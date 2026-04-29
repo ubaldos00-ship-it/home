@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0d6640">
-<title>농작물 생산조사 통합 시스템 v2</title>
+<title>농작물생산조사 디지털 허브 시스템 v3</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -20,7 +20,7 @@
   .wrap{
     max-width:460px;width:100%;
     background:#f0f2f5;min-height:100vh;
-    padding-bottom:2rem;
+    padding-bottom:84px;
   }
 
   /* ── 상단 시스템 상태 바 ── */
@@ -51,8 +51,8 @@
   /* ── 헤더 ── */
   .top-bar{
     background:linear-gradient(160deg,#13472b 0%,#0d6640 60%,#0f5f7a 100%);
-    padding:1.1rem 1.2rem 1.3rem;
-    position:relative;color:#fff;overflow:hidden;
+    padding:0.55rem 0.95rem 0.65rem;
+    position:sticky;top:34px;z-index:45;color:#fff;overflow:hidden;
   }
   .top-bar::after{
     content:'';position:absolute;top:-30px;right:-30px;width:130px;height:130px;
@@ -68,10 +68,10 @@
   }
   .brand-text{flex:1;min-width:0}
   .top-title{
-    font-size:20px;font-weight:800;line-height:1.25;letter-spacing:-0.3px;
+    font-size:17px;font-weight:900;line-height:1.22;letter-spacing:-0.35px;
   }
   .top-sub{
-    font-size:12px;color:rgba(255,255,255,0.75);margin-top:4px;font-weight:500;
+    font-size:10.5px;color:rgba(255,255,255,0.75);margin-top:2px;font-weight:500;
   }
   .ver-badge{
     flex-shrink:0;
@@ -225,6 +225,31 @@
   }
   .session-mini .num{color:#0d6640;font-weight:800}
 
+
+  .title-lines{display:flex;flex-direction:column;align-items:flex-start;gap:1px}
+  .title-line{display:block;padding-left:0;text-indent:0}
+  .top-clock{margin-top:7px;display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:8px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);font-size:11px;font-weight:700;color:rgba(255,255,255,.92);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;}
+  .tool-button{width:100%;font-family:inherit;text-align:left;cursor:pointer}
+  .gps-overlay{position:fixed;inset:0;background:#f0f2f5;z-index:9999;display:none;flex-direction:column;max-width:460px;margin:0 auto;left:0;right:0}
+  .gps-overlay.show{display:flex}
+  .gps-top{background:#0d6640;color:#fff;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;box-shadow:0 2px 10px rgba(0,0,0,.22)}
+  .gps-title{font-size:15px;font-weight:900;line-height:1.35}
+  .gps-back{border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.16);color:#fff;border-radius:10px;padding:8px 12px;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap}
+  .gps-info{background:#fff;margin:10px 12px;border:1px solid #d1fae5;border-radius:12px;padding:10px 12px;font-size:12px;color:#374151;line-height:1.6;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+  .gps-info strong{color:#0d6640}
+  .gps-actions{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+  .gps-action{display:inline-flex;align-items:center;justify-content:center;padding:8px 10px;border-radius:9px;border:1px solid #0d6640;background:#ecfdf5;color:#0d6640;text-decoration:none;font-size:12px;font-weight:800;cursor:pointer}
+  .gps-frame-wrap{flex:1;margin:0 12px 12px;border-radius:12px;overflow:hidden;background:#fff;border:1px solid #e5e7eb;min-height:360px}
+  .gps-frame{width:100%;height:100%;border:0;background:#fff}
+  .gps-loading{padding:18px 12px;color:#374151;font-size:13px;line-height:1.6}
+
+  .bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:500;max-width:460px;margin:0 auto;background:rgba(255,255,255,.96);backdrop-filter:blur(10px);border-top:1px solid #d1d5db;box-shadow:0 -6px 20px rgba(0,0,0,.08);display:grid;grid-template-columns:repeat(3,1fr);padding:8px 10px calc(8px + env(safe-area-inset-bottom));gap:8px}
+  .bottom-nav a,.bottom-nav button{border:1px solid #d1fae5;background:linear-gradient(135deg,#ecfdf5,#f0f9ff);border-radius:14px;min-height:54px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;color:#0d6640;font-family:inherit;font-weight:900;cursor:pointer}
+  .bottom-nav .bico{font-size:21px;line-height:1}
+  .bottom-nav .blabel{font-size:11px;letter-spacing:-.2px}
+  .bottom-nav a:active,.bottom-nav button:active{transform:translateY(1px);background:#e6f7ef}
+  .camera-hidden{display:none}
+
   @media (max-width:380px){
     .top-title{font-size:18px}
     .meta-cell{padding:9px 10px}
@@ -255,8 +280,14 @@
   <div class="top-bar">
     <div class="brand-row">
       <div class="brand-text">
-        <div class="top-title">🌾 농작물 생산조사<br>통합 디지털 허브</div>
+        <div class="top-title">
+          <span class="title-lines">
+            <span class="title-line">🌾 농작물생산조사</span>
+            <span class="title-line">디지털 허브 시스템</span>
+          </span>
+        </div>
         <div class="top-sub">Crop Survey Field Toolkit</div>
+        <div class="top-clock" id="currentDateTime">0000.00.00 00:00:00</div>
       </div>
       <span class="ver-badge">v2.0</span>
     </div>
@@ -266,7 +297,7 @@
   <div class="meta-strip">
     <div class="meta-cell">
       <span class="k">TOOLS</span>
-      <span class="v">6<small>개</small></span>
+      <span class="v">9<small>개</small></span>
     </div>
     <div class="meta-cell">
       <span class="k">MODE</span>
@@ -274,7 +305,7 @@
     </div>
     <div class="meta-cell">
       <span class="k">BUILD</span>
-      <span class="v">26.04.27</span>
+      <span class="v" id="buildDateText">26.04.30</span>
     </div>
   </div>
 
@@ -300,7 +331,7 @@
     <a href="https://ubaldos00-ship-it.github.io/flag_cal/" class="tool">
       <div class="tool-icon">📍</div>
       <div class="tool-body">
-        <div class="tool-name">A/B포구 기점 계산기</div>
+        <div class="tool-name">A/B포구 선정 계산기</div>
         <div class="tool-desc">조사의 시작점, 정확한 기점 설정 및 좌표 계산</div>
       </div>
       <div class="tool-arrow">›</div>
@@ -318,8 +349,8 @@
     <a href="https://ubaldos00-ship-it.github.io/yield_cal/" class="tool">
       <div class="tool-icon">⚖️</div>
       <div class="tool-body">
-        <div class="tool-name">10a당 생산량 계산기</div>
-        <div class="tool-desc">이보다 빠를순 없다. 쉽게 빠른 10a당 생산량 계산기!</div>
+        <div class="tool-name">실측 10a당 생산량 계산기</div>
+        <div class="tool-desc">이보다 빠를순 없다. 쉽게 빠른 실측 생산량 계산기!</div>
       </div>
       <div class="tool-arrow">›</div>
     </a>
@@ -327,7 +358,7 @@
     <a href="https://ubaldos00-ship-it.github.io/chungchi_cal/" class="tool">
       <div class="tool-icon">👂</div>
       <div class="tool-body">
-        <div class="tool-name">10a당 생산량 계산기</div>
+        <div class="tool-name">청취 10a당 생산량 계산기</div>
         <div class="tool-desc">응답자의 언어도 해석하는 청취조사의 끝판왕!!</div>
       </div>
       <div class="tool-arrow">›</div>
@@ -365,7 +396,7 @@
   <!-- 푸터 -->
   <footer>
     <div class="foot-line">
-      v2.0 <span class="dot">·</span> 농작물 생산조사 통합 디지털 허브
+      v2.0 <span class="dot">·</span> 농작물생산조사 디지털 허브 시스템
     </div>
     <div class="foot-line" style="margin-top:5px">
       Statistics Specialist <span class="dot">·</span> Crop Survey Field Tools
@@ -379,6 +410,21 @@
 
 </div>
 
+
+
+<nav class="bottom-nav" aria-label="하단 빠른 실행">
+  <a href="https://ubaldos00-ship-it.github.io/home/jakmul_game.html" aria-label="작물 게임 실행">
+    <span class="bico">🎮</span><span class="blabel">게임</span>
+  </a>
+  <button type="button" id="cameraBtn" aria-label="카메라 실행">
+    <span class="bico">📷</span><span class="blabel">카메라</span>
+  </button>
+  <a href="map.html" aria-label="GPS 현재위치 지도 열기">
+    <span class="bico">📍</span><span class="blabel">위치</span>
+  </a>
+</nav>
+<input id="cameraInput" class="camera-hidden" type="file" accept="image/*" capture="environment">
+
 <script>
 (function(){
   'use strict';
@@ -391,27 +437,25 @@
   const BUILD_EPOCH = new Date('2026-04-27T00:00:00+09:00').getTime();
 
   function fmtElapsed(sec){
-    if(sec < 60) return sec + 's';
-    if(sec < 3600) return Math.floor(sec/60) + 'm ' + (sec%60) + 's';
-    if(sec < 86400){
-      const h = Math.floor(sec/3600);
-      const m = Math.floor((sec%3600)/60);
-      return h + 'h ' + m + 'm';
-    }
-    const d = Math.floor(sec/86400);
-    const h = Math.floor((sec%86400)/3600);
-    return d + 'd ' + h + 'h';
+    const d = Math.floor(sec / 86400);
+    const h = Math.floor((sec % 86400) / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    const ss = sec % 60;
+    return d + 'd ' + h + 'h ' + m + 'm ' + ss + 's';
   }
   function pad2(n){return n < 10 ? '0' + n : '' + n}
+  function fmtDateTime(d){return d.getFullYear()+'.'+pad2(d.getMonth()+1)+'.'+pad2(d.getDate())+' '+pad2(d.getHours())+':'+pad2(d.getMinutes())+':'+pad2(d.getSeconds());}
 
   const elapsedEl = document.getElementById('elapsedSec');
   const sessionEl = document.getElementById('sessionTime');
+  const currentDateTimeEl = document.getElementById('currentDateTime');
   const sessionStart = Date.now();
 
   function tick(){
     const now = Date.now();
     const elapsedFromBuild = Math.max(0, Math.floor((now - BUILD_EPOCH)/1000));
     if(elapsedEl) elapsedEl.textContent = fmtElapsed(elapsedFromBuild);
+    if(currentDateTimeEl) currentDateTimeEl.textContent = fmtDateTime(new Date());
     const sessionSec = Math.floor((now - sessionStart)/1000);
     const m = Math.floor(sessionSec/60);
     const s = sessionSec % 60;
@@ -446,11 +490,74 @@
   );
 
   const allOk = Object.values(sysCheck).every(Boolean);
-  console.log('%c[농작물 생산조사 통합 시스템 v2] 검증', 'color:#0d6640;font-weight:bold;font-size:12px');
+  console.log('%c[농작물생산조사 디지털 허브 시스템 v4] 검증', 'color:#0d6640;font-weight:bold;font-size:12px');
   console.table(sysCheck);
   console.log(allOk ? '%c✓ 모든 시스템 정상' : '%c⚠ 일부 항목 점검 필요',
               'color:' + (allOk ? '#0d6640' : '#f59e0b') + ';font-weight:bold');
   window.__sysCheck = sysCheck;
+
+  function initCameraButton(){
+    const cameraBtn = document.getElementById('cameraBtn');
+    const cameraInput = document.getElementById('cameraInput');
+    if(!cameraBtn || !cameraInput) return;
+    cameraBtn.addEventListener('click', function(){ cameraInput.click(); });
+    cameraInput.addEventListener('change', function(){
+      if(cameraInput.files && cameraInput.files.length > 0){
+        console.log('[카메라] 촬영/선택 파일:', cameraInput.files[0].name || 'image');
+      }
+    });
+  }
+
+  function naverMapUrl(lat,lng){
+    return 'https://map.naver.com/p/search/' + encodeURIComponent(lat + ',' + lng);
+  }
+
+  function openGpsOverlay(){
+    const overlay = document.getElementById('gpsOverlay');
+    const info = document.getElementById('gpsInfo');
+    const frameWrap = document.getElementById('gpsFrameWrap');
+    const searchDate = document.getElementById('gpsSearchDate');
+    const actions = document.getElementById('gpsActions');
+    if(!overlay || !info || !frameWrap) return;
+    overlay.classList.add('show');
+    overlay.setAttribute('aria-hidden','false');
+    if(searchDate) searchDate.textContent = '검색일자: ' + fmtDateTime(new Date());
+    if(actions) actions.style.display = 'none';
+    frameWrap.innerHTML = '<div class="gps-loading">📡 현재 위치를 조회하고 있습니다.<br>위치 권한을 허용해주세요.</div>';
+
+    if(!navigator.geolocation){
+      frameWrap.innerHTML = '<div class="gps-loading">이 브라우저는 GPS 위치 조회를 지원하지 않습니다.</div>';
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(function(pos){
+      const lat = Number(pos.coords.latitude).toFixed(6);
+      const lng = Number(pos.coords.longitude).toFixed(6);
+      const accuracy = Math.round(pos.coords.accuracy || 0);
+      const url = naverMapUrl(lat,lng);
+      info.innerHTML = '<strong>현재위치 조회 완료</strong><br>'+ '위도: ' + lat + ' / 경도: ' + lng + '<br>'+ '오차범위: 약 ' + accuracy + 'm<br>'+ '<span id="gpsSearchDate">검색일자: ' + fmtDateTime(new Date()) + '</span>'+ '<div class="gps-actions" id="gpsActions">'+ '<a class="gps-action" id="gpsOpenExternal" href="'+url+'" target="_blank" rel="noopener">네이버지도 새창 열기</a>'+ '<button type="button" class="gps-action" id="gpsRetryBtn">위치 다시 조회</button>'+ '</div>';
+      frameWrap.innerHTML = '<iframe class="gps-frame" title="네이버지도 현재위치" src="'+url+'"></iframe>'+ '<div class="gps-loading" style="font-size:11px;color:#6b7280;">지도 화면이 보이지 않으면 위의 “네이버지도 새창 열기”를 눌러주세요.</div>';
+      const retry = document.getElementById('gpsRetryBtn');
+      if(retry) retry.addEventListener('click', openGpsOverlay);
+    }, function(err){
+      const msg = err && err.message ? err.message : '위치 권한 또는 GPS 조회에 실패했습니다.';
+      frameWrap.innerHTML = '<div class="gps-loading">⚠️ 위치 조회 실패<br>'+msg+'<br><br>휴대폰 설정에서 브라우저 위치 권한을 허용한 뒤 다시 실행해주세요.</div>';
+    }, {enableHighAccuracy:true, timeout:12000, maximumAge:0});
+  }
+
+  function initGpsButton(){
+    const gpsBtn = document.getElementById('gpsBtn');
+    const backBtn = document.getElementById('gpsBackBtn');
+    const retryBtn = document.getElementById('gpsRetryBtn');
+    const overlay = document.getElementById('gpsOverlay');
+    if(gpsBtn) gpsBtn.addEventListener('click', openGpsOverlay);
+    if(backBtn) backBtn.addEventListener('click', function(){
+      if(overlay){ overlay.classList.remove('show'); overlay.setAttribute('aria-hidden','true'); }
+    });
+    if(retryBtn) retryBtn.addEventListener('click', openGpsOverlay);
+  }
+
+  initCameraButton();
+
 })();
 </script>
 
