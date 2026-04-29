@@ -1,106 +1,98 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#ffffff">
-<title>GPS 현재위치 지도 v1</title>
-<style>
-  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-  html,body{width:100%;height:100%;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;background:#eef2f4;color:#111827;overflow:hidden}
-  .map-page{position:fixed;inset:0;background:#eef2f4;display:flex;align-items:stretch;justify-content:center}
-  .phone-frame{position:relative;width:100%;max-width:460px;height:100%;background:#f8fafc;overflow:hidden}
-  .status-space{position:absolute;top:0;left:0;right:0;height:30px;background:rgba(255,255,255,.88);z-index:5;display:flex;align-items:center;justify-content:space-between;padding:0 12px;font-size:12px;font-weight:800;color:#111827;backdrop-filter:blur(8px)}
-  .map-top{position:absolute;top:30px;left:0;right:0;height:54px;z-index:6;display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(255,255,255,.55),rgba(255,255,255,0));pointer-events:none}
-  .back-btn{pointer-events:auto;width:42px;height:42px;border:0;border-radius:50%;background:rgba(255,255,255,.92);box-shadow:0 2px 10px rgba(0,0,0,.16);font-size:30px;line-height:1;color:#111827;display:flex;align-items:center;justify-content:center;cursor:pointer}
-  .type-chip{pointer-events:auto;border:1px solid #d1d5db;background:rgba(255,255,255,.92);border-radius:18px;padding:8px 12px;font-size:13px;font-weight:800;color:#374151;box-shadow:0 2px 8px rgba(0,0,0,.10)}
-  .map-wrap{position:absolute;inset:0;background:#e5e7eb}
-  iframe{width:100%;height:100%;border:0;background:#e5e7eb}
-  .loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;background:linear-gradient(135deg,#f8fafc,#ecfdf5);z-index:3;color:#374151;font-size:14px;line-height:1.7}
-  .loading strong{color:#0d6640;font-size:17px}
-  .error-box{position:absolute;left:14px;right:14px;top:98px;z-index:8;background:rgba(255,255,255,.95);border:1px solid #fecaca;border-left:4px solid #ef4444;border-radius:14px;padding:14px;color:#991b1b;font-size:13px;line-height:1.6;box-shadow:0 3px 14px rgba(0,0,0,.12);display:none}
-  .info-card{position:absolute;left:12px;right:12px;bottom:14px;z-index:7;background:rgba(255,255,255,.94);border:1px solid #e5e7eb;border-radius:16px;padding:12px 14px;box-shadow:0 6px 22px rgba(0,0,0,.16);backdrop-filter:blur(8px)}
-  .info-title{font-size:13px;font-weight:900;color:#0d6640;margin-bottom:4px}
-  .info-text{font-size:11.5px;color:#4b5563;line-height:1.55;word-break:break-all}
-  .info-actions{display:flex;gap:8px;margin-top:9px}
-  .info-actions a,.info-actions button{flex:1;border:0;border-radius:10px;padding:10px 8px;font-size:12px;font-weight:900;text-align:center;text-decoration:none;cursor:pointer}
-  .open-btn{background:#0d6640;color:#fff}.retry-btn{background:#ecfdf5;color:#0d6640;border:1px solid #bbf7d0!important}
-  .pin-dot{position:absolute;left:50%;top:50%;width:20px;height:20px;border-radius:50%;background:#1a73e8;border:4px solid #fff;box-shadow:0 0 0 10px rgba(26,115,232,.18),0 3px 10px rgba(0,0,0,.28);transform:translate(-50%,-50%);z-index:4;display:none;pointer-events:none}
-  .scale{position:absolute;right:12px;bottom:96px;z-index:7;background:rgba(255,255,255,.92);border-radius:4px;padding:2px 5px;font-size:10px;color:#111827;border-bottom:2px solid #111}
-  .naver{position:absolute;left:12px;bottom:96px;z-index:7;color:#03c75a;font-size:12px;font-weight:900;letter-spacing:-.2px}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>네이버 지도</title>
+    
+    <!-- 네이버 지도 API (Client ID 적용 완료) -->
+    <script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=l300nz0ugi"></script>
+    
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+        }
+        
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 상단 컨트롤 바 */
+        .top-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+        }
+
+        .title {
+            margin-left: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
 </head>
 <body>
-<div class="map-page">
-  <div class="phone-frame">
-    <div class="status-space"><span id="clock">--:--</span><span>GPS</span></div>
-    <div class="map-top">
-      <button class="back-btn" type="button" onclick="goBack()" aria-label="뒤로가기">‹</button>
-      <div class="type-chip">위성지도</div>
+
+    <div class="top-bar">
+        <button class="back-btn" onclick="window.history.back();" title="뒤로가기">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+        <div class="title">지도 보기</div>
     </div>
-    <div class="map-wrap" id="mapWrap">
-      <div class="loading" id="loading"><div><strong>현재 위치를 찾는 중입니다.</strong><br>위치 권한을 허용하면 네이버지도를 화면 안에 표시합니다.</div></div>
-    </div>
-    <div class="pin-dot" id="pinDot" aria-hidden="true"></div>
-    <div class="error-box" id="errorBox"></div>
-    <div class="info-card" id="infoCard">
-      <div class="info-title">📍 GPS 현재위치 지도</div>
-      <div class="info-text" id="infoText">검색일자: 위치 조회 대기 중</div>
-      <div class="info-actions">
-        <a class="open-btn" id="openExternal" href="https://map.naver.com" target="_blank" rel="noopener">네이버지도 열기</a>
-        <button class="retry-btn" type="button" onclick="locateNow()">다시 조회</button>
-      </div>
-    </div>
-    <div class="naver">NAVER</div>
-    <div class="scale">100m</div>
-  </div>
-</div>
-<script>
-(function(){'use strict';
-  function pad2(n){return n<10?'0'+n:''+n}
-  function fmt(d){return d.getFullYear()+'.'+pad2(d.getMonth()+1)+'.'+pad2(d.getDate())+' '+pad2(d.getHours())+':'+pad2(d.getMinutes())+':'+pad2(d.getSeconds())}
-  function tick(){var d=new Date();var c=document.getElementById('clock');if(c)c.textContent=pad2(d.getHours())+':'+pad2(d.getMinutes())}
-  tick();setInterval(tick,1000);
-  window.fmtDateTime=fmt;
-})();
-function goBack(){
-  if(history.length>1) history.back();
-  else location.href='index.html';
-}
-function naverUrl(lat,lng){
-  return 'https://map.naver.com/p/search/' + encodeURIComponent(lat+','+lng);
-}
-function setError(msg){
-  var e=document.getElementById('errorBox');
-  var l=document.getElementById('loading');
-  if(l) l.style.display='none';
-  if(e){e.style.display='block';e.innerHTML='⚠️ '+msg+'<br>브라우저 위치 권한을 허용한 뒤 다시 조회해주세요.';}
-}
-function locateNow(){
-  var wrap=document.getElementById('mapWrap');
-  var loading=document.getElementById('loading');
-  var err=document.getElementById('errorBox');
-  var pin=document.getElementById('pinDot');
-  var info=document.getElementById('infoText');
-  var open=document.getElementById('openExternal');
-  if(err) err.style.display='none';
-  if(pin) pin.style.display='none';
-  if(wrap){wrap.innerHTML='<div class="loading" id="loading"><div><strong>현재 위치를 찾는 중입니다.</strong><br>위치 권한을 허용해주세요.</div></div>';}
-  if(!navigator.geolocation){setError('이 브라우저는 GPS 조회를 지원하지 않습니다.');return;}
-  navigator.geolocation.getCurrentPosition(function(pos){
-    var lat=Number(pos.coords.latitude).toFixed(6);
-    var lng=Number(pos.coords.longitude).toFixed(6);
-    var acc=Math.round(pos.coords.accuracy||0);
-    var url=naverUrl(lat,lng);
-    if(open) open.href=url;
-    if(info) info.innerHTML='검색일자: '+window.fmtDateTime(new Date())+'<br>위도 '+lat+' / 경도 '+lng+'<br>오차범위 약 '+acc+'m';
-    if(wrap){wrap.innerHTML='<iframe title="네이버지도 현재위치" src="'+url+'"></iframe>';}
-    if(pin) pin.style.display='block';
-  }, function(error){
-    setError(error && error.message ? error.message : '위치 조회에 실패했습니다.');
-  }, {enableHighAccuracy:true, timeout:12000, maximumAge:0});
-}
-document.addEventListener('DOMContentLoaded',locateNow);
-</script>
+
+    <div id="map"></div>
+
+    <script>
+        window.onload = function() {
+            // 경산 펜타힐즈 부근 좌표
+            var mapOptions = {
+                center: new naver.maps.LatLng(35.8239, 128.7358),
+                zoom: 16,
+                
+                // 지도 유형 컨트롤 (일반/위성 선택 버튼)
+                mapTypeControl: true,
+                mapTypeControlOptions: {
+                    style: naver.maps.MapTypeControlStyle.BUTTON,
+                    position: naver.maps.Position.TOP_RIGHT
+                },
+                
+                // 줌 컨트롤
+                zoomControl: true,
+                zoomControlOptions: {
+                    position: naver.maps.Position.RIGHT_CENTER
+                }
+            };
+
+            var map = new naver.maps.Map('map', mapOptions);
+        };
+    </script>
+
 </body>
 </html>
