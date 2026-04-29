@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>매의 눈 조사관: 작물조사 게임</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #app-container {
+            width: 100%;
+            max-width: 420px;
+            height: 100%;
+            background-color: white;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        header {
+            background: linear-gradient(135deg, #1a4d31 0%, #2d6a4f 100%);
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        /* 헤더 상단 레이아웃 조정 (홈버튼 겹침 방지) */
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            height: 40px;
+        }
+
+        .high-score-display {
+            font-size: 0.9rem;
+            background: rgba(255,255,255,0.15);
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-weight: bold;
+        }
+
+        .level-info {
+            font-size: 1.2rem;
+            font-weight: bold;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+        }
+
+        .home-link {
+            color: white;
+            text-decoration: none;
+            font-size: 1.4rem;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            z-index: 10;
+        }
+
+        .timer-container {
+            width: 100%;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        #timer-bar {
+            width: 100%;
+            height: 100%;
+            background: #ffcc00;
+            transition: width 0.1s linear;
+        }
+
+        .screen {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .hidden { display: none !important; }
+
+        #game-board {
+            display: grid;
+            gap: 8px;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            padding: 10px;
+            background: #f1f3f1;
+            border-radius: 12px;
+        }
+
+        .cell {
+            background: white;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-size: 2rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: transform 0.1s;
+        }
+
+        .cell:active { transform: scale(0.9); }
+
+        .result-card {
+            text-align: center;
+            padding: 30px;
+            background: #f9fbf9;
+            border-radius: 20px;
+            border: 1px solid #e0e6e0;
+            width: 90%;
+        }
+
+        .btn {
+            background-color: #2d6a4f;
+            color: white;
+            border: none;
+            padding: 16px 40px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-top: 20px;
+            box-shadow: 0 4px 10px rgba(45, 106, 79, 0.3);
+        }
+
+        .btn:active { transform: scale(0.95); }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        .wrong { animation: shake 0.2s ease-in-out; background-color: #ffe6e6 !important; }
+    </style>
+</head>
+<body>
+
+<div id="app-container">
+    <header>
+        <div class="header-top">
+            <div class="high-score-display">TOP: <span id="top-level">1</span></div>
+            <div class="level-info">🚩 LV <span id="current-level">1</span></div>
+            <a href="https://ubaldos00-ship-it.github.io/home/" class="home-link">🏠</a>
+        </div>
+        <div class="timer-container">
+            <div id="timer-bar"></div>
+        </div>
+    </header>
+
+    <!-- 시작 화면 -->
+    <div id="start-screen" class="screen">
+        <div class="result-card">
+            <h2 style="color:#1a4d31; margin-bottom:15px;">매의 눈 조사관: 작물조사 게임</h2>
+            <p style="color:#666; line-height:1.6; margin-bottom:20px;">
+                수많은 작물 사이에 숨어있는<br>
+                <b>다른 작물을 찾으세요!</b><br><br>
+                틀리면 시간이 줄어드니 주의하세요!
+            </p>
+            <button class="btn" onclick="game.start()">조사 시작</button>
+        </div>
+    </div>
+
+    <!-- 게임 화면 -->
+    <div id="game-screen" class="screen hidden">
+        <div id="game-board"></div>
+    </div>
+
+    <!-- 결과 화면 -->
+    <div id="result-screen" class="screen hidden">
+        <div class="result-card">
+            <h2 style="color:#1a4d31">조사 완료!</h2>
+            <div style="font-size: 1.2rem; margin: 20px 0;">도달 레벨: <span id="final-level" style="color:#2d6a4f; font-weight:bold;">0</span></div>
+            <p id="rank-text" style="font-weight: bold; margin-bottom: 20px; color: #555;"></p>
+            <button class="btn" onclick="game.start()">다시 도전</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const game = {
+        level: 1,
+        highScore: localStorage.getItem('spyCropHighScore') || 1,
+        time: 100,
+        timerInterval: null,
+        isPlaying: false,
+
+        // 작물 데이터 리스트
+        stageData: [
+            ['🍎', '🍅'], ['🥬', '🥦'], ['🥔', '🍠'], ['🍇', '🫐'], 
+            ['🧅', '🧄'], ['🍊', '🍋'], ['🌽', '🌾'], ['🍄', '🪵'],
+            ['🍒', '🍓'], ['🍐', '🍏'], ['🍉', '🎃'], ['🥕', '🥖'],
+            ['🌵', '🌳'], ['🌻', '🌼'], ['🍆', '🥒'], ['🥨', '🥐']
+        ],
+
+        init() {
+            this.board = document.getElementById('game-board');
+            this.levelText = document.getElementById('current-level');
+            this.topLevelText = document.getElementById('top-level');
+            this.timerBar = document.getElementById('timer-bar');
+            this.topLevelText.innerText = this.highScore;
+        },
+
+        start() {
+            this.level = 1;
+            this.time = 100;
+            this.isPlaying = true;
+            
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+
+            this.render();
+            this.startTimer();
+        },
+
+        startTimer() {
+            if (this.timerInterval) clearInterval(this.timerInterval);
+            this.timerInterval = setInterval(() => {
+                // 레벨이 올라갈수록 감소 속도 증가
+                this.time -= (0.7 + (this.level * 0.06)); 
+                this.updateTimerBar();
+                if (this.time <= 0) this.gameOver();
+            }, 100);
+        },
+
+        updateTimerBar() {
+            this.timerBar.style.width = this.time + '%';
+            if (this.time < 30) this.timerBar.style.background = '#ff4d4d';
+            else if (this.time < 60) this.timerBar.style.background = '#ffa500';
+            else this.timerBar.style.background = '#ffcc00';
+        },
+
+        render() {
+            this.levelText.innerText = this.level;
+            this.board.innerHTML = '';
+
+            // 레벨에 따른 그리드 크기 결정 (최대 8x8)
+            let size = 2 + Math.floor(this.level / 3);
+            if (size > 8) size = 8;
+            this.board.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+
+            // 작물 랜덤 선택 (매 판마다 랜덤하게 섞이도록 수정)
+            const pairIndex = Math.floor(Math.random() * this.stageData.length);
+            let [normal, spy] = this.stageData[pairIndex];
+            
+            // 정상/스파이 역할도 랜덤하게 뒤바꿈
+            if (Math.random() > 0.5) [normal, spy] = [spy, normal];
+
+            const totalCells = size * size;
+            const spyIndex = Math.floor(Math.random() * totalCells);
+
+            for (let i = 0; i < totalCells; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.innerText = (i === spyIndex) ? spy : normal;
+                
+                // 모바일 터치 대응
+                const handleTouch = (e) => {
+                    e.preventDefault();
+                    if (!this.isPlaying) return;
+                    if (i === spyIndex) this.nextLevel();
+                    else this.wrongChoice(cell);
+                };
+                
+                cell.addEventListener('mousedown', handleTouch);
+                cell.addEventListener('touchstart', handleTouch, {passive: false});
+                
+                this.board.appendChild(cell);
+            }
+        },
+
+        nextLevel() {
+            this.level++;
+            // 레벨 성공 시 시간 회복 (레벨이 높을수록 회복량 감소)
+            const bonus = Math.max(10, 20 - Math.floor(this.level / 2));
+            this.time = Math.min(100, this.time + bonus);
+            this.updateTimerBar();
+            this.render();
+        },
+
+        wrongChoice(cell) {
+            this.time -= 12; // 오답 시 시간 대폭 감점
+            this.updateTimerBar();
+            cell.classList.add('wrong');
+            setTimeout(() => cell.classList.remove('wrong'), 200);
+        },
+
+        gameOver() {
+            this.isPlaying = false;
+            clearInterval(this.timerInterval);
+            
+            // 최고 점수 갱신 및 저장
+            if (this.level > this.highScore) {
+                this.highScore = this.level;
+                localStorage.setItem('spyCropHighScore', this.highScore);
+                this.topLevelText.innerText = this.highScore;
+            }
+
+            document.getElementById('final-level').innerText = this.level;
+            
+            let rank = "";
+            if (this.level > 25) rank = "🏅 신의 경지에 오른 조사관";
+            else if (this.level > 15) rank = "👁️ 매의 눈을 가진 베테랑";
+            else if (this.level > 8) rank = "👨‍🌾 숙련된 현장 농부";
+            else rank = "🌱 초보 관찰자";
+
+            document.getElementById('rank-text').innerText = rank;
+            
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+        }
+    };
+
+    game.init();
+</script>
+</body>
+</html>
