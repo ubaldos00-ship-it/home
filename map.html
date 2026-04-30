@@ -6,15 +6,28 @@
 <title>현재 위치 지도</title>
 
 <!--
-  네이버 Maps JS API
-  App   : ubaldos
-  KeyID : w8m4oe36ev
-  onerror → 스크립트 로드 실패 즉시 감지
+  ✅ 수정1: 도메인 openapi → oapi
+  ✅ 수정2: ncpClientId → ncpKeyId
+  ✅ 수정3: &callback=initNaverMap (비동기 로드, waitAndRun 폴링 제거)
 -->
 <script type="text/javascript"
-    src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=w8m4oe36ev&submodules=geolocation"
-    onerror="window.__naverFailed=true;"
-    onload="window.__naverLoaded=true;">
+    src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=w8m4oe36ev&submodules=geolocation&callback=initNaverMap"
+    onerror="window.__naverFailed=true;onNaverFail('스크립트 로드 실패');">
+</script>
+
+<!--
+  ✅ 수정4: 인증 실패 감지 함수 (API 키 오류 시 즉시 호출됨)
+  반드시 API 스크립트보다 앞에 선언되어야 합니다.
+-->
+<script>
+window.navermap_authFailure = function(){
+  window.__naverAuthFailed = true;
+  // onNaverFail은 body 스크립트에서 정의됨 — 지연 호출
+  setTimeout(function(){
+    if(typeof onNaverFail === 'function')
+      onNaverFail('API 키 인증 실패 (ncpKeyId 확인 필요)');
+  }, 100);
+};
 </script>
 
 <style>
@@ -44,7 +57,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 /* ── 지도 영역 ── */
 #map{position:fixed;top:56px;left:0;right:0;bottom:0;}
 
-/* ── 로딩 / 에러 오버레이 ── */
+/* ── 오버레이 ── */
 #overlay{
   position:fixed;top:56px;left:0;right:0;bottom:0;
   background:#f0f2f5;
@@ -60,14 +73,14 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 @keyframes spin{to{transform:rotate(360deg)}}
 #ov-title{font-size:15px;font-weight:700;color:#111;text-align:center}
 #ov-sub{font-size:13px;color:#6b7280;text-align:center;line-height:1.7;max-width:280px}
-#ov-btns{display:flex;flex-direction:column;gap:9px;width:100%;max-width:270px;margin-top:6px}
+#ov-btns{display:flex;flex-direction:column;gap:9px;width:100%;max-width:270px;margin-top:6px;display:none}
 .ov-btn{
   padding:13px 16px;border-radius:13px;border:none;
-  font-size:13px;font-weight:700;cursor:pointer;
+  font-size:13.5px;font-weight:700;cursor:pointer;
   font-family:inherit;letter-spacing:-.2px;
 }
-.ov-btn-primary{background:#0d6640;color:#fff;}
-.ov-btn-primary:active{background:#0a5030}
+.ov-btn-primary  {background:#0d6640;color:#fff;}
+.ov-btn-primary:active  {background:#0a5030}
 .ov-btn-secondary{background:#fff;color:#374151;border:1px solid #d1d5db;}
 .ov-btn-secondary:active{background:#f9fafb}
 
@@ -82,7 +95,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 }
 #locate-btn:active{transform:scale(.9)}
 
-/* ── 상태 토스트 ── */
+/* ── 토스트 ── */
 #toast{
   position:fixed;bottom:100px;left:50%;transform:translateX(-50%);
   background:rgba(17,24,39,.85);color:#fff;
@@ -92,13 +105,13 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 }
 #toast.show{opacity:1}
 
-/* ── 디버그 패널 (제목 5회 탭 토글) ── */
+/* ── 디버그 패널 (제목 5탭) ── */
 #dbg{
   position:fixed;bottom:0;left:0;right:0;
-  background:rgba(0,0,0,.88);color:#4ade80;
-  font-family:ui-monospace,monospace;font-size:10px;line-height:1.75;
+  background:rgba(0,0,0,.9);color:#4ade80;
+  font-family:ui-monospace,monospace;font-size:10.5px;line-height:1.75;
   padding:8px 12px 16px;z-index:2000;
-  display:none;max-height:200px;overflow-y:auto;
+  display:none;max-height:220px;overflow-y:auto;
 }
 </style>
 </head>
@@ -117,18 +130,18 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
   <div class="coord-pill" id="coordPill">—</div>
 </div>
 
-<!-- 오버레이 (로딩 / 에러 / 폴백) -->
+<!-- 오버레이 -->
 <div id="overlay">
   <div class="spinner" id="ovSpinner"></div>
   <div id="ov-title">🗺 지도 초기화 중</div>
-  <div id="ov-sub">잠시만 기다려 주세요…</div>
-  <div id="ov-btns" style="display:none"></div>
+  <div id="ov-sub">Naver Maps API 로드 중…</div>
+  <div id="ov-btns"></div>
 </div>
 
-<!-- 지도 컨테이너 -->
+<!-- 지도 -->
 <div id="map"></div>
 
-<!-- 현재 위치 재조회 버튼 -->
+<!-- 현재 위치 버튼 -->
 <button id="locate-btn" onclick="startGPS()" title="현재 위치">
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
        stroke="#0d6640" stroke-width="2.2"
@@ -142,7 +155,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 <!-- 토스트 -->
 <div id="toast"></div>
 
-<!-- 디버그 패널 (제목 5회 탭) -->
+<!-- 디버그 패널 -->
 <div id="dbg"></div>
 
 <script>
@@ -151,20 +164,15 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 
 /* ── 설정 ── */
 var CFG = {
-  clientId   : 'w8m4oe36ev',
   defaultLat : 35.8239,
   defaultLng : 128.7358,
-  apiTimeout : 8000,
   gpsTimeout : 14000
 };
 
 /* ── 상태 ── */
-var S = {
-  map:null, marker:null, circle:null,
-  lat:null, lng:null, acc:null,
-  naverReady:false, gpsOk:false,
-  tapCount:0
-};
+var S = { map:null, marker:null, circle:null,
+          lat:null, lng:null, acc:null,
+          naverReady:false, gpsOk:false, tapCount:0 };
 
 /* ── DOM ── */
 var overlay   = document.getElementById('overlay');
@@ -179,42 +187,39 @@ var toastTmr;
 
 /* ── 디버그 로그 ── */
 function log(msg, lv){
-  var t = new Date().toTimeString().slice(0,8);
-  var c = lv==='err'?'#f87171':lv==='warn'?'#fbbf24':'#86efac';
-  dbgEl.innerHTML += '<span style="color:#6b7280">['+t+']</span> <span style="color:'+c+'">'+msg+'</span><br>';
-  dbgEl.scrollTop = dbgEl.scrollHeight;
+  var t   = new Date().toTimeString().slice(0,8);
+  var col = lv==='err'?'#f87171':lv==='warn'?'#fbbf24':'#86efac';
+  dbgEl.innerHTML += '<span style="color:#6b7280">['+t+']</span> <span style="color:'+col+'">'+msg+'</span><br>';
+  dbgEl.scrollTop  = dbgEl.scrollHeight;
   console[lv==='err'?'error':lv==='warn'?'warn':'log']('[MAP]', msg);
 }
 
-/* ── 디버그 패널 토글 (제목 5회 탭) ── */
+/* 제목 5탭 → 디버그 패널 */
 document.getElementById('topTitle').addEventListener('click', function(){
-  S.tapCount++;
-  if(S.tapCount >= 5){
+  if(++S.tapCount >= 5){
     S.tapCount = 0;
-    dbgEl.style.display = dbgEl.style.display === 'none' ? 'block' : 'none';
+    dbgEl.style.display = dbgEl.style.display==='none'?'block':'none';
   }
 });
 
 /* ── 오버레이 헬퍼 ── */
 function showOv(title, sub, spinner){
-  overlay.style.display = 'flex';
-  ovTitle.textContent   = title;
-  ovSub.innerHTML       = sub;
+  overlay.style.display   = 'flex';
+  ovTitle.textContent     = title;
+  ovSub.innerHTML         = sub;
   ovSpinner.style.display = spinner ? 'block' : 'none';
-  ovBtns.innerHTML = '';
-  ovBtns.style.display = 'none';
+  ovBtns.innerHTML        = '';
+  ovBtns.style.display    = 'none';
 }
 function hideOv(){ overlay.style.display = 'none'; }
 function addBtn(label, cls, fn){
   var b = document.createElement('button');
-  b.className = 'ov-btn ' + cls;
+  b.className   = 'ov-btn ' + cls;
   b.textContent = label;
-  b.onclick = fn;
+  b.onclick     = fn;
   ovBtns.appendChild(b);
   ovBtns.style.display = 'flex';
 }
-
-/* ── 토스트 ── */
 function toast(msg){
   clearTimeout(toastTmr);
   toastEl.textContent = msg;
@@ -223,48 +228,27 @@ function toast(msg){
 }
 
 /* ================================================================
-   STEP 1 — Naver API 로드 감시 (타임아웃 포함)
+   ✅ Naver API callback — 로드 완료 시 자동 호출
 ================================================================ */
-function waitForNaver(){
-  log('Naver API 로드 대기 (최대 ' + CFG.apiTimeout + 'ms)');
-  showOv('🗺 지도 초기화 중', 'Naver Maps API 로드 중…', true);
+window.initNaverMap = function(){
+  log('✅ Naver API 콜백 수신 — 준비 완료');
+  S.naverReady = true;
+  startGPS();
+};
 
-  var elapsed = 0, iv = 150;
-  var tid = setInterval(function(){
-    elapsed += iv;
-
-    if(window.__naverFailed){
-      clearInterval(tid);
-      log('API 스크립트 onerror — 키 또는 도메인 문제', 'err');
-      onNaverFail('API 스크립트 로드 실패 (키/도메인 미등록)');
-      return;
-    }
-    if(typeof naver !== 'undefined' && naver.maps && naver.maps.Map){
-      clearInterval(tid);
-      log('Naver API 준비 완료 (' + elapsed + 'ms)');
-      S.naverReady = true;
-      startGPS();
-      return;
-    }
-    if(elapsed >= CFG.apiTimeout){
-      clearInterval(tid);
-      log('Naver API 타임아웃 ' + CFG.apiTimeout + 'ms', 'warn');
-      onNaverFail('로드 타임아웃 (' + CFG.apiTimeout/1000 + '초 초과)');
-    }
-  }, iv);
-}
-
-function onNaverFail(reason){
-  log('폴백 모드: ' + reason, 'warn');
+/* ✅ Naver API 실패 (onerror / authFailure 공통 처리) */
+window.onNaverFail = function(reason){
+  log('❌ Naver API 실패: ' + reason, 'err');
   showOv('⚠️ 지도를 불러올 수 없음',
-    'Naver Maps API 오류<br><small style="color:#9ca3af">' + reason + '</small><br><br>' +
+    '<b>Naver Maps API 오류</b><br>' +
+    '<small style="color:#9ca3af">' + reason + '</small><br><br>' +
     'GPS 위치 조회는 계속 진행합니다.', false);
   addBtn('📡 GPS 위치 확인', 'ov-btn-primary', gpsOnlyFlow);
   addBtn('🌐 네이버지도 열기', 'ov-btn-secondary', openNaverWeb);
-}
+};
 
 /* ================================================================
-   STEP 2 — GPS 조회
+   GPS 조회
 ================================================================ */
 window.startGPS = function(){
   if(!navigator.geolocation){
@@ -275,8 +259,11 @@ window.startGPS = function(){
     });
     return;
   }
+
   showOv('📡 GPS 조회 중',
-    'GPS 권한 팝업이 뜨면 <b>허용</b>을 눌러주세요', true);
+    'GPS 권한 팝업이 뜨면 <b>허용</b>을 눌러주세요<br>' +
+    '<small style="color:#9ca3af">iOS: 설정 → 개인 정보 → 위치 서비스 → 브라우저</small>',
+    true);
   log('GPS 요청 시작');
 
   navigator.geolocation.getCurrentPosition(
@@ -301,19 +288,23 @@ function onGPSOk(pos){
 
 function onGPSErr(err){
   var msg = 'GPS 오류', guide = '';
-  if(err.code===1){
-    msg   = '위치 권한이 거부되었습니다';
-    guide = '① 브라우저 주소창 🔒 아이콘 터치<br>② <b>위치 → 허용</b> 선택 후 새로고침<br><br>' +
-            'iOS: 설정 → 개인 정보 → 위치 서비스';
-  } else if(err.code===2){
-    msg   = 'GPS 신호를 찾을 수 없습니다';
-    guide = '실내이거나 신호가 약합니다.<br>Wi-Fi를 켜거나 야외에서 다시 시도하세요.';
-  } else if(err.code===3){
-    msg   = 'GPS 응답 시간 초과';
-    guide = '잠시 후 다시 시도해 주세요.';
+  switch(err.code){
+    case 1:
+      msg   = '위치 권한이 거부되었습니다';
+      guide = '① 브라우저 주소창 🔒 아이콘 터치<br>' +
+              '② <b>위치 → 허용</b> 선택 후 새로고침<br>' +
+              '<small style="color:#9ca3af">iOS: 설정 → 개인정보 → 위치 서비스</small>';
+      break;
+    case 2:
+      msg   = 'GPS 신호 없음';
+      guide = '실내이거나 신호가 약합니다.<br>Wi-Fi를 켜거나 야외에서 다시 시도하세요.';
+      break;
+    case 3:
+      msg   = '위치 조회 시간 초과';
+      guide = '잠시 후 다시 시도해 주세요.';
+      break;
   }
-  log('GPS 실패 code:' + err.code + ' ' + msg, 'err');
-
+  log('GPS 실패 code:' + err.code + ' — ' + msg, 'err');
   showOv('📡 ' + msg, guide || err.message, false);
   addBtn('🔄 다시 시도', 'ov-btn-primary', window.startGPS);
   addBtn('기본 위치로 지도 보기', 'ov-btn-secondary', function(){
@@ -322,21 +313,21 @@ function onGPSErr(err){
 }
 
 /* ================================================================
-   STEP 3 — 지도 렌더링
+   지도 렌더링
 ================================================================ */
 function renderMap(lat, lng, acc){
-  if(!S.naverReady){ log('renderMap: naver 미준비', 'warn'); return; }
-  log('지도 렌더링 lat:' + lat + ' lng:' + lng);
+  if(!S.naverReady){ log('renderMap: Naver 미준비', 'warn'); return; }
 
   var pos = new naver.maps.LatLng(lat, lng);
 
   if(!S.map){
     S.map = new naver.maps.Map('map', {
-      center : pos, zoom : 17,
+      center : pos,
+      zoom   : 17,
       mapTypeControl : true,
       mapTypeControlOptions : {
-        style    : naver.maps.MapTypeControlStyle.BUTTON,
-        position : naver.maps.Position.TOP_RIGHT,
+        style      : naver.maps.MapTypeControlStyle.BUTTON,
+        position   : naver.maps.Position.TOP_RIGHT,
         mapTypeIds : [
           naver.maps.MapTypeId.NORMAL,
           naver.maps.MapTypeId.SATELLITE,
@@ -344,16 +335,16 @@ function renderMap(lat, lng, acc){
         ]
       },
       zoomControl : true,
-      zoomControlOptions : { position : naver.maps.Position.RIGHT_CENTER },
+      zoomControlOptions : { position: naver.maps.Position.RIGHT_CENTER },
       scaleControl : false
     });
-    log('지도 인스턴스 생성');
+    log('지도 인스턴스 생성 완료');
   } else {
     S.map.setCenter(pos);
     S.map.setZoom(17);
   }
 
-  // 오차 범위 원
+  /* 오차 범위 원 */
   if(S.circle){ S.circle.setMap(null); }
   if(acc > 0){
     S.circle = new naver.maps.Circle({
@@ -361,12 +352,12 @@ function renderMap(lat, lng, acc){
       radius      : Math.min(acc, 500),
       fillColor   : 'rgba(26,115,232,.08)',
       fillOpacity : 1,
-      strokeColor : 'rgba(26,115,232,.35)',
+      strokeColor : 'rgba(26,115,232,.4)',
       strokeWeight: 1.5
     });
   }
 
-  // 현재 위치 마커 (파란 점)
+  /* 현재 위치 마커 (파란 점) */
   if(S.marker){ S.marker.setMap(null); }
   S.marker = new naver.maps.Marker({
     map:S.map, position:pos,
@@ -386,8 +377,9 @@ function renderMap(lat, lng, acc){
     }
   });
 
-  coordPill.innerHTML = lat.toFixed(5) + '<br>' + lng.toFixed(5) +
-    (acc>0 ? '<br><span style="color:#22c55e">±'+Math.round(acc)+'m</span>' : '');
+  coordPill.innerHTML =
+    lat.toFixed(5) + '<br>' + lng.toFixed(5) +
+    (acc > 0 ? '<br><span style="color:#22c55e">±'+Math.round(acc)+'m</span>' : '');
 
   hideOv();
   toast('📍 현재 위치 표시 완료');
@@ -395,17 +387,10 @@ function renderMap(lat, lng, acc){
 }
 
 /* ================================================================
-   폴백 — Naver 실패 시 GPS 좌표 + 외부 지도 링크
+   폴백 — Naver 실패 시 GPS 좌표 + 외부 지도
 ================================================================ */
 function gpsOnlyFlow(){
   if(!S.gpsOk){
-    // GPS 먼저 조회
-    if(!navigator.geolocation){
-      showOv('GPS 미지원', '위치 조회를 지원하지 않습니다.', false);
-      addBtn('🌐 네이버지도 열기', 'ov-btn-primary', openNaverWeb);
-      return;
-    }
-    showOv('📡 GPS 조회 중', 'GPS 권한을 허용해 주세요', true);
     navigator.geolocation.getCurrentPosition(function(pos){
       S.lat = pos.coords.latitude;
       S.lng = pos.coords.longitude;
@@ -416,13 +401,14 @@ function gpsOnlyFlow(){
     return;
   }
 
-  coordPill.innerHTML = S.lat.toFixed(5) + '<br>' + S.lng.toFixed(5) +
+  coordPill.innerHTML =
+    S.lat.toFixed(5) + '<br>' + S.lng.toFixed(5) +
     '<br><span style="color:#22c55e">±' + Math.round(S.acc) + 'm</span>';
 
   showOv('📍 GPS 위치 확인됨',
-    '<b style="font-size:15px">' + S.lat.toFixed(6) + '</b><br>' +
-    '<b style="font-size:15px">' + S.lng.toFixed(6) + '</b><br>' +
-    '<span style="color:#9ca3af">오차 ±' + Math.round(S.acc) + 'm</span><br><br>' +
+    '<b style="font-size:16px">' + S.lat.toFixed(6) + '</b><br>' +
+    '<b style="font-size:16px">' + S.lng.toFixed(6) + '</b><br>' +
+    '<span style="color:#9ca3af;font-size:12px">오차 ±' + Math.round(S.acc) + 'm</span><br><br>' +
     '<small style="color:#9ca3af">지도 API 오류 — 외부 지도를 이용하세요</small>',
     false);
   addBtn('🗺 네이버지도로 보기', 'ov-btn-primary', openNaverWeb);
@@ -431,11 +417,11 @@ function gpsOnlyFlow(){
 
 function openNaverWeb(){
   var la = S.lat||CFG.defaultLat, ln = S.lng||CFG.defaultLng;
-  window.open('https://map.naver.com/p/search/' + la + ',' + ln, '_blank');
+  window.open('https://map.naver.com/p/search/'+la+','+ln, '_blank');
 }
 function openKakaoWeb(){
   var la = S.lat||CFG.defaultLat, ln = S.lng||CFG.defaultLng;
-  window.open('https://map.kakao.com/link/map/현재위치,' + la + ',' + ln, '_blank');
+  window.open('https://map.kakao.com/link/map/현재위치,'+la+','+ln, '_blank');
 }
 
 /* ── GPS 펄스 애니메이션 ── */
@@ -443,8 +429,13 @@ var st = document.createElement('style');
 st.textContent = '@keyframes gpsPulse{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(2.6);opacity:0}}';
 document.head.appendChild(st);
 
-/* ── 시작 ── */
-waitForNaver();
+/* ──
+   시작 안내:
+   API 로드 성공 → window.initNaverMap() 콜백 자동 호출
+   API 로드 실패 → onerror / navermap_authFailure 자동 호출
+   별도 waitAndRun 폴링 불필요
+── */
+log('페이지 로드. Naver API 콜백 대기 중…');
 
 })();
 </script>
