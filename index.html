@@ -20,7 +20,7 @@
   .status-bar{
     background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-bottom:1px solid #dbe6df;
     padding:9px 14px;display:flex;align-items:center;justify-content:space-between;font-size:11px;
-    position:sticky;top:0;z-index:50;
+    position:relative;top:auto;z-index:10;
   }
   .status-left{display:flex;align-items:center;gap:7px}.status-dot{width:8px;height:8px;border-radius:50%;background:#16a34a;animation:breathe 2.4s ease-in-out infinite}
   @keyframes breathe{0%,100%{opacity:.45;transform:scale(.86);box-shadow:0 0 0 0 rgba(22,163,74,.35)}50%{opacity:1;transform:scale(1);box-shadow:0 0 0 6px rgba(22,163,74,0)}}
@@ -30,7 +30,7 @@
     background:
       radial-gradient(circle at 88% 18%, rgba(255,255,255,.34) 0%, rgba(255,255,255,.16) 24%, rgba(255,255,255,0) 48%),
       linear-gradient(135deg,#f7d85a 0%,#efd044 28%,#9fcf53 62%,#2f8a55 100%);
-    padding:7px 14px 7px;position:sticky;top:34px;z-index:45;color:#17351f;overflow:hidden;
+    padding:7px 14px 7px;position:sticky;top:0;z-index:100;color:#17351f;overflow:hidden;
     border-bottom-left-radius:22px;border-bottom-right-radius:22px;box-shadow:0 8px 22px rgba(142,111,16,.18);
   }
   .top-bar:before{content:'';position:absolute;right:-38px;top:-34px;width:150px;height:150px;border-radius:50%;background:rgba(255,255,255,.22)}
@@ -74,6 +74,63 @@
   .location-cross{width:25px;height:25px;display:block}.location-cross circle.outer{fill:#fff;stroke:#0f5f3b;stroke-width:2.2}.location-cross path{stroke:#0f5f3b;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}.location-cross circle.center{fill:#0f5f3b}
 
   @media (max-width:380px){.brand-row{min-height:84px}.brand-text{max-width:205px;padding-bottom:2px}.dongbugi-stage{right:-2px;top:0;width:230px;height:94px}.dongbugi-character{width:68px;right:6px}.dongbugi-name{font-size:36px}.top-title{font-size:15px}.top-sub{font-size:9.8px}.tool{padding:14px 13px}.tool-icon{width:47px;height:47px}.tool-name{font-size:16.5px}.meta-cell{padding:10px 8px}.meta-cell .v{font-size:13.5px}}
+
+
+  /* ── v12 요청 반영: 상단 고정, 메타 정보 compact, 빠른 실행 우측 정렬 ── */
+  .status-bar{position:sticky;top:0;z-index:80;padding:7px 14px;min-height:30px}
+  .top-bar{position:sticky;top:30px;z-index:75;padding:6px 14px 6px;border-bottom-left-radius:18px;border-bottom-right-radius:18px}
+  .brand-row{min-height:76px}
+  .dongbugi-character{width:68px;right:8px;bottom:2px}
+  .dongbugi-stage{height:84px;width:220px;right:0;top:0}
+  .dongbugi-name{font-size:42px}
+  .top-title{font-size:16px}
+  .top-sub{font-size:10.5px;margin-top:3px}
+  .top-clock{margin-top:4px;padding:4px 8px;font-size:10.5px}
+
+  .meta-strip{
+    display:grid;grid-template-columns:.62fr .88fr 1.5fr;gap:6px;
+    margin:8px 12px 0;
+  }
+  .meta-cell{
+    border-radius:11px;padding:6px 7px;min-height:44px;
+    display:flex;flex-direction:column;justify-content:center;
+  }
+  .meta-cell .k{font-size:8.8px;letter-spacing:.35px;line-height:1}
+  .meta-cell .v{font-size:12px;line-height:1.12;margin-top:3px;letter-spacing:-.35px}
+  .meta-cell .v small{font-size:8.8px;margin-left:1px}
+
+  .tool.primary .tool-body{position:relative;padding-right:86px}
+  .tool.primary .tool-name{font-size:17.5px;padding-right:0}
+  .quick-start-pill{
+    position:absolute;right:0;top:0;margin-top:0;
+    padding:6px 10px;font-size:11px;border-radius:999px;white-space:nowrap;
+  }
+  .sub-link{font-size:12px;gap:5px;padding:8px 9px;white-space:nowrap}
+  .sub-link span:first-child{gap:5px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .sub-link.disabled{font-size:11.5px}
+  .sub-link em{font-size:8.5px;padding:1px 4px;margin-left:2px;letter-spacing:-.2px}
+  .sub-link.disabled > span:last-child{font-size:9px;font-weight:900;white-space:nowrap;color:#64748b}
+
+  @media (max-width:380px){
+    .top-bar{top:30px;padding:5px 12px}
+    .brand-row{min-height:72px}
+    .brand-text{max-width:205px}
+    .dongbugi-stage{width:205px;height:80px;right:-2px}
+    .dongbugi-character{width:63px;right:7px;bottom:2px}
+    .dongbugi-name{font-size:39px}
+    .top-title{font-size:15px}
+    .top-sub{font-size:9.5px}
+    .meta-strip{grid-template-columns:.58fr .82fr 1.6fr;gap:5px;margin-top:7px}
+    .meta-cell{padding:5px 6px;min-height:40px}
+    .meta-cell .v{font-size:11px}
+    .tool.primary .tool-body{padding-right:78px}
+    .tool.primary .tool-name{font-size:16.5px}
+    .quick-start-pill{font-size:10px;padding:5px 8px}
+    .sub-link{font-size:11.2px;padding:7px 8px}
+    .sub-link.disabled{font-size:10.8px}
+    .sub-link.disabled > span:last-child{font-size:8.3px}
+  }
+
 </style>
 </head>
 <body>
@@ -113,7 +170,7 @@
     <a href="https://ubaldos00-ship-it.github.io/home/tonghab.html" class="tool primary">
       <div class="tool-icon">⚖️</div>
       <div class="tool-body">
-        <div class="tool-name">농작물 10a당 생산량 통합계산기 <span class="new-tag">통합</span></div>
+        <div class="tool-name">10a당 생산량 통합계산기 <span class="new-tag">통합</span></div>
         <div class="tool-desc">포구 선정, 계통추출, 실측 생산량 계산을 한 곳에서 실행합니다.</div>
         <div class="quick-start-pill">빠른 시작</div>
         <div class="sub-links">
