@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>난수표 조회기</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", sans-serif;
+      background: #f4f8fc;
+      color: #1f2937;
+    }
+    .wrap {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 28px 16px 48px;
+    }
+    .card {
+      background: #fff;
+      border: 1px solid #d9e7f7;
+      border-radius: 18px;
+      box-shadow: 0 8px 24px rgba(31, 90, 150, 0.08);
+      padding: 24px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      color: #12385f;
+      font-size: 28px;
+    }
+    .desc {
+      margin: 0 0 24px;
+      color: #5b6b7c;
+      line-height: 1.6;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #12385f;
+    }
+    input {
+      width: 100%;
+      height: 48px;
+      border: 1px solid #b9d3ee;
+      border-radius: 12px;
+      padding: 0 14px;
+      font-size: 18px;
+      outline: none;
+    }
+    input:focus {
+      border-color: #367cc3;
+      box-shadow: 0 0 0 4px rgba(54, 124, 195, 0.14);
+    }
+    .buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 18px 0;
+    }
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 13px 18px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .primary { background: #2f75bd; color: #fff; }
+    .secondary { background: #e8f1fb; color: #174a7d; }
+    .result {
+      margin-top: 18px;
+      padding: 22px;
+      border-radius: 16px;
+      background: #edf6ff;
+      border: 1px solid #c9e0f6;
+      text-align: center;
+    }
+    .result .small {
+      color: #4b6074;
+      margin-bottom: 8px;
+      font-size: 15px;
+    }
+    .result .number {
+      font-size: 36px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      color: #0f3e6f;
+    }
+    .converted {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid #c9e0f6;
+      color: #174a7d;
+      font-size: 18px;
+      font-weight: 800;
+    }
+    .converted strong {
+      font-size: 30px;
+      color: #0f3e6f;
+    }
+    .error {
+      margin-top: 14px;
+      color: #b42318;
+      font-weight: 700;
+      min-height: 24px;
+    }
+    .help {
+      margin-top: 20px;
+      padding: 16px;
+      border-radius: 14px;
+      background: #f8fbff;
+      color: #536577;
+      line-height: 1.7;
+      font-size: 14px;
+    }
+    .table-area {
+      margin-top: 24px;
+      overflow-x: auto;
+      border: 1px solid #d9e7f7;
+      border-radius: 14px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 680px;
+      background: #fff;
+    }
+    th, td {
+      border: 1px solid #d7e7f8;
+      padding: 9px 10px;
+      text-align: center;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+    th {
+      background: #c8dff6;
+      color: #0f2f50;
+    }
+    td:first-child {
+      background: #eef6ff;
+      font-weight: 700;
+      color: #12385f;
+    }
+    .highlight {
+      background: #ffeeb8 !important;
+      color: #111827;
+      font-weight: 900;
+      outline: 2px solid #e0a800;
+    }
+    @media (max-width: 560px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .result .number { font-size: 36px; }
+      .card { padding: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>난수표 조회기</h1>
+      <p class="desc">가로값을 먼저 입력하고, 세로값을 입력하면 난수표에서 해당 값을 가져옵니다. 결과는 전체 5자리 난수와 앞 두 자리를 소수점 형식으로 변환한 값을 함께 보여줍니다.</p>
+
+      <div class="form-grid">
+        <div>
+          <label for="colInput">가로값</label>
+          <input id="colInput" type="number" min="0" max="9" placeholder="예: 0" />
+        </div>
+        <div>
+          <label for="rowInput">세로값</label>
+          <input id="rowInput" type="number" min="0" max="79" placeholder="예: 40" />
+        </div>
+      </div>
+
+      <div class="buttons">
+        <button class="primary" onclick="lookupNumber()">조회하기</button>
+        <button class="secondary" onclick="resetForm()">초기화</button>
+      </div>
+
+      <div id="error" class="error"></div>
+
+      <div class="result" id="resultBox" style="display:none;">
+        <div class="small" id="positionText"></div>
+        <div class="number" id="resultNumber"></div>
+        <div class="converted" id="decimalNumber"></div>
+      </div>
+
+      <div class="help">
+        <strong>사용 예시</strong><br />
+        가로값 0, 세로값 40을 입력하면 전체 난수 <strong>79152</strong>가 조회됩니다.<br />
+        추가 변환값은 앞 두 자리 79를 <strong>7.9</strong>처럼 표시합니다.<br />
+        앞자리가 0인 난수도 사라지지 않도록 문자열 데이터로 저장했습니다.
+      </div>
+
+      <div class="table-area">
+        <table id="dataTable"></table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const randomTable = {
+      0:["54463","22662","65905","70639","79365","67382","29085","69831","47058","08186"],
+      1:["15389","85205","18850","39226","42249","90669","96325","23248","60933","26927"],
+      2:["85941","40756","82404","02015","13858","78030","16269","65978","01385","15345"],
+      3:["61149","69440","11286","88218","58925","03638","52862","62733","33451","77455"],
+      4:["05219","81619","10651","67079","92511","59888","84502","72095","83463","75577"],
+      5:["41417","98326","87719","92294","46614","50948","64886","20002","97365","30976"],
+      6:["28358","94070","20652","35774","16249","75019","21145","05217","47286","76305"],
+      7:["17783","00015","10806","83091","91530","36466","39981","62481","49177","75779"],
+      8:["40950","84820","29881","85966","62800","70326","84740","62660","77379","90279"],
+      9:["82995","64157","66164","41180","10089","41757","78258","96488","88629","37231"],
+      10:["96754","17676","55659","44105","47361","34833","86679","23930","53249","27083"],
+      11:["34357","88040","53364","71726","45690","66334","60332","22554","90600","71113"],
+      12:["06318","37403","49927","57715","50423","67372","63116","48888","21505","80182"],
+      13:["62111","52820","07243","79931","89292","84767","85693","73947","22278","11551"],
+      14:["47534","09243","67879","00544","23410","12740","02540","54440","32946","13491"],
+      15:["98614","75993","84460","62846","59844","14922","48730","73443","48167","34770"],
+      16:["24856","03648","44898","09351","98795","18644","39765","17058","90368","44104"],
+      17:["96887","12479","80621","66223","86085","78285","02432","53342","42846","94771"],
+      18:["90801","21472","42815","77408","37390","76766","52615","32141","30268","18106"],
+      19:["55165","77312","83666","36028","28420","70219","83169","41943","47366","41067"],
+      20:["75884","12952","84318","95108","72305","64620","91308","89872","45375","85463"],
+      21:["16777","37116","58550","42958","21460","43910","01175","87894","81378","10620"],
+      22:["46230","43877","80207","88877","89380","32992","91380","03164","98656","59337"],
+      23:["42902","66892","45134","01432","94710","23474","20423","60137","60609","13119"],
+      24:["81007","00333","36993","28039","10154","95425","39220","19774","31782","49037"],
+      25:["63089","01122","51111","72373","06902","74373","96199","97017","41273","21546"],
+      26:["20411","67810","89950","16944","93054","87687","96693","87236","77054","33848"],
+      27:["58212","13160","06488","15718","82627","76999","05999","58680","96739","63700"],
+      28:["70577","42866","24969","61210","76046","67699","42054","12696","93758","03283"],
+      29:["94522","74358","71659","62038","79643","79169","44741","05437","39038","13163"],
+      30:["42626","36819","85651","88678","17401","03252","99547","32404","17918","62880"],
+      31:["16051","33763","57194","16752","54450","19031","58580","47625","94132","60631"],
+      32:["08244","27647","33851","44705","94211","46716","11788","55784","95374","72655"],
+      33:["59497","04392","09419","89964","51211","04894","72882","17805","21896","83864"],
+      34:["97155","13428","40293","09985","58434","01412","69124","82171","59058","82859"],
+      35:["98409","66162","95763","47420","20792","61527","20441","39435","11859","41567"],
+      36:["45476","84882","65109","96597","25930","66790","65706","61203","53634","22557"],
+      37:["89300","69700","50741","30329","11658","23166","05400","66669","48703","03887"],
+      38:["50051","95137","91631","66315","91428","12275","24816","68091","71710","33258"],
+      39:["31753","85178","31310","89642","98364","02306","24617","09609","83942","22716"],
+      40:["79152","53829","77250","20190","56535","18760","69942","71448","33278","48805"],
+      41:["44560","38750","83635","56540","64900","42912","13953","79149","18710","68618"],
+      42:["68328","83378","63369","71381","39564","05615","42451","64559","97501","65747"],
+      43:["46939","38639","58625","08342","30459","85863","20781","09284","26333","91777"],
+      44:["83544","86141","15707","96256","23068","13782","08467","89469","93842","55349"],
+      45:["91621","00881","04900","54224","46177","55309","17852","27491","89415","23466"],
+      46:["91896","67126","04151","03795","59077","11848","12630","98375","52068","60142"],
+      47:["55751","62515","21108","80830","02263","29303","37204","96926","30506","09808"],
+      48:["85156","87698","95493","88842","00664","55017","55539","17771","69448","87530"],
+      49:["07521","56898","12236","60277","39102","62315","12239","07105","11844","01117"],
+      50:["59391","58030","52098","82718","87024","82848","04190","96574","90464","29065"],
+      51:["99657","76364","77204","04615","27062","96621","43918","01896","83991","51141"],
+      52:["10363","97518","51400","25670","98342","61891","27101","37855","06235","33316"],
+      53:["86859","19558","64432","19706","99612","59798","32803","67708","15297","28612"],
+      54:["11258","24591","36863","55368","31721","94335","34936","02566","80972","08188"],
+      55:["95068","88628","35911","14530","33020","80428","39936","31855","34334","64865"],
+      56:["54463","47237","73800","91017","36239","71824","83671","39892","60518","37092"],
+      57:["16874","62677","57412","13125","31389","62233","80827","73917","82802","84420"],
+      58:["92494","63157","76593","91316","03505","72389","96363","52887","01087","66091"],
+      59:["15669","56689","35682","40844","53256","81872","35213","09840","34471","74441"],
+      60:["99116","75486","84989","23476","52967","67104","39495","39100","17217","74073"],
+      61:["15696","10703","65178","90637","63110","17622","53988","71087","84148","11670"],
+      62:["97720","15396","51269","69620","03388","13699","33423","67453","43269","56720"],
+      63:["11666","13841","71681","98000","35979","39719","81899","07449","47985","46967"],
+      64:["71628","73130","78783","75691","41632","09847","61547","18707","85489","69944"],
+      65:["40501","01089","99943","91843","41995","88931","73631","69361","05375","15417"],
+      66:["22518","55576","98215","82068","10798","86211","36584","67466","69373","40054"],
+      67:["75112","30485","62173","02132","14878","92879","22281","16783","86352","00077"],
+      68:["80327","02671","98191","84342","90813","49268","95441","15496","20168","09271"],
+      69:["60251","45548","02146","05597","48228","81366","34598","72856","66762","17002"],
+      70:["57430","82270","10421","05540","43648","75888","66049","21511","47676","33444"],
+      71:["73528","39559","34434","88596","54086","71693","43132","14414","79949","85193"],
+      72:["25991","65959","70769","64721","86413","33475","42740","06175","82758","66248"],
+      73:["78388","16638","09134","59880","63806","48472","39318","35434","24057","74739"],
+      74:["12477","09965","96657","57994","59439","76330","24596","77515","09577","91871"],
+      75:["83266","32883","42451","15579","38155","29793","40914","65990","16255","17777"],
+      76:["76970","80876","10237","39515","79152","74798","39357","09054","73579","92359"],
+      77:["37074","65198","44785","68624","98336","84481","97610","78735","46703","98265"],
+      78:["83712","06514","30101","78295","54656","85417","43189","60048","72781","72606"],
+      79:["20287","56862","69727","64443","64936","08366","27227","05158","50326","59566"]
+    };
+
+    function getRandomNumber(row, col) {
+      return randomTable[row]?.[col] ?? null;
+    }
+
+    function lookupNumber() {
+      const row = Number(document.getElementById("rowInput").value);
+      const col = Number(document.getElementById("colInput").value);
+      const error = document.getElementById("error");
+      const resultBox = document.getElementById("resultBox");
+      const resultNumber = document.getElementById("resultNumber");
+      const decimalNumber = document.getElementById("decimalNumber");
+      const positionText = document.getElementById("positionText");
+
+      clearHighlight();
+      error.textContent = "";
+      resultBox.style.display = "none";
+
+      if (!Number.isInteger(row) || row < 0 || row > 79) {
+        error.textContent = "세로값은 0부터 79까지의 정수로 입력해주세요.";
+        return;
+      }
+      if (!Number.isInteger(col) || col < 0 || col > 9) {
+        error.textContent = "가로값은 0부터 9까지의 정수로 입력해주세요.";
+        return;
+      }
+
+      const value = getRandomNumber(row, col);
+      if (value === null) {
+        error.textContent = "해당 위치의 데이터를 찾을 수 없습니다.";
+        return;
+      }
+
+      const decimalValue = `${value[0]}.${value[1]}`;
+      positionText.textContent = `가로값 ${col}, 세로값 ${row}의 조회 결과`;
+      resultNumber.textContent = `전체 난수: ${value}`;
+      decimalNumber.innerHTML = `앞 두 자리 소수점 변환: <strong>${decimalValue}</strong>`;
+      resultBox.style.display = "block";
+
+      const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+      if (cell) {
+        cell.classList.add("highlight");
+        cell.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+      }
+    }
+
+    function resetForm() {
+      document.getElementById("rowInput").value = "";
+      document.getElementById("colInput").value = "";
+      document.getElementById("error").textContent = "";
+      document.getElementById("resultBox").style.display = "none";
+      clearHighlight();
+    }
+
+    function clearHighlight() {
+      document.querySelectorAll(".highlight").forEach(cell => cell.classList.remove("highlight"));
+    }
+
+    function renderTable() {
+      const table = document.getElementById("dataTable");
+      let html = "<thead><tr><th>세로\\가로</th>";
+      for (let col = 0; col <= 9; col++) html += `<th>${col}</th>`;
+      html += "</tr></thead><tbody>";
+
+      for (let row = 0; row <= 79; row++) {
+        html += `<tr><td>${row}</td>`;
+        for (let col = 0; col <= 9; col++) {
+          html += `<td data-row="${row}" data-col="${col}">${randomTable[row][col]}</td>`;
+        }
+        html += "</tr>";
+      }
+      html += "</tbody>";
+      table.innerHTML = html;
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      renderTable();
+      document.getElementById("colInput").focus();
+      document.getElementById("colInput").addEventListener("keydown", e => {
+        if (e.key === "Enter") document.getElementById("rowInput").focus();
+      });
+      document.getElementById("rowInput").addEventListener("keydown", e => {
+        if (e.key === "Enter") lookupNumber();
+      });
+    });
+  </script>
+</body>
+</html>
