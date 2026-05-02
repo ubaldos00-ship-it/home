@@ -332,7 +332,7 @@ input.needs-input:focus{
 .samp-lookup b{font-family:var(--mono);font-size:11px;}
 .res-card.a-res .samp-lookup b{color:var(--ac);}
 .res-card.b-res .samp-lookup b{color:var(--bc);}
-.samp-grid{padding:11px 12px 12px;display:grid;grid-template-columns:repeat(5,1fr);gap:7px;}
+.samp-grid{overflow: visible !important;padding:11px 12px 12px;display:grid;grid-template-columns:repeat(5,1fr);gap:7px;}
 .ncw{display:flex;flex-direction:column;align-items:center;gap:3px;animation:pop .2s ease backwards;}
 .ncw-no{font-family:var(--mono);font-size:10px;font-weight:700;color:#aaa;line-height:1;}
 .ncc{width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:7px;
@@ -2052,13 +2052,29 @@ function captureResult(){
   btn.innerHTML = '⏳&nbsp; 이미지 생성 중...';
 
   setTimeout(function(){
-    html2canvas(target, {
+    
+  // 🔥 force render all sampling grids before capture
+  const grids = document.querySelectorAll('.samp-grid');
+  grids.forEach(g => {
+    g.style.display = 'grid';
+    g.style.opacity = '1';
+    g.style.maxHeight = 'none';
+    g.style.overflow = 'visible';
+  });
+
+  // 🔥 disable animations
+  const items = document.querySelectorAll('.ncw');
+  items.forEach(el => {
+    el.style.animation = 'none';
+  });
+
+html2canvas(target, {
       scale: 2,
       useCORS: true,
       backgroundColor: '#ffffff',
       logging: false,
       windowWidth: target.scrollWidth,
-      windowHeight: target.scrollHeight
+      windowHeight: target.scrollHeight + 800
     }).then(function(canvas){
       const dataUrl = canvas.toDataURL('image/png');
       const filename = buildCaptureFilename();
