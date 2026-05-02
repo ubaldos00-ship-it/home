@@ -64,6 +64,17 @@ body{
 .card{background:#fff;border-radius:var(--radl);border:1px solid var(--gr100);padding:16px;}
 .card-ttl{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--t600);
   margin-bottom:13px;padding-bottom:9px;border-bottom:1px solid #E0DDD6;display:flex;align-items:center;gap:7px;}
+.card-ttl-flex{justify-content:space-between;}
+.card-ttl-left{display:flex;align-items:center;gap:7px;flex:1;min-width:0;}
+.btn-reset-mini{
+  flex-shrink:0;display:inline-flex;align-items:center;gap:4px;
+  padding:6px 11px;border:1.5px solid #C0392B;background:#fff;color:#C0392B;
+  border-radius:50px;font-size:11px;font-weight:800;font-family:inherit;
+  cursor:pointer;letter-spacing:.02em;text-transform:none;
+  transition:all .12s;
+}
+.btn-reset-mini:hover{background:#FEF2F2;}
+.btn-reset-mini:active{transform:scale(.95);}
 .sn{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;
   background:var(--t600);color:#fff;font-size:10.5px;font-weight:800;flex-shrink:0;}
 
@@ -367,18 +378,52 @@ input.needs-input:focus{
 .btn-capture:active{transform:scale(.98);}
 .btn-capture[disabled]{opacity:.5;cursor:not-allowed;}
 
-/* ── Image preview modal ── */
-.img-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;
+/* ── Image preview modal (v3 - 이미지 저장 버튼 + 파일정보) ── */
+.img-modal{display:none;position:fixed;inset:0;background:#1a1a1a;z-index:9999;
   flex-direction:column;align-items:center;overflow-y:auto;}
 .img-modal.open{display:flex;}
-.img-modal-bar{width:100%;max-width:500px;display:flex;align-items:center;justify-content:space-between;
-  padding:14px 16px;background:#1a1a1a;position:sticky;top:0;z-index:2;flex-shrink:0;}
-.img-modal-title{color:#fff;font-size:14px;font-weight:700;}
-.img-modal-close{background:none;border:1.5px solid rgba(255,255,255,.4);color:#fff;font-size:13px;
-  font-weight:700;padding:7px 16px;border-radius:100px;cursor:pointer;font-family:inherit;}
-.img-modal-hint{color:#C0DD97;font-size:12px;text-align:center;padding:10px 16px;background:#1a1a1a;
-  width:100%;max-width:500px;border-bottom:1px solid #333;flex-shrink:0;line-height:1.55;}
-.img-modal img{width:100%;max-width:500px;display:block;margin:0 auto;}
+.img-modal-inner{width:100%;max-width:520px;display:flex;flex-direction:column;}
+.img-modal-bar{width:100%;display:flex;align-items:center;justify-content:space-between;
+  padding:18px 18px 14px;background:#1a1a1a;position:sticky;top:0;z-index:2;flex-shrink:0;
+  border-bottom:1px solid #2a2a2a;}
+.img-modal-title{color:#fff;font-size:18px;font-weight:800;display:flex;align-items:center;gap:8px;}
+.img-modal-close{background:transparent;border:1.5px solid rgba(255,255,255,.45);color:#fff;font-size:14px;
+  font-weight:800;padding:8px 18px;border-radius:100px;cursor:pointer;font-family:inherit;
+  display:flex;align-items:center;gap:5px;transition:background .15s;}
+.img-modal-close:hover{background:rgba(255,255,255,.1);}
+.img-modal-close:active{transform:scale(.96);}
+.img-modal-hint{color:#fff;font-size:13px;padding:14px 20px;background:#222;
+  line-height:1.9;flex-shrink:0;border-bottom:1px solid #2a2a2a;}
+.img-modal-hint .row{display:flex;align-items:flex-start;gap:9px;margin:3px 0;}
+.img-modal-hint .ico{font-size:16px;flex-shrink:0;line-height:1.4;}
+.img-modal-hint .label{color:#7DD4BC;font-weight:800;}
+.img-modal-hint .green{color:#A6E373;font-weight:700;}
+.img-modal-hint .quoted{color:#fff;font-weight:800;}
+/* 큰 이미지 저장 버튼 */
+.img-modal-save{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  margin:14px 16px;padding:18px;
+  background:#3B6D11;color:#fff;border:none;border-radius:12px;
+  font-size:18px;font-weight:900;font-family:inherit;cursor:pointer;
+  box-shadow:0 4px 18px rgba(59,109,17,.45);
+  transition:all .15s;letter-spacing:.02em;
+}
+.img-modal-save:hover{background:#4a8a18;}
+.img-modal-save:active{transform:scale(.98);}
+.img-modal-save:disabled{opacity:.6;cursor:not-allowed;}
+/* 파일 정보 */
+.img-modal-fileinfo{
+  margin:0 16px 14px;padding:14px 16px;
+  background:#222;border:1px solid #333;border-radius:10px;
+  text-align:center;color:#ccc;font-size:13px;line-height:1.85;
+}
+.img-modal-fileinfo .fline{display:block;}
+.img-modal-fileinfo .ico{margin-right:4px;}
+.img-modal-fileinfo .fname{color:#A6E373;font-weight:800;word-break:break-all;}
+.img-modal-fileinfo .floc{color:#A6E373;font-weight:700;}
+.img-modal-fileinfo .fsub{font-size:11.5px;color:#999;margin-top:3px;display:block;}
+.img-modal img{width:calc(100% - 32px);max-width:488px;display:block;margin:0 16px 24px;
+  border-radius:8px;border:1px solid #333;}
 
 @media (max-width:380px){
   .crop-btn{font-size:11px;}
@@ -410,7 +455,13 @@ input.needs-input:focus{
 
   <!-- ════ ① 공통사항 ════ -->
   <div class="card">
-    <div class="card-ttl"><span class="sn">1</span> 공통사항 (작물·필지·날짜)</div>
+    <div class="card-ttl card-ttl-flex">
+      <span class="card-ttl-left"><span class="sn">1</span> 공통사항 (작물·필지·날짜)</span>
+      <button type="button" class="btn-reset-mini" onclick="if(confirm('모든 입력값을 초기화합니다. 계속하시겠습니까?')) location.reload()">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 018-8 8 8 0 016.93 4H16v2h6V2h-2v2.54A9.99 9.99 0 0012 2C6.48 2 2 6.48 2 12h2z" fill="#C0392B"/><path d="M20 12a8 8 0 01-8 8 8 8 0 01-6.93-4H8v-2H2v6h2v-2.54A9.99 9.99 0 0012 22c5.52 0 10-4.48 10-10h-2z" fill="#C0392B"/></svg>
+        초기화
+      </button>
+    </div>
     <label style="margin-bottom:8px;">작물 선택</label>
     <div class="crop-grid">
 
@@ -693,11 +744,11 @@ input.needs-input:focus{
       <div class="samp-row">
         <div class="fg">
           <label>난수표 가로값 (0~9)</label>
-          <input type="number" inputmode="numeric" id="aRandCol" min="0" max="9" placeholder="0~9">
+          <input type="number" inputmode="numeric" id="aRandCol" min="0" max="9" placeholder="0~9" data-need="always">
         </div>
         <div class="fg">
           <label>난수표 세로값 (0~79)</label>
-          <input type="number" inputmode="numeric" id="aRandRow" min="0" max="79" placeholder="0~79">
+          <input type="number" inputmode="numeric" id="aRandRow" min="0" max="79" placeholder="0~79" data-need="always">
         </div>
       </div>
       <div class="samp-trio">
@@ -919,17 +970,37 @@ input.needs-input:focus{
 
 </div><!-- /wrap -->
 
-<!-- 이미지 미리보기 모달 -->
+<!-- 이미지 미리보기 모달 (v3 - 저장 버튼 + 파일정보) -->
 <div class="img-modal" id="imgModal">
-  <div class="img-modal-bar">
-    <span class="img-modal-title">📷 결과 이미지</span>
-    <button class="img-modal-close" onclick="document.getElementById('imgModal').classList.remove('open')">✕ 닫기</button>
+  <div class="img-modal-inner">
+    <div class="img-modal-bar">
+      <span class="img-modal-title">📷 결과 이미지</span>
+      <button class="img-modal-close" onclick="document.getElementById('imgModal').classList.remove('open')">✕ 닫기</button>
+    </div>
+
+    <div class="img-modal-hint">
+      <div class="row">
+        <span class="ico">📱</span>
+        <span><span class="label">iOS</span>: 아래 이미지를 <span class="green">길게 누르기</span> → <span class="quoted">"사진에 추가"</span> 선택</span>
+      </div>
+      <div class="row">
+        <span class="ico">💻</span>
+        <span><span class="label">PC/Android</span>: 이미지 우클릭 → <span class="green">다른 이름으로 저장</span></span>
+      </div>
+    </div>
+
+    <button type="button" class="img-modal-save" id="btnModalSave">
+      <span style="font-size:22px;">⬇</span> 이미지 저장
+    </button>
+
+    <div class="img-modal-fileinfo">
+      <span class="fline"><span class="ico">📁</span>파일명: <span class="fname" id="modalFileName">결과.png</span></span>
+      <span class="fline"><span class="ico">📂</span>저장위치: <span class="floc">기기 다운로드 폴더</span></span>
+      <span class="fsub">iOS: 사진앱 / Android·PC: Downloads</span>
+    </div>
+
+    <img id="modalImg" src="" alt="결과 이미지">
   </div>
-  <div class="img-modal-hint">
-    📱 <strong>iOS</strong>: 아래 이미지를 <strong style="color:#fff;">길게 누르기</strong> → <strong style="color:#fff;">"사진에 추가"</strong><br>
-    💻 <strong>PC/Android</strong>: 이미지 우클릭 → 다른 이름으로 저장
-  </div>
-  <img id="modalImg" src="" alt="결과 이미지">
 </div>
 
 
@@ -1533,7 +1604,17 @@ function validatePort(p, label){
   const r = parseFloat(rv);
   if(!N || N < 1) return { error: label + ' 전체 N을 입력하세요.' };
   if(!n || n < 1) return { error: label + ' 추출 n을 입력하세요.' };
-  if(n > N)       return { error: label + ' 추출 n이 전체 N보다 큽니다. 전체 수확 조사합니다.' };
+  // ★ N < n: 에러가 아니라 "전체 수확 조사" 케이스로 처리
+  if(n > N){
+    return {
+      fullHarvest: true,
+      pN: N, pn: n, pr: NaN,
+      k: NaN, kRaw: NaN,
+      samples: [],
+      lookup: randomLookupState[p],
+      message: label + ' 추출 n(' + n + ')이 전체 N(' + N + ')보다 큽니다. 전체 수확 조사합니다.'
+    };
+  }
   const kRaw = N/n, k = round1(kRaw);
   if(rv === '' || isNaN(r) || r < 1) return { error: label + ' 시작난수 r을 1 이상 입력하세요.' };
   if(r > k) return { error: label + ' 난수 r은 k(' + disp1(k) + ') 이하여야 합니다.' };
@@ -1671,7 +1752,20 @@ function renderUnifiedResult(state){
   updateRatioWarning(a_ga);
 
   // A 계통추출 결과 영역
-  if(sampA){
+  if(sampA && sampA.fullHarvest){
+    // 전체 수확 조사 케이스
+    document.getElementById('aSampMeta').style.display = 'block';
+    document.getElementById('aSampMeta').innerHTML =
+      '<span style="color:#B91C1C;">⚠ 전체 수확 조사</span> · N=' + sampA.pN + ' / n=' + sampA.pn +
+      ' (n이 N보다 큼)';
+    document.getElementById('aSampLookup').style.display = 'block';
+    document.getElementById('aSampLookup').innerHTML =
+      '<strong style="color:#B91C1C;">' + sampA.message + '</strong><br>' +
+      '계통추출 없이 전체 개체를 수확 조사합니다.';
+    const aGrid = document.getElementById('aSampGrid');
+    aGrid.style.display = 'none';
+    aGrid.innerHTML = '';
+  } else if(sampA){
     document.getElementById('aSampMeta').style.display = 'block';
     document.getElementById('aSampMeta').textContent =
       'N=' + sampA.pN + ' / n=' + sampA.pn + ' / k=' + disp1(sampA.k) + ' / r=' + disp1(sampA.pr);
@@ -1708,7 +1802,19 @@ function renderUnifiedResult(state){
     bCard.style.opacity = '1'; bCard.style.border = '';
     document.getElementById('bPendingNote').style.display = 'none';
 
-    if(sampB){
+    if(sampB && sampB.fullHarvest){
+      document.getElementById('bSampMeta').style.display = 'block';
+      document.getElementById('bSampMeta').innerHTML =
+        '<span style="color:#B91C1C;">⚠ 전체 수확 조사</span> · N=' + sampB.pN + ' / n=' + sampB.pn +
+        ' (n이 N보다 큼)';
+      document.getElementById('bSampLookup').style.display = 'block';
+      document.getElementById('bSampLookup').innerHTML =
+        '<strong style="color:#B91C1C;">' + sampB.message + '</strong><br>' +
+        '계통추출 없이 전체 개체를 수확 조사합니다.';
+      const bGrid = document.getElementById('bSampGrid');
+      bGrid.style.display = 'none';
+      bGrid.innerHTML = '';
+    } else if(sampB){
       document.getElementById('bSampMeta').style.display = 'block';
       document.getElementById('bSampMeta').textContent =
         'N=' + sampB.pN + ' / n=' + sampB.pn + ' / k=' + disp1(sampB.k) + ' / r=' + disp1(sampB.pr);
@@ -1777,22 +1883,27 @@ function renderFormulaTable(sampA, sampB){
   const head = document.getElementById('ftblHead');
   const rows = document.getElementById('ftblRows');
   head.innerHTML = ''; rows.innerHTML = '';
-  if(!sampA && !sampB){ card.style.display = 'none'; return; }
+
+  // 전체수확 케이스는 계산식이 없으므로 제외
+  const useA = sampA && !sampA.fullHarvest && sampA.samples && sampA.samples.length > 0;
+  const useB = sampB && !sampB.fullHarvest && sampB.samples && sampB.samples.length > 0;
+
+  if(!useA && !useB){ card.style.display = 'none'; return; }
   card.style.display = 'block';
 
-  const mode = (sampA && sampB) ? 'ab' : (sampA ? 'aonly' : 'bonly');
+  const mode = (useA && useB) ? 'ab' : (useA ? 'aonly' : 'bonly');
   head.className = 'ftbl-head ' + mode;
   head.innerHTML = '<div class="fth-no">No.</div>' +
-    (sampA ? '<div class="fth-a">' + PIN_SVG_WHITE + 'A포구 계산식</div>' : '') +
-    (sampB ? '<div class="fth-b">' + PIN_SVG_WHITE + 'B포구 계산식</div>' : '');
+    (useA ? '<div class="fth-a">' + PIN_SVG_WHITE + 'A포구 계산식</div>' : '') +
+    (useB ? '<div class="fth-b">' + PIN_SVG_WHITE + 'B포구 계산식</div>' : '');
 
-  const maxLen = Math.max(sampA ? sampA.samples.length : 0, sampB ? sampB.samples.length : 0);
+  const maxLen = Math.max(useA ? sampA.samples.length : 0, useB ? sampB.samples.length : 0);
   for(let i = 0; i < maxLen; i++){
     const row = document.createElement('div');
     row.className = 'ftbl-row ' + mode;
     row.innerHTML = '<div class="f-no">' + (i+1) + '</div>' +
-      (sampA ? '<div class="f-cell blue">' + fHtml(sampA.samples, i, sampA.pr, sampA.k) + '</div>' : '') +
-      (sampB ? '<div class="f-cell red">'  + fHtml(sampB.samples, i, sampB.pr, sampB.k) + '</div>' : '');
+      (useA ? '<div class="f-cell blue">' + fHtml(sampA.samples, i, sampA.pr, sampA.k) + '</div>' : '') +
+      (useB ? '<div class="f-cell red">'  + fHtml(sampB.samples, i, sampB.pr, sampB.k) + '</div>' : '');
     rows.appendChild(row);
   }
 }
@@ -1914,10 +2025,21 @@ function sanitizeFilename(s){
 
 function buildCaptureFilename(){
   const crop = selectedCrop || '작물';
-  const addr = sanitizeFilename(document.getElementById('address').value || '필지');
-  const dt = (document.getElementById('surveyDate').value || nowStr()).replace(/-/g, '');
-  return '종합조사_' + crop + '_' + addr + '_' + dt + '.png';
+  const addrRaw = (document.getElementById('address').value || '').trim();
+  const addr = addrRaw ? sanitizeFilename(addrRaw) : '주소미입력';
+  // KST 기준 현재 시각
+  const kst = new Date(Date.now() + 9*60*60*1000);
+  const yyyy = kst.getUTCFullYear();
+  const mm = String(kst.getUTCMonth()+1).padStart(2,'0');
+  const dd = String(kst.getUTCDate()).padStart(2,'0');
+  const hh = String(kst.getUTCHours()).padStart(2,'0');
+  const mn = String(kst.getUTCMinutes()).padStart(2,'0');
+  return crop + '_' + addr + '_' + yyyy + '-' + mm + '-' + dd + '_' + hh + mn + '.png';
 }
+
+/* 저장용 dataUrl/파일명을 모달과 공유 */
+let lastCaptureDataUrl = null;
+let lastCaptureFilename = '결과.png';
 
 function captureResult(){
   const target = document.getElementById('captureTarget');
@@ -1929,7 +2051,6 @@ function captureResult(){
   btn.disabled = true;
   btn.innerHTML = '⏳&nbsp; 이미지 생성 중...';
 
-  // 약간의 딜레이로 버튼 상태 반영
   setTimeout(function(){
     html2canvas(target, {
       scale: 2,
@@ -1942,19 +2063,17 @@ function captureResult(){
       const dataUrl = canvas.toDataURL('image/png');
       const filename = buildCaptureFilename();
 
-      if(isIOS()){
-        // iOS: 모달에 띄워서 길게 누르기 안내
-        document.getElementById('modalImg').src = dataUrl;
-        document.getElementById('imgModal').classList.add('open');
-      } else {
-        // PC / Android: 다운로드 트리거
-        const a = document.createElement('a');
-        a.href = dataUrl;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-      }
+      lastCaptureDataUrl  = dataUrl;
+      lastCaptureFilename = filename;
+
+      // 모달에 이미지 + 파일명 세팅
+      document.getElementById('modalImg').src = dataUrl;
+      document.getElementById('modalFileName').textContent = filename;
+
+      // 모달 띄우기
+      const modal = document.getElementById('imgModal');
+      modal.classList.add('open');
+      modal.scrollTop = 0;
 
       btn.disabled = false;
       btn.innerHTML = orig;
@@ -1965,6 +2084,35 @@ function captureResult(){
       btn.innerHTML = orig;
     });
   }, 60);
+}
+
+/* 모달의 [⬇ 이미지 저장] 버튼 동작 */
+function saveCaptureFromModal(){
+  if(!lastCaptureDataUrl){ alert('이미지가 준비되지 않았습니다.'); return; }
+  const filename = lastCaptureFilename || '결과.png';
+  const ios = isIOS();
+
+  if(ios){
+    // iOS Safari: a.download 미지원 → 새 탭 열거나 길게 누르기 안내
+    alert('iOS는 자동 저장이 제한됩니다.\n\n아래 이미지를 길게 누른 뒤 "사진에 추가"를 선택해주세요.');
+    // 이미지로 스크롤
+    const img = document.getElementById('modalImg');
+    if(img && img.scrollIntoView) img.scrollIntoView({behavior:'smooth', block:'center'});
+    return;
+  }
+
+  // PC / Android: 다운로드 트리거
+  try {
+    const a = document.createElement('a');
+    a.href = lastCaptureDataUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  } catch(e){
+    console.error('[save error]', e);
+    alert('저장 중 오류가 발생했습니다. 이미지 우클릭 → 다른 이름으로 저장을 이용해주세요.');
+  }
 }
 
 /* ═════════════════════════════════════════
@@ -1980,6 +2128,10 @@ function captureResult(){
     // 캡처 버튼 바인딩
     const btnCap = document.getElementById('btnCapture');
     if(btnCap){ btnCap.addEventListener('click', captureResult); }
+
+    // 모달 [⬇ 이미지 저장] 버튼
+    const btnSave = document.getElementById('btnModalSave');
+    if(btnSave){ btnSave.addEventListener('click', saveCaptureFromModal); }
 
     // 모달 닫기 (배경 클릭)
     const modal = document.getElementById('imgModal');
