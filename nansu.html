@@ -24,10 +24,31 @@
       box-shadow: 0 8px 24px rgba(31, 90, 150, 0.08);
       padding: 24px;
     }
+    /* 헤더 영역: 제목과 홈 버튼 정렬 */
+    .header-area {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
     h1 {
-      margin: 0 0 8px;
+      margin: 0;
       color: #12385f;
       font-size: 28px;
+    }
+    .home-btn {
+      text-decoration: none;
+      background: #f0f4f8;
+      color: #4b6074;
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      border: 1px solid #d1d9e0;
+      transition: background 0.2s;
+    }
+    .home-btn:hover {
+      background: #e2eaf1;
     }
     .desc {
       margin: 0 0 24px;
@@ -59,10 +80,11 @@
       border-color: #367cc3;
       box-shadow: 0 0 0 4px rgba(54, 124, 195, 0.14);
     }
+    /* 버튼 우측 정렬 */
     .buttons {
       display: flex;
       gap: 10px;
-      flex-wrap: wrap;
+      justify-content: flex-end;
       margin: 18px 0;
     }
     button {
@@ -75,6 +97,7 @@
     }
     .primary { background: #2f75bd; color: #fff; }
     .secondary { background: #e8f1fb; color: #174a7d; }
+    
     .result {
       margin-top: 18px;
       padding: 22px;
@@ -121,34 +144,50 @@
       line-height: 1.7;
       font-size: 14px;
     }
+    
+    /* 틀 고정 테이블 설정 */
     .table-area {
       margin-top: 24px;
-      overflow-x: auto;
+      overflow: auto;
+      max-height: 600px;
       border: 1px solid #d9e7f7;
       border-radius: 14px;
+      position: relative;
     }
     table {
-      border-collapse: collapse;
+      border-collapse: separate;
+      border-spacing: 0;
       width: 100%;
       min-width: 680px;
       background: #fff;
     }
     th, td {
-      border: 1px solid #d7e7f8;
+      border: 0.5px solid #d7e7f8;
       padding: 9px 10px;
       text-align: center;
       font-size: 14px;
       white-space: nowrap;
+      scroll-margin: 50px;
     }
     th {
       background: #c8dff6;
       color: #0f2f50;
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
-    td:first-child {
+    td:first-child, th:first-child {
       background: #eef6ff;
       font-weight: 700;
       color: #12385f;
+      position: sticky;
+      left: 0;
+      z-index: 5;
     }
+    th:first-child {
+      z-index: 15;
+    }
+    
     .highlight {
       background: #ffeeb8 !important;
       color: #111827;
@@ -159,14 +198,18 @@
       .form-grid { grid-template-columns: 1fr; }
       .result .number { font-size: 36px; }
       .card { padding: 18px; }
+      h1 { font-size: 22px; }
     }
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card">
-      <h1>난수표 조회기</h1>
-      <p class="desc">가로값을 먼저 입력하고, 세로값을 입력하면 난수표에서 해당 값을 가져옵니다. 결과는 전체 5자리 난수와 앞 두 자리를 소수점 형식으로 변환한 값을 함께 보여줍니다.</p>
+      <div class="header-area">
+        <h1>난수표 조회기</h1>
+        <a href="https://ubaldos00-ship-it.github.io/home" class="home-btn">홈으로</a>
+      </div>
+      <p class="desc">가로값을 먼저 입력하고, 세로값을 입력하면 난수표에서 해당 값을 가져옵니다.</p>
 
       <div class="form-grid">
         <div>
@@ -180,8 +223,8 @@
       </div>
 
       <div class="buttons">
-        <button class="primary" onclick="lookupNumber()">조회하기</button>
         <button class="secondary" onclick="resetForm()">초기화</button>
+        <button class="primary" onclick="lookupNumber()">조회하기</button>
       </div>
 
       <div id="error" class="error"></div>
@@ -195,8 +238,7 @@
       <div class="help">
         <strong>사용 예시</strong><br />
         가로값 0, 세로값 40을 입력하면 전체 난수 <strong>79152</strong>가 조회됩니다.<br />
-        추가 변환값은 앞 두 자리 79를 <strong>7.9</strong>처럼 표시합니다.<br />
-        앞자리가 0인 난수도 사라지지 않도록 문자열 데이터로 저장했습니다.
+        가로와 세로 헤더가 고정되어 있어 스크롤 시에도 위치 확인이 편리합니다.
       </div>
 
       <div class="table-area">
