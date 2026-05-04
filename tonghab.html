@@ -843,7 +843,7 @@ input.needs-input:focus{
       <div class="meas-grid">
         <div class="fg">
           <label>세로 총길이 (cm)</label>
-          <input type="number" inputmode="numeric" step="any" id="heightB" placeholder="B 세로" oninput="updateABDerived()">
+          <input type="number" inputmode="numeric" step="any" id="heightB" placeholder="B 세로" oninput="updateABDerived()" data-need="bport">
         </div>
         <div class="fg">
           <label>세로 기점 계산값</label>
@@ -852,7 +852,7 @@ input.needs-input:focus{
         </div>
         <div class="fg">
           <label>10개 이랑 평균너비 (cm)</label>
-          <input type="number" inputmode="numeric" step="any" id="wbAvg" placeholder="평균값" oninput="updateABDerived()">
+          <input type="number" inputmode="numeric" step="any" id="wbAvg" placeholder="평균값" oninput="updateABDerived()" data-need="bport-open">
         </div>
         <div class="fg">
           <label>3㎡ 조사 길이</label>
@@ -879,7 +879,7 @@ input.needs-input:focus{
       <div class="samp-trio">
         <div class="fg">
           <label class="lbl-N">전체 N (개)</label>
-          <input type="number" inputmode="numeric" pattern="[0-9]*" id="bN" class="in-N" placeholder="예)120" min="1">
+          <input type="number" inputmode="numeric" pattern="[0-9]*" id="bN" class="in-N" placeholder="예)120" min="1" data-need="bport">
         </div>
         <div class="fg">
           <label class="lbl-n">추출 n</label>
@@ -1396,11 +1396,15 @@ function updateRequiredHighlights(){
   all.forEach(inp => {
     const need = inp.dataset.need;
     let active = false;
-    if(need === 'always')        active = true;
-    else if(need === 'ratio1')   active = (selectedRatio === 1);
-    else if(need === 'ratio2')   active = (selectedRatio === 2);
-    else if(need === 'open')     active = (cultivationType === '노지');
-    else if(need === 'facility') active = (cultivationType === '시설');
+    if(need === 'always')           active = true;
+    else if(need === 'ratio1')      active = (selectedRatio === 1);
+    else if(need === 'ratio2')      active = (selectedRatio === 2);
+    else if(need === 'open')        active = (cultivationType === '노지');
+    else if(need === 'facility')    active = (cultivationType === '시설');
+    // B포구는 옵션이지만, 사용자가 시각적으로 인지하기 쉽도록 항상 강조
+    else if(need === 'bport')       active = true;
+    // B포구 평균너비: 노지일 때만 직접 입력이므로 노지에서만 강조
+    else if(need === 'bport-open')  active = (cultivationType === '노지');
 
     if(active && isInputEmpty(inp)){
       inp.classList.add('needs-input');
@@ -1521,7 +1525,7 @@ function lookupRandomToR(p, options){
   };
   setLookupMsg(p,
     '<strong>' + label + '</strong> · k=' + disp1(k) + ' · ' + rule + ' · ' + moveText + '<br>' +
-    '시작 좌표: (' + col + ',' + row + ') → 사용: (' + found.col + ',' + found.row + ')<br>' +
+    '시작 좌표: (' + col + 'X' + row + ') → 사용: (' + found.col + 'X' + found.row + ')<br>' +
     '조회값 <b>' + found.value + '</b> → r <b>' + rText + '</b>',
     'ok'
   );
@@ -1772,8 +1776,8 @@ function renderUnifiedResult(state){
     if(sampA.lookup){
       document.getElementById('aSampLookup').style.display = 'block';
       document.getElementById('aSampLookup').innerHTML =
-        '난수표 조회: 시작 (' + sampA.lookup.inputCol + ',' + sampA.lookup.inputRow +
-        ') → 사용 (<b>' + sampA.lookup.foundCol + ',' + sampA.lookup.foundRow + '</b>)<br>' +
+        '난수표 조회: 시작 (' + sampA.lookup.inputCol + 'X' + sampA.lookup.inputRow +
+        ') → 사용 (<b>' + sampA.lookup.foundCol + 'X' + sampA.lookup.foundRow + '</b>)<br>' +
         '조회값 <b>' + sampA.lookup.value + '</b> → r <b>' + sampA.lookup.rText + '</b> · ' + sampA.lookup.rule;
     } else {
       document.getElementById('aSampLookup').style.display = 'block';
@@ -1821,8 +1825,8 @@ function renderUnifiedResult(state){
       if(sampB.lookup){
         document.getElementById('bSampLookup').style.display = 'block';
         document.getElementById('bSampLookup').innerHTML =
-          '난수표 조회: 시작 (' + sampB.lookup.inputCol + ',' + sampB.lookup.inputRow +
-          ') → 사용 (<b>' + sampB.lookup.foundCol + ',' + sampB.lookup.foundRow + '</b>)<br>' +
+          '난수표 조회: 시작 (' + sampB.lookup.inputCol + 'X' + sampB.lookup.inputRow +
+          ') → 사용 (<b>' + sampB.lookup.foundCol + 'X' + sampB.lookup.foundRow + '</b>)<br>' +
           '조회값 <b>' + sampB.lookup.value + '</b> → r <b>' + sampB.lookup.rText + '</b> · ' + sampB.lookup.rule;
       } else {
         document.getElementById('bSampLookup').style.display = 'block';
