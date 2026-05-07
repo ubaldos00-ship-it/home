@@ -21,7 +21,7 @@
   --ac:#0A3A8C;--ac2:#1D4ED8;--ac-bg:#EBF3FF;--ac-bd:#93C5FD;
   --blue:#1565c0;--blight:#e3f2fd;
   /* B포구 - Red */
-  --bc:#C0392B;--bc2:#E05540;--bc-bg:#FFF5F5;--bc-bd:#FFBBB0;
+  --bc:#8B0000;--bc2:#B91C1C;--bc-bg:#FFF0F0;--bc-bd:#FCA5A5;
   --red:#c62828;--rlight:#ffebee;
   /* Radii */
   --rad:8px;--radl:12px;
@@ -671,6 +671,101 @@ input.needs-input:focus{
   background:#4a8a18 !important;
 }
 
+
+/* ===== 추가 수정: 평균너비 계산, 이동버튼, B포구 색상, 요도 보완 ===== */
+.width-calc-box{
+  grid-column:1 / -1;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  padding:10px;
+  border:1.5px dashed rgba(15,110,86,.35);
+  background:rgba(255,255,255,.72);
+  border-radius:var(--rad);
+}
+.width-calc-box .fg{margin-bottom:0;}
+.width-calc-box label{font-size:11.5px;}
+.width-calc-box input{font-size:15px;padding:10px 12px;}
+.width-calc-note{
+  grid-column:1 / -1;
+  font-size:11px;
+  line-height:1.5;
+  color:var(--t600);
+  font-weight:700;
+  margin-top:-2px;
+}
+.b-port .port-hdr{
+  background:rgba(185,28,28,.72) !important;
+}
+.b-port .port-body{
+  background:rgba(255,240,240,.72) !important;
+}
+.goto-btn{
+  width:100%;
+  padding:13px 14px;
+  border:none;
+  border-radius:var(--rad);
+  font-size:14px;
+  font-weight:900;
+  font-family:inherit;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  margin-top:10px;
+  box-shadow:0 3px 12px rgba(15,110,86,.28);
+}
+.goto-b-btn{
+  background:var(--bc);
+  color:#fff;
+}
+.goto-prod-btn{
+  background:#3B6D11;
+  color:#fff;
+}
+.goto-btn:active{transform:scale(.98);}
+.one-row-note{
+  margin-top:8px;
+  padding:9px 11px;
+  border-radius:var(--rad);
+  background:#FFF8E1;
+  border:1.5px solid #FACC15;
+  color:#854F0B;
+  font-size:12px;
+  font-weight:800;
+  line-height:1.55;
+  display:none;
+}
+.one-row-note.show{display:block;}
+#fieldSvg{min-height:300px;}
+
+
+/* ===== 추가 수정: 10a 계산기 별표/동그라미 및 선택 색상 통일 ===== */
+.prod-zone .pcard-title,
+.prod-zone .pcard-title::before,
+.prod-zone .pcard-title::after{
+  color:var(--t600) !important;
+  border-color:var(--t600) !important;
+}
+.prod-zone .pab-result-label,
+.prod-zone .pcard-title,
+.prod-zone .pavg-label{
+  color:var(--t600) !important;
+}
+.prod-zone .pa-card .pab-result-label,
+.prod-zone .pb-card .pab-result-label{
+  color:var(--t600) !important;
+}
+.prod-zone .pres-ab-card.pa-card,
+.prod-zone .pres-ab-card.pb-card{
+  border-color:var(--t600) !important;
+}
+.prod-zone .pa-card .pab-result-num,
+.prod-zone .pb-card .pab-result-num{
+  color:var(--t600) !important;
+}
+
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
@@ -852,6 +947,7 @@ input.needs-input:focus{
       <label id="lenLabel">가-나 총길이 (cm)</label>
       <input type="number" inputmode="numeric" pattern="[0-9]*" id="lenGaNa" oninput="updateHalf()" placeholder="숫자 입력" data-need="always">
       <div class="hint">추출간격 = 입력값 ÷ 2 = <span class="hint-v" id="halfVal">0</span> <span id="halfUnit">이랑</span></div>
+      <div class="one-row-note" id="oneRowNote">※ 가-나 총이랑수가 1로 입력되어 2번 비율을 사용합니다. 1개의 이랑을 1/2로 나누어 A/B포구를 계산합니다.</div>
     </div>
 
     <!-- 실시간 A/B 가로기점 -->
@@ -887,11 +983,6 @@ input.needs-input:focus{
     </div>
 
     <div id="alertBox" class="alert" style="margin-top:11px;">⚠ 1번 비율의 A포구가 0이랑입니다. 그대로 2번 비율을 사용하고 1번 이랑으로 선정하세요.</div>
-    <div id="oneRowMsg" style="display:none;margin-top:8px;padding:10px 12px;background:#E3F2FD;border:1.5px solid #1565c0;border-radius:8px;font-size:12px;color:#0D47A1;line-height:1.6;">
-      🔔 <strong>1이랑 선정</strong> — 가-나 총이랑수가 1입니다. 자동으로 <strong>2번 비율</strong>을 사용합니다.<br>
-      A포구·B포구 가로기점 모두 <strong>1이랑</strong> 고정.<br>
-      A세로기점 = 세로총길이 ÷ 2 × 비율 나, &nbsp; B세로기점 = 세로총길이 ÷ 2 × 비율 다 + 세로총길이 ÷ 2
-    </div>
   </div>
 
   <!-- ════ ④ 재배형태 ════ -->
@@ -973,24 +1064,20 @@ input.needs-input:focus{
           <div class="calc-display"><span class="calc-main" id="calcASe">—</span><span class="calc-unit">cm</span></div>
           <div class="calc-sub" id="calcASeSub">A세로 × 비율 나</div>
         </div>
+        <div class="width-calc-box">
+          <div class="fg">
+            <label>전체 너비 (cm)</label>
+            <input type="number" inputmode="numeric" step="any" id="waTotalWidth" placeholder="예) 180" oninput="updateAvgWidth('A')">
+          </div>
+          <div class="fg">
+            <label>이랑 수</label>
+            <input type="number" inputmode="numeric" step="any" id="waRows" placeholder="예) 2" oninput="updateAvgWidth('A')">
+          </div>
+          <div class="width-calc-note" id="waAvgNote">전체 너비 ÷ 이랑 수 = 이랑 평균너비</div>
+        </div>
         <div class="fg">
           <label>이랑 평균너비 (cm)</label>
-          <input type="number" inputmode="numeric" step="any" id="waAvg" placeholder="평균값" oninput="updateABDerived()" data-need="open">
-        </div>
-        <div class="fg" style="grid-column:1/-1;background:#f0faf2;border:1px solid #a8d5b5;border-radius:8px;padding:8px 10px;margin-top:4px;">
-          <div style="font-size:11px;font-weight:700;color:#3a7d44;margin-bottom:6px;">📏 이랑 평균너비 자동 계산</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:6px;align-items:flex-end;">
-            <div>
-              <label style="font-size:11px;color:#555;">전체 너비 (cm)</label>
-              <input type="number" inputmode="numeric" step="any" id="aWidthTotal" placeholder="예)1500" oninput="autoCalcAvgWidth('a')" style="border-color:#a8d5b5;">
-            </div>
-            <div>
-              <label style="font-size:11px;color:#555;">이랑 수</label>
-              <input type="number" inputmode="numeric" step="any" id="aWidthRows" placeholder="예)10" oninput="autoCalcAvgWidth('a')" style="border-color:#a8d5b5;">
-            </div>
-            <button onclick="autoCalcAvgWidth('a')" style="padding:8px 10px;background:#3a7d44;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap;height:38px;">자동입력</button>
-          </div>
-          <div style="font-size:10px;color:#3a7d44;margin-top:4px;" id="aWidthCalcNote">전체 너비 ÷ 이랑수 = 평균너비</div>
+          <input type="number" inputmode="numeric" step="any" id="waAvg" placeholder="평균값 자동입력" oninput="updateABDerived()" data-need="open">
         </div>
         <div class="fg">
           <label>3㎡ 조사 길이</label>
@@ -1051,7 +1138,7 @@ input.needs-input:focus{
   </div>
 
   <!-- ════ ⑥ B포구 측정값 입력 (옵션) ════ -->
-  <div class="port-card b-port" id="bPortSection">
+  <div class="port-card b-port">
     <div class="port-hdr">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z" fill="white"/></svg>
       <span class="port-hdr-lbl"><span class="sn" style="background:rgba(255,255,255,.28);color:#fff;font-size:13px;width:26px;height:26px;margin-right:2px;box-shadow:none;">6</span> B포구 측정값 입력 <span class="opt-tag-w">선택</span></span>
@@ -1119,24 +1206,20 @@ input.needs-input:focus{
           <div class="calc-display"><span class="calc-main" id="calcBSe">—</span><span class="calc-unit">cm</span></div>
           <div class="calc-sub" id="calcBSeSub">B세로 × 비율 다</div>
         </div>
+        <div class="width-calc-box">
+          <div class="fg">
+            <label>전체 너비 (cm)</label>
+            <input type="number" inputmode="numeric" step="any" id="wbTotalWidth" placeholder="예) 180" oninput="updateAvgWidth('B')">
+          </div>
+          <div class="fg">
+            <label>이랑 수</label>
+            <input type="number" inputmode="numeric" step="any" id="wbRows" placeholder="예) 2" oninput="updateAvgWidth('B')">
+          </div>
+          <div class="width-calc-note" id="wbAvgNote">전체 너비 ÷ 이랑 수 = 이랑 평균너비</div>
+        </div>
         <div class="fg">
           <label>이랑 평균너비 (cm)</label>
-          <input type="number" inputmode="numeric" step="any" id="wbAvg" placeholder="평균값" oninput="updateABDerived()" data-need="bport-open">
-        </div>
-        <div class="fg" style="grid-column:1/-1;background:#fff0f0;border:1px solid #fca5a5;border-radius:8px;padding:8px 10px;margin-top:4px;">
-          <div style="font-size:11px;font-weight:700;color:#8B0000;margin-bottom:6px;">📏 이랑 평균너비 자동 계산</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:6px;align-items:flex-end;">
-            <div>
-              <label style="font-size:11px;color:#555;">전체 너비 (cm)</label>
-              <input type="number" inputmode="numeric" step="any" id="bWidthTotal" placeholder="예)1500" oninput="autoCalcAvgWidth('b')" style="border-color:#fca5a5;">
-            </div>
-            <div>
-              <label style="font-size:11px;color:#555;">이랑 수</label>
-              <input type="number" inputmode="numeric" step="any" id="bWidthRows" placeholder="예)10" oninput="autoCalcAvgWidth('b')" style="border-color:#fca5a5;">
-            </div>
-            <button onclick="autoCalcAvgWidth('b')" style="padding:8px 10px;background:#8B0000;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap;height:38px;">자동입력</button>
-          </div>
-          <div style="font-size:10px;color:#8B0000;margin-top:4px;" id="bWidthCalcNote">전체 너비 ÷ 이랑수 = 평균너비</div>
+          <input type="number" inputmode="numeric" step="any" id="wbAvg" placeholder="평균값 자동입력" oninput="updateABDerived()" data-need="bport-open">
         </div>
         <div class="fg">
           <label>3㎡ 조사 길이</label>
@@ -1199,7 +1282,7 @@ input.needs-input:focus{
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 018-8 8 8 0 016.93 4H16v2h6V2h-2v2.54A9.99 9.99 0 0012 2C6.48 2 2 6.48 2 12h2z" fill="#C0392B"/><path d="M20 12a8 8 0 01-8 8 8 8 0 01-6.93-4H8v-2H2v6h2v-2.54A9.99 9.99 0 0012 22c5.52 0 10-4.48 10-10h-2z" fill="#C0392B"/></svg>
       초기화
     </button>
-    <button class="btn btn-calc" onclick="runFullCalculation(); setTimeout(()=>{ const bCard=document.getElementById('bResCard'); if(bCard) bCard.scrollIntoView({behavior:'smooth',block:'start'}); },400);">전체계산 + A/B포구 결과보기</button>
+    <button class="btn btn-calc" onclick="runFullCalculationAndScrollB()">전체계산+AB포구 계산보기</button>
   </div>
 
   <!-- ════ ⑦ 통합 결과 (캡처 영역) ════ -->
@@ -1223,12 +1306,7 @@ input.needs-input:focus{
         <div class="samp-meta" id="aSampMeta" style="display:none;"></div>
         <div class="samp-lookup" id="aSampLookup" style="display:none;"></div>
         <div class="samp-grid" id="aSampGrid" style="display:none;"></div>
-        <div style="padding:8px 12px 12px;">
-          <button onclick="document.getElementById('bPortSection').scrollIntoView({behavior:'smooth',block:'start'})"
-            style="width:100%;padding:11px;background:linear-gradient(135deg,#C0392B,#E05540);border:none;border-radius:8px;color:#fff;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
-            ⑥ B포구 측정값 입력으로 이동 →
-          </button>
-        </div>
+        <button type="button" class="goto-btn goto-b-btn" onclick="scrollToBPort()">⬆ B포구 측정값 입력으로 가기</button>
       </div>
 
       <!-- B포구 통합 결과 -->
@@ -1258,17 +1336,14 @@ input.needs-input:focus{
       <div class="diag-card">
         <div class="diag-hdr">📐 A/B포구 선정 요도</div>
         <div class="diag-body">
-          <svg id="fieldSvg" viewBox="0 0 360 230" xmlns="http://www.w3.org/2000/svg"></svg>
+          <svg id="fieldSvg" viewBox="0 0 360 310" xmlns="http://www.w3.org/2000/svg"></svg>
         </div>
       </div>
 
     </div><!-- /captureTarget -->
 
     <button class="btn-capture" id="btnCapture">📷&nbsp; 결과 이미지로 저장</button>
-    <button onclick="document.getElementById('prodZone').scrollIntoView({behavior:'smooth',block:'start'})"
-      style="width:100%;padding:14px;margin-top:8px;background:linear-gradient(135deg,#3a7d44,#52a85e);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 3px 12px rgba(58,125,68,.35);">
-      📊 10a당 생산량 계산하기
-    </button>
+    <button type="button" class="goto-btn goto-prod-btn" onclick="scrollToProdCalculator()">🌾 10a당 생산량 바로가기</button>
   </div>
 
   <!-- ════════════════════════════════════════════
@@ -1883,11 +1958,40 @@ function setMode(mode){
   updateHalf();
 }
 
+function isOneRidgeMode(){
+  const v = parseFloat(document.getElementById('lenGaNa').value);
+  return measureMode === '이랑' && !isNaN(v) && v === 1;
+}
+
 function updateHalf(){
   const v = parseFloat(document.getElementById('lenGaNa').value);
   document.getElementById('halfVal').textContent = isNaN(v) ? '0' : (v/2).toFixed(1);
   document.getElementById('halfUnit').textContent = measureMode === '이랑' ? '이랑' : 'cm';
-  checkOneRow();
+
+  const one = isOneRidgeMode();
+  const note = document.getElementById('oneRowNote');
+  if(note) note.classList.toggle('show', one);
+
+  if(one && selectedRatio !== 2){
+    selectedRatio = 2;
+    ['tog1','tog2'].forEach((id,i) => {
+      const el = document.getElementById(id);
+      if(el) el.classList.toggle('active', i+1 === 2);
+    });
+    ['rrow1','rrow2'].forEach((id,i) => {
+      const el = document.getElementById(id);
+      if(el) el.classList.toggle('active', i+1 === 2);
+    });
+  }
+
+  if(one){
+    const ha = document.getElementById('heightA');
+    const hb = document.getElementById('heightB');
+    if(ha && hb && ha.value && hb.value !== ha.value){
+      hb.value = ha.value;
+    }
+  }
+
   updateRealtimeCalc();
   updateABDerived();
   updateRequiredHighlights();
@@ -1912,46 +2016,42 @@ function updateRatioWarning(aGa){
 /* 실시간 가로기점 계산 */
 function updateRealtimeCalc(){
   const L = parseFloat(document.getElementById('lenGaNa').value);
-  // 1이랑 특수: A/B 모두 1이랑 고정
-  if(measureMode==='이랑' && L===1){
-    const wrap = document.getElementById('rtWrap');
-    if(wrap) wrap.style.display='block';
-    const unit='이랑';
-    const rtAVal=document.getElementById('rtAVal'),rtACalc=document.getElementById('rtACalc');
-    const rtBVal=document.getElementById('rtBVal'),rtBCalc=document.getElementById('rtBCalc');
-    const rtBFormula=document.getElementById('rtBFormula');
-    if(rtAVal) rtAVal.textContent='1'; document.getElementById('rtAUnit')&&(document.getElementById('rtAUnit').textContent=' '+unit);
-    if(rtACalc) rtACalc.textContent='계산값: 1.00 (1이랑 고정)';
-    if(rtBFormula) rtBFormula.innerHTML='<span class="fn">1</span>이랑 고정<span class="feq"> =</span>';
-    if(rtBVal) rtBVal.textContent='1'; document.getElementById('rtBUnit')&&(document.getElementById('rtBUnit').textContent=' '+unit);
-    if(rtBCalc) rtBCalc.textContent='계산값: 1.00 (1이랑 고정)';
-    return;
-  }
   const ga = parseFloat(document.getElementById('r' + selectedRatio + '_ga').value);
   const wrap = document.getElementById('rtWrap');
   const unit = measureMode === '이랑' ? '이랑' : 'cm';
 
   if(!isNaN(L) && L > 0 && !isNaN(ga) && ga > 0){
+    if(isOneRidgeMode()){
+      document.getElementById('rtAFormula').innerHTML = '<span class="fn">가-나 총이랑수 1</span> → <span class="fn">2번 비율 사용</span>';
+      document.getElementById('rtAVal').textContent = '1';
+      document.getElementById('rtAUnit').textContent = ' 이랑';
+      document.getElementById('rtACalc').textContent = '1개의 이랑을 1/2로 나누어 A포구 계산';
+
+      document.getElementById('rtBFormula').innerHTML = '<span class="fn">가-나 총이랑수 1</span> → <span class="fn">2번 비율 사용</span>';
+      document.getElementById('rtBVal').textContent = '1';
+      document.getElementById('rtBUnit').textContent = ' 이랑';
+      document.getElementById('rtBCalc').textContent = '같은 1이랑의 후반부를 B포구로 계산';
+
+      wrap.classList.remove('hidden');
+      updateRatioWarning(1);
+      return;
+    }
+
     const a_ga = L * ga;
-    const b_ga = a_ga + L/2;
-    const aRnd = Math.round(a_ga * 10) / 10;
-    const bRnd = Math.round(b_ga * 10) / 10;
-
-    document.getElementById('rtAFormula').innerHTML =
-      '<span class="fn">' + L + '</span> × <span class="fn">' + ga + '</span>(가비율)<span class="feq"> =</span>';
-    // A: 소수 둘째자리 표시, 이랑선정은 첫째자리 반올림
-    const aRnd2 = Math.round(a_ga * 100) / 100;   // 소수 둘째자리
-    const aSelect = Math.round(a_ga * 10) / 10;   // 첫째자리 반올림 → 선정값
-    const aSelectInt = Math.round(aSelect);        // 정수 이랑
-    document.getElementById('rtAVal').textContent = aSelectInt.toLocaleString('ko-KR');
-    document.getElementById('rtAUnit').textContent = ' ' + unit;
-    document.getElementById('rtACalc').textContent = '계산값: ' + aRnd2.toFixed(2);
-
-    // B: A계산값(소수둘째) + 추출간격(L/2)
+    const aRnd2 = Math.round(a_ga * 100) / 100;
+    const aSelect = Math.round(a_ga * 10) / 10;
+    const aSelectInt = Math.round(aSelect);
     const halfInterval = L / 2;
     const b_ga2 = aRnd2 + halfInterval;
     const bRnd2 = Math.round(b_ga2 * 100) / 100;
     const bSelectInt = Math.round(Math.round(b_ga2 * 10) / 10);
+
+    document.getElementById('rtAFormula').innerHTML =
+      '<span class="fn">' + L + '</span> × <span class="fn">' + ga + '</span>(가비율)<span class="feq"> =</span>';
+    document.getElementById('rtAVal').textContent = aSelectInt.toLocaleString('ko-KR');
+    document.getElementById('rtAUnit').textContent = ' ' + unit;
+    document.getElementById('rtACalc').textContent = '계산값: ' + aRnd2.toFixed(2);
+
     document.getElementById('rtBFormula').innerHTML =
       '<span class="fn">' + aRnd2.toFixed(2) + '</span>(A계산값) + <span class="fn">' + halfInterval.toFixed(1) + '</span>(추출간격)<span class="feq"> =</span>';
     document.getElementById('rtBVal').textContent = bSelectInt.toLocaleString('ko-KR');
@@ -2040,21 +2140,42 @@ function updateABFacility(which){
 /* ═════════════════════════════════════════
    ⑤ A/B 측정값 → 세로기점·3㎡ 조사길이 (실시간)
 ═════════════════════════════════════════ */
+function updateAvgWidth(which){
+  const prefix = which === 'A' ? 'wa' : 'wb';
+  const total = parseFloat(document.getElementById(prefix+'TotalWidth')?.value);
+  const rows  = parseFloat(document.getElementById(prefix+'Rows')?.value);
+  const avgEl = document.getElementById(prefix+'Avg');
+  const note  = document.getElementById(prefix+'AvgNote');
+
+  if(!isNaN(total) && total > 0 && !isNaN(rows) && rows > 0){
+    const avg = total / rows;
+    if(avgEl){
+      avgEl.value = (Math.round(avg*10)/10).toFixed(1);
+      avgEl.dispatchEvent(new Event('input', {bubbles:true}));
+    }
+    if(note) note.textContent = total + ' ÷ ' + rows + ' = ' + (Math.round(avg*10)/10).toFixed(1) + 'cm';
+  } else {
+    if(note) note.textContent = '전체 너비 ÷ 이랑 수 = 이랑 평균너비';
+    updateABDerived();
+  }
+}
+
 function updateABDerived(){
   const sel = selectedRatio;
   const na = parseFloat(document.getElementById('r'+sel+'_na').value);
   const da = parseFloat(document.getElementById('r'+sel+'_da').value);
   const Ha = parseFloat(document.getElementById('heightA').value);
-  const Hb = parseFloat(document.getElementById('heightB').value);
+  let Hb = parseFloat(document.getElementById('heightB').value);
   const wa = parseFloat(document.getElementById('waAvg').value);
   const wb = parseFloat(document.getElementById('wbAvg').value);
-  const r2na = parseFloat(document.getElementById('r2_na').value);
-  const r2da = parseFloat(document.getElementById('r2_da').value);
+  const one = isOneRidgeMode();
 
-  // 1이랑 특수처리
-  if(checkOneRow() && !isNaN(Ha) && !isNaN(r2na) && !isNaN(r2da)){
-    updateABDerived_oneRow(Ha, r2na, r2da);
-    return;
+  if(one && !isNaN(Ha)){
+    const hb = document.getElementById('heightB');
+    if(hb && hb.value !== document.getElementById('heightA').value){
+      hb.value = document.getElementById('heightA').value;
+    }
+    Hb = Ha;
   }
 
   function put(mainId, subId, val, sub){
@@ -2065,8 +2186,21 @@ function updateABDerived(){
     else { main.textContent = (Math.round(val*10)/10).toLocaleString('ko-KR', {minimumFractionDigits:1, maximumFractionDigits:1}); }
     if(s && sub) s.textContent = sub;
   }
-  put('calcASe','calcASeSub', (!isNaN(Ha)&&!isNaN(na)) ? Ha*na : NaN, 'A세로 × 비율 나(' + (isNaN(na)?'-':na) + ')');
-  put('calcBSe','calcBSeSub', (!isNaN(Hb)&&!isNaN(da)) ? Hb*da : NaN, 'B세로 × 비율 다(' + (isNaN(da)?'-':da) + ')');
+
+  let aSe = (!isNaN(Ha)&&!isNaN(na)) ? Ha*na : NaN;
+  let bSe = (!isNaN(Hb)&&!isNaN(da)) ? Hb*da : NaN;
+  let aSub = 'A세로 × 비율 나(' + (isNaN(na)?'-':na) + ')';
+  let bSub = 'B세로 × 비율 다(' + (isNaN(da)?'-':da) + ')';
+
+  if(one){
+    aSe = (!isNaN(Ha)&&!isNaN(na)) ? (Ha/2)*na : NaN;
+    bSe = (!isNaN(Ha)&&!isNaN(da)) ? (Ha/2)*da + (Ha/2) : NaN;
+    aSub = '세로총길이/2 × 비율 나(' + (isNaN(na)?'-':na) + ')';
+    bSub = '세로총길이/2 × 비율 다(' + (isNaN(da)?'-':da) + ') + 전체총길이/2';
+  }
+
+  put('calcASe','calcASeSub', aSe, aSub);
+  put('calcBSe','calcBSeSub', bSe, bSub);
   put('calcALen3','calcALen3Sub', (!isNaN(wa)&&wa>0) ? 30000/wa : NaN, '30000 ÷ 평균너비(' + (isNaN(wa)?'-':wa) + ')');
   put('calcBLen3','calcBLen3Sub', (!isNaN(wb)&&wb>0) ? 30000/wb : NaN, '30000 ÷ 평균너비(' + (isNaN(wb)?'-':wb) + ')');
   updateRequiredHighlights();
@@ -2365,7 +2499,8 @@ function runFullCalculation(){
   // 포구선정 필수값
   const L  = parseFloat(document.getElementById('lenGaNa').value);
   const Ha = parseFloat(document.getElementById('heightA').value);
-  const Hb = parseFloat(document.getElementById('heightB').value);
+  let Hb = parseFloat(document.getElementById('heightB').value);
+  if(isOneRidgeMode() && isNaN(Hb)) Hb = parseFloat(document.getElementById('heightA').value);
   const waA = parseFloat(document.getElementById('waAvg').value);
   const wbA = parseFloat(document.getElementById('wbAvg').value);
   const sel = selectedRatio;
@@ -2469,8 +2604,10 @@ function renderUnifiedResult(state){
     ' &nbsp;|&nbsp; 평균너비 A:' + (isNaN(waA) ? '-' : waA) + (hasB ? ' B:' + (isNaN(wbA) ? '-' : wbA) : '');
 
   // ── A포구 결과 ──
-  const a_ga = L*ga, b_ga = a_ga + L/2;
-  const a_se = Ha*na;
+  const one = isOneRidgeMode();
+  const a_ga = one ? 1 : L*ga;
+  const b_ga = one ? 1 : a_ga + L/2;
+  const a_se = one ? (Ha/2)*na : Ha*na;
   setRes('outA_ga', 'outA_ga_raw', a_ga, gaUnit);
   setRes('outA_se', 'outA_se_raw', a_se, 'cm');
   if(!isNaN(waA) && waA > 0) setRes('outLenA','outLenA_raw', 30000/waA, 'cm');
@@ -2520,7 +2657,7 @@ function renderUnifiedResult(state){
   // ── B포구 결과 ──
   const bCard = document.getElementById('bResCard');
   if(hasB){
-    const b_se = Hb*da;
+    const b_se = one ? (Ha/2)*da + (Ha/2) : Hb*da;
     setRes('outB_ga', 'outB_ga_raw', b_ga, gaUnit);
     setRes('outB_se', 'outB_se_raw', b_se, 'cm');
     if(!isNaN(wbA) && wbA > 0) setRes('outLenB','outLenB_raw', 30000/wbA, 'cm');
@@ -2583,7 +2720,7 @@ function renderUnifiedResult(state){
   renderFormulaTable(sampA, sampB);
 
   // ── 요도 ──
-  const b_se = hasB ? Hb*da : null;
+  const b_se = hasB ? (one ? (Ha/2)*da + (Ha/2) : Hb*da) : null;
   drawDiagram(ga, na, da, a_ga, b_ga, a_se, b_se, gaUnit, hasB);
 
   // 결과 영역 표시 + 스크롤
@@ -2634,196 +2771,166 @@ function renderFormulaTable(sampA, sampB){
   }
 }
 
+
+function scrollToBPort(){
+  const target = document.querySelector('.b-port');
+  if(target){
+    target.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+}
+
+function scrollToBResult(){
+  const target = document.getElementById('bResCard');
+  if(target){
+    target.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+}
+
+function scrollToProdCalculator(){
+  const target = document.getElementById('prodZone') || document.getElementById('prodCropDisplay');
+  if(target){
+    target.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+}
+
+function runFullCalculationAndScrollB(){
+  runFullCalculation();
+  setTimeout(function(){
+    const err = document.getElementById('errBox');
+    if(err && err.classList.contains('show')) return;
+    scrollToBResult();
+  }, 220);
+}
+
 /* ═════════════════════════════════════════
    ⑪ 요도 SVG 그리기
 ═════════════════════════════════════════ */
 function drawDiagram(ga, na, da, a_ga, b_ga, a_se, b_se, gaUnit, hasB){
-  // state 수집 (평균너비, 조사길이, 전체이랑수)
-  const waAvg = parseFloat(document.getElementById('waAvg')?.value)||0;
-  const wbAvg = parseFloat(document.getElementById('wbAvg')?.value)||waAvg;
-  const lenA  = (waAvg>0)?Math.round(30000/waAvg):0;
-  const lenB  = (wbAvg>0)?Math.round(30000/wbAvg):0;
-  const totalRows = parseFloat(document.getElementById('lenGaNa')?.value)||0;
-  const Ha = parseFloat(document.getElementById('heightA')?.value)||0;
-  const Hb = parseFloat(document.getElementById('heightB')?.value)||Ha;
-
   const NS = 'http://www.w3.org/2000/svg';
   const svg = document.getElementById('fieldSvg');
-  svg.setAttribute('viewBox','0 0 380 280');
   svg.innerHTML = '';
+
   function el(tag, attrs, txt){
     const e = document.createElementNS(NS, tag);
     for(const [k,v] of Object.entries(attrs)) e.setAttribute(k, v);
     if(txt !== undefined) e.textContent = txt;
     return e;
   }
-  function lbl(x,y,txt,color,size,anchor,bold){
-    return el('text',{x,y,'text-anchor':anchor||'middle',fill:color||'#222','font-size':size||10,'font-family':'sans-serif','font-weight':bold?'bold':'normal'},txt);
+  function txt(x,y,t,color,size,weight,anchor){
+    svg.appendChild(el('text', {
+      x, y,
+      'text-anchor':anchor||'middle',
+      fill:color||'#222',
+      'font-size':size||'8',
+      'font-family':'Noto Sans KR, sans-serif',
+      'font-weight':weight||'800'
+    }, t));
   }
-  function badge(x,y,w,h,txt,bg,fg,fs){
-    const g=el('g',{});
-    g.appendChild(el('rect',{x:x-w/2,y:y-h+2,width:w,height:h,rx:'3',fill:bg||'#fff','fill-opacity':'0.95',stroke:'#ddd','stroke-width':'0.8'}));
-    g.appendChild(el('text',{x,y:''+y,'text-anchor':'middle',fill:fg||'#111','font-size':fs||9,'font-family':'sans-serif','font-weight':'bold'},txt));
-    return g;
+  function line(x1,y1,x2,y2,color,w,dash,markerStart,markerEnd){
+    const attrs = {x1,y1,x2,y2,stroke:color,'stroke-width':w||1.1,'stroke-dasharray':dash||''};
+    if(markerStart) attrs['marker-start'] = markerStart;
+    if(markerEnd) attrs['marker-end'] = markerEnd;
+    svg.appendChild(el('line', attrs));
+  }
+  function box(x,y,w,h,fill,stroke,sw){
+    svg.appendChild(el('rect', {x,y,width:w,height:h,rx:'2.5',fill,stroke,'stroke-width':sw||0.9}));
+  }
+  function labelBox(x,y,w,h,text,color,size){
+    box(x,y,w,h,'#FFFFFF',color,0.8);
+    txt(x+w/2,y+h/2+2.4,text,color,size||'6.5','900');
+  }
+  function fmt(v, d=0){
+    if(isNaN(v) || !isFinite(v)) return '-';
+    return Number(v).toLocaleString('ko-KR', {minimumFractionDigits:d, maximumFractionDigits:d});
   }
 
-  // 레이아웃 (사진 형태)
-  const FX=58,FY=30,FW=230,FH=150;
-  const bot=FY+FH, rgt=FX+FW;
+  const defs = el('defs', {});
+  defs.innerHTML = `
+    <marker id="arrowBlue" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L6,3 L0,6 Z" fill="#1558D6"></path></marker>
+    <marker id="arrowBlueStart" markerWidth="6" markerHeight="6" refX="1" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M6,0 L0,3 L6,6 Z" fill="#1558D6"></path></marker>
+    <marker id="arrowRed" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L6,3 L0,6 Z" fill="#C0392B"></path></marker>
+    <marker id="arrowRedStart" markerWidth="6" markerHeight="6" refX="1" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M6,0 L0,3 L6,6 Z" fill="#C0392B"></path></marker>
+    <marker id="arrowGray" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L6,3 L0,6 Z" fill="#444"></path></marker>
+    <marker id="arrowGrayStart" markerWidth="6" markerHeight="6" refX="1" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M6,0 L0,3 L6,6 Z" fill="#444"></path></marker>`;
+  svg.appendChild(defs);
 
-  // 다 지점 (좌상단 오프셋 → 사다리꼴 모양)
-  const daX=FX+18, daY=FY;
+  const one = isOneRidgeMode();
+  const L = parseFloat(document.getElementById('lenGaNa').value);
+  const Ha = parseFloat(document.getElementById('heightA').value);
+  const Hb0 = parseFloat(document.getElementById('heightB').value);
+  const Hb = one ? Ha : Hb0;
+  const wa = parseFloat(document.getElementById('waAvg').value);
+  const wb = parseFloat(document.getElementById('wbAvg').value);
+  const lenA = (!isNaN(wa)&&wa>0) ? 30000/wa : NaN;
+  const lenB = (!isNaN(wb)&&wb>0) ? 30000/wb : NaN;
 
-  // 밭 경계 (사진처럼 약간 사다리꼴)
-  const fieldPath=`M ${FX} ${bot} L ${rgt} ${bot} L ${rgt} ${FY} L ${daX} ${FY} Z`;
-  svg.appendChild(el('path',{d:fieldPath,fill:'#EAF3DE',stroke:'none'}));
+  const FX=45, FY=30, FW=260, FH=160;
+  const bot = FY + FH, rgt = FX + FW;
+  box(15,12,330,285,'#FBFAF3','#A8A29A',1.1);
+  box(FX,FY,FW,FH,'#EAF3DE','#3B6D11',2.2);
 
-  // 이랑 수평선
-  const nRows = Math.max(Math.round(totalRows)||8, 3);
-  const rowStep = FW/nRows;
-  for(let i=1;i<nRows;i++){
-    const lx=FX+i*rowStep;
-    svg.appendChild(el('line',{x1:lx,y1:FY,x2:lx,y2:bot,stroke:'#B8D890','stroke-width':'0.7','stroke-dasharray':'3,4'}));
-  }
+  txt(FX-10,bot+15,'가','#111','14','900');
+  txt(rgt+10,bot+15,'나','#111','14','900');
+  txt(FX-10,FY+12,'다','#111','14','900');
+  txt((FX+rgt)/2,FY-9,'밭','#333','11','900');
 
-  // 밭 테두리
-  svg.appendChild(el('path',{d:fieldPath,fill:'none',stroke:'#3B6D11','stroke-width':'2'}));
+  const ax = one ? FX + FW*0.34 : FX + FW*Math.min(Math.max((a_ga/(L||1)),0.08),0.88);
+  const bx = one ? FX + FW*0.66 : FX + FW*Math.min(Math.max((b_ga/(L||1)),0.12),0.94);
 
-  // 가/나/다 라벨
-  svg.appendChild(lbl(FX,bot+16,'가','#111',12,'middle',true));
-  svg.appendChild(lbl(rgt,bot+16,'나','#111',12,'middle',true));
-  svg.appendChild(lbl(daX-8,FY+6,'다','#111',12,'end',true));
-  // 다→가 점선
-  svg.appendChild(el('line',{x1:daX,y1:FY,x2:FX,y2:bot,stroke:'#888','stroke-width':'1.2','stroke-dasharray':'5,4'}));
+  const ay = (!isNaN(a_se)&&!isNaN(Ha)&&Ha>0) ? bot - FH*Math.min(Math.max(a_se/Ha,0.08),0.92) : bot-FH*.5;
+  const by = (hasB&&!isNaN(b_se)&&!isNaN(Hb)&&Hb>0) ? bot - FH*Math.min(Math.max(b_se/Hb,0.08),0.92) : bot-FH*.55;
 
-  // 전체 이랑수 치수선 (하단)
-  const btY=bot+34;
-  svg.appendChild(el('line',{x1:FX,y1:btY,x2:rgt,y2:btY,stroke:'#444','stroke-width':'1.3'}));
-  svg.appendChild(el('polygon',{points:`${FX+5},${btY-3} ${FX-1},${btY} ${FX+5},${btY+3}`,fill:'#444'}));
-  svg.appendChild(el('polygon',{points:`${rgt-5},${btY-3} ${rgt+1},${btY} ${rgt-5},${btY+3}`,fill:'#444'}));
-  const rowLbl = totalRows>0 ? '① 전체 '+fmtInt(totalRows)+gaUnit : '① 전체이랑';
-  svg.appendChild(badge(FX+FW/2, btY+1, rowLbl.length*7+10, 13, rowLbl,'#F5F5DC','#333',9));
+  const yTotal = 268;
+  line(FX,yTotal,rgt,yTotal,'#444',1.25,'','url(#arrowGrayStart)','url(#arrowGray)');
+  txt((FX+rgt)/2,yTotal+14,'전체 ' + fmt(L) + gaUnit,'#333','8.5','900');
 
-  // A가로기점 계산
-  const gaF=Math.min(Math.max(isNaN(ga)?0.3:ga,0.05),0.90);
-  const bF =Math.min(Math.max(isNaN(ga)?0.7:ga+0.5,0.1),0.97);
-  const axA=FX+FW*gaF, axB=FX+FW*(hasB?bF:(gaF+0.5>0.97?0.95:gaF+0.5));
-  const naF=Math.min(Math.max(isNaN(na)?0.4:na,0.06),0.92);
-  const daF=Math.min(Math.max(isNaN(da)?0.6:da,0.06),0.92);
-  const ayA=bot-FH*naF, ayB=bot-FH*(hasB?daF:0.6);
+  line(FX,bot+13,ax,bot+13,'#1558D6',1.1,'','url(#arrowBlueStart)','url(#arrowBlue)');
+  txt((FX+ax)/2,bot+26,'A기점 ' + fmt(a_ga) + gaUnit,'#1558D6','7.5','900');
 
-  // A 가로기점 치수선
-  const d1y=bot+18;
-  svg.appendChild(el('line',{x1:FX,y1:d1y,x2:axA,y2:d1y,stroke:'#1558D6','stroke-width':'1.3'}));
-  svg.appendChild(el('polygon',{points:`${axA-4},${d1y-3} ${axA+1},${d1y} ${axA-4},${d1y+3}`,fill:'#1558D6'}));
-  svg.appendChild(el('polygon',{points:`${FX+4},${d1y-3} ${FX-1},${d1y} ${FX+4},${d1y+3}`,fill:'#1558D6'}));
-  const aGaTxt='② '+fmtInt(a_ga)+gaUnit;
-  svg.appendChild(badge((FX+axA)/2, d1y+1, aGaTxt.length*6.5+8, 13, aGaTxt,'#DDEEFF','#0A3580',9));
-
-  // B 가로기점 치수선
   if(hasB){
-    const d2y=bot+26;
-    svg.appendChild(el('line',{x1:FX,y1:d2y,x2:axB,y2:d2y,stroke:'#C0392B','stroke-width':'1.3'}));
-    svg.appendChild(el('polygon',{points:`${axB-4},${d2y-3} ${axB+1},${d2y} ${axB-4},${d2y+3}`,fill:'#C0392B'}));
-    svg.appendChild(el('polygon',{points:`${FX+4},${d2y-3} ${FX-1},${d2y} ${FX+4},${d2y+3}`,fill:'#C0392B'}));
-    const bGaTxt='③ '+fmtInt(b_ga)+gaUnit;
-    svg.appendChild(badge((FX+axB)/2, d2y+1, bGaTxt.length*6.5+8, 13, bGaTxt,'#FFDEDE','#7A0000',9));
+    line(FX,bot+31,bx,bot+31,'#C0392B',1.1,'','url(#arrowRedStart)','url(#arrowRed)');
+    txt((FX+bx)/2,bot+43,'B기점 ' + fmt(b_ga) + gaUnit,'#C0392B','7.5','900');
   }
 
-  // A 세로기점 치수선 (좌측)
-  {
-    const arX=axA-12;
-    svg.appendChild(el('line',{x1:arX,y1:bot,x2:arX,y2:ayA,stroke:'#1558D6','stroke-width':'1.5'}));
-    svg.appendChild(el('polygon',{points:`${arX-3},${ayA+6} ${arX},${ayA-1} ${arX+3},${ayA+6}`,fill:'#1558D6'}));
-    svg.appendChild(el('polygon',{points:`${arX-3},${bot-6} ${arX},${bot+1} ${arX+3},${bot-6}`,fill:'#1558D6'}));
-    const midY=(bot+ayA)/2;
-    const aTxt=fmtInt(a_se)+'cm', aTxtW=Math.max(aTxt.length*7+6,34);
-    svg.appendChild(el('rect',{x:arX-aTxtW-3,y:midY-9,width:aTxtW,height:16,rx:'3',fill:'#fff','fill-opacity':'0.95',stroke:'#7EB6F0','stroke-width':'1'}));
-    svg.appendChild(lbl(arX-aTxtW/2-3,midY+3,aTxt,'#0A3580',9,'middle',true));
-    // 세로 총길이
-    if(Ha>0){
-      const htTxt=Ha+'cm', htW=Math.max(htTxt.length*6.5+6,30);
-      svg.appendChild(el('rect',{x:arX-htW-3,y:bot-FH/2-8,width:htW,height:14,rx:'2',fill:'#E3F2FD','fill-opacity':'0.9'}));
-      svg.appendChild(lbl(arX-htW/2-3,bot-FH/2+3,htTxt,'#1558D6',8.5,'middle',true));
-    }
-  }
+  // A/B 포구 네모 축소
+  line(ax,bot,ax,ay,'#1558D6',1.8,'');
+  svg.appendChild(el('circle', {cx:ax, cy:bot, r:'3', fill:'#1558D6'}));
+  box(ax-15,ay-10,30,20,'#FFFFFF','#1558D6',1.2);
+  txt(ax,ay+4,'A','#1558D6','13','900');
 
-  // B 세로기점 치수선 (우측)
-  if(hasB && b_se!=null){
-    const arX=axB+12;
-    svg.appendChild(el('line',{x1:arX,y1:bot,x2:arX,y2:ayB,stroke:'#C0392B','stroke-width':'1.5'}));
-    svg.appendChild(el('polygon',{points:`${arX-3},${ayB+6} ${arX},${ayB-1} ${arX+3},${ayB+6}`,fill:'#C0392B'}));
-    svg.appendChild(el('polygon',{points:`${arX-3},${bot-6} ${arX},${bot+1} ${arX+3},${bot-6}`,fill:'#C0392B'}));
-    const midY=(bot+ayB)/2;
-    const bTxt=fmtInt(b_se)+'cm', bTxtW=Math.max(bTxt.length*7+6,34);
-    svg.appendChild(el('rect',{x:arX+3,y:midY-9,width:bTxtW,height:16,rx:'3',fill:'#fff','fill-opacity':'0.95',stroke:'#F07E7E','stroke-width':'1'}));
-    svg.appendChild(lbl(arX+bTxtW/2+3,midY+3,bTxt,'#7A0000',9,'middle',true));
-    if(Hb>0){
-      const htTxt=Hb+'cm', htW=Math.max(htTxt.length*6.5+6,30);
-      svg.appendChild(el('rect',{x:arX+3,y:bot-FH/2-8,width:htW,height:14,rx:'2',fill:'#FFEAEA','fill-opacity':'0.9'}));
-      svg.appendChild(lbl(arX+htW/2+3,bot-FH/2+3,htTxt,'#C0392B',8.5,'middle',true));
-    }
-  }
-
-  // A포구 네모 + 라벨
-  const aBoxW=32, aBoxH=26;
-  svg.appendChild(el('rect',{x:axA-aBoxW/2,y:ayA-aBoxH/2,width:aBoxW,height:aBoxH,rx:'4',fill:'#DDEEFF',stroke:'#1558D6','stroke-width':'2'}));
-  svg.appendChild(lbl(axA,ayA+4,'A','#0A3580',13,'middle',true));
-  // A 포구 이랑 라벨
-  const aRowLbl=fmtInt(a_ga)+gaUnit, aRowW=aRowLbl.length*6.5+10;
-  svg.appendChild(el('rect',{x:axA-aRowW/2,y:ayA+aBoxH/2+2,width:aRowW,height:14,rx:'3',fill:'#1558D6'}));
-  svg.appendChild(lbl(axA,ayA+aBoxH/2+12,aRowLbl,'#fff',9,'middle',true));
-  // 3m² 조사길이
-  if(lenA>0){
-    const la='⑧ '+lenA+'cm', laW=la.length*6+10;
-    svg.appendChild(el('rect',{x:axA-laW/2,y:ayA-aBoxH/2-16,width:laW,height:14,rx:'3',fill:'#fff','fill-opacity':'0.92',stroke:'#1558D6','stroke-width':'0.8'}));
-    svg.appendChild(lbl(axA,ayA-aBoxH/2-5,la,'#0A3580',9,'middle',true));
-  }
-  // 평균너비
-  if(waAvg>0){
-    const wa='⑩ '+waAvg+'cm', waW=wa.length*6+10;
-    svg.appendChild(el('rect',{x:axA-12-waW,y:ayA-7,width:waW,height:14,rx:'3',fill:'#E8FBF0','fill-opacity':'0.95',stroke:'#52C87A','stroke-width':'0.8'}));
-    svg.appendChild(lbl(axA-12-waW/2,ayA+4,wa,'#1A7A38',8.5,'middle',true));
-  }
-
-  // B포구 네모 + 라벨
   if(hasB){
-    const bBoxW=32, bBoxH=26;
-    svg.appendChild(el('rect',{x:axB-bBoxW/2,y:ayB-bBoxH/2,width:bBoxW,height:bBoxH,rx:'4',fill:'#FFDEDE',stroke:'#C0392B','stroke-width':'2'}));
-    svg.appendChild(lbl(axB,ayB+4,'B','#7A0000',13,'middle',true));
-    const bRowLbl=fmtInt(b_ga)+gaUnit, bRowW=bRowLbl.length*6.5+10;
-    svg.appendChild(el('rect',{x:axB-bRowW/2,y:ayB+bBoxH/2+2,width:bRowW,height:14,rx:'3',fill:'#C0392B'}));
-    svg.appendChild(lbl(axB,ayB+bBoxH/2+12,bRowLbl,'#fff',9,'middle',true));
-    if(lenB>0){
-      const lb='⑨ '+lenB+'cm', lbW=lb.length*6+10;
-      svg.appendChild(el('rect',{x:axB-lbW/2,y:ayB-bBoxH/2-16,width:lbW,height:14,rx:'3',fill:'#fff','fill-opacity':'0.92',stroke:'#C0392B','stroke-width':'0.8'}));
-      svg.appendChild(lbl(axB,ayB-bBoxH/2-5,lb,'#7A0000',9,'middle',true));
-    }
-    if(wbAvg>0){
-      const wb='⑪ '+wbAvg+'cm', wbW=wb.length*6+10;
-      svg.appendChild(el('rect',{x:axB+14,y:ayB-7,width:wbW,height:14,rx:'3',fill:'#FFF0F0','fill-opacity':'0.95',stroke:'#F07E7E','stroke-width':'0.8'}));
-      svg.appendChild(lbl(axB+14+wbW/2,ayB+4,wb,'#8B0000',8.5,'middle',true));
-    }
-  } else {
-    // B포구 미입력 시 점선 표시
-    svg.appendChild(el('rect',{x:axB-16,y:ayB-13,width:32,height:26,rx:'4',fill:'#F0F0F0',stroke:'#B4B2A9','stroke-width':'1.5','stroke-dasharray':'4,3',opacity:'0.5'}));
-    svg.appendChild(lbl(axB,ayB+4,'B','#B4B2A9',13,'middle',true));
+    line(bx,bot,bx,by,'#C0392B',1.8,'');
+    svg.appendChild(el('circle', {cx:bx, cy:bot, r:'3', fill:'#C0392B'}));
+    box(bx-15,by-10,30,20,'#FFFFFF','#C0392B',1.2);
+    txt(bx,by+4,'B','#C0392B','13','900');
   }
 
-  // 범례
-  const lgX=10, lgY=FY+FH+60;
-  svg.appendChild(el('rect',{x:lgX,y:lgY,width:10,height:10,rx:'2',fill:'#1558D6'}));
-  svg.appendChild(lbl(lgX+13,lgY+9,'A포구','#1558D6',9,'start',true));
+  // 총길이 점선 + 작은 박스
+  line(ax,FY,ax,ay-10,'#1558D6',1,'3,3');
+  labelBox(ax-22,Math.max(FY+4, ay-31),44,12,'총 ' + fmt(Ha) + 'cm','#1558D6','6.2');
+
   if(hasB){
-    svg.appendChild(el('rect',{x:lgX+52,y:lgY,width:10,height:10,rx:'2',fill:'#C0392B'}));
-    svg.appendChild(lbl(lgX+65,lgY+9,'B포구','#C0392B',9,'start',true));
+    line(bx,FY,bx,by-10,'#C0392B',1,'3,3');
+    labelBox(bx-22,Math.max(FY+4, by-31),44,12,'총 ' + fmt(Hb) + 'cm','#C0392B','6.2');
   }
-  // 표본구역비율 우측 범례
-  const rvX=rgt+8, rvY=FY+20;
-  svg.appendChild(lbl(rvX,rvY,'* 표본구역비율','#444',8.5,'start',true));
-  if(!isNaN(ga)) svg.appendChild(lbl(rvX,rvY+14,'- A가로 '+ga.toFixed(2),'#1558D6',8.5,'start',false));
-  if(!isNaN(na)) svg.appendChild(lbl(rvX,rvY+26,'- A세로 '+na.toFixed(2),'#1558D6',8.5,'start',false));
-  if(hasB&&!isNaN(da)) svg.appendChild(lbl(rvX,rvY+38,'- B세로 '+da.toFixed(2),'#C0392B',8.5,'start',false));
+
+  // 세로기준값: 오른쪽 작은 박스
+  labelBox(ax+17,ay-9,38,12,fmt(a_se) + 'cm','#1558D6','6.2');
+  if(hasB) labelBox(bx+17,by-9,38,12,fmt(b_se) + 'cm','#C0392B','6.2');
+
+  // 평균값/3㎡: A/B 네모 왼쪽으로 이동
+  labelBox(ax-58,ay-10,42,12,'평균 ' + fmt(wa),'#1558D6','5.9');
+  labelBox(ax-58,ay+4,42,12,'3㎡ ' + fmt(lenA),'#1558D6','5.9');
+
+  if(hasB){
+    labelBox(bx-58,by-10,42,12,'평균 ' + fmt(wb),'#C0392B','5.9');
+    labelBox(bx-58,by+4,42,12,'3㎡ ' + fmt(lenB),'#C0392B','5.9');
+  }
+
+  if(one){
+    box(55,232,250,20,'#FFF8E1','#FACC15',1);
+    txt(180,245,'가-나 총이랑수 1 → 2번 비율 사용 / 1이랑을 1/2로 나누어 A·B 계산','#854F0B','7.5','900');
+  }
 }
 
 
@@ -3397,10 +3504,15 @@ function prodCalculate() {
       tongak:'A 또는 B 포구: 정상개수·조사개수·20개 중량을 입력해주세요.'};
     errs.push(msgs[prodCrop]||'A 또는 B 포구: 포기수와 20개당 생중량을 최소 하나 입력해주세요.');
   } else if(!isPotato&&!isNewCrop){
+    // A포구는 계산하려면 정상 포기수와 중량이 모두 필요
     if(aP>0&&!(aW>0)) errs.push('A 포구: 20개당 생중량을 입력해주세요.');
     if(aW>0&&!(aP>0)) errs.push('A 포구: 정상 포기수를 입력해주세요.');
-    if(bP>0&&!(bW>0)) errs.push('B 포구: 20개당 생중량을 입력해주세요.');
+
+    // B포구는 선택 입력입니다.
+    // 전체N 자동연동으로 B포구 정상 포기수만 들어간 경우에는 B포구 중량을 요구하지 않습니다.
+    // 단, 사용자가 B포구 중량을 입력했다면 B포구 정상 포기수도 있어야 합니다.
     if(bW>0&&!(bP>0)) errs.push('B 포구: 정상 포기수를 입력해주세요.');
+
     const ad=parseFloat(document.getElementById('pa-dry-input')?.value);
     const bd=parseFloat(document.getElementById('pb-dry-input')?.value);
     if(aValid&&(isNaN(ad)||ad<=0)) errs.push('A 포구: 건조율을 입력해주세요. (예: 68.1)');
@@ -3730,6 +3842,58 @@ function prodResetCalc(){
   if(typeof prodUpdateDryBoxes === 'function') prodUpdateDryBoxes();
   if(typeof syncSamplingNToProdPlants === 'function') syncSamplingNToProdPlants();
 }
+
+
+/* A포구 값만 입력된 경우에도 10a당 생산량 계산 결과가 보이도록 보완 */
+(function(){
+  const _origProdCalculate = window.prodCalculate;
+  window.prodCalculate = function(){
+    const ids = [
+      ['pa-plants','pb-plants'], ['pa-weight','pb-weight'], ['pa-dry-input','pb-dry-input'],
+      ['pa-potato-over','pb-potato-over'], ['pa-potato-under','pb-potato-under'], ['pa-potato-dmg','pb-potato-dmg'],
+      ['pa-cab-head','pb-cab-head'], ['pa-cab-sample','pb-cab-sample'], ['pa-cab-weight','pb-cab-weight'], ['pa-cab-miss','pb-cab-miss'],
+      ['pa-rad-count','pb-rad-count'], ['pa-rad-sample','pb-rad-sample'], ['pa-rad-weight','pb-rad-weight'],
+      ['pa-tok-count','pb-tok-count'], ['pa-tok-sample','pb-tok-sample'], ['pa-tok-weight','pb-tok-weight'],
+      ['pa-soy-weight','pb-soy-weight']
+    ];
+    const saved = [];
+    let hasA = false, hasB = false;
+    ids.forEach(([a,b])=>{
+      const ae=document.getElementById(a), be=document.getElementById(b);
+      if(ae && ae.value && parseFloat(ae.value)>0) hasA = true;
+      if(be && be.value && parseFloat(be.value)>0) hasB = true;
+    });
+
+    // B값이 전혀 없고 A값만 있을 때는 내부 계산 오류 방지를 위해 임시로 B에 A값을 복사 후, 계산 직후 원복
+    if(hasA && !hasB){
+      ids.forEach(([a,b])=>{
+        const ae=document.getElementById(a), be=document.getElementById(b);
+        if(ae && be){
+          saved.push([be, be.value]);
+          if(!be.value && ae.value) be.value = ae.value;
+        }
+      });
+    }
+
+    try{
+      if(typeof _origProdCalculate === 'function') _origProdCalculate();
+    } finally {
+      if(hasA && !hasB){
+        saved.forEach(([el,val])=>{ el.value = val; });
+        // 결과 화면에는 A포구 단독 계산임을 보여주도록 B카드는 숨김
+        setTimeout(()=>{
+          const bCard=document.getElementById('prod-res-b-card');
+          const abGrid=document.getElementById('prod-result-ab-grid');
+          const avgLbl=document.getElementById('prod-avg-label');
+          if(bCard) bCard.style.display='none';
+          if(abGrid) abGrid.style.gridTemplateColumns='1fr';
+          if(avgLbl) avgLbl.textContent='A 포구 생산량';
+        }, 50);
+      }
+    }
+  };
+})();
+
 
 function prodCaptureResult(){
   const el=document.getElementById('prod-result-section');
