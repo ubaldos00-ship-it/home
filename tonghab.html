@@ -786,6 +786,66 @@ input.needs-input:focus{
   background:#EAB308 !important;
 }
 
+
+/* ===== A/B포구 측정값 제목 및 B포구 색상 보완 ===== */
+.port-hdr .sn{
+  background:rgba(255,255,255,.22) !important;
+  color:#fff !important;
+  box-shadow:none !important;
+  width:26px;
+  height:26px;
+  font-size:13px;
+}
+.b-port .port-hdr{
+  background:var(--bc) !important;
+}
+.b-port .port-body{
+  background:var(--bc-bg) !important;
+}
+
+
+/* ===== 요청 보정: 5/6 위치 이모지 유지, 지역품종 별표 색상 통일 ===== */
+.port-hdr .sn{
+  display:inline-flex !important;
+}
+
+/* 지역·품종 선택 앞 별표 동그라미 색상: 글자색과 동일 */
+.prod-zone .card-ttl .sn,
+.card-ttl .sn.prod-region-star,
+#prodZone .sn,
+#prod-region-title .sn{
+  background:var(--t600) !important;
+  color:#fff !important;
+  box-shadow:0 2px 6px rgba(15,110,86,.30) !important;
+}
+
+/* 10a당 생산량 계산기 카드 제목의 아이콘형 원형 배지 색상도 통일 */
+.prod-zone .card-ttl span:first-child,
+.prod-zone .pcard-title span:first-child{
+  color:var(--t600) !important;
+}
+
+
+/* ===== 지역·품종 선택 별표 원형 색상 재보정 ===== */
+#prodZone .card-ttl .sn,
+#prodZone .sn,
+.prod-zone .sn,
+.prod-zone .card-ttl-left .sn,
+.card-ttl:has(+ div #prodCropDisplay) .sn{
+  background:var(--t600) !important;
+  border-color:var(--t600) !important;
+  color:#fff !important;
+  box-shadow:0 2px 6px rgba(15,110,86,.30) !important;
+}
+
+
+/* ===== A/B포구 측정값 제목: 위치 아이콘 삭제, 숫자 배지 복구 ===== */
+.port-hdr .sn{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+}
+
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
@@ -1019,7 +1079,6 @@ input.needs-input:focus{
   <!-- ════ ⑤ A포구 측정값 입력 ════ -->
   <div class="port-card a-port">
     <div class="port-hdr">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z" fill="white"/></svg>
       <span class="port-hdr-lbl"><span class="sn" style="background:rgba(255,255,255,.28);color:#fff;font-size:13px;width:26px;height:26px;margin-right:2px;box-shadow:none;">5</span> A포구 측정값 입력</span>
       <span class="port-hdr-step">STEP A</span>
     </div>
@@ -1160,7 +1219,6 @@ input.needs-input:focus{
   <!-- ════ ⑥ B포구 측정값 입력 (옵션) ════ -->
   <div class="port-card b-port">
     <div class="port-hdr">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z" fill="white"/></svg>
       <span class="port-hdr-lbl"><span class="sn" style="background:rgba(255,255,255,.28);color:#fff;font-size:13px;width:26px;height:26px;margin-right:2px;box-shadow:none;">6</span> B포구 측정값 입력 <span class="opt-tag-w">선택</span></span>
       <span class="port-hdr-step">STEP B</span>
     </div>
@@ -1379,7 +1437,7 @@ input.needs-input:focus{
     <!-- 지역·품종 선택 카드 -->
     <div class="card">
       <div class="card-ttl card-ttl-flex">
-        <span class="card-ttl-left"><span class="sn" style="background:var(--blue);">★</span> 지역 · 품종 선택</span>
+        <span class="card-ttl-left"><span class="sn" style="background:var(--t600);">★</span> 지역 · 품종 선택</span>
       </div>
       <div style="background:var(--glight);border:1px solid var(--g100);border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:12px;color:var(--g800);display:flex;align-items:center;gap:7px;">
         <span>🌱</span>
@@ -2608,7 +2666,10 @@ function renderUnifiedResult(state){
     '재배 형태: ' + cultivationType + ' &nbsp;|&nbsp; 선택 비율: ' + sel + '번<br>' +
     '1번: 가(' + r1ga + ') 나(' + r1na + ') 다(' + r1da + ')' +
     ' &nbsp;|&nbsp; 2번: 가(' + r2ga + ') 나(' + r2na + ') 다(' + r2da + ')<br>' +
-    lLbl + ': ' + L + ' &nbsp;|&nbsp; A세로: ' + Ha + 'cm' +
+    lLbl + ': ' + L +
+    ' &nbsp;|&nbsp; 추출간격: ' + (isNaN(L) ? '-' : (Math.round((L/2)*10)/10).toFixed(1)) +
+    (measureMode === '이랑' ? '이랑' : 'cm') +
+    ' &nbsp;|&nbsp; A세로: ' + Ha + 'cm' +
     (hasB ? ' &nbsp;|&nbsp; B세로: ' + Hb + 'cm' : ' &nbsp;|&nbsp; B세로: <em>미입력</em>') +
     ' &nbsp;|&nbsp; 평균너비 A:' + (isNaN(waA) ? '-' : waA) + (hasB ? ' B:' + (isNaN(wbA) ? '-' : wbA) : '');
 
@@ -2822,7 +2883,8 @@ function drawDiagram(ga, na, da, a_ga, b_ga, a_se, b_se, gaUnit, hasB){
   function line(x1,y1,x2,y2,c,w,d,ms,me){const a={x1,y1,x2,y2,stroke:c,'stroke-width':w||1.1,'stroke-dasharray':d||''};if(ms)a['marker-start']=ms;if(me)a['marker-end']=me;svg.appendChild(el('line',a));}
   function box(x,y,w,h,f,s,sw){svg.appendChild(el('rect',{x,y,width:w,height:h,rx:'2.5',fill:f,stroke:s,'stroke-width':sw||0.9}));}
   function labelBox(x,y,w,h,t,c,s){box(x,y,w,h,'#fff',c,0.8);txt(x+w/2,y+h/2+2.3,t,c,s||'6.1','900');}
-  function vBox(x,y,w,h,lines,c,s){box(x,y,w,h,'#fff',c,0.8);lines.forEach((t,i)=>txt(x+w/2,y+9+i*9,t,c,s||'5.9','900'));}
+  function vBox(x,y,w,h,lines,c,s){box(x,y,w,h,'#fff',c,0.8);lines.forEach((t,i)=>txt(x+w/2,y+8+i*8,t,c,s||'5.7','900'));}
+  function twoBox(x,y,w,h,l1,l2,c,s){box(x,y,w,h,'#fff',c,0.8);txt(x+w/2,y+8,l1,c,s||'5.7','900');txt(x+w/2,y+16,l2,c,s||'5.7','900');}
   function fmt(v,d=0){if(isNaN(v)||!isFinite(v))return '-';return Number(v).toLocaleString('ko-KR',{minimumFractionDigits:d,maximumFractionDigits:d});}
   const defs=el('defs',{});
   defs.innerHTML=`<marker id="arrowBlue" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L6,3 L0,6 Z" fill="#1558D6"></path></marker><marker id="arrowBlueStart" markerWidth="6" markerHeight="6" refX="1" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M6,0 L0,3 L6,6 Z" fill="#1558D6"></path></marker><marker id="arrowRed" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L6,3 L0,6 Z" fill="#C0392B"></path></marker><marker id="arrowRedStart" markerWidth="6" markerHeight="6" refX="1" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M6,0 L0,3 L6,6 Z" fill="#C0392B"></path></marker><marker id="arrowGray" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L6,3 L0,6 Z" fill="#444"></path></marker><marker id="arrowGrayStart" markerWidth="6" markerHeight="6" refX="1" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M6,0 L0,3 L6,6 Z" fill="#444"></path></marker>`;
@@ -2847,10 +2909,10 @@ function drawDiagram(ga, na, da, a_ga, b_ga, a_se, b_se, gaUnit, hasB){
   if(hasB){line(bx,bot,bx,by,'#C0392B',1.8,''); svg.appendChild(el('circle',{cx:bx,cy:bot,r:'3',fill:'#C0392B'})); box(bx-15,by-10,30,20,'#fff','#C0392B',1.2); txt(bx,by+4,'B','#C0392B','13','900');}
   line(ax,FY,ax,ay-10,'#1558D6',1,'3,3'); labelBox(ax-22,Math.max(FY+4,ay-31),44,12,'총 '+fmt(Ha)+'cm','#1558D6','6.2');
   if(hasB){line(bx,FY,bx,by-10,'#C0392B',1,'3,3'); labelBox(bx-22,Math.max(FY+4,by-31),44,12,'총 '+fmt(Hb)+'cm','#C0392B','6.2');}
-  labelBox(ax+17,ay-9,47,12,'기점 '+fmt(a_se)+'cm','#1558D6','5.9');
-  if(hasB) labelBox(bx+17,by-9,47,12,'기점 '+fmt(b_se)+'cm','#C0392B','5.9');
-  labelBox(ax-58,ay-10,47,12,'너비 '+fmt(wa)+'cm','#1558D6','5.9'); vBox(ax-14,ay+15,28,31,['3㎡',fmt(lenA)+'cm'],'#1558D6','5.9');
-  if(hasB){labelBox(bx-58,by-10,47,12,'너비 '+fmt(wb)+'cm','#C0392B','5.9'); vBox(bx-14,by+15,28,31,['3㎡',fmt(lenB)+'cm'],'#C0392B','5.9');}
+  twoBox(ax+17,ay-12,34,19,'기점',fmt(a_se)+'cm','#1558D6','5.5');
+  if(hasB) twoBox(bx+17,by-12,34,19,'기점',fmt(b_se)+'cm','#C0392B','5.5');
+  twoBox(ax-54,ay-12,34,19,'너비',fmt(wa)+'cm','#1558D6','5.5'); vBox(ax-12,ay+15,24,24,['3㎡',fmt(lenA)+'cm'],'#1558D6','5.5');
+  if(hasB){twoBox(bx-54,by-12,34,19,'너비',fmt(wb)+'cm','#C0392B','5.5'); vBox(bx-12,by+15,24,24,['3㎡',fmt(lenB)+'cm'],'#C0392B','5.5');}
   if(one){box(55,276,250,18,'#FFF8E1','#FACC15',1); txt(180,288,'가-나 총이랑수 1 → 2번 비율 사용 / 1이랑을 1/2로 나누어 A·B 계산','#854F0B','7','900');}
 }
 
@@ -3558,7 +3620,7 @@ function prodCalculate() {
     const rounded=calc.kg10a_rounded!==undefined?calc.kg10a_rounded:Math.round(calc.kg10a);
     document.getElementById('prod-res-'+ab).textContent=rounded.toLocaleString('ko-KR');
     const rawEl=document.getElementById('prod-res-'+ab+'-raw');
-    if(rawEl) rawEl.textContent='('+((calc.kg10a_raw!==undefined?calc.kg10a_raw:calc.kg10a).toFixed(1))+' kg)';
+    if(rawEl) rawEl.textContent='('+fmtKg1Comma(calc.kg10a_raw!==undefined?calc.kg10a_raw:calc.kg10a)+' kg)';
     document.getElementById(`prod-res-${ab}-sub`).innerHTML=sub.join('<br>');
 
     const fEl=document.getElementById('prod-res-'+ab+'-formula');
@@ -3569,33 +3631,33 @@ function prodCalculate() {
       const pO=ab==='a'?aPotatoOver:bPotatoOver;
       fEl.innerHTML='<span class="pformula-line pf-step">10a당 생산량(kg)</span>'
         +'<span class="pformula-line pf-eq">'+prodFmtInt(pO)+'g ÷ 3 × 1,000 ÷ 1,000</span>'
-        +'<span class="pformula-line pf-result">= '+rounded.toLocaleString('ko-KR')+' kg ('+calc.kg10a.toFixed(1)+')</span>';
+        +'<span class="pformula-line pf-result">= '+rounded.toLocaleString('ko-KR')+' kg ('+fmtKg1Comma(calc.kg10a_raw!==undefined?calc.kg10a_raw:calc.kg10a)+')</span>';
     } else if(isCabbage){
       const cH=ab==='a'?aCabHead:bCabHead,cS=ab==='a'?aCabSample:bCabSample,cW=ab==='a'?aCabWeight:bCabWeight;
       fEl.innerHTML='<span class="pformula-line pf-step">① 포기당 중량</span>'
         +'<span class="pformula-line pf-eq">'+prodFmtInt(cW)+'g ÷ '+cS+'개 = '+Math.round(calc.perPlant||cW/cS).toLocaleString('ko-KR')+'g</span>'
         +'<span class="pformula-line pf-step">② 10a당 생산량(kg)</span>'
         +'<span class="pformula-line pf-eq">'+prodFmtInt(cH)+'포기 × '+Math.round(calc.perPlant||cW/cS).toLocaleString('ko-KR')+'g ÷ 3 × 1,000 ÷ 1,000</span>'
-        +'<span class="pformula-line pf-result">= '+rounded.toLocaleString('ko-KR')+' kg ('+calc.kg10a.toFixed(1)+')</span>';
+        +'<span class="pformula-line pf-result">= '+rounded.toLocaleString('ko-KR')+' kg ('+fmtKg1Comma(calc.kg10a_raw!==undefined?calc.kg10a_raw:calc.kg10a)+')</span>';
     } else if(isRadish){
       const rC=ab==='a'?aRadCount:bRadCount,rS=ab==='a'?aRadSample:bRadSample,rW=ab==='a'?aRadWeight:bRadWeight;
       fEl.innerHTML='<span class="pformula-line pf-step">① 개당 중량</span>'
         +'<span class="pformula-line pf-eq">'+prodFmtInt(rW)+'g ÷ '+rS+'개 = '+Math.round(rW/rS).toLocaleString('ko-KR')+'g</span>'
         +'<span class="pformula-line pf-step">② 10a당 생산량(kg)</span>'
         +'<span class="pformula-line pf-eq">'+prodFmtInt(rC)+'개 × '+Math.round(rW/rS).toLocaleString('ko-KR')+'g ÷ 3 × 1,000 ÷ 1,000</span>'
-        +'<span class="pformula-line pf-result">= '+rounded.toLocaleString('ko-KR')+' kg ('+calc.kg10a.toFixed(1)+')</span>';
+        +'<span class="pformula-line pf-result">= '+rounded.toLocaleString('ko-KR')+' kg ('+fmtKg1Comma(calc.kg10a_raw!==undefined?calc.kg10a_raw:calc.kg10a)+')</span>';
     } else if(isTongak){
       const tC=ab==='a'?aTokCount:bTokCount,tS=ab==='a'?aTokSample:bTokSample,tW=ab==='a'?aTokWeight:bTokWeight;
       fEl.innerHTML='<span class="pformula-line pf-step">① 개당 중량</span>'
         +'<span class="pformula-line pf-eq">'+prodFmtInt(tW)+'g ÷ '+tS+'개 = '+Math.round(tW/tS).toLocaleString('ko-KR')+'g</span>'
         +'<span class="pformula-line pf-step">② 10a당 생산량(kg)</span>'
         +'<span class="pformula-line pf-eq">'+prodFmtInt(tC)+'개 × '+Math.round(tW/tS).toLocaleString('ko-KR')+'g ÷ 3 × 1,000 ÷ 1,000</span>'
-        +'<span class="pformula-line pf-result">= '+rounded.toLocaleString('ko-KR')+' kg ('+calc.kg10a.toFixed(1)+')</span>';
+        +'<span class="pformula-line pf-result">= '+rounded.toLocaleString('ko-KR')+' kg ('+fmtKg1Comma(calc.kg10a_raw!==undefined?calc.kg10a_raw:calc.kg10a)+')</span>';
     } else if(isSoybean){
       const sw=ab==='a'?aSoyWeight:bSoyWeight;
       fEl.innerHTML='<span class="pformula-line pf-step">10a당 생산량(kg)</span>'
         +'<span class="pformula-line pf-eq">'+prodFmtInt(sw)+'g ÷ 6 × 1,000 ÷ 1,000</span>'
-        +'<span class="pformula-line pf-result">= '+rounded.toLocaleString('ko-KR')+' kg ('+calc.kg10a.toFixed(1)+')</span>';
+        +'<span class="pformula-line pf-result">= '+rounded.toLocaleString('ko-KR')+' kg ('+fmtKg1Comma(calc.kg10a_raw!==undefined?calc.kg10a_raw:calc.kg10a)+')</span>';
     } else {
       fEl.innerHTML='<span class="pformula-line pf-step">① 3m² 생중량(g)</span>'
         +'<span class="pformula-line pf-eq">'+prodFmtInt(plants)+'포기 × '+prodFmtInt(w20)+'g ÷ 20 = '+prodFmtInt(fresh3m2)+'g</span>'
@@ -3603,7 +3665,7 @@ function prodCalculate() {
         +'<span class="pformula-line pf-eq">'+prodFmtInt(fresh3m2)+'g ÷ 3 × 1,000 = '+prodFmtInt(fresh10a_g)+'g</span>'
         +'<span class="pformula-line pf-step">③ 10a 생산량(kg)</span>'
         +'<span class="pformula-line pf-eq">'+prodFmtInt(fresh10a_g)+'g ÷ 1,000 × '+dry.toFixed(1)+'%</span>'
-        +'<span class="pformula-line pf-result">= '+rounded.toLocaleString('ko-KR')+' kg ('+calc.kg10a.toFixed(1)+')</span>';
+        +'<span class="pformula-line pf-result">= '+rounded.toLocaleString('ko-KR')+' kg ('+fmtKg1Comma(calc.kg10a_raw!==undefined?calc.kg10a_raw:calc.kg10a)+')</span>';
     }
   }
   prodFillCard('a',A,aDry); prodFillCard('b',B,bDry);
@@ -3857,7 +3919,7 @@ document.addEventListener('DOMContentLoaded', function(){
       <button class="prod-cap-close-btn" onclick="prodCloseCapModal()">× 닫기</button>
     </div>
     <div class="prod-cap-modal-guide">
-      <div class="prod-cap-guide-row"><span style="font-size:15px;flex-shrink:0;">📱</span><span class="prod-cap-guide-text"><strong>iOS</strong>: 아래 이미지를 <strong>길게 누르기</strong> → <strong>"사진에 추가"</strong> 선택</span></div>
+      <div class="prod-cap-guide-row"><span style="font-size:15px;flex-shrink:0;">📱</span><span class="prod-cap-guide-text"><strong>iOS</strong>: <strong>이미지 저장</strong> 버튼 → 공유창에서 <strong>"이미지 저장"</strong> 또는 <strong>"사진에 추가"</strong> 선택</span></div>
       <div class="prod-cap-guide-row"><span style="font-size:15px;flex-shrink:0;">💻</span><span class="prod-cap-guide-text"><strong>PC/Android</strong>: 이미지 우클릭 → <strong>다른 이름으로 저장</strong></span></div>
     </div>
     <div class="prod-cap-modal-body">
@@ -3958,6 +4020,88 @@ document.addEventListener('DOMContentLoaded', function(){
     }, 120);
   }
 });
+</script>
+
+
+<script>
+/* ===== 전체 초기화 후 동그라미1번 공통사항으로 강제 이동 ===== */
+document.addEventListener('DOMContentLoaded', function(){
+  if(sessionStorage.getItem('tonghabScrollTopAfterReload') === '1'){
+    sessionStorage.removeItem('tonghabScrollTopAfterReload');
+    setTimeout(function(){
+      window.scrollTo(0, 0);
+      const firstCard = document.querySelector('.wrap .card');
+      if(firstCard) firstCard.scrollIntoView({behavior:'auto', block:'start'});
+    }, 300);
+  }
+});
+</script>
+
+
+<script>
+/* ===== iPhone 이미지 저장 보완: 공유창에서 이미지 저장/파일 저장 가능 ===== */
+async function saveImageForIOSAndAndroid(dataUrl, filename){
+  try{
+    const res = await fetch(dataUrl);
+    const blob = await res.blob();
+    const safeName = filename || 'result.png';
+    const file = new File([blob], safeName, {type: blob.type || 'image/png'});
+
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({
+        files:[file],
+        title:safeName,
+        text:'결과 이미지 저장'
+      });
+      return true;
+    }
+
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = safeName;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);
+    return true;
+  }catch(e){
+    console.error(e);
+    return false;
+  }
+}
+
+document.addEventListener('click', async function(e){
+  const btn = e.target.closest('.img-modal-save');
+  if(!btn) return;
+  const img = document.querySelector('.img-modal img');
+  if(!img || !img.src) return;
+  e.preventDefault();
+  e.stopPropagation();
+  const nameEl = document.querySelector('.img-modal-fileinfo .fname');
+  const filename = (nameEl && nameEl.textContent.trim()) || '포구선정_결과이미지.png';
+  await saveImageForIOSAndAndroid(img.src, filename);
+}, true);
+
+const _oldProdDownloadCapImage = window.prodDownloadCapImage;
+window.prodDownloadCapImage = async function(){
+  const img = document.getElementById('prod-cap-preview-img');
+  const nameText = (document.getElementById('prod-cap-filename')?.textContent || '').trim();
+  const filename = nameText || (typeof _prodCapFilename !== 'undefined' ? _prodCapFilename : '10a_생산량_결과.png');
+  if(img && img.src){
+    const ok = await saveImageForIOSAndAndroid(img.src, filename);
+    if(ok) return;
+  }
+  if(typeof _oldProdDownloadCapImage === 'function') _oldProdDownloadCapImage();
+};
+</script>
+
+
+<script>
+/* ===== 숫자 천단위 콤마 표시 보완 ===== */
+function fmtKg1Comma(v){
+  const n = Number(v);
+  if(isNaN(n) || !isFinite(n)) return '-';
+  return n.toLocaleString('ko-KR', {minimumFractionDigits:1, maximumFractionDigits:1});
+}
 </script>
 
 </body>
