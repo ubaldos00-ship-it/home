@@ -3935,8 +3935,12 @@ document.addEventListener('DOMContentLoaded', function(){
 /* ===== 10a 결과 아래 전체 초기화 버튼 보완 ===== */
 function prodFullResetAll(){
   if(!confirm('전체 데이터가 초기화됩니다. 초기화 하시겠습니까?')) return;
-  sessionStorage.setItem('tonghabScrollTopAfterReload','1');
-  location.reload();
+  try{
+    sessionStorage.setItem('tonghabForceTop','1');
+    sessionStorage.setItem('tonghabScrollTopAfterReload','1');
+    if('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  }catch(e){}
+  window.location.replace(window.location.pathname + '?reset=' + Date.now());
 }
 document.addEventListener('DOMContentLoaded', function(){
   setTimeout(function(){
@@ -4102,6 +4106,128 @@ function fmtKg1Comma(v){
   if(isNaN(n) || !isFinite(n)) return '-';
   return n.toLocaleString('ko-KR', {minimumFractionDigits:1, maximumFractionDigits:1});
 }
+</script>
+
+
+<script>
+/* ===== iPhone 전체 초기화 후 동그라미1번 강제 이동 ===== */
+(function(){
+  function forceTopAfterReset(){
+    let need = false;
+    try{
+      need = sessionStorage.getItem('tonghabForceTop') === '1' ||
+             sessionStorage.getItem('tonghabScrollTopAfterReload') === '1' ||
+             new URLSearchParams(location.search).has('reset');
+    }catch(e){}
+    if(!need) return;
+    try{
+      sessionStorage.removeItem('tonghabForceTop');
+      sessionStorage.removeItem('tonghabScrollTopAfterReload');
+      if('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    }catch(e){}
+    function goTop(){
+      window.scrollTo(0,0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      const firstCard = document.querySelector('.wrap .card');
+      if(firstCard) firstCard.scrollIntoView({behavior:'auto', block:'start'});
+      window.scrollTo(0,0);
+    }
+    goTop();
+    [80,250,600,1000,1500].forEach(t=>setTimeout(goTop,t));
+  }
+  document.addEventListener('DOMContentLoaded', forceTopAfterReset);
+  window.addEventListener('load', forceTopAfterReset);
+  window.addEventListener('pageshow', forceTopAfterReset);
+})();
+</script>
+
+
+<script>
+/* ===== 10a 그래프 결과 이미지 공유/저장 보완 ===== */
+function sanitizePngFileName(name, fallback){
+  let n = (name || fallback || '결과이미지.png').toString().trim();
+  n = n.replace(/[\\/:*?"<>|\n\r\t]+/g, '_').replace(/\s+/g, '_').replace(/_+/g, '_');
+  if(!/\.png$/i.test(n)) n += '.png';
+  return n;
+}
+function dataUrlToBlob(dataUrl){
+  const arr = dataUrl.split(',');
+  const mimeMatch = arr[0].match(/:(.*?);/);
+  const mime = mimeMatch ? mimeMatch[1] : 'image/png';
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+  while(n--) u8arr[n] = bstr.charCodeAt(n);
+  return new Blob([u8arr], {type:mime || 'image/png'});
+}
+async function shareOrSavePngImage(dataUrl, filename){
+  try{
+    const blob0 = dataUrl.startsWith('data:') ? dataUrlToBlob(dataUrl) : await (await fetch(dataUrl)).blob();
+    const blob = blob0.type === 'image/png' ? blob0 : new Blob([blob0], {type:'image/png'});
+    const safeName = sanitizePngFileName(filename, '결과이미지.png');
+    const file = new File([blob], safeName, {type:'image/png'});
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({files:[file], title:'결과 이미지', text:'결과 이미지'});
+      return true;
+    }
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = safeName;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},700);
+    return true;
+  }catch(err){
+    console.error(err);
+    return false;
+  }
+}
+document.addEventListener('click', async function(e){
+  const abBtn = e.target.closest('.img-modal-save');
+  if(!abBtn) return;
+  const img = document.querySelector('.img-modal img');
+  if(!img || !img.src) return;
+  e.preventDefault();
+  e.stopPropagation();
+  const fnameEl = document.querySelector('.img-modal-fileinfo .fname');
+  await shareOrSavePngImage(img.src, fnameEl ? fnameEl.textContent : '포구선정_결과이미지.png');
+}, true);
+
+window.prodDownloadCapImage = async function(){
+  const img = document.getElementById('prod-cap-preview-img');
+  let fname = '';
+  try{ fname = _prodCapFilename || ''; }catch(e){}
+  if(!fname){
+    const t = document.getElementById('prod-cap-filename')?.textContent || '';
+    fname = (t.split('\n').find(x=>x.includes('.png')) || t || '10a_생산량_결과.png').trim();
+  }
+  if(!img || !img.src){ alert('저장할 이미지가 없습니다.'); return; }
+  const ok = await shareOrSavePngImage(img.src, fname);
+  if(!ok) alert('이미지 저장을 다시 시도해주세요.');
+};
+
+document.addEventListener('DOMContentLoaded', function(){
+  const guide = document.querySelector('.prod-cap-modal-guide');
+  if(guide){
+    guide.innerHTML =
+      '<div class="prod-cap-guide-row"><span style="font-size:15px;flex-shrink:0;">📱</span><span class="prod-cap-guide-text"><strong>iOS</strong>: <strong>이미지 저장</strong> 버튼 → 공유창에서 <strong>이미지 저장</strong>, <strong>사진에 추가</strong>, <strong>카카오톡</strong>, <strong>메시지</strong> 선택</span></div>' +
+      '<div class="prod-cap-guide-row"><span style="font-size:15px;flex-shrink:0;">💻</span><span class="prod-cap-guide-text"><strong>PC/Android</strong>: 이미지 저장 버튼 클릭 → Downloads 또는 공유 앱 선택</span></div>';
+  }
+});
+</script>
+
+
+<script>
+/* ===== 전체 초기화 버튼 바인딩 재보완 ===== */
+document.addEventListener('DOMContentLoaded', function(){
+  setTimeout(function(){
+    document.querySelectorAll('button').forEach(function(btn){
+      const t = (btn.textContent || '').trim();
+      if(t.includes('전체 초기화')) btn.onclick = prodFullResetAll;
+    });
+  }, 500);
+});
 </script>
 
 </body>
