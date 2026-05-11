@@ -414,6 +414,17 @@ input.needs-input:focus{
 .img-modal-save:hover{background:#4a8a18;}
 .img-modal-save:active{transform:scale(.98);}
 .img-modal-save:disabled{opacity:.6;cursor:not-allowed;}
+.img-modal-share{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  margin:-4px 16px 12px;padding:13px 16px;
+  background:#1255A8;color:#fff;border:none;border-radius:10px;
+  font-size:15px;font-weight:900;font-family:inherit;cursor:pointer;
+  box-shadow:0 3px 12px rgba(18,85,168,.40);
+  transition:all .15s;letter-spacing:.02em;
+}
+.img-modal-share:hover{background:#1a6ccc;}
+.img-modal-share:active{transform:scale(.98);}
+.img-modal-share:disabled{opacity:.6;cursor:not-allowed;}
 /* 파일 정보 */
 .img-modal-fileinfo{
   margin:0 16px 14px;padding:14px 16px;
@@ -611,6 +622,9 @@ input.needs-input:focus{
 .prod-cap-guide-text strong{color:#8BC34A;font-size:12px;}
 .prod-cap-modal-body{padding:12px;background:#111;}
 .prod-cap-save-btn{width:100%;margin-top:11px;padding:13px;background:#3a7d44;border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;}
+.prod-cap-share-btn{width:100%;margin-top:8px;padding:13px;background:#1255A8;border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;box-shadow:0 3px 10px rgba(18,85,168,.35);}
+.prod-cap-share-btn:active{transform:scale(.98);}
+.prod-cap-share-btn:disabled{opacity:.6;cursor:not-allowed;}
 .prod-cap-filename{font-size:11px;color:#888;text-align:center;margin-top:8px;line-height:1.7;padding:8px 10px;background:#1e1e1e;border-radius:7px;}
 .prod-cap-preview-img{width:100%;border-radius:8px;display:block;box-shadow:0 3px 14px rgba(0,0,0,.5);margin-top:10px;}
 
@@ -1794,7 +1808,7 @@ input.needs-input:focus{
     <div class="img-modal-hint">
       <div class="row">
         <span class="ico">📱</span>
-        <span><span class="label">iOS</span>: <span class="green">이미지 저장</span> 버튼 → 공유 시트에서 <span class="quoted">"파일에 저장"</span> 또는 <span class="quoted">"사진에 추가"</span> 선택</span>
+        <span><span class="label">iPhone</span>: <span class="green">iPhone 공유/파일에 저장</span> 버튼 → 공유창에서 <span class="quoted">"사진에 추가"</span> 또는 <span class="quoted">"파일에 저장"</span> 선택</span>
       </div>
       <div class="row">
         <span class="ico">💻</span>
@@ -1804,6 +1818,9 @@ input.needs-input:focus{
 
     <button type="button" class="img-modal-save" id="btnModalSave">
       <span style="font-size:18px;">⬇</span> 이미지 저장
+    </button>
+    <button type="button" class="img-modal-share" id="btnModalShare">
+      <span style="font-size:18px;">📱</span> iPhone 공유 / 파일에 저장
     </button>
 
     <div class="img-modal-fileinfo">
@@ -3008,61 +3025,56 @@ html2canvas(target, {
   }, 60);
 }
 
-/* 모달의 [⬇ 이미지 저장] 버튼 동작 */
+/* 모달의 [⬇ 이미지 저장] 버튼 동작 — 다운로드 전용 */
 async function saveCaptureFromModal(){
   if(!lastCaptureDataUrl){ alert('이미지가 준비되지 않았습니다.'); return; }
   const filename = lastCaptureFilename || '결과.png';
   const btn = document.getElementById('btnModalSave');
   const orig = btn ? btn.innerHTML : '';
   if(btn){ btn.disabled = true; btn.innerHTML = '<span style="font-size:18px;">⏳</span> 저장 중...'; }
-
   function restoreBtn(){ if(btn){ btn.disabled = false; btn.innerHTML = orig; } }
-  function downloadByAnchor(url){
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.rel = 'noopener';
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => document.body.removeChild(a), 100);
-  }
-
   try {
-    const ua = navigator.userAgent || '';
-    const isAndroid = /Android/i.test(ua);
-
-    // Android에서는 공유창이 뜨지 않도록 Web Share API보다 다운로드를 우선 실행
-    if(isAndroid){
-      downloadByAnchor(lastCaptureDataUrl);
-      restoreBtn();
-      return;
-    }
-
     const res = await fetch(lastCaptureDataUrl);
     const blob = await res.blob();
-
-    // iOS 계열은 파일 다운로드 제한이 있어 공유/사진 저장 흐름을 유지
-    if(typeof isIOS === 'function' && isIOS() && navigator.canShare){
-      const file = new File([blob], filename, { type: 'image/png' });
-      if(navigator.canShare({ files: [file] })){
-        restoreBtn();
-        await navigator.share({ files: [file], title: filename });
-        return;
-      }
-    }
-
     const blobUrl = URL.createObjectURL(blob);
-    downloadByAnchor(blobUrl);
-    setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+    const a = document.createElement('a');
+    a.href = blobUrl; a.download = filename; a.rel = 'noopener';
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(blobUrl); document.body.removeChild(a); }, 10000);
     restoreBtn();
+  } catch(e){
+    restoreBtn();
+    console.error('[save error]', e);
+    alert('저장 중 오류가 발생했습니다. 아래 이미지를 길게 눌러 저장해주세요.');
+    const img = document.getElementById('modalImg');
+    if(img && img.scrollIntoView) img.scrollIntoView({ behavior:'smooth', block:'center' });
+  }
+}
 
+/* 모달의 [📱 iPhone 공유 / 파일에 저장] 버튼 동작 */
+async function shareCaptureFromModal(){
+  if(!lastCaptureDataUrl){ alert('이미지가 준비되지 않았습니다.'); return; }
+  const filename = lastCaptureFilename || '결과.png';
+  const btn = document.getElementById('btnModalShare');
+  const orig = btn ? btn.innerHTML : '';
+  if(btn){ btn.disabled = true; btn.innerHTML = '<span style="font-size:18px;">⏳</span> 공유 준비 중...'; }
+  function restoreBtn(){ if(btn){ btn.disabled = false; btn.innerHTML = orig; } }
+  try {
+    const res = await fetch(lastCaptureDataUrl);
+    const blob = await res.blob();
+    const file = new File([blob], filename, { type: 'image/png' });
+    if(navigator.canShare && navigator.canShare({ files: [file] })){
+      restoreBtn();
+      await navigator.share({ files: [file], title: filename, text: '결과 이미지' });
+    } else {
+      restoreBtn();
+      alert('이 기기에서는 공유 기능을 지원하지 않습니다.\n위 이미지 저장 버튼을 이용해주세요.');
+    }
   } catch(e){
     restoreBtn();
     if(e && e.name === 'AbortError') return;
-    console.error('[save error]', e);
-    alert('자동 저장을 지원하지 않는 환경입니다.\n\n아래 이미지를 길게 누른 뒤\n"사진에 추가" 또는 "다른 이름으로 저장"을 선택해주세요.');
-    const img = document.getElementById('modalImg');
-    if(img && img.scrollIntoView) img.scrollIntoView({ behavior:'smooth', block:'center' });
+    console.error('[share error]', e);
+    alert('공유 중 오류가 발생했습니다.');
   }
 }
 
@@ -3083,6 +3095,10 @@ async function saveCaptureFromModal(){
     // 모달 [⬇ 이미지 저장] 버튼
     const btnSave = document.getElementById('btnModalSave');
     if(btnSave){ btnSave.addEventListener('click', saveCaptureFromModal); }
+
+    // 모달 [📱 iPhone 공유 / 파일에 저장] 버튼
+    const btnShare = document.getElementById('btnModalShare');
+    if(btnShare){ btnShare.addEventListener('click', shareCaptureFromModal); }
 
     // 모달 닫기 (배경 클릭)
     const modal = document.getElementById('imgModal');
@@ -3919,11 +3935,12 @@ document.addEventListener('DOMContentLoaded', function(){
       <button class="prod-cap-close-btn" onclick="prodCloseCapModal()">× 닫기</button>
     </div>
     <div class="prod-cap-modal-guide">
-      <div class="prod-cap-guide-row"><span style="font-size:15px;flex-shrink:0;">📱</span><span class="prod-cap-guide-text"><strong>iOS</strong>: <strong>이미지 저장</strong> 버튼 → 공유창에서 <strong>"이미지 저장"</strong> 또는 <strong>"사진에 추가"</strong> 선택</span></div>
-      <div class="prod-cap-guide-row"><span style="font-size:15px;flex-shrink:0;">💻</span><span class="prod-cap-guide-text"><strong>PC/Android</strong>: 이미지 우클릭 → <strong>다른 이름으로 저장</strong></span></div>
+      <div class="prod-cap-guide-row"><span style="font-size:15px;flex-shrink:0;">📱</span><span class="prod-cap-guide-text"><strong>iPhone</strong>: <strong>iPhone 공유/파일에 저장</strong> 버튼 → 공유창에서 <strong>"사진에 추가"</strong> 또는 <strong>"파일에 저장"</strong> 선택</span></div>
+      <div class="prod-cap-guide-row"><span style="font-size:15px;flex-shrink:0;">💻</span><span class="prod-cap-guide-text"><strong>PC/Android</strong>: <strong>이미지 저장</strong> 버튼 클릭 → Downloads 폴더에 자동 저장</span></div>
     </div>
     <div class="prod-cap-modal-body">
       <button class="prod-cap-save-btn" onclick="prodDownloadCapImage()">⬇ 이미지 저장</button>
+      <button class="prod-cap-share-btn" id="prodCapShareBtn" onclick="prodShareImage()">📱 iPhone 공유 / 파일에 저장</button>
       <p class="prod-cap-filename" id="prod-cap-filename"></p>
       <img id="prod-cap-preview-img" class="prod-cap-preview-img" src="" alt="결과 미리보기">
     </div>
@@ -4043,58 +4060,60 @@ document.addEventListener('DOMContentLoaded', function(){
 
 
 <script>
-/* ===== iPhone 이미지 저장 보완: 공유창에서 이미지 저장/파일 저장 가능 ===== */
-async function saveImageForIOSAndAndroid(dataUrl, filename){
-  try{
-    const res = await fetch(dataUrl);
-    const blob = await res.blob();
-    const safeName = filename || 'result.png';
-    const file = new File([blob], safeName, {type: blob.type || 'image/png'});
-
-    if(navigator.canShare && navigator.canShare({files:[file]})){
-      await navigator.share({
-        files:[file],
-        title:safeName,
-        text:'결과 이미지 저장'
-      });
-      return true;
-    }
-
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = safeName;
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);
-    return true;
-  }catch(e){
-    console.error(e);
-    return false;
-  }
-}
-
-document.addEventListener('click', async function(e){
-  const btn = e.target.closest('.img-modal-save');
-  if(!btn) return;
-  const img = document.querySelector('.img-modal img');
-  if(!img || !img.src) return;
-  e.preventDefault();
-  e.stopPropagation();
-  const nameEl = document.querySelector('.img-modal-fileinfo .fname');
-  const filename = (nameEl && nameEl.textContent.trim()) || '포구선정_결과이미지.png';
-  await saveImageForIOSAndAndroid(img.src, filename);
-}, true);
-
-const _oldProdDownloadCapImage = window.prodDownloadCapImage;
+/* ===== prod-cap-modal 다운로드 / 공유 ===== */
 window.prodDownloadCapImage = async function(){
   const img = document.getElementById('prod-cap-preview-img');
-  const nameText = (document.getElementById('prod-cap-filename')?.textContent || '').trim();
-  const filename = nameText || (typeof _prodCapFilename !== 'undefined' ? _prodCapFilename : '10a_생산량_결과.png');
-  if(img && img.src){
-    const ok = await saveImageForIOSAndAndroid(img.src, filename);
-    if(ok) return;
+  if(!img || !img.src){ alert('저장할 이미지가 없습니다.'); return; }
+  let fname = '';
+  try{ fname = _prodCapFilename || ''; }catch(e){}
+  if(!fname){
+    const t = document.getElementById('prod-cap-filename')?.textContent || '';
+    fname = (t.split('\n').find(x=>x.includes('.png')) || t || '10a_생산량_결과.png').trim();
   }
-  if(typeof _oldProdDownloadCapImage === 'function') _oldProdDownloadCapImage();
+  try{
+    const res = await fetch(img.src);
+    const blob = await res.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl; a.download = fname; a.rel = 'noopener';
+    document.body.appendChild(a); a.click();
+    setTimeout(()=>{ URL.revokeObjectURL(blobUrl); a.remove(); }, 10000);
+  }catch(e){
+    console.error(e);
+    alert('저장 중 오류가 발생했습니다. 이미지를 길게 눌러 저장해주세요.');
+  }
+};
+
+window.prodShareImage = async function(){
+  const img = document.getElementById('prod-cap-preview-img');
+  if(!img || !img.src){ alert('공유할 이미지가 없습니다.'); return; }
+  let fname = '';
+  try{ fname = _prodCapFilename || ''; }catch(e){}
+  if(!fname){
+    const t = document.getElementById('prod-cap-filename')?.textContent || '';
+    fname = (t.split('\n').find(x=>x.includes('.png')) || t || '10a_생산량_결과.png').trim();
+  }
+  const btn = document.getElementById('prodCapShareBtn');
+  const orig = btn ? btn.innerHTML : '';
+  if(btn){ btn.disabled = true; btn.innerHTML = '⏳ 공유 준비 중...'; }
+  function restoreBtn(){ if(btn){ btn.disabled = false; btn.innerHTML = orig; } }
+  try{
+    const res = await fetch(img.src);
+    const blob = await res.blob();
+    const file = new File([blob], fname, { type: 'image/png' });
+    if(navigator.canShare && navigator.canShare({ files: [file] })){
+      restoreBtn();
+      await navigator.share({ files: [file], title: fname, text: '결과 이미지' });
+    } else {
+      restoreBtn();
+      alert('이 기기에서는 공유 기능을 지원하지 않습니다.\n위 이미지 저장 버튼을 이용해주세요.');
+    }
+  }catch(e){
+    restoreBtn();
+    if(e && e.name === 'AbortError') return;
+    console.error(e);
+    alert('공유 중 오류가 발생했습니다.');
+  }
 };
 </script>
 
@@ -4143,79 +4162,6 @@ function fmtKg1Comma(v){
 </script>
 
 
-<script>
-/* ===== 10a 그래프 결과 이미지 공유/저장 보완 ===== */
-function sanitizePngFileName(name, fallback){
-  let n = (name || fallback || '결과이미지.png').toString().trim();
-  n = n.replace(/[\\/:*?"<>|\n\r\t]+/g, '_').replace(/\s+/g, '_').replace(/_+/g, '_');
-  if(!/\.png$/i.test(n)) n += '.png';
-  return n;
-}
-function dataUrlToBlob(dataUrl){
-  const arr = dataUrl.split(',');
-  const mimeMatch = arr[0].match(/:(.*?);/);
-  const mime = mimeMatch ? mimeMatch[1] : 'image/png';
-  const bstr = atob(arr[1]);
-  let n = bstr.length;
-  const u8arr = new Uint8Array(n);
-  while(n--) u8arr[n] = bstr.charCodeAt(n);
-  return new Blob([u8arr], {type:mime || 'image/png'});
-}
-async function shareOrSavePngImage(dataUrl, filename){
-  try{
-    const blob0 = dataUrl.startsWith('data:') ? dataUrlToBlob(dataUrl) : await (await fetch(dataUrl)).blob();
-    const blob = blob0.type === 'image/png' ? blob0 : new Blob([blob0], {type:'image/png'});
-    const safeName = sanitizePngFileName(filename, '결과이미지.png');
-    const file = new File([blob], safeName, {type:'image/png'});
-    if(navigator.canShare && navigator.canShare({files:[file]})){
-      await navigator.share({files:[file], title:'결과 이미지', text:'결과 이미지'});
-      return true;
-    }
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = safeName;
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},700);
-    return true;
-  }catch(err){
-    console.error(err);
-    return false;
-  }
-}
-document.addEventListener('click', async function(e){
-  const abBtn = e.target.closest('.img-modal-save');
-  if(!abBtn) return;
-  const img = document.querySelector('.img-modal img');
-  if(!img || !img.src) return;
-  e.preventDefault();
-  e.stopPropagation();
-  const fnameEl = document.querySelector('.img-modal-fileinfo .fname');
-  await shareOrSavePngImage(img.src, fnameEl ? fnameEl.textContent : '포구선정_결과이미지.png');
-}, true);
-
-window.prodDownloadCapImage = async function(){
-  const img = document.getElementById('prod-cap-preview-img');
-  let fname = '';
-  try{ fname = _prodCapFilename || ''; }catch(e){}
-  if(!fname){
-    const t = document.getElementById('prod-cap-filename')?.textContent || '';
-    fname = (t.split('\n').find(x=>x.includes('.png')) || t || '10a_생산량_결과.png').trim();
-  }
-  if(!img || !img.src){ alert('저장할 이미지가 없습니다.'); return; }
-  const ok = await shareOrSavePngImage(img.src, fname);
-  if(!ok) alert('이미지 저장을 다시 시도해주세요.');
-};
-
-document.addEventListener('DOMContentLoaded', function(){
-  const guide = document.querySelector('.prod-cap-modal-guide');
-  if(guide){
-    guide.innerHTML =
-      '<div class="prod-cap-guide-row"><span style="font-size:15px;flex-shrink:0;">📱</span><span class="prod-cap-guide-text"><strong>iOS</strong>: <strong>이미지 저장</strong> 버튼 → 공유창에서 <strong>이미지 저장</strong>, <strong>사진에 추가</strong>, <strong>카카오톡</strong>, <strong>메시지</strong> 선택</span></div>' +
-      '<div class="prod-cap-guide-row"><span style="font-size:15px;flex-shrink:0;">💻</span><span class="prod-cap-guide-text"><strong>PC/Android</strong>: 이미지 저장 버튼 클릭 → Downloads 또는 공유 앱 선택</span></div>';
-  }
-});
-</script>
 
 
 <script>
