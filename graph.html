@@ -127,8 +127,9 @@
     font-size: 12px; font-weight: 700;
     background: #f3f4f6; color: #4b5563;
     border: 2px solid #e5e7eb;
-    padding: 6px 12px; border-radius: 18px;
+    padding: 6px 10px; border-radius: 18px;
     cursor: pointer; user-select: none; transition: all 0.12s;
+    white-space: nowrap; flex-shrink: 0;
   }
   .cat-chip.on {
     background: #15803d; color: #fff; border-color: #15803d;
@@ -160,6 +161,7 @@
     background: #f3f4f6; color: #374151;
     border: 1px solid #e5e7eb;
     padding: 6px 11px; border-radius: 14px; cursor: pointer;
+    white-space: nowrap; flex-shrink: 0;
   }
   .qb:active { background: #e5e7eb; }
   .qb.on { background: #15803d; color:#fff; border-color: #15803d; }
@@ -767,7 +769,7 @@ function render() {
 
       statsHtml += `
         <div class="stat-block" style="border-left: 3px solid ${color};">
-          <b style="color:${color}">${s.region} (${DB.years[lIdx]}년 ${Math.round(latest).toLocaleString('ko-KR')}kg)</b>
+          <b style="color:${color}">${s.region}</b>
           평년대비: ${fmtDiff(avgRatio)}<br>전년대비: ${fmtDiff(yoy)}
         </div>
       `;
