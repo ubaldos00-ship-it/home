@@ -431,6 +431,9 @@
     <div class="img-modal-hint">
       <div class="hint-row"><span style="font-size:15px">📱</span><span><span class="hint-label">iPhone</span>: <span class="hint-green">iPhone 공유/파일에 저장</span> 버튼 → 공유창에서 <strong style="color:#fff">"사진에 추가"</strong> 또는 <strong style="color:#fff">"파일에 저장"</strong> 선택</span></div>
       <div class="hint-row"><span style="font-size:15px">💻</span><span><span class="hint-label">PC/Android</span>: <span class="hint-green">이미지 저장</span> 버튼 클릭 → Downloads 폴더에 자동 저장</span></div>
+      <div style="margin-top:8px;padding:7px 10px;background:#3a0000;border-radius:7px;text-align:center;">
+        <span style="color:#ff4d4d;font-weight:800;font-size:13px;">⚠ 카톡 전송시 원본으로 전송해야 화질이 좋음</span>
+      </div>
     </div>
     <div class="img-modal-btn-row">
       <button class="img-modal-save-btn" id="modalSaveBtn">⬇ 파일에 저장</button>
@@ -933,18 +936,17 @@ function _extTip(context) {
       </div>`;
     }).join('');
   const rect = chart.canvas.getBoundingClientRect();
-  const wrapEl = document.querySelector('.wrap');
-  const wrapRect = wrapEl.getBoundingClientRect();
-  // position: absolute 기준 — wrap 내부 상대좌표 (스크롤 따라 이동)
-  const cx = rect.left + tooltip.caretX - wrapRect.left;
-  const cy = rect.top + tooltip.caretY - wrapRect.top;
-  const tw = 200, wrapW = wrapEl.offsetWidth;
+  // page 절대좌표 기준 (position:absolute는 body 기준이므로 scrollY 더함)
+  const cx = rect.left + tooltip.caretX + window.scrollX;
+  const cy = rect.top + tooltip.caretY + window.scrollY;
+  const tw = 200, vw = window.innerWidth;
   let left = cx - tw / 2;
   if (left < 4) left = 4;
-  if (left + tw > wrapW - 4) left = wrapW - tw - 4;
+  if (left + tw > vw - 4) left = vw - tw - 4;
   const tipH = tip.offsetHeight || 100;
   let top = cy - tipH - 12;
-  if (top < (rect.top - wrapRect.top) + 5) top = cy + 16;
+  const canvasPageTop = rect.top + window.scrollY;
+  if (top < canvasPageTop + 5) top = cy + 16;
   tip.style.left = left + 'px';
   tip.style.top = top + 'px';
   tip.style.display = 'block';
