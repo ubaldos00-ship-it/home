@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>논벼 예상량 조사</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+    background: #f0f4f0;
+    color: #333;
+    font-size: 14px;
+  }
+
+  header {
+    background: #5a7a4a;
+    color: #fff;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  }
+  header h1 { font-size: 17px; font-weight: 700; }
+  header span { font-size: 22px; }
+
+  .content { padding: 12px; display: flex; flex-direction: column; gap: 12px; }
+
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+
+  .card-header {
+    background: #6b8f5a;
+    color: #fff;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .card-header .num {
+    background: rgba(255,255,255,0.3);
+    border-radius: 50%;
+    width: 22px; height: 22px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+  }
+
+  .card-body { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 11px; color: #666; font-weight: 600; }
+  .field input, .field select {
+    border: 1.5px solid #ddd;
+    border-radius: 8px;
+    padding: 9px 10px;
+    font-size: 14px;
+    width: 100%;
+    background: #fafafa;
+    transition: border-color 0.2s;
+  }
+  .field input:focus, .field select:focus {
+    outline: none;
+    border-color: #6b8f5a;
+    background: #fff;
+  }
+  .field input[readonly] {
+    background: #eef3eb;
+    color: #4a6a3a;
+    font-weight: 700;
+    border-color: #b5cfa8;
+  }
+  .field .unit { font-size: 11px; color: #999; margin-top: 2px; }
+
+  /* 이삭수 그리드 */
+  .ear-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+  }
+  .ear-cell { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .ear-cell label { font-size: 11px; color: #888; }
+  .ear-cell input {
+    border: 1.5px solid #ddd;
+    border-radius: 6px;
+    padding: 7px 4px;
+    font-size: 13px;
+    text-align: center;
+    width: 100%;
+    background: #fafafa;
+  }
+  .ear-cell input:focus {
+    outline: none;
+    border-color: #6b8f5a;
+    background: #fff;
+  }
+
+  /* 구분 탭 */
+  .tab-wrap { display: flex; gap: 6px; margin-bottom: 4px; }
+  .tab-btn {
+    flex: 1;
+    padding: 8px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    background: #f5f5f5;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #666;
+  }
+  .tab-btn.active {
+    border-color: #6b8f5a;
+    background: #6b8f5a;
+    color: #fff;
+  }
+
+  /* 결과 카드 */
+  .result-card {
+    background: linear-gradient(135deg, #4a7a3a, #6b9a5a);
+    border-radius: 12px;
+    padding: 18px;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(74,122,58,0.3);
+  }
+  .result-card h3 { font-size: 13px; opacity: 0.85; margin-bottom: 8px; }
+  .result-main { font-size: 36px; font-weight: 800; margin-bottom: 4px; }
+  .result-main span { font-size: 18px; font-weight: 400; opacity: 0.8; }
+  .result-sub { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+  .result-item { background: rgba(255,255,255,0.15); border-radius: 8px; padding: 10px; }
+  .result-item .label { font-size: 11px; opacity: 0.8; margin-bottom: 4px; }
+  .result-item .value { font-size: 16px; font-weight: 700; }
+
+  /* 계산 버튼 */
+  .calc-btn {
+    width: 100%;
+    padding: 14px;
+    background: #5a7a4a;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .calc-btn:active { background: #3d5a2e; }
+
+  .divider {
+    height: 1px;
+    background: #eee;
+    margin: 2px 0;
+  }
+
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    font-size: 13px;
+  }
+  .info-row .lbl { color: #888; }
+  .info-row .val { font-weight: 600; color: #3d5a2e; }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6b8f5a;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+
+  .badge {
+    display: inline-block;
+    background: #eef3eb;
+    color: #5a7a4a;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .area-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .area-label span {
+    font-size: 13px;
+    font-weight: 700;
+    color: #4a6a3a;
+  }
+
+  /* 피해/품종 */
+  .mini-row { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 8px; }
+  .mini-row2 { display: grid; grid-template-columns: 2fr 1fr; gap: 8px; }
+  .date-row { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 8px; }
+
+  footer {
+    text-align: center;
+    padding: 16px;
+    font-size: 11px;
+    color: #aaa;
+  }
+
+  .highlight-box {
+    background: #eef3eb;
+    border-left: 3px solid #6b8f5a;
+    border-radius: 0 8px 8px 0;
+    padding: 10px 12px;
+    font-size: 12px;
+    color: #4a6a3a;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <span>🌾</span>
+  <h1>논벼 예상량 조사</h1>
+</header>
+
+<div class="content">
+
+  <!-- STEP 1: 포기간 길이 / 1m²당 포기수 -->
+  <div class="card">
+    <div class="card-header">
+      <div class="num">1</div>
+      표본구역 포기간 길이 및 포기수
+    </div>
+    <div class="card-body">
+
+      <div class="area-label">
+        <span class="badge">A구역</span>
+        <span>포기간 길이</span>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>가로 간격</label>
+          <input type="number" id="a_garo" placeholder="예: 30" inputmode="decimal" oninput="calcPlants()">
+          <span class="unit">cm</span>
+        </div>
+        <div class="field">
+          <label>세로 간격</label>
+          <input type="number" id="a_sero" placeholder="예: 20" inputmode="decimal" oninput="calcPlants()">
+          <span class="unit">cm</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>1m²당 포기수 (자동계산)</label>
+        <input type="text" id="a_plants_m2" readonly placeholder="-">
+        <span class="unit">포기/m²</span>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="area-label">
+        <span class="badge">B구역</span>
+        <span>포기간 길이</span>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>가로 간격</label>
+          <input type="number" id="b_garo" placeholder="예: 30" inputmode="decimal" oninput="calcPlants()">
+          <span class="unit">cm</span>
+        </div>
+        <div class="field">
+          <label>세로 간격</label>
+          <input type="number" id="b_sero" placeholder="예: 20" inputmode="decimal" oninput="calcPlants()">
+          <span class="unit">cm</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>1m²당 포기수 (자동계산)</label>
+        <input type="text" id="b_plants_m2" readonly placeholder="-">
+        <span class="unit">포기/m²</span>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="field">
+        <label>평균 1m²당 포기수 (자동계산)</label>
+        <input type="text" id="avg_plants_m2" readonly placeholder="-">
+        <span class="unit">포기/m²</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- STEP 2: 포기당 이삭수 (A구역 10포기) -->
+  <div class="card">
+    <div class="card-header">
+      <div class="num">2</div>
+      포기당 이삭수 — A 표본구역 (10포기)
+    </div>
+    <div class="card-body">
+      <div class="section-label">각 포기별 이삭수 입력</div>
+      <div class="ear-grid">
+        <div class="ear-cell"><label>1포기</label><input type="number" id="ear_1" inputmode="numeric" oninput="calcEars()"></div>
+        <div class="ear-cell"><label>2포기</label><input type="number" id="ear_2" inputmode="numeric" oninput="calcEars()"></div>
+        <div class="ear-cell"><label>3포기</label><input type="number" id="ear_3" inputmode="numeric" oninput="calcEars()"></div>
+        <div class="ear-cell"><label>4포기</label><input type="number" id="ear_4" inputmode="numeric" oninput="calcEars()"></div>
+        <div class="ear-cell"><label>5포기</label><input type="number" id="ear_5" inputmode="numeric" oninput="calcEars()"></div>
+        <div class="ear-cell"><label>6포기</label><input type="number" id="ear_6" inputmode="numeric" oninput="calcEars()"></div>
+        <div class="ear-cell"><label>7포기</label><input type="number" id="ear_7" inputmode="numeric" oninput="calcEars()"></div>
+        <div class="ear-cell"><label>8포기</label><input type="number" id="ear_8" inputmode="numeric" oninput="calcEars()"></div>
+        <div class="ear-cell"><label>9포기</label><input type="number" id="ear_9" inputmode="numeric" oninput="calcEars()"></div>
+        <div class="ear-cell"><label>10포기</label><input type="number" id="ear_10" inputmode="numeric" oninput="calcEars()"></div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>합계 (자동계산)</label>
+          <input type="text" id="ear_total" readonly placeholder="-">
+          <span class="unit">이삭</span>
+        </div>
+        <div class="field">
+          <label>포기당 평균 (자동계산)</label>
+          <input type="text" id="ear_avg" readonly placeholder="-">
+          <span class="unit">이삭/포기</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3: 낟알수 조사 (A구역 1포기) -->
+  <div class="card">
+    <div class="card-header">
+      <div class="num">3</div>
+      낟알수 조사 — A 표본구역 1포기
+    </div>
+    <div class="card-body">
+      <div class="row3">
+        <div class="field">
+          <label>유효 이삭수</label>
+          <input type="number" id="valid_ears" inputmode="numeric" placeholder="0" oninput="calcGrains()">
+          <span class="unit">이삭</span>
+        </div>
+        <div class="field">
+          <label>총 낟알수</label>
+          <input type="number" id="total_grains" inputmode="numeric" placeholder="0" oninput="calcGrains()">
+          <span class="unit">알</span>
+        </div>
+        <div class="field">
+          <label>완전 낟알수</label>
+          <input type="number" id="complete_grains" inputmode="numeric" placeholder="0" oninput="calcGrains()">
+          <span class="unit">알</span>
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>등숙율 (자동계산)</label>
+          <input type="text" id="ripening_rate" readonly placeholder="-">
+          <span class="unit">%</span>
+        </div>
+        <div class="field">
+          <label>이삭당 완전낟알수</label>
+          <input type="text" id="grains_per_ear" readonly placeholder="-">
+          <span class="unit">알/이삭</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4: 천립중 -->
+  <div class="card">
+    <div class="card-header">
+      <div class="num">4</div>
+      천립중 (1,000알 무게)
+    </div>
+    <div class="card-body">
+      <div class="field">
+        <label>천립중</label>
+        <input type="number" id="thousand_weight" value="21.5" inputmode="decimal" oninput="calcResult()">
+        <span class="unit">g (일반 자포니카 기본값: 21.5g)</span>
+      </div>
+      <div class="field">
+        <label>정미율 (현미→백미 변환)</label>
+        <select id="milling_rate" onchange="calcResult()">
+          <option value="0.88">88% (일반)</option>
+          <option value="0.90">90% (고품질)</option>
+          <option value="0.85">85% (저품질)</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- 계산 버튼 -->
+  <button class="calc-btn" onclick="calcResult()">
+    🌾 예상 생산량 계산
+  </button>
+
+  <!-- 결과 -->
+  <div class="result-card" id="result_card" style="display:none;">
+    <h3>10a당 예상 생산량 (백미 기준)</h3>
+    <div class="result-main" id="result_main">- <span>kg</span></div>
+    <div class="result-sub">
+      <div class="result-item">
+        <div class="label">현미 기준</div>
+        <div class="value" id="res_brown">- kg</div>
+      </div>
+      <div class="result-item">
+        <div class="label">1m²당 유효이삭수</div>
+        <div class="value" id="res_ears_m2">-</div>
+      </div>
+      <div class="result-item">
+        <div class="label">등숙율</div>
+        <div class="value" id="res_ripening">- %</div>
+      </div>
+      <div class="result-item">
+        <div class="label">이삭당 완전낟알</div>
+        <div class="value" id="res_grains_ear">-</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 검산 계 -->
+  <div class="card" id="verify_card" style="display:none;">
+    <div class="card-header">
+      <div class="num">✓</div>
+      검산 계
+    </div>
+    <div class="card-body">
+      <div class="info-row"><span class="lbl">1m²당 포기수</span><span class="val" id="v_plants">-</span></div>
+      <div class="divider"></div>
+      <div class="info-row"><span class="lbl">포기당 평균 이삭수</span><span class="val" id="v_ears">-</span></div>
+      <div class="divider"></div>
+      <div class="info-row"><span class="lbl">1m²당 유효이삭수</span><span class="val" id="v_ears_m2">-</span></div>
+      <div class="divider"></div>
+      <div class="info-row"><span class="lbl">이삭당 완전낟알수</span><span class="val" id="v_grains_ear">-</span></div>
+      <div class="divider"></div>
+      <div class="info-row"><span class="lbl">등숙율</span><span class="val" id="v_ripening">-</span></div>
+      <div class="divider"></div>
+      <div class="info-row"><span class="lbl">천립중</span><span class="val" id="v_tw">-</span></div>
+      <div class="divider"></div>
+      <div class="info-row"><span class="lbl">10a당 현미 예상량</span><span class="val" id="v_brown">-</span></div>
+      <div class="divider"></div>
+      <div class="info-row"><span class="lbl">10a당 백미 예상량</span><span class="val" id="v_white">-</span></div>
+      <div class="divider"></div>
+      <div class="highlight-box">
+        📌 계산식: 1m²당포기수 × 포기당이삭수 × 이삭당완전낟알 × 천립중(g) ÷ 1,000,000 × 1,000 = 현미(kg/10a)
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 5: 피해상황 / 품종 / 모내기 -->
+  <div class="card">
+    <div class="card-header">
+      <div class="num">5</div>
+      피해상황 · 품종 · 모내기
+    </div>
+    <div class="card-body">
+
+      <div class="section-label">피해상황 — A구역</div>
+      <div class="mini-row">
+        <div class="field"><label>피해명</label><input type="text" id="a_dmg_name" placeholder="예: 도열병"></div>
+        <div class="field"><label>부호</label><input type="text" id="a_dmg_code" placeholder="예: D1"></div>
+        <div class="field"><label>피해율 (%)</label><input type="number" id="a_dmg_rate" placeholder="0" inputmode="decimal"></div>
+      </div>
+
+      <div class="section-label" style="margin-top:6px;">피해상황 — B구역</div>
+      <div class="mini-row">
+        <div class="field"><label>피해명</label><input type="text" id="b_dmg_name" placeholder="예: 도열병"></div>
+        <div class="field"><label>부호</label><input type="text" id="b_dmg_code" placeholder="예: D1"></div>
+        <div class="field"><label>피해율 (%)</label><input type="number" id="b_dmg_rate" placeholder="0" inputmode="decimal"></div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="section-label">품종</div>
+      <div class="mini-row2">
+        <div class="field"><label>품종명</label><input type="text" id="variety_name" placeholder="예: 신동진"></div>
+        <div class="field"><label>부호</label><input type="text" id="variety_code" placeholder="예: V1"></div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="section-label">모내기</div>
+      <div class="date-row">
+        <div class="field">
+          <label>모내기 방법</label>
+          <select id="transplant_method">
+            <option value="">선택</option>
+            <option value="기계이앙">기계이앙</option>
+            <option value="손이앙">손이앙</option>
+            <option value="직파">직파</option>
+          </select>
+        </div>
+        <div class="field"><label>월</label><input type="number" id="transplant_month" placeholder="월" min="1" max="12" inputmode="numeric"></div>
+        <div class="field"><label>일</label><input type="number" id="transplant_day" placeholder="일" min="1" max="31" inputmode="numeric"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <footer>논벼 예상량 조사 계산기 · 농작물 생산량조사</footer>
+</div>
+
+<script>
+  function val(id) {
+    return parseFloat(document.getElementById(id).value) || 0;
+  }
+  function setVal(id, v, decimals = 1) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.value = (v === null || isNaN(v)) ? '' : (Number.isInteger(v) ? v : v.toFixed(decimals));
+  }
+  function setText(id, text) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = text;
+  }
+
+  function calcPlants() {
+    const ag = val('a_garo'), as_ = val('a_sero');
+    const bg = val('b_garo'), bs = val('b_sero');
+
+    let aP = null, bP = null;
+    if (ag > 0 && as_ > 0) {
+      aP = 10000 / (ag * as_);
+      setVal('a_plants_m2', aP, 1);
+    } else {
+      document.getElementById('a_plants_m2').value = '';
+    }
+
+    if (bg > 0 && bs > 0) {
+      bP = 10000 / (bg * bs);
+      setVal('b_plants_m2', bP, 1);
+    } else {
+      document.getElementById('b_plants_m2').value = '';
+    }
+
+    if (aP !== null && bP !== null) {
+      setVal('avg_plants_m2', (aP + bP) / 2, 1);
+    } else if (aP !== null) {
+      setVal('avg_plants_m2', aP, 1);
+    } else if (bP !== null) {
+      setVal('avg_plants_m2', bP, 1);
+    } else {
+      document.getElementById('avg_plants_m2').value = '';
+    }
+
+    calcResult();
+  }
+
+  function calcEars() {
+    let sum = 0, count = 0;
+    for (let i = 1; i <= 10; i++) {
+      const v = val('ear_' + i);
+      if (v > 0) { sum += v; count++; }
+    }
+    document.getElementById('ear_total').value = sum > 0 ? sum : '';
+    const avg = count > 0 ? sum / count : 0;
+    document.getElementById('ear_avg').value = avg > 0 ? avg.toFixed(1) : '';
+    calcResult();
+  }
+
+  function calcGrains() {
+    const total = val('total_grains');
+    const complete = val('complete_grains');
+    const validEars = val('valid_ears');
+
+    if (total > 0 && complete >= 0) {
+      const rate = (complete / total) * 100;
+      document.getElementById('ripening_rate').value = rate.toFixed(1);
+    } else {
+      document.getElementById('ripening_rate').value = '';
+    }
+
+    if (validEars > 0 && complete >= 0) {
+      const gpe = complete / validEars;
+      document.getElementById('grains_per_ear').value = gpe.toFixed(1);
+    } else {
+      document.getElementById('grains_per_ear').value = '';
+    }
+
+    calcResult();
+  }
+
+  function calcResult() {
+    const avgPlants = val('avg_plants_m2');
+    const earAvg = val('ear_avg') || (() => {
+      let sum = 0, count = 0;
+      for (let i = 1; i <= 10; i++) {
+        const v = val('ear_' + i);
+        if (v > 0) { sum += v; count++; }
+      }
+      return count > 0 ? sum / count : 0;
+    })();
+    const validEars = val('valid_ears');
+    const complete = val('complete_grains');
+    const total = val('total_grains');
+    const tw = val('thousand_weight');
+    const millingRate = parseFloat(document.getElementById('milling_rate').value);
+
+    if (!avgPlants || !earAvg || !validEars || !complete || !tw) return;
+
+    const grainsPerEar = validEars > 0 ? complete / validEars : 0;
+    const ripeningRate = total > 0 ? (complete / total) * 100 : 0;
+    const earsPerM2 = avgPlants * earAvg;
+
+    // 10a당 현미 예상량 (kg)
+    // = 1m²당유효이삭수 × 이삭당완전낟알 × 천립중(g) / 1,000,000 × 1,000(m²/10a)
+    const brownRice = earsPerM2 * grainsPerEar * tw / 1000000 * 1000;
+    const whiteRice = brownRice * millingRate;
+
+    // 결과 표시
+    document.getElementById('result_card').style.display = 'block';
+    document.getElementById('verify_card').style.display = 'block';
+
+    document.getElementById('result_main').innerHTML = whiteRice.toFixed(1) + ' <span>kg</span>';
+    setText('res_brown', brownRice.toFixed(1) + ' kg');
+    setText('res_ears_m2', earsPerM2.toFixed(1) + ' 이삭');
+    setText('res_ripening', ripeningRate.toFixed(1) + ' %');
+    setText('res_grains_ear', grainsPerEar.toFixed(1) + ' 알');
+
+    // 검산
+    setText('v_plants', avgPlants.toFixed(1) + ' 포기/m²');
+    setText('v_ears', earAvg.toFixed(1) + ' 이삭/포기');
+    setText('v_ears_m2', earsPerM2.toFixed(1) + ' 이삭/m²');
+    setText('v_grains_ear', grainsPerEar.toFixed(1) + ' 알/이삭');
+    setText('v_ripening', ripeningRate.toFixed(1) + ' %');
+    setText('v_tw', tw + ' g');
+    setText('v_brown', brownRice.toFixed(1) + ' kg/10a');
+    setText('v_white', whiteRice.toFixed(1) + ' kg/10a');
+  }
+</script>
+</body>
+</html>
