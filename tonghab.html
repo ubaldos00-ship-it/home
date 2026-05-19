@@ -2881,7 +2881,7 @@ function renderUnifiedResult(state){
   // 결과 영역 표시 + 스크롤
   const rb = document.getElementById('resultBox');
   rb.classList.add('show');
-  setTimeout(() => rb.scrollIntoView({behavior:'smooth', block:'start'}), 50);
+  setTimeout(() => scrollWithOffset(rb), 50);
 
   // 캡처용 마지막 결과 저장
   lastResult = { sampA, sampB, addr, crop:selectedCrop, dateTxt, saveTime };
@@ -2927,25 +2927,25 @@ function renderFormulaTable(sampA, sampB){
 }
 
 
+function scrollWithOffset(el, extra){
+  if(!el) return;
+  const hdr = document.querySelector('.sticky-top');
+  const hdrH = hdr ? hdr.offsetHeight : 0;
+  const top = el.getBoundingClientRect().top + window.scrollY - hdrH - (extra || 8);
+  window.scrollTo({top: Math.max(0, top), behavior:'smooth'});
+}
+
 function scrollToBPort(){
-  const target = document.querySelector('.b-port');
-  if(target){
-    target.scrollIntoView({behavior:'smooth', block:'start'});
-  }
+  scrollWithOffset(document.querySelector('.b-port'));
 }
 
 function scrollToBResult(){
-  const target = document.getElementById('bResCard');
-  if(target){
-    target.scrollIntoView({behavior:'smooth', block:'start'});
-  }
+  scrollWithOffset(document.getElementById('bResCard'));
 }
 
 function scrollToProdCalculator(){
   const target = document.getElementById('prodZone') || document.getElementById('prodCropDisplay');
-  if(target){
-    target.scrollIntoView({behavior:'smooth', block:'start'});
-  }
+  scrollWithOffset(target);
 }
 
 function runFullCalculationAndScrollB(){
@@ -3855,7 +3855,7 @@ function prodCalculate() {
   if(hBtn) hBtn.textContent='▲ 접기';
   document.getElementById('prod-result-section').classList.add('show');
   setTimeout(function(){ drawProdLineChart(prodCrop,region); }, 80);
-  setTimeout(function(){ document.getElementById('prod-capture-zone').scrollIntoView({behavior:'smooth',block:'start'}); }, 80);
+  setTimeout(function(){ scrollWithOffset(document.getElementById('prod-capture-zone')); }, 80);
 }
 
 let prodLineChartInst=null;
