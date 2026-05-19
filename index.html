@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<meta name="theme-color" content="#143820" />
+<meta name="theme-color" content="#27500A" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <title>텐아르(10a) - 농작물생산조사 통합시스템 v5</title>
@@ -44,7 +44,7 @@
   }
 
   html {
-    background-color: #143820; /* iOS safe-area 위 상태바 영역 색상 */
+    background-color: #27500A; /* iOS safe-area 위 상태바 영역 색상 */
   }
 
   html, body {
@@ -78,7 +78,7 @@
     z-index: 100;
     height: var(--header-h);
     padding: 12px 18px 10px;
-    background: linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary) 60%, var(--color-primary-light) 100%);
+    background: #27500A;
     color: #fff;
     box-shadow: var(--shadow-md);
     display: flex;
@@ -697,11 +697,14 @@
 
   <!-- 도움말 -->
   <section class="section help-section">
-    <h2 class="section-title">
-      <span class="icon">📚</span>
-      도움이 필요하신가요?
+    <h2 class="section-title" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="toggleHelp()">
+      <span>
+        <span class="icon">📚</span>
+        도움이 필요하신가요?
+      </span>
+      <span id="helpToggleBtn" style="font-size:13px;font-weight:600;color:#27500A;background:#eaf3e6;border-radius:8px;padding:4px 10px;user-select:none;">▼ 펼치기</span>
     </h2>
-    <div class="menu-grid">
+    <div class="menu-grid" id="helpMenuGrid" style="display:none;">
       <a class="menu-item"
          href="https://www.k-stat.go.kr/comb100/file-download?fileDnKey=dtMdbNk3l%2F14PXM6opKXpbmdSv3amqHth1tAmWy%2FU3I%3D"
          target="_blank" rel="noopener">
@@ -910,6 +913,14 @@
       }
     });
   })();
+
+  function toggleHelp() {
+    const grid = document.getElementById('helpMenuGrid');
+    const btn = document.getElementById('helpToggleBtn');
+    const isHidden = grid.style.display === 'none';
+    grid.style.display = isHidden ? '' : 'none';
+    btn.textContent = isHidden ? '▲ 접기' : '▼ 펼치기';
+  }
 </script>
 </body>
 </html>
