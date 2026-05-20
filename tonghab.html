@@ -221,18 +221,23 @@ input[type=date]{font-size:14px;font-weight:500;color:#1558D6;padding:11px 10px;
 .samp-row label{font-size:11px;}
 .samp-row input{font-size:15px;padding:9px 10px;text-align:center;}
 
-.samp-trio{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
+.samp-trio{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:5px;}
 .samp-trio .fg{margin-bottom:0;}
 .samp-trio label{font-size:10.5px;font-weight:700;}
 .a-port .samp-trio label.lbl-N{color:var(--ac);}
 .b-port .samp-trio label.lbl-N{color:var(--bc);}
 .samp-trio label.lbl-n{color:var(--gr800);}
+.a-port .samp-trio label.lbl-k{color:var(--blue);}
+.b-port .samp-trio label.lbl-k{color:var(--red);}
 .a-port .samp-trio label.lbl-r{color:var(--bc);}
 .b-port .samp-trio label.lbl-r{color:var(--bc);}
-.samp-trio input{font-size:16px;padding:9px 4px;text-align:center;font-weight:800;font-family:var(--mono);}
+.samp-trio input{font-size:15px;padding:9px 3px;text-align:center;font-weight:800;font-family:var(--mono);}
 .a-port .samp-trio input.in-N{color:var(--ac);}
 .b-port .samp-trio input.in-N{color:var(--bc);}
 .samp-trio input.in-n{color:var(--gr800);}
+.samp-trio .in-k-box{font-size:15px;padding:9px 3px;text-align:center;font-weight:800;font-family:var(--mono);border-radius:var(--rad);min-height:42px;display:flex;align-items:center;justify-content:center;border:1.5px solid #ddd;background:#f5f5f5;color:#666;}
+.a-port .samp-trio .in-k-box{border-color:var(--ac);color:var(--blue);background:var(--blight);}
+.b-port .samp-trio .in-k-box{border-color:var(--bc);color:var(--red);background:var(--rlight);}
 .samp-trio input.in-r{color:var(--bc);}
 
 /* k formula box */
@@ -1228,6 +1233,10 @@ input.needs-input:focus{
           <input type="number" inputmode="numeric" pattern="[0-9]*" id="an" class="in-n" min="1" value="20">
         </div>
         <div class="fg">
+          <label class="lbl-k">추출간격 k</label>
+          <div class="in-k-box" id="aKDisp">—</div>
+        </div>
+        <div class="fg">
           <label class="lbl-r">난수 r (자동)</label>
           <input type="number" inputmode="decimal" id="ar" class="in-r" placeholder="자동" min="0.1" step="0.1">
         </div>
@@ -1372,6 +1381,10 @@ input.needs-input:focus{
           <input type="number" inputmode="numeric" pattern="[0-9]*" id="bn" class="in-n" min="1" value="20">
         </div>
         <div class="fg">
+          <label class="lbl-k">추출간격 k</label>
+          <div class="in-k-box" id="bKDisp">—</div>
+        </div>
+        <div class="fg">
           <label class="lbl-r">난수 r (자동)</label>
           <input type="number" inputmode="decimal" id="br" class="in-r" placeholder="자동" min="0.1" step="0.1">
         </div>
@@ -1421,6 +1434,7 @@ input.needs-input:focus{
         <div class="res-rows">
           <div class="res-row"><span class="res-lbl">가로 기점</span><div class="res-right"><span id="outA_ga" class="res-main">-</span><span id="outA_ga_raw" class="res-sub"></span></div></div>
           <div class="res-row"><span class="res-lbl">세로 기점</span><div class="res-right"><span id="outA_se" class="res-main">-</span><span id="outA_se_raw" class="res-sub"></span></div></div>
+          <div class="res-row" id="resRowAK" style="display:none;"><span class="res-lbl">추출간격 k</span><div class="res-right"><span id="outA_k" class="res-main">-</span><span id="outA_k_sub" class="res-sub"></span></div></div>
           <div class="res-row"><span class="res-lbl">3㎡ 조사 이랑길이</span><div class="res-right"><span id="outLenA" class="res-main">-</span><span id="outLenA_raw" class="res-sub"></span></div></div>
         </div>
         <div class="samp-meta" id="aSampMeta" style="display:none;"></div>
@@ -1439,6 +1453,7 @@ input.needs-input:focus{
         <div class="res-rows">
           <div class="res-row"><span class="res-lbl">가로 기점</span><div class="res-right"><span id="outB_ga" class="res-main">-</span><span id="outB_ga_raw" class="res-sub"></span></div></div>
           <div class="res-row"><span class="res-lbl">세로 기점</span><div class="res-right"><span id="outB_se" class="res-main">-</span><span id="outB_se_raw" class="res-sub"></span></div></div>
+          <div class="res-row" id="resRowBK" style="display:none;"><span class="res-lbl">추출간격 k</span><div class="res-right"><span id="outB_k" class="res-main">-</span><span id="outB_k_sub" class="res-sub"></span></div></div>
           <div class="res-row"><span class="res-lbl">3㎡ 조사 이랑길이</span><div class="res-right"><span id="outLenB" class="res-main">-</span><span id="outLenB_raw" class="res-sub"></span></div></div>
         </div>
         <div class="samp-meta" id="bSampMeta" style="display:none;"></div>
@@ -2202,13 +2217,13 @@ function setCultivation(type){
   document.getElementById('cultOpen').classList.toggle('active', type === '노지');
   document.getElementById('cultFacility').classList.toggle('active', type === '시설');
   document.getElementById('cultHelp').textContent = type === '시설'
-    ? '시설 선택 시 A/B포구별 시설 평균너비를 계산하여 이랑 평균너비에 자동 입력합니다.'
+    ? '시설 선택 시 이랑 평균너비가 자동 입력됩니다. 필요시 직접 수정도 가능합니다.'
     : '노지 선택 시 세로 총길이, 이랑 평균너비는 직접 입력합니다.';
 
   document.querySelectorAll('.facility-only').forEach(el => el.classList.toggle('show', type === '시설'));
   ['waAvg','wbAvg'].forEach(id => {
     const el = document.getElementById(id);
-    if(el) el.readOnly = (type === '시설');
+    if(el) el.readOnly = false; // 시설 자동입력 후에도 수동 수정 가능
   });
 
   if(type === '시설'){
@@ -2402,13 +2417,16 @@ function updateFormula(p){
   const nv = parseInt(document.getElementById(p+'n').value);
   const fb = document.getElementById('formula' + p.toUpperCase());
 
+  const kDisp = document.getElementById(p.toLowerCase() + 'KDisp');
   if(Nv > 0 && nv > 0 && nv <= Nv){
     const kRaw = Nv/nv, k = round1(kRaw);
     fb.innerHTML = '<div class="fk-title">추출간격 k <span style="font-size:9px;font-weight:500;">(소수 둘째자리에서 반올림)</span></div>' + Nv + ' ÷ ' + nv +
       ' = ' + kRaw.toFixed(3) + ' → <b>k = ' + disp1(k) + '</b>' +
       '<br><span style="font-size:10px;color:#555;">난수 r 범위: 1 ~ ' + disp1(k) + '</span>';
+    if(kDisp) kDisp.textContent = disp1(k);
   } else {
     fb.innerHTML = '<div class="fk-title">추출간격 k <span style="font-size:9px;font-weight:500;">(소수 둘째자리에서 반올림)</span></div>k = N ÷ n = <b>?</b>';
+    if(kDisp) kDisp.textContent = '—';
   }
 }
 function updateFormulas(){ updateFormula('a'); updateFormula('b'); }
@@ -2785,6 +2803,11 @@ function renderUnifiedResult(state){
     document.getElementById('aSampMeta').style.display = 'block';
     document.getElementById('aSampMeta').textContent =
       'N=' + sampA.pN + ' / n=' + sampA.pn + ' / k=' + disp1(sampA.k) + ' / r=' + disp1(sampA.pr);
+    const aKRow = document.getElementById('resRowAK');
+    if(aKRow){ aKRow.style.display = '';
+      document.getElementById('outA_k').textContent = disp1(sampA.k);
+      document.getElementById('outA_k_sub').textContent = '전체N ' + sampA.pN + ' ÷ 추출n ' + sampA.pn + ' = ' + (sampA.pN/sampA.pn).toFixed(2);
+    }
     if(sampA.lookup){
       document.getElementById('aSampLookup').style.display = 'block';
       document.getElementById('aSampLookup').innerHTML =
@@ -2835,6 +2858,11 @@ function renderUnifiedResult(state){
       document.getElementById('bSampMeta').style.display = 'block';
       document.getElementById('bSampMeta').textContent =
         'N=' + sampB.pN + ' / n=' + sampB.pn + ' / k=' + disp1(sampB.k) + ' / r=' + disp1(sampB.pr);
+      const bKRow = document.getElementById('resRowBK');
+      if(bKRow){ bKRow.style.display = '';
+        document.getElementById('outB_k').textContent = disp1(sampB.k);
+        document.getElementById('outB_k_sub').textContent = '전체N ' + sampB.pN + ' ÷ 추출n ' + sampB.pn + ' = ' + (sampB.pN/sampB.pn).toFixed(2);
+      }
       if(sampB.lookup){
         document.getElementById('bSampLookup').style.display = 'block';
         document.getElementById('bSampLookup').innerHTML =
@@ -2992,8 +3020,8 @@ function drawDiagram(ga, na, da, a_ga, b_ga, a_se, b_se, gaUnit, hasB){
   if(hasB){line(FX,bot+31,bx,bot+31,'#C0392B',1.1,'','url(#arrowRedStart)','url(#arrowRed)'); txt((FX+bx)/2,bot+43,'B기점 '+fmt(b_ga)+gaUnit,'#C0392B','7.5','900');}
   line(ax,bot,ax,ay,'#1558D6',1.8,''); svg.appendChild(el('circle',{cx:ax,cy:bot,r:'3',fill:'#1558D6'})); box(ax-15,ay-10,30,20,'#fff','#1558D6',1.2); txt(ax,ay+4,'A','#1558D6','13','900');
   if(hasB){line(bx,bot,bx,by,'#C0392B',1.8,''); svg.appendChild(el('circle',{cx:bx,cy:bot,r:'3',fill:'#C0392B'})); box(bx-15,by-10,30,20,'#fff','#C0392B',1.2); txt(bx,by+4,'B','#C0392B','13','900');}
-  line(ax,FY,ax,ay-10,'#1558D6',1,'3,3'); labelBox(ax-22,Math.max(-6,ay-34),44,12,'총 '+fmt(Ha)+'cm','#1558D6','6.2');
-  if(hasB){line(bx,FY,bx,by-10,'#C0392B',1,'3,3'); labelBox(bx-22,Math.max(-6,by-34),44,12,'총 '+fmt(Hb)+'cm','#C0392B','6.2');}
+  line(ax,FY,ax,ay-10,'#1558D6',1,'3,3'); labelBox(ax-22,Math.max(-6,ay-22),44,12,'총 '+fmt(Ha)+'cm','#1558D6','6.2');
+  if(hasB){line(bx,FY,bx,by-10,'#C0392B',1,'3,3'); labelBox(bx-22,Math.max(-6,by-22),44,12,'총 '+fmt(Hb)+'cm','#C0392B','6.2');}
   twoBox(ax+17,ay-12,34,19,'기점',fmt(a_se)+'cm','#1558D6','5.5');
   if(hasB) twoBox(bx+17,by-12,34,19,'기점',fmt(b_se)+'cm','#C0392B','5.5');
   twoBox(ax-54,ay-12,34,19,'너비',fmt(wa)+'cm','#1558D6','5.5'); vBox(ax-12,ay+15,24,24,['3㎡',fmt(lenA)+'cm'],'#1558D6','5.5');
