@@ -2779,8 +2779,13 @@ function renderUnifiedResult(state){
   const b_ga = one ? 1 : a_ga + L/2;
   const a_se = one ? (Ha/2)*na : Ha*na;
   setRes('outA_ga', 'outA_ga_raw', a_ga, gaUnit);
-  document.getElementById('outA_ga_raw').textContent = '계산값: ' + a_ga.toFixed(2);
+  document.getElementById('outA_ga_raw').textContent = one
+    ? '1이랑 고정'
+    : L + ' × ' + ga + '(가비율) = ' + a_ga.toFixed(2);
   setRes('outA_se', 'outA_se_raw', a_se, 'cm');
+  document.getElementById('outA_se_raw').textContent = one
+    ? '(세로 ' + Ha + ' ÷ 2) × ' + na + '(나비율) = ' + a_se.toFixed(1)
+    : Ha + ' × ' + na + '(나비율) = ' + a_se.toFixed(1);
   if(!isNaN(waA) && waA > 0){ const waR=roundWidthForLen(waA); setRes('outLenA','outLenA_raw', 30000/waR, 'cm'); document.getElementById('outLenA_raw').textContent = '계산값: ' + (30000/waR).toFixed(1) + ' (÷' + waR + ')'; }
   else { document.getElementById('outLenA').textContent = '—'; document.getElementById('outLenA_raw').textContent = '평균너비 미입력'; }
   updateRatioWarning(a_ga);
@@ -2835,8 +2840,13 @@ function renderUnifiedResult(state){
   if(hasB){
     const b_se = one ? (Ha/2)*da + (Ha/2) : Hb*da;
     setRes('outB_ga', 'outB_ga_raw', b_ga, gaUnit);
-    document.getElementById('outB_ga_raw').textContent = '계산값: ' + b_ga.toFixed(2);
+    document.getElementById('outB_ga_raw').textContent = one
+      ? '1이랑 고정'
+      : a_ga.toFixed(2) + '(A) + ' + (L/2).toFixed(1) + '(추출간격) = ' + b_ga.toFixed(2);
     setRes('outB_se', 'outB_se_raw', b_se, 'cm');
+    document.getElementById('outB_se_raw').textContent = one
+      ? '(세로 ' + Ha + ' ÷ 2) × ' + da + '(다비율) + ' + (Ha/2).toFixed(1) + ' = ' + b_se.toFixed(1)
+      : Hb + ' × ' + da + '(다비율) = ' + b_se.toFixed(1);
     if(!isNaN(wbA) && wbA > 0){ const wbR=roundWidthForLen(wbA); setRes('outLenB','outLenB_raw', 30000/wbR, 'cm'); document.getElementById('outLenB_raw').textContent = '계산값: ' + (30000/wbR).toFixed(1) + ' (÷' + wbR + ')'; }
     else { document.getElementById('outLenB').textContent = '—'; document.getElementById('outLenB_raw').textContent = '평균너비 미입력'; }
     bCard.style.opacity = '1'; bCard.style.border = '';
@@ -2886,7 +2896,9 @@ function renderUnifiedResult(state){
     }
   } else {
     setRes('outB_ga', 'outB_ga_raw', b_ga, gaUnit);
-    document.getElementById('outB_ga_raw').textContent = '계산값: ' + b_ga.toFixed(2);
+    document.getElementById('outB_ga_raw').textContent = one
+      ? '1이랑 고정'
+      : a_ga.toFixed(2) + '(A) + ' + (L/2).toFixed(1) + '(추출간격) = ' + b_ga.toFixed(2);
     document.getElementById('outB_se').textContent = '—';
     document.getElementById('outB_se_raw').textContent = 'B 세로 미입력';
     document.getElementById('outLenB').textContent = '—';
