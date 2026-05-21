@@ -14,12 +14,12 @@
 
 <style>
   :root {
-    --color-primary: #1f5132;       /* 짙은 농업 그린 */
+    --color-primary: #1f5132;
     --color-primary-light: #2e7a4e;
     --color-primary-dark: #143820;
-    --color-accent: #c9962b;        /* 벼 황금색 */
+    --color-accent: #c9962b;
     --color-accent-light: #e6b955;
-    --color-bg: #f6f4ec;            /* 따뜻한 베이지 */
+    --color-bg: #f6f4ec;
     --color-card: #ffffff;
     --color-text: #1a1f1a;
     --color-text-soft: #5b6358;
@@ -44,7 +44,7 @@
   }
 
   html {
-    background-color: #27500A; /* iOS safe-area 위 상태바 영역 색상 */
+    background-color: #27500A;
   }
 
   html, body {
@@ -68,12 +68,10 @@
       radial-gradient(circle at 90% 100%, rgba(201, 150, 43, 0.05) 0%, transparent 40%);
   }
 
-  /* ===== HEADER (고정) ===== */
+  /* ===== HEADER ===== */
   header.app-header {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
+    top: 0; left: 0; right: 0;
     z-index: 100;
     height: var(--header-h);
     padding: 12px 18px 10px;
@@ -160,17 +158,8 @@
     color: #6b4f0a;
     line-height: 1.5;
   }
-  .beta-notice strong {
-    color: var(--color-accent);
-    font-weight: 700;
-    margin-right: 4px;
-  }
-  .beta-notice a {
-    color: var(--color-primary);
-    font-weight: 600;
-    text-decoration: underline;
-    text-underline-offset: 2px;
-  }
+  .beta-notice strong { color: var(--color-accent); font-weight: 700; margin-right: 4px; }
+  .beta-notice a { color: var(--color-primary); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
 
   /* 섹션 카드 */
   .section {
@@ -198,16 +187,11 @@
   }
 
   .section-title .icon {
-    width: 32px;
-    height: 32px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    width: 32px; height: 32px;
+    display: inline-flex; align-items: center; justify-content: center;
     border-radius: 9px;
     background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
-    color: #fff;
-    font-size: 17px;
-    flex-shrink: 0;
+    color: #fff; font-size: 17px; flex-shrink: 0;
     box-shadow: 0 2px 6px rgba(31,81,50,0.25);
   }
 
@@ -239,16 +223,12 @@
   }
 
   .menu-item .menu-emoji {
-    width: 38px;
-    height: 38px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    width: 38px; height: 38px;
+    display: inline-flex; align-items: center; justify-content: center;
     background: #fff;
     border: 1px solid var(--color-border);
     border-radius: 10px;
-    font-size: 19px;
-    flex-shrink: 0;
+    font-size: 19px; flex-shrink: 0;
   }
 
   .menu-item .menu-text {
@@ -256,7 +236,9 @@
     min-width: 0;
   }
 
+  /* ★ label·desc 줄바꿈: block으로 각각 한 줄씩 */
   .menu-item .menu-label {
+    display: block;
     font-size: 16px;
     font-weight: 700;
     color: var(--color-text);
@@ -264,6 +246,7 @@
   }
 
   .menu-item .menu-desc {
+    display: block;
     font-size: 12px;
     color: var(--color-text-soft);
     margin-top: 3px;
@@ -295,7 +278,7 @@
     border-color: #f0d68a;
   }
 
-  /* 푸터 정보 */
+  /* 푸터 */
   footer.info {
     margin-top: 8px;
     padding: 14px 16px;
@@ -304,37 +287,15 @@
     color: var(--color-text-soft);
     line-height: 1.7;
   }
-
-  footer.info .source {
-    font-size: 11px;
-    color: #8a8f86;
-    margin-bottom: 8px;
-  }
-
-  footer.info .brand-line {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--color-primary);
-    margin: 6px 0 4px;
-  }
-
-  footer.info .meta {
-    font-variant-numeric: tabular-nums;
-    color: #7a8079;
-  }
-
-  footer.info .contact a {
-    color: var(--color-primary);
-    text-decoration: none;
-    font-weight: 600;
-  }
+  footer.info .source { font-size: 11px; color: #8a8f86; margin-bottom: 8px; }
+  footer.info .brand-line { font-size: 13px; font-weight: 700; color: var(--color-primary); margin: 6px 0 4px; }
+  footer.info .meta { font-variant-numeric: tabular-nums; color: #7a8079; }
+  footer.info .contact a { color: var(--color-primary); text-decoration: none; font-weight: 600; }
 
   /* ===== 하단 고정 네비 ===== */
   nav.bottom-nav {
     position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    bottom: 0; left: 0; right: 0;
     z-index: 100;
     height: var(--footer-nav-h);
     background: rgba(255, 255, 255, 0.96);
@@ -377,21 +338,25 @@
     line-height: 1;
   }
 
+  /* 준비중 버튼 스타일 */
+  nav.bottom-nav .nav-btn.disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+
   /* 카메라 input 숨김 */
   #cameraInput {
     position: absolute;
-    width: 1px;
-    height: 1px;
+    width: 1px; height: 1px;
     opacity: 0;
     pointer-events: none;
   }
 
-  /* 카메라 미리보기 모달 */
+  /* 카메라 모달 */
   .camera-modal {
     display: none;
     position: fixed;
-    inset: 0;
-    z-index: 200;
+    inset: 0; z-index: 200;
     background: rgba(0, 0, 0, 0.85);
     align-items: center;
     justify-content: center;
@@ -401,57 +366,35 @@
   .camera-modal .modal-inner {
     background: #fff;
     border-radius: var(--radius-md);
-    max-width: 90%;
-    max-height: 90vh;
-    overflow: auto;
-    padding: 16px;
-    text-align: center;
+    max-width: 90%; max-height: 90vh;
+    overflow: auto; padding: 16px; text-align: center;
   }
   .camera-modal img {
-    max-width: 100%;
-    max-height: 60vh;
-    border-radius: var(--radius-sm);
-    margin-bottom: 12px;
+    max-width: 100%; max-height: 60vh;
+    border-radius: var(--radius-sm); margin-bottom: 12px;
   }
   .camera-modal button {
-    background: var(--color-primary);
-    color: #fff;
-    border: none;
-    border-radius: var(--radius-sm);
-    padding: 10px 20px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: inherit;
+    background: var(--color-primary); color: #fff;
+    border: none; border-radius: var(--radius-sm);
+    padding: 10px 20px; font-size: 14px; font-weight: 600;
+    cursor: pointer; font-family: inherit;
   }
 
-  /* 페이드인 애니메이션 */
+  /* 페이드인 */
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
+    to   { opacity: 1; transform: translateY(0); }
   }
-  .section, .beta-notice, footer.info {
-    animation: fadeUp 0.4s ease backwards;
-  }
+  .section, .beta-notice, footer.info { animation: fadeUp 0.4s ease backwards; }
   .section:nth-child(2) { animation-delay: 0.05s; }
   .section:nth-child(3) { animation-delay: 0.10s; }
   .section:nth-child(4) { animation-delay: 0.15s; }
   .section:nth-child(5) { animation-delay: 0.20s; }
 
   /* SVG 아이콘 */
-  .menu-emoji svg {
-    width: 22px;
-    height: 22px;
-    display: block;
-  }
-  .nav-icon svg {
-    width: 24px;
-    height: 24px;
-    display: block;
-    margin: 0 auto;
-  }
+  .menu-emoji svg { width: 22px; height: 22px; display: block; }
+  .nav-icon svg { width: 24px; height: 24px; display: block; margin: 0 auto; }
 
-  /* 작은 화면 대응 */
   @media (max-width: 360px) {
     header.app-header .brand-name { font-size: 22px; }
     header.app-header .clock { font-size: 11.5px; padding: 4px 8px; }
@@ -484,35 +427,26 @@
     <a href="mailto:ubaldos@naver.com">ubaldos@naver.com</a>
   </div>
 
-  <!-- 빠른조사 메뉴 -->
+  <!-- ① 빠른조사 메뉴 -->
   <section class="section highlight">
     <h2 class="section-title">
       <span class="icon">⚡</span>
       빠른조사 메뉴
     </h2>
     <div class="menu-grid">
+      <!-- 실측조사 빠른실행 -->
       <a class="menu-item" href="https://ubaldos00-ship-it.github.io/home/tonghab.html" target="_blank" rel="noopener">
-        <!-- 동그란 줄자 (Rolled Tape Measure) -->
         <span class="menu-emoji"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-          <!-- 줄자 케이스 외형 -->
           <circle cx="11" cy="12" r="7.5" fill="#2e7a4e" stroke="#1f5132" stroke-width="0.8"/>
-          <!-- 케이스 하이라이트 -->
           <path d="M6.5 6.5 Q11 4 15.5 6.5" stroke="rgba(255,255,255,0.25)" stroke-width="1.4" fill="none" stroke-linecap="round"/>
-          <!-- 안쪽 링 -->
           <circle cx="11" cy="12" r="4.2" fill="#f6f4ec" stroke="#1f5132" stroke-width="0.7"/>
-          <!-- 내부 회전 슬롯 원 -->
           <circle cx="11" cy="12" r="1.6" fill="#c9962b" stroke="#a07020" stroke-width="0.6"/>
-          <!-- 중심 점 -->
           <circle cx="11" cy="12" r="0.7" fill="#fff"/>
-          <!-- 테이프 나오는 입구 (케이스 오른쪽) -->
           <rect x="18" y="10.8" width="4.5" height="2.4" rx="0.7" fill="#e6b955" stroke="#c9962b" stroke-width="0.7"/>
-          <!-- 테이프 눈금 -->
           <line x1="19.3" y1="10.8" x2="19.3" y2="13.2" stroke="#a07020" stroke-width="0.7"/>
           <line x1="20.6" y1="10.8" x2="20.6" y2="13.2" stroke="#a07020" stroke-width="0.7"/>
           <line x1="21.8" y1="10.8" x2="21.8" y2="13.2" stroke="#a07020" stroke-width="0.7"/>
-          <!-- 테이프 연결부 -->
           <line x1="18.5" y1="12" x2="19" y2="12" stroke="#c9962b" stroke-width="0.6"/>
-          <!-- 케이스 연결 꺾임 -->
           <path d="M18.5 10.8 Q17.5 10 18.5 9 Q19 8 19 7" stroke="#c9962b" stroke-width="0.7" fill="none" stroke-linecap="round" opacity="0.5"/>
         </svg></span>
         <span class="menu-text">
@@ -521,6 +455,7 @@
         </span>
         <span class="menu-arrow">›</span>
       </a>
+      <!-- 청취조사 빠른실행 -->
       <a class="menu-item" href="https://ubaldos00-ship-it.github.io/chungchi_cal/" target="_blank" rel="noopener">
         <span class="menu-emoji">🎙️</span>
         <span class="menu-text">
@@ -529,78 +464,15 @@
         </span>
         <span class="menu-arrow">›</span>
       </a>
-    </div>
-  </section>
-
-  <!-- 생산량조사 도구 -->
-  <section class="section">
-    <h2 class="section-title">
-      <span class="icon">🌾</span>
-      생산량조사 도구
-    </h2>
-    <div class="menu-grid">
-      <a class="menu-item" href="https://ubaldos00-ship-it.github.io/yield_cal/" target="_blank" rel="noopener">
-        <!-- 저울 (Balance Scale) -->
-        <span class="menu-emoji"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-          <!-- 기둥 -->
-          <line x1="12" y1="3" x2="12" y2="20" stroke="#2e7a4e" stroke-width="1.6" stroke-linecap="round"/>
-          <!-- 받침대 -->
-          <rect x="8" y="19" width="8" height="2" rx="1" fill="#2e7a4e"/>
-          <!-- 가로대 -->
-          <line x1="5" y1="7" x2="19" y2="7" stroke="#1f5132" stroke-width="1.5" stroke-linecap="round"/>
-          <!-- 왼쪽 접시 줄 -->
-          <line x1="6" y1="7" x2="5" y2="12" stroke="#1f5132" stroke-width="1.2" stroke-linecap="round"/>
-          <line x1="8" y1="7" x2="7" y2="12" stroke="#1f5132" stroke-width="1.2" stroke-linecap="round"/>
-          <!-- 오른쪽 접시 줄 -->
-          <line x1="16" y1="7" x2="17" y2="12" stroke="#1f5132" stroke-width="1.2" stroke-linecap="round"/>
-          <line x1="18" y1="7" x2="19" y2="12" stroke="#1f5132" stroke-width="1.2" stroke-linecap="round"/>
-          <!-- 왼쪽 접시 -->
-          <path d="M3.5 12 Q6 14 8.5 12" stroke="#2e7a4e" stroke-width="1.4" fill="#c6e8d5" stroke-linecap="round"/>
-          <!-- 오른쪽 접시 -->
-          <path d="M15.5 12 Q18 14 20.5 12" stroke="#2e7a4e" stroke-width="1.4" fill="#c6e8d5" stroke-linecap="round"/>
-          <!-- 중심 지지점 -->
-          <circle cx="12" cy="7" r="1.2" fill="#c9962b"/>
-          <circle cx="12" cy="3.5" r="1" fill="#1f5132"/>
-        </svg></span>
-        <span class="menu-text">
-          <span class="menu-label">실측 10a당 생산량 계산기</span>
-          <span class="menu-desc">실측 데이터 기반 계산</span>
-        </span>
-        <span class="menu-arrow">›</span>
-      </a>
-      <a class="menu-item" href="https://ubaldos00-ship-it.github.io/chungchi_cal/" target="_blank" rel="noopener">
-        <!-- 귀 (Ear) -->
-        <span class="menu-emoji"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-          <!-- 귀 외형 -->
-          <path d="M6 9 C6 5.7 8.7 3 12 3 C15.3 3 18 5.7 18 9 C18 12 15.5 13.5 15 16 C14.6 18 13 19 12 19 C10 19 9 17.5 9 16" 
-                stroke="#c9962b" stroke-width="1.8" fill="#fff6e0" stroke-linecap="round" stroke-linejoin="round"/>
-          <!-- 귀 안쪽 곡선 -->
-          <path d="M10 10 C10 8.3 11 7 12.5 7 C14 7 15 8 15 9.5 C15 11 13.8 11.8 13.5 13" 
-                stroke="#c9962b" stroke-width="1.4" fill="none" stroke-linecap="round"/>
-          <!-- 귀걸이 / 귓불 -->
-          <ellipse cx="10.5" cy="18.5" rx="1.5" ry="1.2" fill="#c9962b" opacity="0.7"/>
-          <!-- 음파 라인 -->
-          <path d="M20 7 Q21.5 9 21.5 11 Q21.5 13 20 15" stroke="#c9962b" stroke-width="1.3" fill="none" stroke-linecap="round" opacity="0.6"/>
-          <path d="M19 9 Q20 10.5 20 12 Q20 13.5 19 14.5" stroke="#c9962b" stroke-width="1.2" fill="none" stroke-linecap="round" opacity="0.4"/>
-        </svg></span>
-        <span class="menu-text">
-          <span class="menu-label">청취 10a당 생산량 계산기</span>
-          <span class="menu-desc">청취 데이터 기반 계산</span>
-        </span>
-        <span class="menu-arrow">›</span>
-      </a>
+      <!-- 지역별 10a당 생산량 조회기 (생산량조사 도구에서 이동) -->
       <a class="menu-item" href="https://ubaldos00-ship-it.github.io/home/graph.html" target="_blank" rel="noopener">
-        <!-- 막대 그래프 (Bar Chart) -->
         <span class="menu-emoji"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-          <!-- 배경 그리드선 -->
           <line x1="3" y1="5" x2="3" y2="19" stroke="#ddd" stroke-width="1"/>
           <line x1="3" y1="19" x2="21" y2="19" stroke="#ddd" stroke-width="1"/>
-          <!-- 막대 4개 (높이 다양하게) -->
           <rect x="5"  y="9"  width="3" height="10" rx="1" fill="#2e7a4e"/>
           <rect x="9.5" y="6" width="3" height="13" rx="1" fill="#c9962b"/>
           <rect x="14" y="11" width="3" height="8"  rx="1" fill="#2e7a4e" opacity="0.7"/>
           <rect x="18.5" y="7" width="2.5" height="12" rx="1" fill="#c9962b" opacity="0.7"/>
-          <!-- 상단 값 표시 점 -->
           <circle cx="6.5"  cy="8.5"  r="1" fill="#1f5132"/>
           <circle cx="11"   cy="5.5"  r="1" fill="#a07020"/>
           <circle cx="15.5" cy="10.5" r="1" fill="#1f5132"/>
@@ -615,23 +487,27 @@
     </div>
   </section>
 
-  <!-- 개별 바로가기 -->
+  <!-- ② 개별 조사도구 바로가기 (접기/펼치기, 기본: 접힘) -->
   <section class="section">
-    <h2 class="section-title">
-      <span class="icon">🔗</span>
-      개별 바로가기
+    <h2 class="section-title"
+        style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;margin-bottom:0;"
+        onclick="toggleTools()">
+      <span style="display:flex;align-items:center;gap:10px;">
+        <span class="icon">🔗</span>
+        개별 조사도구 바로가기
+      </span>
+      <span id="toolsToggleBtn"
+            style="font-size:13px;font-weight:600;color:#27500A;background:#eaf3e6;border-radius:8px;padding:4px 10px;user-select:none;flex-shrink:0;">
+        ▼ 펼치기
+      </span>
     </h2>
-    <div class="menu-grid">
+    <div class="menu-grid" id="toolsMenuGrid" style="display:none;margin-top:13px;">
+      <!-- AB포구 선정 계산기 -->
       <a class="menu-item" href="https://ubaldos00-ship-it.github.io/flag_cal/" target="_blank" rel="noopener">
-        <!-- 노랑 깃발 1개 (Single Yellow Flag) -->
         <span class="menu-emoji"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-          <!-- 깃대 -->
           <line x1="6" y1="3" x2="6" y2="21" stroke="#6b6b6b" stroke-width="1.8" stroke-linecap="round"/>
-          <!-- 깃발 (1개, 노랑) -->
           <path d="M6 4.5 L19.5 8.5 L6 13 Z" fill="#f0c400" stroke="#c9a000" stroke-width="0.9" stroke-linejoin="round"/>
-          <!-- 깃발 안 AB 라벨 -->
           <text x="12.5" y="10" font-size="5" font-weight="900" fill="#7a5800" font-family="sans-serif" text-anchor="middle" letter-spacing="-0.5">AB</text>
-          <!-- 하단 발침 -->
           <ellipse cx="6" cy="21.2" rx="2" ry="0.8" fill="#aaa" opacity="0.6"/>
           <circle cx="6" cy="21" r="1.1" fill="#888"/>
         </svg></span>
@@ -641,6 +517,7 @@
         </span>
         <span class="menu-arrow">›</span>
       </a>
+      <!-- 계통 추출 계산기 -->
       <a class="menu-item" href="https://ubaldos00-ship-it.github.io/sample_cal/" target="_blank" rel="noopener">
         <span class="menu-emoji">🎯</span>
         <span class="menu-text">
@@ -649,32 +526,46 @@
         </span>
         <span class="menu-arrow">›</span>
       </a>
-      <a class="menu-item" href="https://ubaldos00-ship-it.github.io/jusu_cal/" target="_blank" rel="noopener">
-        <!-- 논벼 이삭 (Rice Ear - 생산량조사 도구 스타일) -->
+      <!-- 실측 10a당 생산량 계산기 (생산량조사 도구에서 이동) -->
+      <a class="menu-item" href="https://ubaldos00-ship-it.github.io/yield_cal/" target="_blank" rel="noopener">
         <span class="menu-emoji"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-          <!-- 줄기 (살짝 휘어짐) -->
+          <line x1="12" y1="3" x2="12" y2="20" stroke="#2e7a4e" stroke-width="1.6" stroke-linecap="round"/>
+          <rect x="8" y="19" width="8" height="2" rx="1" fill="#2e7a4e"/>
+          <line x1="5" y1="7" x2="19" y2="7" stroke="#1f5132" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="6" y1="7" x2="5" y2="12" stroke="#1f5132" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="8" y1="7" x2="7" y2="12" stroke="#1f5132" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="16" y1="7" x2="17" y2="12" stroke="#1f5132" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="18" y1="7" x2="19" y2="12" stroke="#1f5132" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M3.5 12 Q6 14 8.5 12" stroke="#2e7a4e" stroke-width="1.4" fill="#c6e8d5" stroke-linecap="round"/>
+          <path d="M15.5 12 Q18 14 20.5 12" stroke="#2e7a4e" stroke-width="1.4" fill="#c6e8d5" stroke-linecap="round"/>
+          <circle cx="12" cy="7" r="1.2" fill="#c9962b"/>
+          <circle cx="12" cy="3.5" r="1" fill="#1f5132"/>
+        </svg></span>
+        <span class="menu-text">
+          <span class="menu-label">실측 10a당 생산량 계산기</span>
+          <span class="menu-desc">실측 데이터 기반 계산</span>
+        </span>
+        <span class="menu-arrow">›</span>
+      </a>
+      <!-- 논벼 이삭 수 계산기 -->
+      <a class="menu-item" href="https://ubaldos00-ship-it.github.io/jusu_cal/" target="_blank" rel="noopener">
+        <span class="menu-emoji"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
           <path d="M12 21 Q11.5 17 12 12 Q12.5 8 12 3.5" stroke="#5a8a30" stroke-width="1.6" fill="none" stroke-linecap="round"/>
-          <!-- 왼쪽 이삭 낱알 5개 -->
           <ellipse cx="10.0" cy="5.5"  rx="2.1" ry="1.0" fill="#d4a800" transform="rotate(-38 10.0 5.5)"/>
           <ellipse cx="9.6"  cy="8.0"  rx="2.1" ry="1.0" fill="#c9962b" transform="rotate(-32 9.6 8.0)"/>
           <ellipse cx="9.5"  cy="10.5" rx="2.0" ry="1.0" fill="#d4a800" transform="rotate(-26 9.5 10.5)"/>
           <ellipse cx="9.8"  cy="13.0" rx="1.9" ry="0.9" fill="#c9962b" transform="rotate(-20 9.8 13.0)"/>
           <ellipse cx="10.3" cy="15.5" rx="1.7" ry="0.8" fill="#d4a800" transform="rotate(-14 10.3 15.5)"/>
-          <!-- 오른쪽 이삭 낱알 5개 -->
           <ellipse cx="14.0" cy="5.5"  rx="2.1" ry="1.0" fill="#c9962b" transform="rotate(38 14.0 5.5)"/>
           <ellipse cx="14.4" cy="8.0"  rx="2.1" ry="1.0" fill="#d4a800" transform="rotate(32 14.4 8.0)"/>
           <ellipse cx="14.5" cy="10.5" rx="2.0" ry="1.0" fill="#c9962b" transform="rotate(26 14.5 10.5)"/>
           <ellipse cx="14.2" cy="13.0" rx="1.9" ry="0.9" fill="#d4a800" transform="rotate(20 14.2 13.0)"/>
           <ellipse cx="13.7" cy="15.5" rx="1.7" ry="0.8" fill="#c9962b" transform="rotate(14 13.7 15.5)"/>
-          <!-- 낱알 테두리 (광택) -->
           <ellipse cx="10.0" cy="5.5"  rx="2.1" ry="1.0" stroke="#a07020" stroke-width="0.4" fill="none" transform="rotate(-38 10.0 5.5)"/>
           <ellipse cx="14.0" cy="5.5"  rx="2.1" ry="1.0" stroke="#a07020" stroke-width="0.4" fill="none" transform="rotate(38 14.0 5.5)"/>
-          <!-- 수염 끝 -->
           <line x1="12"   y1="3.5" x2="11.3" y2="1.8" stroke="#5a8a30" stroke-width="1.1" stroke-linecap="round"/>
           <line x1="12"   y1="3.5" x2="12.7" y2="1.8" stroke="#5a8a30" stroke-width="1.1" stroke-linecap="round"/>
-          <!-- 잎 (왼쪽) -->
           <path d="M11.5 17.5 Q8.5 16 7 18.5" stroke="#5a8a30" stroke-width="1.3" fill="none" stroke-linecap="round"/>
-          <!-- 잎 (오른쪽) -->
           <path d="M12.5 19 Q15 17.5 16.5 19.5" stroke="#5a8a30" stroke-width="1.1" fill="none" stroke-linecap="round" opacity="0.75"/>
         </svg></span>
         <span class="menu-text">
@@ -683,6 +574,7 @@
         </span>
         <span class="menu-arrow">›</span>
       </a>
+      <!-- 난수표 조회기 -->
       <a class="menu-item" href="https://ubaldos00-ship-it.github.io/home/nansu.html" target="_blank" rel="noopener">
         <span class="menu-emoji">🔢</span>
         <span class="menu-text">
@@ -694,16 +586,21 @@
     </div>
   </section>
 
-  <!-- 도움말 -->
+  <!-- ③ 도움말 (접기/펼치기, 기본: 접힘) -->
   <section class="section help-section">
-    <h2 class="section-title" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="toggleHelp()">
-      <span>
+    <h2 class="section-title"
+        style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;margin-bottom:0;"
+        onclick="toggleHelp()">
+      <span style="display:flex;align-items:center;gap:10px;">
         <span class="icon">📚</span>
         도움이 필요하신가요?
       </span>
-      <span id="helpToggleBtn" style="font-size:13px;font-weight:600;color:#27500A;background:#eaf3e6;border-radius:8px;padding:4px 10px;user-select:none;">▼ 펼치기</span>
+      <span id="helpToggleBtn"
+            style="font-size:13px;font-weight:600;color:#27500A;background:#eaf3e6;border-radius:8px;padding:4px 10px;user-select:none;flex-shrink:0;">
+        ▼ 펼치기
+      </span>
     </h2>
-    <div class="menu-grid" id="helpMenuGrid" style="display:none;">
+    <div class="menu-grid" id="helpMenuGrid" style="display:none;margin-top:13px;">
       <a class="menu-item"
          href="https://www.k-stat.go.kr/comb100/file-download?fileDnKey=dtMdbNk3l%2F14PXM6opKXpbmdSv3amqHth1tAmWy%2FU3I%3D"
          target="_blank" rel="noopener">
@@ -727,16 +624,14 @@
     </div>
   </section>
 
-  <!-- 푸터 정보 -->
+  <!-- 푸터 -->
   <footer class="info">
-    <div class="source">
-      출처 / 참고자료: 국가데이터처 통계설명자료, KOSIS 등
-    </div>
+    <div class="source">출처 / 참고자료: 국가데이터처 통계설명자료, KOSIS 등</div>
     <div class="brand-line">농작물생산조사 통합시스템 · 텐아르 v1.0</div>
     <div class="meta">
       Session <strong id="sessionCount">1</strong> &nbsp;·&nbsp;
       Visit <strong id="visitCount">1</strong> &nbsp;·&nbsp;
-      Build 2026.4.27
+      Build 2026.5.21
     </div>
     <div class="meta" style="margin-top:4px;">by <strong>Mr. hyun</strong></div>
     <div class="contact" style="margin-top:8px;">
@@ -765,28 +660,28 @@
     <span class="nav-icon">🎮</span>
     <span>게임</span>
   </a>
-  <a class="nav-btn" href="https://ubaldos00-ship-it.github.io/home/map.html" target="_blank" rel="noopener">
-    <!-- 크로스헤어 위치 아이콘 -->
+  <!-- 위치: 준비중 -->
+  <button class="nav-btn disabled" type="button" onclick="alert('위치 기능은 준비 중입니다.')">
     <span class="nav-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
       <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.8"/>
-      <line x1="12" y1="2" x2="12" y2="7"  stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      <line x1="12" y1="2"  x2="12" y2="7"  stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
       <line x1="12" y1="17" x2="12" y2="22" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
       <line x1="2"  y1="12" x2="7"  y2="12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
       <line x1="17" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
       <circle cx="12" cy="12" r="2.5" fill="currentColor"/>
     </svg></span>
-    <span>위치</span>
-  </a>
+    <span>준비중</span>
+  </button>
   <button class="nav-btn" type="button" id="cameraBtn" aria-label="카메라 열기">
     <span class="nav-icon">📷</span>
     <span>카메라</span>
   </button>
 </nav>
 
-<!-- 모바일 카메라 input (capture=environment 로 후면 카메라 호출) -->
+<!-- 카메라 input -->
 <input type="file" id="cameraInput" accept="image/*" capture="environment" />
 
-<!-- 카메라 미리보기 모달 -->
+<!-- 카메라 모달 -->
 <div class="camera-modal" id="cameraModal">
   <div class="modal-inner">
     <img id="capturedImg" alt="촬영 이미지" />
@@ -795,20 +690,13 @@
 </div>
 
 <script>
-  /* ====== 시계 (5.2.(토) 09:10:30 형식) ====== */
+  /* ====== 시계 ====== */
   (function () {
     const days = ['일', '월', '화', '수', '목', '금', '토'];
     const pad = (n) => String(n).padStart(2, '0');
-
     function tick() {
       const d = new Date();
-      const m = d.getMonth() + 1;
-      const day = d.getDate();
-      const w = days[d.getDay()];
-      const hh = pad(d.getHours());
-      const mm = pad(d.getMinutes());
-      const ss = pad(d.getSeconds());
-      const txt = `${m}.${day}.(${w}) ${hh}:${mm}:${ss}`;
+      const txt = `${d.getMonth()+1}.${d.getDate()}.(${days[d.getDay()]}) ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
       const el = document.getElementById('clock');
       if (el) el.textContent = txt;
     }
@@ -819,16 +707,13 @@
   /* ====== 방문/세션 카운터 ====== */
   (function () {
     try {
-      // 방문 (영구)
       let visit = parseInt(localStorage.getItem('tenar_visit') || '0', 10);
       visit += 1;
       localStorage.setItem('tenar_visit', String(visit));
       document.getElementById('visitCount').textContent = visit.toLocaleString();
 
-      // 세션 (탭 단위)
       let session = parseInt(sessionStorage.getItem('tenar_session') || '0', 10);
       if (session === 0) {
-        // 새 세션 - 전체 세션 카운트 +1
         let totalSession = parseInt(localStorage.getItem('tenar_total_session') || '0', 10);
         totalSession += 1;
         localStorage.setItem('tenar_total_session', String(totalSession));
@@ -838,44 +723,33 @@
         document.getElementById('sessionCount').textContent = session.toLocaleString();
       }
     } catch (e) {
-      // 사용자가 스토리지를 차단한 경우 무시
       console.warn('Storage unavailable:', e);
     }
   })();
 
-  /* ====== Gmail 문의 버튼 ====== */
+  /* ====== Gmail 버튼 ====== */
   (function () {
     var btn = document.getElementById('gmailBtn');
     if (!btn) return;
     btn.addEventListener('click', function () {
       var to  = 'ubaldos@naver.com';
       var sub = encodeURIComponent('텐아르(10a) 문의');
-      // 1) Gmail 앱 URI (Android)
       var appUri = 'googlegmail://co?to=' + encodeURIComponent(to) + '&subject=' + sub;
-      // 2) Gmail 웹 Compose (iOS Safari / 데스크탑)
       var webUri = 'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(to) + '&su=' + sub;
-
-      // iOS는 universal link 없이 앱 스킴 직접 지원 안 함 → 웹으로 fallback
       var isAndroid = /Android/i.test(navigator.userAgent);
       if (isAndroid) {
-        // Android: Gmail 앱 URI 시도, 500ms 후 앱 미설치 시 웹 열기
-        var fallbackTimer = setTimeout(function () {
-          window.open(webUri, '_blank');
-        }, 600);
+        var fallbackTimer = setTimeout(function () { window.open(webUri, '_blank'); }, 600);
         window.location.href = appUri;
-        // 앱이 열렸다면 visibilitychange로 timer 취소
         document.addEventListener('visibilitychange', function onVis() {
-          if (document.hidden) {
-            clearTimeout(fallbackTimer);
-            document.removeEventListener('visibilitychange', onVis);
-          }
+          if (document.hidden) { clearTimeout(fallbackTimer); document.removeEventListener('visibilitychange', onVis); }
         });
       } else {
-        // iOS / 데스크탑: Gmail 웹 바로 열기
         window.open(webUri, '_blank');
       }
     });
   })();
+
+  /* ====== 카메라 ====== */
   (function () {
     const btn = document.getElementById('cameraBtn');
     const input = document.getElementById('cameraInput');
@@ -883,39 +757,32 @@
     const img = document.getElementById('capturedImg');
     const closeBtn = document.getElementById('closeModal');
 
-    btn.addEventListener('click', function () {
-      input.click();
-    });
-
+    btn.addEventListener('click', function () { input.click(); });
     input.addEventListener('change', function (e) {
       const file = e.target.files && e.target.files[0];
       if (!file) return;
       const reader = new FileReader();
-      reader.onload = function (ev) {
-        img.src = ev.target.result;
-        modal.classList.add('show');
-      };
+      reader.onload = function (ev) { img.src = ev.target.result; modal.classList.add('show'); };
       reader.readAsDataURL(file);
-      // 같은 파일 재선택 가능하도록 초기화
       input.value = '';
     });
-
-    closeBtn.addEventListener('click', function () {
-      modal.classList.remove('show');
-      img.src = '';
-    });
-
-    modal.addEventListener('click', function (e) {
-      if (e.target === modal) {
-        modal.classList.remove('show');
-        img.src = '';
-      }
-    });
+    closeBtn.addEventListener('click', function () { modal.classList.remove('show'); img.src = ''; });
+    modal.addEventListener('click', function (e) { if (e.target === modal) { modal.classList.remove('show'); img.src = ''; } });
   })();
 
+  /* ====== 개별 조사도구 바로가기 접기/펼치기 ====== */
+  function toggleTools() {
+    const grid = document.getElementById('toolsMenuGrid');
+    const btn  = document.getElementById('toolsToggleBtn');
+    const isHidden = grid.style.display === 'none';
+    grid.style.display = isHidden ? '' : 'none';
+    btn.textContent = isHidden ? '▲ 접기' : '▼ 펼치기';
+  }
+
+  /* ====== 도움말 접기/펼치기 ====== */
   function toggleHelp() {
     const grid = document.getElementById('helpMenuGrid');
-    const btn = document.getElementById('helpToggleBtn');
+    const btn  = document.getElementById('helpToggleBtn');
     const isHidden = grid.style.display === 'none';
     grid.style.display = isHidden ? '' : 'none';
     btn.textContent = isHidden ? '▲ 접기' : '▼ 펼치기';
