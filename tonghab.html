@@ -1211,6 +1211,7 @@ input.needs-input:focus{
       </div>
 
       <!-- A 계통추출 입력 -->
+      <div id="aSampSection">
       <div class="sub-ttl" style="margin-top:18px;">🔢 A포구 계통추출 입력</div>
       <div style="font-size:12px;color:#C0392B;font-weight:600;margin:-2px 0 8px;">부여된 난수값 및 조사길이 전체 N을 입력하세요.</div>
       <div class="samp-row">
@@ -1254,6 +1255,7 @@ input.needs-input:focus{
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z" fill="var(--ac)"/></svg>
         📋 난수표 확인하기 (새창)
       </a>
+      </div><!-- /aSampSection -->
     </div>
   </div>
 
@@ -1357,6 +1359,7 @@ input.needs-input:focus{
       </div>
 
       <!-- B 계통추출 입력 -->
+      <div id="bSampSection">
       <div class="sub-ttl" style="margin-top:18px;">🔢 B포구 계통추출 입력</div>
       <div style="font-size:10.5px;color:var(--gr600);margin-bottom:6px;line-height:1.5;">
         ⭐ 난수표 좌표는 <strong>A포구와 자동 동기화</strong>됩니다 (수정 불가).
@@ -1402,6 +1405,7 @@ input.needs-input:focus{
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z" fill="var(--bc)"/></svg>
         📋 난수표 확인하기 (새창)
       </a>
+      </div><!-- /bSampSection -->
     </div>
   </div>
 
@@ -1435,6 +1439,7 @@ input.needs-input:focus{
           <div class="res-row"><span class="res-lbl">가로 기점</span><div class="res-right"><span id="outA_ga" class="res-main">-</span><span id="outA_ga_raw" class="res-sub"></span></div></div>
           <div class="res-row"><span class="res-lbl">세로 기점</span><div class="res-right"><span id="outA_se" class="res-main">-</span><span id="outA_se_raw" class="res-sub"></span></div></div>
           <div class="res-row" id="resRowAK" style="display:none;"><span class="res-lbl">추출간격 k</span><div class="res-right"><span id="outA_k" class="res-main">-</span><span id="outA_k_sub" class="res-sub"></span></div></div>
+          <div class="res-row"><span class="res-lbl">이랑 평균너비</span><div class="res-right"><span id="outWA" class="res-main">-</span><span id="outWA_sub" class="res-sub"></span></div></div>
           <div class="res-row"><span class="res-lbl">3㎡ 조사 이랑길이</span><div class="res-right"><span id="outLenA" class="res-main">-</span><span id="outLenA_raw" class="res-sub"></span></div></div>
         </div>
         <div class="samp-meta" id="aSampMeta" style="display:none;"></div>
@@ -1454,6 +1459,7 @@ input.needs-input:focus{
           <div class="res-row"><span class="res-lbl">가로 기점</span><div class="res-right"><span id="outB_ga" class="res-main">-</span><span id="outB_ga_raw" class="res-sub"></span></div></div>
           <div class="res-row"><span class="res-lbl">세로 기점</span><div class="res-right"><span id="outB_se" class="res-main">-</span><span id="outB_se_raw" class="res-sub"></span></div></div>
           <div class="res-row" id="resRowBK" style="display:none;"><span class="res-lbl">추출간격 k</span><div class="res-right"><span id="outB_k" class="res-main">-</span><span id="outB_k_sub" class="res-sub"></span></div></div>
+          <div class="res-row"><span class="res-lbl">이랑 평균너비</span><div class="res-right"><span id="outWB" class="res-main">-</span><span id="outWB_sub" class="res-sub"></span></div></div>
           <div class="res-row"><span class="res-lbl">3㎡ 조사 이랑길이</span><div class="res-right"><span id="outLenB" class="res-main">-</span><span id="outLenB_raw" class="res-sub"></span></div></div>
         </div>
         <div class="samp-meta" id="bSampMeta" style="display:none;"></div>
@@ -2025,6 +2031,8 @@ const randomTable = {
 /* ═════════════════════════════════════════
    ① 작물 선택
 ═════════════════════════════════════════ */
+const SAMP_CROPS = new Set(['마늘','양파','무','총각무','배추']); // 계통추출 대상 작물
+
 function selectCrop(btn){
   document.querySelectorAll('.crop-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -2032,6 +2040,14 @@ function selectCrop(btn){
   const defaultN = parseInt(btn.dataset.n, 10) || 20;
   document.getElementById('hdrCropBadge').textContent = selectedCrop;
   document.getElementById('hdrCropBadge').style.display = 'inline-block';
+
+  // 계통추출 섹션 show/hide (감자·콩은 숨김)
+  const showSamp = SAMP_CROPS.has(selectedCrop);
+  ['aSampSection','bSampSection'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.style.display = showSamp ? '' : 'none';
+  });
+
   // 10a 생산량 계산기 작물 자동 동기화
   if(typeof prodSyncFromCrop === 'function') prodSyncFromCrop(selectedCrop);
 
@@ -2679,15 +2695,17 @@ function runFullCalculation(){
     showError('비율(가·나)과 가-나 총길이, A포구 세로 총길이를 입력해주세요.'); return;
   }
 
-  // 계통추출 - 자동 난수 조회
-  if(!autoLookupRandomsBeforeExtract()){
-    // 좌표가 비어있는 경우엔 계통추출은 건너뛰지만, 포구선정은 계속 진행
+  // 계통추출 - 대상 작물(마늘·양파·무·총각무·배추)만 검증
+  let sampA = null, sampB = null;
+  if(SAMP_CROPS.has(selectedCrop)){
+    if(!autoLookupRandomsBeforeExtract()){
+      // 좌표가 비어있는 경우엔 계통추출은 건너뛰지만, 포구선정은 계속 진행
+    }
+    sampA = validatePort('a', 'A포구');
+    sampB = validatePort('b', 'B포구');
+    if(sampA && sampA.error){ showError(sampA.error); return; }
+    if(sampB && sampB.error){ showError(sampB.error); return; }
   }
-
-  const sampA = validatePort('a', 'A포구');
-  const sampB = validatePort('b', 'B포구');
-  if(sampA && sampA.error){ showError(sampA.error); return; }
-  if(sampB && sampB.error){ showError(sampB.error); return; }
 
   renderUnifiedResult({
     L, Ha, Hb, waA, wbA, ga, na, da, sel,
@@ -2712,11 +2730,13 @@ function runACalculation(){
     showError('비율(가·나)과 가-나 총길이, A포구 세로 총길이를 입력해주세요.'); return;
   }
 
-  // 자동 난수 조회 (A포구 한정)
-  autoLookupRandomsBeforeExtract();
-
-  const sampA = validatePort('a', 'A포구');
-  if(sampA && sampA.error){ showError(sampA.error); return; }
+  // 계통추출 - 대상 작물(마늘·양파·무·총각무·배추)만 검증
+  let sampA = null;
+  if(SAMP_CROPS.has(selectedCrop)){
+    autoLookupRandomsBeforeExtract();
+    sampA = validatePort('a', 'A포구');
+    if(sampA && sampA.error){ showError(sampA.error); return; }
+  }
 
   // B포구는 의도적으로 비워둠 → 결과화면에선 가로기점만 회색 표시
   renderUnifiedResult({
@@ -2786,8 +2806,18 @@ function renderUnifiedResult(state){
   document.getElementById('outA_se_raw').textContent = one
     ? '(세로 ' + Ha + ' ÷ 2) × ' + na + '(나비율) = ' + a_se.toFixed(1)
     : Ha + ' × ' + na + '(나비율) = ' + a_se.toFixed(1);
-  if(!isNaN(waA) && waA > 0){ const waR=roundWidthForLen(waA); setRes('outLenA','outLenA_raw', 30000/waR, 'cm'); document.getElementById('outLenA_raw').textContent = '계산값: ' + (30000/waR).toFixed(1) + ' (÷' + waR + ')'; }
-  else { document.getElementById('outLenA').textContent = '—'; document.getElementById('outLenA_raw').textContent = '평균너비 미입력'; }
+  if(!isNaN(waA) && waA > 0){
+    document.getElementById('outWA').textContent = waA + ' cm';
+    document.getElementById('outWA_sub').textContent = '';
+    const waR=roundWidthForLen(waA); const lenA=(30000/waR);
+    document.getElementById('outLenA').textContent = lenA.toFixed(1) + ' cm';
+    document.getElementById('outLenA_raw').textContent = '30000 ÷ ' + waR + ' = ' + lenA.toFixed(1);
+  } else {
+    document.getElementById('outWA').textContent = '—';
+    document.getElementById('outWA_sub').textContent = '미입력';
+    document.getElementById('outLenA').textContent = '—';
+    document.getElementById('outLenA_raw').textContent = '평균너비 미입력';
+  }
   updateRatioWarning(a_ga);
 
   // A 계통추출 결과 영역
@@ -2847,8 +2877,18 @@ function renderUnifiedResult(state){
     document.getElementById('outB_se_raw').textContent = one
       ? '(세로 ' + Ha + ' ÷ 2) × ' + da + '(다비율) + ' + (Ha/2).toFixed(1) + ' = ' + b_se.toFixed(1)
       : Hb + ' × ' + da + '(다비율) = ' + b_se.toFixed(1);
-    if(!isNaN(wbA) && wbA > 0){ const wbR=roundWidthForLen(wbA); setRes('outLenB','outLenB_raw', 30000/wbR, 'cm'); document.getElementById('outLenB_raw').textContent = '계산값: ' + (30000/wbR).toFixed(1) + ' (÷' + wbR + ')'; }
-    else { document.getElementById('outLenB').textContent = '—'; document.getElementById('outLenB_raw').textContent = '평균너비 미입력'; }
+    if(!isNaN(wbA) && wbA > 0){
+      document.getElementById('outWB').textContent = wbA + ' cm';
+      document.getElementById('outWB_sub').textContent = '';
+      const wbR=roundWidthForLen(wbA); const lenB=(30000/wbR);
+      document.getElementById('outLenB').textContent = lenB.toFixed(1) + ' cm';
+      document.getElementById('outLenB_raw').textContent = '30000 ÷ ' + wbR + ' = ' + lenB.toFixed(1);
+    } else {
+      document.getElementById('outWB').textContent = '—';
+      document.getElementById('outWB_sub').textContent = '미입력';
+      document.getElementById('outLenB').textContent = '—';
+      document.getElementById('outLenB_raw').textContent = '평균너비 미입력';
+    }
     bCard.style.opacity = '1'; bCard.style.border = '';
     document.getElementById('bPendingNote').style.display = 'none';
 
@@ -2901,6 +2941,8 @@ function renderUnifiedResult(state){
       : a_ga.toFixed(2) + '(A) + ' + (L/2).toFixed(1) + '(추출간격) = ' + b_ga.toFixed(2);
     document.getElementById('outB_se').textContent = '—';
     document.getElementById('outB_se_raw').textContent = 'B 세로 미입력';
+    document.getElementById('outWB').textContent = '—';
+    document.getElementById('outWB_sub').textContent = '미입력';
     document.getElementById('outLenB').textContent = '—';
     document.getElementById('outLenB_raw').textContent = '평균너비 미입력';
     bCard.style.opacity = '0.6';
