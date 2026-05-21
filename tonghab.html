@@ -559,10 +559,10 @@ input.needs-input:focus{
 .prod-zone .pformula-line.pf-result{font-size:11px;font-weight:800;padding-left:4px;}
 .prod-zone .pa-card .pformula-line.pf-result{color:#2563EB;}
 .prod-zone .pb-card .pformula-line.pf-result{color:#C0392B;}
-.prod-zone .pavg-result-box{background:var(--p-green);border-radius:var(--p-radius-sm);padding:11px;text-align:center;margin-bottom:9px;}
-.prod-zone .pavg-label{font-size:11px;font-weight:700;color:rgba(255,255,255,.8);letter-spacing:.08em;margin-bottom:3px;}
-.prod-zone .pavg-num{font-size:clamp(28px,8vw,38px);font-weight:700;color:#fff;line-height:1;letter-spacing:-.02em;}
-.prod-zone .pavg-unit{font-size:13px;color:rgba(255,255,255,.8);margin-top:3px;}
+.prod-zone .pavg-result-box{background:var(--p-green);border-radius:var(--p-radius-sm);padding:7px 11px;text-align:center;margin-bottom:9px;}
+.prod-zone .pavg-label{font-size:10px;font-weight:700;color:rgba(255,255,255,.8);letter-spacing:.06em;margin-bottom:1px;}
+.prod-zone .pavg-num{font-size:clamp(16px,4.5vw,20px);font-weight:800;color:#fff;line-height:1.2;letter-spacing:-.01em;}
+.prod-zone .pavg-unit{font-size:10px;color:rgba(255,255,255,.8);margin-top:1px;}
 .prod-zone .pdry-note{font-size:11px;color:var(--p-text-muted);padding:7px 10px;background:var(--p-green-light);border-radius:var(--p-radius-sm);border-left:3px solid var(--p-green);line-height:1.5;}
 .prod-zone .pcmp-item{margin-bottom:14px;}
 .prod-zone .pcmp-item:last-child{margin-bottom:0;}
@@ -788,9 +788,10 @@ input.needs-input:focus{
 
 /* ===== 동그라미7 결과 제목/평균색 보완 ===== */
 .prod-result-title-main{
-  margin:10px 0 8px;padding:12px 14px;border-radius:12px;
-  background:var(--t600);color:#fff;font-size:15px;font-weight:900;
-  text-align:center;letter-spacing:.02em;
+  margin:10px 0 8px;padding:6px 2px;
+  background:transparent;color:var(--t600);font-size:15px;font-weight:900;
+  text-align:left;letter-spacing:.02em;
+  border-bottom:2.5px solid var(--t600);
 }
 /* ===== 평당 비교표 ===== */
 .ppyeong-box{margin-top:10px;border-radius:10px;overflow:hidden;border:1.5px solid #c8e6c9;}
@@ -903,7 +904,7 @@ input.needs-input:focus{
         홈
       </a>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey · v17 저장: 2026-05-21 23:38</div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v18 저장: 2026-05-22 00:35)</span></div>
   </div>
 </div>
 
@@ -3763,6 +3764,7 @@ function prodCalculate() {
     if(prodCrop==='onion') sumRows+=`<tr>${psk('양파종')}${aV?psv(aOnion?aOnion+'개':'—'):pEmpty()}${bV?psv(bOnion?bOnion+'개':'—'):pEmpty()}</tr>`;
     sumRows+=`<tr>${psk('20개 생중량')}${aV?psv(prodFmtInt(aW)+' g'):pEmpty()}${bV?psv(prodFmtInt(bW)+' g'):pEmpty()}</tr>`;
     sumRows+=`<tr>${psk('1개당 생중량')}${aV?psv(prodFmt(aW/20,1)+' g'):pEmpty()}${bV?psv(prodFmt(bW/20,1)+' g'):pEmpty()}</tr>`;
+    sumRows+=`<tr>${psk('3m² 생중량')}${aV&&aP&&aW?psv(prodFmtInt(Math.round(aP*(aW/20)))+' g'):pEmpty()}${bV&&bP&&bW?psv(prodFmtInt(Math.round(bP*(bW/20)))+' g'):pEmpty()}</tr>`;
     sumRows+=`<tr>${psk('건조율')}${aV?psv(aDry.toFixed(1)+' %'):pEmpty()}${bV?psv(bDry.toFixed(1)+' %'):pEmpty()}</tr>`;
     if(aDmg||bDmg) sumRows+=`<tr>${psk('비고')}${aV?psv(aDmg||'—',true):pEmpty()}${bV?psv(bDmg||'—',true):pEmpty()}</tr>`;
   }
