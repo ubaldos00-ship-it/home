@@ -958,7 +958,7 @@ input.needs-input:focus{
 }
 .sl-hdr-btn:active{background:rgba(255,255,255,.28);}
 /* ── 저장/불러오기 모달 ── */
-.sl-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:3000;overflow-y:auto;padding:16px 14px 40px;}
+.sl-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:3000;overflow-y:auto;padding:16px 14px 40px;overscroll-behavior:contain;}
 .sl-modal.show{display:flex;justify-content:center;align-items:flex-start;}
 .sl-box{width:100%;max-width:430px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.45);}
 .sl-head{padding:13px 16px;background:#27500A;display:flex;justify-content:space-between;align-items:center;}
@@ -968,7 +968,7 @@ input.needs-input:focus{
 .sl-save-now{width:100%;padding:14px;background:#27500A;border:none;border-radius:10px;color:#fff;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:14px;letter-spacing:.02em;}
 .sl-save-now:active{opacity:.82;}
 .sl-section{font-size:11px;font-weight:700;color:#888;letter-spacing:.06em;text-transform:uppercase;margin-bottom:7px;}
-.sl-list{display:flex;flex-direction:column;gap:7px;margin-bottom:14px;max-height:300px;overflow-y:auto;}
+.sl-list{display:flex;flex-direction:column;gap:7px;margin-bottom:14px;max-height:300px;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;}
 .sl-item{background:#f8f6f1;border:1px solid #e0ddd6;border-radius:10px;padding:9px 10px;display:flex;align-items:center;gap:7px;}
 .sl-item-num{min-width:22px;height:22px;background:#27500A;color:#fff;border-radius:50%;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .sl-item-info{flex:1;min-width:0;}
@@ -1005,7 +1005,7 @@ input.needs-input:focus{
         홈
       </a>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v29 저장: 2026-05-23 07:35)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v30 저장: 2026-05-23 07:38)</span></div>
   </div>
 </div>
 
@@ -4797,9 +4797,17 @@ function _slSetList(l){try{localStorage.setItem(SL_LIST_KEY,JSON.stringify(l));}
 function openSaveLoadModal(){
   _slRenderList();
   document.getElementById('sl-modal').classList.add('show');
+  // 모달 열릴 때 배경 페이지 스크롤 완전 차단
+  document.body.style.overflow='hidden';
+  document.body.style.position='fixed';
+  document.body.style.width='100%';
 }
 function closeSaveLoadModal(){
   document.getElementById('sl-modal').classList.remove('show');
+  // 모달 닫힐 때 배경 스크롤 복원
+  document.body.style.overflow='';
+  document.body.style.position='';
+  document.body.style.width='';
 }
 
 /* 지금 바로 저장 */
