@@ -536,9 +536,11 @@ input.needs-input:focus{
 .prod-zone .psum-table td{padding:6px 6px;border-bottom:1px solid var(--p-border);vertical-align:top;line-height:1.4;}
 .prod-zone .psum-table tr:last-child td{border-bottom:none;}
 .prod-zone .psum-table td.psk{font-size:11px;color:var(--p-text-muted);font-weight:500;background:var(--p-surface2);}
-.prod-zone .psum-table td.psv{font-size:12px;font-weight:500;}
+.prod-zone .psum-table td.psv{font-size:13px;font-weight:700;text-align:right;}
+.prod-zone .psum-table td.psv:not(.pcenter):nth-child(2){color:var(--ac,#0A3A8C);font-size:14px;font-weight:900;}
+.prod-zone .psum-table td.psv:not(.pcenter):nth-child(3){color:var(--bc,#8B0000);font-size:14px;font-weight:900;}
 .prod-zone .psum-table td.psv.pred{color:var(--p-red);}
-.prod-zone .psum-table td.psv.pcenter{text-align:center;}
+.prod-zone .psum-table td.psv.pcenter{text-align:center;font-size:12px;font-weight:500;color:inherit;}
 .prod-zone .pres-ab-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;}
 .prod-zone .pres-ab-card{border-radius:12px;padding:10px 8px;text-align:center;border:2px solid;min-width:0;overflow:hidden;}
 .prod-zone .pres-ab-card.pa-card{background:#EBF4FF;border-color:#2563EB;}
@@ -885,6 +887,54 @@ input.needs-input:focus{
   align-items:center !important;
   justify-content:center !important;
 }
+/* ── 전체 조사 결과 버튼 ── */
+.full-cap-btn{width:100%;padding:15px;background:var(--ac);border:none;border-radius:var(--p-radius);color:#fff;font-size:15px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;letter-spacing:.02em;transition:background .15s,transform .1s;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:8px;-webkit-tap-highlight-color:transparent;box-shadow:0 3px 12px rgba(10,58,140,.35);}
+.full-cap-btn:hover{background:var(--ac2);}
+.full-cap-btn:active{transform:scale(.97);}
+.full-cap-btn:disabled{opacity:.6;cursor:not-allowed;}
+/* ── 전체 결과 캡처 영역 ── */
+#fullResultZone{display:none;position:fixed;left:-9999px;top:0;width:480px;background:#f4f3ef;font-family:'Noto Sans KR',-apple-system,sans-serif;z-index:-1;}
+/* 전체결과 캡처: 조사요약 테이블 */
+#fullResultZone .psum-table{width:100%;border-collapse:collapse;font-size:11px;}
+#fullResultZone .psum-table th{font-size:10px;font-weight:700;padding:6px 8px;background:#f0ede6;border-bottom:1.5px solid #d0ccc4;text-align:center;color:#666;}
+#fullResultZone .psum-table th.pa-th{color:#0A3A8C;}
+#fullResultZone .psum-table th.pb-th{color:#8B0000;}
+#fullResultZone .psum-table td{padding:6px 8px;border-bottom:1px solid #edeae4;vertical-align:middle;}
+#fullResultZone .psum-table tr:last-child td{border-bottom:none;}
+#fullResultZone .psum-table td.psk{font-size:10px;color:#555;font-weight:700;background:#fafaf7;border-right:1px solid #edeae4;}
+#fullResultZone .psum-table td.psv{font-size:12px;font-weight:700;text-align:right;}
+#fullResultZone .psum-table td.psv:not(.pcenter):nth-child(2){color:#0A3A8C;font-size:13px;font-weight:900;}
+#fullResultZone .psum-table td.psv:not(.pcenter):nth-child(3){color:#8B0000;font-size:13px;font-weight:900;}
+#fullResultZone .psum-table td.psv.pred{color:#C0392B;}
+#fullResultZone .psum-table td.pcenter{text-align:center;font-size:11px;font-weight:500;color:inherit;}
+/* 전체결과 캡처: 입력요약 / 건조율 / 비교 */
+#fullResultZone .summary-card{background:#f5f3ee;border:1px solid #d0ccc4;border-radius:8px;padding:10px 12px;font-size:11px;line-height:1.85;color:#3D3C39;}
+#fullResultZone .summary-card strong{color:#111;font-weight:700;}
+#fullResultZone .pdry-note{font-size:11px;color:#555;padding:7px 10px;background:#e8f5e9;border-radius:8px;border-left:3px solid #3a7d44;line-height:1.5;margin-bottom:8px;}
+#fullResultZone .ppyeong-box{margin-bottom:8px;}
+#fullResultZone .ppyeong-head{background:#2e7d32;color:#fff;font-size:11px;font-weight:800;padding:6px 12px;border-radius:8px 8px 0 0;display:flex;justify-content:space-between;align-items:center;}
+#fullResultZone .ppyeong-tbl{width:100%;border-collapse:collapse;font-size:11px;}
+#fullResultZone .ppyeong-tbl th{padding:5px 8px;background:#e8f5e9;color:#1b5e20;font-weight:700;font-size:10px;text-align:center;}
+#fullResultZone .ppyeong-tbl td{padding:6px 8px;border-top:1px solid #e8f5e9;color:#37474f;text-align:center;}
+#fullResultZone .ppyeong-tbl td:first-child{text-align:left;}
+#fullResultZone .ppyeong-tbl tr.ppyeong-survey td{background:#e3f2fd;color:#1a237e;font-weight:800;}
+#fullResultZone .ppyeong-toggle-btn{display:none;}
+#fullResultZone .pcmp-item{margin-bottom:10px;}
+#fullResultZone .pcmp-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+#fullResultZone .pcmp-name{font-size:11px;color:#555;font-weight:500;}
+#fullResultZone .pbadge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;}
+#fullResultZone .pbadge-up{background:#e3f2fd;color:#1565c0;}
+#fullResultZone .pbadge-down{background:#ffebee;color:#c62828;}
+#fullResultZone .pbadge-same{background:#f5f5f5;color:#888;}
+#fullResultZone .pbar-chart-wrap{position:relative;height:22px;display:flex;align-items:center;margin-bottom:2px;}
+#fullResultZone .pbar-center-line{position:absolute;left:50%;top:0;bottom:0;width:1px;background:#bbb;z-index:1;}
+#fullResultZone .pbar-bg-left{position:absolute;right:50%;top:4px;bottom:4px;background:#eee;border-radius:3px 0 0 3px;}
+#fullResultZone .pbar-bg-right{position:absolute;left:50%;top:4px;bottom:4px;background:#eee;border-radius:0 3px 3px 0;}
+#fullResultZone .pbar-fill{position:absolute;top:4px;bottom:4px;border-radius:3px;z-index:2;}
+#fullResultZone .pfill-up{left:50%;background:#1565c0;}
+#fullResultZone .pfill-down{right:50%;background:#c62828;}
+#fullResultZone .pbar-labels{display:flex;justify-content:space-between;font-size:9px;color:#aaa;}
+#fullResultZone .pstat-note{font-size:9px;color:#aaa;margin-top:6px;line-height:1.5;}
 
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -904,7 +954,7 @@ input.needs-input:focus{
         홈
       </a>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v19 저장: 2026-05-22 00:55)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v21 저장: 2026-05-22 03:00)</span></div>
   </div>
 </div>
 
@@ -1855,9 +1905,13 @@ input.needs-input:focus{
 
       <button class="preset-bottom-btn" onclick="prodResetCalc()">← 전체 초기화 / 초기화</button>
       <button class="pcap-btn" id="prod-cap-trigger-btn" onclick="prodCaptureResult()">📷 결과 이미지로 저장</button>
+      <button class="full-cap-btn" id="full-cap-btn" onclick="showFullResultCapture()">📋 전체 조사 결과 이미지 저장</button>
     </div><!-- /presult-section -->
 
   </div><!-- /prod-zone -->
+
+  <!-- 전체 조사 결과 캡처 영역 (오프스크린) -->
+  <div id="fullResultZone"></div>
 
 </div><!-- /wrap -->
 
@@ -4144,6 +4198,153 @@ function prodCloseCapModal(){
   document.getElementById('prod-cap-modal').classList.remove('show');
 }
 
+/* ══════════════════════════════════════
+   전체 조사 결과 이미지 저장
+══════════════════════════════════════ */
+function showFullResultCapture(){
+  const prodSec=document.getElementById('prod-result-section');
+  if(!prodSec||!prodSec.classList.contains('show')){alert('먼저 10a당 생산량을 계산해주세요.');return;}
+  if(!lastResult){alert('먼저 A/B포구 계산(전체계산+AB포구)을 실행해주세요.');return;}
+
+  const zone=document.getElementById('fullResultZone');
+  if(!zone) return;
+
+  /* ── 기초 정보 ── */
+  const cropName=PROD_CROP_KO[prodCrop]||prodCrop||'작물';
+  const addrVal=(document.getElementById('address')?.value||'').trim()||'주소 미입력';
+  const dateVal=document.getElementById('surveyDate')?.value||'';
+  const nowKst=new Date(new Date().getTime()+9*60*60*1000);
+  const saveTimeStr=nowKst.toISOString().replace('T',' ').slice(0,16)+' (KST)';
+
+  /* ── A/B 기점선정 결과 행 ── */
+  function gv(id){return document.getElementById(id)?.textContent?.trim()||'—';}
+  const aKVisible=document.getElementById('resRowAK')?.style.display!=='none';
+  const portRows=[
+    {lbl:'가로 기점', a:gv('outA_ga'), b:gv('outB_ga')},
+    {lbl:'세로 기점', a:gv('outA_se'), b:gv('outB_se')},
+  ];
+  if(aKVisible) portRows.push({lbl:'추출간격 k', a:gv('outA_k'), b:gv('outB_k')});
+  portRows.push({lbl:'이랑 평균너비', a:gv('outWA'), b:gv('outWB')});
+  portRows.push({lbl:'3㎡ 이랑길이', a:gv('outLenA'), b:gv('outLenB')});
+
+  const portRowsHtml=portRows.map(r=>`
+    <tr>
+      <td style="font-size:11px;color:#555;font-weight:600;padding:7px 10px;background:#fafaf7;border-bottom:1px solid #edeae4;border-right:1px solid #edeae4;">${r.lbl}</td>
+      <td style="font-size:14px;font-weight:900;color:var(--ac,#0A3A8C);padding:7px 10px;text-align:right;border-bottom:1px solid #edeae4;border-right:1px solid #edeae4;">${r.a}</td>
+      <td style="font-size:14px;font-weight:900;color:var(--bc,#8B0000);padding:7px 10px;text-align:right;border-bottom:1px solid #edeae4;">${r.b}</td>
+    </tr>`).join('');
+
+  /* ── 입력 데이터 요약 (AB 기점선정 summary-card) ── */
+  const inputSumEl=document.getElementById('inputSummary');
+  const inputSumHtml=inputSumEl?inputSumEl.outerHTML:'';
+
+  /* ── 10a당 생산량 조사요약 ── */
+  const prodSumEl=document.getElementById('prod-summary-content');
+  const prodSumHtml=prodSumEl?prodSumEl.innerHTML:'';
+
+  /* ── 계산결과 카드 ── */
+  const aCard=document.getElementById('prod-res-a-card');
+  const bCard=document.getElementById('prod-res-b-card');
+  const aVis=aCard&&aCard.style.display!=='none';
+  const bVis=bCard&&bCard.style.display!=='none';
+  const resA=gv('prod-res-a'); const resB=gv('prod-res-b');
+  const resAvg=gv('prod-res-avg'); const resAvgRaw=gv('prod-res-avg-raw');
+  const avgLbl=gv('prod-avg-label');
+
+  let abCardsHtml='<div style="display:grid;grid-template-columns:'+(aVis&&bVis?'1fr 1fr':'1fr')+';gap:8px;margin-bottom:8px;">';
+  if(aVis) abCardsHtml+=`<div style="background:#EBF3FF;border:1.5px solid #0A3A8C;border-radius:10px;padding:12px 8px;text-align:center;"><div style="font-size:12px;font-weight:700;color:#0A3A8C;margin-bottom:5px;">📍 A 포구</div><div style="font-size:28px;font-weight:900;color:#0A3A8C;line-height:1;">${resA}</div><div style="font-size:10px;color:#999;margin-top:3px;">kg / 10a</div></div>`;
+  if(bVis) abCardsHtml+=`<div style="background:#FFF0F0;border:1.5px solid #8B0000;border-radius:10px;padding:12px 8px;text-align:center;"><div style="font-size:12px;font-weight:700;color:#8B0000;margin-bottom:5px;">📍 B 포구</div><div style="font-size:28px;font-weight:900;color:#8B0000;line-height:1;">${resB}</div><div style="font-size:10px;color:#999;margin-top:3px;">kg / 10a</div></div>`;
+  abCardsHtml+='</div>';
+  const avgHtml=`<div style="background:#3a7d44;color:#fff;border-radius:8px;padding:8px 10px;text-align:center;margin-bottom:8px;"><div style="font-size:10px;opacity:.8;margin-bottom:2px;">${avgLbl}</div><div style="font-size:20px;font-weight:800;line-height:1.2;">${resAvg} kg/10a</div><div style="font-size:10px;opacity:.7;margin-top:2px;">${resAvgRaw}</div></div>`;
+
+  /* ── 건조율·평년전년비교·국가데이터 ── */
+  const dryNoteEl=document.getElementById('prod-dry-note');
+  const dryNoteHtml=(dryNoteEl&&dryNoteEl.style.display!=='none')?`<div class="pdry-note">${dryNoteEl.textContent}</div>`:'';
+
+  const ppyeongBox=document.getElementById('prod-pyeong-cmp');
+  let ppyeongHtml='';
+  if(ppyeongBox&&ppyeongBox.style.display!=='none'){
+    const ppWrap=document.getElementById('ppyeong-tbl-wrap');
+    if(ppWrap) ppWrap.style.display=''; // 접혀있어도 펼쳐서 캡처
+    ppyeongHtml=`<div class="ppyeong-box">${ppyeongBox.innerHTML}</div>`;
+  }
+
+  const statEl=document.getElementById('prod-stat-content');
+  const statHtml=statEl?statEl.innerHTML:'';
+  const hasStatContent=statEl&&statEl.children.length>0&&!statEl.querySelector('[style*="text-align:center"]');
+
+  /* ── 전체 HTML 구성 ── */
+  zone.innerHTML=`<div style="padding:14px;">
+    <div style="background:#27500A;color:#fff;border-radius:10px;padding:12px 15px;margin-bottom:10px;">
+      <div style="font-size:14px;font-weight:800;margin-bottom:3px;">🌾 ${cropName} 전체 조사 결과</div>
+      <div style="font-size:10px;color:rgba(255,255,255,.75);">${addrVal} · ${dateVal||'날짜미입력'} · ${saveTimeStr}</div>
+    </div>
+
+    <div style="background:#fff;border-radius:12px;border:1px solid #d0ccc4;overflow:hidden;margin-bottom:10px;">
+      <div style="font-size:12px;font-weight:800;color:#fff;background:#0F6E56;padding:9px 13px;">📍 A/B 포구 기점 선정 결과</div>
+      ${inputSumHtml?`<div style="padding:8px 12px;border-bottom:1px solid #edeae4;">${inputSumHtml}</div>`:''}
+      <table style="width:100%;border-collapse:collapse;">
+        <thead><tr>
+          <th style="padding:7px 10px;background:#fafaf7;font-size:11px;font-weight:700;color:#888;border-bottom:1.5px solid #d0ccc4;border-right:1px solid #edeae4;text-align:left;">항목</th>
+          <th style="padding:7px 10px;background:#EBF3FF;font-size:12px;font-weight:800;color:#0A3A8C;border-bottom:1.5px solid #d0ccc4;border-right:1px solid #edeae4;text-align:center;">A 포구</th>
+          <th style="padding:7px 10px;background:#FFF0F0;font-size:12px;font-weight:800;color:#8B0000;border-bottom:1.5px solid #d0ccc4;text-align:center;">B 포구</th>
+        </tr></thead>
+        <tbody>${portRowsHtml}</tbody>
+      </table>
+    </div>
+
+    <div style="background:#fff;border-radius:12px;border:1px solid #d0ccc4;overflow:hidden;margin-bottom:10px;">
+      <div style="font-size:12px;font-weight:800;color:#fff;background:#0F6E56;padding:9px 13px;">📊 10a당 생산량 조사 요약</div>
+      <div style="padding:8px 10px;">${prodSumHtml}</div>
+    </div>
+
+    <div style="background:#fff;border-radius:12px;border:1px solid #d0ccc4;overflow:hidden;margin-bottom:4px;">
+      <div style="font-size:12px;font-weight:800;color:#fff;background:#0F6E56;padding:9px 13px;">📊 10a당 생산량 계산 결과</div>
+      <div style="padding:10px;">
+        ${abCardsHtml}${avgHtml}
+        ${dryNoteHtml}
+        ${ppyeongHtml}
+        ${hasStatContent?`<div style="background:#fff;border:1px solid #d0ccc4;border-radius:8px;padding:8px 10px;margin-top:4px;"><div style="font-size:11px;font-weight:800;color:#333;margin-bottom:8px;">📈 국가데이터포털 데이터 비교</div>${statHtml}<p class="pstat-note">※ 출처: KOSIS 농작물생산조사 (2021~2025). 전년: 2025년 / 평년: 5개년 평균.</p></div>`:''}
+      </div>
+    </div>
+  </div>`;
+
+  /* ── 캡처 실행 ── */
+  zone.style.display='block';
+  const btn=document.getElementById('full-cap-btn');
+  if(btn){btn.disabled=true;btn.textContent='⏳ 이미지 생성 중...';}
+
+  function doFullCapture(){
+    html2canvas(zone,{scale:window.devicePixelRatio||2,useCORS:true,allowTaint:true,logging:false,
+      backgroundColor:'#f4f3ef',width:zone.offsetWidth,scrollX:0,scrollY:0})
+    .then(function(canvas){
+      zone.style.display='none';
+      _prodCapDataUrl=canvas.toDataURL('image/png');
+      const safeAddr=(addrVal).replace(/[\/\\:*?"<>|\s]/g,'_').slice(0,20);
+      const hh=String(nowKst.getUTCHours()).padStart(2,'0');
+      const mm2=String(nowKst.getUTCMinutes()).padStart(2,'0');
+      _prodCapFilename=cropName+'_전체결과_'+safeAddr+'_'+hh+mm2+'.png';
+      document.getElementById('prod-cap-preview-img').src=_prodCapDataUrl;
+      document.getElementById('prod-cap-filename').innerHTML='📁 파일명: <strong style="color:#8BC34A">'+_prodCapFilename+'</strong><br>📂 저장위치: 기기 다운로드 폴더<br><span style="font-size:11px;color:#888">iOS: 사진앱 / Android·PC: Downloads</span>';
+      document.getElementById('prod-cap-modal').classList.add('show');
+      if(btn){btn.disabled=false;btn.textContent='📋 전체 조사 결과 이미지 저장';}
+    }).catch(function(err){
+      zone.style.display='none';
+      if(btn){btn.disabled=false;btn.textContent='📋 전체 조사 결과 이미지 저장';}
+      alert('캡처 실패: '+(err&&err.message?err.message:err));
+    });
+  }
+
+  if(window.html2canvas){doFullCapture();return;}
+  const urls=['https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'];
+  let tried=0;
+  function tryLoad(){
+    if(tried>=urls.length){zone.style.display='none';if(btn){btn.disabled=false;btn.textContent='📋 전체 조사 결과 이미지 저장';}alert('라이브러리 로드 실패.');return;}
+    const s=document.createElement('script');s.src=urls[tried++];s.onload=doFullCapture;s.onerror=tryLoad;document.head.appendChild(s);
+  }
+  tryLoad();
+}
 
 
 /* ⑤·⑥ 전체N → 10a당 생산량 계산기 작물별 기준 입력칸 자동 입력 - 보완 */
