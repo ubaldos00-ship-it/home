@@ -969,6 +969,7 @@ input.needs-input:focus{
 .sl-section{font-size:11px;font-weight:700;color:#888;letter-spacing:.06em;text-transform:uppercase;margin-bottom:7px;}
 .sl-list{display:flex;flex-direction:column;gap:7px;margin-bottom:14px;max-height:300px;overflow-y:auto;}
 .sl-item{background:#f8f6f1;border:1px solid #e0ddd6;border-radius:10px;padding:9px 10px;display:flex;align-items:center;gap:7px;}
+.sl-item-num{min-width:22px;height:22px;background:#27500A;color:#fff;border-radius:50%;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .sl-item-info{flex:1;min-width:0;}
 .sl-item-label{font-size:13px;font-weight:700;color:#1a1918;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .sl-item-date{font-size:10px;color:#999;margin-top:2px;}
@@ -1002,7 +1003,7 @@ input.needs-input:focus{
         홈
       </a>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v25 저장: 2026-05-23 13:00)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v26 저장: 2026-05-23 14:30)</span></div>
   </div>
 </div>
 
@@ -4700,10 +4701,15 @@ document.addEventListener('DOMContentLoaded', function(){
    입력 데이터 보호 목적
    ══════════════════════════════════════════ */
 (function(){
-  // 현재 페이지를 history 스택에 한 번 더 쌓아 뒤로가기를 흡수
+  // 버퍼 스택을 2개 쌓아두어 popstate 시 history.go(1)로 복귀 가능하게 함
+  // ※ history.pushState 대신 history.go(1)을 사용해야 iOS Safari에서
+  //    이후 초기화·홈 버튼이 정상 동작함 (pushState는 navigation-locked 상태 유발)
+  history.pushState(null, '', location.href);
   history.pushState(null, '', location.href);
 
   var _backToastTimer = null;
+  var _histGoInProgress = false; // history.go(1) 재진입 방지 플래그
+
   function showBackBlockToast(){
     var el = document.getElementById('back-block-toast');
     if(!el) return;
@@ -4715,8 +4721,12 @@ document.addEventListener('DOMContentLoaded', function(){
   window.addEventListener('popstate', function(){
     // 의도된 이동(초기화·홈 버튼)은 차단하지 않음
     if(window._allowLeave) return;
-    // 뒤로가기를 눌렀을 때 즉시 다시 현재 페이지 상태를 쌓아 이탈 차단
-    history.pushState(null, '', location.href);
+    // 재진입 방지 (history.go(1)이 유발하는 forward popstate 무시)
+    if(_histGoInProgress) return;
+    _histGoInProgress = true;
+    // history.pushState 대신 history.go(1) 사용 → iOS navigation-locked 상태 방지
+    history.go(1);
+    setTimeout(function(){ _histGoInProgress = false; }, 400);
     showBackBlockToast();
   });
 
@@ -4800,7 +4810,9 @@ function saveCurrentData(){
   var ymd=kst.toISOString().slice(0,10);
   var hh=String(kst.getUTCHours()).padStart(2,'0');
   var mm=String(kst.getUTCMinutes()).padStart(2,'0');
-  var label=cropKo+' · '+ymd+' '+hh+':'+mm;
+  var addr=(d['address']||'').trim();
+  var addrShort=addr?addr.slice(0,15)+(addr.length>15?'…':''):'';
+  var label=cropKo+(addrShort?' · '+addrShort:'')+' · '+ymd+' '+hh+':'+mm;
   var key=Date.now().toString();
   try{localStorage.setItem(SL_DATA_PFX+key,JSON.stringify(d));}
   catch(e){alert('저장 실패: 저장 공간이 부족합니다.');return;}
@@ -4838,8 +4850,9 @@ function _slRenderList(){
   var el=document.getElementById('sl-list');
   if(!el)return;
   if(!list.length){el.innerHTML='<div class="sl-empty">저장된 자료가 없습니다.</div>';return;}
-  el.innerHTML=list.map(function(it){
+  el.innerHTML=list.map(function(it,idx){
     return '<div class="sl-item">'
+      +'<div class="sl-item-num">'+(idx+1)+'</div>'
       +'<div class="sl-item-info">'
         +'<div class="sl-item-label">'+it.label+'</div>'
         +'<div class="sl-item-date">'+it.ymd+' '+it.hm+'</div>'
@@ -4855,8 +4868,12 @@ function exportJSON(){
   var d=_slCollect();
   var crop=d['__crop']||'data';
   var cropKo=(typeof PROD_CROP_KO!=='undefined'&&PROD_CROP_KO[crop])?PROD_CROP_KO[crop]:crop;
+  var addr=(d['address']||'').trim().replace(/[\/\\:*?"<>|\s]+/g,'_').slice(0,15);
   var now=new Date();var kst=new Date(now.getTime()+9*3600000);
-  var fname='tonghab_'+cropKo+'_'+kst.toISOString().slice(0,10)+'.json';
+  var ymd=kst.toISOString().slice(0,10);
+  var hh=String(kst.getUTCHours()).padStart(2,'0');
+  var mm=String(kst.getUTCMinutes()).padStart(2,'0');
+  var fname='tonghab_'+cropKo+(addr?'_'+addr:'')+'_'+ymd+'_'+hh+mm+'.json';
   var blob=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});
   var url=URL.createObjectURL(blob);
   var a=document.createElement('a');a.href=url;a.download=fname;
