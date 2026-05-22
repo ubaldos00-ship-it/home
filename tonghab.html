@@ -936,6 +936,18 @@ input.needs-input:focus{
 #fullResultZone .pbar-labels{display:flex;justify-content:space-between;font-size:9px;color:#aaa;}
 #fullResultZone .pstat-note{font-size:9px;color:#aaa;margin-top:6px;line-height:1.5;}
 
+/* ── 뒤로가기 차단 토스트 ── */
+#back-block-toast{
+  position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:rgba(30,30,30,.92);color:#fff;
+  padding:11px 20px;border-radius:24px;
+  font-size:13px;font-weight:600;letter-spacing:.02em;
+  white-space:nowrap;pointer-events:none;
+  opacity:0;transition:opacity .25s,transform .25s;
+  z-index:99999;box-shadow:0 4px 16px rgba(0,0,0,.35);
+}
+#back-block-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
@@ -954,7 +966,7 @@ input.needs-input:focus{
         홈
       </a>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v21 저장: 2026-05-22 03:00)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v22 저장: 2026-05-23 09:45)</span></div>
   </div>
 </div>
 
@@ -4622,7 +4634,40 @@ document.addEventListener('DOMContentLoaded', function(){
     });
   }, 500);
 });
+
+/* ══════════════════════════════════════════
+   뒤로가기 차단 — Chrome / Safari / Android
+   입력 데이터 보호 목적
+   ══════════════════════════════════════════ */
+(function(){
+  // 현재 페이지를 history 스택에 한 번 더 쌓아 뒤로가기를 흡수
+  history.pushState(null, '', location.href);
+
+  var _backToastTimer = null;
+  function showBackBlockToast(){
+    var el = document.getElementById('back-block-toast');
+    if(!el) return;
+    if(_backToastTimer){ clearTimeout(_backToastTimer); }
+    el.classList.add('show');
+    _backToastTimer = setTimeout(function(){ el.classList.remove('show'); }, 2200);
+  }
+
+  window.addEventListener('popstate', function(){
+    // 뒤로가기를 눌렀을 때 즉시 다시 현재 페이지 상태를 쌓아 이탈 차단
+    history.pushState(null, '', location.href);
+    showBackBlockToast();
+  });
+
+  // 탭 닫기 / 주소창 직접 이동 시 경고 (beforeunload)
+  window.addEventListener('beforeunload', function(e){
+    e.preventDefault();
+    e.returnValue = '입력 중인 데이터가 있습니다. 페이지를 떠나면 데이터가 사라집니다.';
+  });
+})();
 </script>
+
+<!-- 뒤로가기 차단 안내 토스트 -->
+<div id="back-block-toast">🔒 뒤로가기 차단 — 입력 데이터 보호 중</div>
 
 </body>
 </html>
