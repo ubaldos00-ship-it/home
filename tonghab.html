@@ -940,9 +940,10 @@ input.needs-input:focus{
 #back-block-toast{
   position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);
   background:rgba(30,30,30,.92);color:#fff;
-  padding:11px 20px;border-radius:24px;
-  font-size:13px;font-weight:600;letter-spacing:.02em;
-  white-space:nowrap;pointer-events:none;
+  padding:12px 18px;border-radius:16px;
+  font-size:13px;font-weight:600;letter-spacing:.01em;
+  white-space:normal;text-align:center;line-height:1.5;
+  max-width:85vw;pointer-events:none;
   opacity:0;transition:opacity .25s,transform .25s;
   z-index:99999;box-shadow:0 4px 16px rgba(0,0,0,.35);
 }
@@ -1004,7 +1005,7 @@ input.needs-input:focus{
         홈
       </a>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v28 저장: 2026-05-23 07:21)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v29 저장: 2026-05-23 07:35)</span></div>
   </div>
 </div>
 
@@ -4698,34 +4699,45 @@ document.addEventListener('DOMContentLoaded', function(){
 });
 
 /* ══════════════════════════════════════════
-   데이터 보호 — iOS Safari 호환 방식
-   ══════════════════════════════════════════
-   iOS Safari는 history API(pushState/go)로 뒤로가기를 차단하면
-   이후 confirm() / location.replace() / 버튼 클릭이 비활성화되는
-   근본적인 제약이 있음. (Apple 보안 정책)
-   → history 조작 완전 제거
-   → 탭 닫기/주소창 이동: beforeunload 경고
-   → 뒤로가기 후 복귀: pageshow(bfcache) 감지 → 데이터 보존 안내
-   → 실수로 뒤로가도: localStorage 자동저장으로 데이터 완전 보존
+   뒤로가기 차단 + 안내 토스트
    ══════════════════════════════════════════ */
 (function(){
-  window._allowLeave = false;
+  /* 뒤로가기 차단: history 버퍼 1개 */
+  history.pushState(null, '', location.href);
 
-  /* 탭 닫기 / 주소창 직접 이동 시 경고 */
+  var _toastTimer = null;
+  function showToast(msg, dur){
+    var el = document.getElementById('back-block-toast');
+    if(!el) return;
+    if(_toastTimer) clearTimeout(_toastTimer);
+    el.innerHTML = msg;
+    el.classList.add('show');
+    _toastTimer = setTimeout(function(){ el.classList.remove('show'); }, dur||3500);
+  }
+
+  window.addEventListener('popstate', function(){
+    if(window._allowLeave) return;
+    history.pushState(null, '', location.href);
+    showToast(
+      '🔒 뒤로가기 차단 중<br>'
+      +'<span style="font-size:11px;font-weight:500;opacity:.85;">'
+      +'초기화·홈 버튼이 안 눌리면<br>새로고침 후 눌러주세요</span>',
+      4000
+    );
+  });
+
+  /* 탭 닫기 / 주소창 이동 경고 */
+  window._allowLeave = false;
   window.addEventListener('beforeunload', function(e){
     if(window._allowLeave) return;
     e.preventDefault();
     e.returnValue = '';
   });
 
-  /* 뒤로갔다가 돌아왔을 때 (bfcache 복원) 데이터 보존 안내 토스트 */
+  /* 뒤로갔다 돌아왔을 때(bfcache) 데이터 보존 안내 */
   window.addEventListener('pageshow', function(e){
     if(!e.persisted) return;
-    var el = document.getElementById('back-block-toast');
-    if(!el) return;
-    el.textContent = '✅ 데이터 자동 보호 — 입력 내용이 유지됩니다';
-    el.classList.add('show');
-    setTimeout(function(){ el.classList.remove('show'); }, 3000);
+    showToast('✅ 데이터 자동 보호 — 입력 내용이 유지됩니다', 3000);
   });
 })();
 </script>
