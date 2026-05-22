@@ -904,7 +904,7 @@ input.needs-input:focus{
         홈
       </a>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v18 저장: 2026-05-22 00:35)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v19 저장: 2026-05-22 00:55)</span></div>
   </div>
 </div>
 
@@ -2383,7 +2383,9 @@ function updateABDerived(){
   const waR = (!isNaN(wa)&&wa>0) ? roundWidthForLen(wa) : NaN;
   const wbR = (!isNaN(wb)&&wb>0) ? roundWidthForLen(wb) : NaN;
   put('calcALen3','calcALen3Sub', (!isNaN(waR)&&waR>0) ? 30000/waR : NaN, '30000 ÷ 평균너비(' + (isNaN(waR)?'-':waR) + ')');
+  if(!isNaN(waR)&&waR>0){const _la=30000/waR;const _eA=document.getElementById('calcALen3Sub');if(_eA)_eA.innerHTML='30000 ÷ 평균너비('+waR+') / <span style="color:#C0392B;font-weight:700;">'+_la.toFixed(1)+'÷2 = '+(_la/2).toFixed(1)+'</span>';}
   put('calcBLen3','calcBLen3Sub', (!isNaN(wbR)&&wbR>0) ? 30000/wbR : NaN, '30000 ÷ 평균너비(' + (isNaN(wbR)?'-':wbR) + ')');
+  if(!isNaN(wbR)&&wbR>0){const _lb=30000/wbR;const _eB=document.getElementById('calcBLen3Sub');if(_eB)_eB.innerHTML='30000 ÷ 평균너비('+wbR+') / <span style="color:#C0392B;font-weight:700;">'+_lb.toFixed(1)+'÷2 = '+(_lb/2).toFixed(1)+'</span>';}
   updateRequiredHighlights();
 }
 
@@ -2812,7 +2814,7 @@ function renderUnifiedResult(state){
     document.getElementById('outWA_sub').textContent = '';
     const waR=roundWidthForLen(waA); const lenA=(30000/waR);
     document.getElementById('outLenA').textContent = lenA.toFixed(1) + ' cm';
-    document.getElementById('outLenA_raw').textContent = '30000 ÷ ' + waR + ' = ' + lenA.toFixed(1);
+    document.getElementById('outLenA_raw').innerHTML = '30000 ÷ ' + waR + ' = ' + lenA.toFixed(1) + ' / <span style="color:#C0392B;font-weight:700;">' + lenA.toFixed(1) + '÷2 = ' + (lenA/2).toFixed(1) + '</span>';
   } else {
     document.getElementById('outWA').textContent = '—';
     document.getElementById('outWA_sub').textContent = '미입력';
@@ -2883,7 +2885,7 @@ function renderUnifiedResult(state){
       document.getElementById('outWB_sub').textContent = '';
       const wbR=roundWidthForLen(wbA); const lenB=(30000/wbR);
       document.getElementById('outLenB').textContent = lenB.toFixed(1) + ' cm';
-      document.getElementById('outLenB_raw').textContent = '30000 ÷ ' + wbR + ' = ' + lenB.toFixed(1);
+      document.getElementById('outLenB_raw').innerHTML = '30000 ÷ ' + wbR + ' = ' + lenB.toFixed(1) + ' / <span style="color:#C0392B;font-weight:700;">' + lenB.toFixed(1) + '÷2 = ' + (lenB/2).toFixed(1) + '</span>';
     } else {
       document.getElementById('outWB').textContent = '—';
       document.getElementById('outWB_sub').textContent = '미입력';
