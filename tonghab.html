@@ -966,7 +966,7 @@ input.needs-input:focus{
         홈
       </a>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v22 저장: 2026-05-23 10:20)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v23 저장: 2026-05-23 11:00)</span></div>
   </div>
 </div>
 
@@ -4672,6 +4672,116 @@ document.addEventListener('DOMContentLoaded', function(){
 
 <!-- 뒤로가기 차단 안내 토스트 -->
 <div id="back-block-toast">🔒 뒤로가기 차단 — 입력 데이터 보호 중</div>
+
+<script>
+/* ══════════════════════════════════════════
+   자동 저장 / 복원 — localStorage 기반
+   새로고침·이탈 후 입력 데이터 자동 복원
+   ══════════════════════════════════════════ */
+(function(){
+  var SAVE_KEY = 'tonghabAutoSave_v1';
+  var _saveTimer = null;
+  // 의도적 초기화(reset= URL)로 진입 시 저장 데이터 삭제
+  var isReset = location.search.indexOf('reset=') !== -1;
+  if(isReset){ try{ localStorage.removeItem(SAVE_KEY); }catch(e){} }
+
+  /* ── 저장 ── */
+  function doSave(){
+    try{
+      var d = {};
+      // 모든 input / select / textarea (ID 있는 것만)
+      document.querySelectorAll('input[id], select[id], textarea[id]').forEach(function(el){
+        if(el.type === 'checkbox'){ d[el.id] = el.checked; }
+        else if(el.type === 'radio'){ if(el.checked) d['__r_'+el.name] = el.value; }
+        else { d[el.id] = el.value; }
+      });
+      // 작물 선택 버튼 (.crop-btn.active)
+      var ac = document.querySelector('.crop-btn.active');
+      if(ac) d['__crop'] = ac.getAttribute('data-crop');
+      // 지역 선택 버튼 (.ptog-btn.p-active-region)
+      var ar = document.querySelector('.ptog-btn.p-active-region');
+      if(ar) d['__region'] = ar.id.replace('prod-btn-','');
+      // 품종 선택 버튼 (#prod-variety-btns .ptog-btn.p-active-var)
+      var av = document.querySelector('#prod-variety-btns .ptog-btn.p-active-var');
+      if(av) d['__varIdx'] = av.id.replace('pvar-','');
+      localStorage.setItem(SAVE_KEY, JSON.stringify(d));
+    }catch(e){}
+  }
+  function autoSave(){
+    clearTimeout(_saveTimer);
+    _saveTimer = setTimeout(doSave, 600);
+  }
+
+  /* ── 복원 ── */
+  function autoRestore(){
+    try{
+      var saved = localStorage.getItem(SAVE_KEY);
+      if(!saved) return;
+      var d = JSON.parse(saved);
+
+      // Step1: 작물 선택 복원 (UI 구조 변경을 먼저)
+      if(d['__crop'] && typeof selectCrop === 'function'){
+        var cb = document.querySelector('.crop-btn[data-crop="'+d['__crop']+'"]');
+        if(cb) selectCrop(cb);
+      }
+
+      setTimeout(function(){
+        // Step2: 지역 복원
+        if(d['__region'] && typeof prodSelectRegion === 'function'){
+          prodSelectRegion(d['__region']);
+        }
+        // Step3: 품종 복원
+        if(d['__varIdx'] !== undefined){
+          var vb = document.getElementById('pvar-'+d['__varIdx']);
+          if(vb) vb.click();
+        }
+
+        setTimeout(function(){
+          // Step4: 모든 입력값 복원
+          document.querySelectorAll('input[id], select[id], textarea[id]').forEach(function(el){
+            if(el.readOnly || el.disabled) return;
+            if(el.type === 'checkbox'){
+              if(d[el.id] !== undefined){ el.checked = !!d[el.id]; el.dispatchEvent(new Event('change',{bubbles:true})); }
+            } else if(el.type === 'radio'){
+              if(d['__r_'+el.name] === el.value){ el.checked = true; el.dispatchEvent(new Event('change',{bubbles:true})); }
+            } else {
+              if(d[el.id] !== undefined && d[el.id] !== ''){
+                el.value = d[el.id];
+                el.dispatchEvent(new Event('input',{bubbles:true}));
+                el.dispatchEvent(new Event('change',{bubbles:true}));
+              }
+            }
+          });
+
+          // Step5: 기점선정 재계산 트리거
+          setTimeout(function(){
+            ['waAvg','wbAvg','heightA','heightB','aN','bN'].forEach(function(id){
+              var el = document.getElementById(id);
+              if(el && el.value) el.dispatchEvent(new Event('input',{bubbles:true}));
+            });
+          }, 300);
+        }, 400);
+      }, 500);
+    }catch(e){}
+  }
+
+  // 이벤트 리스너 등록 (입력/변경/작물버튼 클릭)
+  document.addEventListener('input', autoSave);
+  document.addEventListener('change', autoSave);
+  document.addEventListener('click', function(e){
+    if(e.target.classList.contains('crop-btn') || e.target.classList.contains('ptog-btn')){
+      setTimeout(autoSave, 100);
+    }
+  });
+
+  // 복원: reset이 아닐 때만, 앱 초기화 완료 후 실행
+  if(!isReset){
+    document.addEventListener('DOMContentLoaded', function(){
+      setTimeout(autoRestore, 800);
+    });
+  }
+})();
+</script>
 
 </body>
 </html>
