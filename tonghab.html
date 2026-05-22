@@ -972,6 +972,7 @@ input.needs-input:focus{
 .sl-item-num{min-width:22px;height:22px;background:#27500A;color:#fff;border-radius:50%;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .sl-item-info{flex:1;min-width:0;}
 .sl-item-label{font-size:13px;font-weight:700;color:#1a1918;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sl-item-addr{font-size:11px;color:#5a7a3a;font-weight:600;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .sl-item-date{font-size:10px;color:#999;margin-top:2px;}
 .sl-item-load{padding:7px 11px;background:#0A3A8C;border:none;border-radius:7px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;}
 .sl-item-del{padding:7px 9px;background:#fdecea;border:none;border-radius:7px;color:#8B0000;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;}
@@ -1003,7 +1004,7 @@ input.needs-input:focus{
         홈
       </a>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v26 저장: 2026-05-23 14:30)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v27 저장: 2026-05-23 15:10)</span></div>
   </div>
 </div>
 
@@ -4817,7 +4818,7 @@ function saveCurrentData(){
   try{localStorage.setItem(SL_DATA_PFX+key,JSON.stringify(d));}
   catch(e){alert('저장 실패: 저장 공간이 부족합니다.');return;}
   var list=_slGetList();
-  list.unshift({key:key,label:label,ymd:ymd,hm:hh+':'+mm,crop:cropKo});
+  list.unshift({key:key,label:label,ymd:ymd,hm:hh+':'+mm,crop:cropKo,addr:addrShort});
   if(list.length>30){var rm=list.splice(30);rm.forEach(function(r){try{localStorage.removeItem(SL_DATA_PFX+r.key);}catch(e){}});}
   _slSetList(list);
   _slRenderList();
@@ -4851,10 +4852,14 @@ function _slRenderList(){
   if(!el)return;
   if(!list.length){el.innerHTML='<div class="sl-empty">저장된 자료가 없습니다.</div>';return;}
   el.innerHTML=list.map(function(it,idx){
+    // 번호: 처음 저장 = 1, 최신 저장 = list.length (역순)
+    var num=list.length-idx;
+    var addrLine=it.addr?'<div class="sl-item-addr">📍 '+it.addr+'</div>':'';
     return '<div class="sl-item">'
-      +'<div class="sl-item-num">'+(idx+1)+'</div>'
+      +'<div class="sl-item-num">'+num+'</div>'
       +'<div class="sl-item-info">'
         +'<div class="sl-item-label">'+it.label+'</div>'
+        +addrLine
         +'<div class="sl-item-date">'+it.ymd+' '+it.hm+'</div>'
       +'</div>'
       +'<button class="sl-item-load" onclick="loadSavedData(\''+it.key+'\')">불러오기</button>'
