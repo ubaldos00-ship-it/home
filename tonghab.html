@@ -966,7 +966,7 @@ input.needs-input:focus{
         홈
       </a>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v23 저장: 2026-05-23 11:00)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v24 저장: 2026-05-23 11:40)</span></div>
   </div>
 </div>
 
@@ -4654,6 +4654,8 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   window.addEventListener('popstate', function(){
+    // 의도된 이동(초기화·홈 버튼)은 차단하지 않음
+    if(window._allowLeave) return;
     // 뒤로가기를 눌렀을 때 즉시 다시 현재 페이지 상태를 쌓아 이탈 차단
     history.pushState(null, '', location.href);
     showBackBlockToast();
@@ -4681,9 +4683,13 @@ document.addEventListener('DOMContentLoaded', function(){
 (function(){
   var SAVE_KEY = 'tonghabAutoSave_v1';
   var _saveTimer = null;
-  // 의도적 초기화(reset= URL)로 진입 시 저장 데이터 삭제
+  // 의도적 초기화(reset= URL)로 진입 시 저장 데이터 삭제 + URL 즉시 정리
+  // URL 정리를 하지 않으면 이 상태로 새로고침 시 다음에도 복원이 생략되는 문제 발생
   var isReset = location.search.indexOf('reset=') !== -1;
-  if(isReset){ try{ localStorage.removeItem(SAVE_KEY); }catch(e){} }
+  if(isReset){
+    try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
+    try{ history.replaceState(null, '', location.pathname); }catch(e){}
+  }
 
   /* ── 저장 ── */
   function doSave(){
