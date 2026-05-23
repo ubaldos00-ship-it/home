@@ -1020,7 +1020,7 @@ input.needs-input:focus{
         홈
       </a>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v32 저장: 2026-05-23 11:43)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v33 저장: 2026-05-23 12:00)</span></div>
   </div>
 </div>
 
@@ -5035,7 +5035,7 @@ function _slCollect(){
 }
 
 /* 데이터 화면에 적용 (자동저장 복원과 동일 방식) */
-function _slApply(d){
+function _slApply(d, _onDone){
   if(d['__crop']&&typeof selectCrop==='function'){
     var cb=document.querySelector('.crop-btn[data-crop="'+d['__crop']+'"]');if(cb)selectCrop(cb);
   }
@@ -5055,9 +5055,25 @@ function _slApply(d){
         ['waAvg','wbAvg','heightA','heightB','aN','bN'].forEach(function(id){
           var el=document.getElementById(id);if(el&&el.value)el.dispatchEvent(new Event('input',{bubbles:true}));
         });
+        // 복원 완료 후 맨 위 스크롤 (Android·iOS 공통)
+        _slScrollToTop();
+        if(typeof _onDone==='function') _onDone();
       },300);
     },400);
   },500);
+}
+
+/* 불러오기 후 화면 맨 위(①공통사항)로 강제 스크롤 */
+function _slScrollToTop(){
+  // 여러 번 연속 실행하여 Android DOM 갱신 후에도 확실히 고정
+  var t = [0, 100, 300, 600];
+  t.forEach(function(ms){
+    setTimeout(function(){
+      window.scrollTo(0,0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    }, ms);
+  });
 }
 
 function _slGetList(){try{return JSON.parse(localStorage.getItem(SL_LIST_KEY)||'[]');}catch(e){return[];}}
@@ -5144,9 +5160,8 @@ function loadSavedData(key){
   try{
     var s=localStorage.getItem(SL_DATA_PFX+key);
     if(!s){alert('저장 데이터를 찾을 수 없습니다.');return;}
-    _slApply(JSON.parse(s));
     closeSaveLoadModal();
-    setTimeout(function(){ window.scrollTo(0,0); },600);
+    _slApply(JSON.parse(s)); // 내부에서 복원 완료 후 자동 스크롤
   }catch(e){alert('불러오기 실패: '+e.message);}
 }
 
@@ -5207,9 +5222,8 @@ function importJSON(input){
     try{
       var d=JSON.parse(e.target.result);
       if(!confirm('JSON 파일을 불러옵니다.\n현재 입력 내용이 덮어씌워집니다. 계속할까요?'))return;
-      _slApply(d);
       closeSaveLoadModal();
-      setTimeout(function(){ window.scrollTo(0,0); },600);
+      _slApply(d); // 내부에서 복원 완료 후 자동 스크롤
     }catch(err){alert('파일 읽기 실패: JSON 형식이 아닙니다.');}
   };
   reader.readAsText(file);
