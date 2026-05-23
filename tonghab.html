@@ -1020,7 +1020,7 @@ input.needs-input:focus{
         홈
       </a>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v31 저장: 2026-05-23 11:09)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v32 저장: 2026-05-23 11:43)</span></div>
   </div>
 </div>
 
@@ -1710,11 +1710,14 @@ input.needs-input:focus{
             <!-- 마늘/양파 -->
             <div id="pa-go-section">
               <div class="pab-field">
-                <label>20개당 생중량</label>
-                <div class="pab-input-wrap preq-border" id="pwrap-a-weight">
-                  <input type="number" id="pa-weight" placeholder="예)1,300" min="0" inputmode="numeric"
-                    oninput="prodCalcLive('a');prodCheckGarlicWarn('a');prodAddFmt('pa-weight');prodCheckFilled('pa-weight')">
-                  <span class="pab-unit">g</span>
+                <label>20개당 생중량 <span style="font-size:10px;color:#888;">(여러 번 측정 가능)</span></label>
+                <input type="hidden" id="pa-weight">
+                <div class="pmw-wrap preq-border" id="pwrap-a-weight">
+                  <div class="pmw-rows" id="pmw-pa-weight"></div>
+                  <div class="pmw-footer">
+                    <span class="pmw-sum" id="pmw-sum-pa-weight">합계: —</span>
+                    <button type="button" class="pmw-add-btn" onclick="_pmwAddRow('pa-weight','a','go')">＋ 추가</button>
+                  </div>
                 </div>
                 <div class="pfmt-display" id="pfmt-pa-weight"></div>
                 <div class="pwarn-box" id="pa-weight-warn"></div>
@@ -1847,11 +1850,14 @@ input.needs-input:focus{
             <!-- 마늘/양파 -->
             <div id="pb-go-section">
               <div class="pab-field">
-                <label>20개당 생중량</label>
-                <div class="pab-input-wrap preq-border" id="pwrap-b-weight">
-                  <input type="number" id="pb-weight" placeholder="예)1,300" min="0" inputmode="numeric"
-                    oninput="prodCalcLive('b');prodCheckGarlicWarn('b');prodAddFmt('pb-weight');prodCheckFilled('pb-weight')">
-                  <span class="pab-unit">g</span>
+                <label>20개당 생중량 <span style="font-size:10px;color:#888;">(여러 번 측정 가능)</span></label>
+                <input type="hidden" id="pb-weight">
+                <div class="pmw-wrap preq-border" id="pwrap-b-weight">
+                  <div class="pmw-rows" id="pmw-pb-weight"></div>
+                  <div class="pmw-footer">
+                    <span class="pmw-sum" id="pmw-sum-pb-weight">합계: —</span>
+                    <button type="button" class="pmw-add-btn" onclick="_pmwAddRow('pb-weight','b','go')">＋ 추가</button>
+                  </div>
                 </div>
                 <div class="pfmt-display" id="pfmt-pb-weight"></div>
                 <div class="pwarn-box" id="pb-weight-warn"></div>
@@ -4557,7 +4563,7 @@ document.addEventListener('DOMContentLoaded', function(){
       <div class="sl-file-row">
         <button class="sl-file-btn" onclick="exportJSON()">📤 JSON 내보내기</button>
         <label class="sl-file-btn">📥 JSON 불러오기
-          <input type="file" accept=".json" style="display:none;" onchange="importJSON(this)">
+          <input type="file" accept="application/json,text/plain,.json" style="display:none;" onchange="importJSON(this)">
         </label>
       </div>
     </div>
@@ -4845,6 +4851,8 @@ document.addEventListener('DOMContentLoaded', function(){
 
 // 필드ID → {ab, type} 매핑
 var PMW_FIELDS = [
+  {id:'pa-weight',      ab:'a', type:'go'},
+  {id:'pb-weight',      ab:'b', type:'go'},
   {id:'pa-cab-weight',  ab:'a', type:'cab'},
   {id:'pb-cab-weight',  ab:'b', type:'cab'},
   {id:'pa-rad-weight',  ab:'a', type:'rad'},
@@ -4857,6 +4865,7 @@ var PMW_FIELDS = [
 
 // 각 필드의 oninput 콜백 매핑
 function _pmwGetCallback(ab, type){
+  if(type==='go')     return function(id){ prodCalcLive(ab); prodCheckGarlicWarn(ab); prodAddFmt(id); prodCheckFilled(id); };
   if(type==='cab')    return function(id){ prodCalcLiveCabbage(ab); prodAddFmt(id); prodCheckFilled(id); };
   if(type==='rad')    return function(id){ prodCalcLiveRadish(ab);  prodAddFmt(id); prodCheckFilled(id); };
   if(type==='tok')    return function(id){ prodCalcLiveTongak(ab);  prodAddFmt(id); prodCheckFilled(id); };
@@ -5054,20 +5063,55 @@ function _slApply(d){
 function _slGetList(){try{return JSON.parse(localStorage.getItem(SL_LIST_KEY)||'[]');}catch(e){return[];}}
 function _slSetList(l){try{localStorage.setItem(SL_LIST_KEY,JSON.stringify(l));}catch(e){}}
 
+/* ── iOS 모달 스크롤 터치 핸들러 ── */
+var _slTouchStartY = 0;
+function _slListTouchStart(e){
+  _slTouchStartY = (e.touches[0]||e.changedTouches[0]).clientY;
+}
+function _slListTouchMove(e){
+  // 배경까지 전파 차단 (모달 핸들러가 보지 못하도록)
+  e.stopPropagation();
+  var list = document.getElementById('sl-list');
+  if(!list) return;
+  var dy = _slTouchStartY - (e.touches[0]||e.changedTouches[0]).clientY;
+  var atTop    = list.scrollTop <= 0;
+  var atBottom = list.scrollTop + list.clientHeight >= list.scrollHeight - 1;
+  // 경계에서 overscroll이 배경으로 넘어가지 않도록 차단
+  if((atTop && dy < 0)||(atBottom && dy > 0)){
+    e.preventDefault();
+  }
+}
+function _slModalTouchMove(e){
+  // 목록 영역 바깥(모달 배경)은 스크롤 완전 차단
+  e.preventDefault();
+}
+
 /* 모달 열기/닫기 */
 function openSaveLoadModal(){
   _slRenderList();
-  document.getElementById('sl-modal').classList.add('show');
-  // 배경 스크롤 차단 (position:fixed 제거 → iOS 스크롤 점프 방지)
+  var modal = document.getElementById('sl-modal');
+  var list  = document.getElementById('sl-list');
+  modal.classList.add('show');
   document.body.style.overflow='hidden';
-  // 저장목록을 최신(맨 위)부터 보이도록 스크롤 리셋
-  var sl=document.getElementById('sl-list');
-  if(sl) sl.scrollTop=0;
+  if(list) list.scrollTop=0;
+  // iOS 스크롤 이벤트 리스너 등록
+  if(list){
+    list.addEventListener('touchstart', _slListTouchStart, {passive:true});
+    list.addEventListener('touchmove',  _slListTouchMove,  {passive:false});
+  }
+  modal.addEventListener('touchmove', _slModalTouchMove, {passive:false});
 }
 function closeSaveLoadModal(){
-  document.getElementById('sl-modal').classList.remove('show');
-  // 배경 스크롤 복원
+  var modal = document.getElementById('sl-modal');
+  var list  = document.getElementById('sl-list');
+  modal.classList.remove('show');
   document.body.style.overflow='';
+  // 리스너 정리
+  if(list){
+    list.removeEventListener('touchstart', _slListTouchStart);
+    list.removeEventListener('touchmove',  _slListTouchMove);
+  }
+  modal.removeEventListener('touchmove', _slModalTouchMove);
 }
 
 /* 지금 바로 저장 */
