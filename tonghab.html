@@ -968,7 +968,22 @@ input.needs-input:focus{
 .sl-save-now{width:100%;padding:14px;background:#27500A;border:none;border-radius:10px;color:#fff;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:14px;letter-spacing:.02em;}
 .sl-save-now:active{opacity:.82;}
 .sl-section{font-size:11px;font-weight:700;color:#888;letter-spacing:.06em;text-transform:uppercase;margin-bottom:7px;}
-.sl-list{display:flex;flex-direction:column;gap:7px;margin-bottom:14px;max-height:300px;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;}
+.sl-list{display:flex;flex-direction:column;gap:7px;margin-bottom:14px;max-height:50vh;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;}
+/* ── 계산식 접기/펼치기 바 ── */
+.ftbl-toggle-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#27500A;cursor:pointer;user-select:none;}
+.ftbl-toggle-bar-title{color:#fff;font-size:12px;font-weight:700;letter-spacing:.03em;}
+.ftbl-toggle-btn{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);color:#fff;padding:3px 12px;border-radius:12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;}
+/* ── 다중중량 입력 ── */
+.pmw-wrap{width:100%;border:1.5px solid #c8d4c0;border-radius:10px;padding:8px 10px;background:#f9fbf7;box-sizing:border-box;}
+.pmw-wrap.pfilled{border-color:#3a7d44 !important;box-shadow:0 0 0 2px rgba(58,125,68,.18);}
+.pmw-row{display:flex;align-items:center;gap:6px;margin-bottom:5px;}
+.pmw-input{flex:1;border:1px solid #ccc;border-radius:8px;padding:8px 10px;font-size:15px;text-align:right;min-width:0;font-family:inherit;background:#fff;-webkit-appearance:none;}
+.pmw-input:focus{border-color:#3a7d44;outline:none;box-shadow:0 0 0 2px rgba(58,125,68,.15);}
+.pmw-del{width:30px;height:30px;border-radius:50%;background:#e74c3c;color:#fff;border:none;font-size:20px;line-height:1;font-weight:700;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.pmw-footer{display:flex;align-items:center;justify-content:space-between;margin-top:4px;padding-top:6px;border-top:1px dashed #ddd;}
+.pmw-sum{font-size:13px;font-weight:700;color:#27500A;}
+.pmw-add-btn{background:#27500A;color:#fff;border:none;border-radius:8px;padding:5px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
+.pmw-add-btn:active{opacity:.8;}
 .sl-item{background:#f8f6f1;border:1px solid #e0ddd6;border-radius:10px;padding:9px 10px;display:flex;align-items:center;gap:7px;}
 .sl-item-num{min-width:22px;height:22px;background:#27500A;color:#fff;border-radius:50%;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .sl-item-info{flex:1;min-width:0;}
@@ -1005,7 +1020,7 @@ input.needs-input:focus{
         홈
       </a>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v30 저장: 2026-05-23 07:38)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v31 저장: 2026-05-23 11:09)</span></div>
   </div>
 </div>
 
@@ -1571,8 +1586,14 @@ input.needs-input:focus{
 
       <!-- 계산식 표 -->
       <div class="formula-card" id="formulaCard" style="display:none;">
-        <div class="ftbl-head" id="ftblHead"></div>
-        <div id="ftblRows"></div>
+        <div class="ftbl-toggle-bar" onclick="(function(){var c=document.getElementById('ftblContent');var b=document.getElementById('ftbl-toggle-btn');var show=c.style.display==='none';c.style.display=show?'':'none';b.textContent=show?'▲ 접기':'▼ 계산식 펼치기';})()">
+          <span class="ftbl-toggle-bar-title">📐 계산식</span>
+          <button class="ftbl-toggle-btn" id="ftbl-toggle-btn" onclick="event.stopPropagation();(function(){var c=document.getElementById('ftblContent');var b=document.getElementById('ftbl-toggle-btn');var show=c.style.display==='none';c.style.display=show?'':'none';b.textContent=show?'▲ 접기':'▼ 계산식 펼치기';})()">▼ 계산식 펼치기</button>
+        </div>
+        <div id="ftblContent" style="display:none;">
+          <div class="ftbl-head" id="ftblHead"></div>
+          <div id="ftblRows"></div>
+        </div>
       </div>
 
       <!-- 요도 -->
@@ -1660,10 +1681,14 @@ input.needs-input:focus{
             <!-- 감자 -->
             <div id="pa-potato-section" style="display:none">
               <div class="pab-field">
-                <label>20g이상 중량</label>
-                <div class="pab-input-wrap preq-border" id="pwrap-a-potato-over">
-                  <input type="number" id="pa-potato-over" placeholder="예)9,500" min="0" inputmode="numeric" oninput="prodAddFmt('pa-potato-over');prodCheckFilled('pa-potato-over')">
-                  <span class="pab-unit">g</span>
+                <label>20g이상 중량 <span style="font-size:10px;color:#888;">(여러 번 측정 가능)</span></label>
+                <input type="hidden" id="pa-potato-over">
+                <div class="pmw-wrap preq-border" id="pwrap-a-potato-over">
+                  <div class="pmw-rows" id="pmw-pa-potato-over"></div>
+                  <div class="pmw-footer">
+                    <span class="pmw-sum" id="pmw-sum-pa-potato-over">합계: —</span>
+                    <button type="button" class="pmw-add-btn" onclick="_pmwAddRow('pa-potato-over','a','potato')">＋ 추가</button>
+                  </div>
                 </div>
                 <div class="pfmt-display" id="pfmt-pa-potato-over"></div>
               </div>
@@ -1715,8 +1740,15 @@ input.needs-input:focus{
                 <div class="pfmt-display" id="pfmt-pa-cab-head"></div></div>
               <div class="pab-field"><label>조사 포기수</label>
                 <div class="pab-input-wrap"><input type="number" id="pa-cab-sample" placeholder="6" min="1" inputmode="numeric" oninput="prodCalcLiveCabbage('a')"><span class="pab-unit">개</span></div></div>
-              <div class="pab-field"><label>조사포기 중량</label>
-                <div class="pab-input-wrap preq-border" id="pwrap-a-cab-weight"><input type="number" id="pa-cab-weight" placeholder="예)17,856" min="0" inputmode="numeric" oninput="prodCalcLiveCabbage('a');prodAddFmt('pa-cab-weight');prodCheckFilled('pa-cab-weight')"><span class="pab-unit">g</span></div>
+              <div class="pab-field"><label>조사포기 중량 <span style="font-size:10px;color:#888;">(여러 번 측정 가능)</span></label>
+                <input type="hidden" id="pa-cab-weight">
+                <div class="pmw-wrap preq-border" id="pwrap-a-cab-weight">
+                  <div class="pmw-rows" id="pmw-pa-cab-weight"></div>
+                  <div class="pmw-footer">
+                    <span class="pmw-sum" id="pmw-sum-pa-cab-weight">합계: —</span>
+                    <button type="button" class="pmw-add-btn" onclick="_pmwAddRow('pa-cab-weight','a','cab')">＋ 추가</button>
+                  </div>
+                </div>
                 <div class="pfmt-display" id="pfmt-pa-cab-weight"></div></div>
               <div class="pab-field"><label>미결구 포기수</label>
                 <div class="pab-input-wrap"><input type="number" id="pa-cab-miss" placeholder="예)1" min="0" inputmode="numeric"><span class="pab-unit">개</span></div></div>
@@ -1729,8 +1761,15 @@ input.needs-input:focus{
                 <div class="pfmt-display" id="pfmt-pa-rad-count"></div></div>
               <div class="pab-field"><label>조사 개수</label>
                 <div class="pab-input-wrap"><input type="number" id="pa-rad-sample" placeholder="10" min="1" inputmode="numeric" oninput="prodCalcLiveRadish('a')"><span class="pab-unit">개</span></div></div>
-              <div class="pab-field"><label id="pa-rad-weight-lbl">10개 중량</label>
-                <div class="pab-input-wrap preq-border" id="pwrap-a-rad-weight"><input type="number" id="pa-rad-weight" placeholder="예)5,000" min="0" inputmode="numeric" oninput="prodCalcLiveRadish('a');prodAddFmt('pa-rad-weight');prodCheckFilled('pa-rad-weight')"><span class="pab-unit">g</span></div>
+              <div class="pab-field"><label id="pa-rad-weight-lbl">10개 중량 <span style="font-size:10px;color:#888;">(여러 번 측정 가능)</span></label>
+                <input type="hidden" id="pa-rad-weight">
+                <div class="pmw-wrap preq-border" id="pwrap-a-rad-weight">
+                  <div class="pmw-rows" id="pmw-pa-rad-weight"></div>
+                  <div class="pmw-footer">
+                    <span class="pmw-sum" id="pmw-sum-pa-rad-weight">합계: —</span>
+                    <button type="button" class="pmw-add-btn" onclick="_pmwAddRow('pa-rad-weight','a','rad')">＋ 추가</button>
+                  </div>
+                </div>
                 <div class="pfmt-display" id="pfmt-pa-rad-weight"></div></div>
               <div class="plive-box" id="pa-rad-live"><span class="plive-label">개당 중량</span><span class="plive-val" id="pa-rad-live-val">—</span></div>
             </div>
@@ -1741,8 +1780,15 @@ input.needs-input:focus{
                 <div class="pfmt-display" id="pfmt-pa-tok-count"></div></div>
               <div class="pab-field"><label>조사 개수</label>
                 <div class="pab-input-wrap"><input type="number" id="pa-tok-sample" value="20" placeholder="20" min="1" inputmode="numeric" oninput="prodCalcLiveTongak('a')"><span class="pab-unit">개</span></div></div>
-              <div class="pab-field"><label>20개 중량</label>
-                <div class="pab-input-wrap preq-border" id="pwrap-a-tok-weight"><input type="number" id="pa-tok-weight" placeholder="예)1,500" min="0" inputmode="numeric" oninput="prodCalcLiveTongak('a');prodAddFmt('pa-tok-weight');prodCheckFilled('pa-tok-weight')"><span class="pab-unit">g</span></div>
+              <div class="pab-field"><label>20개 중량 <span style="font-size:10px;color:#888;">(여러 번 측정 가능)</span></label>
+                <input type="hidden" id="pa-tok-weight">
+                <div class="pmw-wrap preq-border" id="pwrap-a-tok-weight">
+                  <div class="pmw-rows" id="pmw-pa-tok-weight"></div>
+                  <div class="pmw-footer">
+                    <span class="pmw-sum" id="pmw-sum-pa-tok-weight">합계: —</span>
+                    <button type="button" class="pmw-add-btn" onclick="_pmwAddRow('pa-tok-weight','a','tok')">＋ 추가</button>
+                  </div>
+                </div>
                 <div class="pfmt-display" id="pfmt-pa-tok-weight"></div></div>
               <div class="plive-box" id="pa-tok-live"><span class="plive-label">개당 중량</span><span class="plive-val" id="pa-tok-live-val">—</span></div>
             </div>
@@ -1783,8 +1829,15 @@ input.needs-input:focus{
             </div>
             <!-- 감자 -->
             <div id="pb-potato-section" style="display:none">
-              <div class="pab-field"><label>20g이상 중량</label>
-                <div class="pab-input-wrap preq-border" id="pwrap-b-potato-over"><input type="number" id="pb-potato-over" placeholder="예)9,500" min="0" inputmode="numeric" oninput="prodAddFmt('pb-potato-over');prodCheckFilled('pb-potato-over')"><span class="pab-unit">g</span></div>
+              <div class="pab-field"><label>20g이상 중량 <span style="font-size:10px;color:#888;">(여러 번 측정 가능)</span></label>
+                <input type="hidden" id="pb-potato-over">
+                <div class="pmw-wrap preq-border" id="pwrap-b-potato-over">
+                  <div class="pmw-rows" id="pmw-pb-potato-over"></div>
+                  <div class="pmw-footer">
+                    <span class="pmw-sum" id="pmw-sum-pb-potato-over">합계: —</span>
+                    <button type="button" class="pmw-add-btn" onclick="_pmwAddRow('pb-potato-over','b','potato')">＋ 추가</button>
+                  </div>
+                </div>
                 <div class="pfmt-display" id="pfmt-pb-potato-over"></div></div>
               <div class="pab-field"><label>20g미만 중량</label>
                 <div class="pab-input-wrap"><input type="number" id="pb-potato-under" placeholder="예)90" min="0" inputmode="numeric"><span class="pab-unit">g</span></div></div>
@@ -1824,8 +1877,15 @@ input.needs-input:focus{
                 <div class="pfmt-display" id="pfmt-pb-cab-head"></div></div>
               <div class="pab-field"><label>조사 포기수</label>
                 <div class="pab-input-wrap"><input type="number" id="pb-cab-sample" placeholder="6" min="1" inputmode="numeric" oninput="prodCalcLiveCabbage('b')"><span class="pab-unit">개</span></div></div>
-              <div class="pab-field"><label>조사포기 중량</label>
-                <div class="pab-input-wrap preq-border" id="pwrap-b-cab-weight"><input type="number" id="pb-cab-weight" placeholder="예)17,856" min="0" inputmode="numeric" oninput="prodCalcLiveCabbage('b');prodAddFmt('pb-cab-weight');prodCheckFilled('pb-cab-weight')"><span class="pab-unit">g</span></div>
+              <div class="pab-field"><label>조사포기 중량 <span style="font-size:10px;color:#888;">(여러 번 측정 가능)</span></label>
+                <input type="hidden" id="pb-cab-weight">
+                <div class="pmw-wrap preq-border" id="pwrap-b-cab-weight">
+                  <div class="pmw-rows" id="pmw-pb-cab-weight"></div>
+                  <div class="pmw-footer">
+                    <span class="pmw-sum" id="pmw-sum-pb-cab-weight">합계: —</span>
+                    <button type="button" class="pmw-add-btn" onclick="_pmwAddRow('pb-cab-weight','b','cab')">＋ 추가</button>
+                  </div>
+                </div>
                 <div class="pfmt-display" id="pfmt-pb-cab-weight"></div></div>
               <div class="pab-field"><label>미결구 포기수</label>
                 <div class="pab-input-wrap"><input type="number" id="pb-cab-miss" placeholder="예)1" min="0" inputmode="numeric"><span class="pab-unit">개</span></div></div>
@@ -1838,8 +1898,15 @@ input.needs-input:focus{
                 <div class="pfmt-display" id="pfmt-pb-rad-count"></div></div>
               <div class="pab-field"><label>조사 개수</label>
                 <div class="pab-input-wrap"><input type="number" id="pb-rad-sample" placeholder="10" min="1" inputmode="numeric" oninput="prodCalcLiveRadish('b')"><span class="pab-unit">개</span></div></div>
-              <div class="pab-field"><label id="pb-rad-weight-lbl">10개 중량</label>
-                <div class="pab-input-wrap preq-border" id="pwrap-b-rad-weight"><input type="number" id="pb-rad-weight" placeholder="예)5,000" min="0" inputmode="numeric" oninput="prodCalcLiveRadish('b');prodAddFmt('pb-rad-weight');prodCheckFilled('pb-rad-weight')"><span class="pab-unit">g</span></div>
+              <div class="pab-field"><label id="pb-rad-weight-lbl">10개 중량 <span style="font-size:10px;color:#888;">(여러 번 측정 가능)</span></label>
+                <input type="hidden" id="pb-rad-weight">
+                <div class="pmw-wrap preq-border" id="pwrap-b-rad-weight">
+                  <div class="pmw-rows" id="pmw-pb-rad-weight"></div>
+                  <div class="pmw-footer">
+                    <span class="pmw-sum" id="pmw-sum-pb-rad-weight">합계: —</span>
+                    <button type="button" class="pmw-add-btn" onclick="_pmwAddRow('pb-rad-weight','b','rad')">＋ 추가</button>
+                  </div>
+                </div>
                 <div class="pfmt-display" id="pfmt-pb-rad-weight"></div></div>
               <div class="plive-box" id="pb-rad-live"><span class="plive-label">개당 중량</span><span class="plive-val" id="pb-rad-live-val">—</span></div>
             </div>
@@ -1850,8 +1917,15 @@ input.needs-input:focus{
                 <div class="pfmt-display" id="pfmt-pb-tok-count"></div></div>
               <div class="pab-field"><label>조사 개수</label>
                 <div class="pab-input-wrap"><input type="number" id="pb-tok-sample" value="20" placeholder="20" min="1" inputmode="numeric" oninput="prodCalcLiveTongak('b')"><span class="pab-unit">개</span></div></div>
-              <div class="pab-field"><label>20개 중량</label>
-                <div class="pab-input-wrap preq-border" id="pwrap-b-tok-weight"><input type="number" id="pb-tok-weight" placeholder="예)1,500" min="0" inputmode="numeric" oninput="prodCalcLiveTongak('b');prodAddFmt('pb-tok-weight');prodCheckFilled('pb-tok-weight')"><span class="pab-unit">g</span></div>
+              <div class="pab-field"><label>20개 중량 <span style="font-size:10px;color:#888;">(여러 번 측정 가능)</span></label>
+                <input type="hidden" id="pb-tok-weight">
+                <div class="pmw-wrap preq-border" id="pwrap-b-tok-weight">
+                  <div class="pmw-rows" id="pmw-pb-tok-weight"></div>
+                  <div class="pmw-footer">
+                    <span class="pmw-sum" id="pmw-sum-pb-tok-weight">합계: —</span>
+                    <button type="button" class="pmw-add-btn" onclick="_pmwAddRow('pb-tok-weight','b','tok')">＋ 추가</button>
+                  </div>
+                </div>
                 <div class="pfmt-display" id="pfmt-pb-tok-weight"></div></div>
               <div class="plive-box" id="pb-tok-live"><span class="plive-label">개당 중량</span><span class="plive-val" id="pb-tok-live-val">—</span></div>
             </div>
@@ -3098,6 +3172,11 @@ function renderFormulaTable(sampA, sampB){
 
   if(!useA && !useB){ card.style.display = 'none'; return; }
   card.style.display = 'block';
+  // 계산식 기본 접힘 상태 초기화
+  var ftblContent = document.getElementById('ftblContent');
+  var ftblToggleBtn = document.getElementById('ftbl-toggle-btn');
+  if(ftblContent){ ftblContent.style.display = 'none'; }
+  if(ftblToggleBtn){ ftblToggleBtn.textContent = '▼ 계산식 펼치기'; }
 
   const mode = (useA && useB) ? 'ab' : (useA ? 'aonly' : 'bonly');
   head.className = 'ftbl-head ' + mode;
@@ -4177,6 +4256,20 @@ function prodResetCalc(){
     if(f) f.textContent='';
   });
 
+  // 다중중량 UI 초기화
+  if(typeof PMW_FIELDS !== 'undefined'){
+    PMW_FIELDS.forEach(function(f){
+      var wrap = document.getElementById('pmw-'+f.id);
+      if(!wrap) return;
+      wrap.innerHTML = '';
+      if(typeof _pmwAddRowSilent === 'function') _pmwAddRowSilent(f.id, f.ab, f.type);
+      var sumEl = document.getElementById('pmw-sum-'+f.id);
+      if(sumEl) sumEl.textContent = '합계: —';
+      var pw = document.getElementById('pwrap-'+f.id.replace(/^p/,''));
+      if(pw) pw.classList.remove('pfilled');
+    });
+  }
+
   const rs=document.getElementById('prod-result-section');
   if(rs) rs.classList.remove('show');
   const eb=document.getElementById('prod-err-box');
@@ -4747,6 +4840,172 @@ document.addEventListener('DOMContentLoaded', function(){
 
 <script>
 /* ══════════════════════════════════════════
+   다중중량 입력 시스템 (무/총각무/배추/감자)
+   ══════════════════════════════════════════ */
+
+// 필드ID → {ab, type} 매핑
+var PMW_FIELDS = [
+  {id:'pa-cab-weight',  ab:'a', type:'cab'},
+  {id:'pb-cab-weight',  ab:'b', type:'cab'},
+  {id:'pa-rad-weight',  ab:'a', type:'rad'},
+  {id:'pb-rad-weight',  ab:'b', type:'rad'},
+  {id:'pa-tok-weight',  ab:'a', type:'tok'},
+  {id:'pb-tok-weight',  ab:'b', type:'tok'},
+  {id:'pa-potato-over', ab:'a', type:'potato'},
+  {id:'pb-potato-over', ab:'b', type:'potato'}
+];
+
+// 각 필드의 oninput 콜백 매핑
+function _pmwGetCallback(ab, type){
+  if(type==='cab')    return function(id){ prodCalcLiveCabbage(ab); prodAddFmt(id); prodCheckFilled(id); };
+  if(type==='rad')    return function(id){ prodCalcLiveRadish(ab);  prodAddFmt(id); prodCheckFilled(id); };
+  if(type==='tok')    return function(id){ prodCalcLiveTongak(ab);  prodAddFmt(id); prodCheckFilled(id); };
+  if(type==='potato') return function(id){ prodAddFmt(id); prodCheckFilled(id); };
+  return function(){};
+}
+
+function _pmwUpdate(id, ab, type){
+  var wrap = document.getElementById('pmw-'+id);
+  if(!wrap) return;
+  var inputs = wrap.querySelectorAll('.pmw-input');
+  var sum = 0;
+  inputs.forEach(function(inp){
+    var v = parseFloat(inp.value);
+    if(!isNaN(v) && v > 0) sum += v;
+  });
+  // 합계 표시
+  var sumEl = document.getElementById('pmw-sum-'+id);
+  if(sumEl) sumEl.textContent = sum > 0 ? '합계: ' + Math.round(sum).toLocaleString('ko-KR') + ' g' : '합계: —';
+  // 숨겨진 입력값 갱신
+  var hidden = document.getElementById(id);
+  if(hidden){
+    hidden.value = sum > 0 ? sum : '';
+    hidden.dispatchEvent(new Event('input', {bubbles:true}));
+    hidden.dispatchEvent(new Event('change', {bubbles:true}));
+  }
+}
+
+function _pmwAddRow(id, ab, type){
+  var wrap = document.getElementById('pmw-'+id);
+  if(!wrap) return;
+  var row = document.createElement('div');
+  row.className = 'pmw-row';
+  var inp = document.createElement('input');
+  inp.type = 'number';
+  inp.min = '0';
+  inp.inputMode = 'numeric';
+  inp.placeholder = '0';
+  inp.className = 'pmw-input';
+  inp.setAttribute('data-pmw', id);
+  inp.oninput = function(){ _pmwUpdate(id, ab, type); };
+  var del = document.createElement('button');
+  del.type = 'button';
+  del.className = 'pmw-del';
+  del.textContent = '−';
+  del.onclick = function(){ _pmwDelRow(id, ab, type, row); };
+  row.appendChild(inp);
+  row.appendChild(del);
+  wrap.appendChild(row);
+  inp.focus();
+  _pmwUpdate(id, ab, type);
+}
+
+function _pmwDelRow(id, ab, type, row){
+  var wrap = document.getElementById('pmw-'+id);
+  if(!wrap) return;
+  var rows = wrap.querySelectorAll('.pmw-row');
+  if(rows.length <= 1){
+    // 마지막 행은 삭제 대신 값 초기화
+    var inp = row.querySelector('.pmw-input');
+    if(inp) inp.value = '';
+    _pmwUpdate(id, ab, type);
+    return;
+  }
+  wrap.removeChild(row);
+  _pmwUpdate(id, ab, type);
+}
+
+// 저장값 복원 시 (합계값을 첫 번째 행에 설정)
+function _pmwSetValue(id, ab, type, val){
+  var wrap = document.getElementById('pmw-'+id);
+  if(!wrap) return;
+  // 기존 행 모두 제거
+  wrap.innerHTML = '';
+  // 새 행 생성
+  var row = document.createElement('div');
+  row.className = 'pmw-row';
+  var inp = document.createElement('input');
+  inp.type = 'number';
+  inp.min = '0';
+  inp.inputMode = 'numeric';
+  inp.className = 'pmw-input';
+  inp.setAttribute('data-pmw', id);
+  inp.value = val || '';
+  inp.oninput = function(){ _pmwUpdate(id, ab, type); };
+  var del = document.createElement('button');
+  del.type = 'button';
+  del.className = 'pmw-del';
+  del.textContent = '−';
+  del.onclick = function(){ _pmwDelRow(id, ab, type, row); };
+  row.appendChild(inp);
+  row.appendChild(del);
+  wrap.appendChild(row);
+  _pmwUpdate(id, ab, type);
+}
+
+// 각 필드에 이벤트 리스너 등록 + 첫 행 초기화
+function _pmwInitAll(){
+  PMW_FIELDS.forEach(function(f){
+    // hidden 입력에 이벤트 리스너 (autoRestore/slApply dispatch 시 계산 트리거)
+    var hidden = document.getElementById(f.id);
+    if(hidden){
+      var cb = _pmwGetCallback(f.ab, f.type);
+      hidden.addEventListener('input', function(){ cb(f.id); });
+    }
+    // 첫 번째 빈 행 추가
+    var wrap = document.getElementById('pmw-'+f.id);
+    if(wrap && wrap.children.length === 0){
+      _pmwAddRowSilent(f.id, f.ab, f.type);
+    }
+  });
+}
+
+// 포커스 없이 행 추가 (초기화용)
+function _pmwAddRowSilent(id, ab, type){
+  var wrap = document.getElementById('pmw-'+id);
+  if(!wrap) return;
+  var row = document.createElement('div');
+  row.className = 'pmw-row';
+  var inp = document.createElement('input');
+  inp.type = 'number';
+  inp.min = '0';
+  inp.inputMode = 'numeric';
+  inp.placeholder = '0';
+  inp.className = 'pmw-input';
+  inp.setAttribute('data-pmw', id);
+  inp.oninput = function(){ _pmwUpdate(id, ab, type); };
+  var del = document.createElement('button');
+  del.type = 'button';
+  del.className = 'pmw-del';
+  del.textContent = '−';
+  del.onclick = function(){ _pmwDelRow(id, ab, type, row); };
+  row.appendChild(inp);
+  row.appendChild(del);
+  wrap.appendChild(row);
+}
+
+document.addEventListener('DOMContentLoaded', _pmwInitAll);
+
+// 다중중량 필드 일괄 복원
+function _pmwRestoreAll(d){
+  PMW_FIELDS.forEach(function(f){
+    if(d[f.id] !== undefined && d[f.id] !== ''){
+      _pmwSetValue(f.id, f.ab, f.type, d[f.id]);
+    }
+  });
+}
+
+/* ══════════════════════════════════════════
    저장 / 불러오기 — 수동 슬롯 (localStorage)
    ══════════════════════════════════════════ */
 var SL_LIST_KEY   = 'tonghabSaveList';
@@ -4781,6 +5040,8 @@ function _slApply(d){
         else if(el.type==='radio'){if(d['__r_'+el.name]===el.value){el.checked=true;el.dispatchEvent(new Event('change',{bubbles:true}));}}
         else{if(d[el.id]!==undefined&&d[el.id]!==''){el.value=d[el.id];el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));}}
       });
+      // 다중중량 필드 UI 복원
+      if(typeof _pmwRestoreAll==='function') _pmwRestoreAll(d);
       setTimeout(function(){
         ['waAvg','wbAvg','heightA','heightB','aN','bN'].forEach(function(id){
           var el=document.getElementById(id);if(el&&el.value)el.dispatchEvent(new Event('input',{bubbles:true}));
@@ -4797,17 +5058,16 @@ function _slSetList(l){try{localStorage.setItem(SL_LIST_KEY,JSON.stringify(l));}
 function openSaveLoadModal(){
   _slRenderList();
   document.getElementById('sl-modal').classList.add('show');
-  // 모달 열릴 때 배경 페이지 스크롤 완전 차단
+  // 배경 스크롤 차단 (position:fixed 제거 → iOS 스크롤 점프 방지)
   document.body.style.overflow='hidden';
-  document.body.style.position='fixed';
-  document.body.style.width='100%';
+  // 저장목록을 최신(맨 위)부터 보이도록 스크롤 리셋
+  var sl=document.getElementById('sl-list');
+  if(sl) sl.scrollTop=0;
 }
 function closeSaveLoadModal(){
   document.getElementById('sl-modal').classList.remove('show');
-  // 모달 닫힐 때 배경 스크롤 복원
+  // 배경 스크롤 복원
   document.body.style.overflow='';
-  document.body.style.position='';
-  document.body.style.width='';
 }
 
 /* 지금 바로 저장 */
@@ -4842,6 +5102,7 @@ function loadSavedData(key){
     if(!s){alert('저장 데이터를 찾을 수 없습니다.');return;}
     _slApply(JSON.parse(s));
     closeSaveLoadModal();
+    setTimeout(function(){ window.scrollTo(0,0); },600);
   }catch(e){alert('불러오기 실패: '+e.message);}
 }
 
@@ -4902,7 +5163,9 @@ function importJSON(input){
     try{
       var d=JSON.parse(e.target.result);
       if(!confirm('JSON 파일을 불러옵니다.\n현재 입력 내용이 덮어씌워집니다. 계속할까요?'))return;
-      _slApply(d);closeSaveLoadModal();
+      _slApply(d);
+      closeSaveLoadModal();
+      setTimeout(function(){ window.scrollTo(0,0); },600);
     }catch(err){alert('파일 읽기 실패: JSON 형식이 아닙니다.');}
   };
   reader.readAsText(file);
@@ -4993,6 +5256,9 @@ function importJSON(input){
               }
             }
           });
+
+          // Step4b: 다중중량 필드 UI 복원
+          if(typeof _pmwRestoreAll === 'function') _pmwRestoreAll(d);
 
           // Step5: 기점선정 재계산 트리거
           setTimeout(function(){
