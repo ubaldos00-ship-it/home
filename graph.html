@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#27500A">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>지역별 농작물 10a당 생산량 조회 v13 (2026-05-25 06:00)</title>
+<title>농작물 10a당 생산량 조회기 v14 (2026-05-25 06:48)</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
@@ -79,17 +79,17 @@
     margin-left: 4px;
     white-space: nowrap;
   }
-  .home-link {
-    display: flex; align-items: center; justify-content: center;
-    text-decoration: none; color: #fff;
-    background: rgba(255,255,255,0.2);
-    border: 1px solid rgba(255,255,255,0.4);
-    border-radius: 50%; 
-    width: 32px; height: 32px;
-    font-size: 16px;
-    transition: background 0.2s;
+  /* ── 통합계산기와 동일한 헤더 버튼 (홈 / 저장) ── */
+  .home-link, .home-btn-uni{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+    width:48px;height:48px;background:rgba(255,255,255,0.18);color:#fff;
+    font-size:10px;font-weight:700;border-radius:12px;
+    text-decoration:none;font-family:inherit;
+    border:1.5px solid rgba(255,255,255,0.35);flex-shrink:0;
   }
-  .home-link:active { background: rgba(255,255,255,0.4); }
+  .home-link:active, .home-btn-uni:active{background:rgba(255,255,255,0.28);}
+  /* 헤더의 작물/지역 태그를 제목 아래(top-sub 옆) 줄로 보내기 위한 컨테이너 */
+  .header-tags-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px;}
   .top-sub { font-size: 12px; color: rgba(255,255,255,0.85); position: relative; z-index: 1;}
 
   /* ── 카드 ── */
@@ -253,9 +253,14 @@
   .btn-reset-red:hover, .btn-reset-mini:hover { background:#FEF2F2; }
   .btn-reset-red:active, .btn-reset-mini:active { transform:scale(.95); }
 
-  /* ── 헤더 저장 버튼 (통합/청취와 동일 스타일) ── */
-  .sl-hdr-btn{background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.38);color:#fff;padding:5px 9px;border-radius:8px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;display:flex;flex-direction:column;align-items:center;gap:1px;min-width:36px;line-height:1.3;font-family:inherit;}
-  .sl-hdr-btn:active{opacity:.75;}
+  /* ── 헤더 저장 버튼 — 통합계산기와 동일 (48x48 정사각, SVG 아이콘 + 글자) ── */
+  .sl-hdr-btn{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+    width:48px;height:48px;background:rgba(255,255,255,.18);color:#fff;font-size:10px;font-weight:700;
+    border-radius:12px;border:1.5px solid rgba(255,255,255,.35);flex-shrink:0;
+    cursor:pointer;font-family:inherit;
+  }
+  .sl-hdr-btn:active{background:rgba(255,255,255,.28);}
 
   /* ── 저장/불러오기 모달 (통합·청취와 동일 스타일) ── */
   .sl-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9998;align-items:flex-start;justify-content:center;padding:30px 14px;overflow-y:auto;}
@@ -417,13 +422,24 @@
 
   <div class="top-bar">
     <div class="top-bar-flex">
-      <div class="top-title">📊 지역별 농작물 10a당 생산량 조회<span class="header-crop-tag" id="headerCropTag" style="display:none"></span></div>
+      <div class="top-title">📊 농작물 10a당 생산량 조회기</div>
       <div style="display:flex;align-items:center;gap:6px;">
-        <button type="button" class="sl-hdr-btn" onclick="openSaveLoadModal()" aria-label="저장/불러오기"><span style="font-size:16px;line-height:1;">💾</span><span>저장</span></button>
-        <a class="home-link" href="https://ubaldos00-ship-it.github.io/home/">🏠</a>
+        <button class="sl-hdr-btn" onclick="openSaveLoadModal()" aria-label="저장/불러오기">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M17 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V7l-4-4z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M17 3v4H7V3" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><rect x="9" y="13" width="6" height="6" rx="1" stroke="#fff" stroke-width="2"/></svg>
+          저장
+        </button>
+        <a class="home-link" href="https://ubaldos00-ship-it.github.io/home/" aria-label="홈">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 9.5L10 3l7 6.5V17a1 1 0 01-1 1H13v-5H7v5H4a1 1 0 01-1-1V9.5z" fill="#fff"/></svg>
+          홈
+        </a>
       </div>
     </div>
-    <div class="top-sub">출처: KOSIS 농작물생산조사(2021~2025) <span style="opacity:.75;font-size:11px;">· v13 저장: 2026-05-25 06:00</span><span class="header-region-tag" id="headerRegionTag" style="display:none"></span></div>
+    <!-- 제목 아래줄: 작물 선택 / 지역 선택 태그 -->
+    <div class="header-tags-row">
+      <span class="header-crop-tag"   id="headerCropTag"   style="display:none"></span>
+      <span class="header-region-tag" id="headerRegionTag" style="display:none"></span>
+    </div>
+    <div class="top-sub">출처: KOSIS 농작물생산조사(2021~2025) <span style="opacity:.75;font-size:11px;">· v14 저장: 2026-05-25 06:48</span></div>
   </div>
 
   <div class="card">
