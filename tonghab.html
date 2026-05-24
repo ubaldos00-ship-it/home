@@ -1048,7 +1048,7 @@ textarea {
         홈
       </a>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v40 저장: 2026-05-24 10:53)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v41 저장: 2026-05-24 13:32)</span></div>
   </div>
 </div>
 
@@ -4833,14 +4833,13 @@ document.addEventListener('DOMContentLoaded', function(){
 });
 
 /* ══════════════════════════════════════════
-   뒤로가기 차단 + 안내 토스트
+   뒤로가기 차단 + 안내 토스트 (v41 강화)
    ══════════════════════════════════════════ */
 (function(){
-  /* 뒤로가기 차단: history 버퍼 1개 */
-  history.pushState(null, '', location.href);
+  window._allowLeave = false;
 
+  /* ── 토스트 ── */
   var _toastTimer = null;
-  /* 전역 토스트 함수 노출 (confirm 오버라이드에서 사용) */
   window._showBackToast = function(msg, dur){
     var el = document.getElementById('back-block-toast');
     if(!el) return;
@@ -4849,16 +4848,26 @@ document.addEventListener('DOMContentLoaded', function(){
     el.classList.add('show');
     _toastTimer = setTimeout(function(){ el.classList.remove('show'); }, dur||3500);
   };
-  function showToast(msg, dur){ window._showBackToast(msg, dur); }
 
-  /* 뒤로가기 차단 발생 시각 기록 */
-  window._backBlockedAt = 0;
+  /* ── history 차단 엔트리 삽입 ──
+     state 객체에 _bb:1 을 넣어 Android Chrome이
+     "동일 state" 로 판단해 popstate 를 건너뛰는 문제 방지.
+     고유 ts 도 포함해 bfcache 복원 후에도 구분 가능하게 함. */
+  function _pushBlock(){
+    try{
+      history.pushState({_bb:1, ts:Date.now()}, '', location.href);
+    }catch(e){}
+  }
 
+  /* 초기 진입 시 즉시 삽입 */
+  _pushBlock();
+
+  /* ── popstate: 뒤로가기/앞으로가기 감지 ── */
   window.addEventListener('popstate', function(){
     if(window._allowLeave) return;
-    history.pushState(null, '', location.href);
-    window._backBlockedAt = Date.now();
-    showToast(
+    /* 즉시 재삽입 — 연속 뒤로가기도 모두 차단 */
+    _pushBlock();
+    window._showBackToast(
       '🔒 뒤로가기 차단 중<br>'
       +'<span style="font-size:11px;font-weight:500;opacity:.85;">'
       +'초기화·홈 버튼이 안 눌리면<br>새로고침 후 눌러주세요</span>',
@@ -4866,44 +4875,42 @@ document.addEventListener('DOMContentLoaded', function(){
     );
   });
 
-  /* 탭 닫기 / 주소창 이동 경고 */
-  window._allowLeave = false;
+  /* ── pageshow: bfcache 복원 시 재삽입 ──
+     bfcache 로 돌아올 때 JS 상태는 살아있지만
+     history 스택이 바뀌어 차단 엔트리가 없어지므로
+     다시 pushState 해서 다음 뒤로가기도 잡음. */
+  window.addEventListener('pageshow', function(e){
+    if(e.persisted){
+      _pushBlock();
+      window._showBackToast('✅ 데이터 자동 보호 — 입력 내용이 유지됩니다', 3000);
+    }
+  });
+
+  /* ── beforeunload: 탭 닫기 / 주소창 이동 경고 ── */
   window.addEventListener('beforeunload', function(e){
     if(window._allowLeave) return;
     e.preventDefault();
     e.returnValue = '';
   });
 
-  /* 뒤로갔다 돌아왔을 때(bfcache) 데이터 보존 안내 */
-  window.addEventListener('pageshow', function(e){
-    if(!e.persisted) return;
-    showToast('✅ 데이터 자동 보호 — 입력 내용이 유지됩니다', 3000);
-  });
-
-  /* ── confirm 오버라이드: 차단 직후 confirm이 즉시 false 반환 시 팝업 안내 ── */
+  /* ── confirm 오버라이드 (iOS Safari 차단 감지) ── */
   var _origConfirm = window.confirm.bind(window);
   window.confirm = function(msg){
-    /* 뒤로가기 차단 후 15초 이내에만 감지 */
-    var isBlocked = window._backBlockedAt && (Date.now() - window._backBlockedAt < 15000);
-    if(isBlocked){
-      var t0 = (typeof performance!=='undefined') ? performance.now() : Date.now();
-      var ok = _origConfirm(msg);
-      var elapsed = ((typeof performance!=='undefined') ? performance.now() : Date.now()) - t0;
-      /* confirm이 100ms 이내에 false 반환 → iOS Safari에서 차단된 것 */
-      if(!ok && elapsed < 100){
-        setTimeout(function(){
-          window._showBackToast(
-            '⚠ 새로고침 후 다시 시도하세요<br>'
-            +'<span style="font-size:11px;font-weight:500;opacity:.85;">'
-            +'뒤로가기 차단 중에는 일부 버튼이<br>제한될 수 있습니다</span>',
-            5000
-          );
-        }, 80);
-        return false;
-      }
-      return ok;
+    var t0 = (typeof performance!=='undefined') ? performance.now() : Date.now();
+    var ok = _origConfirm(msg);
+    var elapsed = ((typeof performance!=='undefined') ? performance.now() : Date.now()) - t0;
+    if(!ok && elapsed < 100){
+      setTimeout(function(){
+        window._showBackToast(
+          '⚠ 새로고침 후 다시 시도하세요<br>'
+          +'<span style="font-size:11px;font-weight:500;opacity:.85;">'
+          +'뒤로가기 차단 중에는 일부 버튼이<br>제한될 수 있습니다</span>',
+          5000
+        );
+      }, 80);
+      return false;
     }
-    return _origConfirm(msg);
+    return ok;
   };
 })();
 </script>
@@ -5413,6 +5420,17 @@ function importJSON(input){
     if(e.target.classList.contains('crop-btn') || e.target.classList.contains('ptog-btn')){
       setTimeout(autoSave, 100);
     }
+  });
+
+  /* ── 즉시 저장: 이탈 직전/탭 숨김 시 디바운스 없이 바로 저장
+     (600ms 디바운스 사이에 앱을 닫으면 최신 입력이 유실되는 문제 방지) */
+  window.addEventListener('beforeunload', function(){ doSave(); });
+  document.addEventListener('visibilitychange', function(){
+    if(document.visibilityState === 'hidden'){ doSave(); }
+  });
+  /* bfcache 복원 시 자동 복원 재실행 (화면이 다시 보일 때) */
+  window.addEventListener('pageshow', function(e){
+    if(e.persisted && !isReset){ setTimeout(autoRestore, 400); }
   });
 
   // 복원: reset이 아닐 때만, 앱 초기화 완료 후 실행
