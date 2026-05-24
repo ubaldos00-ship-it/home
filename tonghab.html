@@ -1049,7 +1049,7 @@ textarea {
         홈
       </a>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v44 저장: 2026-05-24 14:48)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v45 저장: 2026-05-24 15:03)</span></div>
   </div>
 </div>
 
@@ -4834,8 +4834,8 @@ document.addEventListener('DOMContentLoaded', function(){
 });
 
 /* ══════════════════════════════════════════
-   뒤로가기 차단 + 안내 토스트 (v44 iOS 완전 차단)
-   iOS Safari: 고유 해시(#_0,#_1,...) + popstate + hashchange 3중 방어
+   뒤로가기 차단 + 안내 토스트 (v45 iOS 완전 차단)
+   iOS Safari: 고유 해시(#_0,#_1,...) + popstate + hashchange + 스와이프 4중 방어
    ══════════════════════════════════════════ */
 (function(){
   window._allowLeave = false;
@@ -4863,10 +4863,12 @@ document.addEventListener('DOMContentLoaded', function(){
     try{
       var h1 = '#_' + (_bbIdx++);
       var h2 = '#_' + (_bbIdx++);
+      var h3 = '#_' + (_bbIdx++);
       /* replaceState: 현재 엔트리(링크 진입 포함)를 해시 태깅 */
       history.replaceState({_bb:'r', i:_bbIdx}, '', _BASE + h1);
-      /* pushState: 버퍼 엔트리 (이 해시에서 back → h1 로 이동 시 발화) */
+      /* pushState: 버퍼 엔트리 2개 — iOS가 한 번에 여러 엔트리 건너뛰더라도 차단 */
       history.pushState( {_bb:'g', i:_bbIdx}, '', _BASE + h2);
+      history.pushState( {_bb:'g', i:_bbIdx}, '', _BASE + h3);
     }catch(e){}
   }
 
@@ -4931,6 +4933,27 @@ document.addEventListener('DOMContentLoaded', function(){
     }
     return ok;
   };
+
+  /* ── iOS 좌측 엣지 스와이프백 제스처 차단 ──
+     iOS Safari 는 화면 왼쪽 가장자리(<30px)에서 오른쪽으로 스와이프하면
+     내비게이션 스택을 뒤로 이동시킨다. touchmove {passive:false} 로 차단. */
+  var _tsX = 0, _tsY = 0;
+  document.addEventListener('touchstart', function(e){
+    if(e.touches && e.touches[0]){
+      _tsX = e.touches[0].clientX;
+      _tsY = e.touches[0].clientY;
+    }
+  }, {passive:true});
+  document.addEventListener('touchmove', function(e){
+    if(window._allowLeave) return;
+    if(!e.touches || !e.touches[0]) return;
+    var dx = e.touches[0].clientX - _tsX;
+    var dy = Math.abs(e.touches[0].clientY - _tsY);
+    /* 좌측 30px 이내 시작 + 오른쪽으로 8px 이상 + 수평 방향 → 스와이프백 차단 */
+    if(_tsX < 30 && dx > 8 && dx > dy){
+      if(e.cancelable) e.preventDefault();
+    }
+  }, {passive:false});
 })();
 </script>
 
