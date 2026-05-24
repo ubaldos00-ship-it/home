@@ -998,8 +998,14 @@ input.needs-input:focus{
 .sl-file-row{display:flex;gap:8px;}
 .sl-file-btn{flex:1;padding:12px 6px;border:2px solid #d0ccc4;border-radius:10px;background:#fff;color:#3D3C39;font-size:13px;font-weight:700;cursor:pointer;text-align:center;display:block;}
 .sl-file-btn:active{opacity:.82;}
-.sl-file-row .sl-file-btn:first-child{background:#6d28d9;color:#fff;border-color:#6d28d9;}
+.sl-file-row .sl-file-btn{padding:10px 4px;font-size:12px;}
+.sl-file-row .sl-share-btn{background:#1f8a3a;color:#fff;border-color:#1f8a3a;}
+.sl-file-row .sl-file-btn:nth-child(2){background:#6d28d9;color:#fff;border-color:#6d28d9;}
 .sl-file-row .sl-file-btn:last-child{background:#0A3A8C;color:#fff;border-color:#0A3A8C;}
+/* 목록 버튼: 저장(주황) | 불러오기(파랑) | -(빨강) 순서 */
+.sl-item-save{padding:7px 11px;background:#d97706;border:none;border-radius:7px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+.sl-item-save:active{opacity:.82;}
+.sl-item-del{padding:7px 9px;background:#c0392b;border:none;border-radius:7px;color:#fff;font-size:14px;font-weight:900;cursor:pointer;white-space:nowrap;flex-shrink:0;min-width:30px;line-height:1;}
 
 /* ══ iOS 자동확대 완전 차단 ══
    iOS Safari: font-size < 16px 입력창 터치 시 화면 자동확대 발생.
@@ -1049,7 +1055,7 @@ textarea {
         홈
       </a>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v49 저장: 2026-05-24 20:02)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v50 저장: 2026-05-25 06:00)</span></div>
   </div>
 </div>
 
@@ -4584,12 +4590,13 @@ document.addEventListener('DOMContentLoaded', function(){
       <button class="sl-close" onclick="closeSaveLoadModal()">✕</button>
     </div>
     <div class="sl-body">
-      <button class="sl-save-now" onclick="saveCurrentData()">💾 지금 바로 저장</button>
-      <div class="sl-section">저장된 자료 목록 <span style="color:#c0392b;font-size:10px;font-weight:700;letter-spacing:-.01em;">(불러오기·삭제 버튼 안될때 새로고침 후 사용하세요)</span></div>
+      <button class="sl-save-now" onclick="saveCurrentData()">💾 새로 저장</button>
+      <div class="sl-section">저장된 자료 목록 <span style="color:#c0392b;font-size:10px;font-weight:700;letter-spacing:-.01em;">(버튼이 안 눌리면 새로고침 후 사용하세요)</span></div>
       <div class="sl-list" id="sl-list"><div class="sl-empty">저장된 자료가 없습니다.</div></div>
       <hr class="sl-divider">
-      <div class="sl-section" style="margin-bottom:8px;">JSON 파일로 내보내기 / 불러오기</div>
+      <div class="sl-section" style="margin-bottom:8px;">JSON 파일로 공유 / 내보내기 / 불러오기</div>
       <div class="sl-file-row">
+        <button class="sl-file-btn sl-share-btn" onclick="shareJSON()">📱 JSON 공유</button>
         <button class="sl-file-btn" onclick="exportJSON()">📤 JSON 내보내기</button>
         <label class="sl-file-btn">📥 JSON 불러오기
           <input type="file" accept="application/json,text/plain,.json" style="display:none;" onchange="importJSON(this)">
@@ -5295,7 +5302,7 @@ function saveCurrentData(){
   _slSetList(list);
   _slRenderList();
   var btn=document.querySelector('.sl-save-now');
-  if(btn){var orig=btn.textContent;btn.textContent='✅ 저장 완료!';setTimeout(function(){btn.textContent=orig;},1600);}
+  if(btn){var orig=btn.textContent;btn.textContent='✅ 새로 저장 완료!';setTimeout(function(){btn.textContent=orig;},1600);}
 }
 
 /* 불러오기 */
@@ -5317,6 +5324,83 @@ function deleteSavedData(key){
   _slRenderList();
 }
 
+/* 덮어쓰기 — 기존 항목을 현재 데이터로 갱신 (key·번호 유지, 라벨/시각만 갱신) */
+function overwriteSavedData(key){
+  if(!confirm('이 항목에 현재 데이터를 덮어쓰시겠습니까?\n(기존 내용은 사라집니다)'))return;
+  var d=_slCollect();
+  var crop=d['__crop']||'unknown';
+  var cropKo=(typeof PROD_CROP_KO!=='undefined'&&PROD_CROP_KO[crop])?PROD_CROP_KO[crop]:crop;
+  var now=new Date();var kst=new Date(now.getTime()+9*3600000);
+  var ymd=kst.toISOString().slice(0,10);
+  var hh=String(kst.getUTCHours()).padStart(2,'0');
+  var mm=String(kst.getUTCMinutes()).padStart(2,'0');
+  var addr=(d['address']||'').trim();
+  var addrShort=addr?addr.slice(0,15)+(addr.length>15?'…':''):'';
+  var label=cropKo+(addrShort?' · '+addrShort:'')+' · '+ymd+' '+hh+':'+mm;
+  try{localStorage.setItem(SL_DATA_PFX+key,JSON.stringify(d));}
+  catch(e){alert('덮어쓰기 실패: 저장 공간이 부족합니다.');return;}
+  var list=_slGetList();
+  for(var i=0;i<list.length;i++){
+    if(list[i].key===key){
+      list[i].label=label;list[i].ymd=ymd;list[i].hm=hh+':'+mm;
+      list[i].crop=cropKo;list[i].addr=addrShort;break;
+    }
+  }
+  _slSetList(list);
+  _slRenderList();
+  // 토스트 안내
+  var t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#d97706;color:#fff;padding:10px 18px;border-radius:12px;font-size:13px;font-weight:700;z-index:99999;box-shadow:0 4px 16px rgba(0,0,0,.35);';
+  t.textContent='✅ 덮어쓰기 완료';
+  document.body.appendChild(t);
+  setTimeout(function(){try{document.body.removeChild(t);}catch(e){}},1800);
+}
+
+/* JSON 공유 — Web Share API 사용 (iOS·Android 네이티브 공유 시트) */
+function shareJSON(){
+  var d=_slCollect();
+  var crop=d['__crop']||'data';
+  var cropKo=(typeof PROD_CROP_KO!=='undefined'&&PROD_CROP_KO[crop])?PROD_CROP_KO[crop]:crop;
+  var addr=(d['address']||'').trim().replace(/[\/\\:*?"<>|\s]+/g,'_').slice(0,15);
+  var now=new Date();var kst=new Date(now.getTime()+9*3600000);
+  var ymd=kst.toISOString().slice(0,10);
+  var hh=String(kst.getUTCHours()).padStart(2,'0');
+  var mm=String(kst.getUTCMinutes()).padStart(2,'0');
+  var fname='tonghab_'+cropKo+(addr?'_'+addr:'')+'_'+ymd+'_'+hh+mm+'.json';
+  var jsonText=JSON.stringify(d,null,2);
+  var blob=new Blob([jsonText],{type:'application/json'});
+  var file=new File([blob],fname,{type:'application/json'});
+
+  // (1) navigator.share + files 지원 (iOS 16+ Safari, 최신 Android Chrome)
+  if(navigator.canShare && navigator.canShare({files:[file]})){
+    navigator.share({files:[file], title:fname, text:'통합계산기 데이터 공유'})
+      .catch(function(err){
+        if(err && err.name!=='AbortError') _shareJSONFallback(jsonText,fname);
+      });
+    return;
+  }
+  // (2) navigator.share 텍스트만 지원
+  if(navigator.share){
+    navigator.share({title:fname, text:jsonText})
+      .catch(function(err){
+        if(err && err.name!=='AbortError') _shareJSONFallback(jsonText,fname);
+      });
+    return;
+  }
+  // (3) Web Share 미지원 → 클립보드 복사 안내
+  _shareJSONFallback(jsonText,fname);
+}
+function _shareJSONFallback(jsonText,fname){
+  try{
+    navigator.clipboard.writeText(jsonText).then(function(){
+      alert('📋 JSON이 클립보드에 복사되었습니다.\n메시지·카톡 등에 붙여넣기하여 공유하세요.\n\n파일명: '+fname);
+    }).catch(function(){ _shareJSONPrompt(jsonText); });
+  }catch(e){ _shareJSONPrompt(jsonText); }
+}
+function _shareJSONPrompt(jsonText){
+  window.prompt('아래 JSON을 복사하여 공유하세요:', jsonText);
+}
+
 /* 목록 렌더링 */
 function _slRenderList(){
   var list=_slGetList();
@@ -5334,8 +5418,9 @@ function _slRenderList(){
         +addrLine
         +'<div class="sl-item-date">'+it.ymd+' '+it.hm+'</div>'
       +'</div>'
+      +'<button class="sl-item-save" onclick="overwriteSavedData(\''+it.key+'\')">저장</button>'
       +'<button class="sl-item-load" onclick="loadSavedData(\''+it.key+'\')">불러오기</button>'
-      +'<button class="sl-item-del"  onclick="deleteSavedData(\''+it.key+'\')">삭제</button>'
+      +'<button class="sl-item-del"  onclick="deleteSavedData(\''+it.key+'\')" aria-label="삭제">−</button>'
       +'</div>';
   }).join('');
 }
