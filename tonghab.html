@@ -1049,7 +1049,7 @@ textarea {
         홈
       </a>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v47 저장: 2026-05-24 15:20)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v48 저장: 2026-05-24 15:53)</span></div>
   </div>
 </div>
 
@@ -5395,13 +5395,26 @@ function importJSON(input){
   // 의도적 초기화(reset= URL)로 진입 시 저장 데이터 삭제 + URL 즉시 정리
   // URL 정리를 하지 않으면 이 상태로 새로고침 시 다음에도 복원이 생략되는 문제 발생
   var isReset = location.search.indexOf('reset=') !== -1;
+  /* _restoring : 복원 진행 중에 doSave/autoSave가 미완성 DOM을 덮어쓰는 것 방지
+     _initialLoadDone : 초기 복원 완료(또는 복원할 데이터 없음 확정) 전에는 저장 차단
+                        → v47 자동 reload 시 pagehide가 빈 DOM을 저장하던 치명적 버그 해결 */
+  var _restoring = false;
+  var _initialLoadDone = false;
+
   if(isReset){
     try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
     try{ history.replaceState(null, '', location.pathname); }catch(e){}
+    _initialLoadDone = true; // 초기화 모드 → 사용자 입력 즉시 저장 허용
   }
 
-  /* ── 저장 ── */
+  /* ── 저장 ──
+     2중 안전장치로 데이터 손실 방지:
+     (1) _restoring 중 차단 — 복원 진행 중 빈/부분 DOM 덮어쓰기 방지
+     (2) !_initialLoadDone 차단 — 페이지 로드 직후, 복원 시도 전 pagehide/beforeunload
+         (특히 v47 링크진입 자동 reload)로 인한 빈 DOM 저장 차단 */
   function doSave(){
+    if(_restoring) return;
+    if(!_initialLoadDone) return;
     try{
       var d = {};
       // 모든 input / select / textarea (ID 있는 것만)
@@ -5422,8 +5435,6 @@ function importJSON(input){
       localStorage.setItem(SAVE_KEY, JSON.stringify(d));
     }catch(e){}
   }
-  /* _restoring 플래그: 복원 중 autoSave가 미완성 데이터를 덮어쓰는 것 방지 */
-  var _restoring = false;
 
   function autoSave(){
     if(_restoring) return;  // 복원 중에는 autoSave 차단
@@ -5435,10 +5446,13 @@ function importJSON(input){
   function autoRestore(){
     try{
       var saved = localStorage.getItem(SAVE_KEY);
-      if(!saved) return;
+      if(!saved){
+        _initialLoadDone = true; // 저장 데이터 없음 → 새 입력 즉시 저장 허용
+        return;
+      }
       var d = JSON.parse(saved);
 
-      _restoring = true;  // 복원 시작 — autoSave 차단
+      _restoring = true;  // 복원 시작 — autoSave/doSave 차단
 
       // Step1: 작물 선택 복원 (UI 구조 변경을 먼저)
       if(d['__crop'] && typeof selectCrop === 'function'){
@@ -5483,15 +5497,21 @@ function importJSON(input){
               var el = document.getElementById(id);
               if(el && el.value) el.dispatchEvent(new Event('input',{bubbles:true}));
             });
-            _restoring = false;  // 복원 완료 — autoSave 재개
-            doSave();            // 최종 상태를 즉시 한 번 더 저장 (안전망)
+            _restoring = false;       // 복원 완료 — autoSave/doSave 재개
+            _initialLoadDone = true;  // 초기 로드 완료 — pagehide 등에서 정상 저장 허용
+            doSave();                 // 최종 상태를 즉시 한 번 더 저장 (안전망)
           }, 300);
         }, 400);
       }, 500);
     }catch(e){
-      _restoring = false;  // 에러 시에도 플래그 반드시 해제
+      _restoring = false;       // 에러 시에도 플래그 반드시 해제
+      _initialLoadDone = true;  // 에러 시에도 사용자 입력 저장 가능하도록 해제
     }
   }
+
+  /* 최종 안전망: 어떤 이유로든 5초 후에는 무조건 저장 허용
+     (이게 없으면 autoRestore 자체가 호출되지 않는 극단적 상황에서 영구 차단됨) */
+  setTimeout(function(){ _initialLoadDone = true; }, 5000);
 
   // 이벤트 리스너 등록 (입력/변경/작물버튼 클릭)
   document.addEventListener('input', autoSave);
