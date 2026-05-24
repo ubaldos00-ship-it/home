@@ -1014,16 +1014,17 @@ select,
 textarea {
   font-size: 16px !important;
 }
-/* ══ ⑦ 생산량 섹션 생중량 입력란 글자 크기 조정 ══
-   A/B 2칸 분할 레이아웃에서 18px 숫자가 잘려 보이는 문제 수정.
-   13px로 줄여 전체 숫자가 보이도록 함. */
+/* ══ ⑦ 생산량 섹션 생중량 입력란 조정 ══
+   iOS Safari: font-size < 16px 이면 입력 터치 시 화면 자동 확대 발생.
+   font-size 를 16px 로 유지하고 padding 만 줄여 좁은 A/B 컬럼에서도
+   숫자가 잘리지 않고 화면도 확대되지 않도록 함. */
 .prod-zone .pab-input-wrap input {
-  font-size: 13px !important;
-  padding: 8px 4px !important;
+  font-size: 16px !important;
+  padding: 6px 3px !important;
 }
 .pmw-input {
-  font-size: 13px !important;
-  padding: 5px 6px !important;
+  font-size: 16px !important;
+  padding: 4px 6px !important;
 }
 
 </style>
@@ -1048,7 +1049,7 @@ textarea {
         홈
       </a>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v43 저장: 2026-05-24 14:38)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v44 저장: 2026-05-24 14:48)</span></div>
   </div>
 </div>
 
@@ -4833,8 +4834,8 @@ document.addEventListener('DOMContentLoaded', function(){
 });
 
 /* ══════════════════════════════════════════
-   뒤로가기 차단 + 안내 토스트 (v43 iOS 완전 차단)
-   iOS Safari swipe-back 대응: 해시 URL + hashchange 이중 감시
+   뒤로가기 차단 + 안내 토스트 (v44 iOS 완전 차단)
+   iOS Safari: 고유 해시(#_0,#_1,...) + popstate + hashchange 3중 방어
    ══════════════════════════════════════════ */
 (function(){
   window._allowLeave = false;
@@ -4850,19 +4851,22 @@ document.addEventListener('DOMContentLoaded', function(){
     _toastTimer = setTimeout(function(){ el.classList.remove('show'); }, dur||3500);
   };
 
-  /* ── 차단 URL 기준 ──
-     iOS Safari는 같은 URL로 pushState 된 엔트리를 "동일 페이지 중복"으로
-     인식해 swipe-back 시 건너뛰고 이전 페이지로 직행하는 버그가 있음.
-     URL 끝에 #_ 해시를 붙여 이전 페이지 URL 과 구분되게 만들면
-     iOS WebKit 이 "다른 위치"로 인식해 popstate/hashchange 를 반드시 발화함. */
-  var _BB_URL = location.pathname + (location.search || '') + '#_';
+  /* ── 고유 해시 카운터 ──
+     v43 문제: 동일 해시(#_) 두 엔트리 간 이동 시 iOS가 hashchange 미발화.
+     해결: replaceState → #_0, pushState → #_1 처럼 매번 다른 해시 사용.
+     iOS WebKit 은 해시가 다르면 "문서 내 다른 위치"로 인식해
+     popstate + hashchange 를 모두 발화함. 이중 차단 보장. */
+  var _bbIdx = 0;
+  var _BASE = location.pathname + (location.search || '');
 
   function _pushBlock(){
     try{
-      /* replaceState: 현재 엔트리를 해시 URL 로 교체 (링크 진입 엔트리도 태깅) */
-      history.replaceState({_bb:'r', ts:Date.now()}, '', _BB_URL);
-      /* pushState: 버퍼 엔트리 추가 */
-      history.pushState( {_bb:'g', ts:Date.now()}, '', _BB_URL);
+      var h1 = '#_' + (_bbIdx++);
+      var h2 = '#_' + (_bbIdx++);
+      /* replaceState: 현재 엔트리(링크 진입 포함)를 해시 태깅 */
+      history.replaceState({_bb:'r', i:_bbIdx}, '', _BASE + h1);
+      /* pushState: 버퍼 엔트리 (이 해시에서 back → h1 로 이동 시 발화) */
+      history.pushState( {_bb:'g', i:_bbIdx}, '', _BASE + h2);
     }catch(e){}
   }
 
@@ -4888,9 +4892,9 @@ document.addEventListener('DOMContentLoaded', function(){
   /* ── popstate: 표준 뒤로가기 (Android/iOS 공통) ── */
   window.addEventListener('popstate', _onBlock);
 
-  /* ── hashchange: iOS Safari swipe-back 전용 fallback ──
-     iOS WebKit 이 해시를 제거하거나 다른 해시로 이동시킬 때 발화.
-     popstate 가 발화되지 않는 상황에서도 이 이벤트로 잡아냄. */
+  /* ── hashchange: iOS Safari 전용 fallback ──
+     해시가 다르므로 back 시 반드시 발화됨.
+     popstate 와 함께 이중으로 감시해 어느 쪽이든 차단. */
   window.addEventListener('hashchange', _onBlock);
 
   /* ── pageshow: bfcache 복원 시 재삽입 ── */
@@ -5004,7 +5008,9 @@ function _pmwAddRow(id, ab, type){
   row.appendChild(inp);
   row.appendChild(del);
   wrap.appendChild(row);
-  inp.focus();
+  /* iOS Safari: 클릭 이벤트 체인 내에서도 렌더링 완료 후 focus 해야
+     키보드가 즉시 올라옴. 10ms setTimeout 으로 보장. */
+  setTimeout(function(){ inp.focus(); }, 10);
   _pmwUpdate(id, ab, type);
 }
 
