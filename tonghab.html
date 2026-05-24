@@ -50,11 +50,12 @@ body{
 .wrap{max-width:500px;margin:0 auto;display:flex;flex-direction:column;gap:12px;padding:12px 12px 0;}
 
 /* ── Header ── */
-.hdr-ttl{font-size:17px;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px;flex-wrap:nowrap;}
-.hdr-crop-badge{font-size:12px;font-weight:700;background:var(--g400);color:#fff;padding:3px 10px;border-radius:100px;display:none;}
+.hdr-ttl{font-size:17px;font-weight:700;color:#fff;display:flex;align-items:center;gap:6px;flex-wrap:nowrap;overflow:hidden;}
+.hdr-ttl>span:first-child{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:1;min-width:0;}
+.hdr-crop-badge{font-size:12px;font-weight:700;background:var(--g400);color:#fff;padding:3px 10px;border-radius:100px;display:none;white-space:nowrap;flex-shrink:0;}
 .hdr-sub{font-size:9.5px;color:var(--g100);margin-top:3px;font-weight:500;letter-spacing:.04em;}
 .home-btn{
-  margin-left:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
   width:48px;height:48px;background:rgba(255,255,255,0.18);color:#fff;font-size:10px;font-weight:700;
   border-radius:12px;text-decoration:none;font-family:inherit;border:1.5px solid rgba(255,255,255,0.35);flex-shrink:0;
 }
@@ -954,7 +955,7 @@ input.needs-input:focus{
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
   width:48px;height:48px;background:rgba(255,255,255,.18);color:#fff;font-size:10px;font-weight:700;
   border-radius:12px;border:1.5px solid rgba(255,255,255,.35);flex-shrink:0;
-  cursor:pointer;font-family:inherit;margin-left:6px;
+  cursor:pointer;font-family:inherit;margin-left:auto;
 }
 .sl-hdr-btn:active{background:rgba(255,255,255,.28);}
 /* ── 저장/불러오기 모달 ── */
@@ -997,8 +998,8 @@ input.needs-input:focus{
 .sl-file-row{display:flex;gap:8px;}
 .sl-file-btn{flex:1;padding:12px 6px;border:2px solid #d0ccc4;border-radius:10px;background:#fff;color:#3D3C39;font-size:13px;font-weight:700;cursor:pointer;text-align:center;display:block;}
 .sl-file-btn:active{opacity:.82;}
-.sl-file-row .sl-file-btn:first-child{background:#0A3A8C;color:#fff;border-color:#0A3A8C;}
-.sl-file-row .sl-file-btn:last-child{background:#6d28d9;color:#fff;border-color:#6d28d9;}
+.sl-file-row .sl-file-btn:first-child{background:#6d28d9;color:#fff;border-color:#6d28d9;}
+.sl-file-row .sl-file-btn:last-child{background:#0A3A8C;color:#fff;border-color:#0A3A8C;}
 
 /* ══ iOS 자동확대 완전 차단 ══
    iOS Safari: font-size < 16px 입력창 터치 시 화면 자동확대 발생.
@@ -1012,6 +1013,17 @@ input[type="tel"],
 select,
 textarea {
   font-size: 16px !important;
+}
+/* ══ ⑦ 생산량 섹션 생중량 입력란 글자 크기 조정 ══
+   A/B 2칸 분할 레이아웃에서 18px 숫자가 잘려 보이는 문제 수정.
+   13px로 줄여 전체 숫자가 보이도록 함. */
+.prod-zone .pab-input-wrap input {
+  font-size: 13px !important;
+  padding: 8px 4px !important;
+}
+.pmw-input {
+  font-size: 13px !important;
+  padding: 5px 6px !important;
 }
 
 </style>
@@ -1031,12 +1043,12 @@ textarea {
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M17 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V7l-4-4z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M17 3v4H7V3" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><rect x="9" y="13" width="6" height="6" rx="1" stroke="#fff" stroke-width="2"/></svg>
         저장
       </button>
-      <a href="https://ubaldos00-ship-it.github.io/home/" class="home-btn" aria-label="홈" onclick="if(!confirm('모든 데이터가 초기화 됩니다. 홈으로 가시겠습니까?')) return false; window._allowLeave=true; return true;">
+      <a href="https://ubaldos00-ship-it.github.io/home/" class="home-btn" aria-label="홈" onclick="return goHomeAndReset();">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 9.5L10 3l7 6.5V17a1 1 0 01-1 1H13v-5H7v5H4a1 1 0 01-1-1V9.5z" fill="#fff"/></svg>
         홈
       </a>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v37 저장: 2026-05-24 13:00)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v40 저장: 2026-05-24 10:53)</span></div>
   </div>
 </div>
 
@@ -4599,6 +4611,13 @@ function prodFullResetAll(){
   window._allowLeave = true;
   window.location.replace(window.location.pathname + '?reset=' + Date.now());
 }
+function goHomeAndReset(){
+  if(!confirm('모든 데이터가 초기화됩니다. 홈으로 가시겠습니까?')) return false;
+  try{ localStorage.removeItem('tonghabAutoSave_v1'); }catch(e){}
+  window._allowLeave = true;
+  location.href = 'https://ubaldos00-ship-it.github.io/home/';
+  return false;
+}
 document.addEventListener('DOMContentLoaded', function(){
   setTimeout(function(){
     document.querySelectorAll('button').forEach(btn=>{
@@ -5260,6 +5279,15 @@ function exportJSON(){
   var a=document.createElement('a');a.href=url;a.download=fname;
   document.body.appendChild(a);a.click();
   setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},1000);
+  setTimeout(function(){
+    var msg=document.getElementById('_exportMsg');
+    if(!msg){msg=document.createElement('div');msg.id='_exportMsg';
+      msg.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#27500A;color:#fff;padding:10px 18px;border-radius:12px;font-size:13px;font-weight:700;z-index:9999;text-align:center;line-height:1.5;max-width:90vw;box-shadow:0 4px 16px rgba(0,0,0,.35);';
+      document.body.appendChild(msg);}
+    msg.innerHTML='✅ 저장 완료: <b>'+fname+'</b><br><span style="font-weight:400;font-size:11px;">📂 기기 다운로드 폴더에 저장되었습니다</span>';
+    msg.style.display='block';
+    clearTimeout(msg._t);msg._t=setTimeout(function(){msg.style.display='none';},4000);
+  },400);
 }
 
 /* JSON 파일 불러오기 */
