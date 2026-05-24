@@ -1048,7 +1048,7 @@ textarea {
         홈
       </a>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v42 저장: 2026-05-24 13:48)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v43 저장: 2026-05-24 14:38)</span></div>
   </div>
 </div>
 
@@ -4833,8 +4833,8 @@ document.addEventListener('DOMContentLoaded', function(){
 });
 
 /* ══════════════════════════════════════════
-   뒤로가기 차단 + 안내 토스트 (v42 강화)
-   링크 경유 진입 시 첫 뒤로가기도 확실히 차단
+   뒤로가기 차단 + 안내 토스트 (v43 iOS 완전 차단)
+   iOS Safari swipe-back 대응: 해시 URL + hashchange 이중 감시
    ══════════════════════════════════════════ */
 (function(){
   window._allowLeave = false;
@@ -4850,32 +4850,23 @@ document.addEventListener('DOMContentLoaded', function(){
     _toastTimer = setTimeout(function(){ el.classList.remove('show'); }, dur||3500);
   };
 
-  /* ── history 차단 핵심 함수 ──
-     ① replaceState: 현재 엔트리(링크 경유 진입 엔트리 포함)를 태깅
-        → 브라우저가 이 엔트리로 돌아와도 popstate 가 반드시 발화됨
-     ② pushState: 추가 버퍼 엔트리 삽입
-        → 뒤로가기 첫 번째 시도가 버퍼를 소모하고 popstate 를 발화
-     두 단계 모두 ts 로 고유화 → "동일 state" 오탐 방지 */
+  /* ── 차단 URL 기준 ──
+     iOS Safari는 같은 URL로 pushState 된 엔트리를 "동일 페이지 중복"으로
+     인식해 swipe-back 시 건너뛰고 이전 페이지로 직행하는 버그가 있음.
+     URL 끝에 #_ 해시를 붙여 이전 페이지 URL 과 구분되게 만들면
+     iOS WebKit 이 "다른 위치"로 인식해 popstate/hashchange 를 반드시 발화함. */
+  var _BB_URL = location.pathname + (location.search || '') + '#_';
+
   function _pushBlock(){
     try{
-      history.replaceState({_bb:'page', ts:Date.now()}, '', location.href);
-      history.pushState( {_bb:'guard',ts:Date.now()}, '', location.href);
+      /* replaceState: 현재 엔트리를 해시 URL 로 교체 (링크 진입 엔트리도 태깅) */
+      history.replaceState({_bb:'r', ts:Date.now()}, '', _BB_URL);
+      /* pushState: 버퍼 엔트리 추가 */
+      history.pushState( {_bb:'g', ts:Date.now()}, '', _BB_URL);
     }catch(e){}
   }
 
-  /* 1차: 스크립트 파싱 즉시 삽입 */
-  _pushBlock();
-
-  /* 2차: DOMContentLoaded 후 재삽입
-     일부 Android 브라우저는 링크 navigation commit 이
-     스크립트 실행보다 늦게 처리되어 1차 pushState 가 흡수됨.
-     DOM 준비 후 한 번 더 삽입해 반드시 차단 엔트리가 남도록 함. */
-  document.addEventListener('DOMContentLoaded', function(){
-    if(!window._allowLeave){ _pushBlock(); }
-  });
-
-  /* ── popstate: 뒤로가기 감지 → 즉시 재삽입 ── */
-  window.addEventListener('popstate', function(){
+  function _onBlock(){
     if(window._allowLeave) return;
     _pushBlock();
     window._showBackToast(
@@ -4884,7 +4875,23 @@ document.addEventListener('DOMContentLoaded', function(){
       +'초기화·홈 버튼이 안 눌리면<br>새로고침 후 눌러주세요</span>',
       4000
     );
+  }
+
+  /* 1차: 스크립트 파싱 즉시 삽입 */
+  _pushBlock();
+
+  /* 2차: DOMContentLoaded 후 재삽입 (Android 링크 진입 타이밍 보완) */
+  document.addEventListener('DOMContentLoaded', function(){
+    if(!window._allowLeave){ _pushBlock(); }
   });
+
+  /* ── popstate: 표준 뒤로가기 (Android/iOS 공통) ── */
+  window.addEventListener('popstate', _onBlock);
+
+  /* ── hashchange: iOS Safari swipe-back 전용 fallback ──
+     iOS WebKit 이 해시를 제거하거나 다른 해시로 이동시킬 때 발화.
+     popstate 가 발화되지 않는 상황에서도 이 이벤트로 잡아냄. */
+  window.addEventListener('hashchange', _onBlock);
 
   /* ── pageshow: bfcache 복원 시 재삽입 ── */
   window.addEventListener('pageshow', function(e){
