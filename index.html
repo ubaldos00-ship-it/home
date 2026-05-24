@@ -1,4 +1,4 @@
-<!-- home_v14.html · 저장: 2026-05-25 07:25 KST -->
+<!-- home_v15.html · 저장: 2026-05-25 07:36 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -392,6 +392,81 @@
     pointer-events: none;
   }
 
+  /* 계산기 모달 (iOS용 팝업 계산기) */
+  .calc-modal {
+    display: none;
+    position: fixed;
+    inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.75);
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .calc-modal.show { display: flex; }
+  .calc-box {
+    background: #1c1c1e;
+    border-radius: 20px 20px 0 0;
+    width: 100%;
+    max-width: 420px;
+    padding: 0 0 calc(16px + env(safe-area-inset-bottom));
+    box-shadow: 0 -4px 24px rgba(0,0,0,0.4);
+  }
+  .calc-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 18px 6px;
+  }
+  .calc-topbar span {
+    font-size: 13px; font-weight: 600;
+    color: rgba(255,255,255,0.5);
+  }
+  .calc-topbar button {
+    background: rgba(255,255,255,0.12);
+    border: none; border-radius: 999px;
+    color: #fff; font-size: 13px; font-weight: 600;
+    padding: 4px 14px; cursor: pointer;
+    font-family: inherit;
+  }
+  .calc-display {
+    text-align: right;
+    padding: 4px 20px 16px;
+    min-height: 70px;
+    display: flex; flex-direction: column;
+    align-items: flex-end; justify-content: flex-end;
+  }
+  .calc-expr {
+    font-size: 15px; color: rgba(255,255,255,0.45);
+    font-variant-numeric: tabular-nums;
+    min-height: 20px; word-break: break-all;
+    max-width: 100%;
+  }
+  .calc-val {
+    font-size: 46px; font-weight: 300;
+    color: #fff; font-variant-numeric: tabular-nums;
+    line-height: 1.1; word-break: break-all;
+    max-width: 100%;
+  }
+  .calc-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    padding: 0 14px;
+  }
+  .calc-grid button {
+    border: none; border-radius: 50%;
+    font-size: 22px; font-weight: 400;
+    font-family: inherit;
+    aspect-ratio: 1;
+    cursor: pointer;
+    transition: opacity 0.1s;
+  }
+  .calc-grid button:active { opacity: 0.6; }
+  .cbtn-gray  { background: #a5a5a5; color: #000; font-size: 18px !important; font-weight: 600 !important; }
+  .cbtn-dark  { background: #333335; color: #fff; }
+  .cbtn-org   { background: #ff9f0a; color: #fff; }
+  .cbtn-zero  { border-radius: 999px !important; grid-column: span 2; aspect-ratio: auto !important;
+                 text-align: left; padding-left: 28px; }
+
   /* 카메라 모달 */
   .camera-modal {
     display: none;
@@ -719,7 +794,7 @@
     <span class="nav-icon">📷</span>
     <span>카메라</span>
   </button>
-  <a class="nav-btn" href="https://www.google.com/search?q=calculator" target="_blank" rel="noopener" aria-label="계산기 열기">
+  <button class="nav-btn" type="button" onclick="openNativeCalc()" aria-label="계산기 열기">
     <span class="nav-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
       <rect x="4" y="2" width="16" height="20" rx="2.5" fill="#4a7c59" stroke="#2e5e3e" stroke-width="0.8"/>
       <rect x="6" y="4" width="12" height="5" rx="1.2" fill="#d4f0e0" stroke="#a0c8b0" stroke-width="0.5"/>
@@ -734,11 +809,51 @@
       <rect x="14.5" y="17"  width="3" height="2.2" rx="0.7" fill="#c9962b"/>
     </svg></span>
     <span>계산기</span>
-  </a>
+  </button>
 </nav>
 
 <!-- 카메라 input -->
 <input type="file" id="cameraInput" accept="image/*" capture="environment" />
+
+<!-- 계산기 모달 (iOS용) -->
+<div class="calc-modal" id="calcModal">
+  <div class="calc-box">
+    <div class="calc-topbar">
+      <span>계산기</span>
+      <button type="button" onclick="closeCalc()">닫기</button>
+    </div>
+    <div class="calc-display">
+      <div class="calc-expr" id="calcExpr"></div>
+      <div class="calc-val"  id="calcVal">0</div>
+    </div>
+    <div class="calc-grid">
+      <!-- row 1 -->
+      <button class="cbtn-gray" onclick="cAC()">AC</button>
+      <button class="cbtn-gray" onclick="cSign()">+/−</button>
+      <button class="cbtn-gray" onclick="cPct()">%</button>
+      <button class="cbtn-org"  onclick="cOp('÷')">÷</button>
+      <!-- row 2 -->
+      <button class="cbtn-dark" onclick="cNum('7')">7</button>
+      <button class="cbtn-dark" onclick="cNum('8')">8</button>
+      <button class="cbtn-dark" onclick="cNum('9')">9</button>
+      <button class="cbtn-org"  onclick="cOp('×')">×</button>
+      <!-- row 3 -->
+      <button class="cbtn-dark" onclick="cNum('4')">4</button>
+      <button class="cbtn-dark" onclick="cNum('5')">5</button>
+      <button class="cbtn-dark" onclick="cNum('6')">6</button>
+      <button class="cbtn-org"  onclick="cOp('−')">−</button>
+      <!-- row 4 -->
+      <button class="cbtn-dark" onclick="cNum('1')">1</button>
+      <button class="cbtn-dark" onclick="cNum('2')">2</button>
+      <button class="cbtn-dark" onclick="cNum('3')">3</button>
+      <button class="cbtn-org"  onclick="cOp('+')">+</button>
+      <!-- row 5 -->
+      <button class="cbtn-dark cbtn-zero" onclick="cNum('0')">0</button>
+      <button class="cbtn-dark" onclick="cDot()">.</button>
+      <button class="cbtn-org"  onclick="cEq()">=</button>
+    </div>
+  </div>
+</div>
 
 <!-- 카메라 모달 -->
 <div class="camera-modal" id="cameraModal">
@@ -828,6 +943,78 @@
     closeBtn.addEventListener('click', function () { modal.classList.remove('show'); img.src = ''; });
     modal.addEventListener('click', function (e) { if (e.target === modal) { modal.classList.remove('show'); img.src = ''; } });
   })();
+
+  /* ====== 계산기 ====== */
+  function openNativeCalc() {
+    var ua = navigator.userAgent;
+    var isAndroid = /Android/i.test(ua);
+    if (isAndroid) {
+      /* 안드로이드: 기본 계산기 앱 Intent로 실행 */
+      var intentUrl = 'intent://#Intent;action=android.intent.action.MAIN;category=android.intent.category.APP_CALCULATOR;end';
+      var fallback = setTimeout(function() {
+        /* 앱이 없거나 막힌 경우 팝업 계산기 */
+        document.getElementById('calcModal').classList.add('show');
+      }, 800);
+      window.location.href = intentUrl;
+      document.addEventListener('visibilitychange', function onV() {
+        if (document.hidden) { clearTimeout(fallback); document.removeEventListener('visibilitychange', onV); }
+      });
+    } else {
+      /* iOS: 기본 계산기 앱 URL 스킴 없음 → 팝업 계산기 표시 */
+      document.getElementById('calcModal').classList.add('show');
+    }
+  }
+  function closeCalc() {
+    document.getElementById('calcModal').classList.remove('show');
+  }
+  document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('calcModal').addEventListener('click', function(e) {
+      if (e.target === this) closeCalc();
+    });
+  });
+
+  /* -- 계산기 로직 -- */
+  var _cv = '0', _op = '', _prev = '', _newNum = true, _expr = '';
+  function _updDisp() {
+    document.getElementById('calcVal').textContent  = _cv;
+    document.getElementById('calcExpr').textContent = _expr;
+    document.querySelector('.calc-grid button').textContent = (_cv === '0' && _newNum && !_op) ? 'AC' : 'C';
+  }
+  function cNum(n) {
+    if (_newNum) { _cv = n === '0' ? '0' : n; _newNum = false; }
+    else { _cv = _cv === '0' ? n : (_cv.length < 12 ? _cv + n : _cv); }
+    _updDisp();
+  }
+  function cDot() {
+    if (_newNum) { _cv = '0.'; _newNum = false; }
+    else if (_cv.indexOf('.') < 0) { _cv += '.'; }
+    _updDisp();
+  }
+  function cAC() {
+    _cv = '0'; _op = ''; _prev = ''; _newNum = true; _expr = '';
+    _updDisp();
+  }
+  function cSign() { _cv = String(-parseFloat(_cv)); _updDisp(); }
+  function cPct()  { _cv = String(parseFloat(_cv) / 100); _updDisp(); }
+  function cOp(o) {
+    if (_op && !_newNum) _calcResult(false);
+    _prev = _cv; _op = o; _newNum = true;
+    _expr = _prev + ' ' + o;
+    _updDisp();
+  }
+  function _calcResult(final) {
+    if (!_op || !_prev) return;
+    var a = parseFloat(_prev), b = parseFloat(_cv), r;
+    if      (_op === '+') r = a + b;
+    else if (_op === '−') r = a - b;
+    else if (_op === '×') r = a * b;
+    else if (_op === '÷') r = b !== 0 ? a / b : 0;
+    r = Math.round(r * 1e10) / 1e10;
+    if (final) { _expr = _prev + ' ' + _op + ' ' + _cv + ' ='; _op = ''; _prev = ''; }
+    _cv = String(r); _newNum = true;
+    _updDisp();
+  }
+  function cEq() { _calcResult(true); }
 
   /* ====== 개별 조사도구 바로가기 접기/펼치기 ====== */
   function toggleTools() {
