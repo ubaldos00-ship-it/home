@@ -1049,7 +1049,7 @@ textarea {
         홈
       </a>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v45 저장: 2026-05-24 15:03)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v46 저장: 2026-05-24 15:08)</span></div>
   </div>
 </div>
 
@@ -5396,7 +5396,11 @@ function importJSON(input){
       localStorage.setItem(SAVE_KEY, JSON.stringify(d));
     }catch(e){}
   }
+  /* _restoring 플래그: 복원 중 autoSave가 미완성 데이터를 덮어쓰는 것 방지 */
+  var _restoring = false;
+
   function autoSave(){
+    if(_restoring) return;  // 복원 중에는 autoSave 차단
     clearTimeout(_saveTimer);
     _saveTimer = setTimeout(doSave, 600);
   }
@@ -5407,6 +5411,8 @@ function importJSON(input){
       var saved = localStorage.getItem(SAVE_KEY);
       if(!saved) return;
       var d = JSON.parse(saved);
+
+      _restoring = true;  // 복원 시작 — autoSave 차단
 
       // Step1: 작물 선택 복원 (UI 구조 변경을 먼저)
       if(d['__crop'] && typeof selectCrop === 'function'){
@@ -5445,16 +5451,20 @@ function importJSON(input){
           // Step4b: 다중중량 필드 UI 복원
           if(typeof _pmwRestoreAll === 'function') _pmwRestoreAll(d);
 
-          // Step5: 기점선정 재계산 트리거
+          // Step5: 기점선정 재계산 트리거 + 복원 완료
           setTimeout(function(){
             ['waAvg','wbAvg','heightA','heightB','aN','bN'].forEach(function(id){
               var el = document.getElementById(id);
               if(el && el.value) el.dispatchEvent(new Event('input',{bubbles:true}));
             });
+            _restoring = false;  // 복원 완료 — autoSave 재개
+            doSave();            // 최종 상태를 즉시 한 번 더 저장 (안전망)
           }, 300);
         }, 400);
       }, 500);
-    }catch(e){}
+    }catch(e){
+      _restoring = false;  // 에러 시에도 플래그 반드시 해제
+    }
   }
 
   // 이벤트 리스너 등록 (입력/변경/작물버튼 클릭)
@@ -5467,8 +5477,9 @@ function importJSON(input){
   });
 
   /* ── 즉시 저장: 이탈 직전/탭 숨김 시 디바운스 없이 바로 저장
-     (600ms 디바운스 사이에 앱을 닫으면 최신 입력이 유실되는 문제 방지) */
-  window.addEventListener('beforeunload', function(){ doSave(); });
+     beforeunload + pagehide 모두 등록 (iOS Safari는 pagehide가 더 신뢰성 높음) */
+  window.addEventListener('beforeunload',   function(){ doSave(); });
+  window.addEventListener('pagehide',       function(){ doSave(); }); // iOS 신뢰성 보강
   document.addEventListener('visibilitychange', function(){
     if(document.visibilityState === 'hidden'){ doSave(); }
   });
@@ -5477,10 +5488,25 @@ function importJSON(input){
     if(e.persisted && !isReset){ setTimeout(autoRestore, 400); }
   });
 
-  // 복원: reset이 아닐 때만, 앱 초기화 완료 후 실행
+  /* ── 복원 실행: reset이 아닐 때만 ──
+     1차(800ms): DOMContentLoaded 후 기본 복원
+     2차(3000ms): 기기 느림·타이밍 실패 대비 — 저장 데이터 있는데 address가
+                  여전히 비어있으면 재시도 (이미 복원된 경우엔 덮어쓰지 않음) */
   if(!isReset){
     document.addEventListener('DOMContentLoaded', function(){
-      setTimeout(autoRestore, 800);
+      setTimeout(autoRestore, 800);  // 1차 시도
+
+      setTimeout(function(){         // 2차 시도 (fallback)
+        if(_restoring) return;       // 1차가 아직 진행 중이면 건너뜀
+        var chk = null;
+        try{ chk = localStorage.getItem(SAVE_KEY); }catch(e){}
+        if(!chk) return;             // 저장 데이터 없으면 불필요
+        // 핵심 필드(address)가 비어 있으면 1차 복원 실패로 판단 → 재시도
+        var addr = document.getElementById('address');
+        if(addr && !addr.value.trim()){
+          autoRestore();
+        }
+      }, 3000);
     });
   }
 })();
