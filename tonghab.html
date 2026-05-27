@@ -1,3 +1,4 @@
+<!-- tonghab_v71.html · 저장: 2026-05-28 01:09 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -171,6 +172,14 @@ input[type=date]{font-size:16px;font-weight:500;color:#1558D6;padding:11px 10px;
 .rt-a .rt-unit{color:var(--ac2);}
 .rt-b .rt-unit{color:var(--bc2);}
 .rt-calc{font-size:9.5px;color:#9ca3af;display:block;margin-top:3px;}
+/* ── 비율 사용 안내 노트 ── */
+.ratio-note{font-size:11px;font-weight:700;padding:5px 9px;margin:0;border-top:1px dashed;line-height:1.4;display:none;}
+.ratio-note.show{display:block;}
+.rt-a .ratio-note{border-top-color:var(--ac);background:rgba(214,237,248,.35);color:#1a5a9a;}
+.rt-b .ratio-note{border-top-color:var(--bc);background:rgba(228,245,228,.35);color:#276a27;}
+.ratio-note.note-use2{background:#fff8e8;color:#b06000;}
+.rt-a .ratio-note.note-use2{border-top-color:#e08000;}
+.rt-b .ratio-note.note-use2{border-top-color:#e08000;}
 
 /* ── A/B port full card (measurement + sampling) ── */
 .port-card{border:2px solid;border-radius:var(--radl);overflow:hidden;background:#fff;}
@@ -306,7 +315,7 @@ input.needs-input:focus{
 /* 선택 입력 안내 (라벨 옆) */
 
 .alert{display:none;background:var(--a50);border:1.5px solid var(--a400);border-radius:var(--rad);
-  padding:11px 13px;font-size:13px;font-weight:600;color:var(--a600);text-align:center;}
+  padding:11px 13px;font-size:13px;font-weight:600;color:#C0392B;text-align:left;}
 .alert.show{display:block;}
 .err-box{display:none;background:var(--rlight);border:1.5px solid #ef9a9a;border-radius:var(--rad);
   padding:11px 14px;font-size:13px;color:var(--red);font-weight:600;}
@@ -345,8 +354,21 @@ input.needs-input:focus{
 .ncw{display:flex;flex-direction:column;align-items:center;gap:3px;animation:pop .2s ease backwards;}
 .ncw-no{font-family:var(--mono);font-size:10px;font-weight:700;color:#aaa;line-height:1;}
 .ncc{width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:7px;
-  border:1.5px solid #e0ddd5;font-family:var(--mono);font-size:15px;font-weight:800;background:#fff;color:var(--gr800);}
+  border:1.5px solid #e0ddd5;font-family:var(--mono);font-size:15px;font-weight:800;background:#fff;color:var(--gr800);cursor:pointer;transition:background .15s,color .15s,border-color .15s;}
+.ncc.selected{background:#2e7d32 !important;color:#fff !important;border-color:#2e7d32 !important;}
 @keyframes pop{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
+/* N 분산 입력 박스 */
+.n-split-box{background:#fff;border:1.5px dashed #9cbde0;border-radius:8px;padding:6px 8px 5px;margin:7px 0;}
+.n-split-title{font-size:10px;color:#1a5a9a;font-weight:700;margin-bottom:5px;}
+.n-split-row{display:flex;align-items:center;gap:3px;}
+.n-split-inp{flex:1;text-align:center;font-size:14px;font-weight:700;border:1.5px solid #9cbde0;border-radius:6px;padding:5px 2px;background:#fff;font-family:var(--mono);box-sizing:border-box;min-width:0;}
+.n-split-plus{font-size:14px;font-weight:900;color:#1a5a9a;flex-shrink:0;line-height:1;}
+.n-split-sum{font-size:10px;color:#1a5a9a;margin-top:4px;text-align:left;font-weight:600;}
+/* 생중량 빼기 입력 */
+.pmw-deduct-row{display:flex;align-items:center;gap:6px;margin-top:5px;padding:4px 8px;background:#fff5f5;border:1px solid #f5c0c0;border-radius:7px;}
+.pmw-deduct-label{font-size:11px;color:#c0392b;font-weight:700;white-space:nowrap;}
+.pmw-deduct-inp{flex:1;border:1.5px solid #f0a0a0;border-radius:6px;padding:4px 6px;font-size:13px;font-weight:700;font-family:var(--mono);text-align:center;background:#fff;}
+.pmw-deduct-unit{font-size:11px;color:#c0392b;white-space:nowrap;}
 
 /* Formula table (계산식) */
 .formula-card{background:#fff;border-radius:var(--radl);border:1px solid var(--gr100);overflow:hidden;}
@@ -444,6 +466,90 @@ input.needs-input:focus{
 .img-modal-fileinfo .fsub{font-size:11.5px;color:#999;margin-top:3px;display:block;}
 .img-modal img{width:calc(100% - 32px);max-width:488px;display:block;margin:0 16px 24px;
   border-radius:8px;border:1px solid #333;}
+
+/* ════ 논벼 전용 show/hide ════ */
+.nonbye-only { display:none !important; }
+body.nonbye-mode .nonbye-only { display:block !important; }
+body.nonbye-mode .nonbye-only.flex-mode { display:flex !important; }
+body.nonbye-mode .nonbye-only.grid-mode { display:grid !important; }
+body.nonbye-mode .hide-nonbye { display:none !important; }
+
+/* 논벼 포기수 입력 그리드 */
+.nonbye-plants-grid {
+  display:grid; grid-template-columns:repeat(5,1fr); gap:6px; margin-bottom:10px;
+}
+.nonbye-plant-cell {
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  background:#EBF3FF; border:1.5px solid #93C5FD; border-radius:9px; padding:7px 3px 8px;
+}
+.nonbye-plant-cell.rep {
+  background:#FFF8E1; border-color:#F0C040;
+}
+.nonbye-plant-num { font-size:10px; font-weight:700; color:var(--ac); line-height:1; }
+.nonbye-plant-cell.rep .nonbye-plant-num { color:#B08800; }
+.nonbye-plant-inp {
+  width:100%; border:1.5px solid #93C5FD; border-radius:6px; padding:7px 2px;
+  font-size:17px; font-weight:700; color:var(--ac); background:#fff;
+  text-align:center; outline:none; min-height:42px;
+}
+.nonbye-plant-inp:focus { border-color:var(--ac); box-shadow:0 0 0 2px rgba(10,58,140,.14); }
+.nonbye-plant-cell.rep .nonbye-plant-inp { border-color:#F0C040; color:#B08800; background:#FFF8E1; }
+.nonbye-rep-dot {
+  width:6px; height:6px; border-radius:50%; background:#F0C040; display:none;
+}
+.nonbye-plant-cell.rep .nonbye-rep-dot { display:block; }
+
+/* 논벼 이삭수 결과 통계 3칸 */
+.nonbye-stat-row {
+  display:grid; grid-template-columns:1fr 1fr 1fr; gap:7px; margin:10px 0;
+}
+.nonbye-stat-card {
+  border-radius:9px; border:1px solid #ddd; padding:9px 6px; text-align:center; background:#fafaf7;
+}
+.nonbye-stat-card.rep-card { background:#FFF8E1; border-color:#F0C040; }
+.nonbye-stat-lbl { font-size:10.5px; color:#888; font-weight:600; margin-bottom:3px; }
+.nonbye-stat-val { font-size:20px; font-weight:800; color:#222; }
+.nonbye-stat-card.rep-card .nonbye-stat-lbl { color:#B08800; }
+.nonbye-stat-card.rep-card .nonbye-stat-val { color:#B08800; }
+
+/* 논벼 계산 카드 */
+.nonbye-calc-card {
+  background:#fff; border-radius:var(--radl); border:2px solid #D4AC3A; padding:0; overflow:hidden;
+}
+.nonbye-calc-hdr {
+  background:linear-gradient(90deg,#8B7320,#B8960A); color:#fff; padding:12px 14px;
+  font-size:15px; font-weight:800; display:flex; align-items:center; gap:8px;
+}
+.nonbye-calc-body { padding:14px; }
+.nonbye-4col { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
+.nonbye-result-box {
+  background:#27500A; border-radius:var(--rad); padding:14px 16px; text-align:center;
+  margin-top:2px;
+}
+.nonbye-result-lbl { font-size:11px; color:rgba(255,255,255,.7); font-weight:600; margin-bottom:4px; }
+.nonbye-result-num { font-size:34px; font-weight:900; color:#fff; line-height:1.1; }
+.nonbye-result-unit { font-size:12px; color:rgba(255,255,255,.7); }
+.nonbye-result-formula { font-size:10.5px; color:rgba(255,255,255,.55); margin-top:6px; line-height:1.6; }
+
+/* 논벼 피해/품종 2컬럼 */
+.nonbye-damage-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+
+/* 논벼 1m² 포기수 결과칸 */
+.nonbye-m2-result {
+  background:#EBF3FF; border:1.5px solid #93C5FD; border-radius:var(--rad);
+  padding:9px 12px; display:flex; align-items:center; justify-content:space-between; margin-top:8px;
+}
+.nonbye-m2-result .lbl { font-size:12px; color:var(--ac); font-weight:700; }
+.nonbye-m2-result .val { font-size:22px; font-weight:900; color:var(--ac); }
+.nonbye-m2-result .unit { font-size:11px; color:var(--ac2); font-weight:600; }
+
+/* B포구 1m² 포기수 평균 */
+.nonbye-avg-box {
+  margin-top:10px; background:#F0F6FF; border:1.5px solid var(--ac); border-radius:var(--rad);
+  padding:10px 14px; text-align:center;
+}
+.nonbye-avg-box .lbl { font-size:11px; color:var(--ac); font-weight:700; margin-bottom:2px; }
+.nonbye-avg-box .val { font-size:28px; font-weight:900; color:var(--ac); }
 
 @media (max-width:380px){
   .crop-btn{font-size:11px;}
@@ -958,6 +1064,30 @@ input.needs-input:focus{
   cursor:pointer;font-family:inherit;margin-left:auto;
 }
 .sl-hdr-btn:active{background:rgba(255,255,255,.28);}
+/* ── 계산기 헤더 버튼 ── */
+.calc-hdr-btn{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  width:48px;height:48px;background:rgba(255,255,255,.18);color:#fff;font-size:10px;font-weight:700;
+  border-radius:12px;border:1.5px solid rgba(255,255,255,.35);flex-shrink:0;
+  cursor:pointer;font-family:inherit;
+}
+.calc-hdr-btn:active{background:rgba(255,255,255,.28);}
+/* ── 계산기 팝업 ── */
+.calc-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:4000;align-items:flex-end;justify-content:center;}
+.calc-modal.show{display:flex;}
+.calc-box{width:100%;max-width:340px;background:#1c1c1e;border-radius:20px 20px 0 0;padding:16px 12px 28px;box-shadow:0 -8px 40px rgba(0,0,0,.5);user-select:none;}
+.calc-popup-display{background:#000;border-radius:12px;padding:10px 14px;margin-bottom:10px;min-height:64px;display:flex;flex-direction:column;align-items:flex-end;justify-content:flex-end;}
+.calc-expr{font-size:13px;color:rgba(255,255,255,.45);font-family:var(--mono);min-height:18px;word-break:break-all;text-align:right;}
+.calc-val{font-size:34px;font-weight:700;color:#fff;font-family:var(--mono);letter-spacing:-.02em;word-break:break-all;text-align:right;}
+.calc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.calc-btn{height:56px;border:none;border-radius:12px;font-size:18px;font-weight:700;cursor:pointer;font-family:inherit;transition:filter .1s;-webkit-tap-highlight-color:transparent;}
+.calc-btn:active{filter:brightness(1.3);}
+.calc-btn.fn{background:#505054;color:#fff;}
+.calc-btn.op{background:#FF9F0A;color:#fff;}
+.calc-btn.num{background:#2c2c2e;color:#fff;}
+.calc-btn.zero{grid-column:span 2;text-align:left;padding-left:22px;}
+.calc-btn.eq{background:#FF9F0A;color:#fff;}
+.calc-btn.close-btn{background:#3a3a3c;color:#fff;font-size:13px;}
 /* ── 저장/불러오기 모달 ── */
 .sl-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:3000;overflow-y:auto;padding:16px 14px 40px;overscroll-behavior:contain;}
 .sl-modal.show{display:flex;justify-content:center;align-items:flex-start;}
@@ -1050,12 +1180,16 @@ textarea {
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M17 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V7l-4-4z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M17 3v4H7V3" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><rect x="9" y="13" width="6" height="6" rx="1" stroke="#fff" stroke-width="2"/></svg>
         저장
       </button>
+      <button class="calc-hdr-btn" onclick="openCalcModal()" aria-label="계산기">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="16" height="18" rx="2" stroke="#fff" stroke-width="2"/><path d="M8 7h8M8 12h2m4 0h2M8 17h2m4 0h2" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+        계산기
+      </button>
       <a href="https://ubaldos00-ship-it.github.io/home/" class="home-btn" aria-label="홈" onclick="return goHomeAndReset();">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 9.5L10 3l7 6.5V17a1 1 0 01-1 1H13v-5H7v5H4a1 1 0 01-1-1V9.5z" fill="#fff"/></svg>
         홈
       </a>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v50 저장: 2026-05-25 06:00)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v71 저장: 2026-05-28 01:09)</span></div>
   </div>
 </div>
 
@@ -1158,7 +1292,7 @@ textarea {
       </button>
 
       <!-- 논벼 -->
-      <button class="crop-btn" data-crop="논벼" data-mode="길이" data-n="22" onclick="alert('논벼는 현재 준비 중입니다.');" style="opacity:.55;cursor:not-allowed;">
+      <button class="crop-btn" data-crop="논벼" data-mode="길이" data-n="22" onclick="selectCrop(this)">
         <div class="crop-ico"><svg width="22" height="24" viewBox="0 0 22 24" fill="none">
           <line x1="11" y1="23" x2="11" y2="11" stroke="#8B7320" stroke-width="1.4" stroke-linecap="round"/>
           <path d="M11 11 C11 9 9.5 7 8 6" stroke="#9A8030" stroke-width="1" fill="none" stroke-linecap="round"/>
@@ -1170,7 +1304,7 @@ textarea {
           <ellipse cx="12" cy="4.7" rx="1.5" ry="0.85" fill="#D4AC3A" transform="rotate(5 12 4.7)"/>
           <ellipse cx="14.5" cy="6.3" rx="1.5" ry="0.85" fill="#D4AC3A" transform="rotate(25 14.5 6.3)"/>
         </svg></div>
-        논벼<span class="crop-cnt" style="color:#e88;font-size:8.5px;">준비중</span>
+        논벼<span class="crop-cnt">준비중</span>
       </button>
 
     </div>
@@ -1240,6 +1374,7 @@ textarea {
           </div>
           <span class="rt-calc" id="rtACalc"></span>
         </div>
+        <div class="ratio-note" id="ratioNoteA"></div>
       </div>
       <div class="rt-box rt-b">
         <div class="rt-head">
@@ -1254,6 +1389,7 @@ textarea {
           </div>
           <span class="rt-calc" id="rtBCalc"></span>
         </div>
+        <div class="ratio-note" id="ratioNoteB"></div>
       </div>
     </div>
 
@@ -1340,7 +1476,7 @@ textarea {
           <div class="calc-display"><span class="calc-main" id="calcASe">—</span><span class="calc-unit">cm</span></div>
           <div class="calc-sub" id="calcASeSub">A세로 × 비율 나</div>
         </div>
-        <div class="width-calc-box">
+        <div class="width-calc-box hide-nonbye">
           <div class="fg">
             <label>전체 너비 (cm)</label>
             <input type="number" inputmode="numeric" step="any" id="waTotalWidth" placeholder="예) 180" oninput="updateAvgWidth('A')">
@@ -1351,19 +1487,68 @@ textarea {
           </div>
           <div class="width-calc-note" id="waAvgNote">전체 너비 ÷ 이랑 수 = 이랑 평균너비</div>
         </div>
-        <div class="fg">
+        <div class="fg hide-nonbye">
           <label>이랑 평균너비 (cm)</label>
           <input type="number" inputmode="numeric" step="any" id="waAvg" placeholder="평균값 자동입력" oninput="updateABDerived()" data-need="open">
         </div>
-        <div class="fg">
+        <div class="fg hide-nonbye">
           <label>3㎡ 조사 길이</label>
           <div class="calc-display"><span class="calc-main" id="calcALen3">—</span><span class="calc-unit">cm</span></div>
           <div class="calc-sub" id="calcALen3Sub">30000 ÷ 평균너비</div>
         </div>
       </div>
 
+      <!-- ══ 논벼 전용: 가로·세로·1m² 포기수 + 이삭수 ══ -->
+      <div id="nonbyeASection" class="nonbye-only">
+        <div class="sub-ttl" style="margin-top:14px;">📐 A포구 포기간 길이 측정(평균)</div>
+        <div class="meas-grid" style="margin-bottom:8px;">
+          <div class="fg" style="margin-bottom:0;">
+            <label>가로 간격 (cm)</label>
+            <input type="text" inputmode="decimal" id="nbAWidth" placeholder="예) 30.0" oninput="nbFormatSpacing(this,'A')" autocomplete="off">
+          </div>
+          <div class="fg" style="margin-bottom:0;">
+            <label>세로 간격 (cm)</label>
+            <input type="text" inputmode="decimal" id="nbAHeight" placeholder="예) 15.5" oninput="nbFormatSpacing(this,'A')" autocomplete="off">
+          </div>
+        </div>
+        <div class="nonbye-m2-result">
+          <span class="lbl">A포구 1㎡당 포기수</span>
+          <span><span class="val" id="nbAM2">—</span> <span class="unit">포기/㎡</span></span>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:6px;">
+          <div style="flex:1;background:#EBF3FF;border:1px solid var(--ac-bd);border-radius:var(--rad);padding:7px 10px;text-align:center;">
+            <div style="font-size:10px;color:var(--ac);font-weight:700;">3㎡당 포기수</div>
+            <div style="font-size:18px;font-weight:900;color:var(--ac);" id="nbAM3">—</div>
+            <div style="font-size:10px;color:var(--ac2);">포기 (×3)</div>
+          </div>
+          <div style="flex:1;background:#EBF3FF;border:1px solid var(--ac-bd);border-radius:var(--rad);padding:7px 10px;text-align:center;">
+            <div style="font-size:10px;color:var(--ac);font-weight:700;">예취길이</div>
+            <div style="font-size:18px;font-weight:900;color:var(--ac);" id="nbAHarvestLen">—</div>
+            <div style="font-size:10px;color:var(--ac2);">cm (10000÷가로)</div>
+          </div>
+        </div>
+
+        <div class="sub-ttl" style="margin-top:16px;">🌾 A포구 포기당 이삭수 (10포기)</div>
+        <div class="nonbye-plants-grid" id="nbAJusuGrid"></div>
+        <div class="nonbye-stat-row">
+          <div class="nonbye-stat-card">
+            <div class="nonbye-stat-lbl">합계</div>
+            <div class="nonbye-stat-val" id="nbAJusuSum">—</div>
+          </div>
+          <div class="nonbye-stat-card">
+            <div class="nonbye-stat-lbl">평균</div>
+            <div class="nonbye-stat-val" id="nbAJusuAvg">—</div>
+          </div>
+          <div class="nonbye-stat-card rep-card">
+            <div class="nonbye-stat-lbl">⭐ 대표주수</div>
+            <div class="nonbye-stat-val" id="nbAJusuRep">—</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--a600);background:var(--a50);border:1px solid #f5d59c;border-radius:var(--rad);padding:7px 10px;margin-top:2px;display:none;" id="nbAJusuWarn">⚠ 10포기를 모두 입력해야 평균과 대표주수를 산출합니다.</div>
+      </div>
+
       <!-- A 계통추출 입력 -->
-      <div id="aSampSection">
+      <div id="aSampSection" class="hide-nonbye">
       <div class="sub-ttl" style="margin-top:18px;">🔢 A포구 계통추출 입력</div>
       <div style="font-size:12px;color:#C0392B;font-weight:600;margin:-2px 0 8px;">부여된 난수값 및 조사길이 전체 N을 입력하세요.</div>
       <div class="samp-row">
@@ -1375,6 +1560,20 @@ textarea {
           <label>난수표 세로값 (0~79)</label>
           <input type="number" inputmode="numeric" id="aRandRow" min="0" max="79" placeholder="0~79" data-need="always">
         </div>
+      </div>
+      <!-- N 분산 입력 (4인 분담 합산) -->
+      <div class="n-split-box">
+        <div class="n-split-title">➕ N 분산 입력 — 전체N에 자동 합산</div>
+        <div class="n-split-row">
+          <input type="number" inputmode="numeric" class="n-split-inp" id="aN1" placeholder="0" min="0" oninput="calcNSum('a')">
+          <span class="n-split-plus">+</span>
+          <input type="number" inputmode="numeric" class="n-split-inp" id="aN2" placeholder="0" min="0" oninput="calcNSum('a')">
+          <span class="n-split-plus">+</span>
+          <input type="number" inputmode="numeric" class="n-split-inp" id="aN3" placeholder="0" min="0" oninput="calcNSum('a')">
+          <span class="n-split-plus">+</span>
+          <input type="number" inputmode="numeric" class="n-split-inp" id="aN4" placeholder="0" min="0" oninput="calcNSum('a')">
+        </div>
+        <div class="n-split-sum" id="aN-split-sum">합계: —</div>
       </div>
       <div class="samp-trio">
         <div class="fg">
@@ -1412,7 +1611,7 @@ textarea {
   </div>
 
   <!-- A포구 계산하기 버튼 (B포구 입력 전에 A만 즉시 계산) -->
-  <div class="btn-row btn-row-a">
+  <div class="btn-row btn-row-a hide-nonbye">
     <button class="btn btn-reset" type="button" onclick="prodFullResetAll()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 018-8 8 8 0 016.93 4H16v2h6V2h-2v2.54A9.99 9.99 0 0012 2C6.48 2 2 6.48 2 12h2z" fill="#C0392B"/><path d="M20 12a8 8 0 01-8 8 8 8 0 01-6.93-4H8v-2H2v6h2v-2.54A9.99 9.99 0 0012 22c5.52 0 10-4.48 10-10h-2z" fill="#C0392B"/></svg>
       초기화
@@ -1488,7 +1687,7 @@ textarea {
           <div class="calc-display"><span class="calc-main" id="calcBSe">—</span><span class="calc-unit">cm</span></div>
           <div class="calc-sub" id="calcBSeSub">B세로 × 비율 다</div>
         </div>
-        <div class="width-calc-box">
+        <div class="width-calc-box hide-nonbye">
           <div class="fg">
             <label>전체 너비 (cm)</label>
             <input type="number" inputmode="numeric" step="any" id="wbTotalWidth" placeholder="예) 180" oninput="updateAvgWidth('B')">
@@ -1499,19 +1698,64 @@ textarea {
           </div>
           <div class="width-calc-note" id="wbAvgNote">전체 너비 ÷ 이랑 수 = 이랑 평균너비</div>
         </div>
-        <div class="fg">
+        <div class="fg hide-nonbye">
           <label>이랑 평균너비 (cm)</label>
           <input type="number" inputmode="numeric" step="any" id="wbAvg" placeholder="평균값 자동입력" oninput="updateABDerived()" data-need="bport-open">
         </div>
-        <div class="fg">
+        <div class="fg hide-nonbye">
           <label>3㎡ 조사 길이</label>
           <div class="calc-display"><span class="calc-main" id="calcBLen3">—</span><span class="calc-unit">cm</span></div>
           <div class="calc-sub" id="calcBLen3Sub">30000 ÷ 평균너비</div>
         </div>
       </div>
 
+      <!-- ══ 논벼 전용: B포구 가로·세로·1m² 포기수 ══ -->
+      <div id="nonbyeBSection" class="nonbye-only">
+        <div class="sub-ttl" style="margin-top:14px;">📐 B포구 포기간 길이 측정(평균)</div>
+        <!-- A포구 비교 참고값 -->
+        <div style="background:#EBF3FF;border:1px solid var(--ac-bd);border-radius:var(--rad);padding:7px 10px;margin-bottom:8px;font-size:12px;color:var(--ac);">
+          <div style="font-weight:700;margin-bottom:4px;">📌 A포구 참고값</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <span>가로 <b id="nbBRef_W">—</b> cm</span>
+            <span>세로 <b id="nbBRef_H">—</b> cm</span>
+            <span>1㎡당 포기수 <b id="nbBRef_M2">—</b> 포기</span>
+          </div>
+        </div>
+        <div class="meas-grid" style="margin-bottom:8px;">
+          <div class="fg" style="margin-bottom:0;">
+            <label>가로 간격 (cm)</label>
+            <input type="text" inputmode="decimal" id="nbBWidth" placeholder="예) 30.0" oninput="nbFormatSpacing(this,'B')" autocomplete="off">
+          </div>
+          <div class="fg" style="margin-bottom:0;">
+            <label>세로 간격 (cm)</label>
+            <input type="text" inputmode="decimal" id="nbBHeight" placeholder="예) 15.5" oninput="nbFormatSpacing(this,'B')" autocomplete="off">
+          </div>
+        </div>
+        <div class="nonbye-m2-result" style="border-color:var(--bc-bd);background:var(--bc-bg);">
+          <span class="lbl" style="color:var(--bc);">B포구 1㎡당 포기수</span>
+          <span><span class="val" id="nbBM2" style="color:var(--bc);">—</span> <span class="unit" style="color:var(--bc2);">포기/㎡</span></span>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:6px;">
+          <div style="flex:1;background:var(--bc-bg);border:1px solid var(--bc-bd);border-radius:var(--rad);padding:7px 10px;text-align:center;">
+            <div style="font-size:10px;color:var(--bc);font-weight:700;">3㎡당 포기수</div>
+            <div style="font-size:18px;font-weight:900;color:var(--bc);" id="nbBM3">—</div>
+            <div style="font-size:10px;color:var(--bc2);">포기 (×3)</div>
+          </div>
+          <div style="flex:1;background:var(--bc-bg);border:1px solid var(--bc-bd);border-radius:var(--rad);padding:7px 10px;text-align:center;">
+            <div style="font-size:10px;color:var(--bc);font-weight:700;">예취길이</div>
+            <div style="font-size:18px;font-weight:900;color:var(--bc);" id="nbBHarvestLen">—</div>
+            <div style="font-size:10px;color:var(--bc2);">cm (10000÷가로)</div>
+          </div>
+        </div>
+        <div class="nonbye-avg-box" id="nbAvgBox" style="display:none;">
+          <div class="lbl">A·B포구 평균 1㎡당 포기수</div>
+          <div class="val" id="nbAvgM2">—</div>
+          <div style="font-size:11px;color:var(--ac2);margin-top:2px;">포기/㎡ &nbsp;(= 10a당 <span id="nbAvg10a">—</span> 포기)</div>
+        </div>
+      </div>
+
       <!-- B 계통추출 입력 -->
-      <div id="bSampSection">
+      <div id="bSampSection" class="hide-nonbye">
       <div class="sub-ttl" style="margin-top:18px;">🔢 B포구 계통추출 입력</div>
       <div style="font-size:10.5px;color:var(--gr600);margin-bottom:6px;line-height:1.5;">
         ⭐ 난수표 좌표는 <strong>A포구와 자동 동기화</strong>됩니다 (수정 불가).
@@ -1525,6 +1769,20 @@ textarea {
           <label>난수표 세로값 (A 동기화)</label>
           <input type="number" id="bRandRow" readonly placeholder="A포구와 동일">
         </div>
+      </div>
+      <!-- N 분산 입력 (4인 분담 합산) -->
+      <div class="n-split-box" style="border-color:#e0b090;background:#fff;">
+        <div class="n-split-title" style="color:#8B4513;">➕ N 분산 입력 — 전체N에 자동 합산</div>
+        <div class="n-split-row">
+          <input type="number" inputmode="numeric" class="n-split-inp" id="bN1" placeholder="0" min="0" oninput="calcNSum('b')" style="border-color:#e0b090;">
+          <span class="n-split-plus" style="color:#8B4513;">+</span>
+          <input type="number" inputmode="numeric" class="n-split-inp" id="bN2" placeholder="0" min="0" oninput="calcNSum('b')" style="border-color:#e0b090;">
+          <span class="n-split-plus" style="color:#8B4513;">+</span>
+          <input type="number" inputmode="numeric" class="n-split-inp" id="bN3" placeholder="0" min="0" oninput="calcNSum('b')" style="border-color:#e0b090;">
+          <span class="n-split-plus" style="color:#8B4513;">+</span>
+          <input type="number" inputmode="numeric" class="n-split-inp" id="bN4" placeholder="0" min="0" oninput="calcNSum('b')" style="border-color:#e0b090;">
+        </div>
+        <div class="n-split-sum" id="bN-split-sum" style="color:#8B4513;">합계: —</div>
       </div>
       <div class="samp-trio">
         <div class="fg">
@@ -1558,6 +1816,129 @@ textarea {
         📋 난수표 확인하기 (새창)
       </a>
       </div><!-- /bSampSection -->
+    </div>
+  </div>
+
+  <!-- ════ 논벼 전용: 낱알수·예상생산량 카드 ════ -->
+  <div class="nonbye-calc-card nonbye-only" id="nonbyeCalcCard">
+    <div class="nonbye-calc-hdr">
+      <span>🌾</span> 논벼 낱알수 조사 및 10a당 예상생산량
+    </div>
+    <div class="nonbye-calc-body">
+
+      <div style="font-size:12px;color:#5a4a00;font-weight:600;margin-bottom:10px;">
+        A포구 이삭 1포기 기준으로 입력하세요.
+      </div>
+
+      <div class="nonbye-4col">
+        <div class="fg" style="margin-bottom:0;">
+          <label>유효이삭수 (개/포기)</label>
+          <input type="number" inputmode="numeric" id="nbEffEars" placeholder="예) 18" oninput="nonbyeCalcYield()">
+        </div>
+        <div class="fg" style="margin-bottom:0;">
+          <label>총낟알수 (개/이삭)</label>
+          <input type="number" inputmode="numeric" id="nbTotalGrains" placeholder="예) 80" oninput="nonbyeCalcYield()">
+        </div>
+        <div class="fg" style="margin-bottom:0;">
+          <label>완전낱알수 (개/이삭)</label>
+          <input type="number" inputmode="numeric" id="nbCompleteGrains" placeholder="예) 70" oninput="nonbyeCalcYield()">
+        </div>
+        <div class="fg" style="margin-bottom:0;">
+          <label>불완전립 (개/이삭)</label>
+          <input type="number" id="nbIncompleteGrains" readonly placeholder="자동계산" style="background:#f5f5f0;color:var(--gr600);font-weight:700;">
+        </div>
+        <div class="fg" style="margin-bottom:0;">
+          <label>천립중 (g)</label>
+          <input type="text" inputmode="decimal" id="nbThousandWeight" placeholder="예) 17.0~19.0" oninput="nbFmt3Yield(this)" autocomplete="off">
+        </div>
+      </div>
+
+      <!-- 추정값 입력 + 추정 버튼 -->
+      <div style="background:#EEF2FF;border:1.5px solid #C7D2FE;border-radius:var(--rad);padding:10px 12px;margin:8px 0 4px;">
+        <div style="font-size:11px;color:#3730A3;font-weight:700;margin-bottom:8px;">📊 유효이삭수당 추정값 입력 (이삭당 평균)</div>
+        <div style="display:flex;gap:8px;margin-bottom:8px;">
+          <div style="flex:1;">
+            <label style="display:block;font-size:11px;color:var(--gr600);font-weight:600;margin-bottom:3px;">추정 총낟알수 (개/이삭)</label>
+            <input type="text" inputmode="decimal" id="nbEstTotal" value="90.88" oninput="nbFmt4(this)" autocomplete="off"
+              style="width:100%;padding:8px 10px;border:1.5px solid #A5B4FC;border-radius:var(--rad);font-size:15px;font-weight:700;text-align:center;color:#3730A3;background:#fff;">
+          </div>
+          <div style="flex:1;">
+            <label style="display:block;font-size:11px;color:var(--gr600);font-weight:600;margin-bottom:3px;">추정 완전낱알수 (개/이삭)</label>
+            <input type="text" inputmode="decimal" id="nbEstComplete" value="81.41" oninput="nbFmt4(this)" autocomplete="off"
+              style="width:100%;padding:8px 10px;border:1.5px solid #A5B4FC;border-radius:var(--rad);font-size:15px;font-weight:700;text-align:center;color:#3730A3;background:#fff;">
+          </div>
+        </div>
+        <button type="button" onclick="nbApplyEstimate()"
+          style="width:100%;padding:10px;background:#4338CA;color:#fff;font-size:14px;font-weight:700;
+                 border:none;border-radius:var(--rad);cursor:pointer;font-family:inherit;
+                 -webkit-tap-highlight-color:transparent;">
+          추정 적용 (유효이삭수 × 추정값 → 총낟알수·완전낱알수)
+        </button>
+      </div>
+
+      <!-- 비율 통계 3칸 -->
+      <div style="display:flex;gap:6px;margin:8px 0 4px;">
+        <div style="flex:1;background:#fffbe6;border:1px solid #ffe082;border-radius:var(--rad);padding:7px 8px;text-align:center;">
+          <div style="font-size:10px;color:#8B7320;font-weight:700;margin-bottom:3px;">완전낱알수 비율</div>
+          <div style="font-size:20px;font-weight:900;color:#8B7320;" id="nbCompleteRatePct">—</div>
+          <div style="font-size:10px;color:#a08000;">% (등숙률)</div>
+        </div>
+        <div style="flex:1;background:#fffbe6;border:1px solid #ffe082;border-radius:var(--rad);padding:7px 8px;text-align:center;">
+          <div style="font-size:10px;color:#8B7320;font-weight:700;margin-bottom:3px;">이삭당 낟알수</div>
+          <div style="font-size:18px;font-weight:900;color:#8B7320;line-height:1.3;" id="nbGrainRateFrac">—</div>
+          <div style="font-size:10px;color:#a08000;">개/이삭 (완전÷유효)</div>
+        </div>
+        <div style="flex:1;background:#e8f5e9;border:1px solid #a5d6a7;border-radius:var(--rad);padding:7px 8px;text-align:center;">
+          <div style="font-size:10px;color:var(--g600);font-weight:700;margin-bottom:3px;">1㎡당 완전낱알수</div>
+          <div style="font-size:16px;font-weight:900;color:var(--g600);" id="nbCompleteGrainsPerM2">—</div>
+          <div style="font-size:10px;color:var(--g400);">개/㎡</div>
+        </div>
+      </div>
+
+      <div class="nonbye-result-box" id="nbYieldBox">
+        <div class="nonbye-result-lbl">10a당 예상생산량 (백미기준)</div>
+        <div><span class="nonbye-result-num" id="nbYield10a">—</span> <span class="nonbye-result-unit">kg/10a</span></div>
+        <div class="nonbye-result-formula" id="nbYieldFormula"></div>
+      </div>
+
+      <!-- A/B 피해상황·품종명·모내기 -->
+      <div class="sub-ttl" style="margin-top:16px;color:#8B7320;">📋 A·B포구 피해·품종·모내기</div>
+      <div class="nonbye-damage-grid">
+        <div style="border:2px solid var(--ac);border-radius:var(--rad);overflow:hidden;">
+          <div style="background:var(--ac);color:#fff;font-size:11px;font-weight:800;padding:6px 10px;">A포구</div>
+          <div style="padding:10px;">
+            <div class="fg" style="margin-bottom:8px;">
+              <label style="font-size:11px;">피해상황</label>
+              <input type="text" id="nbADamage" placeholder="예) 도복 10%" style="font-size:13px;padding:8px 10px;">
+            </div>
+            <div class="fg" style="margin-bottom:8px;">
+              <label style="font-size:11px;">품종명</label>
+              <input type="text" id="nbAVariety" placeholder="예) 남천벼" style="font-size:13px;padding:8px 10px;">
+            </div>
+            <div class="fg" style="margin-bottom:0;">
+              <label style="font-size:11px;">모내기 (월.일)</label>
+              <input type="text" id="nbATransplant" placeholder="예) 6.5" style="font-size:13px;padding:8px 10px;">
+            </div>
+          </div>
+        </div>
+        <div style="border:2px solid var(--bc);border-radius:var(--rad);overflow:hidden;">
+          <div style="background:var(--bc);color:#fff;font-size:11px;font-weight:800;padding:6px 10px;">B포구</div>
+          <div style="padding:10px;">
+            <div class="fg" style="margin-bottom:8px;">
+              <label style="font-size:11px;">피해상황</label>
+              <input type="text" id="nbBDamage" placeholder="예) 없음" style="font-size:13px;padding:8px 10px;">
+            </div>
+            <div class="fg" style="margin-bottom:8px;">
+              <label style="font-size:11px;">품종명</label>
+              <input type="text" id="nbBVariety" placeholder="예) 남천벼" style="font-size:13px;padding:8px 10px;">
+            </div>
+            <div class="fg" style="margin-bottom:0;">
+              <label style="font-size:11px;">모내기 (월.일)</label>
+              <input type="text" id="nbBTransplant" placeholder="예) 6.5" style="font-size:13px;padding:8px 10px;">
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1642,7 +2023,7 @@ textarea {
     </div><!-- /captureTarget -->
 
     <button class="btn-capture" id="btnCapture">📷&nbsp; 결과 이미지로 저장</button>
-    <button type="button" class="goto-btn goto-prod-btn" onclick="scrollToProdCalculator()">🌾 10a당 생산량 바로가기</button>
+    <button type="button" id="goto-prod-btn" class="goto-btn goto-prod-btn" onclick="scrollToProdCalculator()">🧄 10a당 생산량 바로가기</button>
   </div>
 
   <!-- ════════════════════════════════════════════
@@ -1725,6 +2106,11 @@ textarea {
                     <button type="button" class="pmw-add-btn" onclick="_pmwAddRow('pa-potato-over','a','potato')">+</button>
                   </div>
                 </div>
+                <div class="pmw-deduct-row">
+                  <span class="pmw-deduct-label">− 빼기</span>
+                  <input type="number" class="pmw-deduct-inp" id="pa-potato-over-deduct" placeholder="0" min="0" inputmode="numeric" oninput="_pmwDeductUpdate('a','potato')">
+                  <span class="pmw-deduct-unit">g (박스·망 무게)</span>
+                </div>
                 <div class="pfmt-display" id="pfmt-pa-potato-over"></div>
               </div>
               <div class="pab-field">
@@ -1753,6 +2139,12 @@ textarea {
                     <span class="pmw-sum" id="pmw-sum-pa-weight">합계: —</span>
                     <button type="button" class="pmw-add-btn" onclick="_pmwAddRow('pa-weight','a','go')">+</button>
                   </div>
+                </div>
+                <!-- 빼기 입력 (박스/망 무게) -->
+                <div class="pmw-deduct-row">
+                  <span class="pmw-deduct-label">− 빼기</span>
+                  <input type="number" class="pmw-deduct-inp" id="pa-weight-deduct" placeholder="0" min="0" inputmode="numeric" oninput="_pmwDeductUpdate('a','go')">
+                  <span class="pmw-deduct-unit">g (박스·망 무게)</span>
                 </div>
                 <div class="pfmt-display" id="pfmt-pa-weight"></div>
                 <div class="pwarn-box" id="pa-weight-warn"></div>
@@ -1787,6 +2179,11 @@ textarea {
                     <button type="button" class="pmw-add-btn" onclick="_pmwAddRow('pa-cab-weight','a','cab')">+</button>
                   </div>
                 </div>
+                <div class="pmw-deduct-row">
+                  <span class="pmw-deduct-label">− 빼기</span>
+                  <input type="number" class="pmw-deduct-inp" id="pa-cab-weight-deduct" placeholder="0" min="0" inputmode="numeric" oninput="_pmwDeductUpdate('a','cab')">
+                  <span class="pmw-deduct-unit">g (박스·망 무게)</span>
+                </div>
                 <div class="pfmt-display" id="pfmt-pa-cab-weight"></div></div>
               <div class="pab-field"><label>미결구 포기수</label>
                 <div class="pab-input-wrap"><input type="number" id="pa-cab-miss" placeholder="예)1" min="0" inputmode="numeric"><span class="pab-unit">개</span></div></div>
@@ -1808,6 +2205,11 @@ textarea {
                     <button type="button" class="pmw-add-btn" onclick="_pmwAddRow('pa-rad-weight','a','rad')">+</button>
                   </div>
                 </div>
+                <div class="pmw-deduct-row">
+                  <span class="pmw-deduct-label">− 빼기</span>
+                  <input type="number" class="pmw-deduct-inp" id="pa-rad-weight-deduct" placeholder="0" min="0" inputmode="numeric" oninput="_pmwDeductUpdate('a','rad')">
+                  <span class="pmw-deduct-unit">g (박스·망 무게)</span>
+                </div>
                 <div class="pfmt-display" id="pfmt-pa-rad-weight"></div></div>
               <div class="plive-box" id="pa-rad-live"><span class="plive-label">개당 중량</span><span class="plive-val" id="pa-rad-live-val">—</span></div>
             </div>
@@ -1826,6 +2228,11 @@ textarea {
                     <span class="pmw-sum" id="pmw-sum-pa-tok-weight">합계: —</span>
                     <button type="button" class="pmw-add-btn" onclick="_pmwAddRow('pa-tok-weight','a','tok')">+</button>
                   </div>
+                </div>
+                <div class="pmw-deduct-row">
+                  <span class="pmw-deduct-label">− 빼기</span>
+                  <input type="number" class="pmw-deduct-inp" id="pa-tok-weight-deduct" placeholder="0" min="0" inputmode="numeric" oninput="_pmwDeductUpdate('a','tok')">
+                  <span class="pmw-deduct-unit">g (박스·망 무게)</span>
                 </div>
                 <div class="pfmt-display" id="pfmt-pa-tok-weight"></div></div>
               <div class="plive-box" id="pa-tok-live"><span class="plive-label">개당 중량</span><span class="plive-val" id="pa-tok-live-val">—</span></div>
@@ -1876,6 +2283,11 @@ textarea {
                     <button type="button" class="pmw-add-btn" onclick="_pmwAddRow('pb-potato-over','b','potato')">+</button>
                   </div>
                 </div>
+                <div class="pmw-deduct-row">
+                  <span class="pmw-deduct-label">− 빼기</span>
+                  <input type="number" class="pmw-deduct-inp" id="pb-potato-over-deduct" placeholder="0" min="0" inputmode="numeric" oninput="_pmwDeductUpdate('b','potato')">
+                  <span class="pmw-deduct-unit">g (박스·망 무게)</span>
+                </div>
                 <div class="pfmt-display" id="pfmt-pb-potato-over"></div></div>
               <div class="pab-field"><label>20g미만 중량</label>
                 <div class="pab-input-wrap"><input type="number" id="pb-potato-under" placeholder="예)90" min="0" inputmode="numeric"><span class="pab-unit">g</span></div></div>
@@ -1889,10 +2301,16 @@ textarea {
                 <input type="hidden" id="pb-weight">
                 <div class="pmw-wrap preq-border" id="pwrap-b-weight">
                   <div class="pmw-rows" id="pmw-pb-weight"></div>
-                  <div class="pmw-footer">
+                  <div class="pmw-footer" id="pb-weight-footer">
                     <span class="pmw-sum" id="pmw-sum-pb-weight">합계: —</span>
                     <button type="button" class="pmw-add-btn" onclick="_pmwAddRow('pb-weight','b','go')">+</button>
                   </div>
+                </div>
+                <!-- 빼기 입력 (박스/망 무게) -->
+                <div class="pmw-deduct-row">
+                  <span class="pmw-deduct-label">− 빼기</span>
+                  <input type="number" class="pmw-deduct-inp" id="pb-weight-deduct" placeholder="0" min="0" inputmode="numeric" oninput="_pmwDeductUpdate('b','go')">
+                  <span class="pmw-deduct-unit">g (박스·망 무게)</span>
                 </div>
                 <div class="pfmt-display" id="pfmt-pb-weight"></div>
                 <div class="pwarn-box" id="pb-weight-warn"></div>
@@ -1927,6 +2345,11 @@ textarea {
                     <button type="button" class="pmw-add-btn" onclick="_pmwAddRow('pb-cab-weight','b','cab')">+</button>
                   </div>
                 </div>
+                <div class="pmw-deduct-row">
+                  <span class="pmw-deduct-label">− 빼기</span>
+                  <input type="number" class="pmw-deduct-inp" id="pb-cab-weight-deduct" placeholder="0" min="0" inputmode="numeric" oninput="_pmwDeductUpdate('b','cab')">
+                  <span class="pmw-deduct-unit">g (박스·망 무게)</span>
+                </div>
                 <div class="pfmt-display" id="pfmt-pb-cab-weight"></div></div>
               <div class="pab-field"><label>미결구 포기수</label>
                 <div class="pab-input-wrap"><input type="number" id="pb-cab-miss" placeholder="예)1" min="0" inputmode="numeric"><span class="pab-unit">개</span></div></div>
@@ -1948,6 +2371,11 @@ textarea {
                     <button type="button" class="pmw-add-btn" onclick="_pmwAddRow('pb-rad-weight','b','rad')">+</button>
                   </div>
                 </div>
+                <div class="pmw-deduct-row">
+                  <span class="pmw-deduct-label">− 빼기</span>
+                  <input type="number" class="pmw-deduct-inp" id="pb-rad-weight-deduct" placeholder="0" min="0" inputmode="numeric" oninput="_pmwDeductUpdate('b','rad')">
+                  <span class="pmw-deduct-unit">g (박스·망 무게)</span>
+                </div>
                 <div class="pfmt-display" id="pfmt-pb-rad-weight"></div></div>
               <div class="plive-box" id="pb-rad-live"><span class="plive-label">개당 중량</span><span class="plive-val" id="pb-rad-live-val">—</span></div>
             </div>
@@ -1966,6 +2394,11 @@ textarea {
                     <span class="pmw-sum" id="pmw-sum-pb-tok-weight">합계: —</span>
                     <button type="button" class="pmw-add-btn" onclick="_pmwAddRow('pb-tok-weight','b','tok')">+</button>
                   </div>
+                </div>
+                <div class="pmw-deduct-row">
+                  <span class="pmw-deduct-label">− 빼기</span>
+                  <input type="number" class="pmw-deduct-inp" id="pb-tok-weight-deduct" placeholder="0" min="0" inputmode="numeric" oninput="_pmwDeductUpdate('b','tok')">
+                  <span class="pmw-deduct-unit">g (박스·망 무게)</span>
                 </div>
                 <div class="pfmt-display" id="pfmt-pb-tok-weight"></div></div>
               <div class="plive-box" id="pb-tok-live"><span class="plive-label">개당 중량</span><span class="plive-val" id="pb-tok-live-val">—</span></div>
@@ -2025,8 +2458,10 @@ textarea {
           </div>
           <div class="pavg-result-box" id="prod-avg-result-box">
             <div class="pavg-label" id="prod-avg-label">A·B 포구 평균 생산량</div>
-            <div class="pavg-num" id="prod-res-avg">—</div>
-            <div class="pavg-unit">kg / 10a</div>
+            <div style="display:flex;align-items:baseline;justify-content:center;gap:5px;line-height:1.2;">
+              <span class="pavg-num" id="prod-res-avg">—</span>
+              <span class="pavg-unit" style="display:inline;font-size:13px;margin-top:0;">kg / 10a</span>
+            </div>
             <div id="prod-res-avg-raw" style="font-size:11px;color:rgba(255,255,255,.65);margin-top:3px"></div>
           </div>
           <div class="pdry-note" id="prod-dry-note"></div>
@@ -2070,7 +2505,7 @@ textarea {
       </div>
 
       <button class="preset-bottom-btn" onclick="prodResetCalc()">← 전체 초기화 / 초기화</button>
-      <button class="pcap-btn" id="prod-cap-trigger-btn" onclick="prodCaptureResult()">📷 결과 이미지로 저장</button>
+      <button class="pcap-btn" id="prod-cap-trigger-btn" onclick="prodCaptureResult()">📷 10a당 결과 이미지로 저장</button>
       <button class="full-cap-btn" id="full-cap-btn" onclick="showFullResultCapture()">📋 전체 조사 결과 이미지 저장</button>
     </div><!-- /presult-section -->
 
@@ -2279,8 +2714,313 @@ function selectCrop(btn){
 
   // 입력 단위 자동 변경 (논벼 = 길이, 나머지 = 이랑)
   setMode(btn.dataset.mode || '이랑');
+
+  // 논벼 전용 모드 on/off
+  const isNonbye = (selectedCrop === '논벼');
+  document.body.classList.toggle('nonbye-mode', isNonbye);
+  if(isNonbye){
+    // 노지 강제 선택
+    setCultivation('노지');
+    // 논벼 10포기 이삭수 그리드 초기화
+    nonbyeInitJusuGrid();
+  }
+
   updateFormulas();
   scheduleAutoRandomLookup();
+}
+
+/* ═════════════════════════════════════════
+   논벼 전용 함수들
+═════════════════════════════════════════ */
+
+/* MROUND 함수 (엑셀 MROUND 동일) */
+function mround(n, m){ return Math.round(n/m)*m; }
+
+/* ##.# 포맷 + nonbyeCalcYield 트리거 (천립중 전용) */
+function nbFmt3Yield(inp){
+  const raw = inp.value.replace(/[^0-9]/g,'');
+  inp.value = raw.length >= 3 ? raw.slice(0, raw.length-1) + '.' + raw.slice(raw.length-1) : raw;
+  nonbyeCalcYield();
+}
+
+/* ##.## 포맷 (추정값 입력 전용, 4자리 입력 시 소수 2자리 삽입) */
+function nbFmt4(inp){
+  const raw = inp.value.replace(/[^0-9]/g,'');
+  inp.value = raw.length >= 4 ? raw.slice(0, raw.length-2) + '.' + raw.slice(raw.length-2) : raw;
+  /* 4자리 입력 완료 시 다음 필드로 자동 이동 */
+  if(raw.length === 4){
+    const nextMap = {nbEstTotal:'nbEstComplete', nbEstComplete:'nbThousandWeight'};
+    const nextId = nextMap[inp.id];
+    if(nextId) setTimeout(()=>{ const n=document.getElementById(nextId); if(n){n.focus(); if(n.select)n.select();} }, 80);
+  }
+}
+
+/* 추정 적용: 유효이삭수 × 추정값 → 총낟알수·완전낱알수 채우기 */
+function nbApplyEstimate(){
+  const effEars   = parseFloat(document.getElementById('nbEffEars').value);
+  const estTotal  = parseFloat(document.getElementById('nbEstTotal').value);
+  const estComp   = parseFloat(document.getElementById('nbEstComplete').value);
+  if(isNaN(effEars)||effEars<=0){
+    alert('먼저 유효이삭수를 입력해주세요.'); return;
+  }
+  if(!isNaN(estTotal)){
+    document.getElementById('nbTotalGrains').value = Math.round(effEars * estTotal);
+  }
+  if(!isNaN(estComp)){
+    document.getElementById('nbCompleteGrains').value = Math.round(effEars * estComp);
+  }
+  nonbyeCalcYield();
+}
+
+/* ##.# 간격 자동 포맷 (3자리 입력 시 ##.# 형태로 변환) */
+function nbFormatSpacing(inp, port){
+  const raw = inp.value.replace(/[^0-9]/g,'');
+  if(raw.length >= 3){
+    inp.value = raw.slice(0, raw.length-1) + '.' + raw.slice(raw.length-1);
+  } else {
+    inp.value = raw;
+  }
+  /* 3자리 입력 완료 시 다음 필드로 자동 이동 */
+  if(raw.length === 3){
+    const nextMap = {nbAWidth:'nbAHeight', nbAHeight:'nbJ-1', nbBWidth:'nbBHeight'};
+    const nextId = nextMap[inp.id];
+    if(nextId) setTimeout(()=>{ const n=document.getElementById(nextId); if(n){n.focus(); if(n.select)n.select();} }, 80);
+  }
+  nonbyeCalcM2(port);
+}
+
+/* 1m² 포기수 계산: ROUND(10000/(MROUND(가로,0.5)*MROUND(세로,0.5)),1) */
+function nonbyeCalcM2(port){
+  const wId = port === 'A' ? 'nbAWidth'  : 'nbBWidth';
+  const hId = port === 'A' ? 'nbAHeight' : 'nbBHeight';
+  const vId = port === 'A' ? 'nbAM2'     : 'nbBM2';
+  const w = parseFloat(document.getElementById(wId).value);
+  const h = parseFloat(document.getElementById(hId).value);
+  const el = document.getElementById(vId);
+  if(!isNaN(w) && w>0 && !isNaN(h) && h>0){
+    const val = Math.round(10000/(mround(w,0.5)*mround(h,0.5))*10)/10;
+    el.textContent = val.toFixed(1);
+    /* 3m² 포기수 + 예취길이 */
+    if(port === 'A'){
+      const m3El = document.getElementById('nbAM3');
+      const hlEl = document.getElementById('nbAHarvestLen');
+      if(m3El) m3El.textContent = Math.round(val*3*10)/10;
+      if(hlEl) hlEl.textContent = (Math.round(10000/w*10)/10).toFixed(1);
+    } else {
+      const m3El = document.getElementById('nbBM3');
+      const hlEl = document.getElementById('nbBHarvestLen');
+      if(m3El) m3El.textContent = Math.round(val*3*10)/10;
+      if(hlEl) hlEl.textContent = (Math.round(10000/w*10)/10).toFixed(1);
+    }
+  } else {
+    el.textContent = '—';
+    if(port === 'A'){
+      const m3El = document.getElementById('nbAM3');
+      const hlEl = document.getElementById('nbAHarvestLen');
+      if(m3El) m3El.textContent = '—';
+      if(hlEl) hlEl.textContent = '—';
+    } else {
+      const m3El = document.getElementById('nbBM3');
+      const hlEl = document.getElementById('nbBHarvestLen');
+      if(m3El) m3El.textContent = '—';
+      if(hlEl) hlEl.textContent = '—';
+    }
+  }
+  /* B포구 섹션에 A포구 참고값 갱신 */
+  if(port === 'A'){
+    const refW  = document.getElementById('nbBRef_W');
+    const refH  = document.getElementById('nbBRef_H');
+    const refM2 = document.getElementById('nbBRef_M2');
+    const aW = document.getElementById('nbAWidth').value || '—';
+    const aH = document.getElementById('nbAHeight').value || '—';
+    const aM2 = document.getElementById('nbAM2').textContent;
+    if(refW)  refW.textContent  = aW;
+    if(refH)  refH.textContent  = aH;
+    if(refM2) refM2.textContent = aM2;
+  }
+  nonbyeUpdateAvg();
+  nonbyeCalcYield();
+}
+
+/* A·B 평균 1m² 포기수 */
+function nonbyeUpdateAvg(){
+  const aEl = document.getElementById('nbAM2');
+  const bEl = document.getElementById('nbBM2');
+  const avgBox = document.getElementById('nbAvgBox');
+  const avgEl  = document.getElementById('nbAvgM2');
+  const avg10aEl = document.getElementById('nbAvg10a');
+  const aV = parseFloat(aEl.textContent);
+  const bV = parseFloat(bEl.textContent);
+  let avg = NaN;
+  if(!isNaN(aV) && !isNaN(bV)){
+    avg = Math.round((aV+bV)/2*10)/10;
+  } else if(!isNaN(aV)){
+    avg = aV;
+  }
+  if(!isNaN(avg)){
+    avgBox.style.display='block';
+    avgEl.textContent = avg.toFixed(1);
+    avg10aEl.textContent = Math.round(avg*1000).toLocaleString('ko-KR');
+  } else {
+    avgBox.style.display='none';
+    avgEl.textContent = '—';
+  }
+  nonbyeCalcYield();
+}
+
+/* ══ 10a당 예상생산량 계산 (백미기준) ══
+   공식(공문): [1m²당 포기수 × 포기당이삭수 × 이삭당완전낟알수 × (천립중÷1,000)] × 1,000(m²) ÷ 1,000(g)
+   이삭당완전낟알수 = 완전낟알수 ÷ 유효이삭수
+   대입 → 1m²포기수 × 유효이삭수 × (완전낟알수÷유효이삭수) × 천립중÷1,000
+         = 1m²포기수 × 완전낟알수 × 천립중÷1,000 [g/m²]
+   × 1,000(m²/10a) ÷ 1,000(g/kg) → 10a당(kg) = 1m²포기수 × 완전낟알수 × (천립중÷1,000)
+   ※ 1m²당 완전낟알수 = 1m²포기수 × 완전낟알수 (= 포기수 × 포기당이삭수 × 이삭당완전낟알수) */
+function nonbyeCalcYield(){
+  const avgEl      = document.getElementById('nbAvgM2');
+  const avgM2      = parseFloat(avgEl.textContent);                                 // 1m²당 평균포기수
+  /* 대표주수 이삭수: nbEffEars 직접입력값 (대표주수 선정 후 자동입력됨) */
+  const effEars    = parseFloat(document.getElementById('nbEffEars').value);        // 대표주수 이삭수
+  /* 평균이삭수: 10포기 그리드 평균 → 없으면 대표주수값으로 대체 */
+  const gridAvgTxt = document.getElementById('nbAJusuAvg')?.textContent;
+  const gridAvg    = (gridAvgTxt && gridAvgTxt !== '—') ? parseFloat(gridAvgTxt) : NaN;
+  const effEarsAvg = !isNaN(gridAvg) ? gridAvg : effEars;                           // 포기당 평균이삭수
+  const totalGrains= parseFloat(document.getElementById('nbTotalGrains').value);   // 총낟알수 (포기당)
+  const compGrains = parseFloat(document.getElementById('nbCompleteGrains').value);// 완전낟알수 (포기당)
+  const tWeight    = parseFloat(document.getElementById('nbThousandWeight').value); // 천립중(g)
+  const yieldEl    = document.getElementById('nbYield10a');
+  const formulaEl  = document.getElementById('nbYieldFormula');
+
+  /* 불완전립 자동계산: 총낟알수 - 완전낟알수 */
+  const incEl = document.getElementById('nbIncompleteGrains');
+  if(incEl){
+    if(!isNaN(totalGrains) && !isNaN(compGrains)){
+      incEl.value = totalGrains - compGrains;
+    } else {
+      incEl.value = '';
+    }
+  }
+
+  /* ── 비율 통계 3종 ── */
+  const ratePctEl = document.getElementById('nbCompleteRatePct');
+  const rateFracEl= document.getElementById('nbGrainRateFrac');
+  const m2GrainEl = document.getElementById('nbCompleteGrainsPerM2');
+
+  /* 완전낟알수 비율: 완전낟알수 ÷ 총낟알수 × 100 */
+  if(!isNaN(totalGrains) && !isNaN(compGrains) && totalGrains > 0){
+    const pct = Math.round(compGrains / totalGrains * 1000) / 10;
+    if(ratePctEl) ratePctEl.textContent = pct.toFixed(1);
+  } else {
+    if(ratePctEl) ratePctEl.textContent = '—';
+  }
+
+  /* 이삭당 낟알수: 완전낟알수 ÷ 대표주수이삭수(유효이삭수) */
+  if(!isNaN(compGrains) && !isNaN(effEars) && effEars > 0){
+    const perEar = Math.round(compGrains / effEars * 10) / 10;
+    if(rateFracEl) rateFracEl.textContent = perEar.toFixed(1);
+  } else {
+    if(rateFracEl) rateFracEl.textContent = '—';
+  }
+
+  /* 1m²당 완전낟알수 = 1m²포기수 × 평균이삭수 × (완전낟알수÷대표주수이삭수) */
+  if(!isNaN(avgM2) && !isNaN(effEarsAvg) && !isNaN(compGrains) && !isNaN(effEars) && effEars > 0){
+    const m2grain = Math.round(avgM2 * effEarsAvg * (compGrains / effEars));
+    if(m2GrainEl) m2GrainEl.textContent = m2grain.toLocaleString('ko-KR');
+  } else {
+    if(m2GrainEl) m2GrainEl.textContent = '—';
+  }
+
+  if(isNaN(avgM2)||isNaN(effEars)||isNaN(effEarsAvg)||isNaN(totalGrains)||isNaN(compGrains)||isNaN(tWeight)){
+    yieldEl.textContent = '—'; formulaEl.textContent = ''; return;
+  }
+
+  /* ── 계산 ──
+     이삭당완전낟알수 = 완전낟알수 ÷ 대표주수이삭수(유효이삭수)
+     10a당 = 1m²포기수 × 평균이삭수 × (완전낟알수÷유효이삭수) × 천립중÷1000
+     공식: [R × effEarsAvg × (W÷effEars) × (Z÷1000)] × 1000(㎡) ÷ 1000(g)       */
+  const R   = avgM2;        // 1m²당 포기수
+  const W   = compGrains;   // 완전낟알수 (포기당)
+  const T   = effEarsAvg;   // 평균이삭수 (그리드 평균)
+  const Tr  = effEars;      // 대표주수 이삭수 (이삭당 계산용)
+  const Z   = tWeight;      // 천립중(g)
+  const isakdang = Math.round(W / Tr * 10) / 10;   // 이삭당 완전낟알수 (완전낟알수÷대표주수이삭수)
+  const result   = Math.round(R * T * (W / Tr) * (Z / 1000) * 10) / 10;
+  yieldEl.textContent = result.toFixed(1);
+  formulaEl.innerHTML =
+    '[포기수<b>' + R.toFixed(1) + '</b> × 평균이삭<b>' + T + '</b> × 이삭당완전(<b>' + W + '÷' + Tr + '=' + isakdang + '</b>) × (천립중<b>' + Z + '</b>÷1,000)]' +
+    ' × 1,000(㎡) ÷ 1,000(g)';
+}
+
+/* 논벼 10포기 이삭수 그리드 초기화 */
+function nonbyeInitJusuGrid(){
+  const grid = document.getElementById('nbAJusuGrid');
+  if(!grid||grid.dataset.init) return;
+  grid.dataset.init = '1';
+  grid.innerHTML='';
+  for(let i=1;i<=10;i++){
+    const cell=document.createElement('div');
+    cell.className='nonbye-plant-cell';
+    cell.id='nbJCard-'+i;
+    cell.innerHTML=
+      '<span class="nonbye-plant-num">'+i+'번</span>'+
+      '<input class="nonbye-plant-inp" id="nbJ-'+i+'" type="number" inputmode="numeric" '+
+      'pattern="[0-9]*" min="0" max="99" placeholder="-" autocomplete="off">'+
+      '<span class="nonbye-rep-dot"></span>';
+    grid.appendChild(cell);
+    const inp=document.getElementById('nbJ-'+i);
+    const idx=i-1;
+    inp.addEventListener('input',function(){
+      if(this.value.length>2) this.value=this.value.slice(0,2);
+      if(this.value!==''&&Number(this.value)<0) this.value='';
+      nonbyeJusuCalc();
+      if(this.value.length>=2&&idx<9){
+        setTimeout(()=>{
+          const n=document.getElementById('nbJ-'+(idx+2));
+          if(n){n.focus({preventScroll:true});n.select();}
+        },80);
+      }
+    });
+    inp.addEventListener('keydown',function(e){if(e.key==='Enter'){const n=document.getElementById('nbJ-'+(idx+2));if(n){n.focus({preventScroll:true});n.select();}}});
+  }
+  setTimeout(()=>{const f=document.getElementById('nbJ-1');if(f)f.focus({preventScroll:true});},100);
+}
+
+/* 10포기 이삭수 계산 */
+function nonbyeJusuCalc(){
+  const vals=[];
+  for(let i=1;i<=10;i++){
+    const v=document.getElementById('nbJ-'+i).value;
+    vals.push(v===''?null:Number(v));
+  }
+  const filled=vals.filter(v=>v!==null);
+  for(let i=1;i<=10;i++){
+    document.getElementById('nbJCard-'+i).classList.remove('rep');
+  }
+  const sumEl=document.getElementById('nbAJusuSum');
+  const avgEl=document.getElementById('nbAJusuAvg');
+  const repEl=document.getElementById('nbAJusuRep');
+  const warnEl=document.getElementById('nbAJusuWarn');
+
+  sumEl.textContent=filled.length>0?filled.reduce((a,b)=>a+b,0):'—';
+  if(filled.length<10){
+    avgEl.textContent='—'; repEl.textContent='—';
+    warnEl.style.display=filled.length>0?'block':'none';
+    return;
+  }
+  warnEl.style.display='none';
+  const sum=vals.reduce((a,b)=>a+b,0);
+  const avg=sum/10;
+  avgEl.textContent=avg%1===0?avg:avg.toFixed(1);
+  let repIdx=-1,minDiff=Infinity;
+  vals.forEach((v,i)=>{const d=Math.abs(v-avg);if(d<minDiff){minDiff=d;repIdx=i;}});
+  if(repIdx>=0){
+    document.getElementById('nbJCard-'+(repIdx+1)).classList.add('rep');
+    repEl.textContent=(repIdx+1)+'번';
+    /* 대표주수 이삭수 → 유효이삭수 자동입력 */
+    const repVal = vals[repIdx];
+    const effEarsEl = document.getElementById('nbEffEars');
+    if(effEarsEl && repVal !== null){ effEarsEl.value = repVal; }
+    nonbyeCalcYield();
+  }
 }
 
 /* ═════════════════════════════════════════
@@ -2330,8 +3070,11 @@ function selectCrop(btn){
   });
 })();
 
-function selectRatio(n){
+var _autoSwitchedTo2 = false; // 자동 전환 후 수동 복귀 허용 플래그
+
+function selectRatio(n, _isAuto){
   selectedRatio = n;
+  if(!_isAuto) _autoSwitchedTo2 = false; // 수동 선택 시 플래그 초기화
   ['tog1','tog2'].forEach((id,i) => document.getElementById(id).classList.toggle('active', i+1 === n));
   ['rrow1','rrow2'].forEach((id,i) => document.getElementById(id).classList.toggle('active', i+1 === n));
   updateRealtimeCalc();
@@ -2378,26 +3121,70 @@ if(one){
   updateRequiredHighlights();
 }
 
-/* A포구 0이랑 경고 */
+/* A포구 0이랑 경고 + 2번 비율 자동 선택 / 1번 자동 복귀 */
 function updateRatioWarning(aGa){
   const box = document.getElementById('alertBox');
   if(!box) return;
-  if(typeof aGa === 'number' && isFinite(aGa) && Math.round(aGa) === 0){
-    if(selectedRatio === 1){
-      box.innerHTML = '⚠ 1번 비율의 A포구가 0이랑입니다. 그대로 <strong>2번 비율을 사용</strong>하고 <strong>1번 이랑</strong>으로 선정하세요.';
-    } else {
-      box.innerHTML = '⚠ 1번 비율의 A포구가 0이랑입니다. 그대로 <strong>2번 비율을 사용</strong>하고 <strong>1번 이랑</strong>으로 선정하세요.';
-    }
+  const isZero = typeof aGa === 'number' && isFinite(aGa) && Math.round(aGa) === 0;
+
+  if(isZero){
+    // 0이랑: 경고 표시 + 2번 자동 전환 (최초 1회)
+    box.innerHTML = '⚠ 1번 비율의 A포구가 0이랑입니다. 그대로 <strong>2번 비율을 사용</strong>하고 <strong>1번 이랑</strong>으로 선정하세요.';
     box.classList.add('show');
+    if(!_autoSwitchedTo2 && selectedRatio !== 2){
+      _autoSwitchedTo2 = true;
+      selectRatio(2, true);
+      if(typeof window._showBackToast === 'function'){
+        window._showBackToast('⚠ A포구 1이랑 미만 — 2번 비율 자동 선택', 3500);
+      }
+    }
   } else {
+    // 0이랑 해소: 경고 숨김 + 자동 전환 상태였으면 1번으로 자동 복귀
     box.classList.remove('show');
+    if(_autoSwitchedTo2 && selectedRatio === 2){
+      _autoSwitchedTo2 = false;
+      selectRatio(1, true);
+      if(typeof window._showBackToast === 'function'){
+        window._showBackToast('✅ 1번 비율 A포구 1이랑 이상 — 1번 비율로 자동 복귀', 3000);
+      }
+    } else {
+      _autoSwitchedTo2 = false;
+    }
   }
+}
+
+/* 비율 사용 안내 노트 업데이트 */
+function updateRatioNote(visible, a_ga_ratio1){
+  const noteA = document.getElementById('ratioNoteA');
+  const noteB = document.getElementById('ratioNoteB');
+  if(!noteA || !noteB) return;
+  if(!visible){
+    noteA.className = 'ratio-note'; noteA.textContent = '';
+    noteB.className = 'ratio-note'; noteB.textContent = '';
+    return;
+  }
+  let text = '', cls = 'ratio-note show';
+  if(isOneRidgeMode()){
+    text = '📍 가-나 총길이가 1이랑으로 2번비율 사용합니다';
+    cls = 'ratio-note show note-use2';
+  } else if(selectedRatio === 2){
+    text = '📍 1번 비율 1이랑 미만으로 2번 비율 사용합니다';
+    cls = 'ratio-note show note-use2';
+  } else {
+    text = '📍 1이랑 이상으로 1번 비율 사용합니다';
+    cls = 'ratio-note show';
+  }
+  noteA.className = cls; noteA.textContent = text;
+  noteB.className = cls; noteB.textContent = text;
 }
 
 /* 실시간 가로기점 계산 */
 function updateRealtimeCalc(){
   const L = parseFloat(document.getElementById('lenGaNa').value);
   const ga = parseFloat(document.getElementById('r' + selectedRatio + '_ga').value);
+  // 1번 비율 가비율 (0이랑 감지·복귀 판단용)
+  const ga1El = document.getElementById('r1_ga');
+  const ga1 = ga1El ? parseFloat(ga1El.value) : NaN;
   const wrap = document.getElementById('rtWrap');
   const unit = measureMode === '이랑' ? '이랑' : 'cm';
 
@@ -2415,6 +3202,7 @@ function updateRealtimeCalc(){
 
       wrap.classList.remove('hidden');
       updateRatioWarning(1);
+      updateRatioNote(true, 1);
       return;
     }
 
@@ -2439,10 +3227,14 @@ function updateRealtimeCalc(){
     document.getElementById('rtBCalc').textContent = '계산값: ' + bRnd2.toFixed(2);
 
     wrap.classList.remove('hidden');
-    updateRatioWarning(a_ga);
+    // 경고·자동전환 판단은 항상 1번 비율 기준 a_ga로 계산
+    const a_ga_ratio1 = (!isNaN(L) && !isNaN(ga1) && ga1 > 0) ? L * ga1 : a_ga;
+    updateRatioWarning(a_ga_ratio1);
+    updateRatioNote(true, a_ga_ratio1);
   } else {
     wrap.classList.add('hidden');
     updateRatioWarning(NaN);
+    updateRatioNote(false);
   }
 }
 
@@ -3029,6 +3821,10 @@ function renderUnifiedResult(state){
   document.getElementById('outA_se_raw').textContent = one
     ? '(세로 ' + Ha + ' ÷ 2) × ' + na + '(나비율) = ' + a_se.toFixed(1)
     : Ha + ' × ' + na + '(나비율) = ' + a_se.toFixed(1);
+  // 경고·자동전환 판단은 항상 1번 비율 기준 a_ga
+  const ga1ForWarn = parseFloat((document.getElementById('r1_ga')||{}).value);
+  const a_ga_ratio1 = one ? 1 : (!isNaN(L) && !isNaN(ga1ForWarn) && ga1ForWarn > 0 ? L * ga1ForWarn : a_ga);
+
   if(!isNaN(waA) && waA > 0){
     document.getElementById('outWA').textContent = waA + ' cm';
     document.getElementById('outWA_sub').textContent = '';
@@ -3041,7 +3837,7 @@ function renderUnifiedResult(state){
     document.getElementById('outLenA').textContent = '—';
     document.getElementById('outLenA_raw').textContent = '평균너비 미입력';
   }
-  updateRatioWarning(a_ga);
+  updateRatioWarning(a_ga_ratio1);
 
   // A 계통추출 결과 영역
   if(sampA && sampA.fullHarvest){
@@ -3080,7 +3876,7 @@ function renderUnifiedResult(state){
     aGrid.style.display = 'grid';
     aGrid.innerHTML = sampA.samples.map(({num},i) =>
       '<div class="ncw" style="animation-delay:' + (i*20) + 'ms"><div class="ncw-no">' + (i+1) +
-      '</div><div class="ncc">' + num + '</div></div>'
+      '</div><div class="ncc" onclick="this.classList.toggle(\'selected\')">' + num + '</div></div>'
     ).join('');
   } else {
     document.getElementById('aSampMeta').style.display = 'none';
@@ -3150,7 +3946,7 @@ function renderUnifiedResult(state){
       bGrid.style.display = 'grid';
       bGrid.innerHTML = sampB.samples.map(({num},i) =>
         '<div class="ncw" style="animation-delay:' + (i*20) + 'ms"><div class="ncw-no">' + (i+1) +
-        '</div><div class="ncc">' + num + '</div></div>'
+        '</div><div class="ncc" onclick="this.classList.toggle(\'selected\')">' + num + '</div></div>'
       ).join('');
     } else {
       document.getElementById('bSampMeta').style.display = 'none';
@@ -3599,10 +4395,14 @@ let _prodCapDataUrl = '', _prodCapFilename = '';
 function prodSyncFromCrop(koreanCrop) {
   const eng = PROD_CROP_MAP[koreanCrop] || null;
   prodCrop = eng;
+  const cropEmoji = PROD_CROP_EMOJI[eng] || '🌱';
   const dEmoji = document.getElementById('prodCropEmoji');
   const dName  = document.getElementById('prodCropName');
-  if(dEmoji) dEmoji.textContent = PROD_CROP_EMOJI[eng] || '🌱';
+  if(dEmoji) dEmoji.textContent = cropEmoji;
   if(dName)  dName.textContent  = koreanCrop || '—';
+  // 10a당 생산량 바로가기 버튼 이모지 업데이트
+  const gotoBtn = document.getElementById('goto-prod-btn');
+  if(gotoBtn) gotoBtn.textContent = cropEmoji + ' 10a당 생산량 바로가기';
   const zone = document.getElementById('prodZone');
   if(zone) zone.style.opacity = (eng === 'rice' || !eng) ? '0.65' : '1';
   if(!eng) return;
@@ -4334,7 +5134,7 @@ function prodCaptureResult(){
     'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'];
   let tried=0;
   function tryLoad(){
-    if(tried>=urls.length){btn.disabled=false;btn.textContent='📷 결과 이미지로 저장';alert('라이브러리 로드 실패.');return;}
+    if(tried>=urls.length){btn.disabled=false;btn.textContent='📷 10a당 결과 이미지로 저장';alert('라이브러리 로드 실패.');return;}
     const s=document.createElement('script');s.src=urls[tried++];s.onload=runCap;s.onerror=tryLoad;document.head.appendChild(s);
   }
   tryLoad();
@@ -4342,7 +5142,7 @@ function prodCaptureResult(){
 
 function prodDoCapture(btn){
   const zone=document.getElementById('prod-capture-zone');
-  if(!zone){if(btn){btn.disabled=false;btn.textContent='📷 결과 이미지로 저장';}alert('캡처 영역 없음');return;}
+  if(!zone){if(btn){btn.disabled=false;btn.textContent='📷 10a당 결과 이미지로 저장';}alert('캡처 영역 없음');return;}
   const cropName=prodCrop?PROD_CROP_KO[prodCrop]:'작물';
   const addrRaw=(document.getElementById('address')?.value||'').trim()||'주소미입력';
   const dateVal=document.getElementById('surveyDate')?.value||'';
@@ -4359,9 +5159,9 @@ function prodDoCapture(btn){
     document.getElementById('prod-cap-preview-img').src=_prodCapDataUrl;
     document.getElementById('prod-cap-filename').innerHTML='📁 파일명: <strong style="color:#8BC34A">'+_prodCapFilename+'</strong><br>📂 저장위치: 기기 다운로드 폴더<br><span style="font-size:11px;color:#888">iOS: 사진앱 / Android·PC: Downloads</span>';
     document.getElementById('prod-cap-modal').classList.add('show');
-    if(btn){btn.disabled=false;btn.textContent='📷 결과 이미지로 저장';}
+    if(btn){btn.disabled=false;btn.textContent='📷 10a당 결과 이미지로 저장';}
   }).catch(function(err){
-    if(btn){btn.disabled=false;btn.textContent='📷 결과 이미지로 저장';}
+    if(btn){btn.disabled=false;btn.textContent='📷 10a당 결과 이미지로 저장';}
     alert('캡처 실패: '+(err&&err.message?err.message:err));
   });
 }
@@ -4461,7 +5261,7 @@ function showFullResultCapture(){
   /* ── 전체 HTML 구성 ── */
   zone.innerHTML=`<div style="padding:14px;">
     <div style="background:#27500A;color:#fff;border-radius:10px;padding:12px 15px;margin-bottom:10px;">
-      <div style="font-size:14px;font-weight:800;margin-bottom:3px;">🌾 ${cropName} 전체 조사 결과</div>
+      <div style="font-size:14px;font-weight:800;margin-bottom:3px;">${PROD_CROP_EMOJI[prodCrop]||'🌱'} ${cropName} 전체 조사 결과</div>
       <div style="font-size:10px;color:rgba(255,255,255,.75);">${addrVal} · ${dateVal||'날짜미입력'} · ${saveTimeStr}</div>
     </div>
 
@@ -4686,7 +5486,7 @@ function applyOneRidgeRatioIfNeeded(){
   const el = document.getElementById('lenGaNa');
   const v = parseFloat(el ? el.value : '');
   if(typeof measureMode !== 'undefined' && measureMode === '이랑' && v === 1){
-    if(typeof selectRatio === 'function') selectRatio(2);
+    if(typeof selectRatio === 'function') selectRatio(2, true);
     const note = document.getElementById('oneRowNote');
     if(note) note.classList.add('show');
   }
@@ -5031,15 +5831,68 @@ function _pmwUpdate(id, ab, type){
     var v = parseFloat(inp.value);
     if(!isNaN(v) && v > 0) sum += v;
   });
-  // 합계 표시
+  // 빼기 적용 (go/cab/rad/tok/potato 타입 모두)
+  var deduct = 0;
+  var deductMap = {
+    'go':     (ab==='a'?'pa':'pb')+'-weight-deduct',
+    'cab':    (ab==='a'?'pa':'pb')+'-cab-weight-deduct',
+    'rad':    (ab==='a'?'pa':'pb')+'-rad-weight-deduct',
+    'tok':    (ab==='a'?'pa':'pb')+'-tok-weight-deduct',
+    'potato': (ab==='a'?'pa':'pb')+'-potato-over-deduct'
+  };
+  if(deductMap[type]){
+    var deductEl = document.getElementById(deductMap[type]);
+    deduct = deductEl ? (parseFloat(deductEl.value)||0) : 0;
+  }
+  var finalSum = deduct > 0 ? Math.max(0, sum - deduct) : sum;
+  // 합계 표시 ("제외" 없이 표시)
   var sumEl = document.getElementById('pmw-sum-'+id);
-  if(sumEl) sumEl.textContent = sum > 0 ? '합계: ' + Math.round(sum).toLocaleString('ko-KR') + ' g' : '합계: —';
+  if(sumEl){
+    if(finalSum > 0){
+      sumEl.textContent = '합계: ' + Math.round(finalSum).toLocaleString('ko-KR') + ' g' +
+        (deduct > 0 ? ' (−' + Math.round(deduct).toLocaleString('ko-KR') + ' g)' : '');
+    } else {
+      sumEl.textContent = '합계: —';
+    }
+  }
   // 숨겨진 입력값 갱신
   var hidden = document.getElementById(id);
   if(hidden){
-    hidden.value = sum > 0 ? sum : '';
+    hidden.value = finalSum > 0 ? finalSum : '';
     hidden.dispatchEvent(new Event('input', {bubbles:true}));
     hidden.dispatchEvent(new Event('change', {bubbles:true}));
+  }
+}
+
+/* 빼기 입력 변경 시 pmw 재계산 */
+function _pmwDeductUpdate(ab, type){
+  var idMap = {
+    'go':     (ab==='a'?'pa':'pb')+'-weight',
+    'cab':    (ab==='a'?'pa':'pb')+'-cab-weight',
+    'rad':    (ab==='a'?'pa':'pb')+'-rad-weight',
+    'tok':    (ab==='a'?'pa':'pb')+'-tok-weight',
+    'potato': (ab==='a'?'pa':'pb')+'-potato-over'
+  };
+  var id = idMap[type];
+  if(id) _pmwUpdate(id, ab, type);
+}
+
+/* N 분산 입력 → 전체N 자동합산 */
+function calcNSum(ab){
+  var sum = 0;
+  [1,2,3,4].forEach(function(i){
+    var el = document.getElementById(ab+'N'+i);
+    var v = parseFloat(el ? el.value : 0);
+    if(!isNaN(v) && v > 0) sum += v;
+  });
+  var sumDisp = document.getElementById(ab+'N-split-sum');
+  if(sumDisp) sumDisp.textContent = sum > 0 ? '합계: ' + sum.toLocaleString('ko-KR') + ' 개 → 전체N에 적용' : '합계: —';
+  if(sum > 0){
+    var nEl = document.getElementById(ab+'N');
+    if(nEl){
+      nEl.value = sum;
+      nEl.dispatchEvent(new Event('input', {bubbles:true}));
+    }
   }
 }
 
@@ -5640,6 +6493,103 @@ function importJSON(input){
         }
       }, 3000);
     });
+  }
+})();
+</script>
+
+<!-- ── 계산기 팝업 ── -->
+<div class="calc-modal" id="calcModal" onclick="if(event.target===this)closeCalcModal()">
+  <div class="calc-box">
+    <div class="calc-popup-display">
+      <div class="calc-expr" id="calcExpr"></div>
+      <div class="calc-val" id="calcVal">0</div>
+    </div>
+    <div class="calc-grid">
+      <button class="calc-btn fn" onclick="calcFn('AC')">AC</button>
+      <button class="calc-btn fn" onclick="calcFn('+/-')">+/−</button>
+      <button class="calc-btn fn" onclick="calcFn('%')">%</button>
+      <button class="calc-btn op" onclick="calcOp('÷')">÷</button>
+
+      <button class="calc-btn num" onclick="calcNum('7')">7</button>
+      <button class="calc-btn num" onclick="calcNum('8')">8</button>
+      <button class="calc-btn num" onclick="calcNum('9')">9</button>
+      <button class="calc-btn op" onclick="calcOp('×')">×</button>
+
+      <button class="calc-btn num" onclick="calcNum('4')">4</button>
+      <button class="calc-btn num" onclick="calcNum('5')">5</button>
+      <button class="calc-btn num" onclick="calcNum('6')">6</button>
+      <button class="calc-btn op" onclick="calcOp('−')">−</button>
+
+      <button class="calc-btn num" onclick="calcNum('1')">1</button>
+      <button class="calc-btn num" onclick="calcNum('2')">2</button>
+      <button class="calc-btn num" onclick="calcNum('3')">3</button>
+      <button class="calc-btn op" onclick="calcOp('+')">+</button>
+
+      <button class="calc-btn num zero" onclick="calcNum('0')">0</button>
+      <button class="calc-btn num" onclick="calcNum('.')">.</button>
+      <button class="calc-btn eq" onclick="calcEq()">=</button>
+
+      <button class="calc-btn close-btn" style="grid-column:span 4;" onclick="closeCalcModal()">✕ 닫기</button>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  var _cv='0', _expr='', _op=null, _prev=null, _newNum=false;
+  function _disp(){
+    document.getElementById('calcVal').textContent = _cv;
+    document.getElementById('calcExpr').textContent = _expr;
+  }
+  window.openCalcModal=function(){
+    document.getElementById('calcModal').classList.add('show');
+  };
+  window.closeCalcModal=function(){
+    document.getElementById('calcModal').classList.remove('show');
+  };
+  window.calcNum=function(d){
+    if(_newNum){_cv='';_newNum=false;}
+    if(d==='.'&&_cv.includes('.')) return;
+    if(_cv==='0'&&d!=='.') _cv=d;
+    else _cv+=d;
+    _disp();
+  };
+  window.calcOp=function(op){
+    var v=parseFloat(_cv);
+    if(_op&&!_newNum){
+      v=_doCalc(_prev,v,_op);
+      _cv=_fmt(v);
+    }
+    _prev=parseFloat(_cv);
+    _op=op;
+    _expr=_cv+' '+op;
+    _newNum=true;
+    _disp();
+  };
+  window.calcEq=function(){
+    if(!_op) return;
+    var v=_doCalc(_prev,parseFloat(_cv),_op);
+    _expr=_expr+' '+_cv+' =';
+    _cv=_fmt(v);
+    _op=null;_prev=null;_newNum=true;
+    _disp();
+  };
+  window.calcFn=function(fn){
+    var v=parseFloat(_cv);
+    if(fn==='AC'){_cv='0';_expr='';_op=null;_prev=null;_newNum=false;}
+    else if(fn==='+/-'){_cv=_fmt(-v);}
+    else if(fn==='%'){_cv=_fmt(v/100);}
+    _disp();
+  };
+  function _doCalc(a,b,op){
+    if(op==='+'||op==='＋') return a+b;
+    if(op==='−'||op==='-') return a-b;
+    if(op==='×'||op==='*') return a*b;
+    if(op==='÷'||op==='/') return b!==0?a/b:0;
+    return b;
+  }
+  function _fmt(v){
+    if(!isFinite(v)) return '오류';
+    return parseFloat(v.toPrecision(12)).toString();
   }
 })();
 </script>
