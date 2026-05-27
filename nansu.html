@@ -1,8 +1,9 @@
+<!-- nansu_v5.html · 저장: 2026-05-28 02:02 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>난수표 조회기</title>
   <style>
     * { box-sizing: border-box; }
@@ -15,163 +16,199 @@
     .wrap {
       max-width: 760px;
       margin: 0 auto;
-      padding: 28px 16px 48px;
+      padding: 16px 12px 60px;
     }
     .card {
       background: #fff;
       border: 1px solid #d9e7f7;
       border-radius: 18px;
       box-shadow: 0 8px 24px rgba(31, 90, 150, 0.08);
-      padding: 24px;
+      padding: 18px 16px;
     }
-    /* 헤더 영역: 제목과 홈 버튼 정렬 */
+
+    /* 헤더 */
     .header-area {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
     h1 {
       margin: 0;
       color: #12385f;
-      font-size: 28px;
+      font-size: 22px;
+      font-weight: 900;
     }
     .home-btn {
       text-decoration: none;
       background: #f0f4f8;
       color: #4b6074;
-      padding: 8px 16px;
+      padding: 7px 13px;
       border-radius: 10px;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 700;
       border: 1px solid #d1d9e0;
-      transition: background 0.2s;
-    }
-    .home-btn:hover {
-      background: #e2eaf1;
     }
     .desc {
-      margin: 0 0 24px;
+      margin: 0 0 16px;
       color: #5b6b7c;
       line-height: 1.6;
+      font-size: 13px;
     }
+
+    /* 입력 그리드 */
     .form-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 14px;
-      margin-bottom: 16px;
+      gap: 12px;
+      margin-bottom: 14px;
     }
     label {
       display: block;
       font-weight: 700;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
       color: #12385f;
+      font-size: 14px;
     }
     input {
       width: 100%;
-      height: 48px;
-      border: 1px solid #b9d3ee;
+      height: 52px;
+      border: 1.5px solid #b9d3ee;
       border-radius: 12px;
       padding: 0 14px;
-      font-size: 18px;
+      font-size: 20px;
+      font-weight: 700;
       outline: none;
+      -webkit-appearance: none;
+      appearance: none;
+      background: #fff;
     }
     input:focus {
       border-color: #367cc3;
       box-shadow: 0 0 0 4px rgba(54, 124, 195, 0.14);
     }
-    /* 버튼 우측 정렬 */
+
+    /* 버튼 */
     .buttons {
       display: flex;
       gap: 10px;
       justify-content: flex-end;
-      margin: 18px 0;
+      margin: 14px 0;
     }
     button {
       border: 0;
       border-radius: 12px;
-      padding: 13px 18px;
+      padding: 13px 20px;
       font-size: 16px;
       font-weight: 700;
       cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
     }
     .primary { background: #2f75bd; color: #fff; }
     .secondary { background: #e8f1fb; color: #174a7d; }
-    
+    .primary:active { opacity: .82; }
+    .secondary:active { opacity: .75; }
+
+    /* 결과 박스 */
     .result {
-      margin-top: 18px;
-      padding: 22px;
+      margin-top: 16px;
       border-radius: 16px;
       background: #edf6ff;
       border: 1px solid #c9e0f6;
+      overflow: hidden;
+    }
+    /* ① 전체 난수 (상단 강조 박스) */
+    .result-number-box {
+      background: #1a4f8a;
+      padding: 18px 20px 16px;
       text-align: center;
     }
-    .result .small {
-      color: #4b6074;
-      margin-bottom: 8px;
-      font-size: 15px;
+    .result-number-label {
+      font-size: 12px;
+      color: rgba(255,255,255,.7);
+      font-weight: 600;
+      letter-spacing: .04em;
+      margin-bottom: 6px;
     }
-    .result .number {
-      font-size: 36px;
+    .result-number-val {
+      font-size: 38px;
       font-weight: 900;
-      letter-spacing: 1px;
-      color: #0f3e6f;
+      letter-spacing: 3px;
+      color: #fff;
+      font-family: -apple-system, "SF Mono", "Courier New", monospace;
     }
-    .converted {
-      margin-top: 14px;
-      padding-top: 14px;
-      border-top: 1px solid #c9e0f6;
-      color: #174a7d;
-      font-size: 18px;
+    /* ② 소수점 변환 + 위치 정보 (하단) */
+    .result-detail {
+      padding: 14px 18px;
+    }
+    .result-decimal {
+      font-size: 17px;
       font-weight: 800;
+      color: #174a7d;
+      margin-bottom: 8px;
     }
-    .converted strong {
-      font-size: 30px;
+    .result-decimal strong {
+      font-size: 26px;
       color: #0f3e6f;
     }
+    .result-position {
+      font-size: 13px;
+      color: #6b7c8d;
+      font-weight: 600;
+      border-top: 1px solid #c9e0f6;
+      padding-top: 9px;
+      margin-top: 2px;
+    }
+
     .error {
-      margin-top: 14px;
+      margin-top: 12px;
       color: #b42318;
       font-weight: 700;
-      min-height: 24px;
-    }
-    .help {
-      margin-top: 20px;
-      padding: 16px;
-      border-radius: 14px;
-      background: #f8fbff;
-      color: #536577;
-      line-height: 1.7;
+      min-height: 22px;
       font-size: 14px;
     }
-    
-    /* 틀 고정 테이블 설정 */
+
+    /* 도움말 */
+    .help {
+      margin-top: 18px;
+      padding: 13px 14px;
+      border-radius: 12px;
+      background: #f8fbff;
+      border: 1px solid #deeaf7;
+      color: #536577;
+      line-height: 1.7;
+      font-size: 13px;
+    }
+
+    /* 테이블 */
     .table-area {
-      margin-top: 24px;
+      margin-top: 20px;
       overflow: auto;
-      max-height: 600px;
+      max-height: 480px;
       border: 1px solid #d9e7f7;
       border-radius: 14px;
       position: relative;
+      -webkit-overflow-scrolling: touch;
     }
     table {
       border-collapse: separate;
       border-spacing: 0;
       width: 100%;
-      min-width: 680px;
+      min-width: 580px;
       background: #fff;
     }
     th, td {
       border: 0.5px solid #d7e7f8;
-      padding: 9px 10px;
+      padding: 8px 9px;
       text-align: center;
-      font-size: 14px;
+      font-size: 13px;
       white-space: nowrap;
       scroll-margin: 50px;
     }
     th {
       background: #c8dff6;
       color: #0f2f50;
+      font-weight: 800;
       position: sticky;
       top: 0;
       z-index: 10;
@@ -184,25 +221,77 @@
       left: 0;
       z-index: 5;
     }
-    th:first-child {
-      z-index: 15;
-    }
-    
+    th:first-child { z-index: 15; }
     .highlight {
       background: #ffeeb8 !important;
       color: #111827;
       font-weight: 900;
       outline: 2px solid #e0a800;
     }
-    @media (max-width: 560px) {
-      .form-grid { grid-template-columns: 1fr; }
-      .result .number { font-size: 36px; }
-      .card { padding: 18px; }
-      h1 { font-size: 22px; }
+
+    /* ── 창 닫기 버튼 (슬라이드 탭, 홈 버튼 아래) ── */
+    #windowCloseBtn {
+      position: fixed;
+      top: 66px;          /* 홈 버튼 아래 */
+      right: 0;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      gap: 0;
+      background: #b42318;
+      color: #fff;
+      border: none;
+      border-radius: 10px 0 0 10px;   /* 왼쪽만 둥글게 */
+      padding: 0;
+      font-size: 14px;
+      font-weight: 700;
+      box-shadow: -3px 3px 12px rgba(0,0,0,.30);
+      cursor: pointer;
+      /* 기본: 탭 부분(32px)만 보이도록 오른쪽으로 숨김 */
+      transform: translateX(calc(100% - 32px));
+      transition: transform 0.28s cubic-bezier(.4,0,.2,1);
+      overflow: hidden;
+      white-space: nowrap;
+    }
+    #windowCloseBtn.open {
+      transform: translateX(0);
+    }
+    #windowCloseBtn:active { opacity: .82; }
+    /* 왼쪽 탭 핸들 (항상 보이는 32px 영역) */
+    .close-tab {
+      flex-shrink: 0;
+      width: 32px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      border-right: 1px solid rgba(255,255,255,.25);
+    }
+    /* 오른쪽 텍스트 영역 */
+    .close-text {
+      padding: 0 14px 0 10px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      letter-spacing: .02em;
+    }
+
+    @media (max-width: 400px) {
+      h1 { font-size: 19px; }
+      .result-number-val { font-size: 32px; }
+      .result-decimal strong { font-size: 22px; }
     }
   </style>
 </head>
 <body>
+
+  <!-- 창 닫기 버튼 (슬라이드 탭 오버레이) -->
+  <button id="windowCloseBtn" onclick="handleCloseBtn()">
+    <span class="close-tab" id="closeTabIcon">〈</span>
+    <span class="close-text">✕ 창 닫기</span>
+  </button>
+
   <div class="wrap">
     <div class="card">
       <div class="header-area">
@@ -213,12 +302,14 @@
 
       <div class="form-grid">
         <div>
-          <label for="colInput">가로값</label>
-          <input id="colInput" type="number" min="0" max="9" placeholder="예: 0" />
+          <label for="colInput">가로값 (0~9)</label>
+          <input id="colInput" type="number" inputmode="numeric" pattern="[0-9]*"
+                 min="0" max="9" placeholder="예: 0" autocomplete="off" />
         </div>
         <div>
-          <label for="rowInput">세로값</label>
-          <input id="rowInput" type="number" min="0" max="79" placeholder="예: 40" />
+          <label for="rowInput">세로값 (0~79)</label>
+          <input id="rowInput" type="number" inputmode="numeric" pattern="[0-9]*"
+                 min="0" max="79" placeholder="예: 40" autocomplete="off" />
         </div>
       </div>
 
@@ -229,10 +320,16 @@
 
       <div id="error" class="error"></div>
 
+      <!-- 결과 박스: ① 전체 난수(상단 강조) → ② 소수점+위치(하단) -->
       <div class="result" id="resultBox" style="display:none;">
-        <div class="small" id="positionText"></div>
-        <div class="number" id="resultNumber"></div>
-        <div class="converted" id="decimalNumber"></div>
+        <div class="result-number-box">
+          <div class="result-number-label">전체 난수</div>
+          <div class="result-number-val" id="resultNumber"></div>
+        </div>
+        <div class="result-detail">
+          <div class="result-decimal" id="decimalNumber"></div>
+          <div class="result-position" id="positionText"></div>
+        </div>
       </div>
 
       <div class="help">
@@ -364,15 +461,25 @@
       }
 
       const decimalValue = `${value[0]}.${value[1]}`;
-      positionText.textContent = `가로값 ${col}, 세로값 ${row}의 조회 결과`;
-      resultNumber.textContent = `전체 난수: ${value}`;
+
+      // ① 전체 난수 (상단 강조 박스)
+      resultNumber.textContent = value;
+
+      // ② 소수점 변환
       decimalNumber.innerHTML = `앞 두 자리 소수점 변환: <strong>${decimalValue}</strong>`;
+
+      // ③ 위치 정보 (하단 보조)
+      positionText.textContent = `가로값 ${col}, 세로값 ${row}의 조회 결과`;
+
       resultBox.style.display = "block";
 
+      // 셀 하이라이트
       const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
       if (cell) {
         cell.classList.add("highlight");
-        cell.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+        setTimeout(() => {
+          cell.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+        }, 100);
       }
     }
 
@@ -388,12 +495,35 @@
       document.querySelectorAll(".highlight").forEach(cell => cell.classList.remove("highlight"));
     }
 
+    /* 창 닫기 버튼 슬라이드 토글 */
+    var _closeBtnOpen = false;
+    var _closeBtnTimer = null;
+    function handleCloseBtn() {
+      var btn = document.getElementById('windowCloseBtn');
+      var icon = document.getElementById('closeTabIcon');
+      if (!_closeBtnOpen) {
+        // 탭 클릭 → 열림
+        _closeBtnOpen = true;
+        btn.classList.add('open');
+        icon.textContent = '〉';
+        // 4초 후 자동으로 다시 숨김
+        _closeBtnTimer = setTimeout(function() {
+          _closeBtnOpen = false;
+          btn.classList.remove('open');
+          icon.textContent = '〈';
+        }, 4000);
+      } else {
+        // 열린 상태에서 클릭 → 창 닫기
+        clearTimeout(_closeBtnTimer);
+        window.close();
+      }
+    }
+
     function renderTable() {
       const table = document.getElementById("dataTable");
       let html = "<thead><tr><th>세로\\가로</th>";
       for (let col = 0; col <= 9; col++) html += `<th>${col}</th>`;
       html += "</tr></thead><tbody>";
-
       for (let row = 0; row <= 79; row++) {
         html += `<tr><td>${row}</td>`;
         for (let col = 0; col <= 9; col++) {
@@ -407,7 +537,9 @@
 
     document.addEventListener("DOMContentLoaded", () => {
       renderTable();
+
       document.getElementById("colInput").focus();
+
       document.getElementById("colInput").addEventListener("keydown", e => {
         if (e.key === "Enter") document.getElementById("rowInput").focus();
       });
