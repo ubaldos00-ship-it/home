@@ -1,7 +1,15 @@
-<!-- home_v15.html · 저장: 2026-05-25 07:36 KST -->
+<!-- home_v18.html · 저장: 2026-05-29 06:38 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-B8ELP4S5PR"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-B8ELP4S5PR');
+</script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <meta name="theme-color" content="#27500A" />
@@ -747,8 +755,8 @@
     <div class="source">출처 / 참고자료: 국가데이터처 통계설명자료, KOSIS 등</div>
     <div class="brand-line">농작물생산조사 통합시스템 · 텐아르 v1.0</div>
     <div class="meta">
-      Session <strong id="sessionCount">1</strong> &nbsp;·&nbsp;
-      Visit <strong id="visitCount">1</strong> &nbsp;·&nbsp;
+      오늘 방문자 <strong id="dailyVisitCount">…</strong> &nbsp;·&nbsp;
+      누적 방문자 <strong id="totalVisitCount">…</strong> &nbsp;·&nbsp;
       최초 빌드 2026.4.27
     </div>
     <div class="meta" style="margin-top:4px;">by <strong>Mr. hyun</strong></div>
@@ -864,6 +872,38 @@
 </div>
 
 <script>
+  /* ====== counterapi.dev 방문자 카운터 ====== */
+  (function () {
+    var ns = 'tenar-home-v1';
+    var today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD (UTC 기준)
+    var storageKey = 'tenar_counted_date';
+    var alreadyCounted = '';
+    try { alreadyCounted = localStorage.getItem(storageKey) || ''; } catch(e) {}
+
+    function setDisplay(dailyVal, totalVal) {
+      var d = document.getElementById('dailyVisitCount');
+      var t = document.getElementById('totalVisitCount');
+      if (d) d.textContent = dailyVal !== null ? Number(dailyVal).toLocaleString() : '-';
+      if (t) t.textContent = totalVal !== null ? Number(totalVal).toLocaleString() : '-';
+    }
+
+    var baseUrl = 'https://counterapi.dev/api/' + ns + '/';
+    var suffix  = alreadyCounted === today ? '' : '/hit'; // 오늘 첫 방문만 증가
+
+    if (alreadyCounted !== today) {
+      try { localStorage.setItem(storageKey, today); } catch(e) {}
+    }
+
+    Promise.all([
+      fetch(baseUrl + 'total'            + suffix).then(function(r){ return r.json(); }),
+      fetch(baseUrl + 'daily-' + today   + suffix).then(function(r){ return r.json(); })
+    ]).then(function(results) {
+      setDisplay(results[1].value, results[0].value);
+    }).catch(function() {
+      setDisplay(null, null);
+    });
+  })();
+
   /* ====== 시계 ====== */
   (function () {
     const days = ['일', '월', '화', '수', '목', '금', '토'];
