@@ -1,4 +1,4 @@
-<!-- tonghab_v81.html · 저장: 2026-05-30 02:25 KST -->
+<!-- tonghab_v83.html · 저장: 2026-05-30 03:34 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -524,6 +524,8 @@ body.nonbye-mode .hide-nonbye { display:none !important; }
 .nbres-tbl td.col-a{color:var(--ac);font-weight:800;font-size:16px;}
 .nbres-tbl td.col-b{color:var(--bc);font-weight:800;font-size:16px;}
 .nbres-tbl tr:last-child td{border-bottom:none;}
+.nbres-tbl td.col-span{color:#27500A;font-weight:900;font-size:15px;text-align:center;background:#f0f7ea;}
+.nbres-capture-btn{display:block;width:calc(100% - 24px);margin:10px 12px 2px;padding:9px 0;background:#27500A;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:.3px;}
 .nbres-jusu-wrap{padding:12px 14px;border-top:6px solid #f4f2ec;}
 .nbres-jusu-ttl{font-size:12.5px;font-weight:700;color:var(--ac);margin-bottom:8px;}
 .nbres-jusu-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:8px;}
@@ -595,6 +597,7 @@ body.nonbye-mode .hide-nonbye { display:none !important; }
 .ryield-res-main .rm-lbl{font-size:11.5px;color:rgba(255,255,255,.78);font-weight:600;margin-bottom:3px;}
 .ryield-res-main .rm-num{font-size:36px;font-weight:900;color:#fff;line-height:1.1;}
 .ryield-res-main .rm-unit{font-size:12px;color:rgba(255,255,255,.7);}
+.ryield-res-main .rm-formula{font-size:11px;color:rgba(255,255,255,.75);margin-top:6px;line-height:1.5;word-break:break-all;}
 .ryield-res-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px;}
 .ryield-res-cell{border:1px solid #d7d4cc;border-radius:9px;padding:9px 6px;text-align:center;background:#fafaf7;}
 .ryield-res-cell .rc-lbl{font-size:10.5px;color:#777;font-weight:700;margin-bottom:3px;}
@@ -1206,7 +1209,10 @@ body.nonbye-mode .hide-nonbye { display:none !important; }
 .sl-item-label{font-size:13px;font-weight:700;color:#1a1918;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .sl-item-addr{font-size:11px;color:#5a7a3a;font-weight:600;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .sl-item-date{font-size:10px;color:#999;margin-top:2px;}
-.sl-item-load{padding:7px 11px;background:#0A3A8C;border:none;border-radius:7px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+.sl-item-load{padding:5px 6px;background:#EBF3FF;border:1.5px solid #b3c8f0;border-radius:7px;color:#0A3A8C;font-size:18px;cursor:pointer;white-space:nowrap;flex-shrink:0;display:flex;align-items:center;justify-content:center;min-width:32px;height:32px;transition:background .12s;}
+.sl-item-load:active{background:#d0e4ff;}
+.sl-item.sl-selected{background:#edfbe8;border:2px solid #3a7d44;}
+.sl-item.sl-selected .sl-item-label{color:#1a5c22;}
 .sl-empty{text-align:center;color:#bbb;font-size:13px;padding:22px 0;}
 .sl-divider{border:none;border-top:1px solid #e8e5de;margin:4px 0 14px;}
 .sl-file-row{display:flex;gap:8px;}
@@ -1282,7 +1288,7 @@ textarea {
         저장
       </button>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v81 저장: 2026-05-30 02:25)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v83 저장: 2026-05-30 03:34)</span></div>
   </div>
 </div>
 
@@ -2055,7 +2061,7 @@ textarea {
 
       <!-- ════ 논벼 전용: A/B 종합결과 좌·우 2열 표 (v80) ════ -->
       <div class="nbres-card nonbye-only" id="nbResCard">
-        <div class="nbres-hdr">📍 A/B포구 기점 선정 결과</div>
+        <div class="nbres-hdr">📍 논벼 10a당 예상량 조사 결과</div>
         <table class="nbres-tbl">
           <thead>
             <tr><th>항목</th><th class="col-a">A포구</th><th class="col-b">B포구</th></tr>
@@ -2063,10 +2069,20 @@ textarea {
           <tbody>
             <tr><td class="nbres-lbl">가로 기점</td><td class="col-a" id="ntA_ga">—</td><td class="col-b" id="ntB_ga">—</td></tr>
             <tr><td class="nbres-lbl">세로 기점</td><td class="col-a" id="ntA_se">—</td><td class="col-b" id="ntB_se">—</td></tr>
-            <tr><td class="nbres-lbl">3㎡ 조사 이랑길이</td><td class="col-a" id="ntA_len">—</td><td class="col-b" id="ntB_len">—</td></tr>
+            <tr><td class="nbres-lbl">포기간길이 가로</td><td class="col-a" id="ntA_wid">—</td><td class="col-b" id="ntB_wid">—</td></tr>
+            <tr><td class="nbres-lbl">포기간길이 세로</td><td class="col-a" id="ntA_hei">—</td><td class="col-b" id="ntB_hei">—</td></tr>
             <tr><td class="nbres-lbl">3줄 예취길이</td><td class="col-a" id="ntA_h3">—</td><td class="col-b" id="ntB_h3">—</td></tr>
+            <tr><td class="nbres-lbl">1㎡당 포기수 평균</td><td colspan="2" class="col-span" id="ntAvgM2">—</td></tr>
+            <tr><td class="nbres-lbl">유효이삭수</td><td colspan="2" class="col-span" id="ntEffEars">—</td></tr>
+            <tr><td class="nbres-lbl">총 낟알수</td><td colspan="2" class="col-span" id="ntTotalGrains">—</td></tr>
+            <tr><td class="nbres-lbl">완전낟알수</td><td colspan="2" class="col-span" id="ntCompleteGrains">—</td></tr>
+            <tr><td class="nbres-lbl">10a당 예상량</td><td colspan="2" class="col-span" id="ntYield10a">—</td></tr>
+            <tr><td class="nbres-lbl">피해상황</td><td class="col-a" id="ntA_dmg">—</td><td class="col-b" id="ntB_dmg">—</td></tr>
+            <tr><td class="nbres-lbl">품종</td><td class="col-a" id="ntA_var">—</td><td class="col-b" id="ntB_var">—</td></tr>
+            <tr><td class="nbres-lbl">모내기</td><td class="col-a" id="ntA_trn">—</td><td class="col-b" id="ntB_trn">—</td></tr>
           </tbody>
         </table>
+        <button type="button" class="nbres-capture-btn" onclick="captureNbResCard()">📷 결과 이미지로 저장</button>
         <div class="nbres-jusu-wrap">
           <div class="nbres-jusu-ttl">🌾 A포구 포기당 이삭수 (1~10번)</div>
           <div class="nbres-jusu-grid" id="ntJusuGrid"></div>
@@ -2201,11 +2217,11 @@ textarea {
         <div class="ryield-grid3">
           <div class="ryield-fg">
             <label>1회 측정 (%)</label>
-            <div class="ryield-iwrap"><input type="number" inputmode="decimal" step="any" id="rsMoist1" placeholder="예)13.6" oninput="riceRealYieldCalc()"><span class="ryield-unit">%</span></div>
+            <div class="ryield-iwrap"><input type="text" inputmode="decimal" id="rsMoist1" placeholder="예)13.6" oninput="moistFmt(this)" autocomplete="off"><span class="ryield-unit">%</span></div>
           </div>
           <div class="ryield-fg">
             <label>2회 측정 (%)</label>
-            <div class="ryield-iwrap"><input type="number" inputmode="decimal" step="any" id="rsMoist2" placeholder="예)14.0" oninput="riceRealYieldCalc()"><span class="ryield-unit">%</span></div>
+            <div class="ryield-iwrap"><input type="text" inputmode="decimal" id="rsMoist2" placeholder="예)14.0" oninput="moistFmt(this)" autocomplete="off"><span class="ryield-unit">%</span></div>
           </div>
           <div class="ryield-fg">
             <label>합계 <b style="color:#27500A;">ⓖ</b> (자동)</label>
@@ -2219,6 +2235,7 @@ textarea {
           <div class="rm-lbl">10a당 생산량 (백미 · 92.9% 기준)</div>
           <div class="rm-num" id="rsBaengmi">—</div>
           <div class="rm-unit">kg / 10a</div>
+          <div class="rm-formula" id="rsFormula"></div>
         </div>
         <div class="ryield-res-grid">
           <div class="ryield-res-cell"><div class="rc-lbl">10a당 조곡</div><div class="rc-val" id="rsJogok">—</div></div>
@@ -4265,20 +4282,44 @@ function renderUnifiedResult(state){
 /* ════ 논벼 전용 A/B 좌·우 2열 종합결과 표 채우기 (v80) ════ */
 function renderNonbyeSummary(hasB){
   function tx(id){ var e=document.getElementById(id); return e?e.textContent:'—'; }
+  function iv(id){ var e=document.getElementById(id); return (e&&e.value!=='')?e.value:'—'; }
   function set(id,v){ var e=document.getElementById(id); if(e) e.textContent=(v===''||v==null)?'—':v; }
-  // 가로/세로 기점 + 3㎡ 이랑길이
+  // 가로/세로 기점
   set('ntA_ga', tx('outA_ga'));
   set('ntA_se', tx('outA_se'));
-  set('ntA_len', tx('outLenA'));
   if(hasB){
     set('ntB_ga', tx('outB_ga'));
     set('ntB_se', tx('outB_se'));
-    set('ntB_len', tx('outLenB'));
-  } else { set('ntB_ga','—'); set('ntB_se','—'); set('ntB_len','—'); }
+  } else { set('ntB_ga','—'); set('ntB_se','—'); }
+  // 포기간길이 가로/세로 (v82)
+  var aW=iv('nbAWidth'), aH=iv('nbAHeight');
+  set('ntA_wid', aW!=='—'? aW+' cm':'—');
+  set('ntA_hei', aH!=='—'? aH+' cm':'—');
+  if(hasB){
+    var bW=iv('nbBWidth'), bH=iv('nbBHeight');
+    set('ntB_wid', bW!=='—'? bW+' cm':'—');
+    set('ntB_hei', bH!=='—'? bH+' cm':'—');
+  } else { set('ntB_wid','—'); set('ntB_hei','—'); }
   // 3줄 예취길이
   var ha=tx('nbAHarvestLen'); set('ntA_h3', (ha&&ha!=='—')?(ha+' cm'):'—');
   if(hasB){ var hb=tx('nbBHarvestLen'); set('ntB_h3', (hb&&hb!=='—')?(hb+' cm'):'—'); }
   else set('ntB_h3','—');
+  // 1㎡당 포기수 평균값 (v82)
+  set('ntAvgM2', tx('nbAvgM2')!=='—'? tx('nbAvgM2')+' 포기/㎡':'—');
+  // 유효이삭수 / 총낟알수 / 완전낟알수 / 10a당 예상량 (v82)
+  set('ntEffEars',      iv('nbEffEars')!=='—'?      iv('nbEffEars')+' 개':'—');
+  set('ntTotalGrains',  iv('nbTotalGrains')!=='—'?  iv('nbTotalGrains')+' 개':'—');
+  set('ntCompleteGrains',iv('nbCompleteGrains')!=='—'?iv('nbCompleteGrains')+' 개':'—');
+  var y10=tx('nbYield10a'); set('ntYield10a', (y10&&y10!=='—')? y10+' kg/10a':'—');
+  // 피해상황 / 품종 / 모내기 (v82)
+  set('ntA_dmg', iv('nbADamage'));
+  set('ntA_var', iv('nbAVariety'));
+  set('ntA_trn', iv('nbATransplant')!=='—'? iv('nbATransplant')+' 월':'—');
+  if(hasB){
+    set('ntB_dmg', iv('nbBDamage'));
+    set('ntB_var', iv('nbBVariety'));
+    set('ntB_trn', iv('nbBTransplant')!=='—'? iv('nbBTransplant')+' 월':'—');
+  } else { set('ntB_dmg','—'); set('ntB_var','—'); set('ntB_trn','—'); }
   // A포구 포기당 이삭수 1~10 + 합계/평균/대표주수
   var repTxt=tx('nbAJusuRep'); var repNum=parseInt(repTxt,10);
   var grid=document.getElementById('ntJusuGrid');
@@ -4305,6 +4346,52 @@ function toggleDiag(){
   var show=(b.style.display==='none');
   b.style.display=show?'':'none';
   if(btn) btn.textContent=show?'▲ 접기':'▼ 펼치기';
+}
+
+/* ════ 수분함량 자동소수점 포맷터 (v82) ════
+   입력 예: "136" → "13.6"  (3자리 숫자 → XX.X 자동변환) */
+function moistFmt(el){
+  var raw=el.value.replace(/[^\d.]/g,'');
+  // 앞쪽 점 제거
+  raw=raw.replace(/^\./,'');
+  if(raw.indexOf('.')!==-1){
+    // 이미 소수점 있으면 정수부 2자리·소수부 1자리로 제한
+    var p=raw.split('.');
+    raw=p[0].slice(0,2)+'.'+(p[1]?p[1].slice(0,1):'');
+  } else if(raw.length>=3){
+    // 3자리 이상 숫자 → 앞 2자리 + '.' + 3번째 자리
+    raw=raw.slice(0,2)+'.'+raw.charAt(2);
+  }
+  if(el.value!==raw) el.value=raw;
+  riceRealYieldCalc();
+}
+
+/* ════ 논벼 예상량 결과 이미지 저장 (v82) ════ */
+function captureNbResCard(){
+  var target=document.getElementById('nbResCard');
+  if(!target){ alert('캡처할 결과가 없습니다.'); return; }
+  var btn=target.querySelector('.nbres-capture-btn');
+  var origTxt=btn?btn.textContent:'';
+  if(btn){ btn.disabled=true; btn.textContent='⏳ 이미지 생성 중...'; }
+  setTimeout(function(){
+    html2canvas(target,{
+      scale:2, useCORS:true, backgroundColor:'#ffffff', logging:false,
+      windowWidth:target.scrollWidth, windowHeight:target.scrollHeight+100
+    }).then(function(canvas){
+      var dataUrl=canvas.toDataURL('image/png');
+      var filename='논벼_10a예상량_'+new Date().toISOString().slice(0,10)+'.png';
+      lastCaptureDataUrl=dataUrl; lastCaptureFilename=filename;
+      document.getElementById('modalImg').src=dataUrl;
+      document.getElementById('modalFileName').textContent=filename;
+      var modal=document.getElementById('imgModal');
+      modal.classList.add('open'); modal.scrollTop=0;
+      if(btn){ btn.disabled=false; btn.textContent=origTxt; }
+    }).catch(function(err){
+      console.error('[nbCapture error]',err);
+      alert('이미지 생성 중 오류: '+(err&&err.message?err.message:err));
+      if(btn){ btn.disabled=false; btn.textContent=origTxt; }
+    });
+  },60);
 }
 
 /* ════ 논벼 실수확량 계산 (v81) ════
@@ -4342,6 +4429,15 @@ function riceRealYieldCalc(){
   // 제현율 = 현미/조곡×100, 현백률 = 백미/현미×100
   setT('rsJehyeon', (!isNaN(hyeonmi)&&!isNaN(jogok)&&jogok>0)? (Math.round(hyeonmi/jogok*1000)/10)+' %':'—');
   setT('rsHyeonbaek', (!isNaN(baengmi)&&!isNaN(hyeonmi)&&hyeonmi>0)? (Math.round(baengmi/hyeonmi*1000)/10)+' %':'—');
+  // 계산식 표시 (v82)
+  var fEl=document.getElementById('rsFormula');
+  if(fEl){
+    if(!isNaN(baengmi)&&!isNaN(hm)&&!isNaN(msum)){
+      var mAvgDisp=Math.round(msum/2*10)/10;
+      var factorDisp=Math.round((100-mAvgDisp)/(100-15)*1000)/1000;
+      fEl.textContent='백미 = 현미('+hm+'g)×8/6×(100-'+mAvgDisp+')/(100-15)×92.9% = '+(!isNaN(hyeonmi)?hyeonmi:'—')+'×'+factorDisp+'×0.929 ≈ '+baengmi+' kg';
+    } else { fEl.textContent=''; }
+  }
   riceLoadDamage();
 }
 
@@ -5801,7 +5897,7 @@ document.addEventListener('DOMContentLoaded', function(){
       <button class="sl-close" onclick="closeSaveLoadModal()">✕</button>
     </div>
     <div class="sl-body">
-      <button class="sl-save-now" onclick="saveCurrentData()">💾 새로 저장</button>
+      <button class="sl-save-now" id="slSmartSaveBtn" onclick="slSmartSave()">💾 새로 저장</button>
       <div class="sl-section">저장된 자료 목록 <span style="color:#c0392b;font-size:10px;font-weight:700;letter-spacing:-.01em;">(버튼이 안 눌리면 새로고침 후 사용하세요)</span></div>
       <div class="sl-list" id="sl-list"><div class="sl-empty">저장된 자료가 없습니다.</div></div>
       <hr class="sl-divider">
@@ -6434,6 +6530,38 @@ function _pmwRestoreAll(d){
    ══════════════════════════════════════════ */
 var SL_LIST_KEY   = 'tonghabSaveList';
 var SL_DATA_PFX   = 'tonghabSave_';
+var _slSelectedKey = null; /* v83: 목록에서 선택된 항목 key */
+
+/* 선택 항목 토글 (v83) */
+function slSelectItem(key){
+  _slSelectedKey = (_slSelectedKey === key) ? null : key;
+  _slRenderList();
+  _slUpdateSaveBtn();
+}
+/* 상단 저장버튼 텍스트·색 업데이트 (v83) */
+function _slUpdateSaveBtn(){
+  var btn = document.getElementById('slSmartSaveBtn');
+  if(!btn) return;
+  if(_slSelectedKey){
+    var list = _slGetList();
+    var item = null;
+    for(var i=0;i<list.length;i++){if(list[i].key===_slSelectedKey){item=list[i];break;}}
+    var lbl = item ? item.label.slice(0,18)+(item.label.length>18?'…':'') : '';
+    btn.textContent = '💾 덮어쓰기 · '+lbl;
+    btn.style.background = '#c0392b';
+  } else {
+    btn.textContent = '💾 새로 저장';
+    btn.style.background = '';
+  }
+}
+/* 선택 여부에 따라 새로저장 또는 덮어쓰기 (v83) */
+function slSmartSave(){
+  if(_slSelectedKey){
+    overwriteSavedData(_slSelectedKey);
+  } else {
+    saveCurrentData();
+  }
+}
 
 /* 현재 화면 데이터 수집 (자동저장과 동일 방식) */
 function _slCollect(){
@@ -6519,7 +6647,9 @@ function _slModalTouchMove(e){
 
 /* 모달 열기/닫기 */
 function openSaveLoadModal(){
+  _slSelectedKey = null; /* v83: 모달 열 때 선택 초기화 */
   _slRenderList();
+  _slUpdateSaveBtn();
   var modal = document.getElementById('sl-modal');
   var list  = document.getElementById('sl-list');
   modal.classList.add('show');
@@ -6565,8 +6695,8 @@ function saveCurrentData(){
   if(list.length>30){var rm=list.splice(30);rm.forEach(function(r){try{localStorage.removeItem(SL_DATA_PFX+r.key);}catch(e){}});}
   _slSetList(list);
   _slRenderList();
-  var btn=document.querySelector('.sl-save-now');
-  if(btn){var orig=btn.textContent;btn.textContent='✅ 새로 저장 완료!';setTimeout(function(){btn.textContent=orig;},1600);}
+  var btn=document.getElementById('slSmartSaveBtn');
+  if(btn){var orig=btn.textContent;btn.textContent='✅ 새로 저장 완료!';setTimeout(function(){btn.textContent=orig;_slUpdateSaveBtn();},1600);}
 }
 
 /* 불러오기 */
@@ -6611,7 +6741,9 @@ function overwriteSavedData(key){
     }
   }
   _slSetList(list);
+  _slSelectedKey = null; /* v83: 덮어쓰기 후 선택 초기화 */
   _slRenderList();
+  _slUpdateSaveBtn();
   // 토스트 안내
   var t=document.createElement('div');
   t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#d97706;color:#fff;padding:10px 18px;border-radius:12px;font-size:13px;font-weight:700;z-index:99999;box-shadow:0 4px 16px rgba(0,0,0,.35);';
@@ -6682,16 +6814,16 @@ function _slRenderList(){
     var favCls=it.fav?'sl-item-fav fav-on':'sl-item-fav';
     var favStar=it.fav?'★':'☆';
     var numBg=it.fav?'background:#f59e0b;':'';
-    return '<div class="sl-item">'
+    var selCls=(_slSelectedKey===it.key)?' sl-selected':''; /* v83: 선택 강조 */
+    return '<div class="sl-item'+selCls+'">'
       +'<div class="sl-item-num" style="'+numBg+'">'+num+'</div>'
-      +'<div class="sl-item-info">'
+      +'<div class="sl-item-info" onclick="slSelectItem(\''+it.key+'\')" style="cursor:pointer;">'
         +'<div class="sl-item-label">'+it.label+'</div>'
         +addrLine
         +'<div class="sl-item-date">'+it.ymd+' '+it.hm+'</div>'
       +'</div>'
       +'<button class="'+favCls+'" onclick="toggleFav(\''+it.key+'\')" aria-label="관심목록">'+favStar+'</button>'
-      +'<button class="sl-item-save" onclick="overwriteSavedData(\''+it.key+'\')">저장</button>'
-      +'<button class="sl-item-load" onclick="loadSavedData(\''+it.key+'\')">불러오기</button>'
+      +'<button class="sl-item-load" onclick="loadSavedData(\''+it.key+'\')" aria-label="불러오기">📂</button>'
       +'<button class="sl-item-del" onclick="deleteSavedData(\''+it.key+'\')" aria-label="삭제">'+_TRASH_SVG+'</button>'
       +'</div>';
   }).join('');
