@@ -1,4 +1,4 @@
-<!-- home_v18.html · 저장: 2026-05-29 06:38 KST -->
+<!-- home_v19.html · 저장: 2026-05-29 23:40 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -754,11 +754,18 @@
   <footer class="info">
     <div class="source">출처 / 참고자료: 국가데이터처 통계설명자료, KOSIS 등</div>
     <div class="brand-line">농작물생산조사 통합시스템 · 텐아르 v1.0</div>
-    <div class="meta">
-      오늘 방문자 <strong id="dailyVisitCount">…</strong> &nbsp;·&nbsp;
-      누적 방문자 <strong id="totalVisitCount">…</strong> &nbsp;·&nbsp;
+    <div class="meta" style="display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px;">
+      오늘 방문자 <strong id="localDailyCount">…</strong>
+      &nbsp;·&nbsp;
+      누적 방문자
+      <img src="https://visitor-badge.laobi.icu/badge?page_id=ubaldos&left_text=visitors&query_only=true"
+           alt="누적 방문자" style="height:17px;vertical-align:middle;border-radius:3px;">
+      &nbsp;·&nbsp;
       최초 빌드 2026.4.27
     </div>
+    <!-- 방문자 카운터 증가 (숨김) -->
+    <img src="https://visitor-badge.laobi.icu/badge?page_id=ubaldos"
+         style="position:absolute;width:0;height:0;opacity:0;" alt="">
     <div class="meta" style="margin-top:4px;">by <strong>Mr. hyun</strong></div>
     <div class="contact" style="margin-top:8px;">
       <button type="button" id="gmailBtn" style="
@@ -872,36 +879,18 @@
 </div>
 
 <script>
-  /* ====== counterapi.dev 방문자 카운터 ====== */
+  /* ====== 오늘 방문자 (로컬 근사치) ====== */
   (function () {
-    var ns = 'tenar-home-v1';
-    var today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD (UTC 기준)
-    var storageKey = 'tenar_counted_date';
-    var alreadyCounted = '';
-    try { alreadyCounted = localStorage.getItem(storageKey) || ''; } catch(e) {}
-
-    function setDisplay(dailyVal, totalVal) {
-      var d = document.getElementById('dailyVisitCount');
-      var t = document.getElementById('totalVisitCount');
-      if (d) d.textContent = dailyVal !== null ? Number(dailyVal).toLocaleString() : '-';
-      if (t) t.textContent = totalVal !== null ? Number(totalVal).toLocaleString() : '-';
-    }
-
-    var baseUrl = 'https://counterapi.dev/api/' + ns + '/';
-    var suffix  = alreadyCounted === today ? '' : '/hit'; // 오늘 첫 방문만 증가
-
-    if (alreadyCounted !== today) {
-      try { localStorage.setItem(storageKey, today); } catch(e) {}
-    }
-
-    Promise.all([
-      fetch(baseUrl + 'total'            + suffix).then(function(r){ return r.json(); }),
-      fetch(baseUrl + 'daily-' + today   + suffix).then(function(r){ return r.json(); })
-    ]).then(function(results) {
-      setDisplay(results[1].value, results[0].value);
-    }).catch(function() {
-      setDisplay(null, null);
-    });
+    try {
+      var today = new Date().toISOString().slice(0, 10);
+      var raw = localStorage.getItem('tenar_day') || '{}';
+      var d = JSON.parse(raw);
+      if (d.date !== today) d = { date: today, n: 0 };
+      d.n += 1;
+      localStorage.setItem('tenar_day', JSON.stringify(d));
+      var el = document.getElementById('localDailyCount');
+      if (el) el.textContent = d.n.toLocaleString();
+    } catch (e) {}
   })();
 
   /* ====== 시계 ====== */
@@ -916,29 +905,6 @@
     }
     tick();
     setInterval(tick, 1000);
-  })();
-
-  /* ====== 방문/세션 카운터 ====== */
-  (function () {
-    try {
-      let visit = parseInt(localStorage.getItem('tenar_visit') || '0', 10);
-      visit += 1;
-      localStorage.setItem('tenar_visit', String(visit));
-      document.getElementById('visitCount').textContent = visit.toLocaleString();
-
-      let session = parseInt(sessionStorage.getItem('tenar_session') || '0', 10);
-      if (session === 0) {
-        let totalSession = parseInt(localStorage.getItem('tenar_total_session') || '0', 10);
-        totalSession += 1;
-        localStorage.setItem('tenar_total_session', String(totalSession));
-        sessionStorage.setItem('tenar_session', String(totalSession));
-        document.getElementById('sessionCount').textContent = totalSession.toLocaleString();
-      } else {
-        document.getElementById('sessionCount').textContent = session.toLocaleString();
-      }
-    } catch (e) {
-      console.warn('Storage unavailable:', e);
-    }
   })();
 
   /* ====== Gmail 버튼 ====== */
@@ -1074,5 +1040,9 @@
     btn.textContent = isHidden ? '▲ 접기' : '▼ 펼치기';
   }
 </script>
+
+<!-- GoatCounter 방문자 추적 -->
+<script data-goatcounter="https://ubaldos.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>
