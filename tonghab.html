@@ -1,4 +1,4 @@
-<!-- tonghab_v83.html · 저장: 2026-05-30 03:34 KST -->
+<!-- tonghab_v84.html · 저장: 2026-05-30 08:08 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -524,6 +524,19 @@ body.nonbye-mode .hide-nonbye { display:none !important; }
 .nbres-tbl td.col-a{color:var(--ac);font-weight:800;font-size:16px;}
 .nbres-tbl td.col-b{color:var(--bc);font-weight:800;font-size:16px;}
 .nbres-tbl tr:last-child td{border-bottom:none;}
+/* ── 논벼 필수 입력란 황색 강조 (v84) ── */
+.nb-req-inp{background:#fffbe6!important;border:1.5px solid #ffe082!important;border-radius:var(--rad)!important;}
+.nb-req-inp:focus{border-color:#f59e0b!important;box-shadow:0 0 0 2px rgba(245,158,11,.18)!important;}
+/* ── 계산 공식 텍스트 (v84) ── */
+.nb-formula-txt{font-size:10px;color:#888;margin-top:3px;line-height:1.4;word-break:break-all;}
+/* ── 계산식 팝업 (v84) ── */
+.formula-popup-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9000;align-items:center;justify-content:center;}
+.formula-popup-overlay.open{display:flex;}
+.formula-popup-box{background:#fff;border-radius:16px;padding:20px 18px;max-width:340px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.3);}
+.formula-popup-ttl{font-size:15px;font-weight:800;color:#27500A;margin-bottom:12px;}
+.formula-popup-body{font-size:13px;color:#333;line-height:1.8;background:#f8fdf4;border-radius:8px;padding:12px;}
+.formula-popup-close{display:block;width:100%;margin-top:14px;padding:11px;background:#27500A;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;}
+.formula-info-btn{background:none;border:1px solid #b0c4b1;border-radius:50%;width:18px;height:18px;font-size:11px;cursor:pointer;color:#555;line-height:1;padding:0;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;margin-left:4px;flex-shrink:0;}
 .nbres-tbl td.col-span{color:#27500A;font-weight:900;font-size:15px;text-align:center;background:#f0f7ea;}
 .nbres-capture-btn{display:block;width:calc(100% - 24px);margin:10px 12px 2px;padding:9px 0;background:#27500A;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:.3px;}
 .nbres-jusu-wrap{padding:12px 14px;border-top:6px solid #f4f2ec;}
@@ -673,7 +686,7 @@ body.nonbye-mode .hide-nonbye { display:none !important; }
 .prod-zone .pab-textarea::placeholder{font-size:11px;color:#bbb;font-weight:400;}
 /* 피해부호 / 피해율 입력 */
 .prod-zone .dmg-row{display:grid;grid-template-columns:1.4fr 1fr;gap:6px;}
-.prod-zone .dmg-select,.prod-zone .dmg-rate{width:100%;font-size:14px;font-family:'Noto Sans KR',sans-serif;font-weight:700;padding:9px 8px;border:2px solid #ddd;border-radius:8px;background:#fff;color:#111;outline:none;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'12'%20height%3D'8'%20viewBox%3D'0%200%2012%208'%3E%3Cpath%20fill%3D'%23888'%20d%3D'M6%208L0%200h12z'%2F%3E%3C%2Fsvg%3E");background-repeat:no-repeat;background-position:right 9px center;padding-right:26px;}
+.prod-zone .dmg-select,.prod-zone .dmg-rate{width:100%;font-size:12px;font-family:'Noto Sans KR',sans-serif;font-weight:700;padding:7px 6px;border:2px solid #ddd;border-radius:8px;background:#fff;color:#111;outline:none;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'12'%20height%3D'8'%20viewBox%3D'0%200%2012%208'%3E%3Cpath%20fill%3D'%23888'%20d%3D'M6%208L0%200h12z'%2F%3E%3C%2Fsvg%3E");background-repeat:no-repeat;background-position:right 7px center;padding-right:22px;}
 .prod-zone .pab-col.pab-a .dmg-select:focus,.prod-zone .pab-col.pab-a .dmg-rate:focus{border-color:#2563EB;box-shadow:0 0 0 3px rgba(37,99,235,.15);}
 .prod-zone .pab-col.pab-b .dmg-select:focus,.prod-zone .pab-col.pab-b .dmg-rate:focus{border-color:#C0392B;box-shadow:0 0 0 3px rgba(192,57,43,.15);}
 .prod-zone .dmg-desc{display:none;margin-top:5px;padding:7px 9px;border-radius:7px;font-size:11.5px;line-height:1.5;font-weight:600;}
@@ -1288,7 +1301,7 @@ textarea {
         저장
       </button>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v83 저장: 2026-05-30 03:34)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v84 저장: 2026-05-30 08:08)</span></div>
   </div>
 </div>
 
@@ -1601,11 +1614,11 @@ textarea {
         <div class="meas-grid" style="margin-bottom:8px;">
           <div class="fg" style="margin-bottom:0;">
             <label>가로 간격 (cm)</label>
-            <input type="text" inputmode="decimal" id="nbAWidth" placeholder="예) 30.0" oninput="nbFormatSpacing(this,'A')" autocomplete="off">
+            <input type="text" inputmode="decimal" id="nbAWidth" placeholder="예) 30.0" oninput="nbFormatSpacing(this,'A')" autocomplete="off" class="nb-req-inp">
           </div>
           <div class="fg" style="margin-bottom:0;">
             <label>세로 간격 (cm)</label>
-            <input type="text" inputmode="decimal" id="nbAHeight" placeholder="예) 15.5" oninput="nbFormatSpacing(this,'A')" autocomplete="off">
+            <input type="text" inputmode="decimal" id="nbAHeight" placeholder="예) 15.5" oninput="nbFormatSpacing(this,'A')" autocomplete="off" class="nb-req-inp">
           </div>
         </div>
         <div class="nonbye-m2-result">
@@ -1821,11 +1834,11 @@ textarea {
         <div class="meas-grid" style="margin-bottom:8px;">
           <div class="fg" style="margin-bottom:0;">
             <label>가로 간격 (cm)</label>
-            <input type="text" inputmode="decimal" id="nbBWidth" placeholder="예) 30.0" oninput="nbFormatSpacing(this,'B')" autocomplete="off">
+            <input type="text" inputmode="decimal" id="nbBWidth" placeholder="예) 30.0" oninput="nbFormatSpacing(this,'B')" autocomplete="off" class="nb-req-inp">
           </div>
           <div class="fg" style="margin-bottom:0;">
             <label>세로 간격 (cm)</label>
-            <input type="text" inputmode="decimal" id="nbBHeight" placeholder="예) 15.5" oninput="nbFormatSpacing(this,'B')" autocomplete="off">
+            <input type="text" inputmode="decimal" id="nbBHeight" placeholder="예) 15.5" oninput="nbFormatSpacing(this,'B')" autocomplete="off" class="nb-req-inp">
           </div>
         </div>
         <div class="nonbye-m2-result" style="border-color:var(--bc-bd);background:var(--bc-bg);">
@@ -1930,15 +1943,15 @@ textarea {
       <div class="nonbye-4col">
         <div class="fg" style="margin-bottom:0;">
           <label>유효이삭수 (개/포기)</label>
-          <input type="number" inputmode="numeric" id="nbEffEars" placeholder="예) 18" oninput="nonbyeCalcYield()">
+          <input type="number" inputmode="numeric" id="nbEffEars" placeholder="예) 18" oninput="nonbyeCalcYield()" class="nb-req-inp">
         </div>
         <div class="fg" style="margin-bottom:0;">
           <label>총낟알수 (개/이삭)</label>
-          <input type="number" inputmode="numeric" id="nbTotalGrains" placeholder="예) 80" oninput="nonbyeCalcYield()">
+          <input type="number" inputmode="numeric" id="nbTotalGrains" placeholder="예) 80" oninput="nonbyeCalcYield()" class="nb-req-inp">
         </div>
         <div class="fg" style="margin-bottom:0;">
           <label>완전낱알수 (개/이삭)</label>
-          <input type="number" inputmode="numeric" id="nbCompleteGrains" placeholder="예) 70" oninput="nonbyeCalcYield()">
+          <input type="number" inputmode="numeric" id="nbCompleteGrains" placeholder="예) 70" oninput="nonbyeCalcYield()" class="nb-req-inp">
         </div>
         <div class="fg" style="margin-bottom:0;">
           <label>불완전립 (개/이삭)</label>
@@ -1979,16 +1992,19 @@ textarea {
           <div style="font-size:10px;color:#8B7320;font-weight:700;margin-bottom:3px;">완전낱알수 비율</div>
           <div style="font-size:20px;font-weight:900;color:#8B7320;" id="nbCompleteRatePct">—</div>
           <div style="font-size:10px;color:#a08000;">% (등숙률)</div>
+          <div class="nb-formula-txt" id="fmlCompleteRatio"></div>
         </div>
         <div style="flex:1;background:#fffbe6;border:1px solid #ffe082;border-radius:var(--rad);padding:7px 8px;text-align:center;">
           <div style="font-size:10px;color:#8B7320;font-weight:700;margin-bottom:3px;">이삭당 낟알수</div>
           <div style="font-size:18px;font-weight:900;color:#8B7320;line-height:1.3;" id="nbGrainRateFrac">—</div>
           <div style="font-size:10px;color:#a08000;">개/이삭 (완전÷유효)</div>
+          <div class="nb-formula-txt" id="fmlGrainPerEar"></div>
         </div>
         <div style="flex:1;background:#e8f5e9;border:1px solid #a5d6a7;border-radius:var(--rad);padding:7px 8px;text-align:center;">
           <div style="font-size:10px;color:var(--g600);font-weight:700;margin-bottom:3px;">1㎡당 완전낱알수</div>
           <div style="font-size:16px;font-weight:900;color:var(--g600);" id="nbCompleteGrainsPerM2">—</div>
           <div style="font-size:10px;color:var(--g400);">개/㎡</div>
+          <div class="nb-formula-txt" id="fmlM2Grain"></div>
         </div>
       </div>
 
@@ -2005,8 +2021,29 @@ textarea {
           <div style="background:var(--ac);color:#fff;font-size:11px;font-weight:800;padding:6px 10px;">A포구</div>
           <div style="padding:10px;">
             <div class="fg" style="margin-bottom:8px;">
-              <label style="font-size:11px;">피해상황</label>
-              <input type="text" id="nbADamage" placeholder="예) 도복 10%" style="font-size:13px;padding:8px 10px;">
+              <label style="font-size:11px;">피해부호</label>
+              <div class="dmg-row" style="gap:4px;">
+                <select class="dmg-select" id="nbADmgCode" onchange="nbDmgUpdate('a')" style="font-size:12px;">
+                  <option value="">선택</option>
+                  <option value="01" selected>01 정상</option>
+                  <option value="02">02 병해</option><option value="03">03 충해</option>
+                  <option value="04">04 수해</option><option value="05">05 한해</option>
+                  <option value="06">06 냉해</option><option value="07">07 풍해</option>
+                  <option value="08">08 약해</option><option value="09">09 조수해</option>
+                  <option value="10">10 습해</option><option value="11">11 우박해</option>
+                  <option value="12">12 기타</option>
+                </select>
+                <select class="dmg-rate" id="nbADmgRate" onchange="if(typeof riceLoadDamage==='function')riceLoadDamage()" style="font-size:12px;">
+                  <option value="0" selected>0%</option>
+                  <option value="5">5%</option><option value="10">10%</option><option value="15">15%</option>
+                  <option value="20">20%</option><option value="25">25%</option><option value="30">30%</option>
+                  <option value="35">35%</option><option value="40">40%</option><option value="45">45%</option>
+                  <option value="50">50%</option><option value="55">55%</option><option value="60">60%</option>
+                  <option value="65">65%</option><option value="70">70%</option><option value="75">75%</option>
+                  <option value="80">80%</option><option value="85">85%</option><option value="90">90%</option>
+                  <option value="95">95%</option><option value="100">100%</option>
+                </select>
+              </div>
             </div>
             <div class="fg" style="margin-bottom:8px;">
               <label style="font-size:11px;">품종명</label>
@@ -2022,8 +2059,29 @@ textarea {
           <div style="background:var(--bc);color:#fff;font-size:11px;font-weight:800;padding:6px 10px;">B포구</div>
           <div style="padding:10px;">
             <div class="fg" style="margin-bottom:8px;">
-              <label style="font-size:11px;">피해상황</label>
-              <input type="text" id="nbBDamage" placeholder="예) 없음" style="font-size:13px;padding:8px 10px;">
+              <label style="font-size:11px;">피해부호</label>
+              <div class="dmg-row" style="gap:4px;">
+                <select class="dmg-select" id="nbBDmgCode" onchange="nbDmgUpdate('b')" style="font-size:12px;">
+                  <option value="">선택</option>
+                  <option value="01" selected>01 정상</option>
+                  <option value="02">02 병해</option><option value="03">03 충해</option>
+                  <option value="04">04 수해</option><option value="05">05 한해</option>
+                  <option value="06">06 냉해</option><option value="07">07 풍해</option>
+                  <option value="08">08 약해</option><option value="09">09 조수해</option>
+                  <option value="10">10 습해</option><option value="11">11 우박해</option>
+                  <option value="12">12 기타</option>
+                </select>
+                <select class="dmg-rate" id="nbBDmgRate" onchange="if(typeof riceLoadDamage==='function')riceLoadDamage()" style="font-size:12px;">
+                  <option value="0" selected>0%</option>
+                  <option value="5">5%</option><option value="10">10%</option><option value="15">15%</option>
+                  <option value="20">20%</option><option value="25">25%</option><option value="30">30%</option>
+                  <option value="35">35%</option><option value="40">40%</option><option value="45">45%</option>
+                  <option value="50">50%</option><option value="55">55%</option><option value="60">60%</option>
+                  <option value="65">65%</option><option value="70">70%</option><option value="75">75%</option>
+                  <option value="80">80%</option><option value="85">85%</option><option value="90">90%</option>
+                  <option value="95">95%</option><option value="100">100%</option>
+                </select>
+              </div>
             </div>
             <div class="fg" style="margin-bottom:8px;">
               <label style="font-size:11px;">품종명</label>
@@ -2072,6 +2130,8 @@ textarea {
             <tr><td class="nbres-lbl">포기간길이 가로</td><td class="col-a" id="ntA_wid">—</td><td class="col-b" id="ntB_wid">—</td></tr>
             <tr><td class="nbres-lbl">포기간길이 세로</td><td class="col-a" id="ntA_hei">—</td><td class="col-b" id="ntB_hei">—</td></tr>
             <tr><td class="nbres-lbl">3줄 예취길이</td><td class="col-a" id="ntA_h3">—</td><td class="col-b" id="ntB_h3">—</td></tr>
+            <tr><td class="nbres-lbl">A포구 1㎡당 포기수</td><td colspan="2" class="col-span" id="ntA_m2per">—</td></tr>
+            <tr><td class="nbres-lbl">B포구 1㎡당 포기수</td><td colspan="2" class="col-span" id="ntB_m2per">—</td></tr>
             <tr><td class="nbres-lbl">1㎡당 포기수 평균</td><td colspan="2" class="col-span" id="ntAvgM2">—</td></tr>
             <tr><td class="nbres-lbl">유효이삭수</td><td colspan="2" class="col-span" id="ntEffEars">—</td></tr>
             <tr><td class="nbres-lbl">총 낟알수</td><td colspan="2" class="col-span" id="ntTotalGrains">—</td></tr>
@@ -2082,7 +2142,6 @@ textarea {
             <tr><td class="nbres-lbl">모내기</td><td class="col-a" id="ntA_trn">—</td><td class="col-b" id="ntB_trn">—</td></tr>
           </tbody>
         </table>
-        <button type="button" class="nbres-capture-btn" onclick="captureNbResCard()">📷 결과 이미지로 저장</button>
         <div class="nbres-jusu-wrap">
           <div class="nbres-jusu-ttl">🌾 A포구 포기당 이삭수 (1~10번)</div>
           <div class="nbres-jusu-grid" id="ntJusuGrid"></div>
@@ -2104,8 +2163,11 @@ textarea {
           <div class="res-row"><span class="res-lbl">가로 기점</span><div class="res-right"><span id="outA_ga" class="res-main">-</span><span id="outA_ga_raw" class="res-sub"></span></div></div>
           <div class="res-row"><span class="res-lbl">세로 기점</span><div class="res-right"><span id="outA_se" class="res-main">-</span><span id="outA_se_raw" class="res-sub"></span></div></div>
           <div class="res-row" id="resRowAK" style="display:none;"><span class="res-lbl">추출간격 k</span><div class="res-right"><span id="outA_k" class="res-main">-</span><span id="outA_k_sub" class="res-sub"></span></div></div>
+          <div class="res-row hide-nonbye"><span class="res-lbl">총이랑수</span><div class="res-right"><span id="outA_rows" class="res-main">-</span></div></div>
           <div class="res-row"><span class="res-lbl">이랑 평균너비</span><div class="res-right"><span id="outWA" class="res-main">-</span><span id="outWA_sub" class="res-sub"></span></div></div>
           <div class="res-row"><span class="res-lbl">3㎡ 조사 이랑길이</span><div class="res-right"><span id="outLenA" class="res-main">-</span><span id="outLenA_raw" class="res-sub"></span></div></div>
+          <div class="res-row hide-nonbye"><span class="res-lbl">피해부호</span><div class="res-right"><span id="outA_dmgCode" class="res-main" style="font-size:13px;">-</span></div></div>
+          <div class="res-row hide-nonbye"><span class="res-lbl">피해율</span><div class="res-right"><span id="outA_dmgRate" class="res-main" style="font-size:13px;">-</span></div></div>
         </div>
         <div class="samp-meta" id="aSampMeta" style="display:none;"></div>
         <div class="samp-lookup" id="aSampLookup" style="display:none;"></div>
@@ -2124,8 +2186,11 @@ textarea {
           <div class="res-row"><span class="res-lbl">가로 기점</span><div class="res-right"><span id="outB_ga" class="res-main">-</span><span id="outB_ga_raw" class="res-sub"></span></div></div>
           <div class="res-row"><span class="res-lbl">세로 기점</span><div class="res-right"><span id="outB_se" class="res-main">-</span><span id="outB_se_raw" class="res-sub"></span></div></div>
           <div class="res-row" id="resRowBK" style="display:none;"><span class="res-lbl">추출간격 k</span><div class="res-right"><span id="outB_k" class="res-main">-</span><span id="outB_k_sub" class="res-sub"></span></div></div>
+          <div class="res-row hide-nonbye"><span class="res-lbl">총이랑수</span><div class="res-right"><span id="outB_rows" class="res-main">-</span></div></div>
           <div class="res-row"><span class="res-lbl">이랑 평균너비</span><div class="res-right"><span id="outWB" class="res-main">-</span><span id="outWB_sub" class="res-sub"></span></div></div>
           <div class="res-row"><span class="res-lbl">3㎡ 조사 이랑길이</span><div class="res-right"><span id="outLenB" class="res-main">-</span><span id="outLenB_raw" class="res-sub"></span></div></div>
+          <div class="res-row hide-nonbye"><span class="res-lbl">피해부호</span><div class="res-right"><span id="outB_dmgCode" class="res-main" style="font-size:13px;">-</span></div></div>
+          <div class="res-row hide-nonbye"><span class="res-lbl">피해율</span><div class="res-right"><span id="outB_dmgRate" class="res-main" style="font-size:13px;">-</span></div></div>
         </div>
         <div class="samp-meta" id="bSampMeta" style="display:none;"></div>
         <div class="samp-lookup" id="bSampLookup" style="display:none;"></div>
@@ -2180,19 +2245,19 @@ textarea {
         <div class="ryield-grid2">
           <div class="ryield-fg">
             <label>6㎡당 조제벼 중량 (g)</label>
-            <div class="ryield-iwrap"><input type="number" inputmode="numeric" id="rsJeje" placeholder="예)5400" oninput="riceRealYieldCalc()"><span class="ryield-unit">g</span></div>
+            <div class="ryield-iwrap"><input type="number" inputmode="numeric" id="rsJeje" placeholder="예)5400" oninput="riceRealYieldCalc()" class="nb-req-inp"><span class="ryield-unit">g</span></div>
           </div>
           <div class="ryield-fg">
             <label>1/8 조제벼 (g)</label>
-            <div class="ryield-iwrap"><input type="number" inputmode="numeric" id="rsJeje8" placeholder="예)675" oninput="riceRealYieldCalc()"><span class="ryield-unit">g</span></div>
+            <div class="ryield-iwrap"><input type="number" inputmode="numeric" id="rsJeje8" placeholder="예)675" oninput="riceRealYieldCalc()" class="nb-req-inp"><span class="ryield-unit">g</span></div>
           </div>
           <div class="ryield-fg">
             <label>1/8 건조벼 (g) <b style="color:#27500A;">ⓔ</b></label>
-            <div class="ryield-iwrap"><input type="number" inputmode="numeric" id="rsGeon8" placeholder="예)567" oninput="riceRealYieldCalc()"><span class="ryield-unit">g</span></div>
+            <div class="ryield-iwrap"><input type="number" inputmode="numeric" id="rsGeon8" placeholder="예)567" oninput="riceRealYieldCalc()" class="nb-req-inp"><span class="ryield-unit">g</span></div>
           </div>
           <div class="ryield-fg">
             <label>6㎡당 생볏짚 (g)</label>
-            <div class="ryield-iwrap"><input type="number" inputmode="numeric" id="rsStraw" placeholder="예)9850" oninput="riceRealYieldCalc()"><span class="ryield-unit">g</span></div>
+            <div class="ryield-iwrap"><input type="number" inputmode="numeric" id="rsStraw" placeholder="예)9850" oninput="riceRealYieldCalc()" class="nb-req-inp"><span class="ryield-unit">g</span></div>
           </div>
         </div>
         <div class="ryield-auto"><span class="ra-lbl">검산계 (조제벼중량 ~ 생볏짚 합계)</span><span class="ra-val" id="rsCheckSum1">—</span></div>
@@ -2201,11 +2266,11 @@ textarea {
         <div class="ryield-grid3">
           <div class="ryield-fg">
             <label>1.6mm이상 (현미) <b style="color:#27500A;">ⓕ</b></label>
-            <div class="ryield-iwrap"><input type="number" inputmode="numeric" id="rsHyeonmi" placeholder="예)453" oninput="riceRealYieldCalc()"><span class="ryield-unit">g</span></div>
+            <div class="ryield-iwrap"><input type="number" inputmode="numeric" id="rsHyeonmi" placeholder="예)453" oninput="riceRealYieldCalc()" class="nb-req-inp"><span class="ryield-unit">g</span></div>
           </div>
           <div class="ryield-fg">
             <label>1.6mm미만 (설미)</label>
-            <div class="ryield-iwrap"><input type="number" inputmode="numeric" id="rsSeolmi" placeholder="예)6" oninput="riceRealYieldCalc()"><span class="ryield-unit">g</span></div>
+            <div class="ryield-iwrap"><input type="number" inputmode="numeric" id="rsSeolmi" placeholder="예)6" oninput="riceRealYieldCalc()" class="nb-req-inp"><span class="ryield-unit">g</span></div>
           </div>
           <div class="ryield-fg">
             <label>총량 (자동)</label>
@@ -2217,11 +2282,11 @@ textarea {
         <div class="ryield-grid3">
           <div class="ryield-fg">
             <label>1회 측정 (%)</label>
-            <div class="ryield-iwrap"><input type="text" inputmode="decimal" id="rsMoist1" placeholder="예)13.6" oninput="moistFmt(this)" autocomplete="off"><span class="ryield-unit">%</span></div>
+            <div class="ryield-iwrap"><input type="text" inputmode="decimal" id="rsMoist1" placeholder="예)13.6" oninput="moistFmt(this)" autocomplete="off" class="nb-req-inp"><span class="ryield-unit">%</span></div>
           </div>
           <div class="ryield-fg">
             <label>2회 측정 (%)</label>
-            <div class="ryield-iwrap"><input type="text" inputmode="decimal" id="rsMoist2" placeholder="예)14.0" oninput="moistFmt(this)" autocomplete="off"><span class="ryield-unit">%</span></div>
+            <div class="ryield-iwrap"><input type="text" inputmode="decimal" id="rsMoist2" placeholder="예)14.0" oninput="moistFmt(this)" autocomplete="off" class="nb-req-inp"><span class="ryield-unit">%</span></div>
           </div>
           <div class="ryield-fg">
             <label>합계 <b style="color:#27500A;">ⓖ</b> (자동)</label>
@@ -2238,13 +2303,13 @@ textarea {
           <div class="rm-formula" id="rsFormula"></div>
         </div>
         <div class="ryield-res-grid">
-          <div class="ryield-res-cell"><div class="rc-lbl">10a당 조곡</div><div class="rc-val" id="rsJogok">—</div></div>
-          <div class="ryield-res-cell"><div class="rc-lbl">10a당 현미</div><div class="rc-val" id="rsHyeonmiOut">—</div></div>
-          <div class="ryield-res-cell"><div class="rc-lbl">10a당 백미</div><div class="rc-val" id="rsBaengmi2">—</div></div>
+          <div class="ryield-res-cell"><div class="rc-lbl">10a당 조곡 <button class="formula-info-btn" onclick="showFormulaPopup('조곡')">ℹ</button></div><div class="rc-val" id="rsJogok">—</div></div>
+          <div class="ryield-res-cell"><div class="rc-lbl">10a당 현미 <button class="formula-info-btn" onclick="showFormulaPopup('현미')">ℹ</button></div><div class="rc-val" id="rsHyeonmiOut">—</div></div>
+          <div class="ryield-res-cell"><div class="rc-lbl">10a당 백미 <button class="formula-info-btn" onclick="showFormulaPopup('백미')">ℹ</button></div><div class="rc-val" id="rsBaengmi2">—</div></div>
         </div>
         <div class="ryield-rate-grid">
-          <div class="ryield-rate-cell"><div class="rc-lbl">제현율 (현미/조곡)</div><div class="rc-val" id="rsJehyeon">—</div></div>
-          <div class="ryield-rate-cell"><div class="rc-lbl">현백률 (백미/현미)</div><div class="rc-val" id="rsHyeonbaek">—</div></div>
+          <div class="ryield-rate-cell"><div class="rc-lbl">제현율 (현미/조곡) <button class="formula-info-btn" onclick="showFormulaPopup('제현율')">ℹ</button></div><div class="rc-val" id="rsJehyeon">—</div></div>
+          <div class="ryield-rate-cell"><div class="rc-lbl">현백률 (백미/현미) <button class="formula-info-btn" onclick="showFormulaPopup('현백률')">ℹ</button></div><div class="rc-val" id="rsHyeonbaek">—</div></div>
         </div>
 
         <div class="ryield-sub" style="margin-top:16px;">④ A·B포구별 피해상황 · 3㎡ 예취포기수</div>
@@ -2256,6 +2321,7 @@ textarea {
             <tr><td class="lbl">피해명 (부호)</td><td class="col-a" id="rlA_dmg">—</td><td class="col-b" id="rlB_dmg">—</td></tr>
             <tr><td class="lbl">피해율</td><td class="col-a" id="rlA_rate">—</td><td class="col-b" id="rlB_rate">—</td></tr>
             <tr><td class="lbl">3㎡ 예취포기수</td><td class="col-a" id="rlA_plants">—</td><td class="col-b" id="rlB_plants">—</td></tr>
+            <tr><td class="lbl">3줄 예취길이</td><td class="col-a" id="rl2A_harv">—</td><td class="col-b" id="rl2B_harv">—</td></tr>
           </tbody>
         </table>
         <div style="font-size:11px;color:#888;margin-top:6px;">※ 피해상황·예취포기수는 위 입력값에서 자동으로 불러옵니다.</div>
@@ -2474,7 +2540,7 @@ textarea {
               <div class="dmg-row">
                 <select class="dmg-select" id="pa-dmg-code" onchange="updateDmgDesc('a')">
                   <option value="">피해명 선택</option>
-                  <option value="01">01 정상</option>
+                  <option value="01" selected>01 정상</option>
                   <option value="02">02 병해</option>
                   <option value="03">03 충해</option>
                   <option value="04">04 수해</option>
@@ -2489,7 +2555,7 @@ textarea {
                 </select>
                 <select class="dmg-rate" id="pa-dmg-rate" onchange="if(typeof riceLoadDamage==='function')riceLoadDamage()">
                   <option value="">피해율</option>
-                  <option value="0">0%</option><option value="5">5%</option><option value="10">10%</option>
+                  <option value="0" selected>0%</option><option value="5">5%</option><option value="10">10%</option>
                   <option value="15">15%</option><option value="20">20%</option><option value="25">25%</option>
                   <option value="30">30%</option><option value="35">35%</option><option value="40">40%</option>
                   <option value="45">45%</option><option value="50">50%</option><option value="55">55%</option>
@@ -2671,7 +2737,7 @@ textarea {
               <div class="dmg-row">
                 <select class="dmg-select" id="pb-dmg-code" onchange="updateDmgDesc('b')">
                   <option value="">피해명 선택</option>
-                  <option value="01">01 정상</option>
+                  <option value="01" selected>01 정상</option>
                   <option value="02">02 병해</option>
                   <option value="03">03 충해</option>
                   <option value="04">04 수해</option>
@@ -2686,7 +2752,7 @@ textarea {
                 </select>
                 <select class="dmg-rate" id="pb-dmg-rate" onchange="if(typeof riceLoadDamage==='function')riceLoadDamage()">
                   <option value="">피해율</option>
-                  <option value="0">0%</option><option value="5">5%</option><option value="10">10%</option>
+                  <option value="0" selected>0%</option><option value="5">5%</option><option value="10">10%</option>
                   <option value="15">15%</option><option value="20">20%</option><option value="25">25%</option>
                   <option value="30">30%</option><option value="35">35%</option><option value="40">40%</option>
                   <option value="45">45%</option><option value="50">50%</option><option value="55">55%</option>
@@ -3194,27 +3260,37 @@ function nonbyeCalcYield(){
   const m2GrainEl = document.getElementById('nbCompleteGrainsPerM2');
 
   /* 완전낟알수 비율: 완전낟알수 ÷ 총낟알수 × 100 */
+  const fmlCR=document.getElementById('fmlCompleteRatio');
   if(!isNaN(totalGrains) && !isNaN(compGrains) && totalGrains > 0){
     const pct = Math.round(compGrains / totalGrains * 1000) / 10;
     if(ratePctEl) ratePctEl.textContent = pct.toFixed(1);
+    if(fmlCR) fmlCR.textContent='완전('+compGrains+')÷총('+totalGrains+')×100';
   } else {
     if(ratePctEl) ratePctEl.textContent = '—';
+    if(fmlCR) fmlCR.textContent='';
   }
 
   /* 이삭당 낟알수: 완전낟알수 ÷ 대표주수이삭수(유효이삭수) */
+  const fmlGE=document.getElementById('fmlGrainPerEar');
   if(!isNaN(compGrains) && !isNaN(effEars) && effEars > 0){
     const perEar = Math.round(compGrains / effEars * 10) / 10;
     if(rateFracEl) rateFracEl.textContent = perEar.toFixed(1);
+    if(fmlGE) fmlGE.textContent='완전('+compGrains+')÷대표이삭수('+effEars+')';
   } else {
     if(rateFracEl) rateFracEl.textContent = '—';
+    if(fmlGE) fmlGE.textContent='';
   }
 
   /* 1m²당 완전낟알수 = 1m²포기수 × 평균이삭수 × (완전낟알수÷대표주수이삭수) */
+  const fmlM2=document.getElementById('fmlM2Grain');
   if(!isNaN(avgM2) && !isNaN(effEarsAvg) && !isNaN(compGrains) && !isNaN(effEars) && effEars > 0){
     const m2grain = Math.round(avgM2 * effEarsAvg * (compGrains / effEars));
     if(m2GrainEl) m2GrainEl.textContent = m2grain.toLocaleString('ko-KR');
+    const perEarFml=Math.round(compGrains/effEars*10)/10;
+    if(fmlM2) fmlM2.textContent='포기수('+avgM2.toFixed(1)+')×평균이삭('+effEarsAvg+')×이삭당완전('+perEarFml+')';
   } else {
     if(m2GrainEl) m2GrainEl.textContent = '—';
+    if(fmlM2) fmlM2.textContent='';
   }
 
   if(isNaN(avgM2)||isNaN(effEars)||isNaN(effEarsAvg)||isNaN(totalGrains)||isNaN(compGrains)||isNaN(tWeight)){
@@ -3250,7 +3326,7 @@ function nonbyeInitJusuGrid(){
     cell.id='nbJCard-'+i;
     cell.innerHTML=
       '<span class="nonbye-plant-num">'+i+'번</span>'+
-      '<input class="nonbye-plant-inp" id="nbJ-'+i+'" type="number" inputmode="numeric" '+
+      '<input class="nonbye-plant-inp nb-req-inp" id="nbJ-'+i+'" type="number" inputmode="numeric" '+
       'pattern="[0-9]*" min="0" max="99" placeholder="-" autocomplete="off">'+
       '<span class="nonbye-rep-dot"></span>';
     grid.appendChild(cell);
@@ -3446,6 +3522,12 @@ function updateRatioNote(visible, a_ga_ratio1){
   const noteA = document.getElementById('ratioNoteA');
   const noteB = document.getElementById('ratioNoteB');
   if(!noteA || !noteB) return;
+  // 논벼는 길이 사용 → 비율 안내 문구 미표시 (v84)
+  if(document.body.classList.contains('nonbye-mode')){
+    noteA.className = 'ratio-note'; noteA.textContent = '';
+    noteB.className = 'ratio-note'; noteB.textContent = '';
+    return;
+  }
   if(!visible){
     noteA.className = 'ratio-note'; noteA.textContent = '';
     noteB.className = 'ratio-note'; noteB.textContent = '';
@@ -4096,6 +4178,28 @@ function renderUnifiedResult(state){
     (hasB ? ' &nbsp;|&nbsp; B세로: ' + Hb + 'cm' : ' &nbsp;|&nbsp; B세로: <em>미입력</em>') +
     ' &nbsp;|&nbsp; 평균너비 A:' + (isNaN(waA) ? '-' : waA) + (hasB ? ' B:' + (isNaN(wbA) ? '-' : wbA) : '');
 
+  // ── 총이랑수 / 피해부호율 → A·B 결과 카드에 반영 (v84) ──
+  (function(){
+    var rowsEl=document.getElementById('outA_rows');
+    var rowsBEl=document.getElementById('outB_rows');
+    var rowsVal=(!isNaN(L)?L+' '+(measureMode==='이랑'?'이랑':'cm'):'—');
+    if(rowsEl) rowsEl.textContent=rowsVal;
+    if(rowsBEl) rowsBEl.textContent=rowsVal;
+    function dmgText(ab){
+      var s=document.getElementById('p'+ab+'-dmg-code'); if(!s||!s.value) return '—';
+      var i=(typeof DMG_CODES!=='undefined')?DMG_CODES[s.value]:null;
+      return i?s.value+' '+i.name:s.value;
+    }
+    function rateText(ab){
+      var s=document.getElementById('p'+ab+'-dmg-rate');
+      return(s&&s.value!=='')?s.value+' %':'—';
+    }
+    var adcA=document.getElementById('outA_dmgCode'); if(adcA) adcA.textContent=dmgText('a');
+    var adrA=document.getElementById('outA_dmgRate'); if(adrA) adrA.textContent=rateText('a');
+    var adcB=document.getElementById('outB_dmgCode'); if(adcB) adcB.textContent=dmgText('b');
+    var adrB=document.getElementById('outB_dmgRate'); if(adrB) adrB.textContent=rateText('b');
+  })();
+
   // ── A포구 결과 ──
   const one = isOneRidgeMode();
   const a_ga = one ? 1 : L*ga;
@@ -4304,6 +4408,9 @@ function renderNonbyeSummary(hasB){
   var ha=tx('nbAHarvestLen'); set('ntA_h3', (ha&&ha!=='—')?(ha+' cm'):'—');
   if(hasB){ var hb=tx('nbBHarvestLen'); set('ntB_h3', (hb&&hb!=='—')?(hb+' cm'):'—'); }
   else set('ntB_h3','—');
+  // A/B포구 1㎡당 포기수 개별 (v84)
+  var am2=tx('nbAM2'); set('ntA_m2per', am2!=='—'? am2+' 포기/㎡':'—');
+  var bm2=hasB?tx('nbBM2'):'—'; set('ntB_m2per', (bm2&&bm2!=='—')? bm2+' 포기/㎡':'—');
   // 1㎡당 포기수 평균값 (v82)
   set('ntAvgM2', tx('nbAvgM2')!=='—'? tx('nbAvgM2')+' 포기/㎡':'—');
   // 유효이삭수 / 총낟알수 / 완전낟알수 / 10a당 예상량 (v82)
@@ -4311,12 +4418,24 @@ function renderNonbyeSummary(hasB){
   set('ntTotalGrains',  iv('nbTotalGrains')!=='—'?  iv('nbTotalGrains')+' 개':'—');
   set('ntCompleteGrains',iv('nbCompleteGrains')!=='—'?iv('nbCompleteGrains')+' 개':'—');
   var y10=tx('nbYield10a'); set('ntYield10a', (y10&&y10!=='—')? y10+' kg/10a':'—');
-  // 피해상황 / 품종 / 모내기 (v82)
-  set('ntA_dmg', iv('nbADamage'));
+  // 피해상황 / 품종 / 모내기 (v82/v84 - select 기반)
+  function nbDmgTxt(ab){
+    var AB=ab.toUpperCase();
+    var s=document.getElementById('nb'+AB+'DmgCode');
+    if(!s||!s.value) return '—';
+    var inf=(typeof DMG_CODES!=='undefined')?DMG_CODES[s.value]:null;
+    return inf? s.value+' '+inf.name : s.value;
+  }
+  function nbRateTxt(ab){
+    var AB=ab.toUpperCase();
+    var s=document.getElementById('nb'+AB+'DmgRate');
+    return (s&&s.value!=='')?s.value+'%':'—';
+  }
+  set('ntA_dmg', nbDmgTxt('a')+' / '+nbRateTxt('a'));
   set('ntA_var', iv('nbAVariety'));
   set('ntA_trn', iv('nbATransplant')!=='—'? iv('nbATransplant')+' 월':'—');
   if(hasB){
-    set('ntB_dmg', iv('nbBDamage'));
+    set('ntB_dmg', nbDmgTxt('b')+' / '+nbRateTxt('b'));
     set('ntB_var', iv('nbBVariety'));
     set('ntB_trn', iv('nbBTransplant')!=='—'? iv('nbBTransplant')+' 월':'—');
   } else { set('ntB_dmg','—'); set('ntB_var','—'); set('ntB_trn','—'); }
@@ -4441,26 +4560,34 @@ function riceRealYieldCalc(){
   riceLoadDamage();
 }
 
-/* A·B포구별 피해상황 · 3㎡ 예취포기수 불러오기 (v81) */
+/* A·B포구별 피해상황 · 3㎡ 예취포기수 · 예취길이 불러오기 (v81/v84) */
 function riceLoadDamage(){
   function setT(id,v){ var e=document.getElementById(id); if(e) e.textContent=v; }
-  function dmgText(ab){
-    var sel=document.getElementById('p'+ab+'-dmg-code');
+  function nbDmgText(ab){
+    /* 논벼용: nbADmgCode/nbBDmgCode select (v84) */
+    var AB=ab.toUpperCase();
+    var sel=document.getElementById('nb'+AB+'DmgCode');
     if(!sel||!sel.value) return '—';
     var info=(typeof DMG_CODES!=='undefined')?DMG_CODES[sel.value]:null;
     return info? (info.name+' ('+sel.value+')') : sel.value;
   }
-  function rateText(ab){
-    var sel=document.getElementById('p'+ab+'-dmg-rate');
+  function nbRateText(ab){
+    var AB=ab.toUpperCase();
+    var sel=document.getElementById('nb'+AB+'DmgRate');
     return (sel&&sel.value!=='')? sel.value+' %':'—';
   }
   function plantsText(id){
     var e=document.getElementById(id);
     return (e&&e.textContent&&e.textContent!=='—')? e.textContent+' 포기':'—';
   }
-  setT('rlA_dmg', dmgText('a')); setT('rlB_dmg', dmgText('b'));
-  setT('rlA_rate', rateText('a')); setT('rlB_rate', rateText('b'));
+  function harvText(id){
+    var e=document.getElementById(id);
+    return (e&&e.textContent&&e.textContent!=='—')? e.textContent+' cm':'—';
+  }
+  setT('rlA_dmg', nbDmgText('a')); setT('rlB_dmg', nbDmgText('b'));
+  setT('rlA_rate', nbRateText('a')); setT('rlB_rate', nbRateText('b'));
   setT('rlA_plants', plantsText('nbAM3')); setT('rlB_plants', plantsText('nbBM3'));
+  setT('rl2A_harv', harvText('nbAHarvestLen')); setT('rl2B_harv', harvText('nbBHarvestLen'));
 }
 
 function fHtml(samples, i, r, k){
@@ -4536,8 +4663,74 @@ function runFullCalculationAndScrollB(){
   setTimeout(function(){
     const err = document.getElementById('errBox');
     if(err && err.classList.contains('show')) return;
-    scrollToBResult();
+    // 논벼: 결과 상단(captureTarget)으로 스크롤, 일반작물: B결과로 (v84/15)
+    if(document.body.classList.contains('nonbye-mode')){
+      scrollWithOffset(document.getElementById('captureTarget'));
+    } else {
+      scrollToBResult();
+    }
   }, 220);
+}
+
+/* ════ 계산식 팝업 (v84/13) ════ */
+var _FML_DATA = {
+  '조곡':  {ttl:'10a당 조곡 계산식', body:'조곡 = 1/8건조벼(ⓔ) × 8 ÷ 6 × (100 - 수분평균ⓖ÷2) ÷ (100 - 15)\n\n· 6㎡ 기준을 10a(1,000㎡)로 환산\n· 수분보정: (100-수분평균)/(100-15)'},
+  '현미':  {ttl:'10a당 현미 계산식', body:'현미 = 1.6mm이상(ⓕ) × 8 ÷ 6 × (100 - 수분평균ⓖ÷2) ÷ (100 - 15)\n\n· 조곡과 동일 구조, ⓔ 대신 현미중량(ⓕ) 사용'},
+  '백미':  {ttl:'10a당 백미 계산식', body:'백미 = 현미 × 92.9%\n\n· 현백률 92.9% (도정 수율 기준 적용)'},
+  '제현율':{ttl:'제현율 계산식', body:'제현율 = 현미 ÷ 조곡 × 100 (%)\n\n· 조곡 대비 현미의 비율\n· 일반적 참고범위: 78~82%'},
+  '현백률':{ttl:'현백률 계산식', body:'현백률 = 백미 ÷ 현미 × 100 (%)\n\n· 현미 대비 백미의 비율\n· 표준값 92.9% 적용'}
+};
+function showFormulaPopup(type){
+  var d=_FML_DATA[type]; if(!d) return;
+  var ttl=document.getElementById('fpTitle');
+  var body=document.getElementById('fpBody');
+  var pop=document.getElementById('formulaPopup');
+  if(ttl) ttl.textContent=d.ttl;
+  if(body) body.innerHTML=d.body.replace(/\n/g,'<br>');
+  if(pop) pop.classList.add('open');
+}
+function closeFormulaPopup(){
+  var pop=document.getElementById('formulaPopup');
+  if(pop) pop.classList.remove('open');
+}
+
+/* ════ 논벼 전체 조사결과 이미지 저장 (예상량+실수확량) (v84/14) ════ */
+function captureAllNonbye(){
+  var card1=document.getElementById('nbResCard');
+  var card2=document.getElementById('ryieldCard');
+  if(!card1&&!card2){ alert('캡처할 결과가 없습니다.'); return; }
+  var btn=document.getElementById('btnCaptureAll');
+  var origTxt=btn?btn.innerHTML:'';
+  if(btn){ btn.disabled=true; btn.innerHTML='⏳ 이미지 생성 중...'; }
+  // 임시 wrapper 생성
+  var wrapper=document.createElement('div');
+  wrapper.style.cssText='position:fixed;top:-9999px;left:-9999px;background:#fff;padding:12px;display:flex;flex-direction:column;gap:12px;width:380px;';
+  if(card1) wrapper.appendChild(card1.cloneNode(true));
+  if(card2) wrapper.appendChild(card2.cloneNode(true));
+  document.body.appendChild(wrapper);
+  setTimeout(function(){
+    html2canvas(wrapper,{
+      scale:2, useCORS:true, backgroundColor:'#ffffff', logging:false,
+      windowWidth:wrapper.scrollWidth, windowHeight:wrapper.scrollHeight+100
+    }).then(function(canvas){
+      try{ document.body.removeChild(wrapper); }catch(e){}
+      var dataUrl=canvas.toDataURL('image/png');
+      var now=new Date(); var kst=new Date(now.getTime()+9*3600000);
+      var ymd=kst.toISOString().slice(0,10);
+      var filename='논벼_전체조사결과_'+ymd+'.png';
+      lastCaptureDataUrl=dataUrl; lastCaptureFilename=filename;
+      document.getElementById('modalImg').src=dataUrl;
+      document.getElementById('modalFileName').textContent=filename;
+      var modal=document.getElementById('imgModal');
+      modal.classList.add('open'); modal.scrollTop=0;
+      if(btn){ btn.disabled=false; btn.innerHTML=origTxt; }
+    }).catch(function(err){
+      try{ document.body.removeChild(wrapper); }catch(e){}
+      console.error('[captureAll error]',err);
+      alert('이미지 생성 중 오류: '+(err&&err.message?err.message:err));
+      if(btn){ btn.disabled=false; btn.innerHTML=origTxt; }
+    });
+  }, 80);
 }
 
 /* ═════════════════════════════════════════
@@ -5848,6 +6041,11 @@ function updateDmgDesc(ab){
   var sel=document.getElementById('p'+ab+'-dmg-code');
   var box=document.getElementById('p'+ab+'-dmg-desc');
   if(!sel||!box) return;
+  // 정상(01)이면 피해율 0 강제 (v84)
+  if(sel.value==='01'){
+    var rateEl=document.getElementById('p'+ab+'-dmg-rate');
+    if(rateEl) rateEl.value='0';
+  }
   var info=DMG_CODES[sel.value];
   if(info){
     box.innerHTML='<span class="dmg-name">'+sel.value+' '+info.name+'</span> · '+info.desc;
@@ -5858,6 +6056,15 @@ function updateDmgDesc(ab){
   }
   if(typeof riceLoadDamage==='function') riceLoadDamage();
 }
+/* 논벼 피해부호 변경 시 처리 (v84) */
+function nbDmgUpdate(ab){
+  var sel=document.getElementById('nb'+ab.toUpperCase()+'DmgCode');
+  if(sel&&sel.value==='01'){
+    var rateEl=document.getElementById('nb'+ab.toUpperCase()+'DmgRate');
+    if(rateEl) rateEl.value='0';
+  }
+  if(typeof riceLoadDamage==='function') riceLoadDamage();
+}
 
 // ── prod 초기화 ──
 document.addEventListener('DOMContentLoaded', function(){
@@ -5865,6 +6072,20 @@ document.addEventListener('DOMContentLoaded', function(){
   if(typeof prodSelectRegion==='function') prodSelectRegion('gyeongbuk');
 });
 </script>
+
+<!-- ════ 계산식 팝업 (v84) ════ -->
+<div class="formula-popup-overlay" id="formulaPopup" onclick="closeFormulaPopup()">
+  <div class="formula-popup-box" onclick="event.stopPropagation()">
+    <div class="formula-popup-ttl" id="fpTitle">계산식</div>
+    <div class="formula-popup-body" id="fpBody"></div>
+    <button class="formula-popup-close" onclick="closeFormulaPopup()">✕ 닫기</button>
+  </div>
+</div>
+
+<!-- ════ 논벼 전체 조사결과 이미지 저장 버튼 (v84) ════ -->
+<div class="nonbye-only" id="btnCaptureAllWrap" style="padding:0 16px 8px;">
+  <button class="btn-capture" id="btnCaptureAll" onclick="captureAllNonbye()" style="background:#27500A;">📷&nbsp; 전체 조사결과 이미지로 저장 (예상량+실수확량)</button>
+</div>
 
 <!-- 10a 생산량 계산기 결과 이미지 저장 모달 -->
 <div class="prod-cap-modal" id="prod-cap-modal">
@@ -6948,6 +7169,8 @@ function importJSON(input){
       var saved = localStorage.getItem(SAVE_KEY);
       if(!saved){
         _initialLoadDone = true; // 저장 데이터 없음 → 새 입력 즉시 저장 허용
+        // ①공통사항 맨위로 스크롤 (v84/1)
+        setTimeout(function(){ window.scrollTo(0,0); }, 100);
         return;
       }
       var d = JSON.parse(saved);
@@ -7000,6 +7223,8 @@ function importJSON(input){
             _restoring = false;       // 복원 완료 — autoSave/doSave 재개
             _initialLoadDone = true;  // 초기 로드 완료 — pagehide 등에서 정상 저장 허용
             doSave();                 // 최종 상태를 즉시 한 번 더 저장 (안전망)
+            // 복원 완료 후 ①공통사항 맨위로 스크롤 (v84/1)
+            setTimeout(function(){ window.scrollTo(0,0); }, 200);
           }, 300);
         }, 400);
       }, 500);
