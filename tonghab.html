@@ -1,4 +1,4 @@
-<!-- tonghab_v84.html · 저장: 2026-05-30 08:08 KST -->
+<!-- tonghab_v87.html · 저장: 2026-05-30 11:44 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -524,9 +524,15 @@ body.nonbye-mode .hide-nonbye { display:none !important; }
 .nbres-tbl td.col-a{color:var(--ac);font-weight:800;font-size:16px;}
 .nbres-tbl td.col-b{color:var(--bc);font-weight:800;font-size:16px;}
 .nbres-tbl tr:last-child td{border-bottom:none;}
-/* ── 논벼 필수 입력란 황색 강조 (v84) ── */
-.nb-req-inp{background:#fffbe6!important;border:1.5px solid #ffe082!important;border-radius:var(--rad)!important;}
-.nb-req-inp:focus{border-color:#f59e0b!important;box-shadow:0 0 0 2px rgba(245,158,11,.18)!important;}
+/* ── 논벼 필수 입력란: 빈칸일 때만 공통 needs-input 효과 적용 (v85) ── */
+.nb-req-inp{border-radius:var(--rad);}
+.ryield-iwrap.needs-input-wrap{
+  border-color:#F59E0B !important;
+  background:#FFFBEB !important;
+  box-shadow:0 0 0 3px rgba(245,158,11,.22) !important;
+  animation:needsPulse 2s ease-in-out infinite;
+}
+.ryield-iwrap.needs-input-wrap input{background:#FFFBEB !important;}
 /* ── 계산 공식 텍스트 (v84) ── */
 .nb-formula-txt{font-size:10px;color:#888;margin-top:3px;line-height:1.4;word-break:break-all;}
 /* ── 계산식 팝업 (v84) ── */
@@ -602,6 +608,16 @@ body.nonbye-mode .hide-nonbye { display:none !important; }
 .ryield-iwrap:focus-within{border-color:#27500A;background:#fff;box-shadow:0 0 0 2px rgba(39,80,10,.12);}
 .ryield-iwrap input{flex:1;min-width:0;border:none;background:transparent;font-size:16px;font-weight:700;color:#111;padding:9px 0;outline:none;font-family:inherit;-webkit-appearance:none;}
 .ryield-iwrap .ryield-unit{font-size:11px;color:#888;font-weight:600;flex-shrink:0;}
+/* ── 논벼 실수확량 조사표: 단위 포함 입력칸은 바깥 테두리만 강조, 안쪽 input 테두리는 투명 처리 (v86) ── */
+.ryield-iwrap input.needs-input,
+.ryield-iwrap input.needs-input:focus{
+  border-color:transparent !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  animation:none !important;
+}
+.ryield-iwrap.needs-input-wrap input{background:transparent !important;}
+
 .ryield-auto{background:#EFF5E8;border:1.5px solid #b9d49a;border-radius:9px;padding:8px 10px;display:flex;align-items:center;justify-content:space-between;}
 .ryield-auto .ra-lbl{font-size:11.5px;color:#27500A;font-weight:700;}
 .ryield-auto .ra-val{font-size:17px;color:#1f4408;font-weight:900;}
@@ -1301,7 +1317,7 @@ textarea {
         저장
       </button>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v84 저장: 2026-05-30 08:08)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v87 저장: 2026-05-30 11:44)</span></div>
   </div>
 </div>
 
@@ -1428,6 +1444,22 @@ textarea {
       <div class="fg" style="margin-bottom:0;">
         <label>조사 날짜</label>
         <input type="date" id="surveyDate" style="width:auto;min-width:128px;">
+      </div>
+    </div>
+    <!-- 논벼 전용: 시군 선택 (v87) -->
+    <div class="nonbye-only" id="nbDistrictWrap" style="margin-top:10px;">
+      <div class="fg" style="margin-bottom:0;">
+        <label style="font-size:12px;">논벼 시군 선택 <span class="opt-tag">선택</span></label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <select id="nbRegionGroup" onchange="nbUpdateDistrict()" style="font-size:14px;padding:9px 8px;border:1.5px solid #b9d49a;border-radius:8px;background:#f0f7ea;color:#1f4408;font-weight:700;-webkit-appearance:none;appearance:none;">
+            <option value="">권역 선택</option>
+            <option value="daegu">대구경북권</option>
+            <option value="gangwon">강원권</option>
+          </select>
+          <select id="nbDistrict" style="font-size:14px;padding:9px 8px;border:1.5px solid #b9d49a;border-radius:8px;background:#f0f7ea;color:#1f4408;font-weight:700;-webkit-appearance:none;appearance:none;">
+            <option value="">시군 선택</option>
+          </select>
+        </div>
       </div>
     </div>
   </div>
@@ -1613,28 +1645,28 @@ textarea {
         <div class="sub-ttl" style="margin-top:14px;">📐 A포구 포기간 길이 측정(평균)</div>
         <div class="meas-grid" style="margin-bottom:8px;">
           <div class="fg" style="margin-bottom:0;">
-            <label>가로 간격 (cm)</label>
+            <label>가로 간격 (cm) 긴쪽</label>
             <input type="text" inputmode="decimal" id="nbAWidth" placeholder="예) 30.0" oninput="nbFormatSpacing(this,'A')" autocomplete="off" class="nb-req-inp">
           </div>
           <div class="fg" style="margin-bottom:0;">
-            <label>세로 간격 (cm)</label>
+            <label>세로 간격 (cm) 짧은쪽</label>
             <input type="text" inputmode="decimal" id="nbAHeight" placeholder="예) 15.5" oninput="nbFormatSpacing(this,'A')" autocomplete="off" class="nb-req-inp">
           </div>
         </div>
-        <div class="nonbye-m2-result">
-          <span class="lbl">A포구 1㎡당 포기수</span>
-          <span><span class="val" id="nbAM2">—</span> <span class="unit">포기/㎡</span></span>
+        <div class="nonbye-m2-result" style="border:2px solid var(--ac);box-shadow:0 2px 8px rgba(37,99,235,.15);">
+          <span class="lbl" style="font-size:13px;font-weight:800;">A포구 1㎡당 포기수</span>
+          <span><span class="val" id="nbAM2" style="font-size:26px;">—</span> <span class="unit" style="font-size:13px;">포기/㎡</span></span>
         </div>
         <div style="display:flex;gap:8px;margin-top:6px;">
-          <div style="flex:1;background:#EBF3FF;border:1px solid var(--ac-bd);border-radius:var(--rad);padding:7px 10px;text-align:center;">
-            <div style="font-size:10px;color:var(--ac);font-weight:700;">3㎡당 포기수</div>
-            <div style="font-size:18px;font-weight:900;color:var(--ac);" id="nbAM3">—</div>
-            <div style="font-size:10px;color:var(--ac2);">포기 (×3)</div>
+          <div style="flex:1;background:#EBF3FF;border:1px solid var(--ac-bd);border-radius:var(--rad);padding:5px 8px;text-align:center;">
+            <div style="font-size:9px;color:var(--ac);font-weight:700;">3㎡당 포기수</div>
+            <div style="font-size:14px;font-weight:800;color:var(--ac);" id="nbAM3">—</div>
+            <div style="font-size:9px;color:var(--ac2);">포기 (×3)</div>
           </div>
-          <div style="flex:1;background:#EBF3FF;border:1px solid var(--ac-bd);border-radius:var(--rad);padding:7px 10px;text-align:center;">
-            <div style="font-size:10px;color:var(--ac);font-weight:700;">예취길이</div>
-            <div style="font-size:18px;font-weight:900;color:var(--ac);" id="nbAHarvestLen">—</div>
-            <div style="font-size:10px;color:var(--ac2);">cm (10000÷가로)</div>
+          <div style="flex:1;background:#EBF3FF;border:1px solid var(--ac-bd);border-radius:var(--rad);padding:5px 8px;text-align:center;">
+            <div style="font-size:9px;color:var(--ac);font-weight:700;">예취길이</div>
+            <div style="font-size:14px;font-weight:800;color:var(--ac);" id="nbAHarvestLen">—</div>
+            <div style="font-size:9px;color:var(--ac2);">cm (10000÷가로)</div>
           </div>
         </div>
 
@@ -1653,6 +1685,12 @@ textarea {
             <div class="nonbye-stat-lbl">⭐ 대표주수</div>
             <div class="nonbye-stat-val" id="nbAJusuRep">—</div>
           </div>
+        </div>
+        <!-- 이삭수 컨트롤 버튼 (v87) -->
+        <div style="display:flex;gap:6px;margin-top:8px;">
+          <button type="button" onclick="nbJusuReset()" style="flex:1;padding:8px 4px;background:#fdecea;border:1.5px solid #f5b8b8;border-radius:8px;font-size:12px;font-weight:700;color:#c0392b;cursor:pointer;font-family:inherit;">🗑 이삭수 초기화</button>
+          <button type="button" onclick="nbJusuNav(-1)" style="flex:1;padding:8px 4px;background:#f4f2ec;border:1.5px solid #d0cfc6;border-radius:8px;font-size:13px;font-weight:700;color:#555;cursor:pointer;font-family:inherit;">← 이전</button>
+          <button type="button" onclick="nbJusuNav(1)" style="flex:1;padding:8px 4px;background:#f4f2ec;border:1.5px solid #d0cfc6;border-radius:8px;font-size:13px;font-weight:700;color:#555;cursor:pointer;font-family:inherit;">다음 →</button>
         </div>
         <div style="font-size:11px;color:var(--a600);background:var(--a50);border:1px solid #f5d59c;border-radius:var(--rad);padding:7px 10px;margin-top:2px;display:none;" id="nbAJusuWarn">⚠ 10포기를 모두 입력해야 평균과 대표주수를 산출합니다.</div>
       </div>
@@ -1833,28 +1871,28 @@ textarea {
         </div>
         <div class="meas-grid" style="margin-bottom:8px;">
           <div class="fg" style="margin-bottom:0;">
-            <label>가로 간격 (cm)</label>
+            <label>가로 간격 (cm) 긴쪽</label>
             <input type="text" inputmode="decimal" id="nbBWidth" placeholder="예) 30.0" oninput="nbFormatSpacing(this,'B')" autocomplete="off" class="nb-req-inp">
           </div>
           <div class="fg" style="margin-bottom:0;">
-            <label>세로 간격 (cm)</label>
+            <label>세로 간격 (cm) 짧은쪽</label>
             <input type="text" inputmode="decimal" id="nbBHeight" placeholder="예) 15.5" oninput="nbFormatSpacing(this,'B')" autocomplete="off" class="nb-req-inp">
           </div>
         </div>
-        <div class="nonbye-m2-result" style="border-color:var(--bc-bd);background:var(--bc-bg);">
-          <span class="lbl" style="color:var(--bc);">B포구 1㎡당 포기수</span>
-          <span><span class="val" id="nbBM2" style="color:var(--bc);">—</span> <span class="unit" style="color:var(--bc2);">포기/㎡</span></span>
+        <div class="nonbye-m2-result" style="border:2px solid var(--bc);background:var(--bc-bg);box-shadow:0 2px 8px rgba(192,57,43,.15);">
+          <span class="lbl" style="color:var(--bc);font-size:13px;font-weight:800;">B포구 1㎡당 포기수</span>
+          <span><span class="val" id="nbBM2" style="color:var(--bc);font-size:26px;">—</span> <span class="unit" style="color:var(--bc2);font-size:13px;">포기/㎡</span></span>
         </div>
         <div style="display:flex;gap:8px;margin-top:6px;">
-          <div style="flex:1;background:var(--bc-bg);border:1px solid var(--bc-bd);border-radius:var(--rad);padding:7px 10px;text-align:center;">
-            <div style="font-size:10px;color:var(--bc);font-weight:700;">3㎡당 포기수</div>
-            <div style="font-size:18px;font-weight:900;color:var(--bc);" id="nbBM3">—</div>
-            <div style="font-size:10px;color:var(--bc2);">포기 (×3)</div>
+          <div style="flex:1;background:var(--bc-bg);border:1px solid var(--bc-bd);border-radius:var(--rad);padding:5px 8px;text-align:center;">
+            <div style="font-size:9px;color:var(--bc);font-weight:700;">3㎡당 포기수</div>
+            <div style="font-size:14px;font-weight:800;color:var(--bc);" id="nbBM3">—</div>
+            <div style="font-size:9px;color:var(--bc2);">포기 (×3)</div>
           </div>
-          <div style="flex:1;background:var(--bc-bg);border:1px solid var(--bc-bd);border-radius:var(--rad);padding:7px 10px;text-align:center;">
-            <div style="font-size:10px;color:var(--bc);font-weight:700;">예취길이</div>
-            <div style="font-size:18px;font-weight:900;color:var(--bc);" id="nbBHarvestLen">—</div>
-            <div style="font-size:10px;color:var(--bc2);">cm (10000÷가로)</div>
+          <div style="flex:1;background:var(--bc-bg);border:1px solid var(--bc-bd);border-radius:var(--rad);padding:5px 8px;text-align:center;">
+            <div style="font-size:9px;color:var(--bc);font-weight:700;">예취길이</div>
+            <div style="font-size:14px;font-weight:800;color:var(--bc);" id="nbBHarvestLen">—</div>
+            <div style="font-size:9px;color:var(--bc2);">cm (10000÷가로)</div>
           </div>
         </div>
         <div class="nonbye-avg-box" id="nbAvgBox" style="display:none;">
@@ -1955,11 +1993,11 @@ textarea {
         </div>
         <div class="fg" style="margin-bottom:0;">
           <label>불완전립 (개/이삭)</label>
-          <input type="number" id="nbIncompleteGrains" readonly placeholder="자동계산" style="background:#f5f5f0;color:var(--gr600);font-weight:700;">
+          <input type="number" id="nbIncompleteGrains" readonly placeholder="자동계산" class="nb-req-inp" style="background:#f5f5f0;color:var(--gr600);font-weight:700;">
         </div>
         <div class="fg" style="margin-bottom:0;">
           <label>천립중 (g)</label>
-          <input type="text" inputmode="decimal" id="nbThousandWeight" placeholder="예) 17.0~19.0" oninput="nbFmt3Yield(this)" autocomplete="off">
+          <input type="text" inputmode="decimal" id="nbThousandWeight" placeholder="예) 17.0~19.0" oninput="nbFmt3Yield(this)" autocomplete="off" class="nb-req-inp">
         </div>
       </div>
 
@@ -2021,9 +2059,9 @@ textarea {
           <div style="background:var(--ac);color:#fff;font-size:11px;font-weight:800;padding:6px 10px;">A포구</div>
           <div style="padding:10px;">
             <div class="fg" style="margin-bottom:8px;">
-              <label style="font-size:11px;">피해부호</label>
+              <label style="font-size:11px;">피해부호 / 피해율</label>
               <div class="dmg-row" style="gap:4px;">
-                <select class="dmg-select" id="nbADmgCode" onchange="nbDmgUpdate('a')" style="font-size:12px;">
+                <select class="dmg-select" id="nbADmgCode" onchange="nbDmgUpdate('a')" style="font-size:11px;padding:6px 4px;padding-right:18px;">
                   <option value="">선택</option>
                   <option value="01" selected>01 정상</option>
                   <option value="02">02 병해</option><option value="03">03 충해</option>
@@ -2033,7 +2071,7 @@ textarea {
                   <option value="10">10 습해</option><option value="11">11 우박해</option>
                   <option value="12">12 기타</option>
                 </select>
-                <select class="dmg-rate" id="nbADmgRate" onchange="if(typeof riceLoadDamage==='function')riceLoadDamage()" style="font-size:12px;">
+                <select class="dmg-rate" id="nbADmgRate" onchange="if(typeof riceLoadDamage==='function')riceLoadDamage()" style="font-size:11px;padding:6px 4px;padding-right:18px;">
                   <option value="0" selected>0%</option>
                   <option value="5">5%</option><option value="10">10%</option><option value="15">15%</option>
                   <option value="20">20%</option><option value="25">25%</option><option value="30">30%</option>
@@ -2044,6 +2082,7 @@ textarea {
                   <option value="95">95%</option><option value="100">100%</option>
                 </select>
               </div>
+              <div class="dmg-desc" id="nbA-dmg-desc"></div>
             </div>
             <div class="fg" style="margin-bottom:8px;">
               <label style="font-size:11px;">품종명</label>
@@ -2059,9 +2098,9 @@ textarea {
           <div style="background:var(--bc);color:#fff;font-size:11px;font-weight:800;padding:6px 10px;">B포구</div>
           <div style="padding:10px;">
             <div class="fg" style="margin-bottom:8px;">
-              <label style="font-size:11px;">피해부호</label>
+              <label style="font-size:11px;">피해부호 / 피해율</label>
               <div class="dmg-row" style="gap:4px;">
-                <select class="dmg-select" id="nbBDmgCode" onchange="nbDmgUpdate('b')" style="font-size:12px;">
+                <select class="dmg-select" id="nbBDmgCode" onchange="nbDmgUpdate('b')" style="font-size:11px;padding:6px 4px;padding-right:18px;">
                   <option value="">선택</option>
                   <option value="01" selected>01 정상</option>
                   <option value="02">02 병해</option><option value="03">03 충해</option>
@@ -2071,7 +2110,7 @@ textarea {
                   <option value="10">10 습해</option><option value="11">11 우박해</option>
                   <option value="12">12 기타</option>
                 </select>
-                <select class="dmg-rate" id="nbBDmgRate" onchange="if(typeof riceLoadDamage==='function')riceLoadDamage()" style="font-size:12px;">
+                <select class="dmg-rate" id="nbBDmgRate" onchange="if(typeof riceLoadDamage==='function')riceLoadDamage()" style="font-size:11px;padding:6px 4px;padding-right:18px;">
                   <option value="0" selected>0%</option>
                   <option value="5">5%</option><option value="10">10%</option><option value="15">15%</option>
                   <option value="20">20%</option><option value="25">25%</option><option value="30">30%</option>
@@ -2082,6 +2121,7 @@ textarea {
                   <option value="95">95%</option><option value="100">100%</option>
                 </select>
               </div>
+              <div class="dmg-desc" id="nbB-dmg-desc"></div>
             </div>
             <div class="fg" style="margin-bottom:8px;">
               <label style="font-size:11px;">품종명</label>
@@ -2106,7 +2146,7 @@ textarea {
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 018-8 8 8 0 016.93 4H16v2h6V2h-2v2.54A9.99 9.99 0 0012 2C6.48 2 2 6.48 2 12h2z" fill="#C0392B"/><path d="M20 12a8 8 0 01-8 8 8 8 0 01-6.93-4H8v-2H2v6h2v-2.54A9.99 9.99 0 0012 22c5.52 0 10-4.48 10-10h-2z" fill="#C0392B"/></svg>
       초기화
     </button>
-    <button class="btn btn-calc" onclick="runFullCalculationAndScrollB()">전체계산+AB포구 계산하기</button>
+    <button class="btn btn-calc" onclick="runFullCalculationAndScrollB()">AB포구 예상량 계산하기</button>
   </div>
 
   <div style="border-top:2px solid #d0cfc6;margin:12px 0 2px;opacity:0.6;"></div>
@@ -2125,13 +2165,33 @@ textarea {
             <tr><th>항목</th><th class="col-a">A포구</th><th class="col-b">B포구</th></tr>
           </thead>
           <tbody>
-            <tr><td class="nbres-lbl">가로 기점</td><td class="col-a" id="ntA_ga">—</td><td class="col-b" id="ntB_ga">—</td></tr>
-            <tr><td class="nbres-lbl">세로 기점</td><td class="col-a" id="ntA_se">—</td><td class="col-b" id="ntB_se">—</td></tr>
+            <tr><td class="nbres-lbl">가-나 총길이</td><td colspan="2" class="col-span" id="ntLenTotal">—</td></tr>
+            <tr>
+              <td class="nbres-lbl">가로 기점</td>
+              <td class="col-a">
+                <div id="ntA_ga">—</div>
+                <div style="font-size:9px;color:#888;font-weight:400;margin-top:1px;" id="ntA_ga_sub"></div>
+              </td>
+              <td class="col-b">
+                <div id="ntB_ga">—</div>
+                <div style="font-size:9px;color:#888;font-weight:400;margin-top:1px;" id="ntB_ga_sub"></div>
+              </td>
+            </tr>
+            <tr>
+              <td class="nbres-lbl">세로 기점</td>
+              <td class="col-a">
+                <div id="ntA_se">—</div>
+                <div style="font-size:9px;color:#888;font-weight:400;margin-top:1px;" id="ntA_se_sub"></div>
+              </td>
+              <td class="col-b">
+                <div id="ntB_se">—</div>
+                <div style="font-size:9px;color:#888;font-weight:400;margin-top:1px;" id="ntB_se_sub"></div>
+              </td>
+            </tr>
             <tr><td class="nbres-lbl">포기간길이 가로</td><td class="col-a" id="ntA_wid">—</td><td class="col-b" id="ntB_wid">—</td></tr>
             <tr><td class="nbres-lbl">포기간길이 세로</td><td class="col-a" id="ntA_hei">—</td><td class="col-b" id="ntB_hei">—</td></tr>
             <tr><td class="nbres-lbl">3줄 예취길이</td><td class="col-a" id="ntA_h3">—</td><td class="col-b" id="ntB_h3">—</td></tr>
-            <tr><td class="nbres-lbl">A포구 1㎡당 포기수</td><td colspan="2" class="col-span" id="ntA_m2per">—</td></tr>
-            <tr><td class="nbres-lbl">B포구 1㎡당 포기수</td><td colspan="2" class="col-span" id="ntB_m2per">—</td></tr>
+            <tr><td class="nbres-lbl">A·B 1㎡당 포기수</td><td class="col-a" id="ntA_m2per">—</td><td class="col-b" id="ntB_m2per">—</td></tr>
             <tr><td class="nbres-lbl">1㎡당 포기수 평균</td><td colspan="2" class="col-span" id="ntAvgM2">—</td></tr>
             <tr><td class="nbres-lbl">유효이삭수</td><td colspan="2" class="col-span" id="ntEffEars">—</td></tr>
             <tr><td class="nbres-lbl">총 낟알수</td><td colspan="2" class="col-span" id="ntTotalGrains">—</td></tr>
@@ -2274,7 +2334,7 @@ textarea {
           </div>
           <div class="ryield-fg">
             <label>총량 (자동)</label>
-            <div class="ryield-auto" style="height:100%;"><span class="ra-val" id="rsTotal" style="margin:auto;">—</span></div>
+            <div class="ryield-auto ryield-iwrap" style="min-height:42px;"><span class="ra-val" id="rsTotal">—</span></div>
           </div>
         </div>
 
@@ -2290,7 +2350,7 @@ textarea {
           </div>
           <div class="ryield-fg">
             <label>합계 <b style="color:#27500A;">ⓖ</b> (자동)</label>
-            <div class="ryield-auto" style="height:100%;"><span class="ra-val" id="rsMoistSum" style="margin:auto;">—</span></div>
+            <div class="ryield-auto ryield-iwrap" style="min-height:42px;"><span class="ra-val" id="rsMoistSum">—</span></div>
           </div>
         </div>
 
@@ -3293,6 +3353,7 @@ function nonbyeCalcYield(){
     if(fmlM2) fmlM2.textContent='';
   }
 
+  updateRequiredHighlights();
   if(isNaN(avgM2)||isNaN(effEars)||isNaN(effEarsAvg)||isNaN(totalGrains)||isNaN(compGrains)||isNaN(tWeight)){
     yieldEl.textContent = '—'; formulaEl.textContent = ''; return;
   }
@@ -3312,6 +3373,7 @@ function nonbyeCalcYield(){
   formulaEl.innerHTML =
     '[포기수<b>' + R.toFixed(1) + '</b> × 평균이삭<b>' + T + '</b> × 이삭당완전(<b>' + W + '÷' + Tr + '=' + isakdang + '</b>) × (천립중<b>' + Z + '</b>÷1,000)]' +
     ' × 1,000(㎡) ÷ 1,000(g)';
+  updateRequiredHighlights();
 }
 
 /* 논벼 10포기 이삭수 그리드 초기화 */
@@ -3345,6 +3407,7 @@ function nonbyeInitJusuGrid(){
     });
     inp.addEventListener('keydown',function(e){if(e.key==='Enter'){const n=document.getElementById('nbJ-'+(idx+2));if(n){n.focus({preventScroll:true});n.select();}}});
   }
+  updateRequiredHighlights();
   setTimeout(()=>{const f=document.getElementById('nbJ-1');if(f)f.focus({preventScroll:true});},100);
 }
 
@@ -3368,6 +3431,7 @@ function nonbyeJusuCalc(){
   if(filled.length<10){
     avgEl.textContent='—'; repEl.textContent='—';
     warnEl.style.display=filled.length>0?'block':'none';
+    updateRequiredHighlights();
     return;
   }
   warnEl.style.display='none';
@@ -3787,10 +3851,11 @@ function isInputEmpty(inp){
 }
 
 function updateRequiredHighlights(){
-  const all = document.querySelectorAll('input[data-need]');
+  const all = document.querySelectorAll('input[data-need], input.nb-req-inp');
   all.forEach(inp => {
     const need = inp.dataset.need;
     let active = false;
+    if(inp.classList.contains('nb-req-inp')) active = true;
     if(need === 'always')           active = true;
     else if(need === 'ratio1')      active = true;
     else if(need === 'ratio2')      active = true;
@@ -3801,10 +3866,13 @@ function updateRequiredHighlights(){
     // B포구 평균너비: 노지일 때만 직접 입력이므로 노지에서만 강조
     else if(need === 'bport-open')  active = (cultivationType === '노지');
 
+    const wrap = inp.closest ? inp.closest('.ryield-iwrap') : null;
     if(active && isInputEmpty(inp)){
       inp.classList.add('needs-input');
+      if(wrap) wrap.classList.add('needs-input-wrap');
     } else {
       inp.classList.remove('needs-input');
+      if(wrap) wrap.classList.remove('needs-input-wrap');
     }
   });
 }
@@ -4176,7 +4244,7 @@ function renderUnifiedResult(state){
     (measureMode === '이랑' ? '이랑' : 'cm') +
     ' &nbsp;|&nbsp; A세로: ' + Ha + 'cm' +
     (hasB ? ' &nbsp;|&nbsp; B세로: ' + Hb + 'cm' : ' &nbsp;|&nbsp; B세로: <em>미입력</em>') +
-    ' &nbsp;|&nbsp; 평균너비 A:' + (isNaN(waA) ? '-' : waA) + (hasB ? ' B:' + (isNaN(wbA) ? '-' : wbA) : '');
+    + (document.body.classList.contains('nonbye-mode') ? '' : ' &nbsp;|&nbsp; 평균너비 A:' + (isNaN(waA) ? '-' : waA) + (hasB ? ' B:' + (isNaN(wbA) ? '-' : wbA) : ''));
 
   // ── 총이랑수 / 피해부호율 → A·B 결과 카드에 반영 (v84) ──
   (function(){
@@ -4388,13 +4456,22 @@ function renderNonbyeSummary(hasB){
   function tx(id){ var e=document.getElementById(id); return e?e.textContent:'—'; }
   function iv(id){ var e=document.getElementById(id); return (e&&e.value!=='')?e.value:'—'; }
   function set(id,v){ var e=document.getElementById(id); if(e) e.textContent=(v===''||v==null)?'—':v; }
-  // 가로/세로 기점
+  // 가-나 총길이 (v87)
+  var lenEl=document.getElementById('lenGaNa');
+  var lenV=lenEl&&lenEl.value!==''?lenEl.value:'—';
+  var lenMode=(typeof measureMode!=='undefined'&&measureMode==='이랑')?'이랑':'cm';
+  set('ntLenTotal', lenV!=='—'? lenV+' '+lenMode : '—');
+  // 가로/세로 기점 + 계산식 sub (v87)
   set('ntA_ga', tx('outA_ga'));
   set('ntA_se', tx('outA_se'));
+  var gaRawA=document.getElementById('outA_ga_raw'); set('ntA_ga_sub', gaRawA?gaRawA.textContent:'');
+  var seRawA=document.getElementById('outA_se_raw'); set('ntA_se_sub', seRawA?seRawA.textContent:'');
   if(hasB){
     set('ntB_ga', tx('outB_ga'));
     set('ntB_se', tx('outB_se'));
-  } else { set('ntB_ga','—'); set('ntB_se','—'); }
+    var gaRawB=document.getElementById('outB_ga_raw'); set('ntB_ga_sub', gaRawB?gaRawB.textContent:'');
+    var seRawB=document.getElementById('outB_se_raw'); set('ntB_se_sub', seRawB?seRawB.textContent:'');
+  } else { set('ntB_ga','—'); set('ntB_se','—'); set('ntB_ga_sub',''); set('ntB_se_sub',''); }
   // 포기간길이 가로/세로 (v82)
   var aW=iv('nbAWidth'), aH=iv('nbAHeight');
   set('ntA_wid', aW!=='—'? aW+' cm':'—');
@@ -4408,9 +4485,9 @@ function renderNonbyeSummary(hasB){
   var ha=tx('nbAHarvestLen'); set('ntA_h3', (ha&&ha!=='—')?(ha+' cm'):'—');
   if(hasB){ var hb=tx('nbBHarvestLen'); set('ntB_h3', (hb&&hb!=='—')?(hb+' cm'):'—'); }
   else set('ntB_h3','—');
-  // A/B포구 1㎡당 포기수 개별 (v84)
-  var am2=tx('nbAM2'); set('ntA_m2per', am2!=='—'? am2+' 포기/㎡':'—');
-  var bm2=hasB?tx('nbBM2'):'—'; set('ntB_m2per', (bm2&&bm2!=='—')? bm2+' 포기/㎡':'—');
+  // A/B포구 1㎡당 포기수 개별 같은 행 (v84/v87)
+  var am2=tx('nbAM2'); set('ntA_m2per', am2!=='—'? am2:'—');
+  var bm2=hasB?tx('nbBM2'):'—'; set('ntB_m2per', (bm2&&bm2!=='—')? bm2:'—');
   // 1㎡당 포기수 평균값 (v82)
   set('ntAvgM2', tx('nbAvgM2')!=='—'? tx('nbAvgM2')+' 포기/㎡':'—');
   // 유효이삭수 / 총낟알수 / 완전낟알수 / 10a당 예상량 (v82)
@@ -4686,7 +4763,22 @@ function showFormulaPopup(type){
   var body=document.getElementById('fpBody');
   var pop=document.getElementById('formulaPopup');
   if(ttl) ttl.textContent=d.ttl;
-  if(body) body.innerHTML=d.body.replace(/\n/g,'<br>');
+  // 실제 계산값 삽입 (v87)
+  function gv(id){ var e=document.getElementById(id); return e?(e.value||e.textContent||'?'):'?'; }
+  var geon8=gv('rsGeon8'), hm=gv('rsHyeonmi');
+  var m1=parseFloat(gv('rsMoist1')||''), m2=parseFloat(gv('rsMoist2')||'');
+  var msum=(!isNaN(m1)?m1:0)+(!isNaN(m2)?m2:0);
+  var mavg=Math.round(msum/2*10)/10;
+  var factor=Math.round((100-mavg)/(100-15)*1000)/1000;
+  var jogok=gv('rsJogok'), hyeonmi=gv('rsHyeonmiOut'), baengmi=gv('rsBaengmi2');
+  var jehyeon=gv('rsJehyeon'), hyeonbaek=gv('rsHyeonbaek');
+  var bodyTxt=d.body;
+  if(type==='조곡') bodyTxt='조곡 = ⓔ('+geon8+'g) × 8÷6 × (100-'+mavg+') ÷ (100-15)\n= '+geon8+' × 1.333 × '+factor+'\n= '+jogok+'\n\n· 수분보정계수: '+factor;
+  else if(type==='현미') bodyTxt='현미 = ⓕ('+hm+'g) × 8÷6 × (100-'+mavg+') ÷ (100-15)\n= '+hm+' × 1.333 × '+factor+'\n= '+hyeonmi+'\n\n· 수분보정계수: '+factor;
+  else if(type==='백미') bodyTxt='백미 = 현미('+hyeonmi+') × 92.9%\n= '+baengmi+'\n\n· 현백률 92.9% 적용';
+  else if(type==='제현율') bodyTxt='제현율 = 현미('+hyeonmi+') ÷ 조곡('+jogok+') × 100\n= '+jehyeon+'\n\n· 조곡 대비 현미 비율';
+  else if(type==='현백률') bodyTxt='현백률 = 백미('+baengmi+') ÷ 현미('+hyeonmi+') × 100\n= '+hyeonbaek+'\n\n· 현미 대비 백미 비율';
+  if(body) body.innerHTML=bodyTxt.replace(/\n/g,'<br>');
   if(pop) pop.classList.add('open');
 }
 function closeFormulaPopup(){
@@ -4970,7 +5062,7 @@ async function shareCaptureFromModal(){
 
     // ── 모든 입력 변경 시 노란 테두리 갱신 (위임 리스너) ──
     document.addEventListener('input', function(e){
-      if(e.target && e.target.matches && e.target.matches('input[data-need]')){
+      if(e.target && e.target.matches && e.target.matches('input[data-need], input.nb-req-inp')){
         updateRequiredHighlights();
       }
     });
@@ -6056,12 +6148,59 @@ function updateDmgDesc(ab){
   }
   if(typeof riceLoadDamage==='function') riceLoadDamage();
 }
-/* 논벼 피해부호 변경 시 처리 (v84) */
+/* ════ 이삭수 초기화·이전·다음 (v87) ════ */
+function nbJusuReset(){
+  if(!confirm('이삭수 10개를 초기화할까요?')) return;
+  for(var i=1;i<=10;i++){
+    var el=document.getElementById('nbJ-'+i);
+    if(el){ el.value=''; el.dispatchEvent(new Event('input',{bubbles:true})); }
+  }
+  var f=document.getElementById('nbJ-1'); if(f) f.focus({preventScroll:true});
+}
+function nbJusuNav(dir){
+  var active=document.activeElement;
+  var cur=0;
+  if(active&&active.id&&active.id.startsWith('nbJ-')) cur=parseInt(active.id.replace('nbJ-',''),10)||0;
+  if(cur===0) cur=(dir>0)?0:11;
+  var next=cur+dir;
+  if(next<1) next=10; if(next>10) next=1;
+  var el=document.getElementById('nbJ-'+next);
+  if(el){ el.focus({preventScroll:true}); el.select&&el.select(); }
+}
+
+/* ════ 논벼 시군 선택 (v87) ════ */
+var NB_DISTRICTS = {
+  daegu: ['대구 달성군','경산시','경주시','구미시','김천시','문경시','상주시','안동시','영주시','영천시','예천군','의성군','청송군','포항시','고령군','군위군','성주군','칠곡군','봉화군','울진군','청도군','영양군','영덕군'],
+  gangwon: ['춘천시','원주시','강릉시','동해시','태백시','속초시','삼척시','홍천군','횡성군','영월군','평창군','정선군','철원군','화천군','양구군','인제군','고성군','양양군']
+};
+function nbUpdateDistrict(){
+  var rg=document.getElementById('nbRegionGroup');
+  var dc=document.getElementById('nbDistrict');
+  if(!rg||!dc) return;
+  dc.innerHTML='<option value="">시군 선택</option>';
+  var list=NB_DISTRICTS[rg.value]||[];
+  list.forEach(function(n){
+    var o=document.createElement('option');
+    o.value=n; o.textContent=n; dc.appendChild(o);
+  });
+}
+
+/* 논벼 피해부호 변경 시 처리 (v84/v87) */
 function nbDmgUpdate(ab){
-  var sel=document.getElementById('nb'+ab.toUpperCase()+'DmgCode');
+  var AB=ab.toUpperCase();
+  var sel=document.getElementById('nb'+AB+'DmgCode');
   if(sel&&sel.value==='01'){
-    var rateEl=document.getElementById('nb'+ab.toUpperCase()+'DmgRate');
+    var rateEl=document.getElementById('nb'+AB+'DmgRate');
     if(rateEl) rateEl.value='0';
+  }
+  // 설명 표시 (v87 - 마늘과 동일 방식)
+  var box=document.getElementById('nb'+ab+'-dmg-desc');
+  if(box&&sel){
+    var info=(typeof DMG_CODES!=='undefined')?DMG_CODES[sel.value]:null;
+    if(info){
+      box.innerHTML='<span class="dmg-name">'+sel.value+' '+info.name+'</span> · '+info.desc;
+      box.classList.add('show');
+    }else{box.innerHTML='';box.classList.remove('show');}
   }
   if(typeof riceLoadDamage==='function') riceLoadDamage();
 }
@@ -6084,7 +6223,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
 <!-- ════ 논벼 전체 조사결과 이미지 저장 버튼 (v84) ════ -->
 <div class="nonbye-only" id="btnCaptureAllWrap" style="padding:0 16px 8px;">
-  <button class="btn-capture" id="btnCaptureAll" onclick="captureAllNonbye()" style="background:#27500A;">📷&nbsp; 전체 조사결과 이미지로 저장 (예상량+실수확량)</button>
+  <button class="btn-capture" id="btnCaptureAll" onclick="captureAllNonbye()" style="background:#27500A;font-size:14px;">📷&nbsp; 전체 조사결과 저장</button>
 </div>
 
 <!-- 10a 생산량 계산기 결과 이미지 저장 모달 -->
