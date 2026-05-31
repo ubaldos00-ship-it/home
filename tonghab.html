@@ -1,4 +1,4 @@
-<!-- tonghab_v88.html · 저장: 2026-05-31 08:26 KST -->
+<!-- tonghab_v89.html · 저장: 2026-05-31 09:48 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1325,7 +1325,7 @@ textarea {
         저장
       </button>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v88 저장: 2026-05-31 08:26)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v89 저장: 2026-05-31 09:48)</span></div>
   </div>
 </div>
 
@@ -1988,19 +1988,19 @@ textarea {
 
       <div class="nonbye-4col">
         <div class="fg" style="margin-bottom:0;">
-          <label>유효이삭수 (개/포기)</label>
+          <label>유효이삭수 (개)</label>
           <input type="number" inputmode="numeric" id="nbEffEars" placeholder="예) 18" oninput="nonbyeCalcYield()" class="nb-req-inp">
         </div>
         <div class="fg" style="margin-bottom:0;">
-          <label>총낟알수 (개/이삭)</label>
+          <label>총낟알수 (개)</label>
           <input type="number" inputmode="numeric" id="nbTotalGrains" placeholder="예) 80" oninput="nonbyeCalcYield()" class="nb-req-inp">
         </div>
         <div class="fg" style="margin-bottom:0;">
-          <label>완전낱알수 (개/이삭)</label>
+          <label>완전낱알수 (개)</label>
           <input type="number" inputmode="numeric" id="nbCompleteGrains" placeholder="예) 70" oninput="nonbyeCalcYield()" class="nb-req-inp">
         </div>
         <div class="fg" style="margin-bottom:0;">
-          <label>불완전립 (개/이삭)</label>
+          <label>불완전낱알수 (개)</label>
           <input type="number" id="nbIncompleteGrains" readonly placeholder="자동계산" class="nb-req-inp" style="background:#f5f5f0;color:var(--gr600);font-weight:700;">
         </div>
         <div class="fg" style="margin-bottom:0;">
@@ -2328,7 +2328,7 @@ textarea {
             <div class="ryield-iwrap"><input type="number" inputmode="numeric" id="rsJeje8" placeholder="예)675" oninput="riceRealYieldCalc()" class="nb-req-inp"><span class="ryield-unit">g</span></div>
           </div>
           <div class="ryield-fg">
-            <label>1/8 건조벼 (g) <b style="color:#27500A;">ⓔ</b></label>
+            <label>1/8 건조벼 (g)</label>
             <div class="ryield-iwrap"><input type="number" inputmode="numeric" id="rsGeon8" placeholder="예)567" oninput="riceRealYieldCalc()" class="nb-req-inp"><span class="ryield-unit">g</span></div>
           </div>
           <div class="ryield-fg">
@@ -2341,7 +2341,7 @@ textarea {
         <div class="ryield-sub" style="margin-top:14px;">② 크기별 중량</div>
         <div class="ryield-grid3">
           <div class="ryield-fg">
-            <label>1.6mm이상 (현미) <b style="color:#27500A;">ⓕ</b></label>
+            <label>1.6mm이상 (현미)</label>
             <div class="ryield-iwrap"><input type="number" inputmode="numeric" id="rsHyeonmi" placeholder="예)453" oninput="riceRealYieldCalc()" class="nb-req-inp"><span class="ryield-unit">g</span></div>
           </div>
           <div class="ryield-fg">
@@ -2365,7 +2365,7 @@ textarea {
             <div class="ryield-iwrap"><input type="text" inputmode="decimal" id="rsMoist2" placeholder="예)14.0" oninput="moistFmt(this)" autocomplete="off" class="nb-req-inp"><span class="ryield-unit">%</span></div>
           </div>
           <div class="ryield-fg">
-            <label>합계 <b style="color:#27500A;">ⓖ</b> (자동)</label>
+            <label>합계 (자동)</label>
             <div class="ryield-auto ryield-iwrap" style="min-height:42px;"><span class="ra-val" id="rsMoistSum">—</span></div>
           </div>
         </div>
@@ -6177,9 +6177,11 @@ function nbJusuNav(dir){
   var active=document.activeElement;
   var cur=0;
   if(active&&active.id&&active.id.startsWith('nbJ-')) cur=parseInt(active.id.replace('nbJ-',''),10)||0;
+  /* 포커스가 없으면 이전=10번, 다음=1번에서 시작 */
   if(cur===0) cur=(dir>0)?0:11;
   var next=cur+dir;
-  if(next<1) next=10; if(next>10) next=1;
+  /* 경계 초과 시 정지 (순환 없음) */
+  if(next<1) next=1; if(next>10) next=10;
   var el=document.getElementById('nbJ-'+next);
   if(el){ el.focus({preventScroll:true}); el.select&&el.select(); }
 }
