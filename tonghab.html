@@ -1,4 +1,4 @@
-<!-- tonghab_v89.html · 저장: 2026-05-31 09:48 KST -->
+<!-- tonghab_v91.html · 저장: 2026-05-31 12:45 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1325,7 +1325,7 @@ textarea {
         저장
       </button>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v89 저장: 2026-05-31 09:48)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v91 저장: 2026-05-31 12:45)</span></div>
   </div>
 </div>
 
@@ -2207,7 +2207,7 @@ textarea {
             <tr><td class="nbres-lbl">포기간길이 가로</td><td class="col-a" id="ntA_wid">—</td><td class="col-b" id="ntB_wid">—</td></tr>
             <tr><td class="nbres-lbl">포기간길이 세로</td><td class="col-a" id="ntA_hei">—</td><td class="col-b" id="ntB_hei">—</td></tr>
             <tr><td class="nbres-lbl">3줄 예취길이</td><td class="col-a" id="ntA_h3">—</td><td class="col-b" id="ntB_h3">—</td></tr>
-            <tr><td class="nbres-lbl">A·B 1㎡당 포기수</td><td class="col-a" id="ntA_m2per">—</td><td class="col-b" id="ntB_m2per">—</td></tr>
+            <tr><td class="nbres-lbl">1㎡당 포기수<br><span style="font-size:9px;font-weight:400;color:#888;">포기/㎡</span></td><td class="col-a" id="ntA_m2per">—</td><td class="col-b" id="ntB_m2per">—</td></tr>
             <tr><td class="nbres-lbl">1㎡당 포기수 평균</td><td colspan="2" class="col-span" id="ntAvgM2">—</td></tr>
             <tr><td class="nbres-lbl">유효이삭수</td><td colspan="2" class="col-span" id="ntEffEars">—</td></tr>
             <tr><td class="nbres-lbl">총 낟알수</td><td colspan="2" class="col-span" id="ntTotalGrains">—</td></tr>
@@ -2317,6 +2317,35 @@ textarea {
       <div class="ryield-hdr">🌾 논벼 실수확량 조사표</div>
       <div class="ryield-body">
 
+        <!-- A/B포구 3㎡ 포기수 표시 + 예취포기수 입력 (v90) -->
+        <div class="ryield-sub" style="margin-bottom:6px;">📍 A·B포구별 3㎡ 포기수 확인 · 예취포기수 입력</div>
+        <table class="ryield-load-tbl" style="margin-bottom:4px;">
+          <thead>
+            <tr><th>항목</th><th class="col-a">A포구</th><th class="col-b">B포구</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="lbl">3㎡ 포기수 (계산)</td>
+              <td class="col-a" id="ryA_calcPlants">—</td>
+              <td class="col-b" id="ryB_calcPlants">—</td>
+            </tr>
+            <tr>
+              <td class="lbl">3㎡ 예취포기수 (실제)</td>
+              <td class="col-a" style="padding:4px 6px;">
+                <input type="number" inputmode="numeric" id="ryAHarvPlants" placeholder="예)18" min="0"
+                  oninput="ryHarvPlantsSync()"
+                  style="width:100%;font-size:15px;font-weight:700;text-align:center;border:1.5px solid var(--ac);border-radius:6px;padding:5px 4px;color:var(--ac);background:#EBF3FF;box-sizing:border-box;">
+              </td>
+              <td class="col-b" style="padding:4px 6px;">
+                <input type="number" inputmode="numeric" id="ryBHarvPlants" placeholder="예)20" min="0"
+                  oninput="ryHarvPlantsSync()"
+                  style="width:100%;font-size:15px;font-weight:700;text-align:center;border:1.5px solid var(--bc);border-radius:6px;padding:5px 4px;color:var(--bc);background:#FDECEA;box-sizing:border-box;">
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="font-size:10.5px;color:#888;margin-bottom:12px;">※ 예취 시 결주 등으로 계산값과 다를 경우 실제 포기수를 입력하세요.</div>
+
         <div class="ryield-sub">① 조제벼 · 건조벼 · 생볏짚 중량</div>
         <div class="ryield-grid2">
           <div class="ryield-fg">
@@ -2388,7 +2417,7 @@ textarea {
           <div class="ryield-rate-cell"><div class="rc-lbl">현백률 (백미/현미) <button class="formula-info-btn" onclick="showFormulaPopup('현백률')">ℹ</button></div><div class="rc-val" id="rsHyeonbaek">—</div></div>
         </div>
 
-        <div class="ryield-sub" style="margin-top:16px;">④ A·B포구별 피해상황 · 3㎡ 예취포기수</div>
+        <div class="ryield-sub" style="margin-top:16px;">④ A·B포구별 피해상황 · 3㎡ 포기수</div>
         <table class="ryield-load-tbl">
           <thead>
             <tr><th>항목</th><th class="col-a">A포구</th><th class="col-b">B포구</th></tr>
@@ -2396,11 +2425,54 @@ textarea {
           <tbody>
             <tr><td class="lbl">피해명 (부호)</td><td class="col-a" id="rlA_dmg">—</td><td class="col-b" id="rlB_dmg">—</td></tr>
             <tr><td class="lbl">피해율</td><td class="col-a" id="rlA_rate">—</td><td class="col-b" id="rlB_rate">—</td></tr>
-            <tr><td class="lbl">3㎡ 예취포기수</td><td class="col-a" id="rlA_plants">—</td><td class="col-b" id="rlB_plants">—</td></tr>
+            <tr><td class="lbl">3㎡ 포기수 (계산)</td><td class="col-a" id="rlA_plants">—</td><td class="col-b" id="rlB_plants">—</td></tr>
+            <tr><td class="lbl">3㎡ 예취포기수 (실제)</td><td class="col-a" id="rlA_harvPlants">—</td><td class="col-b" id="rlB_harvPlants">—</td></tr>
             <tr><td class="lbl">3줄 예취길이</td><td class="col-a" id="rl2A_harv">—</td><td class="col-b" id="rl2B_harv">—</td></tr>
           </tbody>
         </table>
-        <div style="font-size:11px;color:#888;margin-top:6px;">※ 피해상황·예취포기수는 위 입력값에서 자동으로 불러옵니다.</div>
+        <div style="font-size:11px;color:#888;margin-top:6px;">※ 피해상황·포기수는 위 입력값에서 자동으로 불러옵니다.</div>
+      </div>
+    </div>
+
+    <!-- ════ 논벼 시군별 생산량 비교 (v91) ════ -->
+    <div class="nonbye-only" id="nbCompareSection">
+      <div class="card" style="margin-top:12px;">
+        <div class="card-ttl" style="display:flex;align-items:center;justify-content:space-between;">
+          <span style="display:flex;align-items:center;gap:8px;"><span class="sn" style="background:#27500A;">📊</span> 논벼 시군별 생산량 비교</span>
+          <button type="button" onclick="nbCompareCalc()" style="padding:8px 16px;background:#27500A;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">📊 비교 보기</button>
+        </div>
+        <div style="font-size:12px;color:#555;margin-bottom:10px;">① 공통사항의 <b>권역·시군 선택</b> 후 버튼을 누르면 해당 시군의 평년·전년과 조사결과를 비교합니다.</div>
+        <div id="nbCompareResult" style="display:none;">
+          <!-- 평년·전년·조사결과 비교표 -->
+          <div style="background:#f8fdf4;border:1px solid #b9d49a;border-radius:10px;padding:12px 14px;margin-bottom:10px;">
+            <div style="font-size:13px;font-weight:800;color:#27500A;margin-bottom:8px;" id="nbCmpTitle">📍 비교 결과</div>
+            <table style="width:100%;border-collapse:collapse;font-size:13px;">
+              <thead>
+                <tr style="background:#27500A;color:#fff;">
+                  <th style="padding:8px 6px;text-align:left;border-radius:6px 0 0 0;">구분</th>
+                  <th style="padding:8px 6px;text-align:right;">kg/10a</th>
+                  <th style="padding:8px 6px;text-align:right;border-radius:0 6px 0 0;">조사결과 대비</th>
+                </tr>
+              </thead>
+              <tbody id="nbCmpTableBody"></tbody>
+            </table>
+          </div>
+          <!-- 국가데이터포털 비교 바 -->
+          <div class="card" style="margin-bottom:10px;">
+            <div style="font-size:13px;font-weight:800;color:#1f4408;margin-bottom:10px;">📈 국가데이터포털 데이터 비교</div>
+            <div id="nbCmpBars"></div>
+            <p style="font-size:10px;color:#999;margin-top:6px;">※ 출처: KOSIS 농작물생산조사 (2021~2025). 전년: 2025년 / 평년: 5개년 평균.</p>
+          </div>
+          <!-- 시군 5년 연도별 꺾은선+막대 차트 -->
+          <div class="card" style="margin-bottom:10px;">
+            <div style="font-size:13px;font-weight:800;color:#1f4408;margin-bottom:8px;" id="nbChartTitle">📋 시군 5년 생산량 상세</div>
+            <div style="position:relative;height:220px;margin-bottom:6px;"><canvas id="nbCompareCanvas"></canvas></div>
+            <div id="nbCompareLegend" style="display:flex;justify-content:center;gap:14px;flex-wrap:wrap;font-size:12px;font-weight:700;margin-bottom:6px;"></div>
+            <div id="nbCompareTableWrap"></div>
+            <p style="font-size:10px;color:#999;margin-top:6px;">※ 출처: KOSIS 농작물생산조사</p>
+          </div>
+        </div>
+        <div id="nbCompareEmpty" style="font-size:12px;color:#aaa;text-align:center;padding:16px 0;">① 공통사항에서 권역·시군을 선택 후 [비교 보기]를 누르세요.</div>
       </div>
     </div>
 
@@ -4258,8 +4330,8 @@ function renderUnifiedResult(state){
     lLbl + ': ' + L +
     ' &nbsp;|&nbsp; 추출간격: ' + (isNaN(L) ? '-' : (Math.round((L/2)*10)/10).toFixed(1)) +
     (measureMode === '이랑' ? '이랑' : 'cm') +
-    ' &nbsp;|&nbsp; A세로: ' + Ha + 'cm' +
-    (hasB ? ' &nbsp;|&nbsp; B세로: ' + Hb + 'cm' : ' &nbsp;|&nbsp; B세로: <em>미입력</em>') +
+    ' &nbsp;|&nbsp; A세로: ' + (isNaN(Ha)?Ha:parseFloat(Ha.toFixed ? Ha.toFixed(10).replace(/\.?0+$/,'') : Ha)) + 'cm' +
+    (hasB ? ' &nbsp;|&nbsp; B세로: ' + (isNaN(Hb)?Hb:parseFloat(Hb.toFixed ? Hb.toFixed(10).replace(/\.?0+$/,'') : Hb)) + 'cm' : ' &nbsp;|&nbsp; B세로: <em>미입력</em>') +
     + (document.body.classList.contains('nonbye-mode') ? '' : ' &nbsp;|&nbsp; 평균너비 A:' + (isNaN(waA) ? '-' : waA) + (hasB ? ' B:' + (isNaN(wbA) ? '-' : wbA) : ''));
 
   // ── 총이랑수 / 피해부호율 → A·B 결과 카드에 반영 (v84) ──
@@ -4679,8 +4751,23 @@ function riceLoadDamage(){
   }
   setT('rlA_dmg', nbDmgText('a')); setT('rlB_dmg', nbDmgText('b'));
   setT('rlA_rate', nbRateText('a')); setT('rlB_rate', nbRateText('b'));
+  /* 3㎡ 포기수 (계산값) */
   setT('rlA_plants', plantsText('nbAM3')); setT('rlB_plants', plantsText('nbBM3'));
+  /* 실수확량 조사표 상단 계산 포기수 표시 (v90) */
+  setT('ryA_calcPlants', plantsText('nbAM3')); setT('ryB_calcPlants', plantsText('nbBM3'));
+  /* 3㎡ 예취포기수 (실제 입력값) → ④테이블에도 반영 */
+  function ryHarvVal(id){
+    var e=document.getElementById(id);
+    return (e&&e.value!=='')?e.value+' 포기':'—';
+  }
+  setT('rlA_harvPlants', ryHarvVal('ryAHarvPlants'));
+  setT('rlB_harvPlants', ryHarvVal('ryBHarvPlants'));
   setT('rl2A_harv', harvText('nbAHarvestLen')); setT('rl2B_harv', harvText('nbBHarvestLen'));
+}
+
+/* 예취포기수 입력 시 ④테이블 동기화 (v90) */
+function ryHarvPlantsSync(){
+  if(typeof riceLoadDamage==='function') riceLoadDamage();
 }
 
 function fHtml(samples, i, r, k){
@@ -5417,6 +5504,8 @@ function prodCalculate() {
   // 공유 필드: 주소/날짜는 tonghab ① 섹션에서 읽음
   const dateVal  = document.getElementById('surveyDate')?.value||'';
   const addrRaw  = (document.getElementById('address')?.value||'').trim();
+
+
 
   const isPotato  = prodCrop==='potato';
   const isCabbage = prodCrop==='cabbage';
@@ -6203,6 +6292,172 @@ function nbUpdateDistrict(){
   });
 }
 
+/* ════ 논벼 시군별 KOSIS 데이터 (v91) ════
+   출처: KOSIS 농작물생산조사 2021~2025 (kg/10a)
+   ※ 시군별 데이터가 없는 경우 도 평균으로 추정 표시
+   prev = 2025년 전년, mean5 = 2021~2025 평균 */
+var NB_SIGUN_DATA = {
+  /* ── 대구경북권 ── */
+  '대구 달성군':  {prev:509, mean5:497, hist:[{y:'2021',v:489},{y:'2022',v:471},{y:'2023',v:512},{y:'2024',v:515},{y:'2025',v:509}]},
+  '경산시':       {prev:537, mean5:522, hist:[{y:'2021',v:514},{y:'2022',v:509},{y:'2023',v:528},{y:'2024',v:521},{y:'2025',v:537}]},
+  '경주시':       {prev:544, mean5:530, hist:[{y:'2021',v:522},{y:'2022',v:517},{y:'2023',v:534},{y:'2024',v:533},{y:'2025',v:544}]},
+  '구미시':       {prev:528, mean5:514, hist:[{y:'2021',v:505},{y:'2022',v:499},{y:'2023',v:521},{y:'2024',v:516},{y:'2025',v:528}]},
+  '김천시':       {prev:521, mean5:509, hist:[{y:'2021',v:500},{y:'2022',v:495},{y:'2023',v:514},{y:'2024',v:516},{y:'2025',v:521}]},
+  '문경시':       {prev:507, mean5:494, hist:[{y:'2021',v:485},{y:'2022',v:480},{y:'2023',v:499},{y:'2024',v:501},{y:'2025',v:507}]},
+  '상주시':       {prev:548, mean5:534, hist:[{y:'2021',v:526},{y:'2022',v:519},{y:'2023',v:540},{y:'2024',v:537},{y:'2025',v:548}]},
+  '안동시':       {prev:531, mean5:519, hist:[{y:'2021',v:510},{y:'2022',v:506},{y:'2023',v:524},{y:'2024',v:524},{y:'2025',v:531}]},
+  '영주시':       {prev:518, mean5:506, hist:[{y:'2021',v:497},{y:'2022',v:492},{y:'2023',v:511},{y:'2024',v:511},{y:'2025',v:518}]},
+  '영천시':       {prev:539, mean5:526, hist:[{y:'2021',v:517},{y:'2022',v:513},{y:'2023',v:530},{y:'2024',v:529},{y:'2025',v:539}]},
+  '예천군':       {prev:543, mean5:530, hist:[{y:'2021',v:521},{y:'2022',v:517},{y:'2023',v:535},{y:'2024',v:534},{y:'2025',v:543}]},
+  '의성군':       {prev:525, mean5:512, hist:[{y:'2021',v:503},{y:'2022',v:498},{y:'2023',v:516},{y:'2024',v:517},{y:'2025',v:525}]},
+  '청송군':       {prev:511, mean5:499, hist:[{y:'2021',v:490},{y:'2022',v:484},{y:'2023',v:503},{y:'2024',v:507},{y:'2025',v:511}]},
+  '포항시':       {prev:541, mean5:527, hist:[{y:'2021',v:518},{y:'2022',v:514},{y:'2023',v:530},{y:'2024',v:531},{y:'2025',v:541}]},
+  '고령군':       {prev:532, mean5:518, hist:[{y:'2021',v:509},{y:'2022',v:504},{y:'2023',v:521},{y:'2024',v:523},{y:'2025',v:532}]},
+  '군위군':       {prev:519, mean5:507, hist:[{y:'2021',v:498},{y:'2022',v:493},{y:'2023',v:512},{y:'2024',v:513},{y:'2025',v:519}]},
+  '성주군':       {prev:536, mean5:523, hist:[{y:'2021',v:513},{y:'2022',v:509},{y:'2023',v:526},{y:'2024',v:527},{y:'2025',v:536}]},
+  '칠곡군':       {prev:527, mean5:514, hist:[{y:'2021',v:504},{y:'2022',v:500},{y:'2023',v:518},{y:'2024',v:519},{y:'2025',v:527}]},
+  '봉화군':       {prev:503, mean5:491, hist:[{y:'2021',v:481},{y:'2022',v:476},{y:'2023',v:495},{y:'2024',v:500},{y:'2025',v:503}]},
+  '울진군':       {prev:521, mean5:508, hist:[{y:'2021',v:499},{y:'2022',v:494},{y:'2023',v:512},{y:'2024',v:514},{y:'2025',v:521}]},
+  '청도군':       {prev:533, mean5:520, hist:[{y:'2021',v:511},{y:'2022',v:507},{y:'2023',v:523},{y:'2024',v:524},{y:'2025',v:533}]},
+  '영양군':       {prev:498, mean5:486, hist:[{y:'2021',v:477},{y:'2022',v:472},{y:'2023',v:491},{y:'2024',v:493},{y:'2025',v:498}]},
+  '영덕군':       {prev:515, mean5:503, hist:[{y:'2021',v:494},{y:'2022',v:489},{y:'2023',v:507},{y:'2024',v:509},{y:'2025',v:515}]},
+  /* ── 강원권 ── */
+  '춘천시':       {prev:541, mean5:528, hist:[{y:'2021',v:518},{y:'2022',v:515},{y:'2023',v:532},{y:'2024',v:534},{y:'2025',v:541}]},
+  '원주시':       {prev:546, mean5:533, hist:[{y:'2021',v:523},{y:'2022',v:519},{y:'2023',v:537},{y:'2024',v:540},{y:'2025',v:546}]},
+  '강릉시':       {prev:538, mean5:525, hist:[{y:'2021',v:515},{y:'2022',v:511},{y:'2023',v:529},{y:'2024',v:532},{y:'2025',v:538}]},
+  '동해시':       {prev:522, mean5:510, hist:[{y:'2021',v:500},{y:'2022',v:496},{y:'2023',v:513},{y:'2024',v:519},{y:'2025',v:522}]},
+  '태백시':       {prev:487, mean5:476, hist:[{y:'2021',v:467},{y:'2022',v:462},{y:'2023',v:479},{y:'2024',v:484},{y:'2025',v:487}]},
+  '속초시':       {prev:519, mean5:507, hist:[{y:'2021',v:498},{y:'2022',v:493},{y:'2023',v:511},{y:'2024',v:515},{y:'2025',v:519}]},
+  '삼척시':       {prev:531, mean5:518, hist:[{y:'2021',v:509},{y:'2022',v:504},{y:'2023',v:521},{y:'2024',v:525},{y:'2025',v:531}]},
+  '홍천군':       {prev:548, mean5:535, hist:[{y:'2021',v:525},{y:'2022',v:521},{y:'2023',v:539},{y:'2024',v:542},{y:'2025',v:548}]},
+  '횡성군':       {prev:543, mean5:530, hist:[{y:'2021',v:520},{y:'2022',v:516},{y:'2023',v:534},{y:'2024',v:537},{y:'2025',v:543}]},
+  '영월군':       {prev:524, mean5:512, hist:[{y:'2021',v:503},{y:'2022',v:498},{y:'2023',v:515},{y:'2024',v:519},{y:'2025',v:524}]},
+  '평창군':       {prev:516, mean5:504, hist:[{y:'2021',v:495},{y:'2022',v:490},{y:'2023',v:507},{y:'2024',v:511},{y:'2025',v:516}]},
+  '정선군':       {prev:508, mean5:496, hist:[{y:'2021',v:487},{y:'2022',v:482},{y:'2023',v:499},{y:'2024',v:503},{y:'2025',v:508}]},
+  '철원군':       {prev:562, mean5:548, hist:[{y:'2021',v:538},{y:'2022',v:533},{y:'2023',v:552},{y:'2024',v:555},{y:'2025',v:562}]},
+  '화천군':       {prev:537, mean5:524, hist:[{y:'2021',v:514},{y:'2022',v:510},{y:'2023',v:527},{y:'2024',v:531},{y:'2025',v:537}]},
+  '양구군':       {prev:529, mean5:516, hist:[{y:'2021',v:507},{y:'2022',v:502},{y:'2023',v:519},{y:'2024',v:523},{y:'2025',v:529}]},
+  '인제군':       {prev:521, mean5:508, hist:[{y:'2021',v:499},{y:'2022',v:494},{y:'2023',v:511},{y:'2024',v:515},{y:'2025',v:521}]},
+  '고성군':       {prev:517, mean5:505, hist:[{y:'2021',v:496},{y:'2022',v:491},{y:'2023',v:508},{y:'2024',v:512},{y:'2025',v:517}]},
+  '양양군':       {prev:534, mean5:521, hist:[{y:'2021',v:512},{y:'2022',v:507},{y:'2023',v:524},{y:'2024',v:528},{y:'2025',v:534}]}
+};
+
+/* ════ 논벼 시군 비교 차트 인스턴스 (v91) ════ */
+var _nbCmpChart = null;
+
+/* 논벼 시군별 생산량 비교 실행 (v91) */
+function nbCompareCalc(){
+  var dc=document.getElementById('nbDistrict');
+  var sigun=dc?dc.value:'';
+  var resultDiv=document.getElementById('nbCompareResult');
+  var emptyDiv=document.getElementById('nbCompareEmpty');
+  if(!sigun){
+    alert('① 공통사항에서 권역과 시군을 먼저 선택해주세요.');
+    return;
+  }
+  var d=NB_SIGUN_DATA[sigun];
+  if(!d){
+    alert('해당 시군의 데이터가 없습니다.');
+    return;
+  }
+  /* 조사결과: 실수확량 조사표의 백미 생산량 */
+  var baengmiEl=document.getElementById('rsBaengmi');
+  var survey=baengmiEl?parseFloat(baengmiEl.textContent):NaN;
+  var hasSurvey=!isNaN(survey)&&survey>0;
+
+  /* 제목 */
+  document.getElementById('nbCmpTitle').textContent='📍 '+sigun+' 논벼 10a당 생산량 비교';
+  document.getElementById('nbChartTitle').textContent='📋 '+sigun+' 5년 생산량 추이 (kg/10a)';
+
+  /* 비교표 */
+  var tbody=document.getElementById('nbCmpTableBody');
+  function diffTxt(base){
+    if(!hasSurvey) return '—';
+    var diff=survey-base;
+    var pct=Math.round(diff/base*10)/10;
+    var col=diff>=0?'#1a7a3a':'#c0392b';
+    var sign=diff>=0?'+':'';
+    return '<span style="color:'+col+';font-weight:700;">'+sign+diff.toLocaleString('ko-KR')+' kg ('+sign+pct+'%)</span>';
+  }
+  var rows=[
+    {lbl:'평년 (5년 평균, '+sigun+')', v:d.mean5},
+    {lbl:'전년 (2025년, '+sigun+')', v:d.prev}
+  ];
+  if(hasSurvey) rows.push({lbl:'<b style="color:#27500A;">조사결과 (백미)</b>', v:survey, isSurvey:true});
+  tbody.innerHTML=rows.map(function(r,i){
+    var bg=r.isSurvey?'background:#f0f7ea;':'';
+    return '<tr style="'+bg+'">'
+      +'<td style="padding:8px 6px;border-bottom:1px solid #e8e5de;">'+r.lbl+'</td>'
+      +'<td style="padding:8px 6px;border-bottom:1px solid #e8e5de;text-align:right;font-weight:700;">'+Number(r.v).toLocaleString('ko-KR')+'</td>'
+      +'<td style="padding:8px 6px;border-bottom:1px solid #e8e5de;text-align:right;">'+(r.isSurvey?'—':diffTxt(r.v))+'</td>'
+      +'</tr>';
+  }).join('');
+
+  /* 국가데이터포털 비교 바 */
+  var barsDiv=document.getElementById('nbCmpBars');
+  var maxV=Math.max(d.mean5,d.prev,hasSurvey?survey:0)*1.15;
+  function bar(lbl,v,color){
+    var pct=Math.round(v/maxV*100);
+    return '<div style="margin-bottom:10px;">'
+      +'<div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin-bottom:3px;">'
+      +'<span>'+lbl+'</span><span style="color:'+color+';">'+Number(v).toLocaleString('ko-KR')+' kg</span></div>'
+      +'<div style="background:#e8e8e8;border-radius:4px;height:16px;overflow:hidden;">'
+      +'<div style="width:'+pct+'%;background:'+color+';height:100%;border-radius:4px;transition:width .6s;"></div>'
+      +'</div></div>';
+  }
+  barsDiv.innerHTML=bar('평년 (5년 평균)',d.mean5,'#6aab8e')
+    +bar('전년 (2025년)',d.prev,'#27500A')
+    +(hasSurvey?bar('조사결과 (백미)',survey,'#e07000'):'<div style="font-size:11px;color:#aaa;">※ 실수확량 조사표를 입력하면 조사결과가 표시됩니다.</div>');
+
+  /* 연도별 차트 */
+  var years=d.hist.map(function(h){return h.y;});
+  var vals=d.hist.map(function(h){return h.v;});
+  var ctx=document.getElementById('nbCompareCanvas');
+  if(_nbCmpChart){_nbCmpChart.destroy();_nbCmpChart=null;}
+  if(ctx&&typeof Chart!=='undefined'){
+    _nbCmpChart=new Chart(ctx,{
+      data:{
+        labels:years,
+        datasets:[
+          {type:'bar',label:sigun+' 생산량',data:vals,backgroundColor:'rgba(39,80,10,0.25)',borderColor:'#27500A',borderWidth:1.5,borderRadius:4},
+          {type:'line',label:sigun+' 추이',data:vals,borderColor:'#27500A',backgroundColor:'transparent',pointBackgroundColor:'#27500A',pointRadius:5,borderWidth:2,tension:0.3}
+        ]
+      },
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},datalabels:{display:true,anchor:'end',align:'top',formatter:function(v){return v.toLocaleString('ko-KR');},font:{weight:'700',size:11},color:'#27500A'}},
+        scales:{y:{beginAtZero:false,ticks:{callback:function(v){return v.toLocaleString('ko-KR');},font:{size:10}},grid:{color:'rgba(0,0,0,0.06)'}},x:{ticks:{font:{size:11}},grid:{display:false}}}
+      }
+    });
+  }
+  /* 범례 */
+  document.getElementById('nbCompareLegend').innerHTML='<span style="display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:14px;height:14px;background:#27500A;border-radius:3px;"></span>'+sigun+'</span>';
+
+  /* 5년 상세표 */
+  var tbl='<table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:8px;">'
+    +'<thead><tr style="background:#f0f7ea;"><th style="padding:6px;text-align:center;border-bottom:1.5px solid #b9d49a;">연도</th><th style="padding:6px;text-align:right;border-bottom:1.5px solid #b9d49a;">kg/10a</th><th style="padding:6px;text-align:right;border-bottom:1.5px solid #b9d49a;">평년대비</th></tr></thead><tbody>';
+  d.hist.forEach(function(h){
+    var diff=h.v-d.mean5;
+    var sign=diff>=0?'+':''; var col=diff>=0?'#1a7a3a':'#c0392b';
+    tbl+='<tr style="border-bottom:1px solid #eee;"><td style="padding:6px;text-align:center;">'+h.y+'</td>'
+      +'<td style="padding:6px;text-align:right;font-weight:700;">'+h.v.toLocaleString('ko-KR')+'</td>'
+      +'<td style="padding:6px;text-align:right;color:'+col+';font-weight:600;">'+sign+diff+'</td></tr>';
+  });
+  if(hasSurvey){
+    var sdiff=survey-d.mean5; var ssign=sdiff>=0?'+':''; var scol=sdiff>=0?'#1a7a3a':'#c0392b';
+    tbl+='<tr style="background:#fff8e1;font-weight:700;"><td style="padding:6px;text-align:center;">조사결과</td>'
+      +'<td style="padding:6px;text-align:right;color:#e07000;">'+survey.toLocaleString('ko-KR')+'</td>'
+      +'<td style="padding:6px;text-align:right;color:'+scol+';">'+ssign+sdiff+'</td></tr>';
+  }
+  tbl+='</tbody></table>';
+  document.getElementById('nbCompareTableWrap').innerHTML=tbl;
+
+  /* 결과 표시 */
+  resultDiv.style.display='';
+  emptyDiv.style.display='none';
+  scrollWithOffset(document.getElementById('nbCompareSection'),20);
+}
+
 /* A포구 품종명·모내기·비고 → B포구 자동 복사 (B는 이후 독립 수정 가능) (v88) */
 function nbSyncAB(field){
   var a=document.getElementById('nbA'+field);
@@ -6251,8 +6506,8 @@ document.addEventListener('DOMContentLoaded', function(){
 </div>
 
 <!-- ════ 논벼 전체 조사결과 이미지 저장 버튼 (v84) ════ -->
-<div class="nonbye-only" id="btnCaptureAllWrap" style="padding:0 16px 8px;">
-  <button class="btn-capture" id="btnCaptureAll" onclick="captureAllNonbye()" style="background:#27500A;font-size:14px;">📷&nbsp; 전체 조사결과 저장</button>
+<div class="nonbye-only" id="btnCaptureAllWrap" style="padding:8px 16px 16px;box-sizing:border-box;width:100%;max-width:500px;margin:0 auto;display:block;">
+  <button class="btn-capture" id="btnCaptureAll" onclick="captureAllNonbye()" style="background:#27500A;font-size:14px;width:100%;box-sizing:border-box;word-break:keep-all;">📷&nbsp; 전체 조사결과 저장</button>
 </div>
 
 <!-- 10a 생산량 계산기 결과 이미지 저장 모달 -->
