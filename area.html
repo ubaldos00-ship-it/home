@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>면적단위 환산 계산기</title>
+  <style>
+    :root{
+      --bg:#ffffff;
+      --card:#ffffff;
+      --text:#111827;
+      --muted:#6b7280;
+      --line:#d8e1ee;
+      --primary:#2563eb;
+      --primary-dark:#1d4ed8;
+      --input:#ffffff;
+      --focus:#fff7cc;
+      --warn:#f5c542;
+      --shadow:0 8px 22px rgba(15,23,42,.08);
+      --radius:18px;
+    }
+
+    *{box-sizing:border-box}
+
+    html,body{
+      margin:0;
+      padding:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Segoe UI",sans-serif;
+      -webkit-font-smoothing:antialiased;
+    }
+
+    body{
+      min-height:100vh;
+      padding:14px;
+    }
+
+    .app{
+      max-width:540px;
+      margin:0 auto 24px;
+    }
+
+    .topbar{
+      display:grid;
+      grid-template-columns:64px 1fr 64px;
+      align-items:center;
+      gap:8px;
+      position:sticky;
+      top:0;
+      z-index:10;
+      padding:10px 0 12px;
+      background:linear-gradient(180deg,#ffffff 82%,rgba(255,255,255,0));
+    }
+
+    .topbar h1{
+      margin:0;
+      text-align:center;
+      font-size:19px;
+      line-height:1.25;
+      font-weight:900;
+      letter-spacing:-.04em;
+      white-space:nowrap;
+    }
+
+    .nav-btn{
+      height:42px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:#ffffff;
+      color:var(--primary-dark);
+      font-size:15px;
+      font-weight:900;
+      box-shadow:0 3px 10px rgba(15,23,42,.08);
+      cursor:pointer;
+    }
+
+    .summary-card{
+      background:#ffffff;
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:15px 16px;
+      margin-bottom:14px;
+    }
+
+    .summary-title{
+      font-size:15px;
+      color:var(--muted);
+      margin-bottom:7px;
+      font-weight:800;
+    }
+
+    .summary-value{
+      font-size:27px;
+      line-height:1.25;
+      font-weight:950;
+      letter-spacing:-.04em;
+    }
+
+    .summary-note{
+      margin-top:8px;
+      color:var(--muted);
+      font-size:13.5px;
+      line-height:1.45;
+    }
+
+    .top-reset-btn{
+      margin-top:14px;
+    }
+
+    .main-btn{
+      width:100%;
+      min-height:52px;
+      border:0;
+      border-radius:15px;
+      background:var(--primary);
+      color:#fff;
+      font-size:17px;
+      font-weight:950;
+      cursor:pointer;
+      box-shadow:0 8px 18px rgba(37,99,235,.25);
+    }
+
+    .table-card{
+      display:block;
+      background:var(--card);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      border:1px solid var(--line);
+      margin-top:10px;
+    }
+
+    .table-title{
+      padding:12px 14px;
+      border-bottom:1px solid var(--line);
+      background:#ffffff;
+      font-size:14px;
+      font-weight:900;
+      color:#111827;
+    }
+
+    .row{
+      display:grid;
+      grid-template-columns:minmax(124px,42%) 1fr;
+      min-height:58px;
+      border-bottom:1px solid var(--line);
+    }
+
+    .row:last-child{
+      border-bottom:0;
+    }
+
+    .unit-cell{
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      padding:10px 12px;
+      background:#ffffff;
+      border-right:1px solid var(--line);
+    }
+
+    .unit-name{
+      font-size:16px;
+      font-weight:900;
+      letter-spacing:-.03em;
+    }
+
+    .unit-symbol{
+      margin-top:3px;
+      font-size:12px;
+      color:var(--muted);
+      font-weight:800;
+    }
+
+    .input-cell{
+      display:flex;
+      align-items:center;
+      padding:7px 9px;
+      background:#ffffff;
+    }
+
+    .area-input{
+      display:block;
+      width:100%;
+      min-width:0;
+      height:46px;
+      border:2px solid #e5e7eb;
+      border-radius:12px;
+      background:var(--input);
+      padding:0 11px;
+      color:var(--text);
+      font-size:18px;
+      font-weight:900;
+      text-align:right;
+      outline:none;
+      letter-spacing:-.02em;
+      -webkit-appearance:none;
+      appearance:textfield;
+      user-select:text;
+      -webkit-user-select:text;
+    }
+
+    .area-input::-webkit-outer-spin-button,
+    .area-input::-webkit-inner-spin-button{
+      -webkit-appearance:none;
+      margin:0;
+    }
+
+    .area-input:focus{
+      background:var(--focus);
+      border-color:var(--warn);
+      box-shadow:0 0 0 3px rgba(245,197,66,.18);
+    }
+
+    .area-input.empty{
+      background:#fffdf1;
+      border-color:var(--warn);
+    }
+
+    button:active{
+      transform:translateY(1px);
+      opacity:.92;
+    }
+
+    .sub-note{
+      margin:12px 2px 18px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.55;
+      text-align:center;
+    }
+
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom:22px;
+      transform:translateX(-50%) translateY(20px);
+      padding:11px 15px;
+      border-radius:999px;
+      background:rgba(17,24,39,.92);
+      color:#fff;
+      font-size:14px;
+      font-weight:800;
+      opacity:0;
+      pointer-events:none;
+      transition:.25s ease;
+      z-index:99;
+      white-space:nowrap;
+    }
+
+    .toast.show{
+      opacity:1;
+      transform:translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar" aria-label="상단 메뉴">
+      <button class="nav-btn" type="button" onclick="goHome()">홈</button>
+      <h1>면적단위 환산 계산기</h1>
+      <button class="nav-btn" type="button" onclick="closePage()">닫기</button>
+    </header>
+
+    <section class="summary-card" aria-label="기준 안내">
+      <div class="summary-title">기본 기준값</div>
+      <div class="summary-value">10a = 1,000㎡</div>
+      <div class="summary-note">
+        입력창을 누르면 값이 전체 선택됩니다. 새 숫자를 입력하면 모든 단위가 바로 자동 환산됩니다.
+      </div>
+      <button class="main-btn top-reset-btn" type="button" onclick="resetToDefault()">10a 기준 초기화</button>
+    </section>
+
+    <section class="table-card" aria-label="면적 단위 환산 입력표">
+      <div class="table-title">면적 단위 입력 / 자동 환산</div>
+
+      <div class="row"><div class="unit-cell"><div class="unit-name">제곱미터</div><div class="unit-symbol">㎡</div></div><div class="input-cell"><input id="unit-0" class="area-input" type="number" inputmode="decimal" step="any" enterkeyhint="done" autocomplete="off" data-index="0" value="1000"></div></div>
+      <div class="row"><div class="unit-cell"><div class="unit-name">아르</div><div class="unit-symbol">a</div></div><div class="input-cell"><input id="unit-1" class="area-input" type="number" inputmode="decimal" step="any" enterkeyhint="done" autocomplete="off" data-index="1" value="10"></div></div>
+      <div class="row"><div class="unit-cell"><div class="unit-name">헥타르</div><div class="unit-symbol">ha</div></div><div class="input-cell"><input id="unit-2" class="area-input" type="number" inputmode="decimal" step="any" enterkeyhint="done" autocomplete="off" data-index="2" value="0.1"></div></div>
+      <div class="row"><div class="unit-cell"><div class="unit-name">평</div><div class="unit-symbol">평</div></div><div class="input-cell"><input id="unit-3" class="area-input" type="number" inputmode="decimal" step="any" enterkeyhint="done" autocomplete="off" data-index="3" value="302.5"></div></div>
+      <div class="row"><div class="unit-cell"><div class="unit-name">단보</div><div class="unit-symbol">단보</div></div><div class="input-cell"><input id="unit-4" class="area-input" type="number" inputmode="decimal" step="any" enterkeyhint="done" autocomplete="off" data-index="4" value="1.0083"></div></div>
+      <div class="row"><div class="unit-cell"><div class="unit-name">정보</div><div class="unit-symbol">정보</div></div><div class="input-cell"><input id="unit-5" class="area-input" type="number" inputmode="decimal" step="any" enterkeyhint="done" autocomplete="off" data-index="5" value="0.1008"></div></div>
+      <div class="row"><div class="unit-cell"><div class="unit-name">에이커</div><div class="unit-symbol">acre</div></div><div class="input-cell"><input id="unit-6" class="area-input" type="number" inputmode="decimal" step="any" enterkeyhint="done" autocomplete="off" data-index="6" value="0.2471"></div></div>
+      <div class="row"><div class="unit-cell"><div class="unit-name">제곱피트</div><div class="unit-symbol">ft²</div></div><div class="input-cell"><input id="unit-7" class="area-input" type="number" inputmode="decimal" step="any" enterkeyhint="done" autocomplete="off" data-index="7" value="10763.91"></div></div>
+      <div class="row"><div class="unit-cell"><div class="unit-name">제곱야드</div><div class="unit-symbol">yd²</div></div><div class="input-cell"><input id="unit-8" class="area-input" type="number" inputmode="decimal" step="any" enterkeyhint="done" autocomplete="off" data-index="8" value="1195.99"></div></div>
+      <div class="row"><div class="unit-cell"><div class="unit-name">제곱자</div><div class="unit-symbol">제곱자</div></div><div class="input-cell"><input id="unit-9" class="area-input" type="number" inputmode="decimal" step="any" enterkeyhint="done" autocomplete="off" data-index="9" value="10890.04"></div></div>
+      <div class="row"><div class="unit-cell"><div class="unit-name">평방킬로미터</div><div class="unit-symbol">km²</div></div><div class="input-cell"><input id="unit-10" class="area-input" type="number" inputmode="decimal" step="any" enterkeyhint="done" autocomplete="off" data-index="10" value="0.001"></div></div>
+    </section>
+
+    <p class="sub-note">
+      ※ 평은 1평 = 3.3058㎡ 기준으로 계산합니다.<br>
+      ※ iPhone에서 소수점이 있는 숫자 키보드가 뜨도록 type="number", inputmode="decimal"을 적용했습니다.
+    </p>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">10a 기준으로 초기화되었습니다.</div>
+
+  <script>
+    const HOME_URL = "https://ubaldos00-ship-it.github.io/home/";
+    const DEFAULT_SQM = 1000;
+
+    const areaUnits = [
+      { name:"제곱미터", symbol:"㎡", sqm:1, decimals:4 },
+      { name:"아르", symbol:"a", sqm:100, decimals:4 },
+      { name:"헥타르", symbol:"ha", sqm:10000, decimals:4 },
+      { name:"평", symbol:"평", sqm:3.3058, decimals:2 },
+      { name:"단보", symbol:"단보", sqm:991.7355, decimals:4 },
+      { name:"정보", symbol:"정보", sqm:9917.355, decimals:4 },
+      { name:"에이커", symbol:"acre", sqm:4046.8564224, decimals:4 },
+      { name:"제곱피트", symbol:"ft²", sqm:0.09290304, decimals:2 },
+      { name:"제곱야드", symbol:"yd²", sqm:0.83612736, decimals:2 },
+      { name:"제곱자", symbol:"제곱자", sqm:0.091827, decimals:2 },
+      { name:"평방킬로미터", symbol:"km²", sqm:1000000, decimals:6 }
+    ];
+
+    let isUpdating = false;
+    let activeInput = null;
+    let selectTimer = null;
+    const inputs = Array.from(document.querySelectorAll(".area-input"));
+
+    document.addEventListener("DOMContentLoaded", () => {
+      bindInputEvents();
+      resetToDefault(false);
+    });
+
+    bindInputEvents();
+    resetToDefault(false);
+
+    function bindInputEvents(){
+      inputs.forEach(input => {
+        if(input.dataset.bound === "1") return;
+        input.dataset.bound = "1";
+
+        input.addEventListener("focus", onInputFocus);
+        input.addEventListener("click", onInputClick);
+        input.addEventListener("touchend", onInputTouchEnd, { passive:true });
+
+        input.addEventListener("input", onInputChanged);
+        input.addEventListener("keyup", onInputChanged);
+        input.addEventListener("change", onInputChanged);
+
+        input.addEventListener("blur", onInputBlur);
+      });
+    }
+
+    function onInputFocus(e){
+      activeInput = e.currentTarget;
+      selectAllText(activeInput);
+    }
+
+    function onInputClick(e){
+      activeInput = e.currentTarget;
+      selectAllText(activeInput);
+    }
+
+    function onInputTouchEnd(e){
+      activeInput = e.currentTarget;
+      window.setTimeout(() => {
+        activeInput.focus();
+        selectAllText(activeInput);
+      }, 30);
+    }
+
+    function onInputChanged(e){
+      calculateFromInput(e.currentTarget);
+    }
+
+    function onInputBlur(e){
+      const input = e.currentTarget;
+      const index = Number(input.dataset.index);
+      const value = parseNumber(input.value);
+
+      if(!Number.isNaN(value)){
+        input.value = formatPlainNumber(value, areaUnits[index].decimals);
+      }
+
+      updateEmptyState();
+    }
+
+    function selectAllText(input){
+      if(!input) return;
+
+      clearTimeout(selectTimer);
+      selectTimer = setTimeout(() => {
+        try {
+          input.focus({ preventScroll:true });
+        } catch(e) {
+          input.focus();
+        }
+
+        try {
+          input.setSelectionRange(0, input.value.length);
+        } catch(e) {
+          try { input.select(); } catch(_) {}
+        }
+      }, 20);
+    }
+
+    function calculateFromInput(input){
+      if(isUpdating || !input) return;
+
+      const rawText = String(input.value).trim();
+
+      if(rawText === ""){
+        clearAllExcept(input);
+        updateEmptyState();
+        return;
+      }
+
+      const value = parseNumber(rawText);
+      if(Number.isNaN(value)) return;
+
+      const index = Number(input.dataset.index);
+      const unit = areaUnits[index];
+      const sqmValue = value * unit.sqm;
+
+      updateAllUnits(sqmValue, input);
+      updateEmptyState();
+    }
+
+    function updateAllUnits(sqmValue, skipInput = null){
+      isUpdating = true;
+
+      areaUnits.forEach((unit, index) => {
+        const input = inputs[index];
+        if(input === skipInput) return;
+        input.value = formatPlainNumber(sqmValue / unit.sqm, unit.decimals);
+      });
+
+      isUpdating = false;
+    }
+
+    function clearAllExcept(skipInput){
+      isUpdating = true;
+      inputs.forEach(input => {
+        if(input !== skipInput) input.value = "";
+      });
+      isUpdating = false;
+    }
+
+    function resetToDefault(showMessage = true){
+      updateAllUnits(DEFAULT_SQM, null);
+      updateEmptyState();
+      if(showMessage) showToast("10a 기준으로 초기화되었습니다.");
+    }
+
+    function parseNumber(value){
+      if(typeof value !== "string") value = String(value);
+      const cleaned = value.replace(/,/g, "").trim();
+      if(cleaned === "" || cleaned === "." || cleaned === ",") return NaN;
+      return Number(cleaned);
+    }
+
+    function formatPlainNumber(value, decimals = 4){
+      if(!Number.isFinite(value)) return "";
+      const roundedText = Number(value).toFixed(decimals);
+      return roundedText
+        .replace(/\.?0+$/,"");
+    }
+
+    function updateEmptyState(){
+      inputs.forEach(input => {
+        input.classList.toggle("empty", input.value.trim() === "");
+      });
+    }
+
+    function goHome(){
+      window.location.href = HOME_URL;
+    }
+
+    function closePage(){
+      if(window.history.length > 1){
+        window.history.back();
+        setTimeout(() => {
+          if(!document.hidden) window.location.href = HOME_URL;
+        }, 450);
+      }else{
+        window.location.href = HOME_URL;
+      }
+    }
+
+    function showToast(message){
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => toast.classList.remove("show"), 1600);
+    }
+  </script>
+</body>
+</html>
