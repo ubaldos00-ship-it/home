@@ -1,4 +1,4 @@
-<!-- tonghab_v99.html · 저장: 2026-06-01 00:55 KST -->
+<!-- tonghab_v103.html · 저장: 2026-06-02 00:32 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -598,6 +598,9 @@ body.nonbye-mode .hide-nonbye { display:none !important; }
 
 /* ════ 논벼 실수확량 조사표 (v81) ════ */
 .ryield-card{background:#fff;border-radius:var(--radl);border:2px solid #27500A;overflow:hidden;margin-bottom:14px;}
+/* v102: 실수확량 입력 글자색 파랑 (예취포기수 ryAHarvPlants, ryBHarvPlants 제외) */
+.ryield-card input[type=number]:not(#ryAHarvPlants):not(#ryBHarvPlants),
+.ryield-card input[type=text]:not(#ryAHarvPlants):not(#ryBHarvPlants) { color:#1558D6; }
 .ryield-hdr{background:linear-gradient(90deg,#1f4408,#2f6510);color:#fff;padding:12px 14px;font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px;}
 .ryield-body{padding:14px;}
 .ryield-sub{font-size:12.5px;font-weight:800;color:#27500A;margin:4px 0 8px;display:flex;align-items:center;gap:6px;}
@@ -1325,7 +1328,7 @@ textarea {
         저장
       </button>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v99 저장: 2026-06-01 00:55)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v103 저장: 2026-06-02 00:32)</span></div>
   </div>
 </div>
 
@@ -1654,11 +1657,11 @@ textarea {
         <div class="meas-grid" style="margin-bottom:8px;">
           <div class="fg" style="margin-bottom:0;">
             <label>가로 간격 (cm) 긴쪽</label>
-            <input type="text" inputmode="decimal" id="nbAWidth" placeholder="예) 30.0" oninput="nbFormatSpacing(this,'A')" autocomplete="off" class="nb-req-inp">
+            <input type="text" inputmode="numeric" id="nbAWidth" placeholder="예) 30.0" oninput="nbFormatSpacing(this,'A')" autocomplete="off" class="nb-req-inp">
           </div>
           <div class="fg" style="margin-bottom:0;">
             <label>세로 간격 (cm) 짧은쪽</label>
-            <input type="text" inputmode="decimal" id="nbAHeight" placeholder="예) 15.5" oninput="nbFormatSpacing(this,'A')" autocomplete="off" class="nb-req-inp">
+            <input type="text" inputmode="numeric" id="nbAHeight" placeholder="예) 15.5" oninput="nbFormatSpacing(this,'A')" autocomplete="off" class="nb-req-inp">
           </div>
         </div>
         <div class="nonbye-m2-result" style="border:2px solid var(--ac);box-shadow:0 2px 8px rgba(37,99,235,.15);">
@@ -1880,11 +1883,11 @@ textarea {
         <div class="meas-grid" style="margin-bottom:8px;">
           <div class="fg" style="margin-bottom:0;">
             <label>가로 간격 (cm) 긴쪽</label>
-            <input type="text" inputmode="decimal" id="nbBWidth" placeholder="예) 30.0" oninput="nbFormatSpacing(this,'B')" autocomplete="off" class="nb-req-inp">
+            <input type="text" inputmode="numeric" id="nbBWidth" placeholder="예) 30.0" oninput="nbFormatSpacing(this,'B')" autocomplete="off" class="nb-req-inp">
           </div>
           <div class="fg" style="margin-bottom:0;">
             <label>세로 간격 (cm) 짧은쪽</label>
-            <input type="text" inputmode="decimal" id="nbBHeight" placeholder="예) 15.5" oninput="nbFormatSpacing(this,'B')" autocomplete="off" class="nb-req-inp">
+            <input type="text" inputmode="numeric" id="nbBHeight" placeholder="예) 15.5" oninput="nbFormatSpacing(this,'B')" autocomplete="off" class="nb-req-inp">
           </div>
         </div>
         <div class="nonbye-m2-result" style="border:2px solid var(--bc);background:var(--bc-bg);box-shadow:0 2px 8px rgba(192,57,43,.15);">
@@ -2006,7 +2009,7 @@ textarea {
         </div>
         <div class="fg" style="margin-bottom:0;">
           <label>천립중 (g)</label>
-          <input type="text" inputmode="decimal" id="nbThousandWeight" placeholder="예) 17.0~19.0" oninput="nbFmt3Yield(this)" autocomplete="off" class="nb-req-inp">
+          <input type="text" inputmode="numeric" id="nbThousandWeight" placeholder="예) 17.0~19.0" oninput="nbFmt3Yield(this)" autocomplete="off" class="nb-req-inp">
         </div>
       </div>
 
@@ -2099,7 +2102,7 @@ textarea {
             </div>
             <div class="fg" style="margin-bottom:8px;">
               <label style="font-size:11px;">모내기 (월.일)</label>
-              <input type="text" id="nbATransplant" placeholder="예) 6.5" style="font-size:13px;padding:8px 10px;" oninput="nbSyncAB('Transplant')">
+              <input type="text" inputmode="decimal" id="nbATransplant" placeholder="예) 6.5" style="font-size:13px;padding:8px 10px;" oninput="nbSyncAB('Transplant')">
             </div>
             <div class="fg" style="margin-bottom:0;">
               <label style="font-size:11px;">비고</label>
@@ -2142,7 +2145,7 @@ textarea {
             </div>
             <div class="fg" style="margin-bottom:8px;">
               <label style="font-size:11px;">모내기 (월.일)</label>
-              <input type="text" id="nbBTransplant" placeholder="예) 6.5" style="font-size:13px;padding:8px 10px;">
+              <input type="text" inputmode="decimal" id="nbBTransplant" placeholder="예) 6.5" style="font-size:13px;padding:8px 10px;">
             </div>
             <div class="fg" style="margin-bottom:0;">
               <label style="font-size:11px;">비고</label>
@@ -2237,10 +2240,17 @@ textarea {
           A포구 종합 결과
         </div>
         <div class="res-rows">
+          <!-- v103: 총이랑수 가로기점 위로 이동 -->
+          <div class="res-row hide-nonbye" id="rowA_totalRows">
+            <span class="res-lbl">총이랑수</span>
+            <div class="res-right">
+              <span id="outA_rows" class="res-main">-</span>
+              <span id="outA_extract_note" class="res-sub"></span>
+            </div>
+          </div>
           <div class="res-row"><span class="res-lbl">가로 기점</span><div class="res-right"><span id="outA_ga" class="res-main">-</span><span id="outA_ga_raw" class="res-sub"></span></div></div>
           <div class="res-row"><span class="res-lbl">세로 기점</span><div class="res-right"><span id="outA_se" class="res-main">-</span><span id="outA_se_raw" class="res-sub"></span></div></div>
           <div class="res-row" id="resRowAK" style="display:none;"><span class="res-lbl">추출간격 k</span><div class="res-right"><span id="outA_k" class="res-main">-</span><span id="outA_k_sub" class="res-sub"></span></div></div>
-          <div class="res-row hide-nonbye"><span class="res-lbl">총이랑수</span><div class="res-right"><span id="outA_rows" class="res-main">-</span></div></div>
           <div class="res-row"><span class="res-lbl">이랑 평균너비</span><div class="res-right"><span id="outWA" class="res-main">-</span><span id="outWA_sub" class="res-sub"></span></div></div>
           <div class="res-row"><span class="res-lbl">3㎡ 조사 이랑길이</span><div class="res-right"><span id="outLenA" class="res-main">-</span><span id="outLenA_raw" class="res-sub"></span></div></div>
           <div class="res-row hide-nonbye"><span class="res-lbl">피해부호</span><div class="res-right"><span id="outA_dmgCode" class="res-main" style="font-size:13px;">-</span></div></div>
@@ -2263,7 +2273,7 @@ textarea {
           <div class="res-row"><span class="res-lbl">가로 기점</span><div class="res-right"><span id="outB_ga" class="res-main">-</span><span id="outB_ga_raw" class="res-sub"></span></div></div>
           <div class="res-row"><span class="res-lbl">세로 기점</span><div class="res-right"><span id="outB_se" class="res-main">-</span><span id="outB_se_raw" class="res-sub"></span></div></div>
           <div class="res-row" id="resRowBK" style="display:none;"><span class="res-lbl">추출간격 k</span><div class="res-right"><span id="outB_k" class="res-main">-</span><span id="outB_k_sub" class="res-sub"></span></div></div>
-          <div class="res-row hide-nonbye"><span class="res-lbl">총이랑수</span><div class="res-right"><span id="outB_rows" class="res-main">-</span></div></div>
+          <!-- v103: B포구 총이랑수 삭제 -->
           <div class="res-row"><span class="res-lbl">이랑 평균너비</span><div class="res-right"><span id="outWB" class="res-main">-</span><span id="outWB_sub" class="res-sub"></span></div></div>
           <div class="res-row"><span class="res-lbl">3㎡ 조사 이랑길이</span><div class="res-right"><span id="outLenB" class="res-main">-</span><span id="outLenB_raw" class="res-sub"></span></div></div>
           <div class="res-row hide-nonbye"><span class="res-lbl">피해부호</span><div class="res-right"><span id="outB_dmgCode" class="res-main" style="font-size:13px;">-</span></div></div>
@@ -2364,15 +2374,15 @@ textarea {
         <div class="ryield-grid2">
           <div class="ryield-fg">
             <label>6㎡당 조제벼 중량 (g)</label>
-            <div class="ryield-iwrap"><input type="number" inputmode="numeric" id="rsJeje" placeholder="예)5400" oninput="riceRealYieldCalc()" class="nb-req-inp"><span class="ryield-unit">g</span></div>
+            <div class="ryield-iwrap"><input type="number" inputmode="numeric" id="rsJeje" placeholder="예)5400" oninput="riceRealYieldCalc();rsAutoNext(this,4,'rsJeje8')" class="nb-req-inp"><span class="ryield-unit">g</span></div>
           </div>
           <div class="ryield-fg">
             <label>1/8 조제벼 (g)</label>
-            <div class="ryield-iwrap"><input type="number" inputmode="numeric" id="rsJeje8" placeholder="예)675" oninput="riceRealYieldCalc()" class="nb-req-inp"><span class="ryield-unit">g</span></div>
+            <div class="ryield-iwrap"><input type="number" inputmode="numeric" id="rsJeje8" placeholder="예)675" oninput="riceRealYieldCalc();rsAutoNext(this,3,'rsGeon8')" class="nb-req-inp"><span class="ryield-unit">g</span></div>
           </div>
           <div class="ryield-fg">
             <label>1/8 건조벼 (g)</label>
-            <div class="ryield-iwrap"><input type="number" inputmode="numeric" id="rsGeon8" placeholder="예)567" oninput="riceRealYieldCalc()" class="nb-req-inp"><span class="ryield-unit">g</span></div>
+            <div class="ryield-iwrap"><input type="number" inputmode="numeric" id="rsGeon8" placeholder="예)567" oninput="riceRealYieldCalc();rsAutoNext(this,3,'rsStraw')" class="nb-req-inp"><span class="ryield-unit">g</span></div>
           </div>
           <div class="ryield-fg">
             <label>6㎡당 생볏짚 (g)</label>
@@ -2384,16 +2394,16 @@ textarea {
         <div class="ryield-sub" style="margin-top:14px;">② 크기별 중량</div>
         <div class="ryield-grid3">
           <div class="ryield-fg">
+            <label>총량 (g)</label>
+            <div class="ryield-iwrap"><input type="number" inputmode="numeric" id="rsTotal" placeholder="예)459" oninput="riceRealYieldCalc();rsAutoNext(this,3,'rsHyeonmi')" class="nb-req-inp"><span class="ryield-unit">g</span></div>
+          </div>
+          <div class="ryield-fg">
             <label>1.6mm이상 (현미)</label>
-            <div class="ryield-iwrap"><input type="number" inputmode="numeric" id="rsHyeonmi" placeholder="예)453" oninput="riceRealYieldCalc()" class="nb-req-inp"><span class="ryield-unit">g</span></div>
+            <div class="ryield-iwrap"><input type="number" inputmode="numeric" id="rsHyeonmi" placeholder="예)453" oninput="riceRealYieldCalc();rsAutoNext(this,3,'rsMoist1')" class="nb-req-inp"><span class="ryield-unit">g</span></div>
           </div>
           <div class="ryield-fg">
-            <label>1.6mm미만 (설미)</label>
-            <div class="ryield-iwrap"><input type="number" inputmode="numeric" id="rsSeolmi" placeholder="예)6" oninput="riceRealYieldCalc()" class="nb-req-inp"><span class="ryield-unit">g</span></div>
-          </div>
-          <div class="ryield-fg">
-            <label>총량 (자동)</label>
-            <div class="ryield-auto ryield-iwrap" style="min-height:42px;"><span class="ra-val" id="rsTotal">—</span></div>
+            <label>1.6mm미만 (설미, 자동)</label>
+            <div class="ryield-auto ryield-iwrap" style="min-height:42px;"><span class="ra-val" id="rsSeolmi">—</span></div>
           </div>
         </div>
 
@@ -2401,16 +2411,20 @@ textarea {
         <div class="ryield-grid3">
           <div class="ryield-fg">
             <label>1회 측정 (%)</label>
-            <div class="ryield-iwrap"><input type="text" inputmode="decimal" id="rsMoist1" placeholder="예)13.6" oninput="moistFmt(this)" autocomplete="off" class="nb-req-inp"><span class="ryield-unit">%</span></div>
+            <div class="ryield-iwrap"><input type="text" inputmode="numeric" id="rsMoist1" placeholder="예)13.6" oninput="moistFmt(this)" autocomplete="off" class="nb-req-inp"><span class="ryield-unit">%</span></div>
           </div>
           <div class="ryield-fg">
             <label>2회 측정 (%)</label>
-            <div class="ryield-iwrap"><input type="text" inputmode="decimal" id="rsMoist2" placeholder="예)14.0" oninput="moistFmt(this)" autocomplete="off" class="nb-req-inp"><span class="ryield-unit">%</span></div>
+            <div class="ryield-iwrap"><input type="text" inputmode="numeric" id="rsMoist2" placeholder="예)14.0" oninput="moistFmt(this)" autocomplete="off" class="nb-req-inp"><span class="ryield-unit">%</span></div>
           </div>
           <div class="ryield-fg">
             <label>합계 (자동)</label>
             <div class="ryield-auto ryield-iwrap" style="min-height:42px;"><span class="ra-val" id="rsMoistSum">—</span></div>
           </div>
+        </div>
+        <!-- v103: 수분 평균값 표시 -->
+        <div style="text-align:right;font-size:12px;color:#5b6358;margin-top:5px;padding-right:2px;">
+          평균 수분율: <strong style="color:#0f6e56;" id="rsMoistAvg">—</strong> %
         </div>
 
         <div class="ryield-divline"></div>
@@ -3111,15 +3125,18 @@ const fmtInt  = v => Math.round(v).toLocaleString('ko-KR');
 const fmtCalc = v => '계산값: ' + v.toFixed(1);
 function pad2(n){ return n<10 ? '0'+n : ''+n; }
 function nowStr(){
-  const d=new Date();
-  return d.getFullYear()+pad2(d.getMonth()+1)+pad2(d.getDate())+
-         '_'+pad2(d.getHours())+pad2(d.getMinutes());
+  /* KST 강제(UTC+9) — 기기 타임존 무관 */
+  const kst=new Date(Date.now()+9*60*60*1000);
+  return kst.getUTCFullYear()+pad2(kst.getUTCMonth()+1)+pad2(kst.getUTCDate())+
+         '_'+pad2(kst.getUTCHours())+pad2(kst.getUTCMinutes());
 }
 function nowDisplay(){
-  const d=new Date();
-  return d.getFullYear()+'.'+pad2(d.getMonth()+1)+'.'+pad2(d.getDate())+
-         ' '+pad2(d.getHours())+':'+pad2(d.getMinutes());
+  /* KST 강제(UTC+9) — 기기 타임존 무관 */
+  const kst=new Date(Date.now()+9*60*60*1000);
+  return kst.getUTCFullYear()+'.'+pad2(kst.getUTCMonth()+1)+'.'+pad2(kst.getUTCDate())+
+         ' '+pad2(kst.getUTCHours())+':'+pad2(kst.getUTCMinutes())+' (KST)';
 }
+/* ↑ 구 버전: d.getHours() → 로컬 타임존 오류. getUTC*()+9h 패턴으로 교체(v100) */
 
 const PIN_SVG_WHITE = '<svg viewBox="0 0 24 24" fill="white" stroke="none" width="12" height="12" style="vertical-align:middle;margin-right:4px;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/></svg>';
 
@@ -3378,13 +3395,15 @@ function nonbyeUpdateAvg(){
   const bV = parseFloat(bEl.textContent);
   let avg = NaN;
   if(!isNaN(aV) && !isNaN(bV)){
-    avg = Math.round((aV+bV)/2*10)/10;
+    avg = Math.round((aV+bV)/2*100)/100;   /* v102: 소수점 2자리 */
   } else if(!isNaN(aV)){
-    avg = aV;
+    avg = Math.round(aV*100)/100;
   }
   if(!isNaN(avg)){
     avgBox.style.display='block';
-    avgEl.textContent = avg.toFixed(1);
+    /* 기존 표시(소수1자리) 옆에 정밀값(소수2자리) 병기 */
+    avgEl.textContent = avg.toFixed(1) + ' (' + avg.toFixed(2) + ')';
+    avgEl.dataset.precise = avg.toFixed(2);          /* 계산용 정밀값 */
     avg10aEl.textContent = Math.round(avg*1000).toLocaleString('ko-KR');
   } else {
     avgBox.style.display='none';
@@ -3402,7 +3421,8 @@ function nonbyeUpdateAvg(){
    ※ 1m²당 완전낟알수 = 1m²포기수 × 완전낟알수 (= 포기수 × 포기당이삭수 × 이삭당완전낟알수) */
 function nonbyeCalcYield(){
   const avgEl      = document.getElementById('nbAvgM2');
-  const avgM2      = parseFloat(avgEl.textContent);                                 // 1m²당 평균포기수
+  /* v102: dataset.precise(소수2자리) 우선 사용 — 없으면 textContent 첫 숫자 */
+  const avgM2      = parseFloat(avgEl.dataset.precise || avgEl.textContent);
   /* 대표주수 이삭수: nbEffEars 직접입력값 (대표주수 선정 후 자동입력됨) */
   const effEars    = parseFloat(document.getElementById('nbEffEars').value);        // 대표주수 이삭수
   /* 평균이삭수: 10포기 그리드 평균 → 없으면 대표주수값으로 대체 */
@@ -3458,7 +3478,7 @@ function nonbyeCalcYield(){
     const m2grain = Math.round(avgM2 * effEarsAvg * (compGrains / effEars));
     if(m2GrainEl) m2GrainEl.textContent = m2grain.toLocaleString('ko-KR');
     const perEarFml=Math.round(compGrains/effEars*10)/10;
-    if(fmlM2) fmlM2.textContent='포기수('+avgM2.toFixed(1)+')×평균이삭('+effEarsAvg+')×이삭당완전립('+perEarFml+')';
+    if(fmlM2) fmlM2.textContent='포기수('+avgM2.toFixed(2)+')×평균이삭('+effEarsAvg+')×이삭당완전립('+perEarFml+')';
   } else {
     if(m2GrainEl) m2GrainEl.textContent = '—';
     if(fmlM2) fmlM2.textContent='';
@@ -3482,7 +3502,7 @@ function nonbyeCalcYield(){
   const result   = Math.round(R * T * (W / Tr) * (Z / 1000) * 10) / 10;
   yieldEl.textContent = result.toFixed(1);
   formulaEl.innerHTML =
-    '[포기수<b>' + R.toFixed(1) + '</b> × 평균이삭<b>' + T + '</b> × 이삭당완전립(<b>' + W + '÷' + Tr + '=' + isakdang + '</b>) × (천립중<b>' + Z + '</b>÷1,000)]' +
+    '[포기수<b>' + R.toFixed(2) + '</b> × 평균이삭<b>' + T + '</b> × 이삭당완전립(<b>' + W + '÷' + Tr + '=' + isakdang + '</b>) × (천립중<b>' + Z + '</b>÷1,000)]' +
     ' × 1,000(㎡) ÷ 1,000(g)';
   updateRequiredHighlights();
 }
@@ -4354,8 +4374,9 @@ function renderUnifiedResult(state){
     ' &nbsp;|&nbsp; 추출간격: ' + (isNaN(L) ? '-' : (Math.round((L/2)*10)/10).toFixed(1)) +
     (measureMode === '이랑' ? '이랑' : 'cm') +
     ' &nbsp;|&nbsp; A세로: ' + (isNaN(Ha)?Ha:parseFloat(Ha.toFixed(4)).toString()) + 'cm' +
-    (hasB ? ' &nbsp;|&nbsp; B세로: ' + (isNaN(Hb)?Hb:parseFloat(Hb.toFixed(4)).toString()) + 'cm' : ' &nbsp;|&nbsp; B세로: <em>미입력</em>') +
-    + (document.body.classList.contains('nonbye-mode') ? '' : ' &nbsp;|&nbsp; 평균너비 A:' + (isNaN(waA) ? '-' : waA) + (hasB ? ' B:' + (isNaN(wbA) ? '-' : wbA) : ''));
+    (hasB ? ' &nbsp;|&nbsp; B세로: ' + (isNaN(Hb)?'':parseFloat(Hb.toFixed(4)).toString()) + 'cm' : ' &nbsp;|&nbsp; B세로: <em>미입력</em>') +
+    /* v103: 이중+ 버그 수정 — ++(expr) 이 unary+ 로 해석되어 cm0/NaN 출력되던 문제 */
+    (!document.body.classList.contains('nonbye-mode') ? ' &nbsp;|&nbsp; 평균너비 A:' + (isNaN(waA) ? '-' : waA) + (hasB ? ' B:' + (isNaN(wbA) ? '-' : wbA) : '') : '');
 
   // ── 총이랑수 / 피해부호율 → A·B 결과 카드에 반영 (v84) ──
   (function(){
@@ -4363,6 +4384,12 @@ function renderUnifiedResult(state){
     var rowsBEl=document.getElementById('outB_rows');
     var rowsVal=(!isNaN(L)?L+' '+(measureMode==='이랑'?'이랑':'cm'):'—');
     if(rowsEl) rowsEl.textContent=rowsVal;
+    // v103: 추출간격 note = "L / 2 = L/2 (추출간격)"
+    var noteEl=document.getElementById('outA_extract_note');
+    if(noteEl && !isNaN(L)){
+      var half=Math.round(L/2*10)/10;
+      noteEl.textContent=L+' / 2 = '+half+'(추출간격)';
+    }
     if(rowsBEl) rowsBEl.textContent=rowsVal;
     function dmgText(ab){
       var s=document.getElementById('p'+ab+'-dmg-code'); if(!s||!s.value) return '—';
@@ -4600,8 +4627,10 @@ function renderNonbyeSummary(hasB){
   // 항목 9: 단위를 값 쪽으로 이동 (v92)
   var am2=tx('nbAM2'); set('ntA_m2per', am2!=='—'? am2+' 포기/㎡':'—');
   var bm2=hasB?tx('nbBM2'):'—'; set('ntB_m2per', (bm2&&bm2!=='—')? bm2+' 포기/㎡':'—');
-  // 1㎡당 포기수 평균값
-  set('ntAvgM2', tx('nbAvgM2')!=='—'? tx('nbAvgM2')+' 포기/㎡':'—');
+  // 1㎡당 포기수 평균값 — v102: 소수2자리 정밀값 사용
+  const _avgEl2 = document.getElementById('nbAvgM2');
+  const _avgPrec = _avgEl2 ? (_avgEl2.dataset.precise || '') : '';
+  set('ntAvgM2', _avgPrec ? _avgPrec+' 포기/㎡' : (tx('nbAvgM2')!=='—'? tx('nbAvgM2')+' 포기/㎡':'—'));
   // 항목 8: 천단위 콤마 적용 (v92)
   function fmtNum(v){ var n=parseFloat(v); return (!isNaN(n))?n.toLocaleString('ko-KR'):v; }
   set('ntEffEars',      iv('nbEffEars')!=='—'?      fmtNum(iv('nbEffEars'))+' 개':'—');
@@ -4657,22 +4686,32 @@ function toggleDiag(){
   if(btn) btn.textContent=show?'▲ 접기':'▼ 펼치기';
 }
 
-/* ════ 수분함량 자동소수점 포맷터 (v82) ════
+/* ════ 수분함량 자동소수점 포맷터 (v82/v102) ════
    입력 예: "136" → "13.6"  (3자리 숫자 → XX.X 자동변환) */
 function moistFmt(el){
   var raw=el.value.replace(/[^\d.]/g,'');
-  // 앞쪽 점 제거
   raw=raw.replace(/^\./,'');
   if(raw.indexOf('.')!==-1){
-    // 이미 소수점 있으면 정수부 2자리·소수부 1자리로 제한
     var p=raw.split('.');
     raw=p[0].slice(0,2)+'.'+(p[1]?p[1].slice(0,1):'');
   } else if(raw.length>=3){
-    // 3자리 이상 숫자 → 앞 2자리 + '.' + 3번째 자리
     raw=raw.slice(0,2)+'.'+raw.charAt(2);
   }
   if(el.value!==raw) el.value=raw;
   riceRealYieldCalc();
+  /* v102: 3자리(숫자) 입력 완료 시 다음 항목으로 자동 이동 */
+  if(el.value.replace(/[^0-9]/g,'').length>=3){
+    var nextId=el.id==='rsMoist1'?'rsMoist2':null;
+    if(nextId) setTimeout(function(){ var n=document.getElementById(nextId); if(n){n.focus();n.select();} },60);
+  }
+}
+
+/* ════ 실수확량 자동 다음 입력란 이동 (v102) ════
+   maxLen: 입력값 자릿수 도달 시 nextId 로 포커스 이동 */
+function rsAutoNext(el,maxLen,nextId){
+  if((el.value||'').length>=maxLen){
+    setTimeout(function(){ var n=document.getElementById(nextId); if(n){n.focus();n.select();} },60);
+  }
 }
 
 /* ════ 논벼 예상량 결과 이미지 저장 (v82) ════ */
@@ -4704,11 +4743,11 @@ function captureNbResCard(){
   },60);
 }
 
-/* ════ 논벼 실수확량 계산 (v81) ════
-   조곡  = (1/8건조벼ⓔ × 8 × 1,000) ÷ (6 × 1,000) × (100−수분합계ⓖ÷2) ÷ (100−15)
-   현미  = (1.6mm이상ⓕ × 8 × 1,000) ÷ (6 × 1,000) × (100−수분합계ⓖ÷2) ÷ (100−15)
+/* ════ 논벼 실수확량 계산 (v81/v102) ════
+   조곡  = (1/8건조벼ⓔ × 8 × 1,000) ÷ (6 × 1,000) × (100−수분평균) ÷ (100−15)
+   현미  = (1.6mm이상ⓕ × 8 × 1,000) ÷ (6 × 1,000) × (100−수분평균) ÷ (100−15)
    백미  = 현미 × 92.9%
-   제현율 = 현미 ÷ 조곡 × 100,  현백률 = 백미 ÷ 현미 × 100 */
+   v102: 총량 입력 → 설미 자동계산(설미=총량−현미), 수분평균 소수2자리 적용 */
 function riceRealYieldCalc(){
   function num(id){ var e=document.getElementById(id); if(!e) return NaN; var v=parseFloat(e.value); return isNaN(v)?NaN:v; }
   function setT(id,v){ var e=document.getElementById(id); if(e) e.textContent=v; }
@@ -4716,16 +4755,20 @@ function riceRealYieldCalc(){
   // 검산계 = 조제벼 + 1/8조제벼 + 1/8건조벼 + 생볏짚
   var cs1=[jeje,jeje8,geon8,straw].filter(function(x){return !isNaN(x);});
   setT('rsCheckSum1', cs1.length? cs1.reduce(function(a,b){return a+b;},0).toLocaleString('ko-KR')+' g':'—');
-  // 크기별 총량 = 현미 + 설미
-  var hm=num('rsHyeonmi'), sm=num('rsSeolmi');
-  setT('rsTotal', (!isNaN(hm)||!isNaN(sm))? ((!isNaN(hm)?hm:0)+(!isNaN(sm)?sm:0)).toLocaleString('ko-KR')+' g':'—');
+  // v102: 총량(입력) + 현미(입력) → 설미 자동계산
+  var total=num('rsTotal'), hm=num('rsHyeonmi');
+  var sm=(!isNaN(total)&&!isNaN(hm))? total-hm : NaN;
+  setT('rsSeolmi', !isNaN(sm)? sm.toLocaleString('ko-KR')+' g':'—');
   // 수분 합계 = 1회 + 2회
   var m1=num('rsMoist1'), m2=num('rsMoist2');
   var hasM=(!isNaN(m1)||!isNaN(m2));
   var msum=(!isNaN(m1)?m1:0)+(!isNaN(m2)?m2:0);
   setT('rsMoistSum', hasM? (Math.round(msum*10)/10)+' %':'—');
-  // 생산량 계산
-  var moistAvg = hasM ? msum/2 : NaN;
+  // v103: 수분 평균값 (소수2자리) 표시
+  var mAvgEl=document.getElementById('rsMoistAvg');
+  if(mAvgEl) mAvgEl.textContent=hasM? (Math.round(msum/2*100)/100).toFixed(2):'—';
+  // v102: 수분평균 소수2자리로 계산
+  var moistAvg = hasM ? Math.round(msum/2*100)/100 : NaN;
   var factor = (!isNaN(moistAvg)) ? (100-moistAvg)/(100-15) : NaN;
   function tenA(x){ return x*8/6*factor; }
   var jogok=NaN, hyeonmi=NaN, baengmi=NaN;
@@ -4739,13 +4782,13 @@ function riceRealYieldCalc(){
   // 제현율 = 현미/조곡×100, 현백률 = 백미/현미×100
   setT('rsJehyeon', (!isNaN(hyeonmi)&&!isNaN(jogok)&&jogok>0)? (Math.round(hyeonmi/jogok*1000)/10)+' %':'—');
   setT('rsHyeonbaek', (!isNaN(baengmi)&&!isNaN(hyeonmi)&&hyeonmi>0)? (Math.round(baengmi/hyeonmi*1000)/10)+' %':'—');
-  // 계산식 표시 (v82)
+  // v102: 계산식 — "1.6mm현미", 수분평균 소수2자리 표시
   var fEl=document.getElementById('rsFormula');
   if(fEl){
     if(!isNaN(baengmi)&&!isNaN(hm)&&!isNaN(msum)){
-      var mAvgDisp=Math.round(msum/2*10)/10;
+      var mAvgDisp=Math.round(msum/2*100)/100;          /* 소수2자리 */
       var factorDisp=Math.round((100-mAvgDisp)/(100-15)*1000)/1000;
-      fEl.textContent='백미 = 현미('+hm+'g)×8/6×(100-'+mAvgDisp+')/(100-15)×92.9% = '+(!isNaN(hyeonmi)?hyeonmi:'—')+'×'+factorDisp+'×0.929 ≈ '+baengmi+' kg';
+      fEl.textContent='백미 = 1.6mm현미('+hm+'g)×8/6×(100-'+mAvgDisp.toFixed(2)+')/(100-15)×92.9% = '+(!isNaN(hyeonmi)?hyeonmi:'—')+'×'+factorDisp+'×0.929 ≈ '+baengmi+' kg';
     } else { fEl.textContent=''; }
   }
   riceLoadDamage();
@@ -4784,26 +4827,43 @@ function captureRyield(){
   var btn=document.querySelector('[onclick="captureRyield()"]');
   var orig=btn?btn.innerHTML:'';
   if(btn){ btn.disabled=true; btn.innerHTML='⏳ 저장중...'; }
-  /* 임시 래퍼 생성 */
+  /* ── 임시 래퍼 (v101 수정)
+     · cardW = card1 실제 렌더 너비 → wrapper 를 동일 너비로 설정
+       고정 390px 사용 시: 실제 카드(예 456px)보다 좁아서 텍스트가 재계산되어
+       줄바꿈 위치 달라짐 + 글자가 상대적으로 크게 보임
+     · windowWidth 도 실제 뷰포트 너비로 맞춰 CSS 재계산 방지 */
+  var cardW = card1.offsetWidth || Math.min(window.innerWidth - 24, 480);
   var wrapper=document.createElement('div');
-  wrapper.style.cssText='position:fixed;top:-9999px;left:-9999px;background:#fff;padding:12px;display:flex;flex-direction:column;gap:12px;width:390px;font-size:14px;';
+  wrapper.style.cssText='position:fixed;top:0;left:0;z-index:9999;background:#fff;padding:0;display:flex;flex-direction:column;gap:12px;width:'+cardW+'px;';
   if(card1) wrapper.appendChild(card1.cloneNode(true));
   if(card2){
     var resDiv=card2.querySelector('#nbCompareResult');
     if(resDiv&&resDiv.style.display!=='none'){
-      wrapper.appendChild(card2.cloneNode(true));
+      var c2clone=card2.cloneNode(true);
+      /* cloneNode 직후 canvas → img 교체 (원본 canvas 픽셀 추출) */
+      Array.from(c2clone.querySelectorAll('canvas')).forEach(function(cv){
+        var oCv=cv.id?document.getElementById(cv.id):null;
+        if(!oCv||oCv.width===0) return;
+        try{
+          var imgEl=document.createElement('img');
+          imgEl.src=oCv.toDataURL('image/png');
+          imgEl.style.cssText='width:100%;height:'+oCv.offsetHeight+'px;display:block;';
+          cv.parentNode.replaceChild(imgEl,cv);
+        }catch(e){}
+      });
+      wrapper.appendChild(c2clone);
     }
   }
   document.body.appendChild(wrapper);
   setTimeout(function(){
     html2canvas(wrapper,{
-      scale:1.5,            /* 1.5배 — 고화질이면서 폰트 과대화 방지 */
+      scale:1.5,
       useCORS:true,
       backgroundColor:'#ffffff',
       logging:false,
-      windowWidth:wrapper.scrollWidth,
-      windowHeight:wrapper.scrollHeight+60,
-      onclone:function(clonedDoc){ _canvasToImg(clonedDoc); } /* 그래프 canvas→img */
+      windowWidth:window.innerWidth,   /* 실제 뷰포트 너비 → CSS 재계산 방지 */
+      scrollX:0,
+      scrollY:0
     })
     .then(function(canvas){
       try{document.body.removeChild(wrapper);}catch(e){}
@@ -5041,23 +5101,38 @@ function captureAllNonbye(){
   if(btn){ btn.disabled=true; btn.innerHTML='⏳ 이미지 생성 중...'; }
   // 임시 wrapper 생성 — nbResCard + ryieldCard + 비교섹션 포함 (v94)
   var card3=document.getElementById('nbCompareSection');
+  /* ★ captureRyield 와 동일 수정(v101): 실제 카드 너비로 wrapper 설정 */
+  var cardW = (card1||card2) ? (card1||card2).offsetWidth||Math.min(window.innerWidth-24,480) : 390;
   var wrapper=document.createElement('div');
-  wrapper.style.cssText='position:fixed;top:-9999px;left:-9999px;background:#fff;padding:12px;display:flex;flex-direction:column;gap:12px;width:390px;';
+  wrapper.style.cssText='position:fixed;top:0;left:0;z-index:9999;background:#fff;padding:0;display:flex;flex-direction:column;gap:12px;width:'+cardW+'px;';
   if(card1) wrapper.appendChild(card1.cloneNode(true));
   if(card2) wrapper.appendChild(card2.cloneNode(true));
   if(card3&&card3.style.display!=='none'){
     var c3=card3.cloneNode(true);
     /* 비교섹션이 보이는 경우만 포함 */
     var resDiv=c3.querySelector('#nbCompareResult');
-    if(resDiv&&resDiv.style.display!=='none') wrapper.appendChild(c3);
+    if(resDiv&&resDiv.style.display!=='none'){
+      /* canvas → img 즉시 교체 */
+      Array.from(c3.querySelectorAll('canvas')).forEach(function(cv){
+        var oCv=cv.id?document.getElementById(cv.id):null;
+        if(!oCv||oCv.width===0) return;
+        try{
+          var imgEl=document.createElement('img');
+          imgEl.src=oCv.toDataURL('image/png');
+          imgEl.style.cssText='width:100%;height:'+oCv.offsetHeight+'px;display:block;';
+          cv.parentNode.replaceChild(imgEl,cv);
+        }catch(e){}
+      });
+      wrapper.appendChild(c3);
+    }
   }
   document.body.appendChild(wrapper);
   setTimeout(function(){
     html2canvas(wrapper,{
-      scale:1.5,            /* 1.5배 — 고화질이면서 폰트 과대화 방지 */
+      scale:1.5,
       useCORS:true, backgroundColor:'#ffffff', logging:false,
-      windowWidth:wrapper.scrollWidth, windowHeight:wrapper.scrollHeight+100,
-      onclone:function(clonedDoc){ _canvasToImg(clonedDoc); } /* 그래프 canvas→img */
+      windowWidth:window.innerWidth,
+      scrollX:0, scrollY:0
     }).then(function(canvas){
       try{ document.body.removeChild(wrapper); }catch(e){}
       var dataUrl=canvas.toDataURL('image/png');
@@ -6668,11 +6743,12 @@ function nbCompareCalc(){
           {label:'전국',data:natVals.map(function(v){return v||null;}),borderColor:'#888',backgroundColor:'transparent',
            pointBackgroundColor:'#888',pointBorderColor:'#fff',pointBorderWidth:2,pointRadius:5,pointHoverRadius:7,
            borderWidth:1.8,tension:0.35,segment:{borderDash:function(){return [5,3];}}},
-          {label:provLabel,data:provVals.map(function(v){return v||null;}),borderColor:'#C0392B',backgroundColor:'transparent',
-           pointBackgroundColor:'#C0392B',pointBorderColor:'#fff',pointBorderWidth:2,pointRadius:5,pointHoverRadius:7,
+          {label:provLabel,data:provVals.map(function(v){return v||null;}),borderColor:'#2e7a4e',backgroundColor:'transparent',
+           pointBackgroundColor:'#2e7a4e',pointBorderColor:'#fff',pointBorderWidth:2,pointRadius:5,pointHoverRadius:7,
            borderWidth:2.2,tension:0.35},
-          {label:sigun,data:sigunVals.map(function(v){return v||null;}),borderColor:'#27500A',backgroundColor:'transparent',
-           pointBackgroundColor:'#27500A',pointBorderColor:'#fff',pointBorderWidth:2,pointRadius:6,pointHoverRadius:8,
+          /* v103: 도별선=초록, 시군선=빨강 */
+          {label:sigun,data:sigunVals.map(function(v){return v||null;}),borderColor:'#C0392B',backgroundColor:'transparent',
+           pointBackgroundColor:'#C0392B',pointBorderColor:'#fff',pointBorderWidth:2,pointRadius:6,pointHoverRadius:8,
            borderWidth:2.5,tension:0.35}
         ]
       },
@@ -6717,8 +6793,8 @@ function nbCompareCalc(){
   /* 범례 */
   document.getElementById('nbCompareLegend').innerHTML=
     '<span style="display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:24px;height:2px;background:#888;border-radius:1px;border-top:2px dashed #888;"></span>전국</span>'
-    +'<span style="display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:24px;height:2.5px;background:#C0392B;border-radius:1px;"></span>'+provLabel+'</span>'
-    +'<span style="display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:24px;height:3px;background:#27500A;border-radius:1px;"></span>'+sigun+'</span>';
+    +'<span style="display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:24px;height:2.5px;background:#2e7a4e;border-radius:1px;"></span>'+provLabel+'</span>'
+    +'<span style="display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:24px;height:3px;background:#C0392B;border-radius:1px;"></span>'+sigun+'</span>';
 
   /* ⑤ 5년 상세 통계표 (연도 가로, 마지막열=평년, 조사결과 미포함) (v94) */
   function stRow(lbl,vals,mean,color,bold){
