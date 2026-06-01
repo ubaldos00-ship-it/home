@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>포구 선정 계산기 · 농작물생산조사</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
+:root{
+  --g50:#EAF3DE;--g100:#C0DD97;--g200:#97C459;--g400:#639922;--g600:#3B6D11;--g800:#27500A;
+  --t400:#1D9E75;--t600:#0F6E56;
+  --a50:#FAEEDA;--a400:#EF9F27;--a600:#854F0B;
+  --gr100:#C0BDB5;--gr200:#8A8780;--gr600:#3D3C39;--gr800:#1A1918;
+  --rad:8px;--radl:12px;
+  /* A포구 Blue */
+  --ac:#0A3A8C;--ac2:#1D4ED8;--ac-bg:#EBF3FF;--ac-bd:#93C5FD;
+  /* B포구 Red */
+  --bc:#8B0000;--bc2:#B91C1C;--bc-bg:#FFF0F0;--bc-bd:#FCA5A5;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans KR',-apple-system,sans-serif;background:#E8E5DE;color:var(--gr800);min-height:100vh;padding:0 0 48px;}
+.sticky-top{position:sticky;top:0;z-index:100;background:var(--g800);padding:0 12px;}
+.sticky-inner{max-width:500px;margin:0 auto;padding:12px 0 10px;}
+.wrap{max-width:500px;margin:0 auto;display:flex;flex-direction:column;gap:12px;padding:0 12px;}
+
+/* Header */
+.hdr-ttl{font-size:17px;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px;flex-wrap:nowrap;}
+.hdr-crop-badge{font-size:12px;font-weight:700;background:var(--g400);color:#fff;padding:3px 10px;border-radius:100px;display:none;}
+.hdr-sub{font-size:9.5px;color:var(--g100);margin-top:3px;font-weight:500;letter-spacing:.04em;}
+
+/* Cards */
+.card{background:#fff;border-radius:var(--radl);border:1px solid var(--gr100);padding:16px;}
+.card-ttl{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--t600);margin-bottom:13px;padding-bottom:9px;border-bottom:1px solid #E0DDD6;display:flex;align-items:center;gap:7px;}
+.sn{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--t600);color:#fff;font-size:10.5px;font-weight:800;flex-shrink:0;}
+
+/* Crops */
+.crop-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px;}
+.crop-btn{padding:9px 4px 7px;border:1px solid var(--gr100);border-radius:var(--rad);background:#F8F6F1;font-size:12px;font-weight:600;color:var(--gr600);cursor:pointer;text-align:center;transition:all .15s;font-family:inherit;line-height:1;}
+.crop-btn:hover{border-color:var(--g200);background:var(--g50);}
+.crop-btn.active{background:var(--g800);border-color:var(--g800);color:#fff;font-weight:700;}
+.crop-ico{display:flex;justify-content:center;align-items:center;height:24px;margin-bottom:4px;}
+
+/* Inputs */
+.fg{margin-bottom:13px;}
+.fg:last-child{margin-bottom:0;}
+label{display:block;font-size:13px;font-weight:600;color:#2A2A28;margin-bottom:5px;}
+input[type=text],input[type=number],input[type=date]{width:100%;padding:12px 14px;border:1.5px solid #B0ADA6;border-radius:var(--rad);font-size:17px;font-weight:700;font-family:inherit;background:#fff;color:#1558D6;transition:border-color .15s;-webkit-appearance:none;appearance:none;}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;}
+input[type=number]{-moz-appearance:textfield;}
+input::placeholder{color:#B0ADA6;font-weight:400;font-size:14px;}
+input:focus{outline:none;border-color:var(--t600);box-shadow:0 0 0 3px rgba(15,110,86,.15);}
+.hint{font-size:13px;color:#3D3C39;margin-top:5px;font-weight:500;}
+.hint-v{font-weight:800;color:var(--t600);font-size:15px;}
+input[type=date]{font-size:14px;font-weight:500;color:#1558D6;padding:11px 10px;}
+
+/* Ratio */
+.ratio-toggle{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.rtog-btn{padding:11px;border:2px solid var(--gr100);border-radius:var(--rad);background:#F0EDE6;font-size:13px;font-weight:700;color:#888580;cursor:pointer;text-align:center;font-family:inherit;transition:all .2s;}
+.rtog-btn.active{background:var(--g800);border-color:var(--g800);color:#fff;box-shadow:0 3px 10px rgba(39,80,10,.35);}
+.ratio-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:11px;border:2px solid var(--gr100);border-radius:var(--rad);background:#F0EDE6;opacity:.45;transition:all .2s;}
+.ratio-row.active{border-color:var(--g600);background:#fff;box-shadow:0 0 0 3px rgba(59,109,17,.18);opacity:1;}
+.rc{display:flex;flex-direction:column;gap:4px;text-align:center;}
+.rc-lbl{font-size:11px;color:#3D3C39;font-weight:600;}
+.rc input{text-align:center;padding:10px 4px;font-size:15px;font-weight:700;color:#1558D6;}
+
+/* Mode toggle */
+.mode-toggle{display:inline-flex;border:1.5px solid var(--gr100);border-radius:var(--rad);overflow:hidden;margin-bottom:12px;}
+.mtog{padding:9px 16px;font-size:13px;font-weight:700;font-family:inherit;border:none;background:#F8F6F1;color:#3D3C39;cursor:pointer;transition:all .15s;}
+.mtog.active{background:var(--t600);color:#fff;}
+
+.cult-toggle{display:grid;grid-template-columns:1fr 1fr;border:2px solid var(--gr100);border-radius:var(--radl);overflow:hidden;background:#F8F6F1;margin-top:0;}
+.cult-btn{padding:13px 10px;border:none;background:#F8F6F1;color:#3D3C39;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer;transition:all .15s;}
+.cult-btn.active{background:var(--t600);color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.18);}
+.cult-help{font-size:12px;color:var(--gr600);line-height:1.6;margin-top:8px;font-weight:500;}
+.facility-only{display:none;}
+.facility-only.show{display:block;}
+.calc-display{background:#fff;border:1.5px solid #B0ADA6;border-radius:var(--rad);padding:10px 12px;min-height:44px;display:flex;align-items:baseline;gap:4px;justify-content:flex-end;}
+.calc-display .calc-main{font-size:20px;font-weight:900;color:var(--t600);line-height:1;}
+.calc-display .calc-unit{font-size:12px;font-weight:800;color:var(--gr600);}
+.calc-sub{font-size:10.5px;color:#8A8780;margin-top:4px;text-align:right;font-weight:500;}
+.fac-mid-stack{display:flex;flex-direction:column;gap:8px;}
+
+.ab-fac-calc{border:1.5px dashed rgba(15,110,86,.42);background:rgba(255,255,255,.72);border-radius:var(--rad);padding:12px;margin-bottom:12px;}
+.ab-fac-title{font-size:13px;font-weight:900;color:var(--t600);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.ab-fac-calc .fac-diagram-box{margin-bottom:10px;}
+.ab-fac-inputs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;}
+.ab-fac-inputs label{font-size:10.5px;margin-bottom:4px;}
+.ab-fac-inputs input{font-size:14px;padding:9px 8px;}
+.fac-rows-input{grid-column:2 / 3;}
+.ab-fac-result{display:none;margin-top:9px;border-radius:var(--rad);background:var(--g50);border:1px solid var(--g100);padding:9px 10px;font-size:12px;line-height:1.7;color:var(--gr600);font-weight:600;}
+.ab-fac-result strong{font-size:18px;color:var(--g800);font-weight:900;}
+input[readonly]{background:#F2F7EF;color:var(--g800);border-color:var(--g100);}
+
+/* Facility */
+.fac-diagram-box{background:#F8F6F1;border:1px solid #E0DDD6;border-radius:var(--rad);overflow:hidden;margin-bottom:14px;}
+.fac-diagram-box svg{width:100%;height:auto;display:block;}
+.fac-inputs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.fac-input-group label{font-size:11.5px;margin-bottom:4px;display:flex;align-items:center;gap:3px;}
+.fac-input-group input{font-size:15px;padding:10px 10px;}
+.fi-badge{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;font-size:10px;font-weight:800;color:#fff;flex-shrink:0;}
+.fi-1{background:#666;}
+.fi-2{background:var(--ac);}
+.fi-3{background:#666;}
+.fac-result{display:none;margin-top:12px;background:var(--g50);border:1.5px solid var(--g100);border-radius:var(--rad);padding:12px 14px;}
+.fac-formula-txt{font-size:12px;color:#3D3C39;line-height:1.85;font-weight:500;}
+.fac-formula-txt .fv{font-weight:800;color:var(--g800);}
+.fac-total-row{display:flex;align-items:baseline;gap:5px;margin-top:5px;}
+.fac-total{font-size:26px;font-weight:900;color:var(--g800);}
+.fac-total-unit{font-size:13px;font-weight:700;color:var(--g600);}
+.fac-note{font-size:11px;color:var(--a600);margin-top:4px;font-weight:500;display:block;}
+
+/* Real-time result boxes */
+.rt-wrap{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:11px;transition:opacity .2s;}
+.rt-wrap.hidden{opacity:.3;pointer-events:none;}
+.rt-box{border-radius:var(--rad);overflow:hidden;border:2px solid;}
+.rt-a{border-color:var(--ac);}
+.rt-b{border-color:var(--bc);}
+.rt-head{padding:8px 11px;display:flex;align-items:center;gap:6px;}
+.rt-a .rt-head{background:var(--ac);}
+.rt-b .rt-head{background:var(--bc);}
+.rt-head-txt{font-size:11px;font-weight:800;color:#fff;letter-spacing:.02em;}
+.rt-body{padding:9px 11px;}
+.rt-a .rt-body{background:var(--ac-bg);}
+.rt-b .rt-body{background:var(--bc-bg);}
+.rt-formula-line{font-size:10px;color:#555;line-height:1.7;min-height:30px;}
+.rt-formula-line .fn{font-weight:800;color:#222;}
+.rt-formula-line .feq{color:var(--gr600);}
+.rt-val-wrap{margin-top:5px;display:flex;align-items:baseline;gap:3px;}
+.rt-big{font-size:26px;font-weight:900;line-height:1;}
+.rt-a .rt-big{color:var(--ac);}
+.rt-b .rt-big{color:var(--bc);}
+.rt-unit{font-size:12px;font-weight:700;}
+.rt-a .rt-unit{color:var(--ac2);}
+.rt-b .rt-unit{color:var(--bc2);}
+.rt-calc{font-size:9.5px;color:#9ca3af;display:block;margin-top:3px;}
+
+/* AB stack (now vertical) */
+.ab-stack{display:flex;flex-direction:column;gap:12px;margin-top:13px;}
+.ab-group{border:2px solid;border-radius:var(--rad);overflow:hidden;}
+.a-grp{border-color:var(--ac);}
+.b-grp{border-color:var(--bc);}
+.ab-group-hdr{padding:10px 14px;display:flex;align-items:center;gap:8px;}
+.a-grp .ab-group-hdr{background:var(--ac);}
+.b-grp .ab-group-hdr{background:var(--bc);}
+.ab-hdr-lbl{font-size:14px;font-weight:800;color:#fff;}
+.ab-group-body{padding:12px 14px;}
+.a-grp .ab-group-body{background:var(--ac-bg);}
+.b-grp .ab-group-body{background:var(--bc-bg);}
+.ab-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.ab-fields .fg{margin-bottom:0;}
+.ab-fields label{font-size:12px;}
+.ab-fields input{font-size:15px;padding:10px 12px;}
+
+/* Buttons */
+.btn-row{display:grid;grid-template-columns:1fr 2fr;gap:10px;}
+button.btn{padding:16px;border:none;border-radius:var(--rad);font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .1s;}
+button.btn:active{transform:scale(.97);}
+.btn-reset{background:#fff;border:2px solid #C0392B;color:#C0392B;border-radius:50px;font-size:15px;display:flex;align-items:center;justify-content:center;gap:6px;}
+.btn-calc{background:var(--g800);color:#fff;font-size:17px;}
+.alert{display:none;background:var(--a50);border:1.5px solid var(--a400);border-radius:var(--rad);padding:12px 14px;font-size:14px;font-weight:600;color:var(--a600);text-align:center;}
+
+/* Results */
+.results{display:none;flex-direction:column;gap:12px;}
+.capture-info{background:var(--g800);border-radius:var(--rad);padding:13px 16px;font-size:13px;line-height:1.85;color:var(--g100);}
+.capture-info strong{color:#fff;font-weight:700;}
+.summary-card{background:#F8F6F1;border:1px solid var(--gr100);border-radius:var(--rad);padding:12px 14px;font-size:12px;line-height:1.9;color:#3D3C39;}
+.summary-card strong{color:#111110;font-weight:700;}
+.res-card{background:#fff;border-radius:var(--radl);border:1px solid var(--gr100);overflow:hidden;}
+.res-hdr{padding:12px 16px;font-size:14px;font-weight:700;display:flex;align-items:center;gap:7px;}
+.res-hdr.a{background:var(--ac);color:#fff;}
+.res-hdr.b{background:var(--bc);color:#fff;}
+.pin-badge{width:22px;height:22px;flex-shrink:0;}
+.res-rows{padding:4px 0;}
+.res-row{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid #EDEAE4;}
+.res-row:last-child{border-bottom:none;}
+.res-lbl{font-size:14px;color:#2A2A28;font-weight:600;}
+.res-right{text-align:right;}
+.res-main{display:block;font-size:28px;font-weight:900;color:#111110;line-height:1.15;}
+.res-sub{display:block;font-size:12px;color:#8A8780;margin-top:2px;font-weight:500;}
+.diag-card{background:#fff;border-radius:var(--radl);border:1px solid var(--gr100);overflow:hidden;}
+.diag-hdr{padding:11px 15px;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--g800);background:#D0EAB8;border-bottom:1px solid var(--g100);}
+.diag-body{padding:14px 10px 8px;}
+#fieldSvg{width:100%;height:auto;display:block;}
+.btn-capture{width:100%;padding:15px;background:#fff;border:1.5px solid var(--gr100);border-radius:var(--rad);font-size:14px;font-weight:700;font-family:inherit;color:var(--g800);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn-capture:hover{background:var(--g50);}
+
+/* Modal */
+.img-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;flex-direction:column;align-items:center;overflow-y:auto;}
+.img-modal.open{display:flex;}
+.img-modal-bar{width:100%;max-width:500px;display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:#1a1a1a;position:sticky;top:0;z-index:2;flex-shrink:0;}
+.img-modal-title{color:#fff;font-size:14px;font-weight:700;}
+.img-modal-close{background:none;border:1.5px solid rgba(255,255,255,.4);color:#fff;font-size:13px;font-weight:700;padding:7px 16px;border-radius:100px;cursor:pointer;font-family:inherit;}
+.img-modal-hint{color:#C0DD97;font-size:12px;text-align:center;padding:10px 16px;background:#1a1a1a;width:100%;max-width:500px;border-bottom:1px solid #333;flex-shrink:0;}
+.img-modal img{width:100%;max-width:500px;display:block;margin:0 auto;}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+
+<div class="sticky-top">
+  <div class="sticky-inner">
+    <div class="hdr-ttl">
+      포구 선정 계산기
+      <span class="hdr-crop-badge" id="hdrCropBadge"></span>
+      <a href="https://ubaldos00-ship-it.github.io/home/" style="margin-left:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;width:48px;height:48px;background:rgba(255,255,255,0.18);color:#fff;font-size:10px;font-weight:700;border-radius:12px;text-decoration:none;font-family:inherit;border:1.5px solid rgba(255,255,255,0.35);flex-shrink:0;" onmouseover="this.style.background='rgba(255,255,255,0.28)'" onmouseout="this.style.background='rgba(255,255,255,0.18)'">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 9.5L10 3l7 6.5V17a1 1 0 01-1 1H13v-5H7v5H4a1 1 0 01-1-1V9.5z" fill="#fff"/></svg>
+        홈
+      </a>
+    </div>
+    <div class="hdr-sub">농작물생산조사 · Crop Production Survey</div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- ①필지 정보 -->
+  <div class="card">
+    <div class="card-ttl"><span class="sn">1</span> 필지 정보</div>
+    <label style="margin-bottom:8px;">작물 선택</label>
+    <div class="crop-grid">
+
+      <!-- 마늘 (first) -->
+      <button class="crop-btn active" data-crop="마늘" data-mode="이랑" onclick="selectCrop(this)">
+        <div class="crop-ico"><svg width="26" height="28" viewBox="0 0 26 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <line x1="13" y1="1" x2="13" y2="6" stroke="#5A9020" stroke-width="1.6" stroke-linecap="round"/>
+          <ellipse cx="13" cy="22.5" rx="5.5" ry="1.2" fill="#C8A840" opacity="0.35"/>
+          <path d="M7 11 C6.5 8 8 6 13 6 C18 6 19.5 8 19 11 C18.5 16.5 16.5 22 13 22 C9.5 22 7.5 16.5 7 11Z" fill="#F0EBD0" stroke="#C8A840" stroke-width="1.1"/>
+          <path d="M9 12 C8.5 10 9.5 7.5 11.5 7 C11 9 10.5 13 11 17 C10 15 9.5 13.5 9 12Z" fill="#E8D898" stroke="#B89830" stroke-width="0.5"/>
+          <path d="M17 12 C17.5 10 16.5 7.5 14.5 7 C15 9 15.5 13 15 17 C16 15 16.5 13.5 17 12Z" fill="#E8D898" stroke="#B89830" stroke-width="0.5"/>
+          <line x1="13" y1="6.5" x2="13" y2="21.5" stroke="#C8A840" stroke-width="0.7" stroke-dasharray="1.5,1.5"/>
+          <path d="M8 13 C10 12.2 16 12.2 18 13" stroke="#D4B860" stroke-width="0.6" fill="none" opacity="0.7"/>
+          <path d="M7.5 17 C9.5 16.2 16.5 16.2 18.5 17" stroke="#D4B860" stroke-width="0.5" fill="none" opacity="0.6"/>
+        </svg></div>
+        마늘
+      </button>
+
+      <!-- 양파 -->
+      <button class="crop-btn" data-crop="양파" data-mode="이랑" onclick="selectCrop(this)">
+        <div class="crop-ico"><svg width="26" height="28" viewBox="0 0 26 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M13 5.5 C13 3.5 12.5 2 13 1" stroke="#5A9020" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M11 6 C10 4 9.5 2.5 10.5 1.5" stroke="#5A9020" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+          <ellipse cx="13" cy="6.5" rx="3" ry="1.2" fill="#B86010" stroke="#904010" stroke-width="0.7"/>
+          <path d="M5.5 15 C5.5 9 8.5 6.5 13 6.5 C17.5 6.5 20.5 9 20.5 15 C20.5 20.5 17.5 24 13 24 C8.5 24 5.5 20.5 5.5 15Z" fill="#D07818" stroke="#A05810" stroke-width="1.1"/>
+          <path d="M8 10 C9.5 9 16.5 9 18 10" stroke="#C86810" stroke-width="0.7" fill="none"/>
+          <path d="M7 13.5 C9 12.5 17 12.5 19 13.5" stroke="#BE6010" stroke-width="0.7" fill="none"/>
+          <path d="M6.5 17.5 C9 16.5 17 16.5 19.5 17.5" stroke="#BE6010" stroke-width="0.6" fill="none"/>
+          <path d="M8.5 9.5 C9 8.5 10 7.5 11.5 7.5" stroke="#E89040" stroke-width="1" fill="none" stroke-linecap="round" opacity="0.7"/>
+          <line x1="11" y1="24" x2="10.5" y2="26.5" stroke="#8B5A20" stroke-width="0.8" stroke-linecap="round"/>
+          <line x1="13" y1="24.3" x2="13" y2="27" stroke="#8B5A20" stroke-width="0.8" stroke-linecap="round"/>
+          <line x1="15" y1="24" x2="15.5" y2="26.5" stroke="#8B5A20" stroke-width="0.8" stroke-linecap="round"/>
+        </svg></div>
+        양파
+      </button>
+
+      <!-- 감자 -->
+      <button class="crop-btn" data-crop="감자" data-mode="이랑" onclick="selectCrop(this)">
+        <div class="crop-ico"><svg width="22" height="20" viewBox="0 0 22 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 10 C3 5 6 2 11 2 C15.5 2 19 5 19 10 C19 15 16 18 11 18 C6.5 18 3 15 3 10Z" fill="#C8924A" stroke="#9A6830" stroke-width="0.9"/>
+          <path d="M3 10 C5 8.5 7 9 8 10 C9 11 10 11.5 11 11 C12 10.5 13.5 9.5 15 10 C16.5 10.5 18 11 19 10" stroke="#B07840" stroke-width="0.5" fill="none"/>
+          <circle cx="7" cy="7" r="1" fill="#8A5830" opacity="0.7"/><circle cx="7" cy="7" r="0.4" fill="#7A4820"/>
+          <circle cx="13" cy="6" r="1" fill="#8A5830" opacity="0.7"/><circle cx="13" cy="6" r="0.4" fill="#7A4820"/>
+          <circle cx="15" cy="13" r="0.9" fill="#8A5830" opacity="0.7"/><circle cx="15" cy="13" r="0.35" fill="#7A4820"/>
+          <circle cx="8" cy="14" r="0.8" fill="#8A5830" opacity="0.6"/>
+        </svg></div>
+        감자
+      </button>
+
+      <!-- 무 -->
+      <button class="crop-btn" data-crop="무" data-mode="이랑" onclick="selectCrop(this)">
+        <div class="crop-ico"><svg width="18" height="26" viewBox="0 0 18 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M5 7 C3.5 4.5 3.5 2.5 5.5 1.5" stroke="#3D8A28" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+          <path d="M9 6.5 C9 4 9 2 9 0.8" stroke="#3D8A28" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+          <path d="M13 7 C14.5 4.5 14.5 2.5 12.5 1.5" stroke="#3D8A28" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+          <path d="M4 8 C3 8.5 2.5 11.5 3 15 C3.5 19 6 24 9 25 C12 24 14.5 19 15 15 C15.5 11.5 15 8.5 14 8 Z" fill="#F8F8F0" stroke="#D0D0C0" stroke-width="1"/>
+          <path d="M6.5 8 C6 10 5.5 14 6 18" stroke="#E0E0D0" stroke-width="0.7" fill="none"/>
+          <path d="M11.5 8 C12 10 12.5 14 12 18" stroke="#E0E0D0" stroke-width="0.7" fill="none"/>
+          <circle cx="9" cy="24.5" r="0.9" fill="#C8A0D8"/>
+        </svg></div>
+        무
+      </button>
+
+      <!-- 배추 -->
+      <button class="crop-btn" data-crop="배추" data-mode="이랑" onclick="selectCrop(this)">
+        <div class="crop-ico"><svg width="22" height="24" viewBox="0 0 22 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 14 C3 7 6 3 11 3 C16 3 19 7 19 14 C19 19 16 22 11 22 C6 22 3 19 3 14Z" fill="#B8D870" stroke="#6A9820" stroke-width="0.8"/>
+          <path d="M5 14 C5 9 7.5 6 11 6 C14.5 6 17 9 17 14 C17 18 14.5 20.5 11 20.5 C7.5 20.5 5 18 5 14Z" fill="#E8F8B0" stroke="#90C040" stroke-width="0.6"/>
+          <path d="M7 14 C7 10.5 8.8 8 11 8 C13.2 8 15 10.5 15 14 C15 17 13.2 19 11 19 C8.8 19 7 17 7 14Z" fill="#FAFCE8" stroke="#A8C858" stroke-width="0.5"/>
+          <line x1="11" y1="3" x2="11" y2="22" stroke="#90C040" stroke-width="0.8"/>
+          <path d="M4 10 C7 9 15 9 18 10" stroke="#90C040" stroke-width="0.6" fill="none"/>
+          <path d="M3.5 14 C7 12.8 15 12.8 18.5 14" stroke="#90C040" stroke-width="0.6" fill="none"/>
+        </svg></div>
+        배추
+      </button>
+
+      <!-- 콩 -->
+      <button class="crop-btn" data-crop="콩" data-mode="이랑" onclick="selectCrop(this)">
+        <div class="crop-ico"><svg width="22" height="20" viewBox="0 0 22 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 14 C1 11 1.5 6.5 4.5 4 C7.5 1.5 13 1.5 16.5 4 C19 5.8 19.5 10 17 14 C15 17 11 19 7.5 18 C4.5 17 3 14 3 14Z" fill="#8BC34A" stroke="#558B2F" stroke-width="0.9"/>
+          <ellipse cx="6" cy="14" rx="2.2" ry="2.5" fill="#7CB342" stroke="#5A8B28" stroke-width="0.5" opacity="0.8"/>
+          <ellipse cx="10.5" cy="9.5" rx="2.2" ry="2.5" fill="#7CB342" stroke="#5A8B28" stroke-width="0.5" opacity="0.8"/>
+          <ellipse cx="15" cy="6" rx="2" ry="2.3" fill="#7CB342" stroke="#5A8B28" stroke-width="0.5" opacity="0.8"/>
+          <path d="M16.5 4 C18 3 20 1.5 20 0.5" stroke="#558B2F" stroke-width="1" fill="none" stroke-linecap="round"/>
+        </svg></div>
+        콩
+      </button>
+
+      <!-- 논벼 (last) -->
+      <button class="crop-btn" data-crop="논벼" data-mode="길이" onclick="selectCrop(this)">
+        <div class="crop-ico"><svg width="22" height="24" viewBox="0 0 22 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <line x1="11" y1="23" x2="11" y2="11" stroke="#8B7320" stroke-width="1.4" stroke-linecap="round"/>
+          <path d="M11 11 C11 9 9.5 7 8 6" stroke="#9A8030" stroke-width="1" fill="none" stroke-linecap="round"/>
+          <path d="M11 11 C10.5 9 10 7 10 5" stroke="#9A8030" stroke-width="1" fill="none" stroke-linecap="round"/>
+          <path d="M11 11 C11.5 9 12 7 12 5" stroke="#9A8030" stroke-width="1" fill="none" stroke-linecap="round"/>
+          <path d="M11 11 C12 9 13.5 7 15 6" stroke="#9A8030" stroke-width="1" fill="none" stroke-linecap="round"/>
+          <ellipse cx="8.2" cy="6.3" rx="1.5" ry="0.85" fill="#D4AC3A" transform="rotate(-25 8.2 6.3)"/>
+          <ellipse cx="10.1" cy="4.7" rx="1.5" ry="0.85" fill="#D4AC3A" transform="rotate(-5 10.1 4.7)"/>
+          <ellipse cx="12" cy="4.7" rx="1.5" ry="0.85" fill="#D4AC3A" transform="rotate(5 12 4.7)"/>
+          <ellipse cx="14.5" cy="6.3" rx="1.5" ry="0.85" fill="#D4AC3A" transform="rotate(25 14.5 6.3)"/>
+          <ellipse cx="9" cy="8.5" rx="1.3" ry="0.75" fill="#C89828" transform="rotate(-15 9 8.5)"/>
+          <ellipse cx="13" cy="8.5" rx="1.3" ry="0.75" fill="#C89828" transform="rotate(15 13 8.5)"/>
+          <path d="M11 15 C14 13 17 11 15 8" stroke="#4A8020" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+          <path d="M11 18 C8 16 5 14 7 11" stroke="#4A8020" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+        </svg></div>
+        논벼
+      </button>
+
+    </div>
+    <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end;">
+      <div class="fg" style="margin-bottom:0;">
+        <label>필지 주소</label>
+        <input type="text" id="address" placeholder="필지 주소 입력">
+      </div>
+      <div class="fg" style="margin-bottom:0;">
+        <label>조사 날짜</label>
+        <input type="date" id="surveyDate" style="width:auto;min-width:128px;">
+      </div>
+    </div>
+  </div>
+
+  <!-- ②비율 설정 -->
+  <div class="card">
+    <div class="card-ttl"><span class="sn">2</span> 비율 설정</div>
+    <div class="ratio-toggle">
+      <div class="rtog-btn active" id="tog1" onclick="selectRatio(1)">① 1번 비율</div>
+      <div class="rtog-btn" id="tog2" onclick="selectRatio(2)">② 2번 비율</div>
+    </div>
+    <div class="ratio-row active" id="rrow1">
+      <div class="rc"><span class="rc-lbl">가 (가로)</span><input type="text" inputmode="numeric" pattern="[0-9.]*" id="r1_ga" value="0."></div>
+      <div class="rc"><span class="rc-lbl">나 (A세로)</span><input type="text" inputmode="numeric" pattern="[0-9.]*" id="r1_na" value="0."></div>
+      <div class="rc"><span class="rc-lbl">다 (B세로)</span><input type="text" inputmode="numeric" pattern="[0-9.]*" id="r1_da" value="0."></div>
+    </div>
+    <div style="height:8px;"></div>
+    <div class="ratio-row" id="rrow2">
+      <div class="rc"><span class="rc-lbl">가 (가로)</span><input type="text" inputmode="numeric" pattern="[0-9.]*" id="r2_ga" value="0."></div>
+      <div class="rc"><span class="rc-lbl">나 (A세로)</span><input type="text" inputmode="numeric" pattern="[0-9.]*" id="r2_na" value="0."></div>
+      <div class="rc"><span class="rc-lbl">다 (B세로)</span><input type="text" inputmode="numeric" pattern="[0-9.]*" id="r2_da" value="0."></div>
+    </div>
+  </div>
+
+  <!-- ③재배형태 선택 -->
+  <div class="card">
+    <div class="card-ttl"><span class="sn">3</span> 재배형태 선택</div>
+    <div class="cult-toggle" aria-label="재배 형태 선택">
+      <button type="button" class="cult-btn active" id="cultOpen" onclick="setCultivation('노지')">노지</button>
+      <button type="button" class="cult-btn" id="cultFacility" onclick="setCultivation('시설')">시설</button>
+    </div>
+    <div class="cult-help" id="cultHelp">기본값은 노지입니다. 노지 선택 시 A/B포구의 10개 이랑 평균너비는 직접 입력합니다.</div>
+  </div>
+
+  <!-- ④조사값 입력 -->
+  <div class="card">
+    <div class="card-ttl"><span class="sn">4</span> 조사값 입력</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+      <span style="font-size:12px;font-weight:500;color:var(--gr600);">입력 단위</span>
+      <div class="mode-toggle">
+        <button class="mtog" id="mRidge" onclick="setMode('이랑')">이랑 (수)</button>
+        <button class="mtog active" id="mLength" onclick="setMode('길이')">길이 (cm)</button>
+      </div>
+    </div>
+    <div class="fg">
+      <label id="lenLabel">가-나 총길이 (cm)</label>
+      <input type="number" inputmode="numeric" pattern="[0-9]*" id="lenGaNa" oninput="updateHalf()" placeholder="숫자 입력">
+      <div class="hint">추출간격 ÷ 2 = <span class="hint-v" id="halfVal">0</span> <span id="halfUnit">cm</span></div>
+    </div>
+
+    <!-- ★ Real-time A/B 가로기점 -->
+    <div class="rt-wrap hidden" id="rtWrap">
+      <!-- A포구 -->
+      <div class="rt-box rt-a">
+        <div class="rt-head">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z" fill="white"/></svg>
+          <span class="rt-head-txt">A포구 가로기점</span>
+        </div>
+        <div class="rt-body">
+          <div class="rt-formula-line" id="rtAFormula">—</div>
+          <div class="rt-val-wrap">
+            <span class="rt-big" id="rtAVal">—</span>
+            <span class="rt-unit" id="rtAUnit"> 이랑</span>
+          </div>
+          <span class="rt-calc" id="rtACalc"></span>
+        </div>
+      </div>
+      <!-- B포구 -->
+      <div class="rt-box rt-b">
+        <div class="rt-head">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z" fill="white"/></svg>
+          <span class="rt-head-txt">B포구 가로기점</span>
+        </div>
+        <div class="rt-body">
+          <div class="rt-formula-line" id="rtBFormula">—</div>
+          <div class="rt-val-wrap">
+            <span class="rt-big" id="rtBVal">—</span>
+            <span class="rt-unit" id="rtBUnit"> 이랑</span>
+          </div>
+          <span class="rt-calc" id="rtBCalc"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- A/B 입력 (수직 배치) -->
+    <div class="ab-stack">
+      <!-- A포구 -->
+      <div class="ab-group a-grp">
+        <div class="ab-group-hdr">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z" fill="white"/></svg>
+          <span class="ab-hdr-lbl">A포구 측정값</span>
+        </div>
+        <div class="ab-group-body">
+          <div class="ab-fac-calc facility-only" id="facCalcA">
+            <div class="ab-fac-title">🌿 A포구 시설 평균너비 계산</div>
+            <div class="fac-diagram-box">
+              <svg viewBox="0 0 340 155" xmlns="http://www.w3.org/2000/svg">
+                <!-- BG -->
+                <rect width="340" height="155" fill="#F9F7F2"/>
+            
+                <!-- LEFT adjacent facility -->
+                <rect x="0" y="65" width="78" height="62" fill="#DDDDD5" stroke="#ABABAB" stroke-width="1.2"/>
+                <path d="M0,65 Q39,22 78,65" fill="#CCCCC4" stroke="#ABABAB" stroke-width="1.5"/>
+                <path d="M8,65 Q39,29 70,65" fill="none" stroke="#B8B8B0" stroke-width="0.9" opacity="0.7"/>
+                <path d="M17,65 Q39,37 61,65" fill="none" stroke="#B8B8B0" stroke-width="0.8" opacity="0.6"/>
+                <path d="M27,65 Q39,47 51,65" fill="none" stroke="#B8B8B0" stroke-width="0.7" opacity="0.5"/>
+                <line x1="26" y1="65" x2="26" y2="127" stroke="#C0C0B8" stroke-width="0.8"/>
+                <line x1="52" y1="65" x2="52" y2="127" stroke="#C0C0B8" stroke-width="0.8"/>
+                <text x="39" y="100" text-anchor="middle" font-size="9.5" fill="#888" font-family="sans-serif" font-weight="500">인접</text>
+                <text x="39" y="112" text-anchor="middle" font-size="9.5" fill="#888" font-family="sans-serif" font-weight="500">시설동</text>
+            
+                <!-- ① GAP (78~115) -->
+                <rect x="78" y="65" width="37" height="62" fill="#FFFBF0" stroke="#D8C890" stroke-width="0.8" stroke-dasharray="3,2"/>
+                <text x="96" y="99" text-anchor="middle" font-size="9" fill="#B09850" font-family="sans-serif">통로</text>
+            
+                <!-- CENTER FACILITY (115~225) -->
+                <rect x="115" y="65" width="110" height="62" fill="#EDF7D8" stroke="#3B6D11" stroke-width="2"/>
+                <path d="M115,65 Q170,10 225,65" fill="#C5E878" stroke="#3B6D11" stroke-width="2" fill-opacity="0.65"/>
+                <path d="M121,65 Q170,17 219,65" fill="none" stroke="#8EC840" stroke-width="1.1"/>
+                <path d="M129,65 Q170,26 211,65" fill="none" stroke="#8EC840" stroke-width="1"/>
+                <path d="M137,65 Q170,35 203,65" fill="none" stroke="#8EC840" stroke-width="0.9"/>
+                <path d="M146,65 Q170,46 194,65" fill="none" stroke="#8EC840" stroke-width="0.7"/>
+                <!-- Row dividers -->
+                <line x1="137" y1="65" x2="137" y2="127" stroke="#82B040" stroke-width="1"/>
+                <line x1="159" y1="65" x2="159" y2="127" stroke="#82B040" stroke-width="1"/>
+                <line x1="181" y1="65" x2="181" y2="127" stroke="#82B040" stroke-width="1"/>
+                <line x1="203" y1="65" x2="203" y2="127" stroke="#82B040" stroke-width="1"/>
+                <!-- Row labels -->
+                <text x="126" y="100" text-anchor="middle" font-size="8" fill="#3B6D11" font-family="sans-serif">이랑</text>
+                <text x="148" y="100" text-anchor="middle" font-size="8" fill="#3B6D11" font-family="sans-serif">이랑</text>
+                <text x="170" y="100" text-anchor="middle" font-size="8" fill="#3B6D11" font-family="sans-serif">이랑</text>
+                <text x="192" y="100" text-anchor="middle" font-size="8" fill="#3B6D11" font-family="sans-serif">이랑</text>
+                <text x="214" y="100" text-anchor="middle" font-size="8" fill="#3B6D11" font-family="sans-serif">이랑</text>
+                <text x="170" y="118" text-anchor="middle" font-size="9.5" font-weight="700" fill="#27500A" font-family="sans-serif">조사 시설동</text>
+            
+                <!-- ③ GAP (225~262) -->
+                <rect x="225" y="65" width="37" height="62" fill="#FFFBF0" stroke="#D8C890" stroke-width="0.8" stroke-dasharray="3,2"/>
+                <text x="243" y="99" text-anchor="middle" font-size="9" fill="#B09850" font-family="sans-serif">통로</text>
+            
+                <!-- RIGHT adjacent facility -->
+                <rect x="262" y="65" width="78" height="62" fill="#DDDDD5" stroke="#ABABAB" stroke-width="1.2"/>
+                <path d="M262,65 Q301,22 340,65" fill="#CCCCC4" stroke="#ABABAB" stroke-width="1.5"/>
+                <path d="M270,65 Q301,29 332,65" fill="none" stroke="#B8B8B0" stroke-width="0.9" opacity="0.7"/>
+                <path d="M279,65 Q301,37 323,65" fill="none" stroke="#B8B8B0" stroke-width="0.8" opacity="0.6"/>
+                <path d="M289,65 Q301,47 313,65" fill="none" stroke="#B8B8B0" stroke-width="0.7" opacity="0.5"/>
+                <line x1="288" y1="65" x2="288" y2="127" stroke="#C0C0B8" stroke-width="0.8"/>
+                <line x1="314" y1="65" x2="314" y2="127" stroke="#C0C0B8" stroke-width="0.8"/>
+                <text x="301" y="100" text-anchor="middle" font-size="9.5" fill="#888" font-family="sans-serif" font-weight="500">인접</text>
+                <text x="301" y="112" text-anchor="middle" font-size="9.5" fill="#888" font-family="sans-serif" font-weight="500">시설동</text>
+            
+                <!-- Ground line -->
+                <line x1="0" y1="127" x2="340" y2="127" stroke="#8A8780" stroke-width="1.5"/>
+            
+                <!-- ① arrow -->
+                <line x1="78" y1="139" x2="115" y2="139" stroke="#666" stroke-width="1.3"/>
+                <polygon points="78,136 72,139 78,142" fill="#666"/>
+                <polygon points="115,136 121,139 115,142" fill="#666"/>
+                <rect x="83" y="132" width="24" height="14" rx="3" fill="#F9F7F2"/>
+                <text x="95" y="142.5" text-anchor="middle" font-size="12" font-weight="900" fill="#555" font-family="sans-serif">①</text>
+            
+                <!-- ② arrow -->
+                <line x1="115" y1="139" x2="225" y2="139" stroke="#0A3A8C" stroke-width="1.6"/>
+                <polygon points="115,136 109,139 115,142" fill="#0A3A8C"/>
+                <polygon points="225,136 231,139 225,142" fill="#0A3A8C"/>
+                <rect x="158" y="132" width="24" height="14" rx="3" fill="#F9F7F2"/>
+                <text x="170" y="142.5" text-anchor="middle" font-size="12" font-weight="900" fill="#0A3A8C" font-family="sans-serif">②</text>
+            
+                <!-- ③ arrow -->
+                <line x1="225" y1="139" x2="262" y2="139" stroke="#666" stroke-width="1.3"/>
+                <polygon points="225,136 219,139 225,142" fill="#666"/>
+                <polygon points="262,136 268,139 262,142" fill="#666"/>
+                <rect x="230" y="132" width="24" height="14" rx="3" fill="#F9F7F2"/>
+                <text x="242" y="142.5" text-anchor="middle" font-size="12" font-weight="900" fill="#555" font-family="sans-serif">③</text>
+            
+                <!-- Spanning formula label -->
+                <text x="170" y="154" text-anchor="middle" font-size="9" fill="#3B6D11" font-family="sans-serif" font-weight="700">①÷2 + ② + ③÷2 (①·③ 최대 100cm)</text>
+              </svg>
+            </div>
+            <div class="ab-fac-inputs">
+              <div><label>① 인접시설 좌(cm)</label><input type="number" inputmode="numeric" step="any" id="facA1" placeholder="예) 80" oninput="updateABFacility('A')"></div>
+              <div><label>② 해당시설 폭(cm)</label><input type="number" inputmode="numeric" step="any" id="facA2" placeholder="예) 420" oninput="updateABFacility('A')"></div>
+              <div><label>③ 인접시설 우(cm)</label><input type="number" inputmode="numeric" step="any" id="facA3" placeholder="예) 150" oninput="updateABFacility('A')"></div>
+              <div class="fac-rows-input"><label>해당시설 이랑수</label><input type="number" inputmode="numeric" step="any" id="facARows" placeholder="예) 5" oninput="updateABFacility('A')"></div>
+            </div>
+            <div class="ab-fac-result" id="facAResult"></div>
+          </div>
+          <div class="ab-fields">
+            <div class="fg">
+              <label>세로 총길이 (cm)</label>
+              <input type="number" inputmode="numeric" step="any" id="heightA" placeholder="A 세로" oninput="updateABDerived()">
+            </div>
+            <div class="fg">
+              <label>세로 기점 계산값</label>
+              <div class="calc-display"><span class="calc-main" id="calcASe">—</span><span class="calc-unit">cm</span></div>
+              <div class="calc-sub" id="calcASeSub">A세로 × 비율 나</div>
+            </div>
+            <div class="fg">
+              <label>10개 이랑 평균너비 (cm)</label>
+              <input type="number" inputmode="numeric" step="any" id="waAvg" placeholder="평균값" oninput="updateABDerived()">
+            </div>
+            <div class="fg">
+              <label>3㎡ 조사 길이</label>
+              <div class="calc-display"><span class="calc-main" id="calcALen3">—</span><span class="calc-unit">cm</span></div>
+              <div class="calc-sub" id="calcALen3Sub">30000 ÷ 평균너비</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- B포구 -->
+      <div class="ab-group b-grp">
+        <div class="ab-group-hdr">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z" fill="white"/></svg>
+          <span class="ab-hdr-lbl">B포구 측정값</span>
+        </div>
+        <div class="ab-group-body">
+          <div class="ab-fac-calc facility-only" id="facCalcB">
+            <div class="ab-fac-title">🌿 B포구 시설 평균너비 계산</div>
+            <div class="fac-diagram-box">
+              <svg viewBox="0 0 340 155" xmlns="http://www.w3.org/2000/svg">
+                <!-- BG -->
+                <rect width="340" height="155" fill="#F9F7F2"/>
+            
+                <!-- LEFT adjacent facility -->
+                <rect x="0" y="65" width="78" height="62" fill="#DDDDD5" stroke="#ABABAB" stroke-width="1.2"/>
+                <path d="M0,65 Q39,22 78,65" fill="#CCCCC4" stroke="#ABABAB" stroke-width="1.5"/>
+                <path d="M8,65 Q39,29 70,65" fill="none" stroke="#B8B8B0" stroke-width="0.9" opacity="0.7"/>
+                <path d="M17,65 Q39,37 61,65" fill="none" stroke="#B8B8B0" stroke-width="0.8" opacity="0.6"/>
+                <path d="M27,65 Q39,47 51,65" fill="none" stroke="#B8B8B0" stroke-width="0.7" opacity="0.5"/>
+                <line x1="26" y1="65" x2="26" y2="127" stroke="#C0C0B8" stroke-width="0.8"/>
+                <line x1="52" y1="65" x2="52" y2="127" stroke="#C0C0B8" stroke-width="0.8"/>
+                <text x="39" y="100" text-anchor="middle" font-size="9.5" fill="#888" font-family="sans-serif" font-weight="500">인접</text>
+                <text x="39" y="112" text-anchor="middle" font-size="9.5" fill="#888" font-family="sans-serif" font-weight="500">시설동</text>
+            
+                <!-- ① GAP (78~115) -->
+                <rect x="78" y="65" width="37" height="62" fill="#FFFBF0" stroke="#D8C890" stroke-width="0.8" stroke-dasharray="3,2"/>
+                <text x="96" y="99" text-anchor="middle" font-size="9" fill="#B09850" font-family="sans-serif">통로</text>
+            
+                <!-- CENTER FACILITY (115~225) -->
+                <rect x="115" y="65" width="110" height="62" fill="#EDF7D8" stroke="#3B6D11" stroke-width="2"/>
+                <path d="M115,65 Q170,10 225,65" fill="#C5E878" stroke="#3B6D11" stroke-width="2" fill-opacity="0.65"/>
+                <path d="M121,65 Q170,17 219,65" fill="none" stroke="#8EC840" stroke-width="1.1"/>
+                <path d="M129,65 Q170,26 211,65" fill="none" stroke="#8EC840" stroke-width="1"/>
+                <path d="M137,65 Q170,35 203,65" fill="none" stroke="#8EC840" stroke-width="0.9"/>
+                <path d="M146,65 Q170,46 194,65" fill="none" stroke="#8EC840" stroke-width="0.7"/>
+                <!-- Row dividers -->
+                <line x1="137" y1="65" x2="137" y2="127" stroke="#82B040" stroke-width="1"/>
+                <line x1="159" y1="65" x2="159" y2="127" stroke="#82B040" stroke-width="1"/>
+                <line x1="181" y1="65" x2="181" y2="127" stroke="#82B040" stroke-width="1"/>
+                <line x1="203" y1="65" x2="203" y2="127" stroke="#82B040" stroke-width="1"/>
+                <!-- Row labels -->
+                <text x="126" y="100" text-anchor="middle" font-size="8" fill="#3B6D11" font-family="sans-serif">이랑</text>
+                <text x="148" y="100" text-anchor="middle" font-size="8" fill="#3B6D11" font-family="sans-serif">이랑</text>
+                <text x="170" y="100" text-anchor="middle" font-size="8" fill="#3B6D11" font-family="sans-serif">이랑</text>
+                <text x="192" y="100" text-anchor="middle" font-size="8" fill="#3B6D11" font-family="sans-serif">이랑</text>
+                <text x="214" y="100" text-anchor="middle" font-size="8" fill="#3B6D11" font-family="sans-serif">이랑</text>
+                <text x="170" y="118" text-anchor="middle" font-size="9.5" font-weight="700" fill="#27500A" font-family="sans-serif">조사 시설동</text>
+            
+                <!-- ③ GAP (225~262) -->
+                <rect x="225" y="65" width="37" height="62" fill="#FFFBF0" stroke="#D8C890" stroke-width="0.8" stroke-dasharray="3,2"/>
+                <text x="243" y="99" text-anchor="middle" font-size="9" fill="#B09850" font-family="sans-serif">통로</text>
+            
+                <!-- RIGHT adjacent facility -->
+                <rect x="262" y="65" width="78" height="62" fill="#DDDDD5" stroke="#ABABAB" stroke-width="1.2"/>
+                <path d="M262,65 Q301,22 340,65" fill="#CCCCC4" stroke="#ABABAB" stroke-width="1.5"/>
+                <path d="M270,65 Q301,29 332,65" fill="none" stroke="#B8B8B0" stroke-width="0.9" opacity="0.7"/>
+                <path d="M279,65 Q301,37 323,65" fill="none" stroke="#B8B8B0" stroke-width="0.8" opacity="0.6"/>
+                <path d="M289,65 Q301,47 313,65" fill="none" stroke="#B8B8B0" stroke-width="0.7" opacity="0.5"/>
+                <line x1="288" y1="65" x2="288" y2="127" stroke="#C0C0B8" stroke-width="0.8"/>
+                <line x1="314" y1="65" x2="314" y2="127" stroke="#C0C0B8" stroke-width="0.8"/>
+                <text x="301" y="100" text-anchor="middle" font-size="9.5" fill="#888" font-family="sans-serif" font-weight="500">인접</text>
+                <text x="301" y="112" text-anchor="middle" font-size="9.5" fill="#888" font-family="sans-serif" font-weight="500">시설동</text>
+            
+                <!-- Ground line -->
+                <line x1="0" y1="127" x2="340" y2="127" stroke="#8A8780" stroke-width="1.5"/>
+            
+                <!-- ① arrow -->
+                <line x1="78" y1="139" x2="115" y2="139" stroke="#666" stroke-width="1.3"/>
+                <polygon points="78,136 72,139 78,142" fill="#666"/>
+                <polygon points="115,136 121,139 115,142" fill="#666"/>
+                <rect x="83" y="132" width="24" height="14" rx="3" fill="#F9F7F2"/>
+                <text x="95" y="142.5" text-anchor="middle" font-size="12" font-weight="900" fill="#555" font-family="sans-serif">①</text>
+            
+                <!-- ② arrow -->
+                <line x1="115" y1="139" x2="225" y2="139" stroke="#0A3A8C" stroke-width="1.6"/>
+                <polygon points="115,136 109,139 115,142" fill="#0A3A8C"/>
+                <polygon points="225,136 231,139 225,142" fill="#0A3A8C"/>
+                <rect x="158" y="132" width="24" height="14" rx="3" fill="#F9F7F2"/>
+                <text x="170" y="142.5" text-anchor="middle" font-size="12" font-weight="900" fill="#0A3A8C" font-family="sans-serif">②</text>
+            
+                <!-- ③ arrow -->
+                <line x1="225" y1="139" x2="262" y2="139" stroke="#666" stroke-width="1.3"/>
+                <polygon points="225,136 219,139 225,142" fill="#666"/>
+                <polygon points="262,136 268,139 262,142" fill="#666"/>
+                <rect x="230" y="132" width="24" height="14" rx="3" fill="#F9F7F2"/>
+                <text x="242" y="142.5" text-anchor="middle" font-size="12" font-weight="900" fill="#555" font-family="sans-serif">③</text>
+            
+                <!-- Spanning formula label -->
+                <text x="170" y="154" text-anchor="middle" font-size="9" fill="#3B6D11" font-family="sans-serif" font-weight="700">①÷2 + ② + ③÷2 (①·③ 최대 100cm)</text>
+              </svg>
+            </div>
+            <div class="ab-fac-inputs">
+              <div><label>① 인접시설 좌(cm)</label><input type="number" inputmode="numeric" step="any" id="facB1" placeholder="예) 80" oninput="updateABFacility('B')"></div>
+              <div><label>② 해당시설 폭(cm)</label><input type="number" inputmode="numeric" step="any" id="facB2" placeholder="예) 420" oninput="updateABFacility('B')"></div>
+              <div><label>③ 인접시설 우(cm)</label><input type="number" inputmode="numeric" step="any" id="facB3" placeholder="예) 150" oninput="updateABFacility('B')"></div>
+              <div class="fac-rows-input"><label>해당시설 이랑수</label><input type="number" inputmode="numeric" step="any" id="facBRows" placeholder="예) 5" oninput="updateABFacility('B')"></div>
+            </div>
+            <div class="ab-fac-result" id="facBResult"></div>
+          </div>
+          <div class="ab-fields">
+            <div class="fg">
+              <label>세로 총길이 (cm)</label>
+              <input type="number" inputmode="numeric" step="any" id="heightB" placeholder="B 세로" oninput="updateABDerived()">
+            </div>
+            <div class="fg">
+              <label>세로 기점 계산값</label>
+              <div class="calc-display"><span class="calc-main" id="calcBSe">—</span><span class="calc-unit">cm</span></div>
+              <div class="calc-sub" id="calcBSeSub">B세로 × 비율 다</div>
+            </div>
+            <div class="fg">
+              <label>10개 이랑 평균너비 (cm)</label>
+              <input type="number" inputmode="numeric" step="any" id="wbAvg" placeholder="평균값" oninput="updateABDerived()">
+            </div>
+            <div class="fg">
+              <label>3㎡ 조사 길이</label>
+              <div class="calc-display"><span class="calc-main" id="calcBLen3">—</span><span class="calc-unit">cm</span></div>
+              <div class="calc-sub" id="calcBLen3Sub">30000 ÷ 평균너비</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="alertBox" class="alert">⚠ 1번 비율의 A포구가 0이랑이 됩니다. 2번 비율을 이용하세요.</div>
+
+  <div class="btn-row">
+    <button class="btn btn-reset" onclick="location.reload()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 018-8 8 8 0 016.93 4H16v2h6V2h-2v2.54A9.99 9.99 0 0012 2C6.48 2 2 6.48 2 12h2z" fill="#C0392B"/><path d="M20 12a8 8 0 01-8 8 8 8 0 01-6.93-4H8v-2H2v6h2v-2.54A9.99 9.99 0 0012 22c5.52 0 10-4.48 10-10h-2z" fill="#C0392B"/></svg>
+      초기화
+    </button>
+    <button class="btn btn-calc" onclick="calculate()">계산하기</button>
+  </div>
+  <button class="btn-capture" id="btnCapture" style="display:none;">📷&nbsp; 결과 캡처 저장</button>
+
+  <!-- Results -->
+  <div id="resultBox" class="results">
+    <div id="captureTarget" style="display:flex;flex-direction:column;gap:11px;">
+      <div class="capture-info" id="captureInfo"></div>
+      <div class="summary-card" id="inputSummary"></div>
+
+      <div class="res-card">
+        <div class="res-hdr a">
+          <svg class="pin-badge" viewBox="0 0 24 24" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z" fill="white"/></svg>
+          A포구 선정 결과
+        </div>
+        <div class="res-rows">
+          <div class="res-row"><span class="res-lbl">가로 기점</span><div class="res-right"><span id="outA_ga" class="res-main">-</span><span id="outA_ga_raw" class="res-sub"></span></div></div>
+          <div class="res-row"><span class="res-lbl">세로 기점</span><div class="res-right"><span id="outA_se" class="res-main">-</span><span id="outA_se_raw" class="res-sub"></span></div></div>
+          <div class="res-row"><span class="res-lbl">3㎡ 조사 이랑길이</span><div class="res-right"><span id="outLenA" class="res-main">-</span><span id="outLenA_raw" class="res-sub"></span></div></div>
+        </div>
+      </div>
+
+      <div class="res-card" id="bResCard">
+        <div class="res-hdr b">
+          <svg class="pin-badge" viewBox="0 0 24 24" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z" fill="white"/></svg>
+          B포구 선정 결과
+        </div>
+        <div id="bPendingNote" style="display:none;padding:8px 14px 0;font-size:11px;color:var(--a600);background:var(--a50);border-bottom:.5px solid var(--a400);">⚠ B포구 세로 총길이를 입력하면 전체 결과가 계산됩니다.</div>
+        <div class="res-rows">
+          <div class="res-row"><span class="res-lbl">가로 기점</span><div class="res-right"><span id="outB_ga" class="res-main">-</span><span id="outB_ga_raw" class="res-sub"></span></div></div>
+          <div class="res-row"><span class="res-lbl">세로 기점</span><div class="res-right"><span id="outB_se" class="res-main">-</span><span id="outB_se_raw" class="res-sub"></span></div></div>
+          <div class="res-row"><span class="res-lbl">3㎡ 조사 이랑길이</span><div class="res-right"><span id="outLenB" class="res-main">-</span><span id="outLenB_raw" class="res-sub"></span></div></div>
+        </div>
+      </div>
+
+      <div class="diag-card">
+        <div class="diag-hdr">📐 A/B포구 선정 요도 예시</div>
+        <div class="diag-body">
+          <svg id="fieldSvg" viewBox="0 0 360 230" xmlns="http://www.w3.org/2000/svg"></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal -->
+<div class="img-modal" id="imgModal">
+  <div class="img-modal-bar">
+    <span class="img-modal-title">📷 결과 이미지</span>
+    <button class="img-modal-close" onclick="document.getElementById('imgModal').classList.remove('open')">✕ 닫기</button>
+  </div>
+  <div class="img-modal-hint">
+    📱 <strong>iOS</strong>: 아래 이미지를 <strong style="color:#fff;">길게 누르기</strong> → <strong style="color:#fff;">"사진에 추가"</strong> 선택<br>
+    💻 <strong>PC/Android</strong>: 이미지 우클릭 → 다른 이름으로 저장
+  </div>
+  <img id="modalImg" src="" alt="결과 이미지">
+</div>
+
+<script>
+let selectedRatio = 1, measureMode = '길이', selectedCrop = '', cultivationType = '노지';
+
+// KST today
+(function(){
+  const kst = new Date(Date.now() + 9*60*60*1000);
+  document.getElementById('surveyDate').value = kst.toISOString().slice(0,10);
+})();
+
+// ─── Ratio input protection (0. lock, 2 decimal, auto-advance) ───
+(function(){
+  const ids = ['r1_ga','r1_na','r1_da','r2_ga','r2_na','r2_da'];
+  const next = {r1_ga:'r1_na',r1_na:'r1_da',r1_da:'r2_ga',r2_ga:'r2_na',r2_na:'r2_da',r2_da:'lenGaNa'};
+  function enforce(inp){
+    const dec = inp.value.startsWith('0.') ? inp.value.slice(2) : inp.value.replace(/[^0-9]/g,'');
+    inp.value = '0.' + dec.replace(/[^0-9]/g,'').slice(0,2);
+  }
+  function toEnd(inp){ try{ inp.setSelectionRange(inp.value.length, inp.value.length); }catch(e){} }
+  ids.forEach(function(id){
+    const inp = document.getElementById(id);
+    if(!inp.value || inp.value==='0') inp.value='0.';
+    inp.addEventListener('input', function(){
+      enforce(this); toEnd(this);
+      if(this.value.slice(2).replace(/[^0-9]/g,'').length >= 2){
+        setTimeout(()=>{ const n = document.getElementById(next[id]); if(n){ n.focus(); toEnd(n); } }, 80);
+      }
+      updateRealtimeCalc();
+      if(typeof updateABDerived === 'function') updateABDerived();
+    });
+    inp.addEventListener('keydown', function(e){
+      const s=this.selectionStart??this.value.length, se=this.selectionEnd??this.value.length;
+      if(e.key==='Backspace'){ if(s<=2&&s===se){e.preventDefault();return;} if(s<2){e.preventDefault();return;} }
+      if(e.key==='Delete'){ if(s<2){e.preventDefault();return;} }
+      const ctrl=['Backspace','Delete','ArrowLeft','ArrowRight','Tab','Home','End'];
+      if(!ctrl.includes(e.key)&&!/^[0-9]$/.test(e.key)){e.preventDefault();return;}
+      if(/^[0-9]$/.test(e.key)){ const d=this.value.slice(2).replace(/[^0-9]/g,''); if(d.length>=2&&s>=2&&s===se){e.preventDefault();return;} }
+    });
+    inp.addEventListener('focus', function(){ setTimeout(()=>toEnd(this),10); });
+    inp.addEventListener('click', function(){ if((this.selectionStart??0)<2) toEnd(this); });
+    inp.addEventListener('blur', function(){ if(!this.value||this.value==='0') this.value='0.'; });
+  });
+})();
+
+function selectCrop(btn){
+  document.querySelectorAll('.crop-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedCrop = btn.dataset.crop;
+  document.getElementById('hdrCropBadge').textContent = selectedCrop;
+  document.getElementById('hdrCropBadge').style.display = 'inline-block';
+  setMode(btn.dataset.mode || '이랑');
+}
+
+function selectRatio(n){
+  selectedRatio = n;
+  ['tog1','tog2'].forEach((id,i)=>document.getElementById(id).classList.toggle('active',i+1===n));
+  ['rrow1','rrow2'].forEach((id,i)=>document.getElementById(id).classList.toggle('active',i+1===n));
+  updateRealtimeCalc();
+  updateABDerived();
+}
+
+function setMode(mode){
+  measureMode = mode;
+  document.getElementById('mRidge').classList.toggle('active', mode==='이랑');
+  document.getElementById('mLength').classList.toggle('active', mode==='길이');
+  document.getElementById('lenLabel').textContent = mode==='이랑' ? '가-나 총이랑수 (이랑)' : '가-나 총길이 (cm)';
+  updateHalf();
+}
+setMode('길이');
+
+function updateHalf(){
+  const v = parseFloat(document.getElementById('lenGaNa').value);
+  document.getElementById('halfVal').textContent = isNaN(v) ? '0' : (v/2).toFixed(1);
+  document.getElementById('halfUnit').textContent = measureMode==='이랑' ? '이랑' : 'cm';
+  updateRealtimeCalc();
+}
+
+// ─── A포구 0이랑 주의사항 ───
+function updateRatioWarning(aGa){
+  const box = document.getElementById('alertBox');
+  if(!box) return;
+  if(typeof aGa === 'number' && isFinite(aGa) && Math.round(aGa) === 0){
+    if(selectedRatio === 1){
+      box.innerHTML = '⚠ 1번 비율의 A포구가 0이랑이 됩니다. <strong>2번 비율을 이용하세요.</strong>';
+    } else {
+      box.innerHTML = '⚠ 2번 비율의 A포구가 0이랑입니다. 그대로 <strong>2번 비율을 사용</strong>하고 <strong>1, 2번 이랑</strong>으로 선정하세요.';
+    }
+    box.style.display = 'block';
+  } else {
+    box.style.display = 'none';
+  }
+}
+
+// ─── Real-time A/B calculation ───
+function updateRealtimeCalc(){
+  const L = parseFloat(document.getElementById('lenGaNa').value);
+  const gaEl = document.getElementById('r' + selectedRatio + '_ga');
+  const ga = gaEl ? parseFloat(gaEl.value) : NaN;
+  const wrap = document.getElementById('rtWrap');
+  const unit = measureMode==='이랑' ? '이랑' : 'cm';
+
+  if(!isNaN(L) && L > 0 && !isNaN(ga) && ga > 0){
+    const a_ga = L * ga;
+    const b_ga = a_ga + L / 2;
+    const aRnd = Math.round(a_ga * 10) / 10;
+    const bRnd = Math.round(b_ga * 10) / 10;
+
+    // A formula: L × ga = result
+    document.getElementById('rtAFormula').innerHTML =
+      '<span class="fn">' + L + '</span> × <span class="fn">' + ga + '</span>(가비율)<span class="feq"> =</span>';
+    document.getElementById('rtAVal').textContent = Math.round(a_ga).toLocaleString('ko-KR');
+    document.getElementById('rtAUnit').textContent = ' ' + unit;
+    document.getElementById('rtACalc').textContent = '계산값: ' + aRnd.toFixed(1);
+
+    // B formula: A_result + L/2 = result
+    document.getElementById('rtBFormula').innerHTML =
+      '<span class="fn">' + Math.round(a_ga) + '</span> + <span class="fn">' + L + '</span> ÷ 2<span class="feq"> =</span>';
+    document.getElementById('rtBVal').textContent = Math.round(b_ga).toLocaleString('ko-KR');
+    document.getElementById('rtBUnit').textContent = ' ' + unit;
+    document.getElementById('rtBCalc').textContent = '계산값: ' + bRnd.toFixed(1);
+
+    wrap.classList.remove('hidden');
+    updateRatioWarning(a_ga);
+  } else {
+    wrap.classList.add('hidden');
+    updateRatioWarning(NaN);
+  }
+}
+
+// ─── Facility calculation ───
+function setCultivation(type){
+  cultivationType = type;
+  document.getElementById('cultOpen').classList.toggle('active', type === '노지');
+  document.getElementById('cultFacility').classList.toggle('active', type === '시설');
+  document.getElementById('cultHelp').textContent = type === '시설'
+    ? '시설 선택 시 A/B포구별 시설 평균너비를 계산하여 10개 이랑 평균너비에 자동 입력합니다.'
+    : '기본값은 노지입니다. 노지 선택 시 A/B포구의 10개 이랑 평균너비는 직접 입력합니다.';
+
+  document.querySelectorAll('.facility-only').forEach(el => {
+    el.classList.toggle('show', type === '시설');
+  });
+
+  ['waAvg','wbAvg'].forEach(id => {
+    const input = document.getElementById(id);
+    if(input) input.readOnly = type === '시설';
+  });
+
+  if(type === '시설'){
+    updateABFacility('A');
+    updateABFacility('B');
+  }
+  updateABDerived();
+}
+
+// ─── Facility calculation ───
+function calcFacilityWidth(f1raw, f2, f3raw, rows){
+  // 시설 계산 기준: ① 인접시설 좌, ③ 인접시설 우는 각각 최대 100cm까지만 적용
+  const f1 = Math.min(f1raw || 0, 100);
+  const f3 = Math.min(f3raw || 0, 100);
+  const total = f1 / 2 + (f2 || 0) + f3 / 2;
+  const avg = rows > 0 ? total / rows : NaN;
+  return {f1, f3, total, avg};
+}
+
+function updateABFacility(which){
+  const ids = which === 'A'
+    ? {i1:'facA1', i2:'facA2', rows:'facARows', i3:'facA3', result:'facAResult', target:'waAvg'}
+    : {i1:'facB1', i2:'facB2', rows:'facBRows', i3:'facB3', result:'facBResult', target:'wbAvg'};
+
+  const f1raw = parseFloat(document.getElementById(ids.i1).value) || 0;
+  const f2 = parseFloat(document.getElementById(ids.i2).value) || 0;
+  const rows = parseFloat(document.getElementById(ids.rows).value) || 0;
+  const f3raw = parseFloat(document.getElementById(ids.i3).value) || 0;
+  const box = document.getElementById(ids.result);
+  const target = document.getElementById(ids.target);
+
+  if(f1raw > 0 || f2 > 0 || f3raw > 0 || rows > 0){
+    const v = calcFacilityWidth(f1raw, f2, f3raw, rows);
+    const cappedParts = [];
+    if(f1raw > 100) cappedParts.push('① ' + f1raw + 'cm → 100cm 적용');
+    if(f3raw > 100) cappedParts.push('③ ' + f3raw + 'cm → 100cm 적용');
+    const cappedMsg = cappedParts.length
+      ? ' <span style="color:var(--a600);font-weight:800;">(' + cappedParts.join(', ') + ')</span>'
+      : '';
+
+    const formula =
+      '① <strong>' + v.f1.toFixed(1) + '</strong> ÷ 2 + ② <strong>' + f2 + '</strong> + ③ <strong>' + v.f3.toFixed(1) + '</strong> ÷ 2' +
+      ' = 시설 유효폭 합계 <strong>' + v.total.toFixed(1) + '</strong> cm';
+    if(rows > 0){
+      box.innerHTML = formula + '<br>시설 유효폭 합계 <strong>' + v.total.toFixed(1) + '</strong> cm ÷ 해당시설 이랑수 <strong>' + rows + '</strong> = 평균너비 <strong>' + v.avg.toFixed(1) + '</strong> cm' + cappedMsg;
+      if(cultivationType === '시설') target.value = v.avg.toFixed(1);
+    } else {
+      box.innerHTML = formula + '<br>해당시설 이랑수를 입력하면 평균너비가 계산됩니다.' + cappedMsg;
+      if(cultivationType === '시설') target.value = '';
+    }
+    box.style.display = 'block';
+  } else {
+    box.style.display = 'none';
+    if(cultivationType === '시설') target.value = '';
+  }
+  updateABDerived();
+}
+
+function updateABDerived(){
+  const sel = selectedRatio;
+  const na = parseFloat(document.getElementById('r'+sel+'_na').value);
+  const da = parseFloat(document.getElementById('r'+sel+'_da').value);
+  const Ha = parseFloat(document.getElementById('heightA').value);
+  const Hb = parseFloat(document.getElementById('heightB').value);
+  const wa = parseFloat(document.getElementById('waAvg').value);
+  const wb = parseFloat(document.getElementById('wbAvg').value);
+  function put(mainId, subId, val, sub){
+    const main = document.getElementById(mainId), s = document.getElementById(subId);
+    if(!main) return;
+    if(isNaN(val) || !isFinite(val)){ main.textContent = '—'; }
+    else { main.textContent = (Math.round(val * 10) / 10).toLocaleString('ko-KR', {minimumFractionDigits:1, maximumFractionDigits:1}); }
+    if(s && sub) s.textContent = sub;
+  }
+  put('calcASe','calcASeSub', (!isNaN(Ha)&&!isNaN(na)) ? Ha*na : NaN, 'A세로 × 비율 나(' + (isNaN(na)?'-':na) + ')');
+  put('calcBSe','calcBSeSub', (!isNaN(Hb)&&!isNaN(da)) ? Hb*da : NaN, 'B세로 × 비율 다(' + (isNaN(da)?'-':da) + ')');
+  put('calcALen3','calcALen3Sub', (!isNaN(wa)&&wa>0) ? 30000/wa : NaN, '30000 ÷ 평균너비(' + (isNaN(wa)?'-':wa) + ')');
+  put('calcBLen3','calcBLen3Sub', (!isNaN(wb)&&wb>0) ? 30000/wb : NaN, '30000 ÷ 평균너비(' + (isNaN(wb)?'-':wb) + ')');
+}
+
+setCultivation('노지');
+
+// ─── Calculate ───
+// ─── Calculate ───
+function fmt(v){ return Math.round(v).toLocaleString('ko-KR'); }
+function fmtd(v){ return '계산값: ' + v.toFixed(1); }
+function setRes(mId, sId, val, unit){
+  document.getElementById(mId).textContent = fmt(val) + ' ' + unit;
+  document.getElementById(sId).textContent = fmtd(val);
+}
+
+function calculate(){
+  const addr = document.getElementById('address').value;
+  const dateVal = document.getElementById('surveyDate').value;
+  const dateTxt = dateVal ? new Date(dateVal+'T00:00:00').toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'}) : '미입력';
+  const L = parseFloat(document.getElementById('lenGaNa').value);
+  const Ha = parseFloat(document.getElementById('heightA').value);
+  const Hb = parseFloat(document.getElementById('heightB').value);
+  const waA = parseFloat(document.getElementById('waAvg').value);
+  const wbA = parseFloat(document.getElementById('wbAvg').value);
+  const sel = selectedRatio;
+  const r1ga=document.getElementById('r1_ga').value,r1na=document.getElementById('r1_na').value,r1da=document.getElementById('r1_da').value;
+  const r2ga=document.getElementById('r2_ga').value,r2na=document.getElementById('r2_na').value,r2da=document.getElementById('r2_da').value;
+  const ga = parseFloat(document.getElementById('r'+sel+'_ga').value);
+  const na = parseFloat(document.getElementById('r'+sel+'_na').value);
+  const da = parseFloat(document.getElementById('r'+sel+'_da').value);
+
+  if(isNaN(L)||isNaN(Ha)||isNaN(ga)||isNaN(na)){
+    alert('비율(가·나)과 가-나 총길이, A 세로 총길이를 입력해주세요.');return;
+  }
+
+  const hasB = !isNaN(Hb) && !isNaN(da);
+  const gaUnit = measureMode==='이랑' ? '이랑' : 'cm';
+  const lLbl = measureMode==='이랑' ? '총이랑수' : '총길이(cm)';
+
+  const saveNow = new Date(Date.now()+9*60*60*1000);
+  const saveTime = saveNow.toISOString().slice(0,10).replace(/-/g,'. ')+'. '+
+    String(saveNow.getUTCHours()).padStart(2,'0')+':'+String(saveNow.getUTCMinutes()).padStart(2,'0');
+
+  document.getElementById('captureInfo').innerHTML =
+    (selectedCrop ? '<strong>작물: '+selectedCrop+'</strong> &nbsp;·&nbsp; ' : '') +
+    '주소: '+(addr||'미입력')+' &nbsp;·&nbsp; 조사일: '+dateTxt+'<br>저장일시: '+saveTime;
+
+  document.getElementById('inputSummary').innerHTML =
+    '<strong>입력 데이터 요약</strong><br>'+
+    '재배 형태: '+cultivationType+' &nbsp;|&nbsp; 선택 비율: '+sel+'번 &nbsp;|&nbsp; 1번: 가('+r1ga+') 나('+r1na+') 다('+r1da+')'+
+    ' &nbsp;|&nbsp; 2번: 가('+r2ga+') 나('+r2na+') 다('+r2da+')<br>'+
+    lLbl+': '+L+' &nbsp;|&nbsp; A세로: '+Ha+'cm'+
+    (hasB?' &nbsp;|&nbsp; B세로: '+Hb+'cm':' &nbsp;|&nbsp; B세로: <em>미입력</em>')+
+    ' &nbsp;|&nbsp; 평균너비 A:'+(isNaN(waA)?'-':waA)+(hasB?' B:'+(isNaN(wbA)?'-':wbA):'');
+
+  const a_ga = L*ga, b_ga = a_ga + L/2;
+  const a_se = Ha*na;
+
+  setRes('outA_ga','outA_ga_raw', a_ga, gaUnit);
+  setRes('outA_se','outA_se_raw', a_se, 'cm');
+  if(!isNaN(waA)&&waA>0) setRes('outLenA','outLenA_raw', 30000/waA, 'cm');
+
+  updateRatioWarning(a_ga);
+
+  const bCard = document.getElementById('bResCard');
+  if(hasB){
+    const b_se = Hb*da;
+    setRes('outB_ga','outB_ga_raw', b_ga, gaUnit);
+    setRes('outB_se','outB_se_raw', b_se, 'cm');
+    if(!isNaN(wbA)&&wbA>0) setRes('outLenB','outLenB_raw', 30000/wbA, 'cm');
+    bCard.style.opacity='1'; bCard.style.border='';
+    document.getElementById('bPendingNote').style.display='none';
+  } else {
+    setRes('outB_ga','outB_ga_raw', b_ga, gaUnit);
+    document.getElementById('outB_se').textContent='—';
+    document.getElementById('outB_se_raw').textContent='B 세로 미입력';
+    document.getElementById('outLenB').textContent='—';
+    document.getElementById('outLenB_raw').textContent='평균너비 미입력';
+    bCard.style.opacity='0.6'; bCard.style.border='.5px dashed var(--gr200)';
+    document.getElementById('bPendingNote').style.display='block';
+  }
+
+  const b_se = hasB ? Hb*da : null;
+  drawDiagram(ga, na, da, a_ga, b_ga, a_se, b_se, gaUnit, hasB);
+
+  const rb = document.getElementById('resultBox');
+  rb.style.display='flex'; rb.style.flexDirection='column'; rb.style.gap='12px';
+  const capBtn = document.getElementById('btnCapture');
+  if(capBtn) capBtn.style.display = 'flex';
+  setTimeout(()=>rb.scrollIntoView({behavior:'smooth',block:'start'}), 50);
+}
+
+// ─── Diagram ───
+function drawDiagram(ga,na,da,a_ga,b_ga,a_se,b_se,gaUnit,hasB){
+  const NS='http://www.w3.org/2000/svg';
+  const svg=document.getElementById('fieldSvg');
+  svg.innerHTML='';
+  function el(tag,attrs,txt){
+    const e=document.createElementNS(NS,tag);
+    for(const[k,v]of Object.entries(attrs))e.setAttribute(k,v);
+    if(txt!==undefined)e.textContent=txt;
+    return e;
+  }
+  const FX=52,FY=22,FW=240,FH=130;
+  const bot=FY+FH, rgt=FX+FW;
+  const gaF=Math.min(Math.max(ga,0.05),0.90);
+  const bF=Math.min(Math.max(ga+0.5,0.08),0.97);
+  const naF=Math.min(Math.max(na,0.06),0.92);
+  const daF=hasB?Math.min(Math.max(da,0.06),0.92):0.5;
+  const axA=FX+FW*gaF, axB=FX+FW*bF;
+  const ayA=bot-FH*naF, ayB=bot-FH*daF;
+
+  svg.appendChild(el('rect',{x:FX,y:FY,width:FW,height:FH,rx:'3',fill:'#EAF3DE'}));
+  for(let i=1;i<7;i++){
+    const ly=FY+(FH/7)*i;
+    svg.appendChild(el('line',{x1:FX+2,y1:ly,x2:rgt-2,y2:ly,stroke:'#C0DD97','stroke-width':'0.6','stroke-dasharray':'3,5'}));
+  }
+  svg.appendChild(el('rect',{x:FX,y:FY,width:FW,height:FH,rx:'3',fill:'none',stroke:'#3B6D11','stroke-width':'1.5'}));
+
+  svg.appendChild(el('text',{x:FX-5,y:FY+8,'text-anchor':'end',fill:'#111','font-size':'11','font-family':'sans-serif','font-weight':'bold'},'다'));
+  svg.appendChild(el('text',{x:FX,y:bot+13,'text-anchor':'middle',fill:'#111','font-size':'11','font-family':'sans-serif','font-weight':'bold'},'가'));
+  svg.appendChild(el('text',{x:rgt,y:bot+13,'text-anchor':'middle',fill:'#111','font-size':'11','font-family':'sans-serif','font-weight':'bold'},'나'));
+
+  svg.appendChild(el('line',{x1:axA,y1:bot,x2:axA,y2:FY,stroke:'#1558D6','stroke-width':'1.2','stroke-dasharray':'4,3'}));
+  svg.appendChild(el('line',{x1:axB,y1:bot,x2:axB,y2:FY,stroke:hasB?'#C0392B':'#B4B2A9','stroke-width':'1.2','stroke-dasharray':'4,3',opacity:hasB?'1':'0.45'}));
+
+  const d1y=bot+26, midA=(FX+axA)/2;
+  svg.appendChild(el('line',{x1:FX,y1:d1y,x2:axA,y2:d1y,stroke:'#1558D6','stroke-width':'1.2'}));
+  svg.appendChild(el('polygon',{points:`${axA-4},${d1y-3} ${axA+1},${d1y} ${axA-4},${d1y+3}`,fill:'#1558D6'}));
+  svg.appendChild(el('polygon',{points:`${FX+4},${d1y-3} ${FX-1},${d1y} ${FX+4},${d1y+3}`,fill:'#1558D6'}));
+  const aGaTxt=fmt(a_ga)+gaUnit, aGaW=aGaTxt.length*6+8;
+  svg.appendChild(el('rect',{x:midA-aGaW/2,y:d1y-14,width:aGaW,height:12,rx:'2',fill:'#DDEEFF'}));
+  svg.appendChild(el('text',{x:midA,y:d1y-5,'text-anchor':'middle',fill:'#0A3580','font-size':'8.5','font-family':'sans-serif','font-weight':'bold'},aGaTxt));
+
+  const d2y=bot+42, midB=(FX+axB)/2;
+  svg.appendChild(el('line',{x1:FX,y1:d2y,x2:axB,y2:d2y,stroke:hasB?'#C0392B':'#B4B2A9','stroke-width':'1.2',opacity:hasB?'1':'0.45'}));
+  svg.appendChild(el('polygon',{points:`${axB-4},${d2y-3} ${axB+1},${d2y} ${axB-4},${d2y+3}`,fill:hasB?'#C0392B':'#B4B2A9',opacity:hasB?'1':'0.45'}));
+  svg.appendChild(el('polygon',{points:`${FX+4},${d2y-3} ${FX-1},${d2y} ${FX+4},${d2y+3}`,fill:hasB?'#C0392B':'#B4B2A9',opacity:hasB?'1':'0.45'}));
+  const bGaTxt=fmt(b_ga)+gaUnit, bGaW=bGaTxt.length*6+8;
+  svg.appendChild(el('rect',{x:midB-bGaW/2,y:d2y-14,width:bGaW,height:12,rx:'2',fill:hasB?'#FFDEDE':'#F0F0F0',opacity:hasB?'1':'0.45'}));
+  svg.appendChild(el('text',{x:midB,y:d2y-5,'text-anchor':'middle',fill:hasB?'#7A0000':'#B4B2A9','font-size':'8.5','font-family':'sans-serif','font-weight':'bold'},bGaTxt));
+
+  {
+    const arX=axA-10, arY1=bot, arY2=ayA, midY=(arY1+arY2)/2;
+    svg.appendChild(el('line',{x1:arX,y1:arY1,x2:arX,y2:arY2,stroke:'#1558D6','stroke-width':'1.5'}));
+    svg.appendChild(el('polygon',{points:`${arX-3},${arY2+6} ${arX},${arY2-1} ${arX+3},${arY2+6}`,fill:'#1558D6'}));
+    svg.appendChild(el('polygon',{points:`${arX-3},${arY1-6} ${arX},${arY1+1} ${arX+3},${arY1-6}`,fill:'#1558D6'}));
+    const aTxt=fmt(a_se)+'cm', aTxtW=Math.max(aTxt.length*7+8,36), bxX=arX-aTxtW-4, bxY=midY-9;
+    svg.appendChild(el('rect',{x:bxX,y:bxY,width:aTxtW,height:18,rx:'3',fill:'#fff','fill-opacity':'0.95',stroke:'#7EB6F0','stroke-width':'1'}));
+    svg.appendChild(el('text',{x:bxX+aTxtW/2,y:bxY+12,'text-anchor':'middle',fill:'#0A3580','font-size':'9.5','font-family':'sans-serif','font-weight':'bold'},aTxt));
+  }
+  if(hasB && b_se!=null){
+    const arX=axB+10, arY1=bot, arY2=ayB, midY=(arY1+arY2)/2;
+    svg.appendChild(el('line',{x1:arX,y1:arY1,x2:arX,y2:arY2,stroke:'#C0392B','stroke-width':'1.5'}));
+    svg.appendChild(el('polygon',{points:`${arX-3},${arY2+6} ${arX},${arY2-1} ${arX+3},${arY2+6}`,fill:'#C0392B'}));
+    svg.appendChild(el('polygon',{points:`${arX-3},${arY1-6} ${arX},${arY1+1} ${arX+3},${arY1-6}`,fill:'#C0392B'}));
+    const bTxt=fmt(b_se)+'cm', bTxtW=Math.max(bTxt.length*7+8,36), bxX=arX+4, bxY=midY-9;
+    svg.appendChild(el('rect',{x:bxX,y:bxY,width:bTxtW,height:18,rx:'3',fill:'#fff','fill-opacity':'0.95',stroke:'#F07E7E','stroke-width':'1'}));
+    svg.appendChild(el('text',{x:bxX+bTxtW/2,y:bxY+12,'text-anchor':'middle',fill:'#7A0000','font-size':'9.5','font-family':'sans-serif','font-weight':'bold'},bTxt));
+  }
+
+  function tick(x,label,color,ghost){
+    const op=ghost?'0.4':'1';
+    svg.appendChild(el('line',{x1:x,y1:bot,x2:x,y2:bot+6,stroke:color,'stroke-width':'1.5',opacity:op}));
+    svg.appendChild(el('text',{x:x,y:bot+15,'text-anchor':'middle',fill:color,'font-size':'8.5','font-family':'sans-serif','font-weight':'bold',opacity:op},label));
+  }
+  tick(axA,'A기점','#1558D6',false);
+  tick(axB,'B기점',hasB?'#C0392B':'#B4B2A9',!hasB);
+
+  svg.appendChild(el('circle',{cx:axA,cy:ayA,r:'7',fill:'#1558D6',opacity:'0.18'}));
+  svg.appendChild(el('circle',{cx:axA,cy:ayA,r:'4.5',fill:'#1558D6'}));
+  svg.appendChild(el('text',{x:axA,y:ayA-11,'text-anchor':'middle',fill:'#0A3580','font-size':'11','font-family':'sans-serif','font-weight':'bold'},'A포구'));
+
+  if(hasB){
+    svg.appendChild(el('circle',{cx:axB,cy:ayB,r:'7',fill:'#C0392B',opacity:'0.18'}));
+    svg.appendChild(el('circle',{cx:axB,cy:ayB,r:'4.5',fill:'#C0392B'}));
+    svg.appendChild(el('text',{x:axB,y:ayB-11,'text-anchor':'middle',fill:'#7A0000','font-size':'11','font-family':'sans-serif','font-weight':'bold'},'B포구'));
+  } else {
+    svg.appendChild(el('circle',{cx:axB,cy:ayB,r:'5',fill:'#B4B2A9',opacity:'0.15'}));
+    svg.appendChild(el('circle',{cx:axB,cy:ayB,r:'3.2',fill:'#B4B2A9',opacity:'0.4'}));
+    svg.appendChild(el('text',{x:axB,y:ayB-10,'text-anchor':'middle',fill:'#B4B2A9','font-size':'9','font-family':'sans-serif'},'B포구'));
+  }
+}
+
+// ─── Screenshot ───
+document.getElementById('btnCapture').addEventListener('click', function(){
+  const btn = this;
+  btn.innerHTML='⏳&nbsp; 캡처 중...'; btn.disabled=true;
+  if(typeof html2canvas==='undefined'){
+    btn.innerHTML='📷&nbsp; 결과 캡처 저장'; btn.disabled=false;
+    alert('라이브러리 로딩 중입니다. 잠시 후 다시 시도해주세요.'); return;
+  }
+  const target=document.getElementById('captureTarget');
+  const cropName=(selectedCrop||'농작물').replace(/[\\/:*?"<>|]/g,'');
+  const lotRaw=(document.getElementById('address').value||'지번미입력').trim();
+  const lot=lotRaw.replace(/\s+/g,'_').replace(/[\\/:*?"<>|]/g,'').slice(0,40) || '지번미입력';
+  const surveyDate=document.getElementById('surveyDate').value;
+  const dateStr=(surveyDate || new Date(Date.now()+9*60*60*1000).toISOString().slice(0,10)).replace(/-/g,'');
+  const fileName='포구_'+cropName+'_'+lot+'_'+dateStr+'.png';
+  html2canvas(target,{scale:2,useCORS:true,allowTaint:true,logging:false,backgroundColor:'#ffffff',imageTimeout:0,removeContainer:true}).then(function(canvas){
+    const dataUrl=canvas.toDataURL('image/png');
+    const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;
+    if(isIOS){
+      document.getElementById('modalImg').src=dataUrl;
+      document.getElementById('imgModal').classList.add('open');
+    } else {
+      const a=document.createElement('a');
+      a.href=dataUrl; a.download=fileName;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    }
+    btn.innerHTML='📷&nbsp; 결과 캡처 저장'; btn.disabled=false;
+  }).catch(function(err){
+    console.error(err);
+    alert('캡처에 실패했습니다. 다시 시도해주세요.');
+    btn.innerHTML='📷&nbsp; 결과 캡처 저장'; btn.disabled=false;
+  });
+});
+
+// 기본 선택값: 마늘 · 1번 비율 · 노지
+(function initDefaults(){
+  const garlic = document.querySelector('.crop-btn[data-crop="마늘"]');
+  if(garlic) selectCrop(garlic);
+  selectRatio(1);
+  setCultivation('노지');
+  updateABDerived();
+})();
+</script>
+</body>
+</html>

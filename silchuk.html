@@ -1,0 +1,1924 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>농작물 10a당 생산량 계산기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{overscroll-behavior:none}
+body{overscroll-behavior-y:contain}
+:root{
+  --green:#3a7d44;--green-light:#e8f5ec;--green-mid:#a8d5b5;
+  --blue:#185FA5;--blue-light:#E6F1FB;--blue-mid:#B5D4F4;
+  --amber:#BA7517;--amber-light:#FAEEDA;--amber-mid:#FAC775;
+  --red:#A32D2D;--red-light:#FCEBEB;--red-mid:#F09595;
+  --text:#1a1a1a;--text-muted:#666;--text-hint:#999;
+  --border:#e2e2de;--border-strong:#c8c8c4;
+  --bg:#f4f3ef;--surface:#fff;--surface2:#f7f6f2;
+  --radius:12px;--radius-sm:8px;
+}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.app-header{background:var(--green);padding:0.85rem 1rem 0.85rem;position:sticky;top:0;z-index:10}
+.header-inner{display:flex;justify-content:space-between;align-items:center;max-width:480px;margin:0 auto;gap:8px}
+.header-left{flex:1;min-width:0}
+.app-header h1{font-size:17px;font-weight:700;color:#fff;letter-spacing:-0.01em;line-height:1.2}
+.app-header p{font-size:10px;color:rgba(255,255,255,0.8);margin-top:3px;font-weight:400;letter-spacing:0.01em}
+.home-btn{flex-shrink:0;width:40px;height:40px;background:rgba(255,255,255,0.18);border:2px solid rgba(255,255,255,0.4);border-radius:10px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;transition:all .15s}
+.home-btn:hover{background:rgba(255,255,255,0.3)}
+.home-btn:active{transform:scale(0.92)}
+.content{padding:0.8rem;max-width:480px;margin:0 auto}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:0.9rem 1rem;margin-bottom:8px}
+.card-title{font-size:12px;font-weight:700;color:var(--green);letter-spacing:0.09em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.card-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.field{margin-bottom:11px}
+.field:last-child{margin-bottom:0}
+.field label{display:block;font-size:12px;font-weight:500;color:var(--text-muted);margin-bottom:4px}
+.field input,.field select,.field textarea{width:100%;font-size:16px;font-family:'Noto Sans KR',sans-serif;padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:#fff;color:#111;outline:none;-webkit-appearance:none;transition:border-color .15s,background .15s;font-weight:500}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--green);background:#fff;box-shadow:0 0 0 3px rgba(58,125,68,0.1)}
+.field textarea{resize:none;line-height:1.5;font-size:12px}
+.btn-group-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.crop-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px}
+.crop-ready{opacity:0.5;position:relative}
+.crop-ready::after{content:'준비중';position:absolute;bottom:3px;left:50%;transform:translateX(-50%);font-size:8px;color:#999;font-weight:400;white-space:nowrap}
+.btn-group-2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.toggle-btn{padding:12px 4px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);color:#444;font-size:14px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all .15s;text-align:center;-webkit-tap-highlight-color:transparent;line-height:1.3}
+.toggle-btn:active{transform:scale(0.97)}
+.toggle-btn.active-region{background:var(--green);border-color:var(--green);color:#fff;box-shadow:0 2px 8px rgba(58,125,68,0.35)}
+.toggle-btn.active-crop{background:var(--green);border-color:var(--green);color:#fff;box-shadow:0 2px 8px rgba(58,125,68,0.35)}
+.toggle-btn.active-var{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(24,95,165,0.35)}
+#variety-section{display:none;margin-top:10px}
+
+/* A/B 포구 */
+.ab-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%}
+.ab-col{border-radius:14px;overflow:hidden;box-shadow:0 3px 14px rgba(0,0,0,0.12)}
+.ab-col.ab-a{border:2px solid #2563EB}
+.ab-col.ab-b{border:2px solid #C0392B}
+.ab-header{font-size:16px;font-weight:800;padding:10px 12px;text-align:left;display:flex;align-items:center;gap:6px;letter-spacing:-.01em}
+.ab-header.a-hdr{background:#2563EB;color:#fff}
+.ab-header.b-hdr{background:#C0392B;color:#fff}
+.ab-body{padding:10px 10px 12px;background:#fff}
+.ab-col.ab-a .ab-body{background:#F0F6FF}
+.ab-col.ab-b .ab-body{background:#FFF0F0}
+.ab-field{margin-bottom:10px}
+.ab-field:last-child{margin-bottom:0}
+.ab-field label{display:block;font-size:13px;color:#444;margin-bottom:5px;font-weight:700}
+.ab-input-wrap{display:flex;align-items:center;border:2px solid #ddd;border-radius:8px;background:#fff;overflow:hidden;width:100%}
+.ab-col.ab-a .ab-input-wrap:focus-within{border-color:#2563EB;box-shadow:0 0 0 3px rgba(37,99,235,0.15)}
+.ab-col.ab-b .ab-input-wrap:focus-within{border-color:#C0392B;box-shadow:0 0 0 3px rgba(192,57,43,0.15)}
+.ab-input-wrap input{flex:1;border:none;background:transparent;padding:10px 8px;font-size:18px;font-family:'Noto Sans KR',sans-serif;color:#111;outline:none;min-width:0;width:100%;font-weight:700}
+.ab-input-wrap input::placeholder{font-size:11px;font-weight:400;color:#aaa}
+.ab-unit{padding:0 7px;font-size:12px;font-weight:600;color:#888;white-space:nowrap;border-left:1px solid #e5e5e5;background:rgba(0,0,0,0.03);align-self:stretch;display:flex;align-items:center;flex-shrink:0}
+.ab-textarea{width:100%;font-size:16px;font-family:'Noto Sans KR',sans-serif;padding:8px;border:2px solid #ddd;border-radius:8px;background:#fff;color:#111;outline:none;resize:none;line-height:1.5;transition:border-color .15s;-webkit-text-size-adjust:100%}
+.ab-col.ab-a .ab-textarea:focus{border-color:#2563EB}
+.ab-col.ab-b .ab-textarea:focus{border-color:#C0392B}
+.ab-textarea::placeholder{font-size:11px;color:#bbb;font-weight:400}
+
+/* 경고 박스 */
+.warn-box{background:#FFF8E1;border:1px solid #FFD54F;border-left:3px solid #F9A825;border-radius:5px;padding:5px 7px;margin-top:4px;font-size:10px;color:#5D4037;line-height:1.5;display:none}
+.warn-box.show{display:block}
+
+/* 실시간 생중량 */
+.live-box{background:var(--green-light);border:1px solid var(--green-mid);border-radius:5px;padding:5px 7px;margin-top:5px;display:none;align-items:center;justify-content:space-between;gap:4px}
+.live-box.show{display:flex}
+.live-label{font-size:12px;color:var(--green);font-weight:700;flex-shrink:0}
+.live-val{font-size:14px;font-weight:700;color:var(--green);text-align:right}
+
+/* 건조율 박스 */
+.dry-rate-box{background:var(--blue-light);border:1px solid var(--blue-mid);border-radius:5px;padding:5px 7px;margin-top:5px}
+.dry-rate-row{display:flex;align-items:center;justify-content:space-between;gap:4px}
+.dry-rate-label{font-size:13px;color:var(--blue);font-weight:700;flex-shrink:0}
+.dry-rate-input-wrap{display:flex;align-items:center;gap:2px}
+.dry-rate-input{width:72px;padding:6px 8px;font-size:16px;font-family:'Noto Sans KR',sans-serif;border:2px solid #DAA520;border-radius:4px;background:#fff;color:var(--blue);font-weight:700;text-align:right;outline:none};padding:6px 8px;font-size:16px;font-family:'Noto Sans KR',sans-serif;border:1.5px solid var(--blue-mid);border-radius:4px;background:#fff;color:var(--blue);font-weight:700;text-align:right;outline:none}
+.dry-rate-input:focus{border-color:var(--blue);box-shadow:0 0 0 2px rgba(24,95,165,0.15)}
+.dry-pct{font-size:11px;color:var(--blue);font-weight:600}
+
+.onion-seed-section{display:none}
+
+/* 버튼 행 */
+.btn-row{display:grid;grid-template-columns:auto 1fr;gap:8px;margin-bottom:8px;align-items:stretch}
+.reset-top-btn{padding:0 16px;background:#fff;border:2px solid #C0392B;border-radius:var(--radius);color:#C0392B;font-size:13px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent;transition:all .15s}
+.reset-top-btn:hover{background:#FDECEC}
+.calc-btn{padding:16px;background:var(--green);border:none;border-radius:var(--radius);color:#fff;font-size:17px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;letter-spacing:.02em;transition:background .15s,transform .1s;-webkit-tap-highlight-color:transparent;box-shadow:0 3px 12px rgba(58,125,68,0.4)}
+.calc-btn:hover{background:#2d6635}
+.calc-btn:active{transform:scale(0.98)}
+
+/* 결과 */
+.result-section{display:none}
+.result-section.show{display:block}
+.summary-row{display:flex;justify-content:space-between;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;gap:10px}
+.summary-row:last-child{border-bottom:none}
+.summary-key{color:var(--text-muted);flex-shrink:0}
+.summary-val{font-weight:500;text-align:right;line-height:1.4}
+.summary-val.red{color:var(--red)}
+/* 요약 A/B 테이블 */
+.sum-table{width:100%;border-collapse:collapse;font-size:12px}
+.sum-table th{font-size:11px;font-weight:700;padding:5px 6px;background:var(--surface2);border-bottom:2px solid var(--border);text-align:center;color:var(--text-muted)}
+.sum-table th.a-th{color:var(--blue)}
+.sum-table th.b-th{color:#C0392B}
+.sum-table td{padding:6px 6px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.4}
+.sum-table tr:last-child td{border-bottom:none}
+.sum-table td.sk{font-size:11px;color:var(--text-muted);font-weight:500;background:var(--surface2)}
+.sum-table td.sv{font-size:12px;font-weight:500}
+.sum-table td.sv.red{color:var(--red)}
+.sum-table td.sv.center{text-align:center;}
+/* 에러 알림 */
+.err-box{background:var(--red-light);border:1px solid var(--red-mid);border-left:3px solid var(--red);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:8px;display:none}
+.err-box.show{display:block}
+.err-title{font-size:12px;font-weight:700;color:var(--red);margin-bottom:6px}
+.err-list{list-style:none;padding:0;margin:0}
+.err-list li{font-size:12px;color:var(--red);padding:2px 0}
+/* 캡처 안내 */
+.cap-btn{width:100%;padding:15px;background:var(--green);border:none;border-radius:var(--radius);color:#fff;font-size:15px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;letter-spacing:.02em;transition:background .15s,transform .1s;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:8px;-webkit-tap-highlight-color:transparent;box-shadow:0 3px 12px rgba(58,125,68,0.35)}
+.cap-btn:hover{background:#2d6635}
+.cap-btn:active{transform:scale(0.97)}
+.cap-btn:disabled{opacity:0.6;cursor:not-allowed}
+.cap-hint{font-size:11px;color:var(--text-hint);text-align:center;margin-top:5px;line-height:1.5}
+
+.result-ab-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+.result-ab-card{border-radius:12px;padding:10px 8px;text-align:center;border:2px solid;min-width:0;overflow:hidden}
+.result-ab-card.a-card{background:#EBF4FF;border-color:#2563EB}
+.result-ab-card.b-card{background:#FDECEC;border-color:#F09595}
+.ab-result-label{font-size:clamp(11px,3vw,14px);font-weight:800;letter-spacing:.02em;margin-bottom:4px;display:flex;align-items:center;justify-content:center;gap:3px}
+.a-card .ab-result-label{color:#2563EB}
+.b-card .ab-result-label{color:#C0392B}
+.ab-result-num{font-size:clamp(20px,6vw,30px);font-weight:800;line-height:1;margin-bottom:3px;word-break:break-all}
+.a-card .ab-result-num{color:#2563EB}
+.b-card .ab-result-num{color:#C0392B}
+.ab-result-unit{font-size:9px;color:var(--text-muted)}
+.ab-sub{font-size:9px;color:var(--text-muted);margin-top:4px;padding-top:4px;border-top:1px solid rgba(0,0,0,0.07);line-height:1.5;text-align:left;word-break:break-all}
+.ab-formula{font-size:10px;color:#333;margin-top:6px;padding:7px 8px;background:rgba(255,255,255,0.92);border-radius:7px;line-height:1.8;text-align:left;border:1px solid rgba(0,0,0,0.08);overflow:hidden}
+.formula-line{display:flex;align-items:baseline;gap:4px;padding:1px 0}
+.formula-line.f-step{font-size:9px;font-weight:700;color:#888;letter-spacing:.04em;margin-top:3px;border-top:1px dashed rgba(0,0,0,0.08);padding-top:3px}
+.formula-line.f-step:first-child{border-top:none;margin-top:0;padding-top:0}
+.formula-line.f-eq{font-size:10px;color:#111;font-weight:600;padding-left:4px;word-break:break-all}
+.formula-line.f-result{font-size:11px;color:#185FA5;font-weight:800;padding-left:4px}
+.a-card .formula-line.f-result{color:#2563EB}
+.b-card .formula-line.f-result{color:#C0392B}
+
+.avg-result-box{background:var(--green);border-radius:var(--radius-sm);padding:11px;text-align:center;margin-bottom:9px;opacity:0.9}
+.avg-label{font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);letter-spacing:.08em;margin-bottom:3px}
+.avg-num{font-size:clamp(28px,8vw,38px);font-weight:700;color:#fff;line-height:1;letter-spacing:-.02em}
+.avg-unit{font-size:13px;color:rgba(255,255,255,0.8);margin-top:3px}
+.ab-result-raw{font-size:11px;color:#888;margin-top:3px;line-height:1.3;letter-spacing:.01em}
+.fmt-display{font-size:10px;color:#2563EB;font-weight:700;margin-top:2px;min-height:13px;letter-spacing:.02em;padding-left:2px}
+.result-dry-note{font-size:11px;color:var(--text-muted);padding:7px 10px;background:var(--green-light);border-radius:var(--radius-sm);border-left:3px solid var(--green);line-height:1.5}
+
+/* ── 비교 그래프 ── */
+.cmp-item{margin-bottom:14px}
+.cmp-item:last-child{margin-bottom:0}
+.cmp-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.cmp-name{font-size:12px;color:var(--text-muted);font-weight:500}
+.badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap}
+.badge-up  {background:var(--blue-light);color:var(--blue)}
+.badge-down{background:var(--red-light);color:var(--red)}
+.badge-same{background:var(--surface2);color:var(--text-muted)}
+
+/* 양쪽 방향 바 차트 */
+.bar-chart-wrap{position:relative;height:28px;display:flex;align-items:center}
+.bar-center-line{position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--border-strong);z-index:1}
+.bar-bg-left {position:absolute;right:50%;top:6px;bottom:6px;background:var(--surface2);border-radius:3px 0 0 3px}
+.bar-bg-right{position:absolute;left:50%;top:6px;bottom:6px;background:var(--surface2);border-radius:0 3px 3px 0}
+.bar-fill{position:absolute;top:6px;bottom:6px;border-radius:3px;transition:width .5s ease;z-index:2}
+.bar-fill.fill-up  {left:50%;background:var(--blue)}
+.bar-fill.fill-down{right:50%;background:var(--red)}
+.bar-fill.fill-same{left:50%;background:var(--text-hint);width:2px !important}
+.bar-labels{display:flex;justify-content:space-between;margin-top:3px}
+.bar-lbl{font-size:10px;color:var(--text-hint)}
+.bar-lbl.center{text-align:center;flex:1}
+
+/* 5년 테이블 */
+.history-table{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}
+.history-table th{padding:6px 4px;background:var(--surface2);color:var(--text-muted);font-weight:500;text-align:center;border-bottom:2px solid var(--border);font-size:11px}
+.history-table th:first-child{text-align:left}
+.history-table td{padding:6px 4px;text-align:center;border-bottom:1px solid var(--border);color:var(--text);font-size:12px}
+.history-table tr:last-child td{border-bottom:none}
+.history-table td.year-col{font-weight:500;color:var(--text-muted);text-align:left}
+.history-table td.hl{font-weight:700;color:var(--green)}
+.history-table tr.my-row td{background:rgba(58,125,68,0.06)}
+.mini-bar{display:inline-block;height:4px;background:var(--green);border-radius:2px;vertical-align:middle;margin-left:2px;opacity:0.4}
+
+.stat-note{font-size:11px;color:var(--text-hint);margin-top:8px;line-height:1.5}
+/* 5년 상세표 */
+.htbl{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px}
+.htbl th{padding:5px 6px;background:var(--surface2);font-weight:700;text-align:center;border-bottom:2px solid var(--border);font-size:11px;color:var(--text-muted)}
+.htbl th:first-child{text-align:left}
+.htbl td{padding:6px;text-align:center;border-bottom:1px solid var(--border);color:var(--text);font-size:12px}
+.htbl tr:last-child td{border-bottom:none}
+.htbl td.htbl-yr{text-align:left;font-weight:500;color:var(--text-muted)}
+.htbl td.htbl-hl{font-weight:700;color:var(--green)}
+.htbl tr.htbl-avg td{background:rgba(58,125,68,0.05);font-weight:600}
+.htbl tr.htbl-avg td.htbl-yr{color:var(--green)}
+/* 지역별 막대그래프 */
+.rbar-legend{display:flex;align-items:center;font-size:11px;color:var(--text-muted);margin-bottom:10px;flex-wrap:wrap;gap:4px}
+.rbar-dot{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:middle;margin-right:3px}
+.rbar-group{padding:8px 0;border-bottom:1px solid var(--border);overflow:hidden}
+.rbar-group:last-child{border-bottom:none}
+.rbar-selected{background:rgba(58,125,68,0.05);border-radius:6px;padding:8px 6px;margin:0 -6px}
+.rbar-label{font-size:12px;font-weight:700;color:var(--text);margin-bottom:5px}
+.rbar-rows{display:flex;flex-direction:column;gap:5px}
+.rbar-row{display:grid;grid-template-columns:30px 1fr 48px;align-items:center;gap:3px;height:16px}
+.rbar-bar-wrap{overflow:hidden;height:14px;border-radius:3px;background:var(--border);position:relative}
+.rbar-bar{height:100%;border-radius:3px;transition:width .6s ease;min-width:2px}
+.rbar-val{font-size:9px;color:var(--text-muted);white-space:nowrap;text-align:right;overflow:hidden;text-overflow:ellipsis;line-height:1}
+.rbar-row-lbl{font-size:10px;font-weight:700;color:#666;white-space:nowrap}
+.reset-bottom-btn{width:100%;padding:11px;background:transparent;border:1px solid var(--border-strong);border-radius:var(--radius);color:var(--text-muted);font-size:13px;font-weight:500;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all .15s;margin-top:2px;-webkit-tap-highlight-color:transparent}
+.reset-bottom-btn:hover{background:var(--surface2);color:var(--text)}
+
+
+/* 필지주소+조사일 같은 행 */
+.addr-date-row{display:grid;grid-template-columns:1fr 148px;gap:6px;align-items:end}
+.addr-wrap{flex:1;min-width:0}
+.date-wrap{width:148px;flex-shrink:0}
+.field-label{display:block;font-size:11px;font-weight:500;color:var(--text-muted);margin-bottom:3px}
+.addr-wrap input{width:100%;font-size:13px;font-family:'Noto Sans KR',sans-serif;padding:9px 9px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:#fff;color:#111;outline:none;-webkit-appearance:none;transition:border-color .15s;font-weight:500}
+.date-wrap input{width:100%;font-size:13px;font-family:'Noto Sans KR',sans-serif;padding:9px 5px;border:2px solid #DAA520;border-radius:var(--radius-sm);background:#fff;color:#111;outline:none;-webkit-appearance:none;transition:border-color .15s;font-weight:500;letter-spacing:-0.02em}
+.addr-wrap input:focus,.date-wrap input:focus{border-color:var(--green);background:#fff;box-shadow:0 0 0 3px rgba(58,125,68,0.1)}
+/* 캡처 모달 — PC/모바일 모두 480px 이하 카드로 고정 */
+.cap-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:2000;overflow-y:auto;padding:20px 16px}
+.cap-modal.show{display:flex;justify-content:center;align-items:flex-start}
+.cap-modal-inner{width:100%;max-width:400px;background:#1a1a1a;border-radius:16px;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,0.7)}
+.cap-modal-head{padding:13px 16px;background:#222;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #333}
+.cap-modal-title{font-size:15px;font-weight:700;color:#fff;display:flex;align-items:center;gap:6px}
+.cap-close-btn{padding:7px 15px;background:transparent;border:1.5px solid rgba(255,255,255,0.4);border-radius:50px;font-size:13px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;color:#fff;transition:all .15s;white-space:nowrap}
+.cap-close-btn:hover{background:rgba(255,255,255,0.12);border-color:#fff}
+.cap-modal-guide{background:#222;padding:11px 16px;border-bottom:1px solid #2a2a2a}
+.cap-guide-row{display:flex;align-items:flex-start;gap:7px;margin-bottom:6px;font-size:12px;line-height:1.5}
+.cap-guide-row:last-child{margin-bottom:0}
+.cap-guide-icon{font-size:15px;flex-shrink:0}
+.cap-guide-text{color:#bbb}
+.cap-guide-text strong{color:#8BC34A;font-size:12px}
+.cap-modal-body{padding:12px;background:#111}
+.cap-preview-img{width:100%;border-radius:8px;display:block;box-shadow:0 3px 14px rgba(0,0,0,0.5)}
+.cap-save-btn{width:100%;margin-top:11px;padding:13px;background:#3a7d44;border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:background .15s}
+.cap-save-btn:hover{background:#2d6635}
+.cap-filename{font-size:11px;color:#888;text-align:center;margin-top:8px;line-height:1.7;padding:8px 10px;background:#1e1e1e;border-radius:7px}
+
+/* 필수 입력창 깜빡임 */
+@keyframes req-blink {
+  0%,100% { border-color:#DAA520; box-shadow:0 0 0 0 rgba(218,165,32,0); }
+  50%      { border-color:#f0a500; box-shadow:0 0 0 3px rgba(218,165,32,0.35); }
+}
+.req-border {
+  animation: req-blink 2s ease-in-out infinite;
+}
+.req-border:focus-within,
+.req-border.filled {
+  animation: none;
+  border-color:#3a7d44 !important;
+  box-shadow: 0 0 0 2px rgba(58,125,68,0.18);
+}
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <div class="header-inner">
+    <div class="header-left">
+      <h1>농작물 10a당 생산량 계산기</h1>
+      <p>Crop Yield Calculator per 10a (Garlic · Onion · Potato · Cabbage · Radish · Soybean)</p>
+    </div>
+    <button class="home-btn" onclick="window.location.href='https://ubaldos00-ship-it.github.io/home/'" title="홈으로">🏠</button>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- 기본 정보 -->
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:11px"><span style="font-size:12px;font-weight:700;color:var(--green);letter-spacing:0.09em;text-transform:uppercase">기본 정보</span><button onclick="resetAll()" style="padding:5px 14px;font-size:12px;font-weight:700;font-family:'Noto Sans KR',sans-serif;color:#C0392B;background:#fff;border:2px solid #C0392B;border-radius:8px;cursor:pointer;white-space:nowrap">↺ 초기화</button></div>
+    <!-- 필지주소 + 조사일 같은 행 -->
+    <div class="addr-date-row">
+      <div class="addr-wrap">
+        <label class="field-label">필지주소 <span style="font-weight:400;color:var(--text-hint);font-size:11px">(선택)</span></label>
+        <input type="text" id="addr" placeholder="필지주소를 입력하세요">
+      </div>
+      <div class="date-wrap">
+        <label class="field-label">조사일</label>
+        <input type="date" id="survey-date">
+      </div>
+    </div>
+  </div>
+
+  <!-- 지역·작물·품종 카드 -->
+  <div class="card">
+    <div class="card-title">지역 · 작물 · 품종</div>
+    <div class="field">
+      <label>지역 선택 <span style="font-size:11px;font-weight:400;color:var(--text-hint)">(필수 아님 — 선택 시 건조율 자동 입력)</span></label>
+      <div class="btn-group-3">
+        <button class="toggle-btn" id="btn-daegu"     onclick="selectRegion('daegu')">대구</button>
+        <button class="toggle-btn" id="btn-gyeongbuk" onclick="selectRegion('gyeongbuk')">경북</button>
+        <button class="toggle-btn" id="btn-gangwon"   onclick="selectRegion('gangwon')">강원</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>작물 선택</label>
+      <div class="crop-grid">
+        <button class="toggle-btn" id="btn-garlic"  onclick="selectCrop('garlic')">🧄 마늘</button>
+        <button class="toggle-btn" id="btn-onion"   onclick="selectCrop('onion')">🧅 양파</button>
+        <button class="toggle-btn" id="btn-potato"  onclick="selectCrop('potato')">🥔 감자</button>
+        <button class="toggle-btn crop-ready" onclick="showReady(this)">🌾 논벼</button>
+        <button class="toggle-btn" id="btn-cabbage" onclick="selectCrop('cabbage')">🥬 배추</button>
+        <button class="toggle-btn" id="btn-soybean" onclick="selectCrop('soybean')">🫛 콩</button>
+        <button class="toggle-btn" id="btn-radish"  onclick="selectCrop('radish')">🌱 무</button>
+        <button class="toggle-btn" id="btn-tongak" onclick="selectCrop('tongak')">🌿 총각무</button>
+      </div>
+    </div>
+    <div id="variety-section">
+      <div class="field">
+        <label id="variety-label">품종 선택</label>
+        <div class="btn-group-2" id="variety-btns"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- A/B 포구 -->
+  <div class="card">
+    <div class="card-title">조사 데이터 입력</div>
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:11px;font-weight:500">A/B포구 하나만 입력해도 계산됩니다.</p>
+    <div class="ab-grid">
+
+      <!-- A 포구 -->
+      <div class="ab-col ab-a">
+        <div class="ab-header a-hdr">📍 A포구</div>
+        <div class="ab-body"><div class="ab-field">
+          <label>3m² 정상 포기수</label>
+          <div class="ab-input-wrap req-border">
+            <input type="number" id="a-plants" placeholder="예)100개 내외" min="0" inputmode="numeric"
+              oninput="calcLive('a');checkGarlicWarn('a');addFmt('a-plants');checkFilled('a-plants')">
+            <span class="ab-unit">포기</span>
+          </div>
+          <div class="fmt-display" id="fmt-a-plants"></div>
+          <div class="warn-box" id="a-plants-warn"></div>
+        </div>
+        <div class="ab-field onion-seed-section" id="a-onion-wrap">
+          <label>양파종</label>
+          <div class="ab-input-wrap req-border">
+            <input type="number" id="a-onion" oninput="addFmt(\'a-onion\');checkFilled('a-onion')" placeholder="0" min="0" inputmode="numeric">
+            <span class="ab-unit">개</span>
+          </div>
+          <div class="fmt-display" id="fmt-a-onion"></div>
+        </div>
+        <!-- 감자 전용 입력 -->
+        <div class="potato-section" id="a-potato-section" style="display:none">
+          <div class="ab-field">
+            <label>20g이상 중량</label>
+            <div class="ab-input-wrap req-border">
+              <input type="number" id="a-potato-over" placeholder="예)9,500" min="0" inputmode="numeric" oninput="calcLivePotato('a');addFmt('a-potato-over');checkFilled('a-potato-over')">
+              <span class="ab-unit">g</span>
+            </div>
+          <div class="fmt-display" id="fmt-a-potato-over"></div>
+          </div>
+          <div class="ab-field">
+            <label>20g미만 중량</label>
+            <div class="ab-input-wrap req-border">
+              <input type="number" id="a-potato-under" oninput="addFmt(\'a-potato-under\');checkFilled('a-potato-under')" placeholder="예)90" min="0" inputmode="numeric">
+              <span class="ab-unit">g</span>
+            </div>
+          <div class="fmt-display" id="fmt-a-potato-under"></div>
+          </div>
+          <div class="ab-field">
+            <label>피해 중량</label>
+            <div class="ab-input-wrap req-border">
+              <input type="number" id="a-potato-dmg" oninput="addFmt(\'a-potato-dmg\');checkFilled('a-potato-dmg')" placeholder="예)20" min="0" inputmode="numeric">
+              <span class="ab-unit">g</span>
+            </div>
+          <div class="fmt-display" id="fmt-a-potato-dmg"></div>
+          </div>
+          <div class="live-box" id="a-potato-live">
+            <span class="live-label">3m² 생중량(20g↑)</span>
+            <span class="live-val" id="a-potato-live-val">—</span>
+          </div>
+        </div>
+        <!-- 마늘/양파 공통 입력 -->
+        <div class="garlic-onion-section" id="a-go-section">
+        <div class="ab-field">
+          <label>20개당 생중량</label>
+          <div class="ab-input-wrap req-border">
+            <input type="number" id="a-weight" placeholder="예)1,300g 내외" min="0" inputmode="numeric"
+              oninput="calcLive('a');checkGarlicWarn('a');addFmt('a-weight');checkFilled('a-weight')">
+            <span class="ab-unit">g</span>
+          </div>
+          <div class="fmt-display" id="fmt-a-weight"></div>
+          <div class="warn-box" id="a-weight-warn"></div>
+        </div>
+        <div class="live-box" id="a-live">
+          <span class="live-label">3m² 생중량</span>
+          <span class="live-val" id="a-live-val">—</span>
+        </div>
+        <div class="dry-rate-box" id="a-dry-box" style="display:none">
+          <div class="dry-rate-row">
+            <span class="dry-rate-label">건조율</span>
+            <div class="dry-rate-input-wrap">
+              <input type="number" class="dry-rate-input" id="a-dry-input" min="0" max="100" inputmode="decimal" onblur="syncDryRate('a')">
+              <span class="dry-pct">%</span>
+            </div>
+          </div>
+        </div>
+        </div><!-- /garlic-onion-section -->
+
+        <!-- 배추 섹션 -->
+        <div class="ab-section cabbage-section" id="a-cabbage-section" style="display:none">
+          <div class="ab-field">
+            <label>결구 포기수</label>
+            <div class="ab-input-wrap req-border">
+              <input type="number" id="a-cab-head" placeholder="예)11" min="0" inputmode="numeric" oninput="calcLiveCabbage('a');addFmt('a-cab-head');checkFilled('a-cab-head')">
+              <span class="ab-unit">개</span>
+            </div>
+          <div class="fmt-display" id="fmt-a-cab-head"></div>
+          </div>
+          <div class="ab-field">
+            <label>조사 포기수</label>
+            <div class="ab-input-wrap req-border">
+              <input type="number" id="a-cab-sample" placeholder="6" min="1" inputmode="numeric" oninput="calcLiveCabbage('a');checkFilled('a-cab-sample')">
+              <span class="ab-unit">개</span>
+            </div>
+          </div>
+          <div class="ab-field">
+            <label>조사포기 중량</label>
+            <div class="ab-input-wrap req-border">
+              <input type="number" id="a-cab-weight" placeholder="예)17,856" min="0" inputmode="numeric" oninput="calcLiveCabbage('a');addFmt('a-cab-weight');checkFilled('a-cab-weight')">
+              <span class="ab-unit">g</span>
+            </div>
+          <div class="fmt-display" id="fmt-a-cab-weight"></div>
+          </div>
+          <div class="ab-field">
+            <label>미결구 포기수</label>
+            <div class="ab-input-wrap req-border">
+              <input type="number" id="a-cab-miss" oninput="checkFilled(\'a-cab-miss\')"  placeholder="예)1" min="0" inputmode="numeric">
+              <span class="ab-unit">개</span>
+            </div>
+          </div>
+          <div class="live-box" id="a-cab-live">
+            <span class="live-label">포기당 중량</span>
+            <span class="live-val" id="a-cab-live-val">—</span>
+          </div>
+        </div>
+
+        <!-- 무 섹션 -->
+        <div class="ab-section radish-section" id="a-radish-section" style="display:none">
+          <div class="ab-field">
+            <label>3m²당 정상개수</label>
+            <div class="ab-input-wrap req-border">
+              <input type="number" id="a-rad-count" oninput="addFmt(\'a-rad-count\');checkFilled('a-rad-count')" placeholder="예)30" min="0" inputmode="numeric">
+              <span class="ab-unit">개</span>
+            </div>
+          <div class="fmt-display" id="fmt-a-rad-count"></div>
+          </div>
+          <div class="ab-field">
+            <label>조사 개수</label>
+            <div class="ab-input-wrap req-border">
+              <input type="number" id="a-rad-sample" placeholder="10" min="1" inputmode="numeric" oninput="calcLiveRadish('a');checkFilled('a-rad-sample')">
+              <span class="ab-unit">개</span>
+            </div>
+          </div>
+          <div class="ab-field">
+            <label id="a-rad-weight-lbl">10개 중량</label>
+            <div class="ab-input-wrap req-border">
+              <input type="number" id="a-rad-weight" placeholder="예)5,000" min="0" inputmode="numeric" oninput="calcLiveRadish('a');addFmt('a-rad-weight');checkFilled('a-rad-weight')">
+              <span class="ab-unit">g</span>
+            </div>
+          <div class="fmt-display" id="fmt-a-rad-weight"></div>
+          </div>
+          <div class="live-box" id="a-rad-live">
+            <span class="live-label">개당 중량</span>
+            <span class="live-val" id="a-rad-live-val">—</span>
+          </div>
+        </div>
+
+
+        <!-- 총각무 섹션 A -->
+        <div class="ab-section tongak-section" id="a-tongak-section" style="display:none">
+          <div class="ab-field">
+            <label>3m²당 정상개수</label>
+            <div class="ab-input-wrap req-border">
+              <input type="number" id="a-tok-count" placeholder="예)50" min="0" inputmode="numeric" oninput="addFmt('a-tok-count');checkFilled('a-tok-count')">
+              <span class="ab-unit">개</span>
+            </div>
+            <div class="fmt-display" id="fmt-a-tok-count"></div>
+          </div>
+          <div class="ab-field">
+            <label>조사 개수</label>
+            <div class="ab-input-wrap req-border">
+              <input type="number" id="a-tok-sample" value="20" placeholder="20" min="1" inputmode="numeric" oninput="calcLiveTongak('a')">
+              <span class="ab-unit">개</span>
+            </div>
+          </div>
+          <div class="ab-field">
+            <label>20개 중량</label>
+            <div class="ab-input-wrap req-border">
+              <input type="number" id="a-tok-weight" placeholder="예)1,500" min="0" inputmode="numeric" oninput="calcLiveTongak('a');addFmt('a-tok-weight');checkFilled('a-tok-weight')">
+              <span class="ab-unit">g</span>
+            </div>
+            <div class="fmt-display" id="fmt-a-tok-weight"></div>
+          </div>
+          <div class="live-box" id="a-tok-live">
+            <span class="live-label">개당 중량</span>
+            <span class="live-val" id="a-tok-live-val">—</span>
+          </div>
+        </div>
+        <!-- 콩 섹션 -->
+        <div class="ab-section soybean-section" id="a-soybean-section" style="display:none">
+          <div class="ab-field">
+            <label>6m² 건조곡 중량</label>
+            <div class="ab-input-wrap req-border">
+              <input type="number" id="a-soy-weight" oninput="addFmt(\'a-soy-weight\');checkFilled('a-soy-weight')" placeholder="예)1,259" min="0" inputmode="numeric">
+              <span class="ab-unit">g</span>
+            </div>
+          <div class="fmt-display" id="fmt-a-soy-weight"></div>
+          </div>
+        </div>
+
+        <!-- 공통 비고 -->
+        <div class="ab-field" style="margin-top:8px">
+          <label>비고</label>
+          <textarea class="ab-textarea" id="a-damage" rows="2" placeholder="피해상황 등 기타 사항"></textarea>
+        </div>
+        </div><!-- /ab-body -->
+      </div>
+
+      <!-- B 포구 -->
+      <div class="ab-col ab-b">
+        <div class="ab-header b-hdr">📍 B포구</div>
+        <div class="ab-body"><div class="ab-field">
+          <label>3m² 정상 포기수</label>
+          <div class="ab-input-wrap req-border">
+            <input type="number" id="b-plants" placeholder="예)100개 내외" min="0" inputmode="numeric"
+              oninput="calcLive('b');checkGarlicWarn('b');addFmt('b-plants');checkFilled('b-plants')">
+            <span class="ab-unit">포기</span>
+          </div>
+          <div class="fmt-display" id="fmt-b-plants"></div>
+          <div class="warn-box" id="b-plants-warn"></div>
+        </div>
+        <div class="ab-field onion-seed-section" id="b-onion-wrap">
+          <label>양파종</label>
+          <div class="ab-input-wrap req-border">
+            <input type="number" id="b-onion" oninput="addFmt(\'b-onion\');checkFilled('b-onion')" placeholder="0" min="0" inputmode="numeric">
+            <span class="ab-unit">개</span>
+          </div>
+          <div class="fmt-display" id="fmt-b-onion"></div>
+        </div>
+        <!-- 감자 전용 입력 -->
+        <div class="potato-section" id="b-potato-section" style="display:none">
+          <div class="ab-field">
+            <label>20g이상 중량</label>
+            <div class="ab-input-wrap req-border">
+              <input type="number" id="b-potato-over" placeholder="예)9,500" min="0" inputmode="numeric" oninput="calcLivePotato('b');addFmt('b-potato-over');checkFilled('b-potato-over')">
+              <span class="ab-unit">g</span>
+            </div>
+          <div class="fmt-display" id="fmt-b-potato-over"></div>
+          </div>
+          <div class="ab-field">
+            <label>20g미만 중량</label>
+            <div class="ab-input-wrap req-border">
+              <input type="number" id="b-potato-under" oninput="addFmt(\'b-potato-under\');checkFilled('b-potato-under')" placeholder="예)90" min="0" inputmode="numeric">
+              <span class="ab-unit">g</span>
+            </div>
+          <div class="fmt-display" id="fmt-b-potato-under"></div>
+          </div>
+          <div class="ab-field">
+            <label>피해 중량</label>
+            <div class="ab-input-wrap req-border">
+              <input type="number" id="b-potato-dmg" oninput="addFmt(\'b-potato-dmg\');checkFilled('b-potato-dmg')" placeholder="예)20" min="0" inputmode="numeric">
+              <span class="ab-unit">g</span>
+            </div>
+          <div class="fmt-display" id="fmt-b-potato-dmg"></div>
+          </div>
+          <div class="live-box" id="b-potato-live">
+            <span class="live-label">3m² 생중량(20g↑)</span>
+            <span class="live-val" id="b-potato-live-val">—</span>
+          </div>
+        </div>
+        <!-- 마늘/양파 공통 입력 -->
+        <div class="garlic-onion-section" id="b-go-section">
+        <div class="ab-field">
+          <label>20개당 생중량</label>
+          <div class="ab-input-wrap req-border">
+            <input type="number" id="b-weight" placeholder="예)1,300g 내외" min="0" inputmode="numeric"
+              oninput="calcLive('b');checkGarlicWarn('b');addFmt('b-weight');checkFilled('b-weight')">
+            <span class="ab-unit">g</span>
+          </div>
+          <div class="fmt-display" id="fmt-b-weight"></div>
+          <div class="warn-box" id="b-weight-warn"></div>
+        </div>
+        <div class="live-box" id="b-live">
+          <span class="live-label">3m² 생중량</span>
+          <span class="live-val" id="b-live-val">—</span>
+        </div>
+        <div class="dry-rate-box" id="b-dry-box" style="display:none">
+          <div class="dry-rate-row">
+            <span class="dry-rate-label">건조율</span>
+            <div class="dry-rate-input-wrap">
+              <input type="number" class="dry-rate-input" id="b-dry-input" min="0" max="100" inputmode="decimal" onblur="syncDryRate('b')">
+              <span class="dry-pct">%</span>
+            </div>
+          </div>
+        </div>
+        </div><!-- /garlic-onion-section -->
+
+        <!-- 배추 섹션 -->
+        <div class="ab-section cabbage-section" id="b-cabbage-section" style="display:none">
+          <div class="ab-field">
+            <label>결구 포기수</label>
+            <div class="ab-input-wrap req-border">
+              <input type="number" id="b-cab-head" placeholder="예)11" min="0" inputmode="numeric" oninput="calcLiveCabbage('b');addFmt('b-cab-head');checkFilled('b-cab-head')">
+              <span class="ab-unit">개</span>
+            </div>
+          <div class="fmt-display" id="fmt-b-cab-head"></div>
+          </div>
+          <div class="ab-field">
+            <label>조사 포기수</label>
+            <div class="ab-input-wrap req-border">
+              <input type="number" id="b-cab-sample" placeholder="6" min="1" inputmode="numeric" oninput="calcLiveCabbage('b');checkFilled('b-cab-sample')">
+              <span class="ab-unit">개</span>
+            </div>
+          </div>
+          <div class="ab-field">
+            <label>조사포기 중량</label>
+            <div class="ab-input-wrap req-border">
+              <input type="number" id="b-cab-weight" placeholder="예)17,856" min="0" inputmode="numeric" oninput="calcLiveCabbage('b');addFmt('b-cab-weight');checkFilled('b-cab-weight')">
+              <span class="ab-unit">g</span>
+            </div>
+          <div class="fmt-display" id="fmt-b-cab-weight"></div>
+          </div>
+          <div class="ab-field">
+            <label>미결구 포기수</label>
+            <div class="ab-input-wrap req-border">
+              <input type="number" id="b-cab-miss" oninput="checkFilled(\'b-cab-miss\')"  placeholder="예)1" min="0" inputmode="numeric">
+              <span class="ab-unit">개</span>
+            </div>
+          </div>
+          <div class="live-box" id="b-cab-live">
+            <span class="live-label">포기당 중량</span>
+            <span class="live-val" id="b-cab-live-val">—</span>
+          </div>
+        </div>
+
+        <!-- 무 섹션 -->
+        <div class="ab-section radish-section" id="b-radish-section" style="display:none">
+          <div class="ab-field">
+            <label>3m²당 정상개수</label>
+            <div class="ab-input-wrap req-border">
+              <input type="number" id="b-rad-count" oninput="addFmt(\'b-rad-count\');checkFilled('b-rad-count')" placeholder="예)30" min="0" inputmode="numeric">
+              <span class="ab-unit">개</span>
+            </div>
+          <div class="fmt-display" id="fmt-b-rad-count"></div>
+          </div>
+          <div class="ab-field">
+            <label>조사 개수</label>
+            <div class="ab-input-wrap req-border">
+              <input type="number" id="b-rad-sample" placeholder="10" min="1" inputmode="numeric" oninput="calcLiveRadish('b');checkFilled('b-rad-sample')">
+              <span class="ab-unit">개</span>
+            </div>
+          </div>
+          <div class="ab-field">
+            <label id="b-rad-weight-lbl">10개 중량</label>
+            <div class="ab-input-wrap req-border">
+              <input type="number" id="b-rad-weight" placeholder="예)5,000" min="0" inputmode="numeric" oninput="calcLiveRadish('b');addFmt('b-rad-weight');checkFilled('b-rad-weight')">
+              <span class="ab-unit">g</span>
+            </div>
+          <div class="fmt-display" id="fmt-b-rad-weight"></div>
+          </div>
+          <div class="live-box" id="b-rad-live">
+            <span class="live-label">개당 중량</span>
+            <span class="live-val" id="b-rad-live-val">—</span>
+          </div>
+        </div>
+
+
+        <!-- 총각무 섹션 B -->
+        <div class="ab-section tongak-section" id="b-tongak-section" style="display:none">
+          <div class="ab-field">
+            <label>3m²당 정상개수</label>
+            <div class="ab-input-wrap req-border">
+              <input type="number" id="b-tok-count" placeholder="예)50" min="0" inputmode="numeric" oninput="addFmt('b-tok-count');checkFilled('b-tok-count')">
+              <span class="ab-unit">개</span>
+            </div>
+            <div class="fmt-display" id="fmt-b-tok-count"></div>
+          </div>
+          <div class="ab-field">
+            <label>조사 개수</label>
+            <div class="ab-input-wrap req-border">
+              <input type="number" id="b-tok-sample" value="20" placeholder="20" min="1" inputmode="numeric" oninput="calcLiveTongak('b')">
+              <span class="ab-unit">개</span>
+            </div>
+          </div>
+          <div class="ab-field">
+            <label>20개 중량</label>
+            <div class="ab-input-wrap req-border">
+              <input type="number" id="b-tok-weight" placeholder="예)1,500" min="0" inputmode="numeric" oninput="calcLiveTongak('b');addFmt('b-tok-weight');checkFilled('b-tok-weight')">
+              <span class="ab-unit">g</span>
+            </div>
+            <div class="fmt-display" id="fmt-b-tok-weight"></div>
+          </div>
+          <div class="live-box" id="b-tok-live">
+            <span class="live-label">개당 중량</span>
+            <span class="live-val" id="b-tok-live-val">—</span>
+          </div>
+        </div>
+        <!-- 콩 섹션 -->
+        <div class="ab-section soybean-section" id="b-soybean-section" style="display:none">
+          <div class="ab-field">
+            <label>6m² 건조곡 중량</label>
+            <div class="ab-input-wrap req-border">
+              <input type="number" id="b-soy-weight" oninput="addFmt(\'b-soy-weight\');checkFilled('b-soy-weight')" placeholder="예)1,259" min="0" inputmode="numeric">
+              <span class="ab-unit">g</span>
+            </div>
+          <div class="fmt-display" id="fmt-b-soy-weight"></div>
+          </div>
+        </div>
+
+        <!-- 공통 비고 -->
+        <div class="ab-field" style="margin-top:8px">
+          <label>비고</label>
+          <textarea class="ab-textarea" id="b-damage" rows="2" placeholder="피해상황 등 기타 사항"></textarea>
+        </div>
+        </div><!-- /ab-body -->
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 입력 오류 알림 -->
+  <div class="err-box" id="err-box">
+    <div class="err-title">⚠ 아래 항목을 확인해주세요</div>
+    <ul class="err-list" id="err-list"></ul>
+  </div>
+  <!-- 초기화 + 계산 버튼 -->
+  <div class="btn-row">
+    <button class="reset-top-btn" onclick="resetAll()">↺ 초기화</button>
+    <button class="calc-btn" onclick="calculate()">📊 10a당 생산량 계산하기</button>
+  </div>
+
+  <!-- 결과 -->
+  <div class="result-section" id="result-section">
+
+    <div id="capture-zone">
+    <div class="card">
+      <div class="card-title">조사 요약</div>
+      <div id="summary-content"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">계산 결과</div>
+      <div class="result-ab-grid" id="result-ab-grid">
+        <div class="result-ab-card a-card" id="res-a-card">
+          <div class="ab-result-label">📍 A 포구</div>
+          <div class="ab-result-num" id="res-a">—</div>
+          <div class="ab-result-unit">kg / 10a</div>
+          <div class="ab-result-raw" id="res-a-raw"></div>
+          <div class="ab-sub" id="res-a-sub"></div>
+          <div class="ab-formula" id="res-a-formula"></div>
+        </div>
+        <div class="result-ab-card b-card" id="res-b-card">
+          <div class="ab-result-label">📍 B 포구</div>
+          <div class="ab-result-num" id="res-b">—</div>
+          <div class="ab-result-unit">kg / 10a</div>
+          <div class="ab-result-raw" id="res-b-raw"></div>
+          <div class="ab-sub" id="res-b-sub"></div>
+          <div class="ab-formula" id="res-b-formula"></div>
+        </div>
+      </div>
+      <div class="avg-result-box" id="avg-result-box">
+        <div class="avg-label" id="avg-label">A·B 포구 평균 생산량</div>
+        <div class="avg-num" id="res-avg">—</div>
+        <div class="avg-unit">kg / 10a</div>
+        <div id="res-avg-raw" style="font-size:11px;color:rgba(255,255,255,0.65);margin-top:3px"></div>
+      </div>
+      <div class="result-dry-note" id="dry-note"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">국가데이터포털 데이터 비교</div>
+      <div id="stat-content"></div>
+      <p class="stat-note" id="stat-source-note">※ 출처: KOSIS 농작물생산조사 (2021~2025). 전년: 2025년 / 평년: 5개년 평균.</p>
+    </div>
+    </div><!-- /capture-zone -->
+
+    <div class="card">
+      <div class="card-title">지역별 10a당 생산량 비교 (kg)</div>
+      <div id="history-content"></div>
+      <p class="stat-note">※ 출처: KOSIS 농작물생산조사 (2021~2025)</p>
+    </div>
+
+    <div class="card" id="hist-table-card" style="display:none">
+      <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;cursor:default">
+        <span id="hist-table-title">📋 지역별 5년 생산량 상세표 (kg/10a)</span>
+        <button onclick="toggleHistTable()" style="margin-left:auto;padding:3px 10px;font-size:12px;font-weight:600;font-family:'Noto Sans KR',sans-serif;color:var(--green);background:var(--green-light);border:1px solid var(--green-mid);border-radius:6px;cursor:pointer;white-space:nowrap;flex-shrink:0" id="hist-toggle-btn">▼ 펼치기</button>
+      </div>
+      <div id="hist-table-body" style="display:none">
+        <div id="hist-table-content"></div>
+        <p class="stat-note" style="margin-top:8px">※ 출처: KOSIS 농작물생산조사</p>
+      </div>
+    </div>
+
+    <button class="reset-bottom-btn" onclick="resetAll()">← 다시 계산하기 / 초기화</button>
+    <button class="cap-btn" id="cap-trigger-btn" onclick="captureResult()">📷 결과 이미지로 저장</button>
+  </div>
+
+</div>
+
+<script>
+const DRYRATE = {
+  daegu:    {garlic:68.1, onion:95.3, potato:null},
+  gyeongbuk:{garlic:70.6, onion:95.8, potato:null},
+  gangwon:  {garlic:69.5, onion:95.0, potato:null}
+};
+const REGION_KO = {daegu:'대구', gyeongbuk:'경북', gangwon:'강원'};
+const CROP_KO   = {garlic:'마늘', onion:'양파', potato:'감자', cabbage:'배추', radish:'무', tongak:'총각무', soybean:'콩', rice:'논벼'};
+// 작물 → HISTORY 키 매핑
+const CROP_HIST_KEY = {garlic:'garlic', onion:'onion', potato:'potato', cabbage:'cabbage', radish:'radish', tongak:'radish', soybean:'soybean', rice:'rice'};
+const VARIETIES = {garlic:['난지형','한지형'], onion:['조생종','중만생종'], potato:['봄감자','고랭지감자'], cabbage:[], radish:[], tongak:[], soybean:[]};
+
+// ── 실제 데이터: 채소생산량(조미채소), 국가데이터처 KOSIS ──
+// 출처: https://kosis.kr/statHtml/statHtml.do?orgId=101&tblId=DT_1ET0291
+// 대구광역시 / 경상북도 / 강원도  (단위: kg/10a)
+const HISTORY = {
+  garlic:{
+    daegu:    [{y:'2021',v:1686},{y:'2022',v:1288},{y:'2023',v:1745},{y:'2024',v:1590},{y:'2025',v:1681}],
+    gyeongbuk:[{y:'2021',v:1477},{y:'2022',v:1373},{y:'2023',v:1466},{y:'2024',v:1407},{y:'2025',v:1552}],
+    gangwon:  [{y:'2021',v:922}, {y:'2022',v:819}, {y:'2023',v:855}, {y:'2024',v:894}, {y:'2025',v:998}],
+  },
+  onion:{
+    daegu:    [{y:'2021',v:7968},{y:'2022',v:9610},{y:'2023',v:8316},{y:'2024',v:7729},{y:'2025',v:8063}],
+    gyeongbuk:[{y:'2021',v:9739},{y:'2022',v:7542},{y:'2023',v:7860},{y:'2024',v:7346},{y:'2025',v:7507}],
+    gangwon:  [{y:'2021',v:6484},{y:'2022',v:5046},{y:'2023',v:5278},{y:'2024',v:6805},{y:'2025',v:6340}],
+  },
+  potato:{  // 봄감자 기준 KOSIS 실제값
+    daegu:    [{y:'2021',v:2096},{y:'2022',v:2436},{y:'2023',v:1987},{y:'2024',v:2804},{y:'2025',v:1991}],
+    gyeongbuk:[{y:'2021',v:2617},{y:'2022',v:2052},{y:'2023',v:2463},{y:'2024',v:2517},{y:'2025',v:2380}],
+    gangwon:  [{y:'2021',v:3009},{y:'2022',v:2835},{y:'2023',v:2980},{y:'2024',v:2765},{y:'2025',v:2761}],
+  },
+  // 추가 작물 KOSIS 실제값
+  rice:{
+    daegu:    [{y:'2021',v:523},{y:'2022',v:529},{y:'2023',v:493},{y:'2024',v:501},{y:'2025',v:502}],
+    gyeongbuk:[{y:'2021',v:541},{y:'2022',v:540},{y:'2023',v:538},{y:'2024',v:537},{y:'2025',v:547}],
+    gangwon:  [{y:'2021',v:538},{y:'2022',v:501},{y:'2023',v:528},{y:'2024',v:528},{y:'2025',v:526}],
+  },
+  soybean:{
+    daegu:    [{y:'2021',v:154},{y:'2022',v:104},{y:'2023',v:117},{y:'2024',v:167},{y:'2025',v:164}],
+    gyeongbuk:[{y:'2021',v:232},{y:'2022',v:194},{y:'2023',v:193},{y:'2024',v:191},{y:'2025',v:164}],
+    gangwon:  [{y:'2021',v:222},{y:'2022',v:178},{y:'2023',v:221},{y:'2024',v:206},{y:'2025',v:240}],
+  },
+  radish:{  // 가을무
+    daegu:    [{y:'2021',v:9138},{y:'2022',v:7246},{y:'2023',v:6075},{y:'2024',v:5985},{y:'2025',v:5708}],
+    gyeongbuk:[{y:'2021',v:5945},{y:'2022',v:7356},{y:'2023',v:6585},{y:'2024',v:6297},{y:'2025',v:4862}],
+    gangwon:  [{y:'2021',v:5464},{y:'2022',v:5913},{y:'2023',v:6562},{y:'2024',v:6049},{y:'2025',v:4877}],
+  },
+  cabbage:{  // 가을배추
+    daegu:    [{y:'2021',v:7248},{y:'2022',v:8596},{y:'2023',v:8684},{y:'2024',v:7825},{y:'2025',v:7950}],
+    gyeongbuk:[{y:'2021',v:7256},{y:'2022',v:8188},{y:'2023',v:7333},{y:'2024',v:8073},{y:'2025',v:6459}],
+    gangwon:  [{y:'2021',v:7906},{y:'2022',v:9238},{y:'2023',v:8341},{y:'2024',v:7737},{y:'2025',v:6693}],
+  }
+};
+// 전년: 2025년 / 평년: 2021~2025년 5개년 평균 (KOSIS 실제값)
+const STATS = {
+  garlic:{
+    prev: {daegu:1681, gyeongbuk:1552, gangwon:998},   // 전년: 2025년
+    mean5:{daegu:1598, gyeongbuk:1455, gangwon:898}    // 평년: 2021~2025 평균
+  },
+  onion:{
+    prev: {daegu:8063, gyeongbuk:7507, gangwon:6340},  // 전년: 2025년
+    mean5:{daegu:8337, gyeongbuk:7999, gangwon:5991}   // 평년: 2021~2025 평균
+  },
+  potato:{  // 봄감자 KOSIS 실제값
+    prev: {daegu:1991, gyeongbuk:2380, gangwon:2761},
+    mean5:{daegu:2263, gyeongbuk:2406, gangwon:2870}
+  },
+  cabbage:{  // 가을배추 KOSIS 실제값
+    prev: {daegu:7950, gyeongbuk:6459, gangwon:6693},
+    mean5:{daegu:8061, gyeongbuk:7462, gangwon:7983}
+  },
+  radish:{  // 가을무 KOSIS 실제값
+    prev: {daegu:5708, gyeongbuk:4862, gangwon:4877},
+    mean5:{daegu:6830, gyeongbuk:6209, gangwon:5773}
+  },
+  tongak:{  // 총각무 (무 데이터 참조)
+    prev: {daegu:5708, gyeongbuk:4862, gangwon:4877},
+    mean5:{daegu:6830, gyeongbuk:6209, gangwon:5773}
+  },
+  tongak:{  // 총각무 (가을무 기준 참고)
+    prev: {daegu:5708, gyeongbuk:4862, gangwon:4877},
+    mean5:{daegu:6830, gyeongbuk:6209, gangwon:5773}
+  },
+  soybean:{  // 콩 KOSIS 실제값
+    prev: {daegu:164, gyeongbuk:164, gangwon:240},
+    mean5:{daegu:141, gyeongbuk:195, gangwon:213}
+  }
+};
+
+let selectedCrop = null, selectedVariety = null, selectedRegion = null;
+
+
+function checkFilled(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const wrap = el.closest('.req-border');
+  if (!wrap) return;
+  if (el.value && parseFloat(el.value) > 0) {
+    wrap.classList.add('filled');
+  } else {
+    wrap.classList.remove('filled');
+  }
+}
+
+function addFmt(id) {
+  const el = document.getElementById(id);
+  const disp = document.getElementById('fmt-' + id);
+  if (!el || !disp) return;
+  const v = parseFloat(el.value);
+  disp.textContent = (!isNaN(v) && v > 0) ? v.toLocaleString('ko-KR') : '';
+}
+function fmtBar(v) {
+  if (!v || v===0) return '—';
+  const rounded = Math.round(v);
+  return rounded.toLocaleString('ko-KR') + ' kg';
+}
+function fmt(n, dec=1) {
+  return parseFloat(n.toFixed(dec)).toLocaleString('ko-KR',{minimumFractionDigits:dec,maximumFractionDigits:dec});
+}
+function fmtInt(n) { return Math.round(n).toLocaleString('ko-KR'); }
+
+function selectRegion(r) {
+  selectedRegion = r;
+  ['daegu','gyeongbuk','gangwon'].forEach(k =>
+    document.getElementById('btn-' + k).classList.toggle('active-region', k === r)
+  );
+  updateDryBoxes();
+}
+
+function updateDryBoxes() {
+  if (!selectedCrop) return;
+  const noDry = ['potato','cabbage','radish','tongak','soybean'];
+  ['a','b'].forEach(ab => {
+    const box = document.getElementById(ab + '-dry-box');
+    const inp = document.getElementById(ab + '-dry-input');
+    if (noDry.includes(selectedCrop)) { box.style.display='none'; return; }
+    box.style.display = 'block';
+    if (selectedRegion && DRYRATE[selectedRegion] && DRYRATE[selectedRegion][selectedCrop]) {
+      inp.value = DRYRATE[selectedRegion][selectedCrop].toFixed(1);
+      inp.style.background = '#e8f5ec';
+      setTimeout(function(){ inp.style.background = ''; }, 800);
+    }
+  });
+}
+
+// 건조율 연동: 포커스 떠날 때(onblur) 상대 포구에 복사 (상대가 비었을 때만)
+function syncDryRate(fromAb) {
+  const fromInp = document.getElementById(fromAb + '-dry-input');
+  const fromVal = fromInp.value.trim();
+  if (fromVal === '') return;                    // 빈값이면 패스
+  const toAb  = fromAb === 'a' ? 'b' : 'a';
+  const toInp = document.getElementById(toAb + '-dry-input');
+  if (toInp.value.trim() !== '') return;         // 이미 입력된 경우 패스
+  toInp.value = fromVal;                         // 완성된 값 전체 복사
+  toInp.style.background = '#e8f5ec';
+  setTimeout(function(){ toInp.style.background = ''; }, 1000);
+}
+
+function getDryRate(ab) {
+  const inp = document.getElementById(`${ab}-dry-input`);
+  const v = parseFloat(inp.value);
+  return isNaN(v) ? 0 : v;
+}
+
+function showReady(btn) {
+  alert(btn.textContent.trim() + ' 작물은 준비 중입니다.');
+}
+
+function selectCrop(crop) {
+  selectedCrop = crop; selectedVariety = null;
+  const allBtns = ['garlic','onion','potato','cabbage','radish','tongak','soybean'];
+  allBtns.forEach(c => {
+    const el = document.getElementById('btn-' + c);
+    if (el) el.classList.toggle('active-crop', c === crop);
+  });
+
+  // 품종 선택 처리
+  const vars = VARIETIES[crop] || [];
+  if (vars.length === 0) {
+    // 품종 없는 작물: 자동 선택
+    document.getElementById('variety-section').style.display = 'none';
+    selectedVariety = {cabbage:'가을배추', soybean:'기본', tongak:'총각무', radish:'무'}[crop] || '기본';
+  } else {
+    document.getElementById('variety-section').style.display = 'block';
+    const vLabel = {garlic:'마늘 품종 선택', onion:'양파 품종 선택', potato:'감자 품종 선택', radish:'무 종류 선택'};
+    document.getElementById('variety-label').textContent = vLabel[crop] || '품종 선택';
+    document.getElementById('variety-btns').innerHTML = vars.map((v,i)=>
+      `<button class="toggle-btn" id="var-${i}" onclick="selectVariety(${i},'${v}')">${i+1}. ${v}</button>`
+    ).join('');
+  }
+
+  const isPotato   = crop === 'potato';
+  const isCabbage  = crop === 'cabbage';
+  const isRadish   = crop === 'radish';
+  const isTongak   = crop === 'tongak';
+  const isSoybean  = crop === 'soybean';
+  const isNewCrop  = isCabbage || isRadish || isTongak || isSoybean;
+  const isGarlic   = crop === 'garlic';
+
+  const pph = isGarlic ? '예)100개 내외' : (isPotato ? '예)30개 내외' : '예)90개 내외');
+  const wph = isGarlic ? '예)1,300g 내외' : (isPotato ? '예)2,500g 내외' : '예)6,000g 내외');
+
+  ['a','b'].forEach(ab => {
+    const pEl = document.getElementById(ab + '-plants');
+    const wEl = document.getElementById(ab + '-weight');
+    if (pEl) pEl.placeholder = pph;
+    if (wEl) wEl.placeholder = wph;
+    ['plants','weight'].forEach(f => {
+      const w = document.getElementById(ab + '-' + f + '-warn');
+      if (w) { w.textContent=''; w.classList.remove('show'); }
+    });
+    // 각 섹션 토글
+    const hideGoAndPlants = isPotato || isNewCrop;
+    const potatoSec  = document.getElementById(ab + '-potato-section');
+    const goSec      = document.getElementById(ab + '-go-section');
+    const cabbageSec = document.getElementById(ab + '-cabbage-section');
+    const radishSec  = document.getElementById(ab + '-radish-section');
+    const tongakSec  = document.getElementById(ab + '-tongak-section');
+    const soybeanSec = document.getElementById(ab + '-soybean-section');
+    const plantsField = document.getElementById(ab + '-plants');
+
+    if (potatoSec) potatoSec.style.display  = isPotato  ? 'block' : 'none';
+    if (cabbageSec) cabbageSec.style.display = isCabbage ? 'block' : 'none';
+    if (radishSec)  radishSec.style.display  = isRadish  ? 'block' : 'none';
+    if (tongakSec)  tongakSec.style.display  = isTongak  ? 'block' : 'none';
+    if (soybeanSec) soybeanSec.style.display = isSoybean ? 'block' : 'none';
+    if (goSec)     goSec.style.display       = hideGoAndPlants ? 'none' : 'block';
+    if (plantsField) plantsField.closest('.ab-field').style.display = hideGoAndPlants ? 'none' : 'block';
+
+    // 배추 조사포기수 기본값
+    if (isCabbage) {
+      const cabSample = document.getElementById(ab + '-cab-sample');
+      if (cabSample && !cabSample.value) cabSample.value = '6';
+    }
+    // 무 라벨/기본값 (10개)
+    if (isRadish) {
+      const radLbl = document.getElementById(ab + '-rad-weight-lbl');
+      if (radLbl) radLbl.textContent = '10개 중량';
+      const radSample = document.getElementById(ab + '-rad-sample');
+      if (radSample) { radSample.value = '10'; radSample.placeholder = '10'; }
+    }
+    // 총각무 기본값 (20개)
+    if (isTongak) {
+      const tokSample = document.getElementById(ab + '-tok-sample');
+      if (tokSample) tokSample.value = '20';
+    }
+  });
+
+  const showOnion = crop === 'onion';
+  document.querySelectorAll('.onion-seed-section').forEach(el => el.style.display = showOnion ? 'block' : 'none');
+  updateDryBoxes();
+  calcLive('a'); calcLive('b');
+}
+
+function calcLivePotato(ab) { /* 감자 live 미표시 */ }
+
+function calcLiveCabbage(ab) {
+  const sample = parseFloat(document.getElementById(ab+'-cab-sample').value);
+  const weight = parseFloat(document.getElementById(ab+'-cab-weight').value);
+  const box = document.getElementById(ab+'-cab-live');
+  const val = document.getElementById(ab+'-cab-live-val');
+  if (sample>0 && weight>0) {
+    val.textContent = Math.round(weight/sample).toLocaleString('ko-KR') + ' g';
+    box.classList.add('show');
+  } else { box.classList.remove('show'); }
+}
+
+function calcLiveTongak(ab) {
+  const sample = parseFloat(document.getElementById(ab+'-tok-sample').value);
+  const weight = parseFloat(document.getElementById(ab+'-tok-weight').value);
+  const box = document.getElementById(ab+'-tok-live');
+  const val = document.getElementById(ab+'-tok-live-val');
+  if (sample>0 && weight>0) {
+    val.textContent = Math.round(weight/sample).toLocaleString('ko-KR') + ' g';
+    box.classList.add('show');
+  } else { box.classList.remove('show'); }
+}
+
+function calcLiveRadish(ab) {
+  const sample = parseFloat(document.getElementById(ab+'-rad-sample').value);
+  const weight = parseFloat(document.getElementById(ab+'-rad-weight').value);
+  const box = document.getElementById(ab+'-rad-live');
+  const val = document.getElementById(ab+'-rad-live-val');
+  if (sample>0 && weight>0) {
+    val.textContent = Math.round(weight/sample).toLocaleString('ko-KR') + ' g';
+    box.classList.add('show');
+  } else { box.classList.remove('show'); }
+}
+
+function selectVariety(idx, name) {
+  selectedVariety = name;
+  document.querySelectorAll('#variety-btns .toggle-btn').forEach((b,i)=>b.classList.toggle('active-var',i===idx));
+}
+
+// 마늘 경고 체크
+function checkGarlicWarn(ab) {
+  if (selectedCrop !== 'garlic') return;
+  const p = parseFloat(document.getElementById(`${ab}-plants`).value);
+  const w = parseFloat(document.getElementById(`${ab}-weight`).value);
+  const pw = document.getElementById(`${ab}-plants-warn`);
+  const ww = document.getElementById(`${ab}-weight-warn`);
+
+  if (!isNaN(p) && p > 0) {
+    if (p < 100) {
+      pw.textContent = '⚠ 포기수가 100개 미만입니다. 포기수를 재확인해주세요.';
+      pw.classList.add('show');
+    } else if (p > 130) {
+      pw.textContent = '⚠ 포기수가 130개 초과입니다. 포기수를 재확인해주세요.';
+      pw.classList.add('show');
+    } else {
+      pw.textContent=''; pw.classList.remove('show');
+    }
+  } else { pw.textContent=''; pw.classList.remove('show'); }
+
+  // 개당 중량 = 20개당 생중량 / 20
+  if (!isNaN(w) && w > 0) {
+    const perOne = w / 20;
+    if (perOne < 30) {
+      ww.textContent = `⚠ 개당 중량(${fmt(perOne,1)}g)이 30g 미만입니다. 생중량을 재확인해주세요.`;
+      ww.classList.add('show');
+    } else if (perOne > 70) {
+      ww.textContent = `⚠ 개당 중량(${fmt(perOne,1)}g)이 70g 초과입니다. 생중량을 재확인해주세요.`;
+      ww.classList.add('show');
+    } else { ww.textContent=''; ww.classList.remove('show'); }
+  } else { ww.textContent=''; ww.classList.remove('show'); }
+}
+
+function calcLive(ab) {
+  const p = parseFloat(document.getElementById(`${ab}-plants`).value);
+  const w = parseFloat(document.getElementById(`${ab}-weight`).value);
+  const box = document.getElementById(`${ab}-live`);
+  const val = document.getElementById(`${ab}-live-val`);
+  if (!isNaN(p)&&!isNaN(w)&&p>0&&w>0) {
+    val.textContent = fmtInt(p*(w/20)) + ' g';
+    box.classList.add('show');
+  } else { box.classList.remove('show'); }
+}
+
+function yieldCalc(plants, w20, dryRate) {
+  // 각 단계별 소수 첫째자리에서 반올림
+  const fresh3m2   = Math.round(plants * (w20 / 20));        // ① 3m² 생중량(g)
+  const fresh10a_g = Math.round(fresh3m2 / 3 * 1000);       // ② 10a 생중량(g)
+  const kg10a      = Math.round(fresh10a_g / 1000 * (dryRate / 100)); // ③ 10a 생산량(kg)
+  return {
+    fresh3m2,
+    fresh10a_g,
+    fresh10a_kg: parseFloat((fresh10a_g / 1000).toFixed(1)),
+    kg10a,
+    kg10a_rounded: kg10a,
+    kg10a_raw: fresh10a_g / 1000 * (dryRate / 100)
+  };
+}
+
+function yieldCalcPotato(overG) {
+  const kg10a_raw = overG / 3;
+  const kg10a     = parseFloat(kg10a_raw.toFixed(1));
+  return { fresh3m2:overG, fresh10a_kg:parseFloat((overG/3).toFixed(1)), kg10a, kg10a_rounded:Math.round(kg10a_raw), kg10a_raw };
+}
+
+function yieldCalcCabbage(headCount, sampleWeight, sampleCount) {
+  const perPlant  = sampleWeight / sampleCount;
+  const fresh3m2  = headCount * perPlant;
+  const kg10a_raw = fresh3m2 / 3 * 1000 / 1000;
+  const kg10a     = parseFloat(kg10a_raw.toFixed(1));
+  return { perPlant, fresh3m2, kg10a, kg10a_rounded:Math.round(kg10a_raw), kg10a_raw };
+}
+
+function yieldCalcRadish(normalCount, sampleWeight, sampleCount) {
+  const perUnit   = sampleWeight / sampleCount;
+  const fresh3m2  = normalCount * perUnit;
+  const kg10a_raw = fresh3m2 / 3 * 1000 / 1000;
+  const kg10a     = parseFloat(kg10a_raw.toFixed(1));
+  return { perUnit, fresh3m2, kg10a, kg10a_rounded:Math.round(kg10a_raw), kg10a_raw };
+}
+
+function yieldCalcSoybean(weight6m2) {
+  const kg10a_raw = weight6m2 / 6 * 1000 / 1000;
+  const kg10a     = parseFloat(kg10a_raw.toFixed(1));
+  return { kg10a, kg10a_rounded:Math.round(kg10a_raw), kg10a_raw };
+}
+
+function calculate() {
+  // 계산 시작 시 이전 결과 즉시 숨김
+  document.getElementById('result-section').classList.remove('show');
+
+  const region  = selectedRegion;
+  const dateVal = document.getElementById('survey-date').value;
+  const aP = parseFloat(document.getElementById('a-plants').value);
+  const aW = parseFloat(document.getElementById('a-weight').value);
+  const bP = parseFloat(document.getElementById('b-plants').value);
+  const bW = parseFloat(document.getElementById('b-weight').value);
+  const aPotatoOver = parseFloat(document.getElementById('a-potato-over').value);
+  const bPotatoOver = parseFloat(document.getElementById('b-potato-over').value);
+
+  const isPotato  = selectedCrop === 'potato';
+  const isCabbage = selectedCrop === 'cabbage';
+  const isRadish  = selectedCrop === 'radish';
+  const isTongak  = selectedCrop === 'tongak';
+  const isSoybean = selectedCrop === 'soybean';
+  const isNewCrop = isCabbage || isRadish || isTongak || isSoybean;
+
+  // 새 작물 입력값 읽기
+  const aCabHead   = parseFloat(document.getElementById('a-cab-head').value);
+  const aCabSample = parseFloat(document.getElementById('a-cab-sample').value);
+  const aCabWeight = parseFloat(document.getElementById('a-cab-weight').value);
+  const bCabHead   = parseFloat(document.getElementById('b-cab-head').value);
+  const bCabSample = parseFloat(document.getElementById('b-cab-sample').value);
+  const bCabWeight = parseFloat(document.getElementById('b-cab-weight').value);
+  const aRadCount  = parseFloat(document.getElementById('a-rad-count').value);
+  const aRadSample = parseFloat(document.getElementById('a-rad-sample').value);
+  const aRadWeight = parseFloat(document.getElementById('a-rad-weight').value);
+  const bRadCount  = parseFloat(document.getElementById('b-rad-count').value);
+  const bRadSample = parseFloat(document.getElementById('b-rad-sample').value);
+  const bRadWeight = parseFloat(document.getElementById('b-rad-weight').value);
+  const aSoyWeight = parseFloat(document.getElementById('a-soy-weight').value);
+  const bSoyWeight = parseFloat(document.getElementById('b-soy-weight').value);
+  const aTokCount  = parseFloat(document.getElementById('a-tok-count').value);
+  const aTokSample = parseFloat(document.getElementById('a-tok-sample').value);
+  const aTokWeight = parseFloat(document.getElementById('a-tok-weight').value);
+  const bTokCount  = parseFloat(document.getElementById('b-tok-count').value);
+  const bTokSample = parseFloat(document.getElementById('b-tok-sample').value);
+  const bTokWeight = parseFloat(document.getElementById('b-tok-weight').value);
+
+  let aValid, bValid;
+  if (isPotato)       { aValid=!isNaN(aPotatoOver)&&aPotatoOver>0; bValid=!isNaN(bPotatoOver)&&bPotatoOver>0; }
+  else if (isCabbage) { aValid=!isNaN(aCabHead)&&aCabHead>0&&!isNaN(aCabSample)&&aCabSample>0&&!isNaN(aCabWeight)&&aCabWeight>0;
+                        bValid=!isNaN(bCabHead)&&bCabHead>0&&!isNaN(bCabSample)&&bCabSample>0&&!isNaN(bCabWeight)&&bCabWeight>0; }
+  else if (isRadish)  { aValid=!isNaN(aRadCount)&&aRadCount>0&&!isNaN(aRadSample)&&aRadSample>0&&!isNaN(aRadWeight)&&aRadWeight>0;
+                        bValid=!isNaN(bRadCount)&&bRadCount>0&&!isNaN(bRadSample)&&bRadSample>0&&!isNaN(bRadWeight)&&bRadWeight>0; }
+  else if (isSoybean) { aValid=!isNaN(aSoyWeight)&&aSoyWeight>0; bValid=!isNaN(bSoyWeight)&&bSoyWeight>0; }
+  else if (isTongak)  { aValid=!isNaN(aTokCount)&&aTokCount>0&&!isNaN(aTokSample)&&aTokSample>0&&!isNaN(aTokWeight)&&aTokWeight>0;
+                        bValid=!isNaN(bTokCount)&&bTokCount>0&&!isNaN(bTokSample)&&bTokSample>0&&!isNaN(bTokWeight)&&bTokWeight>0; }
+  else                { aValid=!isNaN(aP)&&aP>0&&!isNaN(aW)&&aW>0; bValid=!isNaN(bP)&&bP>0&&!isNaN(bW)&&bW>0; }
+
+  const errs = [];
+  // 지역 선택 항목 일시 제거 (재추가 예정)
+  if (!selectedCrop)     errs.push('작물(마늘/양파)을 선택해주세요.');
+  if (!selectedVariety)  errs.push('품종을 선택해주세요.');
+  if (!dateVal)          errs.push('조사 월일을 선택해주세요.');
+  if (!aValid && !bValid) {
+    if (isPotato)       errs.push('A 또는 B 포구: 20g이상 중량을 최소 하나 입력해주세요.');
+    else if (isCabbage) errs.push('A 또는 B 포구: 결구포기수·조사포기수·조사포기중량을 입력해주세요.');
+    else if (isRadish)  errs.push('A 또는 B 포구: 정상개수·조사개수·중량을 최소 하나 입력해주세요.');
+    else if (isSoybean) errs.push('A 또는 B 포구: 6m² 건조곡 중량을 입력해주세요.');
+    else if (isTongak)  errs.push('A 또는 B 포구: 정상개수·조사개수·20개 중량을 입력해주세요.');
+    else                errs.push('A 또는 B 포구: 포기수와 20개당 생중량을 최소 하나 입력해주세요.');
+  } else if (!isPotato && !isNewCrop) {
+    // 마늘·양파 전용 검증
+    if (aP>0 && !(aW>0)) errs.push('A 포구: 20개당 생중량을 입력해주세요.');
+    if (aW>0 && !(aP>0)) errs.push('A 포구: 정상 포기수를 입력해주세요.');
+    if (bP>0 && !(bW>0)) errs.push('B 포구: 20개당 생중량을 입력해주세요.');
+    if (bW>0 && !(bP>0)) errs.push('B 포구: 정상 포기수를 입력해주세요.');
+    // 건조율 검증 (마늘·양파만)
+    if (aValid) {
+      const aDryCheck = parseFloat(document.getElementById('a-dry-input').value);
+      if (isNaN(aDryCheck) || aDryCheck <= 0) errs.push('A 포구: 건조율을 입력해주세요. (예: 68.1)');
+    }
+    if (bValid) {
+      const bDryCheck = parseFloat(document.getElementById('b-dry-input').value);
+      if (isNaN(bDryCheck) || bDryCheck <= 0) errs.push('B 포구: 건조율을 입력해주세요. (예: 68.1)');
+    }
+  }
+  const errBox = document.getElementById('err-box');
+  const errList = document.getElementById('err-list');
+  if (errs.length > 0) {
+    errList.innerHTML = errs.map(e=>`<li>${e}</li>`).join('');
+    errBox.classList.add('show');
+    errBox.scrollIntoView({behavior:'smooth', block:'center'});
+    return;
+  }
+  errBox.classList.remove('show'); errList.innerHTML='';
+
+  const addr    = document.getElementById('addr').value.trim();
+  const aDmg    = document.getElementById('a-damage').value.trim();
+  const bDmg    = document.getElementById('b-damage').value.trim();
+  const aOnion  = document.getElementById('a-onion').value.trim();
+  const bOnion  = document.getElementById('b-onion').value.trim();
+  const aDry    = getDryRate('a');
+  const bDry    = getDryRate('b');
+
+  const d = new Date(dateVal);
+  const dateStr = `${d.getMonth()+1}월 ${d.getDate()}일`;
+
+  let A = null, B = null;
+  if (aValid) {
+    if (isPotato)       A = yieldCalcPotato(aPotatoOver);
+    else if (isCabbage) A = yieldCalcCabbage(aCabHead, aCabWeight, aCabSample);
+    else if (isRadish)  A = yieldCalcRadish(aRadCount, aRadWeight, aRadSample);
+    else if (isSoybean) A = yieldCalcSoybean(aSoyWeight);
+    else if (isTongak)  A = yieldCalcRadish(aTokCount, aTokWeight, aTokSample);
+    else                A = yieldCalc(aP, aW, aDry);
+  }
+  if (bValid) {
+    if (isPotato)       B = yieldCalcPotato(bPotatoOver);
+    else if (isCabbage) B = yieldCalcCabbage(bCabHead, bCabWeight, bCabSample);
+    else if (isRadish)  B = yieldCalcRadish(bRadCount, bRadWeight, bRadSample);
+    else if (isSoybean) B = yieldCalcSoybean(bSoyWeight);
+    else if (isTongak)  B = yieldCalcRadish(bTokCount, bTokWeight, bTokSample);
+    else                B = yieldCalc(bP, bW, bDry);
+  }
+
+  // 평균값 (둘 다 있으면 평균, 하나면 그 값)
+  let avg, avgLabel;
+  if (A && B) {
+    avg = parseFloat(((A.kg10a + B.kg10a) / 2).toFixed(1));
+    avgLabel = 'A·B 포구 평균 생산량';
+  } else if (A) {
+    avg = A.kg10a;
+    avgLabel = 'A 포구 생산량';
+  } else {
+    avg = B.kg10a;
+    avgLabel = 'B 포구 생산량';
+  }
+
+  // ── 저장시간 (KST) ──
+  const nowKST = new Date(new Date().getTime() + 9*60*60*1000);
+  const saveTimeStr = nowKST.toISOString().replace('T',' ').slice(0,16) + ' (KST)';
+
+  // ── 요약 테이블 (A/B 열 분리) ──
+  const aV = aValid, bV = bValid;
+  function sv(v, red=false){ return `<td class="sv${red?' red':''}">${v}</td>`; }
+  function sk(k){ return `<td class="sk">${k}</td>`; }
+  function emptyV(){ return `<td class="sv" style="color:var(--text-hint)">—</td>`; }
+
+  let sumRows = '';
+  // 기본 정보 (공통)
+  if (addr) sumRows += `<tr>${sk('필지주소')}<td class="sv center" colspan="2">${addr}</td></tr>`;
+  const regionDisp = region ? REGION_KO[region] + ' / ' : '';
+  const noVarietyCrops = ['potato','cabbage','radish','tongak','soybean'];
+  const varietyDisp = noVarietyCrops.includes(selectedCrop) ? '' : ' / ' + selectedVariety;
+  sumRows += `<tr>${sk('지역·작물·품종')}<td class="sv center" colspan="2">${regionDisp}${CROP_KO[selectedCrop]}${varietyDisp}</td></tr>`;
+  sumRows += `<tr>${sk('조사일')}<td class="sv center" colspan="2">${dateStr}</td></tr>`;
+  sumRows += `<tr>${sk('저장시간')}<td class="sv center" colspan="2" style="font-size:11px;color:var(--text-hint)">${saveTimeStr}</td></tr>`;
+  // A/B 포구 데이터
+  if (isNewCrop) {
+    // 배추/무/콩 요약
+    const aDmgStr = document.getElementById('a-damage').value.trim();
+    const bDmgStr = document.getElementById('b-damage').value.trim();
+    if (isCabbage) {
+      const aCabMiss = document.getElementById('a-cab-miss').value.trim();
+      const bCabMiss = document.getElementById('b-cab-miss').value.trim();
+      sumRows += `<tr>${sk('결구 포기수')}${aV?sv(fmtInt(aCabHead)+' 개'):emptyV()}${bV?sv(fmtInt(bCabHead)+' 개'):emptyV()}</tr>`;
+      sumRows += `<tr>${sk('조사 포기수')}${aV?sv(fmtInt(aCabSample)+' 개'):emptyV()}${bV?sv(fmtInt(bCabSample)+' 개'):emptyV()}</tr>`;
+      sumRows += `<tr>${sk('조사포기 중량')}${aV?sv(fmtInt(aCabWeight)+' g'):emptyV()}${bV?sv(fmtInt(bCabWeight)+' g'):emptyV()}</tr>`;
+      sumRows += `<tr>${sk('포기당 중량')}${aV?sv(Math.round(aCabWeight/aCabSample).toLocaleString('ko-KR')+' g'):emptyV()}${bV?sv(Math.round(bCabWeight/bCabSample).toLocaleString('ko-KR')+' g'):emptyV()}</tr>`;
+      if (aCabMiss||bCabMiss) sumRows += `<tr>${sk('미결구 포기수')}${aV?sv((aCabMiss||'0')+' 개'):emptyV()}${bV?sv((bCabMiss||'0')+' 개'):emptyV()}</tr>`;
+    } else if (isTongak) {
+      const rCnt2 = ab==='a' ? aTokCount : bTokCount;
+      const rSamp2 = ab==='a' ? aTokSample : bTokSample;
+      const rWt2 = ab==='a' ? aTokWeight : bTokWeight;
+      fEl.innerHTML =
+        '<span class="formula-line f-step">① 개당 중량</span>'+
+        '<span class="formula-line f-eq">'+fmtInt(rWt2)+'g ÷ '+rSamp2+'개 = '+Math.round(rWt2/rSamp2).toLocaleString('ko-KR')+'g</span>'+
+        '<span class="formula-line f-step">② 10a당 생산량(kg)</span>'+
+        '<span class="formula-line f-eq">'+fmtInt(rCnt2)+'개 × '+Math.round(rWt2/rSamp2).toLocaleString('ko-KR')+'g ÷ 3 × 1,000 ÷ 1,000</span>'+
+        '<span class="formula-line f-result">= '+rounded.toLocaleString('ko-KR')+' kg ('+calc.kg10a.toFixed(1)+')</span>';
+    } else if (isRadish) {
+      sumRows += `<tr>${sk('3m²당 정상개수')}${aV?sv(fmtInt(aRadCount)+' 개'):emptyV()}${bV?sv(fmtInt(bRadCount)+' 개'):emptyV()}</tr>`;
+      sumRows += `<tr>${sk('조사 개수')}${aV?sv(fmtInt(aRadSample)+' 개'):emptyV()}${bV?sv(fmtInt(bRadSample)+' 개'):emptyV()}</tr>`;
+      sumRows += `<tr>${sk('조사 중량')}${aV?sv(fmtInt(aRadWeight)+' g'):emptyV()}${bV?sv(fmtInt(bRadWeight)+' g'):emptyV()}</tr>`;
+      sumRows += `<tr>${sk('개당 중량')}${aV?sv(Math.round(aRadWeight/aRadSample).toLocaleString('ko-KR')+' g'):emptyV()}${bV?sv(Math.round(bRadWeight/bRadSample).toLocaleString('ko-KR')+' g'):emptyV()}</tr>`;
+    } else if (isTongak) {
+      sumRows += `<tr>${sk('3m²당 정상개수')}${aV?sv(fmtInt(aTokCount)+' 개'):emptyV()}${bV?sv(fmtInt(bTokCount)+' 개'):emptyV()}</tr>`;
+      sumRows += `<tr>${sk('조사 개수')}${aV?sv(fmtInt(aTokSample)+' 개'):emptyV()}${bV?sv(fmtInt(bTokSample)+' 개'):emptyV()}</tr>`;
+      sumRows += `<tr>${sk('20개 중량')}${aV?sv(fmtInt(aTokWeight)+' g'):emptyV()}${bV?sv(fmtInt(bTokWeight)+' g'):emptyV()}</tr>`;
+      sumRows += `<tr>${sk('개당 중량')}${aV?sv(Math.round(aTokWeight/aTokSample).toLocaleString('ko-KR')+' g'):emptyV()}${bV?sv(Math.round(bTokWeight/bTokSample).toLocaleString('ko-KR')+' g'):emptyV()}</tr>`;
+      const aDmgT = document.getElementById('a-damage').value.trim();
+      const bDmgT = document.getElementById('b-damage').value.trim();
+      if (aDmgT||bDmgT) sumRows += `<tr>${sk('비고')}${aV?sv(aDmgT||'—',true):emptyV()}${bV?sv(bDmgT||'—',true):emptyV()}</tr>`;
+    } else if (isSoybean) {
+      sumRows += `<tr>${sk('6m² 건조곡 중량')}${aV?sv(fmtInt(aSoyWeight)+' g'):emptyV()}${bV?sv(fmtInt(bSoyWeight)+' g'):emptyV()}</tr>`;
+    }
+    if (aDmgStr||bDmgStr) sumRows += `<tr>${sk('비고')}${aV?sv(aDmgStr||'—',true):emptyV()}${bV?sv(bDmgStr||'—',true):emptyV()}</tr>`;
+  } else if (isPotato) {
+    const aOv=document.getElementById('a-potato-over').value.trim();
+    const aUn=document.getElementById('a-potato-under').value.trim();
+    const aDW=document.getElementById('a-potato-dmg').value.trim();
+    const bOv=document.getElementById('b-potato-over').value.trim();
+    const bUn=document.getElementById('b-potato-under').value.trim();
+    const bDW=document.getElementById('b-potato-dmg').value.trim();
+    const aDs=document.getElementById('a-damage').value.trim();
+    const bDs=document.getElementById('b-damage').value.trim();
+    sumRows += `<tr>${sk('20g이상 중량')}${aV?sv(fmtInt(parseFloat(aOv)||0)+' g'):emptyV()}${bV?sv(fmtInt(parseFloat(bOv)||0)+' g'):emptyV()}</tr>`;
+    sumRows += `<tr>${sk('20g미만 중량')}${aV?sv(fmtInt(parseFloat(aUn)||0)+' g'):emptyV()}${bV?sv(fmtInt(parseFloat(bUn)||0)+' g'):emptyV()}</tr>`;
+    sumRows += `<tr>${sk('피해 중량')}${aV?sv(fmtInt(parseFloat(aDW)||0)+' g'):emptyV()}${bV?sv(fmtInt(parseFloat(bDW)||0)+' g'):emptyV()}</tr>`;
+    if (aDs||bDs) sumRows += `<tr>${sk('비고')}${aV?sv(aDs||'—',true):emptyV()}${bV?sv(bDs||'—',true):emptyV()}</tr>`;
+  } else {
+    sumRows += `<tr>${sk('포기수')}${aV?sv(fmtInt(aP)+' 포기'):emptyV()}${bV?sv(fmtInt(bP)+' 포기'):emptyV()}</tr>`;
+    if (selectedCrop==='onion') {
+      sumRows += `<tr>${sk('양파종')}${aV?sv(aOnion?aOnion+'개':'—'):emptyV()}${bV?sv(bOnion?bOnion+'개':'—'):emptyV()}</tr>`;
+    }
+    sumRows += `<tr>${sk('20개 생중량')}${aV?sv(fmtInt(aW)+' g'):emptyV()}${bV?sv(fmtInt(bW)+' g'):emptyV()}</tr>`;
+    const aPerOne = aV ? fmt(aW/20, 1)+' g' : null;
+    const bPerOne = bV ? fmt(bW/20, 1)+' g' : null;
+    sumRows += `<tr>${sk('1개당 생중량')}${aV?sv(aPerOne):emptyV()}${bV?sv(bPerOne):emptyV()}</tr>`;
+    sumRows += `<tr>${sk('건조율')}${aV?sv(aDry.toFixed(1)+' %'):emptyV()}${bV?sv(bDry.toFixed(1)+' %'):emptyV()}</tr>`;
+    if (aDmg||bDmg) sumRows += `<tr>${sk('비고')}${aV?sv(aDmg||'—',true):emptyV()}${bV?sv(bDmg||'—',true):emptyV()}</tr>`;
+  }
+
+  document.getElementById('summary-content').innerHTML =
+    `<table class="sum-table">
+      <thead><tr><th></th><th class="a-th">A 포구</th><th class="b-th" style="color:#C0392B">B 포구</th></tr></thead>
+      <tbody>${sumRows}</tbody>
+    </table>`;
+
+  // A/B 카드 표시/숨김
+  const abGrid = document.getElementById('result-ab-grid');
+  abGrid.style.gridTemplateColumns = (A&&B) ? '1fr 1fr' : '1fr';
+
+  function fillCard(ab, calc, dry) {
+    const card = document.getElementById(`res-${ab}-card`);
+    if (!calc) { card.style.display='none'; return; }
+    card.style.display = 'block';
+    const sub = [];
+    const onionVal = document.getElementById(`${ab}-onion`).value.trim();
+    const dmgVal   = document.getElementById(`${ab}-damage`).value.trim();
+    if (!isPotato) sub.push(`3m² 생중량: ${fmtInt(calc.fresh3m2)} g`);
+    if (selectedCrop==='onion'&&onionVal) sub.push(`양파종: ${onionVal}개`);
+    if (dmgVal) sub.push(`비고: ${dmgVal}`);
+    const rounded = calc.kg10a_rounded !== undefined ? calc.kg10a_rounded : Math.round(calc.kg10a);
+    document.getElementById('res-' + ab).textContent = rounded.toLocaleString('ko-KR');
+    const rawEl = document.getElementById('res-' + ab + '-raw');
+    if (rawEl) rawEl.textContent = '(' + (calc.kg10a_raw !== undefined ? calc.kg10a_raw.toFixed(1) : calc.kg10a.toFixed(1)) + ' kg)';
+    document.getElementById(`res-${ab}-sub`).innerHTML = sub.join('<br>');
+    // 계산식
+    const plants = ab==='a'?aP:bP, w20 = ab==='a'?aW:bW;
+    const fresh10a_g = Math.round(calc.fresh3m2 / 3 * 1000);
+    const fEl = document.getElementById('res-' + ab + '-formula');
+    if (isPotato) {
+      const potatoOver = ab==='a' ? aPotatoOver : bPotatoOver;
+      fEl.innerHTML =
+        '<span class="formula-line f-step">10a당 생산량(kg)</span>'+
+        '<span class="formula-line f-eq">' + fmtInt(potatoOver) + 'g ÷ 3 × 1,000 ÷ 1,000</span>'+
+        '<span class="formula-line f-result">= ' + rounded.toLocaleString('ko-KR') + ' kg (' + calc.kg10a.toFixed(1) + ')</span>';
+    } else if (isCabbage) {
+      const cHead = ab==='a' ? aCabHead : bCabHead, cSamp = ab==='a' ? aCabSample : bCabSample, cWt = ab==='a' ? aCabWeight : bCabWeight;
+      fEl.innerHTML =
+        '<span class="formula-line f-step">① 포기당 중량</span>'+
+        '<span class="formula-line f-eq">' + fmtInt(cWt) + 'g ÷ ' + cSamp + '개 = ' + Math.round(calc.perPlant||cWt/cSamp).toLocaleString('ko-KR') + 'g</span>'+
+        '<span class="formula-line f-step">② 10a당 생산량(kg)</span>'+
+        '<span class="formula-line f-eq">' + fmtInt(cHead) + '포기 × ' + Math.round(calc.perPlant||cWt/cSamp).toLocaleString('ko-KR') + 'g ÷ 3 × 1,000 ÷ 1,000</span>'+
+        '<span class="formula-line f-result">= ' + rounded.toLocaleString('ko-KR') + ' kg (' + calc.kg10a.toFixed(1) + ')</span>';
+    } else if (isTongak) {
+      const rCnt2 = ab==='a' ? aTokCount : bTokCount;
+      const rSamp2 = ab==='a' ? aTokSample : bTokSample;
+      const rWt2 = ab==='a' ? aTokWeight : bTokWeight;
+      fEl.innerHTML =
+        '<span class="formula-line f-step">① 개당 중량</span>'+
+        '<span class="formula-line f-eq">'+fmtInt(rWt2)+'g ÷ '+rSamp2+'개 = '+Math.round(rWt2/rSamp2).toLocaleString('ko-KR')+'g</span>'+
+        '<span class="formula-line f-step">② 10a당 생산량(kg)</span>'+
+        '<span class="formula-line f-eq">'+fmtInt(rCnt2)+'개 × '+Math.round(rWt2/rSamp2).toLocaleString('ko-KR')+'g ÷ 3 × 1,000 ÷ 1,000</span>'+
+        '<span class="formula-line f-result">= '+rounded.toLocaleString('ko-KR')+' kg ('+calc.kg10a.toFixed(1)+')</span>';
+    } else if (isRadish) {
+      const rCnt = ab==='a' ? aRadCount : bRadCount, rSamp = ab==='a' ? aRadSample : bRadSample, rWt = ab==='a' ? aRadWeight : bRadWeight;
+      fEl.innerHTML =
+        '<span class="formula-line f-step">① 개당 중량</span>'+
+        '<span class="formula-line f-eq">' + fmtInt(rWt) + 'g ÷ ' + rSamp + '개 = ' + Math.round(rWt/rSamp).toLocaleString('ko-KR') + 'g</span>'+
+        '<span class="formula-line f-step">② 10a당 생산량(kg)</span>'+
+        '<span class="formula-line f-eq">' + fmtInt(rCnt) + '개 × ' + Math.round(rWt/rSamp).toLocaleString('ko-KR') + 'g ÷ 3 × 1,000 ÷ 1,000</span>'+
+        '<span class="formula-line f-result">= ' + rounded.toLocaleString('ko-KR') + ' kg (' + calc.kg10a.toFixed(1) + ')</span>';
+    } else if (isTongak) {
+      sumRows += `<tr>${sk('3m²당 정상개수')}${aV?sv(fmtInt(aTokCount)+' 개'):emptyV()}${bV?sv(fmtInt(bTokCount)+' 개'):emptyV()}</tr>`;
+      sumRows += `<tr>${sk('조사 개수')}${aV?sv(fmtInt(aTokSample)+' 개'):emptyV()}${bV?sv(fmtInt(bTokSample)+' 개'):emptyV()}</tr>`;
+      sumRows += `<tr>${sk('20개 중량')}${aV?sv(fmtInt(aTokWeight)+' g'):emptyV()}${bV?sv(fmtInt(bTokWeight)+' g'):emptyV()}</tr>`;
+      sumRows += `<tr>${sk('개당 중량')}${aV?sv(Math.round(aTokWeight/aTokSample).toLocaleString('ko-KR')+' g'):emptyV()}${bV?sv(Math.round(bTokWeight/bTokSample).toLocaleString('ko-KR')+' g'):emptyV()}</tr>`;
+      const aDmgT = document.getElementById('a-damage').value.trim();
+      const bDmgT = document.getElementById('b-damage').value.trim();
+      if (aDmgT||bDmgT) sumRows += `<tr>${sk('비고')}${aV?sv(aDmgT||'—',true):emptyV()}${bV?sv(bDmgT||'—',true):emptyV()}</tr>`;
+    } else if (isSoybean) {
+      const sWt = ab==='a' ? aSoyWeight : bSoyWeight;
+      fEl.innerHTML =
+        '<span class="formula-line f-step">10a당 생산량(kg)</span>'+
+        '<span class="formula-line f-eq">' + fmtInt(sWt) + 'g ÷ 6 × 1,000 ÷ 1,000</span>'+
+        '<span class="formula-line f-result">= ' + rounded.toLocaleString('ko-KR') + ' kg (' + calc.kg10a.toFixed(1) + ')</span>';
+    } else {
+      document.getElementById('res-' + ab + '-formula').innerHTML =
+        '<span class="formula-line f-step">① 3m² 생중량 (반올림)</span>'+
+        '<span class="formula-line f-eq">' + fmtInt(plants) + '포기 × (' + fmtInt(w20) + 'g÷20) = ' + (plants*(w20/20)).toFixed(2) + '</span>'+
+        '<span class="formula-line f-result">→ ' + fmtInt(calc.fresh3m2) + ' g</span>'+
+        '<span class="formula-line f-step">② 10a 생중량(g) (반올림)</span>'+
+        '<span class="formula-line f-eq">' + fmtInt(calc.fresh3m2) + ' ÷ 3 × 1,000 = ' + (calc.fresh3m2/3*1000).toFixed(2) + '</span>'+
+        '<span class="formula-line f-result">→ ' + fmtInt(fresh10a_g) + ' g</span>'+
+        '<span class="formula-line f-step">③ 10a 생산량 kg (반올림)</span>'+
+        '<span class="formula-line f-eq">' + fmtInt(fresh10a_g) + ' ÷ 1,000 × ' + dry.toFixed(1) + '% = ' + (fresh10a_g/1000*(dry/100)).toFixed(2) + '</span>'+
+        '<span class="formula-line f-result">→ ' + calc.kg10a.toLocaleString('ko-KR') + ' kg</span>';
+    }
+  }
+  fillCard('a', A, aDry);
+  fillCard('b', B, bDry);
+
+  const avgRounded = Math.round(avg);
+  document.getElementById('res-avg').textContent = avgRounded.toLocaleString('ko-KR');
+  const avgRawEl = document.getElementById('res-avg-raw');
+  if (avgRawEl) avgRawEl.textContent = '(' + avg.toFixed(1) + ' kg)';
+  document.getElementById('avg-label').textContent = avgLabel;
+  const regionLabel = region ? REGION_KO[region] + ' ' : '';
+  const dryNoteEl = document.getElementById('dry-note');
+  if (isPotato || isNewCrop) {
+    dryNoteEl.style.display = 'none';
+  } else {
+    dryNoteEl.style.display = '';
+    dryNoteEl.textContent =
+      A&&B ? `건조율 A:${aDry.toFixed(1)}% / B:${bDry.toFixed(1)}% 적용 (${regionLabel}${CROP_KO[selectedCrop]} 기준)`
+           : `건조율 ${(A?aDry:bDry).toFixed(1)}% 적용 (${regionLabel}${CROP_KO[selectedCrop]} 기준)`;
+  }
+
+  // ── 방향 바 그래프 비교 ──
+  const regionLabelForStat = region ? REGION_KO[region] : null;
+  const prev = region ? STATS[selectedCrop].prev[region] : null;
+  const mean = region ? STATS[selectedCrop].mean5[region] : null;
+
+  function cmpItem(label, ref, my) {
+    const diff = my - ref;
+    const pct  = ((diff / ref) * 100).toFixed(1);
+    const sign = diff >= 0 ? '+' : '';
+    const isUp   = diff > ref * 0.01;
+    const isDown = diff < -(ref * 0.01);
+    const cls    = isUp ? 'up' : (isDown ? 'down' : 'same');
+    const badgeTxt = cls==='same' ? '± 보합' : `${sign}${pct}% (${sign}${fmt(diff)} kg)`;
+
+    // 바 너비 계산: 최대 45% (절반 기준)
+    const maxDiff = ref * 0.5; // 50%를 최대 바 길이로
+    const rawPct  = Math.min(Math.abs(diff) / maxDiff * 45, 45);
+    const barWidth = rawPct.toFixed(1);
+
+    let barHTML = '';
+    if (cls === 'up') {
+      barHTML = `<div class="bar-fill fill-up" style="width:${barWidth}%"></div>`;
+    } else if (cls === 'down') {
+      barHTML = `<div class="bar-fill fill-down" style="width:${barWidth}%"></div>`;
+    } else {
+      barHTML = `<div class="bar-fill fill-same"></div>`;
+    }
+
+    return `
+    <div class="cmp-item">
+      <div class="cmp-header">
+        <span class="cmp-name">${label} <span style="color:var(--text-hint);font-size:10px">(기준 ${fmtInt(ref)} kg)</span></span>
+        <span class="badge badge-${cls}">${badgeTxt}</span>
+      </div>
+      <div class="bar-chart-wrap">
+        <div class="bar-bg-left" style="width:46%"></div>
+        <div class="bar-bg-right" style="width:46%"></div>
+        <div class="bar-center-line"></div>
+        ${barHTML}
+      </div>
+      <div class="bar-labels">
+        <span class="bar-lbl" style="color:var(--red);font-size:10px">▼ 감소</span>
+        <span class="bar-lbl center" style="font-size:10px;color:var(--text-hint)">기준값 (${fmtInt(ref)} kg)</span>
+        <span class="bar-lbl" style="color:var(--blue);font-size:10px">증가 ▲</span>
+      </div>
+    </div>`;
+  }
+  document.getElementById('stat-content').innerHTML =
+    (prev !== null && mean !== null)
+    ? (cmpItem('전년 대비 (' + regionLabelForStat + ')', prev, avg) + cmpItem('평년 대비 (' + regionLabelForStat + ' 5년)', mean, avg))
+    : '<div style="padding:14px;text-align:center;color:var(--text-hint);font-size:13px">📍 지역을 선택하면 전년·평년 대비 분석이 표시됩니다.</div>';
+
+  // ── 지역별 막대그래프 ──
+  const allR = ['daegu','gyeongbuk','gangwon'];
+  const hist = HISTORY[selectedCrop];
+  if (!hist) {
+    document.getElementById('history-content').innerHTML = '<p style="font-size:12px;color:var(--text-hint);padding:8px 0">※ 해당 작물의 지역별 데이터가 준비 중입니다.</p>';
+  } else if (!region) {
+    document.getElementById('history-content').innerHTML = '<p style="font-size:12px;color:var(--text-hint);padding:8px 0">※ 지역 선택 시 지역별 비교 그래프가 표시됩니다.</p>';
+  } else {
+    // 각 지역의 5년 평년, 전년, 조사값
+    const regionNames = {daegu:'대구', gyeongbuk:'경북', gangwon:'강원'};
+    const mean5vals = {
+      daegu:    STATS[selectedCrop] ? STATS[selectedCrop].mean5.daegu    : 0,
+      gyeongbuk:STATS[selectedCrop] ? STATS[selectedCrop].mean5.gyeongbuk: 0,
+      gangwon:  STATS[selectedCrop] ? STATS[selectedCrop].mean5.gangwon  : 0,
+    };
+    const prevvals = {
+      daegu:    STATS[selectedCrop] ? STATS[selectedCrop].prev.daegu    : 0,
+      gyeongbuk:STATS[selectedCrop] ? STATS[selectedCrop].prev.gyeongbuk: 0,
+      gangwon:  STATS[selectedCrop] ? STATS[selectedCrop].prev.gangwon  : 0,
+    };
+    // 조사값은 선택 지역만
+    const surveyVal = {daegu:0, gyeongbuk:0, gangwon:0};
+    surveyVal[region] = avg;
+
+    const allVals = allR.flatMap(r => [mean5vals[r], prevvals[r], surveyVal[r]]).filter(v=>v>0);
+    const maxBar = Math.max(...allVals) * 1.15;
+
+    // A포구/B포구 값 (선택 지역만)
+    const aVal = A ? A.kg10a : 0;
+    const bVal = B ? B.kg10a : 0;
+    const surveyA = {daegu:0, gyeongbuk:0, gangwon:0};
+    const surveyB = {daegu:0, gyeongbuk:0, gangwon:0};
+    surveyA[region] = aVal;
+    surveyB[region] = bVal;
+
+    const allVals2 = allR.flatMap(r=>[mean5vals[r],prevvals[r],surveyA[r],surveyB[r]]).filter(v=>v>0);
+    const maxBar2 = Math.max(...allVals2) * 1.15;
+
+    let barHtml = '<div class="rbar-legend">'
+      + '<span class="rbar-dot" style="background:#1B5E20"></span>5년 평년&nbsp;'
+      + '<span class="rbar-dot" style="background:#66BB6A;margin-left:8px"></span>전년&nbsp;'
+      + '<span class="rbar-dot" style="background:#2563EB;margin-left:8px"></span>A포구&nbsp;'
+      + '<span class="rbar-dot" style="background:#C0392B;margin-left:8px"></span>B포구'
+      + '</div>';
+
+    allR.forEach(r => {
+      const rName = regionNames[r];
+      const m5 = mean5vals[r], pv = prevvals[r];
+      const saV = surveyA[r], sbV = surveyB[r];
+      const m5w = Math.round((m5/maxBar2)*100);
+      const pvw = Math.round((pv/maxBar2)*100);
+      const saW = saV > 0 ? Math.round((saV/maxBar2)*100) : 0;
+      const sbW = sbV > 0 ? Math.round((sbV/maxBar2)*100) : 0;
+      const isSelected = r === region;
+
+      barHtml += '<div class="rbar-group' + (isSelected ? ' rbar-selected' : '') + '">'
+        + '<div class="rbar-label">' + rName + (isSelected ? ' ★' : '') + '</div>'
+        + '<div class="rbar-rows">'
+        + '<div class="rbar-row"><span class="rbar-row-lbl">평년</span><div class="rbar-bar-wrap"><div class="rbar-bar" style="width:' + m5w + '%;background:#1B5E20"></div></div><span class="rbar-val">' + fmtInt(m5) + ' kg</span></div>'
+        + '<div class="rbar-row"><span class="rbar-row-lbl">전년</span><div class="rbar-bar-wrap"><div class="rbar-bar" style="width:' + pvw + '%;background:#66BB6A"></div></div><span class="rbar-val">' + fmtInt(pv) + ' kg</span></div>'
+        + (isSelected
+          ? '<div class="rbar-row"><span class="rbar-row-lbl" style="color:#2563EB">A포구</span><div class="rbar-bar-wrap"><div class="rbar-bar" style="width:' + saW + '%;background:#2563EB"></div></div><span class="rbar-val" style="color:#2563EB;font-weight:700">' + (saV > 0 ? fmtBar(saV) : '—') + '</span></div>'
+            + '<div class="rbar-row"><span class="rbar-row-lbl" style="color:#C0392B">B포구</span><div class="rbar-bar-wrap"><div class="rbar-bar" style="width:' + sbW + '%;background:#C0392B"></div></div><span class="rbar-val" style="color:#C0392B;font-weight:700">' + (sbV > 0 ? fmtBar(sbV) : '—') + '</span></div>'
+          : '<div class="rbar-row"><span class="rbar-row-lbl" style="color:var(--text-hint)">A포구</span><div class="rbar-bar-wrap"><div class="rbar-bar" style="width:0%"></div></div><span class="rbar-val" style="color:var(--text-hint)">—</span></div>'
+            + '<div class="rbar-row"><span class="rbar-row-lbl" style="color:var(--text-hint)">B포구</span><div class="rbar-bar-wrap"><div class="rbar-bar" style="width:0%"></div></div><span class="rbar-val" style="color:var(--text-hint)">—</span></div>'
+        )
+        + '</div></div>';
+    });
+    document.getElementById('history-content').innerHTML = barHtml;
+  } // end region check
+  // 5년 상세표 생성 및 자동 펼침
+  buildHistTable(selectedCrop, region);
+  // 계산 후 자동 펼침
+  const _histBody = document.getElementById('hist-table-body');
+  const _histBtn  = document.getElementById('hist-toggle-btn');
+  if (_histBody) { _histBody.style.display = 'block'; }
+  if (_histBtn)  { _histBtn.textContent = '▲ 접기'; }
+  document.getElementById('result-section').classList.add('show');
+  document.getElementById('result-section').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function toggleHistTable() {
+  const body = document.getElementById('hist-table-body');
+  const btn  = document.getElementById('hist-toggle-btn');
+  if (body.style.display === 'none') {
+    body.style.display = 'block';
+    if (btn) btn.textContent = '▲ 접기';
+  } else {
+    body.style.display = 'none';
+    if (btn) btn.textContent = '▼ 펼치기';
+  }
+}
+
+function buildHistTable(crop, region) {
+  const histKey = CROP_HIST_KEY[crop] || crop;
+  const hist = HISTORY[histKey];
+  const card = document.getElementById('hist-table-card');
+  const titleEl = document.getElementById('hist-table-title');
+  const content = document.getElementById('hist-table-content');
+
+  if (!hist) { card.style.display='none'; return; }
+  card.style.display = 'block';
+  // 접힌 상태 초기화
+  document.getElementById('hist-table-body').style.display = 'none';
+  const tBtn=document.getElementById('hist-toggle-btn'); if(tBtn) tBtn.textContent='▼ 펼치기';
+  titleEl.textContent = '📋 ' + (CROP_KO[crop]||crop) + ' 지역별 5년 생산량 상세표 (kg/10a)';
+
+  const allR = ['daegu','gyeongbuk','gangwon'];
+  const rKO  = {daegu:'대구', gyeongbuk:'경북', gangwon:'강원'};
+  const years = ['2021','2022','2023','2024','2025'];
+
+  // 평균 계산
+  function mean(arr){ const v=arr.filter(x=>x>0); return v.length?Math.round(v.reduce((a,b)=>a+b,0)/v.length):'-'; }
+
+  let tbl = '<table class="htbl"><thead><tr>'
+    + '<th>지역</th>' + years.map(y=>'<th>'+y+'년</th>').join('') + '<th>평년</th>'
+    + '</tr></thead><tbody>';
+
+  allR.forEach(r => {
+    const vals = hist[r] ? hist[r].map(d=>d.v) : ['-','-','-','-','-'];
+    const avg5 = mean(vals.filter(v=>typeof v==='number'));
+    const isSel = r === region;
+    tbl += '<tr' + (isSel?' class="htbl-avg"':'') + '>'
+      + '<td class="htbl-yr">' + rKO[r] + (isSel?' ★':'') + '</td>'
+      + vals.map((v,i)=>'<td'+(isSel?' class="htbl-hl"':'')+'>'+(typeof v==='number'?v.toLocaleString('ko-KR'):'-')+'</td>').join('')
+      + '<td style="font-weight:700;color:var(--green)">' + (typeof avg5==='number'?avg5.toLocaleString('ko-KR'):avg5) + '</td>'
+      + '</tr>';
+  });
+  tbl += '</tbody></table>';
+  content.innerHTML = tbl;
+}
+
+function getTodayKST() {
+  const now = new Date();
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  return kst.toISOString().split('T')[0];
+}
+
+let _capDataUrl = '';
+let _capFilename = '';
+
+function captureResult() {
+  const el = document.getElementById('result-section');
+  if (!el || !el.classList.contains('show')) {
+    alert('먼저 계산 결과를 확인해주세요.'); return;
+  }
+  const btn = document.getElementById('cap-trigger-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ 이미지 생성 중...';
+
+  function runCapture() {
+    doCapture(btn);
+  }
+
+  // 이미 로드된 경우 바로 실행
+  if (window.html2canvas) { runCapture(); return; }
+
+  // jsdelivr CDN (가장 안정적)
+  const urls = [
+    'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'
+  ];
+  let tried = 0;
+
+  function tryLoad() {
+    if (tried >= urls.length) {
+      btn.disabled = false;
+      btn.textContent = '📷 결과 이미지로 저장';
+      alert('라이브러리 로드 실패.\n인터넷 연결을 확인하거나 화면을 직접 스크린샷 해주세요.');
+      return;
+    }
+    const s = document.createElement('script');
+    s.src = urls[tried++];
+    s.onload = runCapture;
+    s.onerror = tryLoad;  // 다음 CDN 시도
+    document.head.appendChild(s);
+  }
+  tryLoad();
+}
+
+function doCapture(btn) {
+  const zone = document.getElementById('capture-zone');
+  if (!zone) {
+    if (btn) { btn.disabled=false; btn.textContent='📷 결과 이미지로 저장'; }
+    alert('캡처 영역을 찾을 수 없습니다.');
+    return;
+  }
+
+  // 파일명: 작물명_주소_월일_HHMM.png
+  const cropName = selectedCrop ? CROP_KO[selectedCrop] : '작물';
+  const addrRaw  = (document.getElementById('addr').value || '').trim() || '주소미입력';
+  const dateVal  = document.getElementById('survey-date').value || getTodayKST();
+  const nowKst   = new Date(new Date().getTime() + 9*60*60*1000);
+  const hh       = String(nowKst.getUTCHours()).padStart(2,'0');
+  const mm       = String(nowKst.getUTCMinutes()).padStart(2,'0');
+  const safeAddr = addrRaw.replace(/[\/\\:*?"<>|\s]/g, '_').slice(0, 20);
+  _capFilename   = cropName + '_' + safeAddr + '_' + dateVal + '_' + hh + mm + '.png';
+
+  // allowTaint:true → 외부 폰트 포함 가능 (toDataURL 보안 제한 우회)
+  // useCORS:true → CORS 헤더 있는 외부 리소스 허용
+  // logging:false → 콘솔 노이즈 제거
+  // 모바일 뷰포트 너비 고정으로 캡처 (PC처럼 넓게 캡처되는 문제 방지)
+  const capWidth = Math.min(window.innerWidth, 480);
+  html2canvas(zone, {
+    scale: window.devicePixelRatio || 2,
+    useCORS: true,
+    allowTaint: true,
+    logging: false,
+    backgroundColor: '#f4f3ef',
+    windowWidth: capWidth,
+    width: zone.offsetWidth,
+    scrollX: 0,
+    scrollY: -window.scrollY
+  }).then(function(canvas) {
+    _capDataUrl = canvas.toDataURL('image/png');
+    if (!_capDataUrl || _capDataUrl === 'data:,') {
+      throw new Error('빈 캔버스');
+    }
+    // 모달에 미리보기
+    document.getElementById('cap-preview-img').src = _capDataUrl;
+    document.getElementById('cap-filename').innerHTML =
+      '📁 파일명: <strong style="color:#8BC34A">' + _capFilename + '</strong><br>' +
+      '📂 저장위치: 기기 다운로드 폴더<br>' +
+      '<span style="font-size:11px;color:#888">iOS: 사진앱 / Android·PC: Downloads</span>';
+    document.getElementById('cap-modal').classList.add('show');
+    if (btn) { btn.disabled=false; btn.textContent='📷 결과 이미지로 저장'; }
+  }).catch(function(err) {
+    if (btn) { btn.disabled=false; btn.textContent='📷 결과 이미지로 저장'; }
+    alert('캡처 실패: ' + err.message + '\n화면을 직접 스크린샷 해주세요.');
+    console.error('html2canvas error:', err);
+  });
+}
+
+function downloadCapImage() {
+  if (!_capDataUrl) { alert('저장할 이미지가 없습니다. 먼저 캡처해주세요.'); return; }
+  try {
+    const a = document.createElement('a');
+    a.download = _capFilename;
+    a.href = _capDataUrl;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function(){ document.body.removeChild(a); }, 100);
+  } catch(e) {
+    alert('저장 실패: ' + e.message);
+  }
+}
+
+function closeCapModal() {
+  document.getElementById('cap-modal').classList.remove('show');
+}
+
+function resetAll() {
+  // 모든 텍스트 입력 초기화
+  ['addr','a-plants','a-weight','a-onion','a-damage',
+   'b-plants','b-weight','b-onion','b-damage'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  // 날짜 오늘로
+  document.getElementById('survey-date').value = getTodayKST();
+  // 선택 상태 초기화
+  selectedCrop=null; selectedVariety=null; selectedRegion=null;
+  selectedRegion = null;
+  ['daegu','gyeongbuk','gangwon'].forEach(k => {
+    const el = document.getElementById('btn-' + k);
+    if (el) el.classList.remove('active-region');
+  });
+  ['garlic','onion','potato','cabbage','radish','tongak','soybean'].forEach(k=>{const el=document.getElementById('btn-'+k);if(el)el.classList.remove('active-crop');});
+  // 품종 숨김
+  document.getElementById('variety-section').style.display='none';
+  document.getElementById('variety-btns').innerHTML='';
+  // placeholder 기본값 복원
+  ['a','b'].forEach(ab=>{
+    document.getElementById(`${ab}-plants`).placeholder='예)100개 내외';
+    document.getElementById(`${ab}-weight`).placeholder='예)1,300g 내외';
+  });
+  // 건조율·생중량·경고 박스 숨김
+  ['a','b'].forEach(ab=>{
+    document.getElementById(`${ab}-dry-box`).style.display='none';
+    document.getElementById(`${ab}-dry-input`).value='';
+    document.getElementById(`${ab}-live`).classList.remove('show');
+    ['plants','weight'].forEach(f=>{
+      const w=document.getElementById(`${ab}-${f}-warn`);
+      if(w){w.textContent='';w.classList.remove('show');}
+    });
+  });
+  // 모든 섹션 숨김
+  ['.onion-seed-section','.potato-section','.cabbage-section','.radish-section','.tongak-section','.soybean-section'].forEach(sel=>
+    document.querySelectorAll(sel).forEach(el=>el.style.display='none')
+  );
+  // 감자/배추/무/콩 입력값 초기화
+  ['a-potato-over','a-potato-under','a-potato-dmg','b-potato-over','b-potato-under','b-potato-dmg',
+   'a-cab-head','a-cab-sample','a-cab-weight','a-cab-miss','b-cab-head','b-cab-sample','b-cab-weight','b-cab-miss',
+   'a-rad-count','a-rad-sample','a-rad-weight','b-rad-count','b-rad-sample','b-rad-weight',
+   'a-soy-weight','b-soy-weight','a-tok-count','a-tok-sample','a-tok-weight','b-tok-count','b-tok-sample','b-tok-weight'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  ['a','b'].forEach(ab=>{
+    ['potato','cab','rad','tok'].forEach(t=>{const lb=document.getElementById(ab+'-'+t+'-live');if(lb)lb.classList.remove('show');});
+    // garlic-onion 섹션 복원
+    const go=document.getElementById(ab+'-go-section'); if(go) go.style.display='block';
+    const pf=document.getElementById(ab+'-plants'); if(pf) pf.closest('.ab-field').style.display='block';
+  });
+  // 결과 숨김
+  document.getElementById('result-section').classList.remove('show');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ── 캡처 순번 카운터 ──
+function getDlCount() {
+  return parseInt(localStorage.getItem('crop_calc_dl_count')||'0');
+}
+
+// 초기 실행
+document.getElementById('survey-date').value = getTodayKST();
+document.querySelectorAll('.onion-seed-section').forEach(el=>el.style.display='none');
+selectRegion('gyeongbuk');  // 경북 기본 선택
+</script>
+
+<!-- 결과 이미지 저장 모달 -->
+<div class="cap-modal" id="cap-modal">
+  <div class="cap-modal-inner">
+    <div class="cap-modal-head">
+      <span class="cap-modal-title">📷 결과 이미지</span>
+      <button class="cap-close-btn" onclick="closeCapModal()">× 닫기</button>
+    </div>
+    <div class="cap-modal-guide">
+      <div class="cap-guide-row">
+        <span class="cap-guide-icon">📱</span>
+        <span class="cap-guide-text"><strong>iOS</strong>: 아래 이미지를 <strong>길게 누르기</strong> → <strong>"사진에 추가"</strong> 선택</span>
+      </div>
+      <div class="cap-guide-row">
+        <span class="cap-guide-icon">💻</span>
+        <span class="cap-guide-text"><strong>PC/Android</strong>: 이미지 우클릭 → <strong>다른 이름으로 저장</strong></span>
+      </div>
+    </div>
+    <div class="cap-modal-body">
+      <button class="cap-save-btn" onclick="downloadCapImage()">⬇ 이미지 저장</button>
+      <p class="cap-filename" id="cap-filename"></p>
+      <img id="cap-preview-img" class="cap-preview-img" src="" alt="결과 미리보기" style="margin-top:10px">
+    </div>
+  </div>
+</div>
+</body>
+</html>

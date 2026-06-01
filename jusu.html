@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>논벼 이삭 수 계산기</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ══ 라이트 테마 (기본) ══ */
+[data-theme="light"] {
+  --bg-page:      #f0f4f0;
+  --bg-section:   #ffffff;
+  --bg-input:     #f9fbf9;
+  --bg-cell:      #f4faf4;
+  --bg-arrow:     #e8f4e8;
+  --bg-reset:     #f4f4f0;
+  --bg-theme:     #e8eef8;
+  --bg-capture:   #2d6a2d;
+  --bg-rep:       #fffbe6;
+  --bg-warn:      #fff8ec;
+  --header-bg:    #2d6a2d;
+  --header-txt:   #ffffff;
+  --text-main:    #1a2e1a;
+  --text-muted:   #5a7a5a;
+  --text-title:   #3a7a3a;
+  --text-rep:     #a07800;
+  --text-stat:    #1a3a1a;
+  --text-arrow:   #2d6a2d;
+  --text-reset:   #5a5a50;
+  --text-theme:   #3a5aa0;
+  --text-capture: #ffffff;
+  --border-cell:  #d0e8d0;
+  --border-input: #c8ddc8;
+  --border-sect:  #d8e8d8;
+  --border-reset: #d8d8d0;
+  --border-rep:   #f0c040;
+  --border-warn:  #f5c842;
+  --dot-rep:      #f0c040;
+  --focus-ring:   rgba(58,122,58,0.18);
+}
+
+/* ══ 야외(다크) 테마 ══ */
+[data-theme="dark"] {
+  --bg-page:      #1a1a1a;
+  --bg-section:   #2a2a2a;
+  --bg-input:     #222222;
+  --bg-cell:      #252525;
+  --bg-arrow:     #2a3a2a;
+  --bg-reset:     #2e2e2e;
+  --bg-theme:     #2a2e3a;
+  --bg-capture:   #3a9a3a;
+  --bg-rep:       #3a3010;
+  --bg-warn:      #3a2e10;
+  --header-bg:    #111111;
+  --header-txt:   #ffffff;
+  --text-main:    #e8f0e8;
+  --text-muted:   #8aaa8a;
+  --text-title:   #6acc6a;
+  --text-rep:     #f0c040;
+  --text-stat:    #e0f0e0;
+  --text-arrow:   #6acc6a;
+  --text-reset:   #aaaaaa;
+  --text-theme:   #7ab0f0;
+  --text-capture: #ffffff;
+  --border-cell:  #3a5a3a;
+  --border-input: #3a5a3a;
+  --border-sect:  #333333;
+  --border-reset: #444444;
+  --border-rep:   #c09020;
+  --border-warn:  #c09020;
+  --dot-rep:      #f0c040;
+  --focus-ring:   rgba(100,200,100,0.25);
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Noto Sans KR', sans-serif;
+  background: var(--bg-page);
+  color: var(--text-main);
+  min-height: 100vh;
+  padding-bottom: 30px;
+  transition: background 0.25s, color 0.25s;
+  /* 모바일 당겨서 새로고침 방지 */
+  overscroll-behavior-y: contain;
+}
+
+header {
+  background: var(--header-bg);
+  color: var(--header-txt);
+  padding: 14px 20px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.25s;
+}
+.header-titles {
+  text-align: left;
+}
+header h1 { font-size: 17px; font-weight: 600; }
+header p  { font-size: 11px; opacity: 0.72; margin-top: 2px; }
+
+.home-link {
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+.home-link:active { background: rgba(255, 255, 255, 0.3); }
+
+.section {
+  margin: 10px 14px 0;
+  background: var(--bg-section);
+  border-radius: 14px;
+  border: 1px solid var(--border-sect);
+  padding: 14px;
+  transition: background 0.25s, border-color 0.25s;
+}
+.section-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-title);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 10px;
+}
+
+.info-row { display: flex; gap: 10px; }
+.field-group { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.field-group label { font-size: 11px; color: var(--text-muted); font-weight: 500; }
+.field-group input[type="text"],
+.field-group input[type="date"] {
+  border: 1.5px solid var(--border-input);
+  border-radius: 8px;
+  padding: 9px 10px;
+  font-size: 14px;
+  color: var(--text-main);
+  background: var(--bg-input);
+  width: 100%;
+  outline: none;
+  -webkit-appearance: none;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+.field-group input:focus { border-color: var(--text-title); background: var(--bg-section); }
+
+/* ── 5×2 그리드 ── */
+.plants-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 7px;
+}
+.plant-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-cell);
+  border: 1.5px solid var(--border-cell);
+  border-radius: 10px;
+  padding: 8px 4px 9px;
+  transition: background 0.2s, border-color 0.2s;
+}
+.plant-cell.representative {
+  background: var(--bg-rep);
+  border-color: var(--border-rep);
+}
+.plant-num {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-title);
+  line-height: 1;
+}
+.plant-cell.representative .plant-num { color: var(--text-rep); }
+
+.plant-input {
+  width: 100%;
+  border: 1.5px solid var(--border-input);
+  border-radius: 7px;
+  padding: 8px 2px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-main);
+  background: var(--bg-section);
+  outline: none;
+  text-align: center;
+  -webkit-appearance: none;
+  appearance: none;
+  min-height: 44px;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+.plant-input:focus {
+  border-color: var(--text-title);
+  box-shadow: 0 0 0 2px var(--focus-ring);
+}
+.plant-input::placeholder { color: var(--border-input); font-size: 13px; font-weight: 400; }
+.plant-cell.representative .plant-input {
+  border-color: var(--border-rep);
+  background: var(--bg-rep);
+}
+.rep-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--dot-rep);
+  display: none;
+  flex-shrink: 0;
+}
+.plant-cell.representative .rep-dot { display: block; }
+
+/* ── 결과 카드 ── */
+.result-section {
+  margin: 10px 14px 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+.stat-card {
+  background: var(--bg-section);
+  border: 1px solid var(--border-sect);
+  border-radius: 12px;
+  padding: 11px 8px;
+  text-align: center;
+  transition: background 0.25s, border-color 0.25s;
+}
+.stat-label { font-size: 11px; color: var(--text-muted); font-weight: 500; margin-bottom: 4px; }
+.stat-value { font-size: 22px; font-weight: 700; color: var(--text-stat); }
+.stat-card.rep-stat { background: var(--bg-rep); border-color: var(--border-rep); }
+.stat-card.rep-stat .stat-label { color: var(--text-rep); }
+.stat-card.rep-stat .stat-value { color: var(--text-rep); }
+
+/* ── 경고 ── */
+.warn-msg {
+  margin: 8px 14px 0;
+  background: var(--bg-warn);
+  border: 1px solid var(--border-warn);
+  border-radius: 10px;
+  padding: 9px 14px;
+  font-size: 12px;
+  color: var(--text-rep);
+  font-weight: 500;
+  text-align: center;
+  display: none;
+}
+.warn-msg.visible { display: block; }
+
+/* ── 버튼 영역 ── */
+.action-area {
+  margin: 10px 14px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.nav-arrows { display: flex; gap: 8px; }
+.btn-row    { display: flex; gap: 8px; }
+
+.btn {
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s, background 0.25s, color 0.25s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 50px;
+  font-size: 14px;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn:active { transform: scale(0.96); opacity: 0.80; }
+
+.btn-arrow {
+  flex: 1;
+  background: var(--bg-arrow);
+  color: var(--text-arrow);
+  font-size: 17px;
+  border: 1px solid var(--border-cell);
+}
+.btn-reset {
+  flex: 1;
+  background: var(--bg-reset);
+  color: var(--text-reset);
+  border: 1px solid var(--border-reset);
+}
+.btn-theme {
+  flex: 1;
+  background: var(--bg-theme);
+  color: var(--text-theme);
+  border: 1px solid var(--border-reset);
+  font-size: 13px;
+}
+.btn-capture {
+  flex: 2;
+  background: var(--bg-capture);
+  color: var(--text-capture);
+}
+
+/* ── 커스텀 확인 모달 ── */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 5000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.modal-box {
+  background: var(--bg-section);
+  border-radius: 16px;
+  padding: 24px 20px 18px;
+  width: 100%;
+  max-width: 320px;
+  text-align: center;
+}
+.modal-box p {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-main);
+  line-height: 1.6;
+  margin-bottom: 18px;
+}
+.modal-btns { display: flex; gap: 10px; }
+.modal-btns button {
+  flex: 1;
+  min-height: 48px;
+  border-radius: 10px;
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.modal-cancel { background: var(--bg-reset); color: var(--text-reset); border: 1px solid var(--border-reset) !important; }
+.modal-ok     { background: #d93030; color: #fff; }
+
+/* ── 이미지 오버레이 ── */
+.img-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.92);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 16px 30px;
+  overflow-y: auto;
+}
+.img-overlay p { color:#fff; font-size:13px; text-align:center; margin-bottom:12px; line-height:1.6; }
+.img-overlay p strong { color:#ffd966; }
+.img-overlay img { width:100%; border-radius:10px; display:block; }
+.img-overlay .close-btn {
+  margin-top: 18px;
+  background: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 13px 40px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 48px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (min-width: 480px) {
+  body { max-width: 480px; margin: 0 auto; }
+}
+</style>
+</head>
+<body>
+
+<div id="captureArea">
+<header>
+  <div class="header-titles">
+    <h1>🌾 논벼 이삭 수 계산기</h1>
+    <p>10포기 이삭수 입력 및 대표 주수 산출</p>
+  </div>
+  <a href="https://ubaldos00-ship-it.github.io/home" class="home-link">🏠 홈</a>
+</header>
+
+<div class="section">
+  <div class="section-title">조사 정보</div>
+  <div class="info-row">
+    <div class="field-group" style="flex:2">
+      <label for="address">📍 필지 주소</label>
+      <input type="text" id="address" placeholder="조사 지점 주소" autocomplete="off">
+    </div>
+    <div class="field-group" style="flex:1.2">
+      <label for="surveyDate">📅 조사일</label>
+      <input type="date" id="surveyDate">
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">포기별 이삭수</div>
+  <div class="plants-grid" id="plantsGrid"></div>
+</div>
+
+<div class="result-section">
+  <div class="stat-card">
+    <div class="stat-label">합계</div>
+    <div class="stat-value" id="statSum">—</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">평균</div>
+    <div class="stat-value" id="statAvg">—</div>
+  </div>
+  <div class="stat-card rep-stat">
+    <div class="stat-label">⭐ 대표 주수</div>
+    <div class="stat-value" id="statRep">—</div>
+  </div>
+</div>
+</div><div class="warn-msg" id="warnMsg">⚠️ 10포기를 모두 입력해야 평균과 대표 주수를 산출합니다.</div>
+
+<div class="action-area">
+  <div class="nav-arrows">
+    <button class="btn btn-arrow" onclick="moveFocus(-1)">&#8592; 이전</button>
+    <button class="btn btn-arrow" onclick="moveFocus(1)">다음 &#8594;</button>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-reset"   onclick="confirmReset()">🔄 초기화</button>
+    <button class="btn btn-theme"   id="btnTheme" onclick="toggleTheme()">🌙 야외모드</button>
+    <button class="btn btn-capture" id="btnCapture" onclick="captureScreen()">📸 저장</button>
+  </div>
+</div>
+
+<script>
+const COUNT = 10;
+let focusedIndex = 0;
+
+/* ── 날짜 기본값 ── */
+const today = new Date();
+document.getElementById('surveyDate').value =
+  `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+
+/* ── 입력 셀 생성 ── */
+const grid = document.getElementById('plantsGrid');
+for (let i = 1; i <= COUNT; i++) {
+  const cell = document.createElement('div');
+  cell.className = 'plant-cell';
+  cell.id = `card-${i}`;
+  cell.innerHTML = `
+    <span class="plant-num">${i}번</span>
+    <input class="plant-input" id="plant-${i}"
+      type="number" inputmode="numeric" pattern="[0-9]*"
+      min="0" max="99" placeholder="-" autocomplete="off">
+    <span class="rep-dot"></span>`;
+  grid.appendChild(cell);
+
+  const input = document.getElementById(`plant-${i}`);
+  const idx = i - 1;
+
+  input.addEventListener('focus', () => { focusedIndex = idx; });
+
+  input.addEventListener('input', () => {
+    /* 2자리 초과 차단 */
+    if (input.value.length > 2) input.value = input.value.slice(0, 2);
+    if (input.value !== '' && Number(input.value) < 0) input.value = '';
+    calculate();
+    /* 2자리 채워지면 자동 다음 이동 */
+    if (input.value.length >= 2 && idx < COUNT - 1) {
+      setTimeout(() => moveFocus(1), 80);
+    }
+  });
+
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') moveFocus(1); });
+}
+
+/* ── 포커스 이동 ── */
+function moveFocus(dir) {
+  const next = Math.max(0, Math.min(COUNT - 1, focusedIndex + dir));
+  const el = document.getElementById(`plant-${next + 1}`);
+  if (el) { el.focus(); el.select(); focusedIndex = next; }
+}
+
+/* ── 값 수집 ── */
+function getValues() {
+  return Array.from({ length: COUNT }, (_, i) => {
+    const v = document.getElementById(`plant-${i+1}`).value;
+    return v === '' ? null : Number(v);
+  });
+}
+
+/* ── 계산 ── */
+function calculate() {
+  const vals  = getValues();
+  const filled = vals.filter(v => v !== null);
+  const warn  = document.getElementById('warnMsg');
+
+  for (let i = 1; i <= COUNT; i++)
+    document.getElementById(`card-${i}`).classList.remove('representative');
+
+  if (filled.length < COUNT) {
+    document.getElementById('statSum').textContent = filled.length > 0 ? filled.reduce((a,b) => a+b, 0) : '—';
+    document.getElementById('statAvg').textContent = '—';
+    document.getElementById('statRep').textContent = '—';
+    warn.classList.toggle('visible', filled.length > 0);
+    return;
+  }
+
+  warn.classList.remove('visible');
+  const sum = vals.reduce((a, b) => a + b, 0);
+  const avg = sum / COUNT;
+  document.getElementById('statSum').textContent = sum;
+  document.getElementById('statAvg').textContent = avg % 1 === 0 ? avg : avg.toFixed(1);
+
+  /* 평균 차이 최소, 동점 시 앞 번호 우선 (strict <) */
+  let repIndex = -1, minDiff = Infinity;
+  vals.forEach((v, i) => {
+    const diff = Math.abs(v - avg);
+    if (diff < minDiff) { minDiff = diff; repIndex = i; }
+  });
+
+  if (repIndex >= 0) {
+    document.getElementById(`card-${repIndex+1}`).classList.add('representative');
+    document.getElementById('statRep').textContent = `${repIndex+1}번`;
+  }
+}
+
+/* ── 초기화 (커스텀 모달) ── */
+function confirmReset() {
+  const ov = document.createElement('div');
+  ov.className = 'modal-overlay';
+  ov.id = 'resetModal';
+  ov.innerHTML = `
+    <div class="modal-box">
+      <p>입력된 이삭수를<br>모두 초기화할까요?</p>
+      <div class="modal-btns">
+        <button class="modal-cancel" onclick="document.getElementById('resetModal').remove()">취소</button>
+        <button class="modal-ok"     onclick="doReset()">초기화</button>
+      </div>
+    </div>`;
+  document.body.appendChild(ov);
+}
+
+function doReset() {
+  const modal = document.getElementById('resetModal');
+  if (modal) modal.remove();
+
+  for (let i = 1; i <= COUNT; i++) {
+    document.getElementById(`plant-${i}`).value = '';
+    document.getElementById(`card-${i}`).classList.remove('representative');
+  }
+  document.getElementById('statSum').textContent  = '—';
+  document.getElementById('statAvg').textContent  = '—';
+  document.getElementById('statRep').textContent  = '—';
+  document.getElementById('warnMsg').classList.remove('visible');
+  focusedIndex = 0;
+  setTimeout(() => document.getElementById('plant-1').focus(), 50);
+}
+
+/* ── 테마 토글 ── */
+function toggleTheme() {
+  const html = document.documentElement;
+  const btn  = document.getElementById('btnTheme');
+  if (html.getAttribute('data-theme') === 'light') {
+    html.setAttribute('data-theme', 'dark');
+    btn.textContent = '☀️ 라이트모드';
+  } else {
+    html.setAttribute('data-theme', 'light');
+    btn.textContent = '🌙 야외모드';
+  }
+}
+
+/* ── 화면 캡처 ── */
+function captureScreen() {
+  const btn = document.getElementById('btnCapture');
+  btn.textContent = '⏳…';
+  btn.disabled = true;
+  document.activeElement && document.activeElement.blur();
+
+  setTimeout(() => {
+    const bg = document.documentElement.getAttribute('data-theme') === 'dark' ? '#1a1a1a' : '#f0f4f0';
+    html2canvas(document.getElementById('captureArea'), {
+      scale: 2, useCORS: true, backgroundColor: bg, logging: false
+    }).then(canvas => {
+      btn.textContent = '📸 저장';
+      btn.disabled = false;
+      const date    = document.getElementById('surveyDate').value.replace(/-/g, '');
+      const address = document.getElementById('address').value.trim().replace(/\s+/g, '_') || '주소없음';
+      const imgData = canvas.toDataURL('image/png');
+      const filename = `논벼조사_${address}_${date}.png`;
+      /* Android 자동 다운로드 시도 */
+      try {
+        const a = document.createElement('a');
+        a.download = filename;
+        a.href = imgData;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      } catch(e) {}
+      showOverlay(imgData);
+    }).catch(err => {
+      btn.textContent = '📸 저장';
+      btn.disabled = false;
+      alert('캡처 오류: ' + err.message);
+    });
+  }, 300);
+}
+
+function showOverlay(imgData) {
+  const old = document.getElementById('imgOverlay');
+  if (old) old.remove();
+  const ov = document.createElement('div');
+  ov.className = 'img-overlay';
+  ov.id = 'imgOverlay';
+  ov.innerHTML = `
+    <p>📱 <strong>이미지를 길게 눌러</strong> 앨범에 저장하세요<br>
+    <span style="font-size:11px;opacity:0.65;">(안드로이드는 자동 다운로드됩니다)</span></p>
+    <img src="${imgData}" alt="조사 결과">
+    <button class="close-btn" onclick="document.getElementById('imgOverlay').remove()">닫기</button>`;
+  document.body.appendChild(ov);
+}
+
+document.getElementById('plant-1').focus();
+</script>
+</body>
+</html>

@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>계통추출 계산기</title>
+<style>
+/* 시스템 폰트만 사용 - 외부 의존성 제거 */
+body,button,input{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif}
+</style>
+<style>
+:root {
+  --green:#2d7a3a; --glight:#e8f5e9; --gmid:#a5d6a7;
+  --red:#c62828;   --rlight:#ffebee;
+  --blue:#1565c0;  --blight:#e3f2fd;
+  --amber:#e65100;
+  --ink:#1a1a18;   --ink2:#555;
+  --paper:#f4f4ef; --card:#fff; --border:#e0ddd5;
+  --r:14px;
+  --sans:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --mono:Menlo,Monaco,Consolas,"Courier New",monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);min-height:100vh;padding-bottom:60px;max-width:480px;margin:0 auto}
+
+/*── Header ──*/
+.hdr{background:var(--green);color:#fff;padding:12px 14px 10px;position:sticky;top:0;z-index:200;box-shadow:0 2px 10px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:space-between}
+.hdr h1{font-size:17px;font-weight:900;letter-spacing:-.02em}
+.hdr p{font-size:10px;opacity:.7;margin-top:1px}
+.home-btn{display:flex;flex-direction:column;align-items:center;gap:2px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:10px;padding:7px 11px;cursor:pointer;color:#fff;font-size:9px;font-weight:700;letter-spacing:.04em;text-decoration:none}
+.home-btn svg{width:18px;height:18px}
+
+/*── Cards ──*/
+.card{margin:10px 12px 0;background:var(--card);border-radius:var(--r);box-shadow:0 2px 10px rgba(0,0,0,.07);overflow:hidden}
+.card-head{background:var(--green);color:#fff;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:7px 14px}
+.card-body{padding:12px 12px 14px}
+
+/*── Crop ──*/
+.crop-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.crop-btn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px 8px;border:2px solid var(--border);border-radius:12px;background:#fff;cursor:pointer;transition:all .14s;font-family:var(--sans);position:relative}
+.crop-btn .ico{font-size:26px;line-height:1;display:flex;align-items:center;justify-content:center;width:32px;height:32px}
+.crop-btn .name{font-size:12px;font-weight:700;color:var(--ink2)}
+.crop-btn .cnt{font-size:10px;font-family:var(--mono);color:#bbb}
+.crop-btn.active{border-color:var(--green);background:var(--glight)}
+.crop-btn.active .name{color:var(--green)}
+.crop-btn.active .cnt{color:var(--green);font-weight:600}
+.crop-btn.active::after{content:'✓';position:absolute;top:4px;right:6px;font-size:10px;color:var(--green);font-weight:900}
+
+/*── Address ──*/
+.addr-row{display:flex;align-items:center;gap:8px}
+.addr-input{flex:1;min-width:0;font-family:var(--sans);font-size:14px;padding:10px 10px;border:1.5px solid var(--border);border-radius:10px;background:#fafaf7;outline:none;color:var(--ink);transition:border-color .2s}
+.addr-input:focus{border-color:var(--green);background:#fff}
+.addr-input::placeholder{color:#bbb;font-size:12px}
+
+/*── Port boxes ──*/
+.ports-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.port-box{border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+.port-box.blue-box{border:2px solid var(--blue);background:#fff}
+.port-box.red-box {border:2px solid var(--red); background:#fff}
+.port-box-head{display:flex;align-items:center;gap:6px;padding:8px 10px;font-size:13px;font-weight:800;color:#fff}
+.port-box.blue-box .port-box-head{background:var(--blue)}
+.port-box.red-box  .port-box-head{background:var(--red)}
+.port-box-body{padding:10px 8px 10px;display:flex;flex-direction:column;gap:8px}
+
+/*── Inputs ──*/
+.pi-row{display:flex;gap:5px}
+.pi{flex:1;display:flex;flex-direction:column;gap:3px;align-items:center}
+.pi-lbl{font-size:9px;font-weight:700;letter-spacing:.06em;text-align:center}
+.pi-lbl.blue{color:var(--blue)}
+.pi-lbl.red {color:var(--red)}
+.pi-inp{width:100%;font-family:var(--mono);font-size:18px;font-weight:700;padding:8px 2px;border:2px solid var(--border);border-radius:9px;outline:none;text-align:center;-moz-appearance:textfield;transition:border-color .2s;background:#fff}
+.pi-inp::-webkit-inner-spin-button,.pi-inp::-webkit-outer-spin-button{-webkit-appearance:none}
+.pi-inp.blue{color:var(--blue)}
+.pi-inp.red {color:var(--red)}
+.pi-inp:focus{border-color:var(--green)}
+.pi-inp.err{border-color:#e53935;background:var(--rlight)}
+.pi-inp::placeholder{font-size:11px;color:#bbb;font-weight:400}
+.pi-hint{font-size:9px;color:#bbb;font-family:var(--mono);text-align:center;min-height:12px}
+.pi-hint.ok  {color:var(--green);font-weight:600}
+.pi-hint.blue{color:var(--blue)}
+.pi-hint.red {color:var(--red)}
+
+/*── Formula box ──*/
+.formula-box{border-radius:9px;padding:8px 10px;font-family:var(--mono);font-size:11px;color:#333;line-height:1.6}
+.formula-box .fb-title{font-size:10px;font-weight:700;margin-bottom:3px;letter-spacing:.05em}
+.formula-box b{font-size:13px}
+.formula-box.blue{background:var(--blight);border:1.5px solid #90caf9}
+.formula-box.blue .fb-title{color:var(--blue)}
+.formula-box.blue b{color:var(--blue)}
+.formula-box.red {background:var(--rlight);border:1.5px solid #ef9a9a}
+.formula-box.red  .fb-title{color:var(--red)}
+.formula-box.red  b{color:var(--red)}
+
+/*── Err ──*/
+.err-box{display:none;margin-top:10px;background:var(--rlight);border:1.5px solid #ef9a9a;border-radius:10px;padding:10px 14px;font-size:13px;color:var(--red)}
+.err-box.show{display:block}
+
+/*── Buttons ──*/
+.btn-row{display:flex;gap:10px;margin-top:12px}
+.reset-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:14px 16px;background:#fff;color:var(--red);border:2px solid var(--red);border-radius:12px;font-family:var(--sans);font-size:13px;font-weight:700;cursor:pointer;transition:all .14s;white-space:nowrap;flex-shrink:0}
+.reset-btn:active{background:var(--rlight)}
+.run-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:14px 10px;background:var(--green);color:#fff;border:none;border-radius:12px;font-family:var(--sans);font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 4px 14px rgba(45,122,58,.38);transition:all .14s}
+.run-btn:active{transform:scale(.97);box-shadow:none}
+
+/*══ RESULTS ══*/
+.results{display:none}
+.results.show{display:block}
+
+/* ── Capture area styling ── */
+#capture-area{background:var(--paper);padding:0 0 8px}
+
+.res-header{margin:10px 12px 0;background:var(--green);border-radius:var(--r);padding:14px 14px 12px;color:#fff}
+.res-main-title{font-size:17px;font-weight:900;margin-bottom:6px;letter-spacing:-.01em}
+.res-meta{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px}
+.rchip{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:20px;padding:3px 9px;font-size:11px;font-weight:600}
+.rchip.big{font-family:var(--sans);font-size:12px;background:rgba(255,255,255,.26)}
+.res-date{font-size:10px;opacity:.65;font-family:var(--mono)}
+
+/* Number cards — vertical stack */
+.num-cards{display:flex;flex-direction:column;gap:10px;margin:10px 12px 0}
+.num-card{background:var(--card);border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.07);overflow:hidden}
+.nc-head{padding:9px 14px;font-size:14px;font-weight:800;color:#fff;display:flex;align-items:center;gap:6px}
+.nc-head.blue{background:var(--blue)}
+.nc-head.red {background:var(--red)}
+.nc-meta{padding:7px 14px;font-size:11px;font-family:var(--mono);color:var(--ink2);border-bottom:1px solid var(--border);line-height:1.7}
+.nc-grid{padding:12px 12px 14px;display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
+.ncw{display:flex;flex-direction:column;align-items:center;gap:3px;animation:pop .2s ease backwards}
+.ncw-no{font-family:var(--mono);font-size:10px;font-weight:700;color:#aaa;line-height:1}
+.ncc{width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:8px;border:1.5px solid var(--border);font-family:var(--mono);font-size:16px;font-weight:800;background:#fff;color:var(--ink)}
+@keyframes pop{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
+
+/* Formula table — A left B right */
+.formula-card{margin:10px 12px 0;background:var(--card);border-radius:var(--r);box-shadow:0 2px 8px rgba(0,0,0,.07);overflow:hidden}
+.ftbl-head{display:grid;color:#fff;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase}
+.ftbl-head.ab {grid-template-columns:32px 1fr 1fr}
+.ftbl-head.aonly{grid-template-columns:32px 1fr}
+.ftbl-head.bonly{grid-template-columns:32px 1fr}
+.ftbl-head>div{padding:9px 8px}
+.fth-no{background:#444}
+.fth-a{background:var(--blue)}
+.fth-b{background:var(--red)}
+.ftbl-row{display:grid;border-bottom:1px solid var(--border)}
+.ftbl-row.ab   {grid-template-columns:32px 1fr 1fr}
+.ftbl-row.aonly{grid-template-columns:32px 1fr}
+.ftbl-row.bonly{grid-template-columns:32px 1fr}
+.ftbl-row:last-child{border-bottom:none}
+.ftbl-row>div{padding:9px 8px}
+.f-no{font-family:var(--mono);font-size:11px;color:#bbb;display:flex;align-items:center;font-weight:700}
+.f-cell{font-family:var(--mono);font-size:11px;color:#555;display:flex;align-items:center;flex-wrap:wrap;line-height:1.55}
+.f-cell b{font-size:12px}
+.f-cell.blue b{color:var(--blue)}
+.f-cell.red  b{color:var(--red)}
+
+/* Save btn */
+.save-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:calc(100% - 24px);margin:12px 12px 24px;padding:15px;background:var(--green);color:#fff;border:none;border-radius:12px;font-family:var(--sans);font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 4px 14px rgba(45,122,58,.35);transition:all .14s}
+.save-btn:active{transform:scale(.97);box-shadow:none}
+.save-btn.saving{background:#999}
+
+/* Date inline (same row as address) */
+.date-inline{display:flex;align-items:center;gap:4px;flex-shrink:0;}
+.date-input-inline{font-family:var(--sans);font-size:12px;padding:10px 6px;border:1.5px solid var(--border);border-radius:10px;background:#fafaf7;outline:none;color:var(--ink);width:120px;transition:border-color .2s;}
+.date-input-inline:focus{border-color:var(--green);background:#fff;}
+
+/* ink (black) input label */
+.pi-lbl.ink{color:var(--ink)}
+.pi-inp.ink{color:var(--ink)}
+.pi-inp.ink::placeholder{font-size:11px;color:#bbb;font-weight:400}
+
+/* Footnote */
+.foot{margin:14px 12px 0;padding:11px 14px;background:#fff;border-radius:10px;border-left:3px solid var(--gmid);font-size:11px;color:#999;line-height:1.75}
+
+/* Off-screen print area */
+#print-area{position:fixed;left:-9999px;top:0;width:460px;background:var(--paper);z-index:-999;font-family:var(--sans)}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div>
+    <h1>📋 계통추출 계산기</h1>
+    <p>농산물 생산조사 · Systematic Sampling</p>
+  </div>
+  <a href="https://ubaldos00-ship-it.github.io/home/" class="home-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+      <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H5a1 1 0 01-1-1V9.5z"/>
+      <path d="M9 21V12h6v9"/>
+    </svg>홈
+  </a>
+</div>
+
+<!-- ① 작물 -->
+<div class="card">
+  <div class="card-head">① 작물 선택</div>
+  <div class="card-body">
+    <div class="crop-grid">
+      <button class="crop-btn active" data-crop="마늘" data-count="20">
+        <span class="ico">🧄</span><span class="name">마늘</span><span class="cnt">20개</span>
+      </button>
+      <button class="crop-btn" data-crop="양파" data-count="20">
+        <span class="ico">🧅</span><span class="name">양파</span><span class="cnt">20개</span>
+      </button>
+      <button class="crop-btn" data-crop="배추" data-count="6">
+        <span class="ico">🥬</span><span class="name">배추</span><span class="cnt">6개</span>
+      </button>
+      <button class="crop-btn" data-crop="무" data-count="10">
+        <span class="ico"><svg width="30" height="30" viewBox="0 0 32 32" fill="none">
+          <path d="M10 11 Q7 7 9 3 Q11 7 13 9" fill="#43a047" stroke="#2e7d32" stroke-width=".5"/>
+          <path d="M16 10 Q14 5 16 2 Q18 5 16 10" fill="#66bb6a" stroke="#2e7d32" stroke-width=".5"/>
+          <path d="M22 11 Q25 7 23 3 Q21 7 19 9" fill="#43a047" stroke="#2e7d32" stroke-width=".5"/>
+          <line x1="11" y1="9" x2="15" y2="12" stroke="#388e3c" stroke-width="1.2"/>
+          <line x1="16" y1="10" x2="16" y2="12" stroke="#388e3c" stroke-width="1.2"/>
+          <line x1="21" y1="9" x2="17" y2="12" stroke="#388e3c" stroke-width="1.2"/>
+          <ellipse cx="16" cy="21" rx="6.5" ry="9" fill="#f5f5f5" stroke="#9e9e9e" stroke-width="1.2"/>
+          <line x1="10.5" y1="17" x2="21.5" y2="17" stroke="#e0e0e0" stroke-width=".7"/>
+          <line x1="9.8" y1="21" x2="22.2" y2="21" stroke="#e0e0e0" stroke-width=".7"/>
+          <line x1="10.5" y1="25" x2="21.5" y2="25" stroke="#e0e0e0" stroke-width=".7"/>
+          <line x1="16" y1="30" x2="16" y2="32" stroke="#9e9e9e" stroke-width="1.5" stroke-linecap="round"/>
+        </svg></span>
+        <span class="name">무</span><span class="cnt">10개</span>
+      </button>
+      <button class="crop-btn" data-crop="총각무" data-count="20">
+        <span class="ico"><svg width="30" height="30" viewBox="0 0 32 32" fill="none">
+          <path d="M11 13 Q7 9 8 4 Q11 8 13 12" fill="#43a047" stroke="#2e7d32" stroke-width=".5"/>
+          <path d="M14 12 Q12 6 14 2 Q16 6 15 12" fill="#66bb6a" stroke="#2e7d32" stroke-width=".5"/>
+          <path d="M18 12 Q20 6 18 2 Q20 6 19 12" fill="#66bb6a" stroke="#2e7d32" stroke-width=".5"/>
+          <path d="M21 13 Q25 9 24 4 Q21 8 19 12" fill="#43a047" stroke="#2e7d32" stroke-width=".5"/>
+          <line x1="12" y1="12" x2="15.5" y2="14" stroke="#388e3c" stroke-width="1"/>
+          <line x1="14.5" y1="12" x2="15.8" y2="14" stroke="#388e3c" stroke-width="1"/>
+          <line x1="17.5" y1="12" x2="16.2" y2="14" stroke="#388e3c" stroke-width="1"/>
+          <line x1="20" y1="12" x2="16.5" y2="14" stroke="#388e3c" stroke-width="1"/>
+          <ellipse cx="16" cy="22" rx="5.5" ry="7.5" fill="#f5f5f5" stroke="#9e9e9e" stroke-width="1.2"/>
+          <line x1="10.8" y1="19" x2="21.2" y2="19" stroke="#e0e0e0" stroke-width=".7"/>
+          <line x1="10.5" y1="22.5" x2="21.5" y2="22.5" stroke="#e0e0e0" stroke-width=".7"/>
+          <line x1="11" y1="26" x2="21" y2="26" stroke="#e0e0e0" stroke-width=".7"/>
+          <line x1="14.5" y1="29.5" x2="14" y2="32" stroke="#9e9e9e" stroke-width="1" stroke-linecap="round"/>
+          <line x1="16" y1="29.5" x2="16" y2="32" stroke="#9e9e9e" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="17.5" y1="29.5" x2="18" y2="32" stroke="#9e9e9e" stroke-width="1" stroke-linecap="round"/>
+        </svg></span>
+        <span class="name">총각무</span><span class="cnt">20개</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ② 주소 -->
+<div class="card">
+  <div class="card-head">② 필지주소 / 조사일</div>
+  <div class="card-body">
+    <div class="addr-row">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2d7a3a" stroke-width="1.8" style="flex-shrink:0">
+        <path d="M9 20L3 17V4l6 3M9 20l6-3M9 20V7M15 17l6 3V7l-6-3M15 17V4"/>
+      </svg>
+      <input type="text" id="address" class="addr-input" placeholder="필지 주소 입력">
+      <div class="date-inline">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2d7a3a" stroke-width="1.8" style="flex-shrink:0">
+          <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        <input type="date" id="survey-date" class="date-input-inline">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ③ 추출 설정 -->
+<div class="card">
+  <div class="card-head">③ 추출 설정</div>
+  <div class="card-body">
+    <div class="ports-grid">
+      <!-- A포구 -->
+      <div class="port-box blue-box">
+        <div class="port-box-head">
+          <svg viewBox="0 0 24 24" fill="white" stroke="none" width="14" height="14"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/></svg>
+          A 포구
+        </div>
+        <div class="port-box-body">
+          <div class="pi-row">
+            <div class="pi">
+              <div class="pi-lbl blue">전체 N</div>
+              <input type="number" id="aN" class="pi-inp blue" placeholder="예)120" min="1" inputmode="numeric" pattern="[0-9]*">
+              <div class="pi-hint blue">개수</div>
+            </div>
+            <div class="pi">
+              <div class="pi-lbl ink">추출 n</div>
+              <input type="number" id="an" class="pi-inp ink" placeholder="20" min="1" inputmode="numeric" pattern="[0-9]*" value="20">
+              <div class="pi-hint ok" id="an-hint">마늘기본</div>
+            </div>
+            <div class="pi">
+              <div class="pi-lbl red">난수 r</div>
+              <input type="number" id="ar" class="pi-inp red" placeholder="예)1.2" min="0.1" step="0.1" inputmode="decimal">
+              <div class="pi-hint red" id="ar-hint">1~k</div>
+            </div>
+          </div>
+          <div class="formula-box blue" id="formula-a">
+            <div class="fb-title">추출간격</div>k = N ÷ n = <b>?</b>
+          </div>
+        </div>
+      </div>
+      <!-- B포구 -->
+      <div class="port-box red-box">
+        <div class="port-box-head">
+          <svg viewBox="0 0 24 24" fill="white" stroke="none" width="14" height="14"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/></svg>
+          B 포구
+        </div>
+        <div class="port-box-body">
+          <div class="pi-row">
+            <div class="pi">
+              <div class="pi-lbl blue">전체 N</div>
+              <input type="number" id="bN" class="pi-inp blue" placeholder="예)120" min="1" inputmode="numeric" pattern="[0-9]*">
+              <div class="pi-hint blue">개수</div>
+            </div>
+            <div class="pi">
+              <div class="pi-lbl ink">추출 n</div>
+              <input type="number" id="bn" class="pi-inp ink" placeholder="20" min="1" inputmode="numeric" pattern="[0-9]*" value="20">
+              <div class="pi-hint ok" id="bn-hint">마늘기본</div>
+            </div>
+            <div class="pi">
+              <div class="pi-lbl red">난수 r</div>
+              <input type="number" id="br" class="pi-inp red" placeholder="예)1.2" min="0.1" step="0.1" inputmode="decimal">
+              <div class="pi-hint red" id="br-hint">1~k</div>
+            </div>
+          </div>
+          <div class="formula-box red" id="formula-b">
+            <div class="fb-title">추출간격</div>k = N ÷ n = <b>?</b>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="err-box" id="err-box"></div>
+
+    <div class="btn-row">
+      <button class="reset-btn" id="reset-btn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>
+        초기화
+      </button>
+      <button class="run-btn" id="run-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        계통추출 실행
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ④ 결과 -->
+<div class="results" id="results">
+  <div id="capture-area">
+    <div class="res-header">
+      <div class="res-main-title" id="res-title"></div>
+      <div class="res-meta" id="res-meta"></div>
+      <div class="res-date" id="res-date"></div>
+    </div>
+    <div class="num-cards" id="num-cards"></div>
+    <div class="formula-card" id="formula-card">
+      <div class="ftbl-head" id="ftbl-head"></div>
+      <div id="ftbl-rows"></div>
+    </div>
+  </div>
+</div>
+
+<div class="foot">
+  ※ 추출간격 k = N÷n (소수 둘째 자리 반올림 → 첫째 자리)<br>
+  시작난수 r: 1 이상 k 이하 · 소수 허용 · 그대로 누적<br>
+  이후: 이전값+k → 소수 둘째 반올림 → 절사 = 추출번호
+</div>
+
+<button class="save-btn" id="save-btn" style="display:none;">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+  결과 이미지로 저장
+</button>
+
+<div id="debug-box" style="display:none;margin:12px;padding:10px 14px;background:#ffebee;border:1.5px solid #c62828;border-radius:10px;color:#c62828;font-family:monospace;font-size:11px;line-height:1.6;word-break:break-all;"></div>
+
+<!-- 오프스크린 캡처 전용 영역 -->
+<div id="print-area" style="position:fixed;left:-9999px;top:0;width:460px;background:#f4f4ef;z-index:-999;"></div>
+
+<script>
+// 전역 에러 감지 - 실제 에러 메시지 화면에 표시
+window.addEventListener('error', function(e){
+  try{
+    console.error('에러 감지:', e.message, 'at', e.filename, ':', e.lineno);
+    const debugBox=document.getElementById('debug-box');
+    if(debugBox){
+      debugBox.style.display='block';
+      debugBox.textContent=`에러: ${e.message} (줄 ${e.lineno})`;
+    }
+  }catch(ee){}
+  return false;
+});
+
+let selCrop='마늘', selCount=20;
+let lastResult=null;  // 마지막 결과 저장 {A, B, addr, dateStr}
+
+/* ── 작물 ── */
+function initCropButtons(){
+  try{
+    document.querySelectorAll('.crop-btn').forEach(btn=>{
+      btn.addEventListener('click',function(){
+        try{
+          document.querySelectorAll('.crop-btn').forEach(b=>b.classList.remove('active'));
+          btn.classList.add('active');
+          selCrop=btn.dataset.crop; selCount=parseInt(btn.dataset.count);
+          var anEl=document.getElementById('an');
+          var bnEl=document.getElementById('bn');
+          if(anEl) anEl.value=selCount;
+          if(bnEl) bnEl.value=selCount;
+          ['an-hint','bn-hint'].forEach(function(id){
+            var el=document.getElementById(id);
+            if(el){
+              el.textContent=selCrop+'기본';
+              el.className='pi-hint ok';
+            }
+          });
+          updateFormulas();
+        }catch(e){console.error('crop click error:',e);}
+      });
+    });
+  }catch(e){console.error('initCropButtons error:',e);}
+}
+
+/* ── 유틸 ── */
+const round1=v=>Math.round(v*10)/10;
+const disp1=v=>v.toFixed(1);
+const PIN_SVG=`<svg viewBox="0 0 24 24" fill="white" stroke="none" width="12" height="12" style="vertical-align:middle;margin-right:4px;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/></svg>`;
+function getTodayKST(){var now=new Date();var kst=new Date(now.getTime()+9*60*60*1000);return kst.toISOString().slice(0,10);}
+function nowStr(){const d=new Date();return`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}_${String(d.getHours()).padStart(2,'0')}${String(d.getMinutes()).padStart(2,'0')}`}
+function nowDisplay(){const d=new Date();return`${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 ${d.getHours()}시${String(d.getMinutes()).padStart(2,'0')}분`}
+
+/* ── 수식 바 ── */
+function updateFormula(p){
+  const Nv=parseInt(document.getElementById(p+'N').value);
+  const nv=parseInt(document.getElementById(p+'n').value);
+  const rh=document.getElementById(p+'r-hint');
+  const fb=document.getElementById('formula-'+p);
+  const ttl=p==='a'?'추출간격':'추출간격';
+  if(Nv>0&&nv>0&&nv<=Nv){const kRaw=Nv/nv,k=round1(kRaw);
+    fb.innerHTML=`<div class="fb-title">${ttl}</div>${Nv}÷${nv}=${kRaw.toFixed(3)} → <b>k=${disp1(k)}</b><br><span style="font-size:10px;color:#555;">난수: 1~${disp1(k)}</span>`;
+    rh.textContent=`1~${disp1(k)}`; rh.className='pi-hint red';
+  }else{fb.innerHTML=`<div class="fb-title">${ttl}</div>k=N÷n=<b>?</b>`;rh.textContent='1~k';rh.className='pi-hint red';}
+}
+function updateFormulas(){updateFormula('a');updateFormula('b');}
+function initInputListeners(){
+  try{
+    ['aN','an','ar','bN','bn','br'].forEach(function(id){
+      var el=document.getElementById(id);
+      if(el){
+        el.addEventListener('input',function(){
+          try{
+            if(id.charAt(0)==='a') updateFormula('a');
+            else updateFormula('b');
+          }catch(e){console.error('input error:',e);}
+        });
+      }
+    });
+  }catch(e){console.error('initInputListeners error:',e);}
+}
+
+function initButtons(){
+  try{
+    var resetBtn=document.getElementById('reset-btn');
+    var runBtn=document.getElementById('run-btn');
+    var saveBtn=document.getElementById('save-btn');
+    if(resetBtn) resetBtn.addEventListener('click',function(){try{resetAll();}catch(e){console.error(e);}});
+    if(runBtn) runBtn.addEventListener('click',function(){try{extract();}catch(e){console.error(e);}});
+    if(saveBtn) saveBtn.addEventListener('click',function(){try{saveCapture();}catch(e){console.error(e);}});
+  }catch(e){console.error('initButtons error:',e);}
+}
+
+// DOM 준비 완료 후 이벤트 등록
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',function(){
+    initCropButtons(); initInputListeners(); initButtons();
+    // 조사일 기본값: 한국 기준 오늘
+    var sd=document.getElementById('survey-date');
+    if(sd) sd.value=getTodayKST();
+    try{updateFormulas();}catch(e){}
+  });
+} else {
+  initCropButtons(); initInputListeners(); initButtons();
+  var sd=document.getElementById('survey-date');
+  if(sd) sd.value=getTodayKST();
+  try{updateFormulas();}catch(e){}
+}
+
+/* ── 오류 ── */
+function showErr(msg){const e=document.getElementById('err-box');e.textContent=msg;e.classList.add('show');}
+function clearErr(){document.getElementById('err-box').classList.remove('show');['aN','an','ar','bN','bn','br'].forEach(id=>document.getElementById(id).classList.remove('err'));}
+
+/* ── 초기화 ── */
+function resetAll(){
+  document.getElementById('aN').value=''; document.getElementById('ar').value='';
+  document.getElementById('bN').value=''; document.getElementById('br').value='';
+  document.getElementById('an').value=20; document.getElementById('bn').value=20;
+  document.getElementById('address').value='';
+  var sd=document.getElementById('survey-date'); if(sd) sd.value=getTodayKST();
+  clearErr();
+  document.querySelectorAll('.crop-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector('[data-crop="마늘"]').classList.add('active');
+  selCrop='마늘'; selCount=20;
+  ['an-hint','bn-hint'].forEach(id=>{document.getElementById(id).textContent='마늘기본';document.getElementById(id).className='pi-hint ok';});
+  document.getElementById('results').classList.remove('show');
+  var sb=document.getElementById('save-btn'); if(sb) sb.style.display='none';
+  updateFormulas();
+}
+
+/* ── 계산 ── */
+function calcSamples(N,n,r){
+  const kRaw=N/n, k=round1(kRaw), samples=[];
+  let acc=r;
+  for(let i=0;i<n;i++){const num=Math.floor(acc);if(num>N)break;samples.push({num,acc});acc=round1(acc+k);}
+  return{samples,k,kRaw};
+}
+
+/* ── 유효성 검사 ── */
+function validatePort(p,label){
+  const Nv=document.getElementById(p+'N').value.trim();
+  const rv=document.getElementById(p+'r').value.trim();
+  if(Nv===''&&rv==='') return null; // 입력 없음 → 건너뜀
+  const N=parseInt(Nv), n=parseInt(document.getElementById(p+'n').value), r=parseFloat(rv);
+  if(!N||N<1){document.getElementById(p+'N').classList.add('err');showErr(`${label} 전체 N을 입력하세요.`);return false;}
+  if(!n||n<1){document.getElementById(p+'n').classList.add('err');showErr(`${label} 추출 n을 입력하세요.`);return false;}
+  if(n>N){document.getElementById(p+'n').classList.add('err');showErr(`${label} 추출 n이 전체 N보다 큽니다.`);return false;}
+  const kRaw=N/n, k=round1(kRaw);
+  if(rv===''||isNaN(r)||r<1){document.getElementById(p+'r').classList.add('err');showErr(`${label} 시작난수를 1 이상 입력하세요.`);return false;}
+  if(r>k){document.getElementById(p+'r').classList.add('err');showErr(`${label} 난수는 k(${disp1(k)}) 이하여야 합니다.`);return false;}
+  const res=calcSamples(N,n,r);
+  return{pN:N, pn:n, pr:r, k:res.k, kRaw:res.kRaw, samples:res.samples};
+}
+
+/* ── 추출 실행 ── */
+function extract(){
+  clearErr();
+  const A=validatePort('a','A포구');
+  if(A===false) return;
+  const B=validatePort('b','B포구');
+  if(B===false) return;
+  if(A===null&&B===null){showErr('A포구 또는 B포구 중 하나 이상 입력하세요.');return;}
+  renderResults(A,B);
+}
+
+/* ── 결과 렌더링 ── */
+function renderResults(A,B){
+  const addr=document.getElementById('address').value.trim();
+  const surveyDate=document.getElementById('survey-date').value||getTodayKST();
+  const surveyDateDisp=surveyDate.replace(/-/g,'.');
+  const activeBtn=document.querySelector('.crop-btn.active');
+  const icoHTML=activeBtn?activeBtn.querySelector('.ico').innerHTML:'';
+  const aCount=A?A.samples.length:0, bCount=B?B.samples.length:0;
+  const countLabel=(A?`A포구 ${aCount}개`:'')+(A&&B?' · ':'')+(B?`B포구 ${bCount}개`:'');
+
+  // 마지막 결과 저장 (캡처용)
+  lastResult={A, B, addr, surveyDate:surveyDateDisp, crop:selCrop, dateDisplay:nowDisplay(), dateFile:nowStr()};
+
+  document.getElementById('res-title').innerHTML=`<span style="display:inline-flex;align-items:center;gap:6px;"><span style="font-size:22px;line-height:1;">${icoHTML}</span>${selCrop} 생산조사</span>`;
+  document.getElementById('res-meta').innerHTML=
+    (addr?`<span class="rchip big">📍 ${addr}</span>`:'')+
+    `<span class="rchip">📅 ${surveyDateDisp}</span>`;
+  document.getElementById('res-date').textContent=`추출: ${countLabel} · 저장: ${nowDisplay()}`;
+
+  /* 번호 카드 */
+  const nc=document.getElementById('num-cards'); nc.innerHTML='';
+  if(A) nc.appendChild(makeNumCard('A 포구','blue',A.pN,A.pn,A.k,A.pr,A.samples));
+  if(B) nc.appendChild(makeNumCard('B 포구','red', B.pN,B.pn,B.k,B.pr,B.samples));
+
+  /* 계산식 표 */
+  const head=document.getElementById('ftbl-head');
+  const rows=document.getElementById('ftbl-rows');
+  head.innerHTML=''; rows.innerHTML='';
+  const mode=A&&B?'ab':A?'aonly':'bonly';
+  head.className='ftbl-head '+mode;
+  head.innerHTML=`<div class="fth-no">No.</div>`+
+    (A?`<div class="fth-a">${PIN_SVG}A포구 계산식</div>`:'')+
+    (B?`<div class="fth-b">${PIN_SVG}B포구 계산식</div>`:'');
+
+  const maxLen=Math.max(A?A.samples.length:0, B?B.samples.length:0);
+  for(let i=0;i<maxLen;i++){
+    const row=document.createElement('div');
+    row.className='ftbl-row '+mode;
+    row.innerHTML=`<div class="f-no">${i+1}</div>`+
+      (A?`<div class="f-cell blue">${fHtml(A.samples,i,A.pr,A.k)}</div>`:'')+
+      (B?`<div class="f-cell red">${fHtml(B.samples,i,B.pr,B.k)}</div>`:'');
+    rows.appendChild(row);
+  }
+
+  document.getElementById('results').classList.add('show');
+  // 저장 버튼 표시
+  var saveBtn=document.getElementById('save-btn');
+  if(saveBtn) saveBtn.style.display='flex';
+  setTimeout(()=>document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'}),80);
+}
+
+function makeNumCard(label,color,N,n,k,r,samples){
+  const div=document.createElement('div');
+  div.className='num-card';
+  div.innerHTML=`<div class="nc-head ${color}">${PIN_SVG}${label}</div>`+
+    `<div class="nc-meta">N=${N} / n=${n} / k=${disp1(k)} / r=${disp1(r)}</div>`+
+    `<div class="nc-grid">${samples.map(({num},i)=>`<div class="ncw" style="animation-delay:${i*20}ms"><div class="ncw-no">${i+1}</div><div class="ncc">${num}</div></div>`).join('')}</div>`;
+  return div;
+}
+
+function fHtml(samples,i,r,k){
+  if(i>=samples.length) return`<span style="color:#ddd">—</span>`;
+  if(i===0) return`<span>시작 <b>${disp1(r)}</b>→절사=<b>${samples[0].num}</b></span>`;
+  const prev=samples[i-1].acc, sum=prev+k, sumR=round1(sum);
+  if(disp1(sum)!==disp1(sumR))
+    return`<span>${disp1(prev)}+${disp1(k)}=${disp1(sum)}→↑${disp1(sumR)}→절사=<b>${samples[i].num}</b></span>`;
+  return`<span>${disp1(prev)}+${disp1(k)}=${disp1(sumR)}→절사=<b>${samples[i].num}</b></span>`;
+}
+
+
+/* ── 결과 이미지 표시: Canvas PNG → img 태그 → 길게 눌러 저장 ── */
+function saveCapture(){
+  try{
+    if(!lastResult){
+      var eb=document.getElementById('err-box');
+      if(eb){eb.textContent='먼저 계통추출을 실행하세요.';eb.classList.add('show');}
+      return;
+    }
+    var A=lastResult.A,B=lastResult.B,addr=lastResult.addr,crop=lastResult.crop;
+    var dt=lastResult.dateDisplay, surveyDate=lastResult.surveyDate||getTodayKST();
+    var pngDataUrl=drawResultCanvas(A,B,addr,crop,dt,surveyDate);
+    showImageOverlay(pngDataUrl,crop,addr);
+  }catch(e){
+    console.error('saveCapture:',e);
+    var eb=document.getElementById('err-box');
+    if(eb){eb.textContent='오류: '+e.message;eb.classList.add('show');}
+  }
+}
+
+function drawResultCanvas(A,B,addr,crop,dt,surveyDate){
+  var W=460, PAD=12, GAP=8;
+  var BLUE='#1565c0', RED='#c62828', GREEN='#2d7a3a';
+  var INK='#1a1a18', INK2='#555555', BORDER='#e0ddd5', BG='#f4f4ef';
+  var SANS='-apple-system,sans-serif', MONO='Menlo,monospace';
+
+  /* 높이 계산 */
+  var HDR=96;  /* 헤더 높이 충분히 확보 (겹침 방지) */
+  var CARD_HEAD=36, CARD_META=28, GRID_PAD=10, CELL_GAP=6;
+  var CPR=5;
+  var CELL_W=Math.floor((W-PAD*2-GRID_PAD*2-CELL_GAP*(CPR-1))/CPR);
+  var CELL_AREA=CELL_W+16;
+  var F_HEAD=28, F_ROW=30;
+
+  function gridH(n){ var r=Math.ceil(n/CPR); return GRID_PAD*2+r*CELL_AREA+(r-1)*CELL_GAP; }
+  function cardH(n){ return CARD_HEAD+CARD_META+gridH(n); }
+
+  var H=10+HDR+GAP;
+  if(A) H+=cardH(A.samples.length)+GAP;
+  if(B) H+=cardH(B.samples.length)+GAP;
+  var maxF=Math.max(A?A.samples.length:0,B?B.samples.length:0);
+  H+=F_HEAD+maxF*F_ROW+14;
+
+  var cv=document.createElement('canvas');
+  cv.width=W*2; cv.height=H*2;
+  var c=cv.getContext('2d');
+  c.scale(2,2);
+
+  /* 배경 */
+  c.fillStyle=BG; c.fillRect(0,0,W,H);
+
+  /* 둥근 사각형 */
+  function rr(x,y,w,h,r,fill,stroke,sw){
+    c.beginPath();
+    c.moveTo(x+r,y);
+    c.lineTo(x+w-r,y);c.arcTo(x+w,y,x+w,y+r,r);
+    c.lineTo(x+w,y+h-r);c.arcTo(x+w,y+h,x+w-r,y+h,r);
+    c.lineTo(x+r,y+h);c.arcTo(x,y+h,x,y+h-r,r);
+    c.lineTo(x,y+r);c.arcTo(x,y,x+r,y,r);
+    c.closePath();
+    if(fill){c.fillStyle=fill;c.fill();}
+    if(stroke){c.strokeStyle=stroke;c.lineWidth=sw||1;c.stroke();}
+  }
+
+  /* 텍스트 */
+  function txt(t,x,y,font,color,align){
+    c.font=font; c.fillStyle=color; c.textAlign=align||'left';
+    c.textBaseline='middle'; c.fillText(t,x,y);
+  }
+
+  /* 클립 상단 라운드 */
+  function topRound(x,y,w,h,r,fill){
+    c.beginPath();
+    c.moveTo(x+r,y);
+    c.lineTo(x+w-r,y);c.arcTo(x+w,y,x+w,y+r,r);
+    c.lineTo(x+w,y+h);c.lineTo(x,y+h);
+    c.lineTo(x,y+r);c.arcTo(x,y,x+r,y,r);
+    c.closePath();
+    c.fillStyle=fill;c.fill();
+  }
+
+  var y=10;
+
+  /* ── 헤더: 4행 레이아웃으로 겹침 완전 방지 ── */
+  rr(PAD,y,W-PAD*2,HDR,12,GREEN);
+  /* 행1: 작물명 */
+  txt(crop+' \uc0dd\uc0b0\uc870\uc0ac', PAD+12, y+18, '900 16px '+SANS, '#fff');
+  /* 행2: 주소 (있을 때만) */
+  if(addr){
+    txt('\uD83D\uDCCD '+addr, PAD+12, y+38, '600 12px '+SANS, 'rgba(255,255,255,.95)');
+  }
+  /* 행3: 조사일 칩 + 포구 카운트 칩 — 같은 줄에 좌우 배치 */
+  var row3Y = addr ? y+56 : y+42;
+  /* 조사일 칩 */
+  var sdText='\uD83D\uDCC5 \uc870\uc0ac\uc77c: '+(surveyDate||'');
+  c.font='600 11px '+SANS;
+  var sdW=c.measureText(sdText).width+18;
+  rr(PAD+12, row3Y-10, sdW, 20, 10, 'rgba(255,255,255,.22)');
+  txt(sdText, PAD+20, row3Y, '600 11px '+SANS, '#fff');
+  /* 포구 카운트 칩 */
+  var aLabel=(A?'A\ud3ec\uad6c '+A.samples.length+'\uac1c':'')+(A&&B?' \u00b7 ':'')+(B?'B\ud3ec\uad6c '+B.samples.length+'\uac1c':'');
+  c.font='600 11px '+SANS;
+  var aLW=c.measureText(aLabel).width+18;
+  rr(PAD+12+sdW+6, row3Y-10, aLW, 20, 10, 'rgba(255,255,255,.15)');
+  txt(aLabel, PAD+12+sdW+15, row3Y, '600 11px '+SANS, 'rgba(255,255,255,.9)');
+  /* 행4: 저장 일시 */
+  txt('\uc800\uc7a5: '+dt, PAD+12, y+HDR-10, '400 9px '+MONO, 'rgba(255,255,255,.65)');
+
+  y+=HDR+GAP;
+
+  /* 번호 카드 */
+  function drawCard(label,color,data){
+    var cH=cardH(data.samples.length), cX=PAD, cW=W-PAD*2;
+    rr(cX,y,cW,cH,12,'#fff');
+    topRound(cX,y,cW,CARD_HEAD,12,color);
+    txt(label,cX+14,y+CARD_HEAD/2,'800 14px '+SANS,'#fff');
+    c.fillStyle=INK2; c.font='500 10px '+MONO; c.textAlign='left'; c.textBaseline='middle';
+    c.fillText('N='+data.pN+' / n='+data.pn+' / k='+data.k.toFixed(1)+' / r='+data.pr.toFixed(1),cX+14,y+CARD_HEAD+CARD_META/2);
+    c.strokeStyle=BORDER; c.lineWidth=1;
+    c.beginPath(); c.moveTo(cX,y+CARD_HEAD+CARD_META); c.lineTo(cX+cW,y+CARD_HEAD+CARD_META); c.stroke();
+    var gX=cX+GRID_PAD, gY=y+CARD_HEAD+CARD_META+GRID_PAD;
+    data.samples.forEach(function(s,i){
+      var row=Math.floor(i/CPR), col=i%CPR;
+      var cx=gX+col*(CELL_W+CELL_GAP), cy=gY+row*(CELL_AREA+CELL_GAP);
+      c.fillStyle='#aaa'; c.font='700 9px '+MONO; c.textAlign='center'; c.textBaseline='middle';
+      c.fillText(String(i+1),cx+CELL_W/2,cy+8);
+      rr(cx,cy+13,CELL_W,CELL_W,7,'#fff',BORDER,1.5);
+      c.fillStyle=INK; c.font='800 15px '+MONO; c.textAlign='center'; c.textBaseline='middle';
+      c.fillText(String(s.num),cx+CELL_W/2,cy+13+CELL_W/2);
+    });
+    y+=cH+GAP;
+  }
+  if(A) drawCard('A \ud3ec\uad6c',BLUE,A);
+  if(B) drawCard('B \ud3ec\uad6c',RED,B);
+
+  /* 계산식 표 */
+  var fX=PAD, fW=W-PAD*2, NO_W=32;
+  var hasBoth=A&&B, colW=hasBoth?(fW-NO_W)/2:(fW-NO_W);
+  rr(fX,y,fW,F_HEAD+maxF*F_ROW,12,'#fff');
+
+  /* 표 헤더 */
+  topRound(fX,y,NO_W,F_HEAD,12,'#444');
+  c.fillStyle='#fff'; c.font='700 9px '+SANS; c.textAlign='center'; c.textBaseline='middle';
+  c.fillText('No.',fX+NO_W/2,y+F_HEAD/2);
+  if(A){
+    if(!B){ rr(fX+NO_W,y,colW,F_HEAD,0,BLUE); c.beginPath();c.moveTo(fX+NO_W+colW-12,y);c.lineTo(fX+fW,y+12);/* skip*/}
+    if(hasBoth) c.fillStyle=BLUE; else c.fillStyle=BLUE;
+    c.fillRect(fX+NO_W,y,hasBoth?colW:colW,F_HEAD);
+    c.fillStyle='#fff'; c.font='700 10px '+SANS; c.textAlign='left'; c.textBaseline='middle';
+    c.fillText('A\ud3ec\uad6c \uacc4\uc0b0\uc2dd',fX+NO_W+8,y+F_HEAD/2);
+  }
+  if(B){
+    c.fillStyle=RED; c.fillRect(fX+NO_W+(hasBoth?colW:0),y,colW,F_HEAD);
+    c.fillStyle='#fff'; c.font='700 10px '+SANS; c.textAlign='left'; c.textBaseline='middle';
+    c.fillText('B\ud3ec\uad6c \uacc4\uc0b0\uc2dd',fX+NO_W+(hasBoth?colW:0)+8,y+F_HEAD/2);
+  }
+  /* 헤더 오른쪽 상단 라운드 처리 */
+  c.fillStyle=B?RED:BLUE; c.beginPath();
+  c.moveTo(fX+fW-12,y);c.lineTo(fX+fW,y+12);c.lineTo(fX+fW,y);c.closePath();c.fill();
+  c.beginPath();c.moveTo(fX+fW-12,y);c.arcTo(fX+fW,y,fX+fW,y+12,12);c.lineTo(fX+fW-12,y);c.closePath();
+  c.fillStyle=B?RED:BLUE;c.fill();
+
+  /* 표 행들 */
+  function fLine(samples,i,r,k){
+    if(i>=samples.length) return '\u2014';
+    if(i===0) return '\uc2dc\uc791 '+r.toFixed(1)+' > \uc808\uc0ac='+samples[0].num;
+    var prev=samples[i-1].acc,sum=prev+k,sumR=Math.round(sum*10)/10;
+    if(sum.toFixed(1)!==sumR.toFixed(1)) return prev.toFixed(1)+'+'+k.toFixed(1)+'='+sum.toFixed(1)+'>'+sumR.toFixed(1)+'>\uc808\uc0ac='+samples[i].num;
+    return prev.toFixed(1)+'+'+k.toFixed(1)+'='+sumR.toFixed(1)+' > \uc808\uc0ac='+samples[i].num;
+  }
+
+  for(var i=0;i<maxF;i++){
+    var ry=y+F_HEAD+i*F_ROW;
+    c.strokeStyle=BORDER; c.lineWidth=1;
+    c.beginPath(); c.moveTo(fX+4,ry); c.lineTo(fX+fW-4,ry); c.stroke();
+    c.fillStyle='#bbb'; c.font='700 10px '+MONO; c.textAlign='center'; c.textBaseline='middle';
+    c.fillText(String(i+1),fX+NO_W/2,ry+F_ROW/2);
+    c.font='400 9.5px '+MONO; c.textAlign='left'; c.fillStyle=INK2;
+    if(A){ var ta=fLine(A.samples,i,A.pr,A.k); c.fillText(ta,fX+NO_W+6,ry+F_ROW/2); }
+    if(B){ var tb=fLine(B.samples,i,B.pr,B.k); c.fillStyle=INK2; c.fillText(tb,fX+NO_W+(hasBoth?colW:0)+6,ry+F_ROW/2); }
+  }
+
+  return cv.toDataURL('image/png');
+}
+
+function showImageOverlay(dataUrl,crop,addr){
+  var old=document.getElementById('shot-overlay');
+  if(old) old.remove();
+
+  // 파일명 생성
+  var addrPart=(addr||'\uc8fc\uc18c\uc5c6\uc74c').replace(/\s+/g,'_').replace(/[\\/:*?"<>|]/g,'');
+  var filename=crop+'_'+addrPart+'_'+nowStr()+'.png';
+
+  // 기기 종류 감지
+  var isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  var isAndroid=/Android/i.test(navigator.userAgent);
+  var saveLocation=isIOS?'\ub2e4\uc6b4\ub85c\ub4dc \ud3f4\ub354 (Downloads)':isAndroid?'\ub2e4\uc6b4\ub85c\ub4dc \ud3f4\ub354 (Downloads)':'Downloads \ud3f4\ub354';
+  var saveTip=isIOS?'iOS: \uD30C\uC77C \uc571 Downloads \ud3f4\ub354\uc5d0 \uc800\uc7a5\ub429\ub2c8\ub2e4':'Android\u00b7PC: \uC774\ubbf8\uc9c0 \uAE38\uAC8C \uB204\uB974\uAE30 \u2192 \"\uc800\uc7a5\" \ub610\ub294 \uc544\ub798 \ubc84\ud2bc';
+
+  var ov=document.createElement('div');
+  ov.id='shot-overlay';
+  ov.style.cssText='position:fixed;inset:0;z-index:9999;background:#111;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;';
+
+  /* 상단 안내바 */
+  var bar=document.createElement('div');
+  bar.style.cssText='background:#1565c0;color:#fff;padding:11px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;';
+  var msg=document.createElement('span');
+  msg.style.cssText='font-size:13px;font-weight:700;';
+  msg.textContent='\uACB0\uACFC \uC774\uBBF8\uC9C0';
+  var cl=document.createElement('button');
+  cl.style.cssText='background:rgba(255,255,255,.2);border:none;color:#fff;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0;margin-left:10px;';
+  cl.textContent='\ub2eb\uae30';
+  cl.addEventListener('click',function(){ var o=document.getElementById('shot-overlay'); if(o) o.remove(); });
+  bar.appendChild(msg); bar.appendChild(cl);
+
+  /* 이미지 영역 */
+  var imgWrap=document.createElement('div');
+  imgWrap.style.cssText='padding:12px 12px 6px;display:flex;flex-direction:column;align-items:center;';
+
+  var img=document.createElement('img');
+  img.src=dataUrl;
+  img.style.cssText='max-width:100%;width:100%;border-radius:10px;display:block;';
+  img.alt=crop+' \uACB0\uACFC';
+  imgWrap.appendChild(img);
+
+  /* 하단 저장 패널 */
+  var panel=document.createElement('div');
+  panel.style.cssText='flex-shrink:0;padding:10px 12px 20px;';
+
+  /* 저장 버튼 */
+  var dlBtn=document.createElement('button');
+  dlBtn.style.cssText='width:100%;padding:15px;background:#2d7a3a;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:12px;font-family:inherit;';
+  dlBtn.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> \uC774\uBBF8\uC9C0 \uC800\uC7A5';
+  dlBtn.addEventListener('click',function(){
+    var a=document.createElement('a');
+    a.download=filename;
+    a.href=dataUrl;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    dlBtn.textContent='\u2705 \uC800\uC7A5\uC644\uB8CC!';
+    setTimeout(function(){
+      dlBtn.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> \uC774\uBBF8\uC9C0 \uC800\uC7A5';
+    },3000);
+  });
+
+  /* 파일정보 카드 */
+  var info=document.createElement('div');
+  info.style.cssText='background:#1a1a1a;border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;';
+
+  function infoRow(icon,label,val,valColor){
+    var row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:flex-start;gap:8px;';
+    var ic=document.createElement('span');
+    ic.style.cssText='font-size:14px;flex-shrink:0;line-height:1.5;';
+    ic.textContent=icon;
+    var txt=document.createElement('div');
+    txt.style.cssText='display:flex;flex-direction:column;gap:1px;';
+    var lb=document.createElement('span');
+    lb.style.cssText='font-size:10px;color:#888;font-family:Menlo,monospace;letter-spacing:.04em;';
+    lb.textContent=label;
+    var vl=document.createElement('span');
+    vl.style.cssText='font-size:12px;font-weight:700;font-family:Menlo,monospace;word-break:break-all;color:'+(valColor||'#a5d6a7')+';';
+    vl.textContent=val;
+    txt.appendChild(lb); txt.appendChild(vl);
+    row.appendChild(ic); row.appendChild(txt);
+    return row;
+  }
+
+  info.appendChild(infoRow('\uD83D\uDCC1','\uD30C\uC77C\uBA85',filename,'#a5d6a7'));
+  info.appendChild(infoRow('\uD83D\uDCCD','\uC800\uC7A5\uC704\uCE58',saveLocation,'#90caf9'));
+  var tipRow=document.createElement('div');
+  tipRow.style.cssText='border-top:1px solid #333;padding-top:8px;font-size:11px;color:#888;line-height:1.6;';
+  tipRow.textContent=saveTip;
+  info.appendChild(tipRow);
+
+  panel.appendChild(dlBtn);
+  panel.appendChild(info);
+
+  ov.appendChild(bar);
+  ov.appendChild(imgWrap);
+  ov.appendChild(panel);
+  document.body.appendChild(ov);
+}
+
+</script>
+</body>
+</html>
