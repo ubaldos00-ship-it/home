@@ -1,4 +1,4 @@
-<!-- tonghab_v103.html · 저장: 2026-06-02 00:32 KST -->
+<!-- tonghab_v105.html · 저장: 2026-06-02 14:39 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -624,6 +624,11 @@ body.nonbye-mode .hide-nonbye { display:none !important; }
 .ryield-auto{background:#EFF5E8;border:1.5px solid #b9d49a;border-radius:9px;padding:8px 10px;display:flex;align-items:center;justify-content:space-between;}
 .ryield-auto .ra-lbl{font-size:11.5px;color:#27500A;font-weight:700;}
 .ryield-auto .ra-val{font-size:17px;color:#1f4408;font-weight:900;}
+/* v104: 설미 자동값 - 일반 크기, 현미 input - 빨강 강조 */
+.ryield-auto .ra-val#rsSeolmi{font-size:13px;color:#5b6358;font-weight:500;}
+/* v105: 수분합계 값도 보통 크기 */
+.ryield-auto .ra-val#rsMoistSum{font-size:14px;color:#1f4408;font-weight:600;}
+.ryield-card input#rsHyeonmi{color:#C0392B!important;font-weight:800!important;}
 .ryield-divline{border-top:1px dashed #cfcabb;margin:12px 0 10px;}
 .ryield-res-main{background:#27500A;border-radius:12px;padding:14px 16px;text-align:center;margin:10px 0 8px;}
 .ryield-res-main .rm-lbl{font-size:11.5px;color:rgba(255,255,255,.78);font-weight:600;margin-bottom:3px;}
@@ -1328,7 +1333,7 @@ textarea {
         저장
       </button>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v103 저장: 2026-06-02 00:32)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v105 저장: 2026-06-02 14:39)</span></div>
   </div>
 </div>
 
@@ -2402,7 +2407,7 @@ textarea {
             <div class="ryield-iwrap"><input type="number" inputmode="numeric" id="rsHyeonmi" placeholder="예)453" oninput="riceRealYieldCalc();rsAutoNext(this,3,'rsMoist1')" class="nb-req-inp"><span class="ryield-unit">g</span></div>
           </div>
           <div class="ryield-fg">
-            <label>1.6mm미만 (설미, 자동)</label>
+            <label>1.6mm미만 (설미)</label>
             <div class="ryield-auto ryield-iwrap" style="min-height:42px;"><span class="ra-val" id="rsSeolmi">—</span></div>
           </div>
         </div>
@@ -2424,7 +2429,7 @@ textarea {
         </div>
         <!-- v103: 수분 평균값 표시 -->
         <div style="text-align:right;font-size:12px;color:#5b6358;margin-top:5px;padding-right:2px;">
-          평균 수분율: <strong style="color:#0f6e56;" id="rsMoistAvg">—</strong> %
+          평균 수분율: <strong style="color:#C0392B;font-weight:800;" id="rsMoistAvg">—</strong> %
         </div>
 
         <div class="ryield-divline"></div>
@@ -3402,7 +3407,8 @@ function nonbyeUpdateAvg(){
   if(!isNaN(avg)){
     avgBox.style.display='block';
     /* 기존 표시(소수1자리) 옆에 정밀값(소수2자리) 병기 */
-    avgEl.textContent = avg.toFixed(1) + ' (' + avg.toFixed(2) + ')';
+    /* v104: 소수2자리 값을 작은 폰트로 표시 */
+    avgEl.innerHTML = avg.toFixed(1) + ' <span style="font-size:0.75em;color:#5b6358;font-weight:600;">(' + avg.toFixed(2) + ')</span>';
     avgEl.dataset.precise = avg.toFixed(2);          /* 계산용 정밀값 */
     avg10aEl.textContent = Math.round(avg*1000).toLocaleString('ko-KR');
   } else {
@@ -3775,7 +3781,9 @@ function updateRealtimeCalc(){
     const aRnd2 = Math.round(a_ga * 100) / 100;
     const aSelectInt = Math.round(a_ga);
     const halfInterval = L / 2;
-    const b_ga2 = aRnd2 + halfInterval;
+    /* v104: 길이 모드에서는 반올림된 A 기점값을 기준으로 B 계산 (이랑 모드는 기존 유지) */
+    const isCmMode = (measureMode !== '이랑');
+    const b_ga2 = isCmMode ? (aSelectInt + halfInterval) : (aRnd2 + halfInterval);
     const bRnd2 = Math.round(b_ga2 * 100) / 100;
     const bSelectInt = Math.round(b_ga2);
 
@@ -3785,8 +3793,10 @@ function updateRealtimeCalc(){
     document.getElementById('rtAUnit').textContent = ' ' + unit;
     document.getElementById('rtACalc').textContent = '계산값: ' + aRnd2.toFixed(2);
 
-    document.getElementById('rtBFormula').innerHTML =
-      '<span class="fn">' + aRnd2.toFixed(2) + '</span>(A계산값) + <span class="fn">' + halfInterval.toFixed(1) + '</span>(추출간격)<span class="feq"> =</span>';
+    /* v104: 길이 모드는 반올림A+추출간격, 이랑 모드는 계산값+추출간격 */
+    document.getElementById('rtBFormula').innerHTML = isCmMode
+      ? '<span class="fn">' + aSelectInt.toLocaleString('ko-KR') + '</span>(A반올림) + <span class="fn">' + halfInterval.toFixed(1) + '</span>(추출간격)<span class="feq"> =</span>'
+      : '<span class="fn">' + aRnd2.toFixed(2) + '</span>(A계산값) + <span class="fn">' + halfInterval.toFixed(1) + '</span>(추출간격)<span class="feq"> =</span>';
     document.getElementById('rtBVal').textContent = bSelectInt.toLocaleString('ko-KR');
     document.getElementById('rtBUnit').textContent = ' ' + unit;
     document.getElementById('rtBCalc').textContent = '계산값: ' + bRnd2.toFixed(2);
@@ -4409,7 +4419,8 @@ function renderUnifiedResult(state){
   // ── A포구 결과 ──
   const one = isOneRidgeMode();
   const a_ga = one ? 1 : L*ga;
-  const b_ga = one ? 1 : a_ga + L/2;
+  /* v104: 길이(cm) 모드에서는 반올림된 A값으로 B 계산 → 기점은 정수 기준 */
+  const b_ga = one ? 1 : (measureMode !== '이랑' ? Math.round(a_ga) + L/2 : a_ga + L/2);
   const a_se = one ? (Ha/2)*na : Ha*na;
   setRes('outA_ga', 'outA_ga_raw', a_ga, gaUnit);
   document.getElementById('outA_ga_raw').textContent = one
@@ -4487,9 +4498,12 @@ function renderUnifiedResult(state){
   if(hasB){
     const b_se = one ? (Ha/2)*da + (Ha/2) : Hb*da;
     setRes('outB_ga', 'outB_ga_raw', b_ga, gaUnit);
+    /* v104: 길이 모드 — 반올림 A기점 기준 표시 */
     document.getElementById('outB_ga_raw').textContent = one
       ? '1이랑 고정'
-      : a_ga.toFixed(2) + '(A) + ' + (L/2).toFixed(1) + '(추출간격) = ' + b_ga.toFixed(2);
+      : (measureMode !== '이랑'
+          ? Math.round(a_ga).toLocaleString('ko-KR') + '(A반올림) + ' + (L/2).toFixed(1) + '(추출간격) = ' + b_ga.toFixed(2)
+          : a_ga.toFixed(2) + '(A) + ' + (L/2).toFixed(1) + '(추출간격) = ' + b_ga.toFixed(2));
     setRes('outB_se', 'outB_se_raw', b_se, 'cm');
     document.getElementById('outB_se_raw').textContent = one
       ? '(세로 ' + Ha + ' ÷ 2) × ' + da + '(다비율) + ' + (Ha/2).toFixed(1) + ' = ' + b_se.toFixed(1)
@@ -4553,9 +4567,12 @@ function renderUnifiedResult(state){
     }
   } else {
     setRes('outB_ga', 'outB_ga_raw', b_ga, gaUnit);
+    /* v104: 길이 모드 — 반올림 A기점 기준 표시 (B세로 미입력) */
     document.getElementById('outB_ga_raw').textContent = one
       ? '1이랑 고정'
-      : a_ga.toFixed(2) + '(A) + ' + (L/2).toFixed(1) + '(추출간격) = ' + b_ga.toFixed(2);
+      : (measureMode !== '이랑'
+          ? Math.round(a_ga).toLocaleString('ko-KR') + '(A반올림) + ' + (L/2).toFixed(1) + '(추출간격) = ' + b_ga.toFixed(2)
+          : a_ga.toFixed(2) + '(A) + ' + (L/2).toFixed(1) + '(추출간격) = ' + b_ga.toFixed(2));
     document.getElementById('outB_se').textContent = '—';
     document.getElementById('outB_se_raw').textContent = 'B 세로 미입력';
     document.getElementById('outWB').textContent = '—';
@@ -6616,6 +6633,9 @@ function nbCompareCalc(){
   if(jogokEl){var jt=jogokEl.textContent.replace(/[^0-9.]/g,''); surveyJogok=parseFloat(jt);}
   var hasJogok=!isNaN(surveyJogok)&&surveyJogok>0;
   var mean5=d.mean5, prev=d.prev;
+  /* v105 버그수정: years, prevYearShort 를 rows 사용 전에 선언 (v104에서 실행 순서 오류로 TypeError 크래시) */
+  var years=['2021','2022','2023','2024','2025'];
+  var prevYearShort=years[years.length-1].slice(2); /* '25' */
 
   document.getElementById('nbCmpTitle').textContent='📍 '+sigun+' 논벼 10a당 생산량 비교';
   document.getElementById('nbChartTitle').textContent='📋 '+sigun+' 5년 생산량 추이 (kg/10a)';
@@ -6633,8 +6653,8 @@ function nbCompareCalc(){
     return bags+'포대 (조곡 '+Math.round(kg200).toLocaleString('ko-KR')+'kg)';
   }
   var rows=[
-    {lbl:'평년 (5년 평균, '+sigun+')', v:mean5, jogokV:null},
-    {lbl:'전년 (2025년, '+sigun+')', v:prev, jogokV:null}
+    {lbl:'평년 (5년, '+sigun+')', v:mean5, jogokV:null},
+    {lbl:'전년 ('+prevYearShort+'년, '+sigun+')', v:prev, jogokV:null}
   ];
   if(hasSurvey) rows.push({lbl:'<b style="color:#27500A;">조사결과 (백미)</b>', v:survey, jogokV:hasJogok?surveyJogok:NaN, isSurvey:true});
   tbody.innerHTML=rows.map(function(r){
@@ -6705,14 +6725,14 @@ function nbCompareCalc(){
       +(hasSurvey?'<span class="prbar-dot" style="background:#e07000;margin-left:8px"></span>조사결과&nbsp;':'')
       +'</div>'
       +'<div class="prbar-group prbar-selected"><div class="prbar-label">'+sigun+' ★</div><div class="prbar-rows">'
-      +hbar('평년',mean5,'#1B5E20',false)
-      +hbar('전년',prev,'#66BB6A',false)
+      +hbar('평년(5년, '+sigun+')',mean5,'#1B5E20',false)
+      +hbar('전년('+prevYearShort+'년, '+sigun+')',prev,'#66BB6A',false)
       +(hasSurvey?hbar('조사결과',survey,'#e07000',true):'')
       +'</div></div>';
   }
 
   /* ④ 5년 추이 선그래프 — 전국 / 도 / 시군 */
-  var years=['2021','2022','2023','2024','2025'];
+  /* years, prevYearShort 는 함수 상단에서 이미 선언됨 */
   var sigunVals=d.hist.map(function(h){return h.v;});
   /* 도별 기준 결정 */
   var provKey=d.province==='gangwon'?'강원':(sigun==='대구시'?'대구':(sigun==='군위군'?'군위군':'경북'));
@@ -6734,7 +6754,8 @@ function nbCompareCalc(){
     var pad=Math.max(span*0.25,15);
     var minY=Math.max(0,Math.round((dataMin-pad)/10)*10);
     var maxY=Math.round((dataMax+pad)/10)*10;
-    var colors=['#888','#C0392B','#27500A'];
+    /* v104: 전국=회색, 도=빨강, 시군=파랑 */
+    var colors=['#888','#C0392B','#1558D6'];
     _nbCmpChart=new Chart(ctx,{
       type:'line',
       data:{
@@ -6743,12 +6764,12 @@ function nbCompareCalc(){
           {label:'전국',data:natVals.map(function(v){return v||null;}),borderColor:'#888',backgroundColor:'transparent',
            pointBackgroundColor:'#888',pointBorderColor:'#fff',pointBorderWidth:2,pointRadius:5,pointHoverRadius:7,
            borderWidth:1.8,tension:0.35,segment:{borderDash:function(){return [5,3];}}},
-          {label:provLabel,data:provVals.map(function(v){return v||null;}),borderColor:'#2e7a4e',backgroundColor:'transparent',
-           pointBackgroundColor:'#2e7a4e',pointBorderColor:'#fff',pointBorderWidth:2,pointRadius:5,pointHoverRadius:7,
+          {label:provLabel,data:provVals.map(function(v){return v||null;}),/* v104: 도(province)=빨강, 시군(sigun)=파랑 */
+          borderColor:'#C0392B',backgroundColor:'transparent',
+           pointBackgroundColor:'#C0392B',pointBorderColor:'#fff',pointBorderWidth:2,pointRadius:5,pointHoverRadius:7,
            borderWidth:2.2,tension:0.35},
-          /* v103: 도별선=초록, 시군선=빨강 */
-          {label:sigun,data:sigunVals.map(function(v){return v||null;}),borderColor:'#C0392B',backgroundColor:'transparent',
-           pointBackgroundColor:'#C0392B',pointBorderColor:'#fff',pointBorderWidth:2,pointRadius:6,pointHoverRadius:8,
+          {label:sigun,data:sigunVals.map(function(v){return v||null;}),borderColor:'#1558D6',backgroundColor:'transparent',
+           pointBackgroundColor:'#1558D6',pointBorderColor:'#fff',pointBorderWidth:2,pointRadius:6,pointHoverRadius:8,
            borderWidth:2.5,tension:0.35}
         ]
       },
@@ -6793,8 +6814,8 @@ function nbCompareCalc(){
   /* 범례 */
   document.getElementById('nbCompareLegend').innerHTML=
     '<span style="display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:24px;height:2px;background:#888;border-radius:1px;border-top:2px dashed #888;"></span>전국</span>'
-    +'<span style="display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:24px;height:2.5px;background:#2e7a4e;border-radius:1px;"></span>'+provLabel+'</span>'
-    +'<span style="display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:24px;height:3px;background:#C0392B;border-radius:1px;"></span>'+sigun+'</span>';
+    +'<span style="display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:24px;height:2.5px;background:#C0392B;border-radius:1px;"></span>'+provLabel+'</span>'
+    +'<span style="display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:24px;height:3px;background:#1558D6;border-radius:1px;"></span>'+sigun+'</span>';
 
   /* ⑤ 5년 상세 통계표 (연도 가로, 마지막열=평년, 조사결과 미포함) (v94) */
   function stRow(lbl,vals,mean,color,bold){
@@ -6812,12 +6833,13 @@ function nbCompareCalc(){
   var tbl='<div style="overflow-x:auto;margin-top:8px;"><table style="width:100%;border-collapse:collapse;min-width:300px;">'
     +'<thead><tr style="background:#f0f7ea;">'
     +'<th style="padding:6px 8px;text-align:left;border-bottom:1.5px solid #b9d49a;font-size:12px;">지역</th>'
-    +years.map(function(y){return '<th style="padding:6px 4px;text-align:right;border-bottom:1.5px solid #b9d49a;font-size:12px;">'+y+'년</th>';}).join('')
+    +years.map(function(y){return '<th style="padding:6px 4px;text-align:right;border-bottom:1.5px solid #b9d49a;font-size:11px;white-space:nowrap;">'+y+'년</th>';}).join('')
     +'<th style="padding:6px 4px;text-align:right;border-bottom:1.5px solid #b9d49a;font-size:12px;color:#27500A;">평년</th>'
     +'</tr></thead><tbody>';
   tbl+=stRow('전국',natVals,natData?natData.mean5:null,'#555',false);
   tbl+=stRow(provLabel,provVals,provData?provData.mean5:null,'#C0392B',true);
-  tbl+=stRow(sigun,sigunVals,mean5,'#27500A',true);
+  /* v104: 시군 파랑 */
+  tbl+=stRow(sigun,sigunVals,mean5,'#1558D6',true);
   /* ※ 조사결과는 표에서 제외 — 2021~2025 연도별 통계표와 혼용 방지 */
   tbl+='</tbody></table></div>';
   tbl+='<p style="font-size:10px;color:#999;margin-top:6px;">※ 출처: KOSIS 농작물생산조사 (2021~2025, 정곡 92.9%)</p>';
