@@ -1,4 +1,4 @@
-<!-- tonghab_v105.html · 저장: 2026-06-02 14:39 KST -->
+<!-- tonghab_v106.html · 저장: 2026-06-02 17:36 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1462,22 +1462,7 @@ textarea {
         <input type="date" id="surveyDate" style="width:auto;min-width:128px;">
       </div>
     </div>
-    <!-- 논벼 전용: 시군 선택 (v87) -->
-    <div class="nonbye-only" id="nbDistrictWrap" style="margin-top:10px;">
-      <div class="fg" style="margin-bottom:0;">
-        <label style="font-size:12px;">논벼 시군 선택 <span class="opt-tag">선택</span></label>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-          <select id="nbRegionGroup" onchange="nbUpdateDistrict()" style="font-size:14px;padding:9px 8px;border:1.5px solid #b9d49a;border-radius:8px;background:#f0f7ea;color:#1f4408;font-weight:700;-webkit-appearance:none;appearance:none;">
-            <option value="">권역 선택</option>
-            <option value="daegu">대구경북권</option>
-            <option value="gangwon">강원권</option>
-          </select>
-          <select id="nbDistrict" style="font-size:14px;padding:9px 8px;border:1.5px solid #b9d49a;border-radius:8px;background:#f0f7ea;color:#1f4408;font-weight:700;-webkit-appearance:none;appearance:none;">
-            <option value="">시군 선택</option>
-          </select>
-        </div>
-      </div>
-    </div>
+    <!-- v106: 시군 선택을 논벼 시군별 비교 섹션으로 이동 -->
   </div>
 
   <!-- ════ ② 비율 설정 ════ -->
@@ -2221,7 +2206,9 @@ textarea {
             <tr><td class="nbres-lbl">유효이삭수</td><td colspan="2" class="col-span" id="ntEffEars">—</td></tr>
             <tr><td class="nbres-lbl">총 낟알수</td><td colspan="2" class="col-span" id="ntTotalGrains">—</td></tr>
             <tr><td class="nbres-lbl">완전낟알수</td><td colspan="2" class="col-span" id="ntCompleteGrains">—</td></tr>
-            <tr><td class="nbres-lbl">10a당 예상량</td><td colspan="2" class="col-span" id="ntYield10a">—</td></tr>
+            <tr><td class="nbres-lbl">완전립 비율</td><td colspan="2" class="col-span" id="ntCompleteRate">—</td></tr>
+            <tr><td class="nbres-lbl">이삭당 낟알수</td><td colspan="2" class="col-span" id="ntGrainPerEar">—</td></tr>
+            <tr style="background:#f0f7ea;"><td class="nbres-lbl" style="font-weight:800;color:#1f4408;font-size:13.5px;">🌾 10a당 예상량</td><td colspan="2" style="text-align:center;font-weight:900;font-size:22px;color:#27500A;padding:12px 6px;" id="ntYield10a">—</td></tr>
             <tr><td class="nbres-lbl">피해상황</td><td class="col-a" id="ntA_dmg">—</td><td class="col-b" id="ntB_dmg">—</td></tr>
             <tr><td class="nbres-lbl">품종</td><td class="col-a" id="ntA_var">—</td><td class="col-b" id="ntB_var">—</td></tr>
             <tr><td class="nbres-lbl">모내기</td><td class="col-a" id="ntA_trn">—</td><td class="col-b" id="ntB_trn">—</td></tr>
@@ -2379,15 +2366,19 @@ textarea {
         <div class="ryield-grid2">
           <div class="ryield-fg">
             <label>6㎡당 조제벼 중량 (g)</label>
-            <div class="ryield-iwrap"><input type="number" inputmode="numeric" id="rsJeje" placeholder="예)5400" oninput="riceRealYieldCalc();rsAutoNext(this,4,'rsJeje8')" class="nb-req-inp"><span class="ryield-unit">g</span></div>
+            <div class="ryield-iwrap"><input type="number" inputmode="numeric" id="rsJeje" placeholder="예)5400" oninput="rsJejeAutoFill();riceRealYieldCalc();rsAutoNext(this,4,'rsJeje8')" class="nb-req-inp"><span class="ryield-unit">g</span></div>
           </div>
           <div class="ryield-fg">
-            <label>1/8 조제벼 (g)</label>
+            <label>1/8 조제벼 (g) <span style="font-size:10px;color:#888;font-weight:500;">(자동)</span></label>
             <div class="ryield-iwrap"><input type="number" inputmode="numeric" id="rsJeje8" placeholder="예)675" oninput="riceRealYieldCalc();rsAutoNext(this,3,'rsGeon8')" class="nb-req-inp"><span class="ryield-unit">g</span></div>
           </div>
           <div class="ryield-fg">
             <label>1/8 건조벼 (g)</label>
-            <div class="ryield-iwrap"><input type="number" inputmode="numeric" id="rsGeon8" placeholder="예)567" oninput="riceRealYieldCalc();rsAutoNext(this,3,'rsStraw')" class="nb-req-inp"><span class="ryield-unit">g</span></div>
+            <div class="ryield-iwrap"><input type="number" inputmode="numeric" id="rsGeon8" placeholder="예)567" oninput="rsGeon8Changed();rsAutoNext(this,3,'rsStraw')" class="nb-req-inp"><span class="ryield-unit">g</span></div>
+          </div>
+          <div class="ryield-fg">
+            <label>건조율 (%) <span style="font-size:10px;color:#888;font-weight:500;">(건조벼÷조제벼×100)</span></label>
+            <div class="ryield-iwrap" style="border-color:#c9b88a;background:#FFF8E6;"><input type="text" inputmode="decimal" id="rsGeonRate" placeholder="자동계산" oninput="rsGeonRateChanged()" style="color:#8a6d00;" class="nb-req-inp"><span class="ryield-unit" style="color:#8a6d00;">%</span></div>
           </div>
           <div class="ryield-fg">
             <label>6㎡당 생볏짚 (g)</label>
@@ -2440,6 +2431,8 @@ textarea {
           <div class="rm-unit">kg / 10a</div>
           <div class="rm-formula" id="rsFormula"></div>
         </div>
+        <!-- v106: 예상량 대비 증감 -->
+        <div id="rsYieldCompare" style="display:none;background:#F0F6FF;border:1.5px solid #93C5FD;border-radius:10px;padding:10px 14px;margin-bottom:8px;text-align:center;"></div>
         <div class="ryield-res-grid">
           <div class="ryield-res-cell"><div class="rc-lbl">10a당 조곡 <button class="formula-info-btn" onclick="showFormulaPopup('조곡')">ℹ</button></div><div class="rc-val" id="rsJogok">—</div></div>
           <div class="ryield-res-cell"><div class="rc-lbl">10a당 현미 <button class="formula-info-btn" onclick="showFormulaPopup('현미')">ℹ</button></div><div class="rc-val" id="rsHyeonmiOut">—</div></div>
@@ -2478,7 +2471,21 @@ textarea {
             <button type="button" id="nbCmpToggleBtn" onclick="nbCmpToggle()" style="padding:8px 10px;background:#f0f7ea;color:#27500A;border:1.5px solid #b9d49a;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;">▲ 접기</button>
           </span>
         </div>
-        <div style="font-size:12px;color:#555;margin-bottom:10px;">① 공통사항의 <b>권역·시군 선택</b> 후 버튼을 누르면 해당 시군의 평년·전년과 조사결과를 비교합니다.</div>
+        <!-- v106: 시군 선택 이동 (원래 ① 공통사항에 있던 것) -->
+        <div id="nbDistrictWrap" style="margin-bottom:10px;">
+          <div style="font-size:12px;font-weight:700;color:#1f4408;margin-bottom:5px;">시도 · 시군 선택 <span class="opt-tag">선택</span></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <select id="nbRegionGroup" onchange="nbUpdateDistrict()" style="font-size:14px;padding:9px 8px;border:1.5px solid #b9d49a;border-radius:8px;background:#f0f7ea;color:#1f4408;font-weight:700;-webkit-appearance:none;appearance:none;">
+              <option value="">권역 선택</option>
+              <option value="daegu">대구경북권</option>
+              <option value="gangwon">강원권</option>
+            </select>
+            <select id="nbDistrict" style="font-size:14px;padding:9px 8px;border:1.5px solid #b9d49a;border-radius:8px;background:#f0f7ea;color:#1f4408;font-weight:700;-webkit-appearance:none;appearance:none;">
+              <option value="">시군 선택</option>
+            </select>
+          </div>
+        </div>
+        <div style="font-size:12px;color:#555;margin-bottom:10px;">시도·시군 선택 후 <b>[비교 보기]</b>를 누르면 해당 시군의 평년·전년과 조사결과를 비교합니다.</div>
         <div id="nbCompareResult" style="display:none;">
           <!-- 평년·전년·조사결과 비교표 -->
           <div style="background:#f8fdf4;border:1px solid #b9d49a;border-radius:10px;padding:12px 14px;margin-bottom:10px;">
@@ -3302,13 +3309,19 @@ function nbFmt4(inp){
   }
 }
 
-/* 추정 적용: 유효이삭수 × 추정값 → 총낟알수·완전낱알수 채우기 */
+/* 추정 적용: 유효이삭수 × 추정값 → 총낟알수·완전낱알수 채우기 (v106: 기존 값 있으면 confirm) */
 function nbApplyEstimate(){
   const effEars   = parseFloat(document.getElementById('nbEffEars').value);
   const estTotal  = parseFloat(document.getElementById('nbEstTotal').value);
   const estComp   = parseFloat(document.getElementById('nbEstComplete').value);
   if(isNaN(effEars)||effEars<=0){
     alert('먼저 유효이삭수를 입력해주세요.'); return;
+  }
+  /* v106: 기존 값 보호 확인 */
+  var hasPrev = document.getElementById('nbTotalGrains').value!=='' ||
+                document.getElementById('nbCompleteGrains').value!=='';
+  if(hasPrev){
+    if(!confirm('기존에 입력된 총 낟알수와 완전낱알수 등이 삭제됩니다.\n그래도 추정 적용을 하시겠습니까?')) return;
   }
   if(!isNaN(estTotal)){
     document.getElementById('nbTotalGrains').value = Math.round(effEars * estTotal);
@@ -3387,6 +3400,8 @@ function nonbyeCalcM2(port){
   }
   nonbyeUpdateAvg();
   nonbyeCalcYield();
+  /* v106: 간격 변경 시 실수확량 조사표 3m² 포기수도 즉시 반영 */
+  if(typeof riceLoadDamage==='function') riceLoadDamage();
 }
 
 /* A·B 평균 1m² 포기수 */
@@ -3506,7 +3521,7 @@ function nonbyeCalcYield(){
   const Z   = tWeight;      // 천립중(g)
   const isakdang = Math.round(W / Tr * 10) / 10;   // 이삭당 완전낟알수 (완전낟알수÷대표주수이삭수)
   const result   = Math.round(R * T * (W / Tr) * (Z / 1000) * 10) / 10;
-  yieldEl.textContent = result.toFixed(1);
+  yieldEl.textContent = Math.round(result).toString();
   formulaEl.innerHTML =
     '[포기수<b>' + R.toFixed(2) + '</b> × 평균이삭<b>' + T + '</b> × 이삭당완전립(<b>' + W + '÷' + Tr + '=' + isakdang + '</b>) × (천립중<b>' + Z + '</b>÷1,000)]' +
     ' × 1,000(㎡) ÷ 1,000(g)';
@@ -3542,7 +3557,15 @@ function nonbyeInitJusuGrid(){
         },80);
       }
     });
-    inp.addEventListener('keydown',function(e){if(e.key==='Enter'){const n=document.getElementById('nbJ-'+(idx+2));if(n){n.focus({preventScroll:true});n.select();}}});
+    inp.addEventListener('keydown',function(e){
+      if(e.key==='Enter'){const n=document.getElementById('nbJ-'+(idx+2));if(n){n.focus({preventScroll:true});n.select();}}
+      /* v106: 백스페이스로 이전 칸 이동 (빈 칸에서 누를 때) */
+      if(e.key==='Backspace'&&this.value===''&&idx>0){
+        e.preventDefault();
+        const p=document.getElementById('nbJ-'+idx);
+        if(p){p.focus({preventScroll:true});p.select();}
+      }
+    });
   }
   updateRequiredHighlights();
   setTimeout(()=>{const f=document.getElementById('nbJ-1');if(f)f.focus({preventScroll:true});},100);
@@ -4653,6 +4676,9 @@ function renderNonbyeSummary(hasB){
   set('ntEffEars',      iv('nbEffEars')!=='—'?      fmtNum(iv('nbEffEars'))+' 개':'—');
   set('ntTotalGrains',  iv('nbTotalGrains')!=='—'?  fmtNum(iv('nbTotalGrains'))+' 개':'—');
   set('ntCompleteGrains',iv('nbCompleteGrains')!=='—'?fmtNum(iv('nbCompleteGrains'))+' 개':'—');
+  /* v106: 완전립비율·이삭당낟알수 */
+  var cRateTx=tx('nbCompleteRatePct'); set('ntCompleteRate',(cRateTx&&cRateTx!=='—')?cRateTx+' %':'—');
+  var gPerEarTx=tx('nbGrainRateFrac'); set('ntGrainPerEar',(gPerEarTx&&gPerEarTx!=='—')?gPerEarTx+' 개/이삭':'—');
   var y10=tx('nbYield10a'); set('ntYield10a', (y10&&y10!=='—')? parseFloat(y10).toLocaleString('ko-KR')+' kg/10a':'—');
   // 피해상황 / 품종 / 모내기 (v82/v84 - select 기반)
   function nbDmgTxt(ab){
@@ -4760,6 +4786,42 @@ function captureNbResCard(){
   },60);
 }
 
+/* ════ 1/8 조제벼 자동계산 (v106): rsJeje 입력 시 rsJeje8 = round(rsJeje/8) ════ */
+function rsJejeAutoFill(){
+  var jej=parseFloat(document.getElementById('rsJeje').value);
+  var inp8=document.getElementById('rsJeje8');
+  if(!isNaN(jej)&&jej>0&&inp8){
+    inp8.value=Math.round(jej/8);
+  }
+}
+
+/* ════ 1/8 건조벼 변경 시 건조율 자동계산 (v106) ════ */
+function rsGeon8Changed(){
+  riceRealYieldCalc();
+  rsUpdateGeonRate();
+}
+
+/* ════ 건조율 입력 시 1/8 건조벼 역산 (v106) ════ */
+function rsGeonRateChanged(){
+  var rate=parseFloat(document.getElementById('rsGeonRate').value);
+  var jej8=parseFloat(document.getElementById('rsJeje8').value);
+  var inp=document.getElementById('rsGeon8');
+  if(!isNaN(rate)&&!isNaN(jej8)&&jej8>0&&inp){
+    inp.value=Math.round(rate/100*jej8);
+    riceRealYieldCalc();
+  }
+}
+
+/* ════ 건조율 표시 갱신 (v106): rsGeon8/rsJeje8*100 ════ */
+function rsUpdateGeonRate(){
+  var jej8=parseFloat(document.getElementById('rsJeje8').value);
+  var geo8=parseFloat(document.getElementById('rsGeon8').value);
+  var rateEl=document.getElementById('rsGeonRate');
+  if(rateEl&&!isNaN(jej8)&&jej8>0&&!isNaN(geo8)){
+    rateEl.value=(Math.round(geo8/jej8*1000)/10).toFixed(1);
+  }
+}
+
 /* ════ 논벼 실수확량 계산 (v81/v102) ════
    조곡  = (1/8건조벼ⓔ × 8 × 1,000) ÷ (6 × 1,000) × (100−수분평균) ÷ (100−15)
    현미  = (1.6mm이상ⓕ × 8 × 1,000) ÷ (6 × 1,000) × (100−수분평균) ÷ (100−15)
@@ -4809,6 +4871,32 @@ function riceRealYieldCalc(){
     } else { fEl.textContent=''; }
   }
   riceLoadDamage();
+  /* v106: 건조율 자동갱신 (rsGeon8/rsJeje8*100) — 건조율 입력 중에는 건너뜀 */
+  if(document.activeElement&&document.activeElement.id!=='rsGeonRate'){
+    rsUpdateGeonRate();
+  }
+  /* v106: 예상량 대비 실수확량 증감 표시 */
+  (function(){
+    var compEl=document.getElementById('rsYieldCompare');
+    if(!compEl) return;
+    var expected=parseFloat((document.getElementById('nbYield10a')||{}).textContent||'');
+    var actual=isNaN(baengmi)?NaN:baengmi;
+    if(isNaN(expected)||expected<=0||isNaN(actual)){
+      compEl.style.display='none'; return;
+    }
+    var diff=actual-expected;
+    var pct=Math.round(diff/expected*1000)/10;
+    var sign=diff>=0?'+':'';
+    var color=diff>=0?'#1565c0':'#c62828';
+    var arrow=diff>=0?'▲':'▼';
+    compEl.style.display='block';
+    compEl.innerHTML='<div style="font-size:12px;color:#555;font-weight:600;margin-bottom:3px;">예상량 대비 실수확량</div>'+
+      '<div style="display:flex;align-items:baseline;justify-content:center;gap:6px;flex-wrap:wrap;">'+
+      '<span style="font-size:13px;color:#888;">예상: <b style="color:#333;">'+Math.round(expected).toLocaleString('ko-KR')+'</b> kg</span>'+
+      '<span style="font-size:22px;font-weight:900;color:'+color+';">'+arrow+' '+sign+pct.toFixed(1)+' %</span>'+
+      '<span style="font-size:13px;color:#888;">('+sign+Math.round(diff).toLocaleString('ko-KR')+' kg)</span>'+
+      '</div>';
+  })();
 }
 
 /* ════ 실수확량 조사표 + 논벼 시군별 생산량 비교 이미지 저장 (v97) ════ */
