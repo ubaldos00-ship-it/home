@@ -270,7 +270,7 @@
   .sl-head-title{font-size:15px;font-weight:800;color:#fff;}
   .sl-close{background:rgba(255,255,255,.2);border:none;color:#fff;font-size:18px;width:32px;height:32px;border-radius:8px;cursor:pointer;line-height:1;}
   .sl-body{padding:14px 14px 18px;}
-  .sl-save-now{width:100%;padding:14px;background:#27500A;border:none;border-radius:10px;color:#fff;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:14px;letter-spacing:.02em;}
+  .sl-save-now{width:100%;padding:14px;background:#E07000;border:none;border-radius:10px;color:#fff;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:14px;letter-spacing:.02em;}
   .sl-save-now:active{opacity:.82;}
   .sl-section{font-size:11px;font-weight:700;color:#888;letter-spacing:.06em;margin-bottom:7px;}
   .sl-list{display:flex;flex-direction:column;gap:7px;margin-bottom:14px;max-height:50vh;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;}
@@ -283,8 +283,9 @@
   .sl-item-load:active{background:#d0e4ff;}
   .sl-item-del{padding:7px 8px;background:#fdecea;border:1.5px solid #f5b8b8;border-radius:7px;color:#c0392b;font-size:0;cursor:pointer;white-space:nowrap;flex-shrink:0;display:flex;align-items:center;justify-content:center;min-width:32px;height:32px;transition:background .12s;}
   .sl-item-del:active{background:#f8c8c8;}
-  .sl-item-fav{padding:5px 6px;background:none;border:1.5px solid #e0ddd6;border-radius:7px;color:#ccc;font-size:16px;cursor:pointer;white-space:nowrap;flex-shrink:0;display:flex;align-items:center;justify-content:center;min-width:32px;height:32px;transition:all .15s;line-height:1;}
-  .sl-item-fav.fav-on{color:#f59e0b;border-color:#f59e0b;background:#fff8e1;}
+  .sl-item-fav{padding:5px 6px;background:none;border:1.5px solid #e0ddd6;border-radius:7px;color:#aaa;font-size:16px;cursor:pointer;white-space:nowrap;flex-shrink:0;display:flex;align-items:center;justify-content:center;min-width:32px;height:32px;transition:all .15s;line-height:1;}
+  .sl-item-fav.fav-on{border-color:#1558D6;background:#EBF3FF;}
+  .sl-item-del.del-locked{opacity:.35;cursor:not-allowed;}
   .sl-item.sl-selected{background:#edfbe8;border:2px solid #3a7d44;}
   .sl-item.sl-selected .sl-item-label{color:#1a5c22;}
   .sl-empty{text-align:center;color:#bbb;font-size:13px;padding:22px 0;}
@@ -448,7 +449,7 @@
       <span class="header-crop-tag"   id="headerCropTag"   style="display:none"></span>
       <span class="header-region-tag" id="headerRegionTag" style="display:none"></span>
     </div>
-    <div class="top-sub">출처: KOSIS 농작물생산조사(2021~2025) <span style="opacity:.75;font-size:11px;">· v15 저장: 2026-05-31 09:37</span></div>
+    <div class="top-sub">출처: KOSIS 농작물생산조사(2021~2025) <span style="opacity:.75;font-size:11px;">· v17 저장: 2026-06-03 11:18</span></div>
   </div>
 
   <div class="card">
@@ -1265,6 +1266,9 @@ function saveCurrentData(){
 }
 
 function overwriteSavedData(key){
+  /* v17: 잠금 항목 덮어쓰기 차단 */
+  var chk=_grGetList().find(function(i){return i.key===key;});
+  if(chk&&chk.fav){alert('🔒 잠금 해제 후 덮어쓰기 하세요.');return;}
   if(!confirm('이 항목에 현재 데이터를 덮어쓰시겠습니까?\n(기존 내용은 사라집니다)'))return;
   var d=_grCollect();
   var meta=_grMakeLabel(d);
@@ -1298,6 +1302,9 @@ function loadSavedData(key){
 }
 
 function deleteSavedData(key){
+  /* v16: 잠금 항목 삭제 차단 */
+  var chk=_grGetList().find(function(i){return i.key===key;});
+  if(chk&&chk.fav){alert('🔒 잠금 해제 후 삭제하세요.');return;}
   if(!confirm('이 저장 자료를 삭제할까요?'))return;
   try{localStorage.removeItem(GR_DATA_PFX+key);}catch(e){}
   _grSetList(_grGetList().filter(function(i){return i.key!==key;}));
@@ -1305,29 +1312,34 @@ function deleteSavedData(key){
 }
 
 var _TRASH_SVG='<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6h14z" stroke="#c0392b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 11v5M14 11v5" stroke="#c0392b" stroke-width="1.8" stroke-linecap="round"/></svg>';
+/* v16: 자물쇠 SVG */
+var _LOCK_SVG='<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="4" y="11" width="16" height="11" rx="2" fill="#1558D6" stroke="#1558D6" stroke-width="1.2"/><path d="M8 11V8a4 4 0 018 0v3" stroke="#1558D6" stroke-width="2" stroke-linecap="round"/></svg>';
+var _UNLOCK_SVG='<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="4" y="11" width="16" height="11" rx="2" stroke="#aaa" stroke-width="1.5" fill="none"/><path d="M8 11V8a4 4 0 018 0" stroke="#aaa" stroke-width="2" stroke-linecap="round"/></svg>';
 function _slRenderList(){
   var raw=_grGetList();
   var el=document.getElementById('sl-list');
   if(!el) return;
   if(!raw.length){el.innerHTML='<div class="sl-empty">저장된 자료가 없습니다.</div>';return;}
-  var favList=raw.filter(function(i){return i.fav;});
-  var nonFav=raw.filter(function(i){return !i.fav;});
-  var list=favList.concat(nonFav);
-  el.innerHTML=list.map(function(it,idx){
-    var num=list.length-idx;
-    var favCls=it.fav?'sl-item-fav fav-on':'sl-item-fav';
-    var favStar=it.fav?'★':'☆';
-    var numBg=it.fav?'background:#f59e0b;':'';
+  /* v16: 순서 변경 없이 원래 순서 유지 */
+  el.innerHTML=raw.map(function(it,idx){
+    var num=raw.length-idx;
+    var locked=!!it.fav;
+    var lockCls=locked?'sl-item-fav fav-on':'sl-item-fav';
+    var lockIcon=locked?_LOCK_SVG:_UNLOCK_SVG;
+    var numBg=locked?'background:#1558D6;':'';
     var selCls=(_slSelectedKey===it.key)?' sl-selected':'';
+    var delBtn=locked
+      ?'<button class="sl-item-del del-locked" onclick="alert(\'🔒 잠금 해제 후 삭제하세요.\')" aria-label="삭제(잠금)">'+_TRASH_SVG+'</button>'
+      :'<button class="sl-item-del" onclick="deleteSavedData(\''+it.key+'\')" aria-label="삭제">'+_TRASH_SVG+'</button>';
     return '<div class="sl-item'+selCls+'">'
       +'<div class="sl-item-num" style="'+numBg+'">'+num+'</div>'
       +'<div class="sl-item-info" onclick="slSelectItem(\''+it.key+'\')" style="cursor:pointer;">'
         +'<div class="sl-item-label">'+it.label+'</div>'
         +'<div class="sl-item-date">'+(it.ymd||'')+' '+(it.hm||'')+'</div>'
       +'</div>'
-      +'<button class="'+favCls+'" onclick="toggleFav(\''+it.key+'\')" aria-label="관심목록">'+favStar+'</button>'
+      +'<button class="'+lockCls+'" onclick="toggleFav(\''+it.key+'\')" aria-label="잠금">'+lockIcon+'</button>'
       +'<button class="sl-item-load" onclick="loadSavedData(\''+it.key+'\')" aria-label="불러오기">📂</button>'
-      +'<button class="sl-item-del" onclick="deleteSavedData(\''+it.key+'\')" aria-label="삭제">'+_TRASH_SVG+'</button>'
+      +delBtn
       +'</div>';
   }).join('');
 }

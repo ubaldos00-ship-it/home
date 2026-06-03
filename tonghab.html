@@ -1,4 +1,4 @@
-<!-- tonghab_v110.html · 저장: 2026-06-03 10:00 KST -->
+<!-- tonghab_v112.html · 저장: 2026-06-03 11:18 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1277,8 +1277,9 @@ body.nonbye-mode .hide-nonbye { display:none !important; }
 .sl-item-del{padding:7px 8px;background:#fdecea;border:1.5px solid #f5b8b8;border-radius:7px;color:#c0392b;font-size:0;cursor:pointer;white-space:nowrap;flex-shrink:0;display:flex;align-items:center;justify-content:center;min-width:32px;height:32px;transition:background .12s;}
 .sl-item-del:active{background:#f8c8c8;}
 /* 관심목록 별표 */
-.sl-item-fav{padding:5px 6px;background:none;border:1.5px solid #e0ddd6;border-radius:7px;color:#ccc;font-size:16px;cursor:pointer;white-space:nowrap;flex-shrink:0;display:flex;align-items:center;justify-content:center;min-width:32px;height:32px;transition:all .15s;line-height:1;}
-.sl-item-fav.fav-on{color:#f59e0b;border-color:#f59e0b;background:#fff8e1;}
+.sl-item-fav{padding:5px 6px;background:none;border:1.5px solid #e0ddd6;border-radius:7px;color:#aaa;font-size:16px;cursor:pointer;white-space:nowrap;flex-shrink:0;display:flex;align-items:center;justify-content:center;min-width:32px;height:32px;transition:all .15s;line-height:1;}
+.sl-item-fav.fav-on{border-color:#1558D6;background:#EBF3FF;}
+.sl-item-del.del-locked{opacity:.35;cursor:not-allowed;}
 
 /* ══ iOS 자동확대 완전 차단 ══
    iOS Safari: font-size < 16px 입력창 터치 시 화면 자동확대 발생.
@@ -1337,7 +1338,7 @@ textarea {
         저장
       </button>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v110 저장: 2026-06-03 10:00)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v112 저장: 2026-06-03 11:18)</span></div>
   </div>
 </div>
 
@@ -7885,6 +7886,9 @@ function loadSavedData(key){
 
 /* 삭제 */
 function deleteSavedData(key){
+  /* v111: 잠금 항목 삭제 차단 */
+  var chk=_slGetList().find(function(i){return i.key===key;});
+  if(chk&&chk.fav){alert('🔒 잠금 해제 후 삭제하세요.');return;}
   if(!confirm('이 저장 자료를 삭제할까요?'))return;
   try{localStorage.removeItem(SL_DATA_PFX+key);}catch(e){}
   _slSetList(_slGetList().filter(function(i){return i.key!==key;}));
@@ -7893,6 +7897,9 @@ function deleteSavedData(key){
 
 /* 덮어쓰기 — 기존 항목을 현재 데이터로 갱신 (key·번호 유지, 라벨/시각만 갱신) */
 function overwriteSavedData(key){
+  /* v112: 잠금 항목 덮어쓰기 차단 */
+  var chk=_slGetList().find(function(i){return i.key===key;});
+  if(chk&&chk.fav){alert('🔒 잠금 해제 후 덮어쓰기 하세요.');return;}
   if(!confirm('이 항목에 현재 데이터를 덮어쓰시겠습니까?\n(기존 내용은 사라집니다)'))return;
   var d=_slCollect();
   var crop=d['__crop']||'unknown';
@@ -7972,22 +7979,26 @@ function _shareJSONPrompt(jsonText){
 
 /* 목록 렌더링 */
 var _TRASH_SVG='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6h14z" stroke="#c0392b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 11v5M14 11v5" stroke="#c0392b" stroke-width="1.8" stroke-linecap="round"/></svg>';
+/* v111: 자물쇠 SVG 아이콘 */
+var _LOCK_SVG='<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="4" y="11" width="16" height="11" rx="2" fill="#1558D6" stroke="#1558D6" stroke-width="1.2"/><path d="M8 11V8a4 4 0 018 0v3" stroke="#1558D6" stroke-width="2" stroke-linecap="round"/></svg>';
+var _UNLOCK_SVG='<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="4" y="11" width="16" height="11" rx="2" stroke="#aaa" stroke-width="1.5" fill="none"/><path d="M8 11V8a4 4 0 018 0" stroke="#aaa" stroke-width="2" stroke-linecap="round"/></svg>';
 function _slRenderList(){
   var list=_slGetList();
   var el=document.getElementById('sl-list');
   if(!el)return;
   if(!list.length){el.innerHTML='<div class="sl-empty">저장된 자료가 없습니다.</div>';return;}
-  // 관심목록(fav=true) 먼저, 나머지는 원래 순서 유지
-  var favList=list.filter(function(i){return i.fav;});
-  var nonFav=list.filter(function(i){return !i.fav;});
-  var sorted=favList.concat(nonFav);
-  el.innerHTML=sorted.map(function(it,idx){
-    var num=sorted.length-idx;
+  /* v111: 잠금 여부와 관계없이 원래 순서 유지 */
+  el.innerHTML=list.map(function(it,idx){
+    var num=list.length-idx;
     var addrLine=it.addr?'<div class="sl-item-addr">📍 '+it.addr+'</div>':'';
-    var favCls=it.fav?'sl-item-fav fav-on':'sl-item-fav';
-    var favStar=it.fav?'★':'☆';
-    var numBg=it.fav?'background:#f59e0b;':'';
-    var selCls=(_slSelectedKey===it.key)?' sl-selected':''; /* v83: 선택 강조 */
+    var locked=!!it.fav;
+    var lockCls=locked?'sl-item-fav fav-on':'sl-item-fav';
+    var lockIcon=locked?_LOCK_SVG:_UNLOCK_SVG;
+    var numBg=locked?'background:#1558D6;':'';
+    var selCls=(_slSelectedKey===it.key)?' sl-selected':'';
+    var delBtn=locked
+      ?'<button class="sl-item-del del-locked" onclick="alert(\'🔒 잠금 해제 후 삭제하세요.\')" aria-label="삭제(잠금)">'+_TRASH_SVG+'</button>'
+      :'<button class="sl-item-del" onclick="deleteSavedData(\''+it.key+'\')" aria-label="삭제">'+_TRASH_SVG+'</button>';
     return '<div class="sl-item'+selCls+'">'
       +'<div class="sl-item-num" style="'+numBg+'">'+num+'</div>'
       +'<div class="sl-item-info" onclick="slSelectItem(\''+it.key+'\')" style="cursor:pointer;">'
@@ -7995,14 +8006,14 @@ function _slRenderList(){
         +addrLine
         +'<div class="sl-item-date">'+it.ymd+' '+it.hm+'</div>'
       +'</div>'
-      +'<button class="'+favCls+'" onclick="toggleFav(\''+it.key+'\')" aria-label="관심목록">'+favStar+'</button>'
+      +'<button class="'+lockCls+'" onclick="toggleFav(\''+it.key+'\')" aria-label="잠금">'+lockIcon+'</button>'
       +'<button class="sl-item-load" onclick="loadSavedData(\''+it.key+'\')" aria-label="불러오기">📂</button>'
-      +'<button class="sl-item-del" onclick="deleteSavedData(\''+it.key+'\')" aria-label="삭제">'+_TRASH_SVG+'</button>'
+      +delBtn
       +'</div>';
   }).join('');
 }
 
-/* 관심목록 토글 */
+/* v111: 잠금 토글 (순서 변경 없음) */
 function toggleFav(key){
   var list=_slGetList();
   for(var i=0;i<list.length;i++){
