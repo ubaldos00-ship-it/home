@@ -1,4 +1,4 @@
-<!-- tonghab_v106.html · 저장: 2026-06-02 17:36 KST -->
+<!-- tonghab_v110.html · 저장: 2026-06-03 10:00 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -711,6 +711,8 @@ body.nonbye-mode .hide-nonbye { display:none !important; }
 /* 피해부호 / 피해율 입력 */
 .prod-zone .dmg-row{display:grid;grid-template-columns:1.4fr 1fr;gap:6px;}
 .prod-zone .dmg-select,.prod-zone .dmg-rate{width:100%;font-size:12px;font-family:'Noto Sans KR',sans-serif;font-weight:700;padding:7px 6px;border:2px solid #ddd;border-radius:8px;background:#fff;color:#111;outline:none;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'12'%20height%3D'8'%20viewBox%3D'0%200%2012%208'%3E%3Cpath%20fill%3D'%23888'%20d%3D'M6%208L0%200h12z'%2F%3E%3C%2Fsvg%3E");background-repeat:no-repeat;background-position:right 7px center;padding-right:22px;}
+/* v108: 피해율 select 글자 더 작게 (선택값이 잘리지 않도록) */
+.prod-zone .dmg-rate{font-size:10px;padding:7px 4px;padding-right:18px;}
 .prod-zone .pab-col.pab-a .dmg-select:focus,.prod-zone .pab-col.pab-a .dmg-rate:focus{border-color:#2563EB;box-shadow:0 0 0 3px rgba(37,99,235,.15);}
 .prod-zone .pab-col.pab-b .dmg-select:focus,.prod-zone .pab-col.pab-b .dmg-rate:focus{border-color:#C0392B;box-shadow:0 0 0 3px rgba(192,57,43,.15);}
 .prod-zone .dmg-desc{display:none;margin-top:5px;padding:7px 9px;border-radius:7px;font-size:11.5px;line-height:1.5;font-weight:600;}
@@ -721,6 +723,8 @@ body.nonbye-mode .hide-nonbye { display:none !important; }
 /* 논벼 피해부호/피해율 — 마늘과 동일 디자인 (v88) */
 .nonbye-damage-grid .dmg-row{display:grid;grid-template-columns:1.4fr 1fr;gap:6px;}
 .nonbye-damage-grid .dmg-select,.nonbye-damage-grid .dmg-rate{width:100%;font-size:10px;font-family:'Noto Sans KR',sans-serif;font-weight:700;padding:6px 4px;border:2px solid #ddd;border-radius:8px;background:#fff;color:#111;outline:none;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'12'%20height%3D'8'%20viewBox%3D'0%200%2012%208'%3E%3Cpath%20fill%3D'%23888'%20d%3D'M6%208L0%200h12z'%2F%3E%3C%2Fsvg%3E");background-repeat:no-repeat;background-position:right 7px center;padding-right:22px;}
+/* v108: 논벼 피해율 글자 더 작게 */
+.nonbye-damage-grid .dmg-rate{font-size:9px;padding:6px 2px;padding-right:16px;}
 .nonbye-damage-grid .dmg-desc{display:none;margin-top:5px;padding:7px 9px;border-radius:7px;font-size:11.5px;line-height:1.5;font-weight:600;}
 .nonbye-damage-grid .dmg-desc.show{display:block;}
 .nonbye-damage-grid .dmg-desc .dmg-name{font-weight:800;}
@@ -1333,7 +1337,7 @@ textarea {
         저장
       </button>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v105 저장: 2026-06-02 14:39)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v110 저장: 2026-06-03 10:00)</span></div>
   </div>
 </div>
 
@@ -1488,11 +1492,11 @@ textarea {
 
   <!-- ════ ③ 가-나 총길이 → A/B 가로기점 ════ -->
   <div class="card">
-    <div class="card-ttl"><span class="sn">3</span> 가-나 측정 → A/B 가로기점 <span class="req-tag">필수</span></div>
+    <div class="card-ttl"><span class="sn">3</span> 가-나 측정 → A/B 가로기점 <span class="req-tag">필수</span><span id="ratioUsedBadge3" style="font-size:11px;font-weight:800;background:var(--t600);color:#fff;padding:2px 9px;border-radius:50px;margin-left:auto;display:inline-block;vertical-align:middle;flex-shrink:0;">1번 비율 적용</span></div>
     <div class="fg">
       <label id="lenLabel">가-나 총이랑수 (이랑)</label>
       <div style="display:flex;align-items:center;gap:8px;">
-        <input type="number" inputmode="numeric" pattern="[0-9]*" id="lenGaNa" oninput="updateHalf()" onblur="applyOneRidgeRatioIfNeeded()" onchange="applyOneRidgeRatioIfNeeded()" placeholder="숫자 입력" data-need="always" style="flex:1;min-width:0;">
+        <input type="number" inputmode="numeric" pattern="[0-9]*" id="lenGaNa" oninput="updateHalf()" onblur="applyOneRidgeRatioIfNeeded()" onchange="applyOneRidgeRatioIfNeeded()" placeholder="전체 이랑수 입력해주세요" data-need="always" style="flex:1;min-width:0;font-size:13px;">
         <div class="mode-toggle" style="flex-shrink:0;margin-bottom:0;">
           <button class="mtog" id="mRidge" onclick="setMode('이랑')">이랑 (수)</button>
           <button class="mtog active" id="mLength" onclick="setMode('길이')">길이 (cm)</button>
@@ -1555,7 +1559,7 @@ textarea {
   <div class="port-card a-port">
     <div class="port-hdr">
       <span class="port-hdr-lbl"><span class="sn" style="background:rgba(255,255,255,.28);color:#fff;font-size:13px;width:26px;height:26px;margin-right:2px;box-shadow:none;">5</span> A포구 측정값 입력</span>
-      <span class="port-hdr-step">STEP A</span>
+      <span id="ratioUsedBadge5" style="font-size:10px;font-weight:800;background:rgba(255,255,255,.22);color:#fff;border:1px solid rgba(255,255,255,.5);padding:2px 10px;border-radius:100px;margin-left:auto;flex-shrink:0;">1번 비율</span>
     </div>
     <div class="port-body">
 
@@ -1690,8 +1694,8 @@ textarea {
         <!-- 이삭수 컨트롤 버튼 (v87) -->
         <div style="display:flex;gap:6px;margin-top:8px;">
           <button type="button" onclick="nbJusuReset()" style="flex:1;padding:8px 4px;background:#fdecea;border:1.5px solid #f5b8b8;border-radius:8px;font-size:12px;font-weight:700;color:#c0392b;cursor:pointer;font-family:inherit;">🗑 이삭수 초기화</button>
-          <button type="button" onclick="nbJusuNav(-1)" style="flex:1;padding:8px 4px;background:#f4f2ec;border:1.5px solid #d0cfc6;border-radius:8px;font-size:13px;font-weight:700;color:#555;cursor:pointer;font-family:inherit;">← 이전</button>
-          <button type="button" onclick="nbJusuNav(1)" style="flex:1;padding:8px 4px;background:#f4f2ec;border:1.5px solid #d0cfc6;border-radius:8px;font-size:13px;font-weight:700;color:#555;cursor:pointer;font-family:inherit;">다음 →</button>
+          <button type="button" onclick="nbJusuNav(-1)" style="flex:1;padding:8px 4px;background:#f4f2ec;border:1.5px solid #d0cfc6;border-radius:8px;font-size:13px;font-weight:700;color:#555;cursor:pointer;font-family:inherit;touch-action:manipulation;">← 이전</button>
+          <button type="button" onclick="nbJusuNav(1)" style="flex:1;padding:8px 4px;background:#f4f2ec;border:1.5px solid #d0cfc6;border-radius:8px;font-size:13px;font-weight:700;color:#555;cursor:pointer;font-family:inherit;touch-action:manipulation;">다음 →</button>
         </div>
         <div style="font-size:11px;color:var(--a600);background:var(--a50);border:1px solid #f5d59c;border-radius:var(--rad);padding:7px 10px;margin-top:2px;display:none;" id="nbAJusuWarn">⚠ 10포기를 모두 입력해야 평균과 대표주수를 산출합니다.</div>
       </div>
@@ -1772,7 +1776,7 @@ textarea {
   <div class="port-card b-port">
     <div class="port-hdr">
       <span class="port-hdr-lbl"><span class="sn" style="background:rgba(255,255,255,.28);color:#fff;font-size:13px;width:26px;height:26px;margin-right:2px;box-shadow:none;">6</span> B포구 측정값 입력 <span class="opt-tag-w">선택</span></span>
-      <span class="port-hdr-step">STEP B</span>
+      <span id="ratioUsedBadge6" style="font-size:10px;font-weight:800;background:rgba(255,255,255,.22);color:#fff;border:1px solid rgba(255,255,255,.5);padding:2px 10px;border-radius:100px;margin-left:auto;flex-shrink:0;">1번 비율</span>
     </div>
     <div class="port-body">
       <div class="b-skip-note">※ B포구는 옵션입니다. 입력하지 않으면 A포구만 계산되고, 가로기점만 표시됩니다.</div>
@@ -1987,11 +1991,11 @@ textarea {
         </div>
         <div class="fg" style="margin-bottom:0;">
           <label>총낟알수 (개)</label>
-          <input type="number" inputmode="numeric" id="nbTotalGrains" placeholder="예) 80" oninput="nonbyeCalcYield()" class="nb-req-inp">
+          <input type="number" inputmode="numeric" id="nbTotalGrains" placeholder="예) 1600" oninput="nonbyeCalcYield()" class="nb-req-inp">
         </div>
         <div class="fg" style="margin-bottom:0;">
           <label>완전낱알수 (개)</label>
-          <input type="number" inputmode="numeric" id="nbCompleteGrains" placeholder="예) 70" oninput="nonbyeCalcYield()" class="nb-req-inp">
+          <input type="number" inputmode="numeric" id="nbCompleteGrains" placeholder="예) 1400" oninput="nonbyeCalcYield()" class="nb-req-inp">
         </div>
         <div class="fg" style="margin-bottom:0;">
           <label>불완전낱알수 (개)</label>
@@ -2037,7 +2041,7 @@ textarea {
         <div style="flex:1;background:#fffbe6;border:1px solid #ffe082;border-radius:var(--rad);padding:7px 8px;text-align:center;">
           <div style="font-size:10px;color:#8B7320;font-weight:700;margin-bottom:3px;">이삭당 낟알수</div>
           <div style="font-size:18px;font-weight:900;color:#8B7320;line-height:1.3;" id="nbGrainRateFrac">—</div>
-          <div style="font-size:10px;color:#a08000;">개/이삭 (완전립÷유효)</div>
+          <div style="font-size:10px;color:#a08000;">개/이삭</div>
           <div class="nb-formula-txt" id="fmlGrainPerEar"></div>
         </div>
         <div style="flex:1;background:#e8f5e9;border:1px solid #a5d6a7;border-radius:var(--rad);padding:7px 8px;text-align:center;">
@@ -2335,12 +2339,12 @@ textarea {
             <tr>
               <td class="lbl">3㎡ 예취포기수 (실제)</td>
               <td class="col-a" style="padding:4px 6px;">
-                <input type="number" inputmode="numeric" id="ryAHarvPlants" placeholder="예)18" min="0"
+                <input type="number" inputmode="numeric" id="ryAHarvPlants" placeholder="예)58" min="0"
                   oninput="ryHarvPlantsSync()"
                   style="width:100%;font-size:15px;font-weight:700;text-align:center;border:1.5px solid var(--ac);border-radius:6px;padding:5px 4px;color:var(--ac);background:#EBF3FF;box-sizing:border-box;">
               </td>
               <td class="col-b" style="padding:4px 6px;">
-                <input type="number" inputmode="numeric" id="ryBHarvPlants" placeholder="예)20" min="0"
+                <input type="number" inputmode="numeric" id="ryBHarvPlants" placeholder="예)58" min="0"
                   oninput="ryHarvPlantsSync()"
                   style="width:100%;font-size:15px;font-weight:700;text-align:center;border:1.5px solid var(--bc);border-radius:6px;padding:5px 4px;color:var(--bc);background:#FDECEA;box-sizing:border-box;">
               </td>
@@ -3290,9 +3294,9 @@ function selectCrop(btn){
 /* MROUND 함수 (엑셀 MROUND 동일) */
 function mround(n, m){ return Math.round(n/m)*m; }
 
-/* ##.# 포맷 + nonbyeCalcYield 트리거 (천립중 전용) */
+/* ##.# 포맷 + nonbyeCalcYield 트리거 (천립중 전용, v107: 3자리 제한) */
 function nbFmt3Yield(inp){
-  const raw = inp.value.replace(/[^0-9]/g,'');
+  var raw = inp.value.replace(/[^0-9]/g,'').slice(0, 3); /* v107: 최대 3자리 */
   inp.value = raw.length >= 3 ? raw.slice(0, raw.length-1) + '.' + raw.slice(raw.length-1) : raw;
   nonbyeCalcYield();
 }
@@ -3665,6 +3669,17 @@ function selectRatio(n, _isAuto){
   if(!_isAuto) _autoSwitchedTo2 = false; // 수동 선택 시 플래그 초기화
   ['tog1','tog2'].forEach((id,i) => document.getElementById(id).classList.toggle('active', i+1 === n));
   ['rrow1','rrow2'].forEach((id,i) => document.getElementById(id).classList.toggle('active', i+1 === n));
+  /* v109: ③⑤⑥ 비율 배지 갱신 */
+  var ratioTxt = n === 2 ? '2번 비율 적용' : '1번 비율 적용';
+  var ratioShort = n === 2 ? '2번 비율' : '1번 비율';
+  var b3 = document.getElementById('ratioUsedBadge3');
+  var b5 = document.getElementById('ratioUsedBadge5');
+  var b6 = document.getElementById('ratioUsedBadge6');
+  var orange='#EF9F27', green='var(--t600)';
+  var bgHdr = n===2 ? 'rgba(239,159,39,.55)' : 'rgba(255,255,255,.22)';
+  if(b3){ b3.textContent = ratioTxt; b3.style.background = n===2 ? orange : green; }
+  if(b5){ b5.textContent = ratioShort; b5.style.background = bgHdr; }
+  if(b6){ b6.textContent = ratioShort; b6.style.background = bgHdr; }
   updateRealtimeCalc();
   updateABDerived();
   updateRequiredHighlights();
@@ -3679,6 +3694,9 @@ function setMode(mode){
   document.getElementById('mLength').classList.toggle('active', mode === '길이');
   document.getElementById('lenLabel').textContent =
     mode === '이랑' ? '가-나 총이랑수 (이랑)' : '가-나 총길이 (cm)';
+  /* v108: 모드별 placeholder 안내문구 */
+  var lenInp=document.getElementById('lenGaNa');
+  if(lenInp) lenInp.placeholder=mode==='이랑'?'전체 이랑수 입력해주세요':'전체 가-나 길이를 입력하세요';
   updateHalf();
 }
 
@@ -5178,13 +5196,14 @@ function showFormulaPopup(type){
   var geon8=gv('rsGeon8'), hm=gv('rsHyeonmi');
   var m1=parseFloat(gv('rsMoist1')||''), m2=parseFloat(gv('rsMoist2')||'');
   var msum=(!isNaN(m1)?m1:0)+(!isNaN(m2)?m2:0);
-  var mavg=Math.round(msum/2*10)/10;
+  var mavg=Math.round(msum/2*100)/100; /* v108: 소수 둘째 자리 */
+  var mavgDisp=(mavg%1===0)?mavg.toFixed(2):(mavg*10%1===0)?(mavg.toFixed(2)):(mavg.toFixed(2));
   var factor=Math.round((100-mavg)/(100-15)*1000)/1000;
   var jogok=gv('rsJogok'), hyeonmi=gv('rsHyeonmiOut'), baengmi=gv('rsBaengmi2');
   var jehyeon=gv('rsJehyeon'), hyeonbaek=gv('rsHyeonbaek');
   var bodyTxt=d.body;
-  if(type==='조곡') bodyTxt='조곡 = 1/8건조벼('+geon8+'g) × (1/8전체)8÷(6제곱미터)6 × 평균수분(100-'+mavg+') ÷ 기준수분(100-15)\n= '+geon8+' × 1.333 × '+factor+'\n= '+jogok+'  · 수분보정계수: '+factor;
-  else if(type==='현미') bodyTxt='현미 = 1.6mm이상 현미('+hm+'g) × (1/8전체)8÷(6제곱미터)6 × 평균수분(100-'+mavg+') ÷ 기준수분(100-15)\n= '+hm+' × 1.333 × '+factor+'\n= '+hyeonmi+'\n\n· 수분보정계수: '+factor;
+  if(type==='조곡') bodyTxt='조곡 = 1/8건조벼('+geon8+'g) × (1/8전체)8÷(6제곱미터)6 × 평균수분(100-'+mavgDisp+') ÷ 기준수분(100-15)\n= '+geon8+' × 1.333 × '+factor+'\n= '+jogok+'  · 수분보정계수: '+factor;
+  else if(type==='현미') bodyTxt='현미 = 1.6mm이상 현미('+hm+'g) × (1/8전체)8÷(6제곱미터)6 × 평균수분(100-'+mavgDisp+') ÷ 기준수분(100-15)\n= '+hm+' × 1.333 × '+factor+'\n= '+hyeonmi+'\n\n· 수분보정계수: '+factor;
   else if(type==='백미') bodyTxt='백미 = 현미('+hyeonmi+') × 92.9%\n= '+baengmi+'\n\n· 현백률 92.9% 적용';
   else if(type==='제현율') bodyTxt='제현율 = 현미('+hyeonmi+') ÷ 조곡('+jogok+') × 100\n= '+jehyeon+'\n\n· 조곡 대비 현미 비율';
   else if(type==='현백률') bodyTxt='현백률 = 백미('+baengmi+') ÷ 현미('+hyeonmi+') × 100\n= '+hyeonbaek+'\n\n· 현미 대비 백미 비율';
@@ -5209,7 +5228,12 @@ function captureAllNonbye(){
   /* ★ captureRyield 와 동일 수정(v101): 실제 카드 너비로 wrapper 설정 */
   var cardW = (card1||card2) ? (card1||card2).offsetWidth||Math.min(window.innerWidth-24,480) : 390;
   var wrapper=document.createElement('div');
-  wrapper.style.cssText='position:fixed;top:0;left:0;z-index:9999;background:#fff;padding:0;display:flex;flex-direction:column;gap:12px;width:'+cardW+'px;';
+  wrapper.style.cssText='position:fixed;top:0;left:0;z-index:9999;background:#fff;padding:8px 0;display:flex;flex-direction:column;gap:12px;width:'+cardW+'px;';
+  /* v107: 작물명·주소·조사일·저장일시·입력요약도 이미지에 포함 */
+  var ciEl=document.getElementById('captureInfo');
+  var isEl=document.getElementById('inputSummary');
+  if(ciEl&&ciEl.innerHTML.trim()) wrapper.appendChild(ciEl.cloneNode(true));
+  if(isEl&&isEl.innerHTML.trim()) wrapper.appendChild(isEl.cloneNode(true));
   if(card1) wrapper.appendChild(card1.cloneNode(true));
   if(card2) wrapper.appendChild(card2.cloneNode(true));
   if(card3&&card3.style.display!=='none'){
@@ -5283,7 +5307,14 @@ function drawDiagram(ga, na, da, a_ga, b_ga, a_se, b_se, gaUnit, hasB){
   const lenA=(!isNaN(wa)&&wa>0)?30000/wa:NaN, lenB=(!isNaN(wb)&&wb>0)?30000/wb:NaN;
   const FX=45,FY=30,FW=260,FH=160,bot=FY+FH,rgt=FX+FW;
   box(15,2,330,295,'#FBFAF3','#A8A29A',1.1); box(FX,FY,FW,FH,'#EAF3DE','#3B6D11',2.2);
-  txt(FX-10,bot+15,'가','#111','14','900'); txt(rgt+10,bot+15,'나','#111','14','900'); txt(FX-10,FY+12,'다','#111','14','900'); txt((FX+rgt)/2,FY-9,'밭','#333','11','900');
+  txt(FX-10,bot+15,'가','#111','14','900'); txt(rgt+10,bot+15,'나','#111','14','900'); txt(FX-10,FY+12,'다','#111','14','900');
+  /* v107: '밭' 텍스트 삭제 */
+  const isNonbye=document.body.classList.contains('nonbye-mode');
+  /* v107: 논벼 모드면 가로/세로 간격값, 일반 모드면 너비/3㎡ 기존 표시 */
+  const nbAW=parseFloat((document.getElementById('nbAWidth')||{}).value);
+  const nbAH=parseFloat((document.getElementById('nbAHeight')||{}).value);
+  const nbBW=parseFloat((document.getElementById('nbBWidth')||{}).value);
+  const nbBH=parseFloat((document.getElementById('nbBHeight')||{}).value);
   const ax=one?FX+FW*.34:FX+FW*Math.min(Math.max((a_ga/(L||1)),.08),.88);
   const bx=one?FX+FW*.66:FX+FW*Math.min(Math.max((b_ga/(L||1)),.12),.94);
   const ay=(!isNaN(a_se)&&!isNaN(Ha)&&Ha>0)?bot-FH*Math.min(Math.max(a_se/Ha,.08),.92):bot-FH*.5;
@@ -5298,8 +5329,18 @@ function drawDiagram(ga, na, da, a_ga, b_ga, a_se, b_se, gaUnit, hasB){
   if(hasB){line(bx,FY,bx,by-10,'#C0392B',1,'3,3'); labelBox(bx-22,Math.max(-6,by-22),44,12,'총 '+fmt(Hb)+'cm','#C0392B','6.2');}
   twoBox(ax+17,ay-12,34,19,'기점',fmt(a_se)+'cm','#1558D6','5.5');
   if(hasB) twoBox(bx+17,by-12,34,19,'기점',fmt(b_se)+'cm','#C0392B','5.5');
-  twoBox(ax-54,ay-12,34,19,'너비',fmt(wa)+'cm','#1558D6','5.5'); vBox(ax-12,ay+15,24,24,['3㎡',fmt(lenA)+'cm'],'#1558D6','5.5');
-  if(hasB){twoBox(bx-54,by-12,34,19,'너비',fmt(wb)+'cm','#C0392B','5.5'); vBox(bx-12,by+15,24,24,['3㎡',fmt(lenB)+'cm'],'#C0392B','5.5');}
+  /* v107: 논벼 → 가로/세로 간격 표기, 일반 → 너비/3㎡ */
+  if(isNonbye){
+    twoBox(ax-54,ay-12,34,19,'가로',(!isNaN(nbAW)?nbAW:'?')+'cm','#1558D6','5.5');
+    vBox(ax-12,ay+15,24,24,['세로',(!isNaN(nbAH)?nbAH:'?')+'cm'],'#1558D6','5.5');
+    if(hasB){
+      twoBox(bx-54,by-12,34,19,'가로',(!isNaN(nbBW)?nbBW:'?')+'cm','#C0392B','5.5');
+      vBox(bx-12,by+15,24,24,['세로',(!isNaN(nbBH)?nbBH:'?')+'cm'],'#C0392B','5.5');
+    }
+  } else {
+    twoBox(ax-54,ay-12,34,19,'너비',fmt(wa)+'cm','#1558D6','5.5'); vBox(ax-12,ay+15,24,24,['3㎡',fmt(lenA)+'cm'],'#1558D6','5.5');
+    if(hasB){twoBox(bx-54,by-12,34,19,'너비',fmt(wb)+'cm','#C0392B','5.5'); vBox(bx-12,by+15,24,24,['3㎡',fmt(lenB)+'cm'],'#C0392B','5.5');}
+  }
   if(one){box(55,276,250,18,'#FFF8E1','#FACC15',1); txt(180,288,'가-나 총이랑수 1 → 2번 비율 사용 / 1이랑을 1/2로 나누어 A·B 계산','#854F0B','7','900');}
 }
 
