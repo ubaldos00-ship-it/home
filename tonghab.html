@@ -1,4 +1,4 @@
-<!-- tonghab_v114.html · 저장: 2026-06-04 16:40 KST -->
+<!-- tonghab_v119.html · 저장: 2026-06-04 21:42 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -570,7 +570,7 @@ body.nonbye-mode .hide-nonbye { display:none !important; }
 .nonbye-result-box {
   background:#27500A; border-radius:var(--rad); padding:14px 16px; text-align:center;
   margin-top:2px;
-}
+} /* v117: 예상량 박스 기존 색 복원 */
 .nonbye-result-lbl { font-size:11px; color:rgba(255,255,255,.7); font-weight:600; margin-bottom:4px; }
 .nonbye-result-num { font-size:34px; font-weight:900; color:#fff; line-height:1.1; }
 .nonbye-result-unit { font-size:12px; color:rgba(255,255,255,.7); }
@@ -630,7 +630,7 @@ body.nonbye-mode .hide-nonbye { display:none !important; }
 .ryield-auto .ra-val#rsMoistSum{font-size:14px;color:#1f4408;font-weight:600;}
 .ryield-card input#rsHyeonmi{color:#C0392B!important;font-weight:800!important;}
 .ryield-divline{border-top:1px dashed #cfcabb;margin:12px 0 10px;}
-.ryield-res-main{background:#27500A;border-radius:12px;padding:14px 16px;text-align:center;margin:10px 0 8px;}
+.ryield-res-main{background:linear-gradient(135deg,#A67C00,#E0B820);border-radius:12px;padding:14px 16px;text-align:center;margin:10px 0 8px;} /* v118: 벼 이삭 누른색 밝게 */
 .ryield-res-main .rm-lbl{font-size:11.5px;color:rgba(255,255,255,.78);font-weight:600;margin-bottom:3px;}
 .ryield-res-main .rm-num{font-size:36px;font-weight:900;color:#fff;line-height:1.1;}
 .ryield-res-main .rm-unit{font-size:12px;color:rgba(255,255,255,.7);}
@@ -1338,7 +1338,7 @@ textarea {
         저장
       </button>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v114 저장: 2026-06-04 16:40)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v119 저장: 2026-06-04 21:42)</span></div>
   </div>
 </div>
 
@@ -1453,7 +1453,7 @@ textarea {
           <ellipse cx="12" cy="4.7" rx="1.5" ry="0.85" fill="#D4AC3A" transform="rotate(5 12 4.7)"/>
           <ellipse cx="14.5" cy="6.3" rx="1.5" ry="0.85" fill="#D4AC3A" transform="rotate(25 14.5 6.3)"/>
         </svg></div>
-        논벼<span class="crop-cnt">준비중</span>
+        논벼<span class="crop-cnt" style="color:#EF9F27;font-weight:800;">New</span>
       </button>
 
     </div>
@@ -2056,6 +2056,7 @@ textarea {
       <div class="nonbye-result-box" id="nbYieldBox">
         <div class="nonbye-result-lbl">10a당 예상생산량 (백미기준)</div>
         <div><span class="nonbye-result-num" id="nbYield10a">—</span> <span class="nonbye-result-unit">kg/10a</span></div>
+        <div id="nbYieldDec" style="font-size:12px;color:rgba(255,255,255,.65);font-weight:600;margin-top:2px;"></div>
         <div class="nonbye-result-formula" id="nbYieldFormula"></div>
       </div>
 
@@ -3526,11 +3527,16 @@ function nonbyeCalcYield(){
   const Tr  = effEars;      // 대표주수 이삭수 (이삭당 계산용)
   const Z   = tWeight;      // 천립중(g)
   const isakdang = Math.round(W / Tr * 10) / 10;   // 이삭당 완전낟알수 (완전낟알수÷대표주수이삭수)
-  const result   = Math.round(R * T * (W / Tr) * (Z / 1000) * 10) / 10;
-  yieldEl.textContent = Math.round(result).toString();
+  /* v115: 중간 반올림 없이 원시값으로 소수 둘째 자리까지 계산 */
+  const resultRaw = R * T * (W / Tr) * (Z / 1000);
+  const resultDec = (Math.round(resultRaw * 100) / 100).toFixed(2);
+  yieldEl.textContent = Math.round(resultRaw).toString();
+  /* v115: 소수 둘째자리 작은 글씨 */
+  var yDecEl = document.getElementById('nbYieldDec');
+  if(yDecEl) yDecEl.textContent = '(소수: ' + resultDec + ' kg/10a)';
   formulaEl.innerHTML =
     '[포기수<b>' + R.toFixed(2) + '</b> × 평균이삭<b>' + T + '</b> × 이삭당완전립(<b>' + W + '÷' + Tr + '=' + isakdang + '</b>) × (천립중<b>' + Z + '</b>÷1,000)]' +
-    ' × 1,000(㎡) ÷ 1,000(g)';
+    ' × 1,000(㎡) ÷ 1,000(g) = <b>' + resultDec + '</b>';
   updateRequiredHighlights();
 }
 
@@ -3624,6 +3630,9 @@ function nonbyeJusuCalc(){
   const ids  = ['r1_ga','r1_na','r1_da','r2_ga','r2_na','r2_da'];
   const next = {r1_ga:'r1_na',r1_na:'r1_da',r1_da:'r2_ga',
                 r2_ga:'r2_na',r2_na:'r2_da',r2_da:'lenGaNa'};
+  /* v115: 백스페이스로 이전 필드 이동 */
+  const prev = {r1_na:'r1_ga',r1_da:'r1_na',r2_ga:'r1_da',
+                r2_na:'r2_ga',r2_da:'r2_na'};
 
   function enforce(inp){
     const dec = inp.value.startsWith('0.') ? inp.value.slice(2) : inp.value.replace(/[^0-9]/g,'');
@@ -3647,6 +3656,14 @@ function nonbyeJusuCalc(){
       const s = this.selectionStart ?? this.value.length;
       const se= this.selectionEnd   ?? this.value.length;
       if(e.key === 'Backspace'){
+        /* v115: 자릿수가 비어있으면(0.) 이전 필드로 이동 */
+        const digits = this.value.slice(2).replace(/[^0-9]/g,'');
+        if(digits.length === 0 && prev[id]){
+          e.preventDefault();
+          const pEl = document.getElementById(prev[id]);
+          if(pEl){ pEl.focus(); toEnd(pEl); }
+          return;
+        }
         if(s <= 2 && s === se){ e.preventDefault(); return; }
         if(s < 2){ e.preventDefault(); return; }
       }
@@ -4690,7 +4707,17 @@ function renderNonbyeSummary(hasB){
   // 1㎡당 포기수 평균값 — v102: 소수2자리 정밀값 사용
   const _avgEl2 = document.getElementById('nbAvgM2');
   const _avgPrec = _avgEl2 ? (_avgEl2.dataset.precise || '') : '';
-  set('ntAvgM2', _avgPrec ? _avgPrec+' 포기/㎡' : (tx('nbAvgM2')!=='—'? tx('nbAvgM2')+' 포기/㎡':'—'));
+  /* v115: 소수 1자리 표시 + 괄호 소수 2자리 */
+  (function(){
+    var ntA = document.getElementById('ntAvgM2');
+    if(!ntA) return;
+    if(_avgPrec){
+      var p = parseFloat(_avgPrec);
+      ntA.innerHTML = p.toFixed(1) + ' <span style="font-size:11px;color:#888;font-weight:500;">('+p.toFixed(2)+')</span> 포기/㎡';
+    } else {
+      ntA.textContent = tx('nbAvgM2')!=='—' ? tx('nbAvgM2')+' 포기/㎡' : '—';
+    }
+  })();
   // 항목 8: 천단위 콤마 적용 (v92)
   function fmtNum(v){ var n=parseFloat(v); return (!isNaN(n))?n.toLocaleString('ko-KR'):v; }
   set('ntEffEars',      iv('nbEffEars')!=='—'?      fmtNum(iv('nbEffEars'))+' 개':'—');
@@ -7041,16 +7068,22 @@ document.addEventListener('DOMContentLoaded', function(){
   </div>
 </div>
 
-<!-- ════ 논벼 하단 버튼 영역 (v96) ════ -->
+<!-- ════ 논벼 하단 버튼 영역 (v116) ════ -->
 <div class="nonbye-only" id="btnCaptureAllWrap" style="padding:8px 16px 16px;box-sizing:border-box;width:100%;max-width:500px;margin:0 auto;display:block;">
-  <!-- 1행: 실수확량 초기화 / 처음으로 가기 / 실수확량 이미지 저장 (검정, 비교섹션포함) -->
-  <div style="display:grid;grid-template-columns:1fr 1fr 1.3fr;gap:8px;margin-bottom:8px;">
-    <button type="button" onclick="ryieldReset()" style="padding:12px 4px;background:#fdecea;border:1.5px solid #f5b8b8;border-radius:10px;font-size:12px;font-weight:700;color:#c0392b;cursor:pointer;font-family:inherit;word-break:keep-all;">🗑 실수확량<br>초기화</button>
-    <button type="button" onclick="window.scrollTo({top:0,behavior:'smooth'})" style="padding:12px 4px;background:#f4f2ec;border:1.5px solid #d0cfc6;border-radius:10px;font-size:12px;font-weight:700;color:#555;cursor:pointer;font-family:inherit;word-break:keep-all;">⬆ 처음으로<br>가기</button>
-    <button type="button" onclick="captureRyield()" style="padding:12px 4px;background:#1a1a1a;border:none;border-radius:10px;font-size:12px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit;word-break:keep-all;">📷 실수확량<br>이미지 저장</button>
-  </div>
-  <!-- 2행: 전체 조사결과 저장 -->
-  <button class="btn-capture" id="btnCaptureAll" onclick="captureAllNonbye()" style="background:#27500A;font-size:14px;box-sizing:border-box;word-break:keep-all;width:100%;">📷&nbsp; 전체 조사결과 저장</button>
+  <!-- 1행: 전체 초기화 (preset-bottom-btn 스타일) -->
+  <button type="button" onclick="ryieldReset()"
+    style="width:100%;padding:11px;background:transparent;border:1px solid #c8c8c4;border-radius:12px;color:#666;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;margin-bottom:8px;-webkit-tap-highlight-color:transparent;">
+    ← 전체 초기화 / 초기화
+  </button>
+  <!-- 2행: 10a당 결과 이미지로 저장 (검정 pcap-btn 스타일) -->
+  <button type="button" onclick="captureRyield()"
+    style="width:100%;padding:15px;background:#111;border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 3px 12px rgba(0,0,0,.35);margin-bottom:8px;letter-spacing:.02em;-webkit-tap-highlight-color:transparent;box-sizing:border-box;">
+    📷&nbsp; 10a당 결과 이미지로 저장
+  </button>
+  <!-- 3행: 전체 조사 결과 이미지 저장 (파랑 full-cap-btn 스타일) -->
+  <button class="full-cap-btn" id="btnCaptureAll" onclick="captureAllNonbye()">
+    📋&nbsp; 전체 조사 결과 이미지 저장
+  </button>
 </div>
 
 <!-- 10a 생산량 계산기 결과 이미지 저장 모달 -->
