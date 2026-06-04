@@ -1,4 +1,4 @@
-<!-- tonghab_v112.html · 저장: 2026-06-03 11:18 KST -->
+<!-- tonghab_v113.html · 저장: 2026-06-04 16:31 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1338,7 +1338,7 @@ textarea {
         저장
       </button>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v112 저장: 2026-06-03 11:18)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v113 저장: 2026-06-04 16:31)</span></div>
   </div>
 </div>
 
@@ -4886,7 +4886,8 @@ function riceRealYieldCalc(){
     if(!isNaN(baengmi)&&!isNaN(hm)&&!isNaN(msum)){
       var mAvgDisp=Math.round(msum/2*100)/100;          /* 소수2자리 */
       var factorDisp=Math.round((100-mAvgDisp)/(100-15)*1000)/1000;
-      fEl.textContent='백미 = 1.6mm현미('+hm+'g)×8/6×(100-'+mAvgDisp.toFixed(2)+')/(100-15)×92.9% = '+(!isNaN(hyeonmi)?hyeonmi:'—')+'×'+factorDisp+'×0.929 ≈ '+baengmi+' kg';
+      /* v113: 수식 표시 수정 — hyeonmi는 이미 8/6×수분보정 완료된 현미값이므로 factorDisp 중복 제거 */
+      fEl.textContent='백미 = 1.6mm현미('+hm+'g)×8/6×(100-'+mAvgDisp.toFixed(2)+')/(100-15)×92.9% = 현미 '+(!isNaN(hyeonmi)?hyeonmi:'—')+'kg × 0.929 ≈ '+baengmi+' kg';
     } else { fEl.textContent=''; }
   }
   riceLoadDamage();
