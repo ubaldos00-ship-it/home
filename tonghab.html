@@ -1,4 +1,4 @@
-<!-- tonghab_v113.html · 저장: 2026-06-04 16:31 KST -->
+<!-- tonghab_v114.html · 저장: 2026-06-04 16:40 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1338,7 +1338,7 @@ textarea {
         저장
       </button>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v113 저장: 2026-06-04 16:31)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v114 저장: 2026-06-04 16:40)</span></div>
   </div>
 </div>
 
@@ -2434,6 +2434,7 @@ textarea {
           <div class="rm-lbl">10a당 생산량 (백미 · 92.9% 기준)</div>
           <div class="rm-num" id="rsBaengmi">—</div>
           <div class="rm-unit">kg / 10a</div>
+          <div id="rsBaengmiDec" style="font-size:12px;color:rgba(255,255,255,.65);font-weight:600;margin-top:2px;letter-spacing:.02em;"></div>
           <div class="rm-formula" id="rsFormula"></div>
         </div>
         <!-- v106: 예상량 대비 증감 -->
@@ -4871,12 +4872,22 @@ function riceRealYieldCalc(){
   function tenA(x){ return x*8/6*factor; }
   var jogok=NaN, hyeonmi=NaN, baengmi=NaN;
   if(!isNaN(geon8)&&!isNaN(factor)) jogok=Math.round(tenA(geon8));
-  if(!isNaN(hm)&&!isNaN(factor)) hyeonmi=Math.round(tenA(hm));
-  if(!isNaN(hyeonmi)) baengmi=Math.round(hyeonmi*0.929);
+  /* v114: 중간 반올림 제거 — hyeonmiRaw(소수)로 백미 계산하여 오차 방지 */
+  var hyeonmiRaw=NaN, baengmiRaw=NaN;
+  if(!isNaN(hm)&&!isNaN(factor)){
+    hyeonmiRaw=tenA(hm);                         // 소수 원시값 (예: 682.55)
+    hyeonmi=Math.round(hyeonmiRaw);              // 표시용 반올림 (예: 683)
+    baengmiRaw=hyeonmiRaw*0.929;                 // 소수 원시값 (예: 634.09)
+    baengmi=Math.round(baengmiRaw);              // 표시용 반올림 (예: 634)
+  }
+  var baengmiDecStr=(!isNaN(baengmiRaw))?(Math.round(baengmiRaw*100)/100).toFixed(2):null;
   setT('rsJogok', !isNaN(jogok)? jogok.toLocaleString('ko-KR')+' kg':'—');
   setT('rsHyeonmiOut', !isNaN(hyeonmi)? hyeonmi.toLocaleString('ko-KR')+' kg':'—');
   setT('rsBaengmi2', !isNaN(baengmi)? baengmi.toLocaleString('ko-KR')+' kg':'—');
   setT('rsBaengmi', !isNaN(baengmi)? baengmi.toLocaleString('ko-KR'):'—');
+  /* v114: 소수 둘째 자리 작은 글씨 표시 */
+  var decEl=document.getElementById('rsBaengmiDec');
+  if(decEl) decEl.textContent=baengmiDecStr?'(소수: '+baengmiDecStr+' kg)':'';
   // 제현율 = 현미/조곡×100, 현백률 = 백미/현미×100
   setT('rsJehyeon', (!isNaN(hyeonmi)&&!isNaN(jogok)&&jogok>0)? (Math.round(hyeonmi/jogok*1000)/10)+' %':'—');
   setT('rsHyeonbaek', (!isNaN(baengmi)&&!isNaN(hyeonmi)&&hyeonmi>0)? (Math.round(baengmi/hyeonmi*1000)/10)+' %':'—');
@@ -4886,8 +4897,9 @@ function riceRealYieldCalc(){
     if(!isNaN(baengmi)&&!isNaN(hm)&&!isNaN(msum)){
       var mAvgDisp=Math.round(msum/2*100)/100;          /* 소수2자리 */
       var factorDisp=Math.round((100-mAvgDisp)/(100-15)*1000)/1000;
-      /* v113: 수식 표시 수정 — hyeonmi는 이미 8/6×수분보정 완료된 현미값이므로 factorDisp 중복 제거 */
-      fEl.textContent='백미 = 1.6mm현미('+hm+'g)×8/6×(100-'+mAvgDisp.toFixed(2)+')/(100-15)×92.9% = 현미 '+(!isNaN(hyeonmi)?hyeonmi:'—')+'kg × 0.929 ≈ '+baengmi+' kg';
+      /* v114: 수식 표시 — 소수값 포함 */
+      var decPart=baengmiDecStr?' (='+baengmiDecStr+')':'';
+      fEl.textContent='백미 = 1.6mm현미('+hm+'g)×8/6×(100-'+mAvgDisp.toFixed(2)+')/(100-15)×92.9% = 현미 '+(!isNaN(hyeonmi)?hyeonmi:'—')+'kg × 0.929 ≈ '+baengmi+'kg'+decPart;
     } else { fEl.textContent=''; }
   }
   riceLoadDamage();
