@@ -51,7 +51,7 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
 .au{font-size:13px;font-weight:700;color:#333;flex-shrink:0}
 .aa{color:#27ae60;font-weight:700;font-size:14px;flex-shrink:0;padding:0 2px}
 .rb{width:28px;height:28px;border-radius:50%;border:none;background:#fadbd8;color:#c0392b;font-size:15px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
-.hr2{display:flex;gap:3px;align-items:center;margin-bottom:5px;flex-wrap:nowrap}
+.hr2{display:flex;gap:4px;align-items:center;margin-bottom:5px;flex-wrap:nowrap;width:100%;} /* v53 */
 .hl{font-size:11px;color:#555;white-space:nowrap;flex-shrink:0}
 .tb{background:#fff8dd;border:2px solid #f3d37a;border-radius:14px;padding:12px;margin-top:10px;display:flex;justify-content:space-around;flex-wrap:wrap;gap:8px;box-shadow:inset 0 1px 0 rgba(255,255,255,.8)}
 .ti{text-align:center;flex:1;min-width:70px}
@@ -110,7 +110,7 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
 .brv.cv{color:#3498db}
 .src{font-size:10px;color:#999;margin-top:7px;text-align:right}
 .uib{display:none;background:#fef9e7;border-radius:7px;padding:7px 11px;font-size:12px;margin-top:5px;border:1px solid #f9e79f}
-.udr{display:flex;align-items:center;gap:5px;margin-bottom:9px;background:#f8f9fa;padding:7px 8px;border-radius:7px;border:1px solid #eee;flex-wrap:nowrap;white-space:nowrap;overflow-x:auto}
+.udr{display:flex;align-items:center;gap:6px;margin-bottom:9px;background:#f8f9fa;padding:8px 12px;border-radius:10px;border:1px solid #e0e0e0;flex-wrap:nowrap;white-space:nowrap;overflow-x:auto} /* v48 */
 .udl2{font-size:11px;color:#777;white-space:nowrap}
 .udv2{font-size:13px;font-weight:800;color:#333;white-space:nowrap;overflow:visible;text-align:left;min-width:max-content}
 .sep{color:#ddd;font-size:11px}
@@ -140,6 +140,15 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
 .section-head .btn.bd{background:#fff;color:#c0392b;border-color:#f5b7b1;flex-shrink:0;}
 .memo-box{margin-top:12px;background:#f9fbf9;border:1.5px solid #d9eadb;border-radius:14px;padding:10px}
 .memo-box label{display:block;font-size:13px;font-weight:800;color:#27500A;margin-bottom:6px}
+/* v47: 피해부호/피해율 */
+.dmg-wrap{margin-top:12px;background:#fff;border:1.5px solid #ddd;border-radius:12px;padding:10px 12px;}
+.dmg-wrap label{display:block;font-size:13px;font-weight:800;color:#374151;margin-bottom:7px;}
+.dmg-row{display:grid;grid-template-columns:1.5fr 1fr;gap:8px;}
+.dmg-select,.dmg-rate{width:100%;font-size:13px;font-weight:700;padding:9px 8px;border:1.5px solid #ddd;border-radius:9px;background:#fff;color:#111;outline:none;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'12'%20height%3D'8'%20viewBox%3D'0%200%2012%208'%3E%3Cpath%20fill%3D'%23888'%20d%3D'M6%208L0%200h12z'%2F%3E%3C%2Fsvg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:24px;font-family:inherit;cursor:pointer;}
+.dmg-select:focus,.dmg-rate:focus{border-color:#27500A;box-shadow:0 0 0 2px rgba(39,80,10,.12);}
+.dmg-rate{font-size:12px;}
+.dmg-desc{display:none;margin-top:7px;padding:8px 10px;border-radius:8px;font-size:12.5px;line-height:1.6;font-weight:700;background:#EBF4FF;border:1px solid #b3c8f0;color:#1a4a8a;}
+.dmg-desc.show{display:block;}
 .chart-wrap{margin-top:6px;overflow:hidden;position:relative;height:260px}
 #kosisLine{display:block}
 .kosis-legend{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;background:#f8fafc;border:1px solid #dce4ee;border-radius:10px;padding:8px;margin:8px 0 10px;font-size:12px;font-weight:800;color:#374151}.kosis-legend span{display:flex;align-items:center;gap:5px}.dot{width:10px;height:10px;border-radius:50%;display:inline-block}.dot-n{background:#8b5cf6}.dot-g{background:#0b7a53}.dot-r{background:#e52828}.dot-b{background:#2563eb}.dot-p{background:#f59e0b}
@@ -204,14 +213,14 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
 .crop-row .bc{flex:1;}
 
 /* 드럼 피커 */
-.drum-wrap{position:relative;flex-shrink:0;width:72px;touch-action:none;}
-.drum-box{width:100%;height:46px;border:2px solid #27ae60;border-radius:10px;background:#eafaf1;cursor:ns-resize;user-select:none;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;-webkit-user-select:none;}
-.drum-cur{font-size:17px;font-weight:800;color:#27500A;line-height:1.1;}
-.drum-unit{font-size:10px;color:#666;font-weight:500;}
+.drum-wrap{position:relative;flex:2;min-width:72px;max-width:110px;touch-action:none;} /* v53: flex로 비례 배분 */
+.drum-box{width:100%;height:42px;border:2px solid #27ae60;border-radius:10px;background:#eafaf1;cursor:ns-resize;user-select:none;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;-webkit-user-select:none;}
+.drum-cur{font-size:14px;font-weight:700;color:#27500A;line-height:1.1;} /* v51: 수량 font-size:13px 에 맞춤 */
+.drum-unit{font-size:9px;color:#666;font-weight:500;}
 .drum-arr{position:absolute;color:#27ae60;font-size:9px;line-height:1;left:0;right:0;text-align:center;}
-.drum-arr.up{top:3px;}.drum-arr.dn{bottom:3px;}
+.drum-arr.up{top:2px;}.drum-arr.dn{bottom:2px;}
 .drum-box:active{background:#d5f5e3;}
-.drum-inp{display:none;position:absolute;inset:0;width:100%;height:100%;text-align:center;font-size:17px;font-weight:800;color:#27500A;background:#fff;border:2px solid #27ae60;border-radius:10px;z-index:10;padding:0;box-sizing:border-box;-webkit-appearance:none;appearance:none;}
+.drum-inp{display:none;position:absolute;inset:0;width:100%;height:100%;text-align:center;font-size:14px;font-weight:700;color:#27500A;background:#fff;border:2px solid #27ae60;border-radius:10px;z-index:10;padding:0;box-sizing:border-box;-webkit-appearance:none;appearance:none;} /* v51 */
 
 /* ── 계산기 팝업 (통합계산기 동일) v41 ── */
 .calc-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:4000;align-items:flex-end;justify-content:center;}
@@ -248,7 +257,7 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
     <div class="hd-t">
       <h1>청취 10a당 생산량 계산기</h1>
       <span class="hd-status-row"><span class="hd-status" id="headStatus">경북 · 사과</span></span>
-      <span class="hd-ver">(v45: 2026-06-03 11:18)</span>
+      <span class="hd-ver">(v53: 2026-06-05 17:53)</span>
     </div>
   </div>
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
@@ -307,6 +316,10 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
       <button class="bc" data-crop="쌀보리" onclick="selCrop(this)">🌾쌀보리</button>
       <button class="bc" data-crop="밀" onclick="selCrop(this)">🌾밀</button>
     </div>
+    <div class="crop-row">
+      <button class="bc" data-crop="노지봄무" onclick="selCrop(this)">🌿봄무</button>
+      <button class="bc" data-crop="노지봄배추" onclick="selCrop(this)">🥬봄배추</button>
+    </div>
   </div>
   <div class="uib" id="uib"><span id="uibT"></span></div>
 </div>
@@ -337,9 +350,9 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
   <div class="ct"><span class="n">4</span>수확량 환산</div>
   <p class="desc">응답자의 수확단위가 맞는지 확인하고 환산하세요.</p>
   <div class="udr">
-    <span class="udl2">수확단위</span><span class="udv2" id="dUnit">컨테이너</span>
+    <span class="udl2">수확단위</span><span class="udv2" id="dUnit" style="font-size:10px;font-weight:600;color:#888;max-width:60px;overflow:hidden;text-overflow:ellipsis;">컨테이너</span>
     <span class="sep">|</span>
-    <span class="udl2">기본중량</span><span class="udv2" id="dWeight">18 kg</span>
+    <span class="udl2">기본중량</span><span class="udv2" id="dWeight" style="font-size:22px;font-weight:900;color:#1455d9;min-width:max-content;flex-shrink:0;letter-spacing:-.01em;">18 kg</span>
   </div>
   <div id="hRows"></div>
   <div class="btn-row">
@@ -350,9 +363,40 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
     <div class="ti"><div class="tv" id="tHU">0</div><div class="tl" id="tULbl">단위 합계</div></div>
     <div class="ti"><div class="tv" id="tHK">0</div><div class="tl">생산량 합계 (kg)</div></div>
   </div>
+  <!-- v47: 피해부호/피해율 -->
+  <div class="dmg-wrap">
+    <label>피해부호 / 피해율</label>
+    <div class="dmg-row">
+      <select id="ccDmgCode" class="dmg-select" onchange="ccDmgUpdate();uAll()">
+        <option value="01" selected>01 정상</option>
+        <option value="02">02 병해</option>
+        <option value="03">03 충해</option>
+        <option value="04">04 수해</option>
+        <option value="05">05 한해</option>
+        <option value="06">06 냉해</option>
+        <option value="07">07 풍해</option>
+        <option value="08">08 약해</option>
+        <option value="09">09 조수해</option>
+        <option value="10">10 습해</option>
+        <option value="11">11 우박해</option>
+        <option value="12">12 기타</option>
+      </select>
+      <select id="ccDmgRate" class="dmg-rate" onchange="uAll()">
+        <option value="0" selected>0%</option>
+        <option value="5">5%</option><option value="10">10%</option><option value="15">15%</option>
+        <option value="20">20%</option><option value="25">25%</option><option value="30">30%</option>
+        <option value="35">35%</option><option value="40">40%</option><option value="45">45%</option>
+        <option value="50">50%</option><option value="55">55%</option><option value="60">60%</option>
+        <option value="65">65%</option><option value="70">70%</option><option value="75">75%</option>
+        <option value="80">80%</option><option value="85">85%</option><option value="90">90%</option>
+        <option value="95">95%</option><option value="100">100%</option>
+      </select>
+    </div>
+    <div class="dmg-desc" id="ccDmgDesc"></div>
+  </div>
   <div class="memo-box">
     <label for="memo">비고 및 판매처 등</label>
-    <input type="text" id="memo" placeholder="피해상황 등 기타사항 기재" oninput="uAll()" style="width:100%;margin-top:6px;">
+    <input type="text" id="memo" placeholder="기타사항 기재" oninput="uAll()" style="width:100%;margin-top:6px;">
   </div>
 </div>
 
@@ -407,6 +451,8 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
   <div class="rr"><span class="rl">전년 대비</span><span class="rv" id="rPrev">-</span></div>
   <div class="rr"><span class="rl">재배면적</span><span class="rv" id="rArea">-</span></div>
   <div class="rr"><span class="rl">총 생산량</span><span class="rv" id="rKg">-</span></div>
+  <div id="rKgFm" style="padding:0 0 4px 0;text-align:right;font-size:10.5px;color:#7a9a7e;font-weight:500;display:none;"></div>
+  <div class="rr"><span class="rl">피해부호 / 피해율</span><span class="rv" id="rDmg">-</span></div>
   <div class="rr"><span class="rl">비고 및 판매처 등</span><span class="rv" id="rMemo">-</span></div>
 </div>
 
@@ -501,9 +547,12 @@ const KD={
   '겉보리':{'전국':[292,269,274,216,254],'대구':[255,212,220,181,178],'경북':[232,219,290,236,269],'강원':[209,180,208,236,269],'서울':[132,0,113,null,null],'부산':[297,264,272,214,198],'인천':[132,132,113,216,204],'광주':[0,0,0,null,null],'대전':[0,239,294,179,176],'울산':[0,0,0,null,null],'세종':[0,0,0,179,176],'경기':[132,132,113,216,204],'충북':[199,139,294,216,204],'충남':[213,239,294,179,176],'전북':[312,290,277,217,272],'전남':[312,0,0,null,null],'경남':[297,264,272,214,198],'제주':[0,0,0,null,null]},
   '쌀보리':{'전국':[306,291,258,201,245],'대구':[0,106,204,128,206],'경북':[225,106,204,128,206],'강원':[225,268,204,128,206],'서울':[0,0,0,null,null],'부산':[256,210,194,163,null],'인천':[197,165,188,null,null],'광주':[312,261,184,187,221],'대전':[232,0,0,null,null],'울산':[0,0,0,null,null],'세종':[0,0,0,276,184],'경기':[197,165,188,276,184],'충북':[232,268,0,null,null],'충남':[232,268,188,276,184],'전북':[326,339,292,221,278],'전남':[299,261,238,187,221],'경남':[256,210,194,163,205],'제주':[189,231,205,172,212]},
   '밀':{'전국':[423,418,447,392,418],'대구':[0,0,0,470,null],'경북':[313,318,339,334,368],'강원':[253,250,264,272,285],'서울':[0,0,0,null,null],'부산':[0,0,0,null,null],'인천':[783,0,0,null,null],'광주':[412,413,421,440,434],'대전':[0,0,0,null,367],'울산':[482,0,0,null,null],'세종':[0,0,0,null,null],'경기':[783,410,303,348,331],'충북':[310,290,450,460,371],'충남':[295,525,431,376,356],'전북':[461,448,461,415,427],'전남':[420,403,449,377,431],'경남':[395,384,438,367,352],'제주':[0,384,366,314,296]},
-  '가을감자':{'전국':[1591,1479,1643,1527,null],'대구':[1352,1402,1215,1188,null],'경북':[1556,1084,1621,1704,null],'강원':[2183,2053,2030,2013,null],'서울':[0,1089,2982,null,null],'부산':[935,941,988,1980,null],'인천':[303,2148,852,850,null],'광주':[1397,1406,1412,1432,null],'대전':[2369,2372,2387,2387,null],'울산':[1010,1036,924,822,null],'세종':[0,958,1017,1593,null],'경기':[1455,1089,2982,1251,null],'충북':[1463,1512,1404,1494,null],'충남':[1917,1763,2028,1718,null],'전북':[1672,1674,1761,1625,null],'전남':[1740,1803,1679,1428,null],'경남':[1428,1405,1446,1611,null],'제주':[1428,1279,1299,1405,null]}
+  '가을감자':{'전국':[1591,1479,1643,1527,null],'대구':[1352,1402,1215,1188,null],'경북':[1556,1084,1621,1704,null],'강원':[2183,2053,2030,2013,null],'서울':[0,1089,2982,null,null],'부산':[935,941,988,1980,null],'인천':[303,2148,852,850,null],'광주':[1397,1406,1412,1432,null],'대전':[2369,2372,2387,2387,null],'울산':[1010,1036,924,822,null],'세종':[0,958,1017,1593,null],'경기':[1455,1089,2982,1251,null],'충북':[1463,1512,1404,1494,null],'충남':[1917,1763,2028,1718,null],'전북':[1672,1674,1761,1625,null],'전남':[1740,1803,1679,1428,null],'경남':[1428,1405,1446,1611,null],'제주':[1428,1279,1299,1405,null]},
+  /* v46: 노지봄무·노지봄배추 추가 (출처: KOSIS 채소생산량 2021~2024, 2025 미조사) */
+  '노지봄무':{'전국':[4038,4087,3638,3753,null],'대구':[4324,4304,3118,3103,null],'경북':[2773,2759,3110,3329,null],'강원':[4132,4122,3642,3806,null],'서울':[null,null,null,null,null],'부산':[null,null,null,null,null],'인천':[null,null,null,null,null],'광주':[null,null,null,null,null],'대전':[null,null,null,null,null],'울산':[null,null,null,null,null],'세종':[null,null,null,null,null],'경기':[null,null,null,null,null],'충북':[null,null,null,null,null],'충남':[null,null,null,null,null],'전북':[null,null,null,null,null],'전남':[null,null,null,null,null],'경남':[null,null,null,null,null],'제주':[null,null,null,null,null]},
+  '노지봄배추':{'전국':[4810,4713,4782,4729,null],'대구':[4910,4733,3023,2791,null],'경북':[4698,4565,4795,4712,null],'강원':[4579,4507,4476,4342,null],'서울':[null,null,null,null,null],'부산':[null,null,null,null,null],'인천':[null,null,null,null,null],'광주':[null,null,null,null,null],'대전':[null,null,null,null,null],'울산':[null,null,null,null,null],'세종':[null,null,null,null,null],'경기':[null,null,null,null,null],'충북':[null,null,null,null,null],'충남':[null,null,null,null,null],'전북':[null,null,null,null,null],'전남':[null,null,null,null,null],'경남':[null,null,null,null,null],'제주':[null,null,null,null,null]}
 };
-const CU={'사과':{u:'컨테이너',w:18},'배':{u:'컨테이너',w:18},'고추':{u:'근',w:0.6},'참깨':{u:'되',w:1.2},'고구마':{u:'박스',w:10},'겉보리':{u:'톤백',w:500},'쌀보리':{u:'톤백',w:500},'밀':{u:'톤백',w:500},'가을감자':{u:'박스',w:10}};
+const CU={'사과':{u:'컨테이너',w:18},'배':{u:'컨테이너',w:18},'고추':{u:'근',w:0.6},'참깨':{u:'되',w:1.2},'고구마':{u:'박스',w:10},'겉보리':{u:'톤백',w:500},'쌀보리':{u:'톤백',w:500},'밀':{u:'톤백',w:500},'가을감자':{u:'박스',w:10},'노지봄무':{u:'트럭',w:8000},'노지봄배추':{u:'트럭',w:8000}}; /* v46 */
 const WO={
   '사과':[5,10,15,18,20],
   '배':[5,10,15,18,20],
@@ -513,8 +562,41 @@ const WO={
   '가을감자':[5,10,15,20],
   '겉보리':[10,20,40,100,500],
   '쌀보리':[10,20,40,100,500],
-  '밀':[10,20,40,100,500]
+  '밀':[10,20,40,100,500],
+  '노지봄무':[2000,4000,6000,8000,10000],   /* v46: 트럭 단위 기본 8000kg */
+  '노지봄배추':[2000,4000,6000,8000,10000]  /* v46: 트럭 단위 기본 8000kg */
 };
+/* v47: 피해부호 코드 정의 */
+const CC_DMG={
+  '01':{name:'정상',  desc:'정상(正常)의 상태'},
+  '02':{name:'병해',  desc:'병으로 인하여 입은 농작물의 피해'},
+  '03':{name:'충해',  desc:'해충으로 인하여 입은 농작물의 피해'},
+  '04':{name:'수해',  desc:'장마나 홍수로 인한 농작물의 피해'},
+  '05':{name:'한해',  desc:'가뭄으로 인하여 입은 농작물의 피해'},
+  '06':{name:'냉해',  desc:'냉온으로 인하여 입은 농작물의 피해'},
+  '07':{name:'풍해',  desc:'바람으로 인하여 입은 농작물의 피해'},
+  '08':{name:'약해',  desc:'농약이나 비료를 사용하여 받은 피해'},
+  '09':{name:'조수해',desc:'새나 짐승으로 인한 농작물의 피해'},
+  '10':{name:'습해',  desc:'습기가 많아 입은 농작물의 피해'},
+  '11':{name:'우박해',desc:'우박으로 인하여 입은 농작물의 피해'},
+  '12':{name:'기타',  desc:'종자불량, 퇴화, 발아불량, 관리소홀 등 기타 피해'}
+};
+function ccDmgUpdate(){
+  var sel=document.getElementById('ccDmgCode');
+  var box=document.getElementById('ccDmgDesc');
+  var rateEl=document.getElementById('ccDmgRate');
+  if(!sel||!box) return;
+  var info=CC_DMG[sel.value];
+  if(sel.value==='01'){
+    box.classList.remove('show'); box.textContent='';
+    if(rateEl) rateEl.value='0';
+  } else if(info){
+    box.textContent=sel.value+' '+info.name+' · '+info.desc;
+    box.classList.add('show');
+  } else {
+    box.classList.remove('show'); box.textContent='';
+  }
+}
 const EM={'대구':'🏙️','경북':'🌄','강원':'⛰️','서울':'🗼','부산':'🌊','인천':'✈️','광주':'🌻','대전':'🚀','울산':'🏭','세종':'🏛️','경기':'🌿','충북':'🌲','충남':'🌾','전북':'🌻','전남':'🌊','경남':'🌺','제주':'🍊'};
 let sR='경북',sC=null;
 function updateHeadStatus(){
@@ -655,7 +737,7 @@ function initDrum(box){
   const inp=box.parentNode.querySelector('.drum-inp');
   let lY=0,lT=0,moved=false;
   function setVal(v){
-    v=Math.min(1000,Math.max(1,Math.round(v)));
+    v=Math.max(1,Math.round(v)); /* v46: 상한 제거 */
     box.dataset.val=v;
     box.querySelector('.drum-cur').textContent=v;
     if(inp)inp.value=v;
@@ -678,7 +760,7 @@ function initDrum(box){
   if(inp){
     inp.addEventListener('blur',()=>{
       const v=parseInt(inp.value);
-      if(!isNaN(v)&&v>=1&&v<=1000)setVal(v);
+      if(!isNaN(v)&&v>=1)setVal(v); /* v46: 상한 제거 */
       inp.style.display='none';
     });
     inp.addEventListener('keydown',e=>{if(e.key==='Enter')inp.blur();});
@@ -730,16 +812,16 @@ function bldHR(){
         <div class="drum-cur">${w}</div>
         <div class="drum-arr dn">▼</div>
       </div>
-      <input type="number" inputmode="numeric" min="1" max="1000" class="drum-inp" value="${w}">
+      <input type="number" inputmode="numeric" min="1" class="drum-inp" value="${w}">
     </div>`:
     `<input type="number" inputmode="decimal" step="any" min="0" class="hw" autocomplete="off" value="${w}" oninput="this.dataset.m=1;rRow(this.closest('.hr2'));uHT()" style="width:60px;text-align:center;padding:8px 3px">`;
-  d.innerHTML=`<input type="number" inputmode="decimal" step="any" min="0" placeholder="수량" class="hq needs-input" autocomplete="off" enterkeyhint="done" oninput="rRow(this.closest('.hr2'));uHT()" style="flex:1.2;min-width:55px;text-align:right;font-size:15px">
-  <span class="hl hul" style="padding:0 2px;font-size:11px">${u}</span><span class="hl">×</span>
+  d.innerHTML=`<input type="number" inputmode="decimal" step="any" min="0" placeholder="수량" class="hq needs-input" autocomplete="off" enterkeyhint="done" oninput="rRow(this.closest('.hr2'));uHT()" style="flex:1;min-width:40px;max-width:58px;text-align:right;font-size:13px;padding:10px 4px;">
+  <span class="hl hul" style="padding:0 1px;font-size:11px">${u}</span><span class="hl">×</span>
   ${drumHtml}
   <span class="hl">kg =</span>
-  <input type="number" inputmode="decimal" step="any" min="0" class="hres" autocomplete="off" placeholder="0" oninput="uHT()" style="flex:.9;min-width:52px;text-align:right;background:#eafaf1">
+  <input type="number" inputmode="decimal" step="any" min="0" class="hres" autocomplete="off" placeholder="0" oninput="uHT()" style="flex:1;min-width:40px;max-width:60px;text-align:right;background:#eafaf1;font-size:13px;padding:10px 3px;">
   <span class="hl">kg</span>
-  <button class="rb" onclick="rmHR(this)">−</button>`;
+  <button class="rb" onclick="rmHR(this)">−</button>`; /* v53: 행에 맞게 배분 */
   document.getElementById('hRows').appendChild(d);
   if(hasDrum){const box=d.querySelector('.drum-box');initDrum(box);}
 }
@@ -931,7 +1013,31 @@ function uRC(){
   document.getElementById('rP10Fm').textContent=p?`계산식: 수확량합계(${f(kg)} kg) ÷ 재배면적(${f(sqm)} ㎡) × 1,000 = ${f(p)} kg/10a`:'';
   document.getElementById('rArea').textContent=py?`${f(py)}평 (${f(sqm)}㎡)`:'-';
   document.getElementById('rKg').textContent=kg?f(kg)+' kg':'-';
+  /* v48: 총 생산량 아래 계산식 (작은 글씨) */
+  (function(){
+    var fmEl=document.getElementById('rKgFm');
+    if(!fmEl) return;
+    var rows=document.querySelectorAll('#hRows .hr2');
+    if(!rows.length||!kg){fmEl.style.display='none';fmEl.textContent='';return;}
+    var parts=[];
+    rows.forEach(function(row){
+      var db=row.querySelector('.drum-box');
+      var hres=row.querySelector('.hres');
+      var cnt=db?parseInt(db.dataset.val)||0:0;
+      var wkg=hres?parseFloat(String(hres.value).replace(/,/g,''))||0:0;
+      var unit=document.getElementById('dUnit').textContent||'단위';
+      if(cnt>0) parts.push(cnt+unit+'×'+f(wkg/cnt)+'kg');
+    });
+    if(parts.length){
+      fmEl.textContent='= '+parts.join(' + ')+' = '+f(kg)+' kg';
+      fmEl.style.display='block';
+    } else {
+      fmEl.style.display='none';
+    }
+  })();
   document.getElementById('rMemo').textContent=document.getElementById('memo')?.value||'-';
+  /* v47: 피해부호/피해율 결과 표시 */
+  (function(){var dc=document.getElementById('ccDmgCode');var dr=document.getElementById('ccDmgRate');var rDmg=document.getElementById('rDmg');if(rDmg&&dc&&dr){var code=dc.value||'01';var info=CC_DMG[code];var name=info?info.name:'정상';var rate=dr.value||'0';rDmg.textContent=code+' '+name+(rate!=='0'?' / '+rate+'%':'');}})();
   const avgEl=document.getElementById('rAvg'), prevEl=document.getElementById('rPrev');
   avgEl.textContent='-'; prevEl.textContent='-'; avgEl.className='rv'; prevEl.className='rv';
   const pyBox=document.getElementById('pyeongCmpBox');
@@ -1111,6 +1217,11 @@ function _ccCollect(){
     var el = document.getElementById(id);
     if(el) d[id] = el.value;
   });
+  // v47: 피해부호/피해율
+  var dmgEl=document.getElementById('ccDmgCode');
+  var rateEl=document.getElementById('ccDmgRate');
+  if(dmgEl) d.__dmgCode=dmgEl.value;
+  if(rateEl) d.__dmgRate=rateEl.value;
   // 지역·작물 선택 상태
   d.__sR = sR;
   d.__sC = sC;
@@ -1149,6 +1260,9 @@ function _ccApply(d){
     var el = document.getElementById(id);
     if(el && d[id] !== undefined) el.value = d[id];
   });
+  // v47: 피해부호/피해율 복원
+  if(d.__dmgCode!==undefined){var dc=document.getElementById('ccDmgCode');if(dc){dc.value=d.__dmgCode;ccDmgUpdate();}}
+  if(d.__dmgRate!==undefined){var dr=document.getElementById('ccDmgRate');if(dr)dr.value=d.__dmgRate;}
 
   // 2. 지역 복원
   if(d.__sR){
