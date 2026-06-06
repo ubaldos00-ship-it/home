@@ -1,4 +1,4 @@
-<!-- tonghab_v119.html · 저장: 2026-06-04 21:42 KST -->
+<!-- tonghab_v119.html · 저장: 2026-06-06 11:12 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1338,7 +1338,7 @@ textarea {
         저장
       </button>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v119 저장: 2026-06-04 21:42)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v119 저장: 2026-06-06 11:12)</span></div>
   </div>
 </div>
 
@@ -5622,7 +5622,7 @@ const PROD_REGION_KO = {daegu:'대구', gyeongbuk:'경북', gangwon:'강원'};
 const PROD_CROP_KO   = {garlic:'마늘', onion:'양파', potato:'감자', cabbage:'배추', radish:'무', tongak:'총각무', soybean:'콩', rice:'논벼'};
 const PROD_CROP_EMOJI= {garlic:'🧄', onion:'🧅', potato:'🥔', cabbage:'🥬', radish:'🌱', tongak:'🌿', soybean:'🫛', rice:'🌾'};
 const PROD_CROP_MAP  = {'마늘':'garlic','양파':'onion','무':'radish','총각무':'tongak','배추':'cabbage','감자':'potato','콩':'soybean','논벼':'rice'};
-const PROD_CROP_HIST_KEY = {garlic:'garlic',onion:'onion',potato:'potato',cabbage:'cabbage',radish:'radish',tongak:'radish',soybean:'soybean'};
+const PROD_CROP_HIST_KEY = {garlic:'garlic',onion:'onion',potato:'potato',cabbage:'cabbage',radish:'radish',tongak:'tongak',soybean:'soybean'};
 const PROD_VARIETIES = {garlic:['난지형','한지형'],onion:['조생종','중만생종'],potato:['봄감자','고랭지감자'],cabbage:[],radish:[],tongak:[],soybean:[],rice:[]};
 
 const PROD_HISTORY = {
@@ -5641,6 +5641,11 @@ const PROD_HISTORY = {
     gyeongbuk:[{y:'2021',v:2617},{y:'2022',v:2052},{y:'2023',v:2463},{y:'2024',v:2517},{y:'2025',v:2380}],
     gangwon:  [{y:'2021',v:3009},{y:'2022',v:2835},{y:'2023',v:2980},{y:'2024',v:2765},{y:'2025',v:2761}]
   },
+  potato_highland:{
+    daegu:    [{y:'2021',v:0},   {y:'2022',v:0},   {y:'2023',v:0},   {y:'2024',v:null},{y:'2025',v:null}],
+    gyeongbuk:[{y:'2021',v:3037},{y:'2022',v:3562},{y:'2023',v:3304},{y:'2024',v:3218},{y:'2025',v:3171}],
+    gangwon:  [{y:'2021',v:3037},{y:'2022',v:3562},{y:'2023',v:3304},{y:'2024',v:3218},{y:'2025',v:3171}]
+  },
   soybean:{
     daegu:    [{y:'2021',v:154},{y:'2022',v:104},{y:'2023',v:117},{y:'2024',v:167},{y:'2025',v:164}],
     gyeongbuk:[{y:'2021',v:232},{y:'2022',v:194},{y:'2023',v:193},{y:'2024',v:191},{y:'2025',v:164}],
@@ -5655,15 +5660,21 @@ const PROD_HISTORY = {
     daegu:    [{y:'2021',v:7248},{y:'2022',v:8596},{y:'2023',v:8684},{y:'2024',v:7825},{y:'2025',v:7950}],
     gyeongbuk:[{y:'2021',v:7256},{y:'2022',v:8188},{y:'2023',v:7333},{y:'2024',v:8073},{y:'2025',v:6459}],
     gangwon:  [{y:'2021',v:7906},{y:'2022',v:9238},{y:'2023',v:8341},{y:'2024',v:7737},{y:'2025',v:6693}]
+  },
+  tongak:{
+    daegu:    [{y:'2021',v:3763},{y:'2022',v:0},   {y:'2023',v:0},   {y:'2024',v:4182},{y:'2025',v:0}],
+    gyeongbuk:[{y:'2021',v:3763},{y:'2022',v:4427},{y:'2023',v:3058},{y:'2024',v:4182},{y:'2025',v:3954}],
+    gangwon:  [{y:'2021',v:3897},{y:'2022',v:3403},{y:'2023',v:4617},{y:'2024',v:3971},{y:'2025',v:4719}]
   }
 };
 const PROD_STATS = {
   garlic: {prev:{daegu:1681,gyeongbuk:1552,gangwon:998},   mean5:{daegu:1598,gyeongbuk:1455,gangwon:898}},
   onion:  {prev:{daegu:8063,gyeongbuk:7507,gangwon:6340},  mean5:{daegu:8337,gyeongbuk:7999,gangwon:5991}},
   potato: {prev:{daegu:1991,gyeongbuk:2380,gangwon:2761},  mean5:{daegu:2263,gyeongbuk:2406,gangwon:2870}},
+  potato_highland:{prev:{daegu:null,gyeongbuk:3171,gangwon:3171}, mean5:{daegu:0,gyeongbuk:3258,gangwon:3258}},
   cabbage:{prev:{daegu:7950,gyeongbuk:6459,gangwon:6693},  mean5:{daegu:8061,gyeongbuk:7462,gangwon:7983}},
   radish: {prev:{daegu:5708,gyeongbuk:4862,gangwon:4877},  mean5:{daegu:6830,gyeongbuk:6209,gangwon:5773}},
-  tongak: {prev:{daegu:5708,gyeongbuk:4862,gangwon:4877},  mean5:{daegu:6830,gyeongbuk:6209,gangwon:5773}},
+  tongak: {prev:{daegu:0,gyeongbuk:3954,gangwon:4719},  mean5:{daegu:1589,gyeongbuk:3877,gangwon:4121}},
   soybean:{prev:{daegu:164, gyeongbuk:164, gangwon:240},   mean5:{daegu:141, gyeongbuk:195, gangwon:213}}
 };
 
@@ -5690,7 +5701,7 @@ function prodSyncFromCrop(koreanCrop) {
   const vSec = document.getElementById('prod-variety-section');
   if(vars.length === 0){
     if(vSec) vSec.style.display = 'none';
-    prodVariety = {cabbage:'가을배추',soybean:'기본',tongak:'총각무',radish:'무'}[eng] || '기본';
+    prodVariety = {cabbage:'노지가을배추',soybean:'기본',tongak:'총각무',radish:'노지가을무'}[eng] || '기본';
   } else {
     if(vSec) vSec.style.display = 'block';
     const lMap = {garlic:'마늘 품종 선택',onion:'양파 품종 선택',potato:'감자 품종 선택'};
@@ -6166,8 +6177,9 @@ function prodCalculate() {
   }
 
   // 비교 바 그래프
-  const prev=region&&PROD_STATS[prodCrop]?PROD_STATS[prodCrop].prev[region]:null;
-  const mean=region&&PROD_STATS[prodCrop]?PROD_STATS[prodCrop].mean5[region]:null;
+  const _statsKey=(prodCrop==='potato'&&prodVariety==='고랭지감자')?'potato_highland':prodCrop;
+  const prev=region&&PROD_STATS[_statsKey]?PROD_STATS[_statsKey].prev[region]:null;
+  const mean=region&&PROD_STATS[_statsKey]?PROD_STATS[_statsKey].mean5[region]:null;
   function prodCmpItem(label,ref,my){
     const diff=my-ref,pct=((diff/ref)*100).toFixed(1),sign=diff>=0?'+':'';
     const cls=diff>ref*0.01?'up':(diff<-(ref*0.01)?'down':'same');
@@ -6211,7 +6223,8 @@ function prodCalculate() {
 
   // 지역별 막대그래프
   const allR=['daegu','gyeongbuk','gangwon'];
-  const histKey=PROD_CROP_HIST_KEY[prodCrop]||prodCrop;
+  let histKey=PROD_CROP_HIST_KEY[prodCrop]||prodCrop;
+  if(prodCrop==='potato' && prodVariety==='고랭지감자') histKey='potato_highland';
   const hist=PROD_HISTORY[histKey];
   if(!hist){
     document.getElementById('prod-history-content').innerHTML='<p class="pstat-note">※ 해당 작물의 지역별 데이터가 준비 중입니다.</p>';
@@ -6220,7 +6233,8 @@ function prodCalculate() {
   } else {
     const rN={daegu:'대구',gyeongbuk:'경북',gangwon:'강원'};
     const m5v={},pvv={};
-    allR.forEach(r=>{m5v[r]=PROD_STATS[prodCrop]?.mean5[r]||0;pvv[r]=PROD_STATS[prodCrop]?.prev[r]||0;});
+    const _sk2=(prodCrop==='potato'&&prodVariety==='고랭지감자')?'potato_highland':prodCrop;
+    allR.forEach(r=>{m5v[r]=PROD_STATS[_sk2]?.mean5[r]||0;pvv[r]=PROD_STATS[_sk2]?.prev[r]||0;});
     const sA={daegu:0,gyeongbuk:0,gangwon:0},sB={daegu:0,gyeongbuk:0,gangwon:0};
     allR.forEach(r=>{sA[r]=A?A.kg10a:0; sB[r]=B?B.kg10a:0;});
     const allVals=allR.flatMap(r=>[m5v[r],pvv[r],sA[r],sB[r]]).filter(v=>v>0);
@@ -6255,7 +6269,8 @@ function drawProdLineChart(crop,region){
   const cvs=document.getElementById('prodLineCanvas');
   const legEl=document.getElementById('prodLineLegend');
   if(!cvs||!crop)return;
-  const histKey=PROD_CROP_HIST_KEY[crop]||crop;
+  let histKey=PROD_CROP_HIST_KEY[crop]||crop;
+  if(crop==='potato' && prodVariety==='고랭지감자') histKey='potato_highland';
   const hist=PROD_HISTORY[histKey];
   if(!hist)return;
   if(prodLineChartInst){prodLineChartInst.destroy();prodLineChartInst=null;}
@@ -6327,7 +6342,8 @@ function prodToggleHistTable(){
 }
 
 function prodBuildHistTable(crop,region){
-  const histKey=PROD_CROP_HIST_KEY[crop]||crop;
+  let histKey=PROD_CROP_HIST_KEY[crop]||crop;
+  if(crop==='potato' && prodVariety==='고랭지감자') histKey='potato_highland';
   const hist=PROD_HISTORY[histKey];
   const card=document.getElementById('prod-hist-table-card');
   if(!hist){if(card)card.style.display='none';return;}

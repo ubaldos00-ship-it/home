@@ -248,6 +248,9 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
 .calc-btn.num{background:#2c2c2e;color:#fff;}
 .calc-btn.zero{grid-column:span 2;text-align:left;padding-left:22px;}
 .calc-btn.eq{background:#FF9F0A;color:#fff;}
+/* v54: 서브작물 버튼 */
+.sub-bc{padding:8px 12px;border:1.5px solid #27ae60;border-radius:8px;background:#f0faf5;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;color:#1a5a3a;transition:all .15s;}
+.sub-bc.on{background:#27ae60;color:#fff;border-color:#27ae60;}
 </style>
 </head>
 <body>
@@ -257,7 +260,7 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
     <div class="hd-t">
       <h1>청취 10a당 생산량 계산기</h1>
       <span class="hd-status-row"><span class="hd-status" id="headStatus">경북 · 사과</span></span>
-      <span class="hd-ver">(v53: 2026-06-05 17:53)</span>
+      <span class="hd-ver">(v55: 2026-06-06 11:28)</span>
     </div>
   </div>
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
@@ -317,9 +320,13 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
       <button class="bc" data-crop="밀" onclick="selCrop(this)">🌾밀</button>
     </div>
     <div class="crop-row">
-      <button class="bc" data-crop="노지봄무" onclick="selCrop(this)">🌿봄무</button>
-      <button class="bc" data-crop="노지봄배추" onclick="selCrop(this)">🥬봄배추</button>
+      <button class="bc" data-crop="무" data-subcrop="true" onclick="selParentCrop(this,'무')">🌿무</button>
+      <button class="bc" data-crop="배추" data-subcrop="true" onclick="selParentCrop(this,'배추')">🥬배추</button>
     </div>
+<!-- v54: 무/배추 서브 선택 -->
+<div id="subcropRow" style="display:none;margin-top:4px;">
+  <div id="subcropBtns" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+</div>
   </div>
   <div class="uib" id="uib"><span id="uibT"></span></div>
 </div>
@@ -550,9 +557,11 @@ const KD={
   '가을감자':{'전국':[1591,1479,1643,1527,null],'대구':[1352,1402,1215,1188,null],'경북':[1556,1084,1621,1704,null],'강원':[2183,2053,2030,2013,null],'서울':[0,1089,2982,null,null],'부산':[935,941,988,1980,null],'인천':[303,2148,852,850,null],'광주':[1397,1406,1412,1432,null],'대전':[2369,2372,2387,2387,null],'울산':[1010,1036,924,822,null],'세종':[0,958,1017,1593,null],'경기':[1455,1089,2982,1251,null],'충북':[1463,1512,1404,1494,null],'충남':[1917,1763,2028,1718,null],'전북':[1672,1674,1761,1625,null],'전남':[1740,1803,1679,1428,null],'경남':[1428,1405,1446,1611,null],'제주':[1428,1279,1299,1405,null]},
   /* v46: 노지봄무·노지봄배추 추가 (출처: KOSIS 채소생산량 2021~2024, 2025 미조사) */
   '노지봄무':{'전국':[4038,4087,3638,3753,null],'대구':[4324,4304,3118,3103,null],'경북':[2773,2759,3110,3329,null],'강원':[4132,4122,3642,3806,null],'서울':[null,null,null,null,null],'부산':[null,null,null,null,null],'인천':[null,null,null,null,null],'광주':[null,null,null,null,null],'대전':[null,null,null,null,null],'울산':[null,null,null,null,null],'세종':[null,null,null,null,null],'경기':[null,null,null,null,null],'충북':[null,null,null,null,null],'충남':[null,null,null,null,null],'전북':[null,null,null,null,null],'전남':[null,null,null,null,null],'경남':[null,null,null,null,null],'제주':[null,null,null,null,null]},
-  '노지봄배추':{'전국':[4810,4713,4782,4729,null],'대구':[4910,4733,3023,2791,null],'경북':[4698,4565,4795,4712,null],'강원':[4579,4507,4476,4342,null],'서울':[null,null,null,null,null],'부산':[null,null,null,null,null],'인천':[null,null,null,null,null],'광주':[null,null,null,null,null],'대전':[null,null,null,null,null],'울산':[null,null,null,null,null],'세종':[null,null,null,null,null],'경기':[null,null,null,null,null],'충북':[null,null,null,null,null],'충남':[null,null,null,null,null],'전북':[null,null,null,null,null],'전남':[null,null,null,null,null],'경남':[null,null,null,null,null],'제주':[null,null,null,null,null]}
+  '노지봄배추':{'전국':[4810,4713,4782,4729,null],'대구':[4910,4733,3023,2791,null],'경북':[4698,4565,4795,4712,null],'강원':[4579,4507,4476,4342,null],'서울':[null,null,null,null,null],'부산':[null,null,null,null,null],'인천':[null,null,null,null,null],'광주':[null,null,null,null,null],'대전':[null,null,null,null,null],'울산':[null,null,null,null,null],'세종':[null,null,null,null,null],'경기':[null,null,null,null,null],'충북':[null,null,null,null,null],'충남':[null,null,null,null,null],'전북':[null,null,null,null,null],'전남':[null,null,null,null,null],'경남':[null,null,null,null,null],'제주':[null,null,null,null,null]},
+  '시설봄무':{'전국':[4433,4074,4378,4202,null],'대구':[3236,3211,3211,null,null],'경북':[3295,3438,4410,3438,null],'강원':[4132,4122,3642,3806,null],'서울':[null,null,null,null,null],'부산':[null,null,null,null,null],'인천':[null,null,null,null,null],'광주':[null,null,null,null,null],'대전':[null,null,null,null,null],'울산':[null,null,null,null,null],'세종':[null,null,null,null,null],'경기':[null,null,null,null,null],'충북':[null,null,null,null,null],'충남':[null,null,null,null,null],'전북':[null,null,null,null,null],'전남':[null,null,null,null,null],'경남':[null,null,null,null,null],'제주':[null,null,null,null,null]},
+  '시설봄배추':{'전국':[4638,4357,4258,4207,null],'대구':[3201,3200,3200,3200,null],'경북':[4468,4516,4542,4216,null],'강원':[3343,3461,3336,3267,null],'서울':[null,null,null,null,null],'부산':[null,null,null,null,null],'인천':[null,null,null,null,null],'광주':[null,null,null,null,null],'대전':[null,null,null,null,null],'울산':[null,null,null,null,null],'세종':[null,null,null,null,null],'경기':[null,null,null,null,null],'충북':[null,null,null,null,null],'충남':[null,null,null,null,null],'전북':[null,null,null,null,null],'전남':[null,null,null,null,null],'경남':[null,null,null,null,null],'제주':[null,null,null,null,null]}
 };
-const CU={'사과':{u:'컨테이너',w:18},'배':{u:'컨테이너',w:18},'고추':{u:'근',w:0.6},'참깨':{u:'되',w:1.2},'고구마':{u:'박스',w:10},'겉보리':{u:'톤백',w:500},'쌀보리':{u:'톤백',w:500},'밀':{u:'톤백',w:500},'가을감자':{u:'박스',w:10},'노지봄무':{u:'트럭',w:8000},'노지봄배추':{u:'트럭',w:8000}}; /* v46 */
+const CU={'사과':{u:'컨테이너',w:18},'배':{u:'컨테이너',w:18},'고추':{u:'근',w:0.6},'참깨':{u:'되',w:1.2},'고구마':{u:'박스',w:10},'겉보리':{u:'톤백',w:500},'쌀보리':{u:'톤백',w:500},'밀':{u:'톤백',w:500},'가을감자':{u:'박스',w:10},'노지봄무':{u:'트럭',w:8000},'노지봄배추':{u:'트럭',w:8000},'시설봄무':{u:'트럭',w:8000},'시설봄배추':{u:'트럭',w:8000}}; /* v46, v54 */
 const WO={
   '사과':[5,10,15,18,20],
   '배':[5,10,15,18,20],
@@ -564,7 +573,9 @@ const WO={
   '쌀보리':[10,20,40,100,500],
   '밀':[10,20,40,100,500],
   '노지봄무':[2000,4000,6000,8000,10000],   /* v46: 트럭 단위 기본 8000kg */
-  '노지봄배추':[2000,4000,6000,8000,10000]  /* v46: 트럭 단위 기본 8000kg */
+  '노지봄배추':[2000,4000,6000,8000,10000], /* v46: 트럭 단위 기본 8000kg */
+  '시설봄무':[2000,4000,6000,8000,10000],
+  '시설봄배추':[2000,4000,6000,8000,10000]
 };
 /* v47: 피해부호 코드 정의 */
 const CC_DMG={
@@ -660,6 +671,48 @@ function goHome(){
 
 function selReg(b){document.querySelectorAll('.brg').forEach(x=>x.classList.remove('on'));b.classList.add('on');sR=b.dataset.region;updateHeadStatus();uAll();}
 function selOtherReg(s){if(!s.value)return;document.querySelectorAll('.brg').forEach(x=>x.classList.remove('on'));sR=s.value;updateHeadStatus();uAll();}
+/* v54: 무/배추 부모 작물 선택 */
+var _SUBCROP_MAP = {
+  '무': [
+    {label:'🌿 노지봄무', crop:'노지봄무'},
+    {label:'🏠 시설봄무', crop:'시설봄무'}
+  ],
+  '배추': [
+    {label:'🥬 노지봄배추', crop:'노지봄배추'},
+    {label:'🏠 시설봄배추', crop:'시설봄배추'}
+  ]
+};
+function selParentCrop(btn, parentKey) {
+  /* 메인 버튼 강조 */
+  document.querySelectorAll('.bc').forEach(function(b){ b.classList.remove('on'); });
+  btn.classList.add('on');
+  /* 서브 선택 행 표시 */
+  var row = document.getElementById('subcropRow');
+  var btns = document.getElementById('subcropBtns');
+  var subs = _SUBCROP_MAP[parentKey] || [];
+  if(!subs.length || !row || !btns){ if(row) row.style.display='none'; return; }
+  row.style.display='block';
+  btns.innerHTML = subs.map(function(s){
+    return '<button class="sub-bc" data-crop="'+s.crop+'" onclick="selSubCrop(this,\''+s.crop+'\')">'+s.label+'</button>';
+  }).join('');
+  /* 첫 번째 서브 기본 선택 */
+  var first = btns.querySelector('.sub-bc');
+  if(first) selSubCrop(first, subs[0].crop);
+}
+function selSubCrop(btn, crop) {
+  document.querySelectorAll('#subcropBtns .sub-bc').forEach(function(b){ b.classList.remove('on'); });
+  btn.classList.add('on');
+  /* 실제 selCrop 실행 — 가짜 버튼 생성 */
+  var fake = document.createElement('button');
+  fake.dataset.crop = crop;
+  fake.className = 'bc';
+  selCrop(fake);
+  /* v55: 해당 서브작물의 부모 버튼(무 or 배추)만 on — 둘 다 켜지는 버그 수정 */
+  var parentKey = (crop.indexOf('무') !== -1) ? '무' : '배추';
+  document.querySelectorAll('.bc').forEach(function(b){
+    b.classList.toggle('on', b.dataset.crop === parentKey);
+  });
+}
 function selCrop(b){
   document.querySelectorAll('.bc').forEach(x=>x.classList.remove('on'));b.classList.add('on');sC=b.dataset.crop;
   const c=CU[sC];
@@ -1225,6 +1278,9 @@ function _ccCollect(){
   // 지역·작물 선택 상태
   d.__sR = sR;
   d.__sC = sC;
+  // v54: 서브 선택 상태 저장
+  var actSub = document.querySelector('#subcropBtns .sub-bc.on');
+  if(actSub) d.__subCrop = actSub.dataset.crop;
   // 재배면적 행
   var aRows = [];
   document.querySelectorAll('#areaRows .ar').forEach(function(row){
@@ -1277,6 +1333,18 @@ function _ccApply(d){
   if(d.__sC){
     var cropBtn = document.querySelector('.bc[data-crop="'+d.__sC+'"]');
     if(cropBtn){ selCrop(cropBtn); }
+  }
+  // v54: 서브 선택 복원
+  if(d.__subCrop) {
+    var parentKey = KD['무'] && d.__subCrop.includes('무') ? '무' : (d.__subCrop.includes('배추') ? '배추' : null);
+    if(parentKey) {
+      var parentBtn = document.querySelector('.bc[data-crop="'+parentKey+'"]');
+      if(parentBtn) selParentCrop(parentBtn, parentKey);
+      setTimeout(function(){
+        var subBtn = document.querySelector('#subcropBtns .sub-bc[data-crop="'+d.__subCrop+'"]');
+        if(subBtn) selSubCrop(subBtn, d.__subCrop);
+      }, 100);
+    }
   }
 
   // 4. 재배면적 행 복원
