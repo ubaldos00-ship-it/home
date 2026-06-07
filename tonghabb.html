@@ -1,4 +1,4 @@
-<!-- tenar_tabs_v136.html · 저장: 2026-06-08 00:29 KST -->
+<!-- tenar_tabs_v137.html · 저장: 2026-06-08 00:41 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#27500A">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>농작물생산조사 통합시스템 · 텐아르 v136</title>
+<title>농작물생산조사 통합시스템 · 텐아르 v137</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
@@ -26,33 +26,11 @@ body{margin:0;background:linear-gradient(to bottom,#27500A 0,#27500A calc(var(--
 .calc-modal{display:none;position:absolute;inset:0;background:rgba(0,0,0,.65);z-index:100;align-items:flex-end;justify-content:center}.calc-modal.show{display:flex}.calc-box{width:100%;max-width:340px;background:#1c1c1e;border-radius:20px 20px 0 0;padding:14px 12px 28px;box-shadow:0 -8px 40px rgba(0,0,0,.5);user-select:none;touch-action:manipulation}.calc-topbar{display:flex;align-items:center;gap:8px;margin-bottom:10px}.calc-title{font-size:14px;font-weight:800;color:#fff;flex:1}.calc-top-clear{background:#505054;color:#fff;border:none;border-radius:9px;padding:7px 11px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}.calc-top-close{background:#FF453A;color:#fff;border:none;border-radius:9px;padding:7px 14px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit}.calc-popup-display{background:#000;border-radius:12px;padding:10px 14px;margin-bottom:10px;min-height:64px;display:flex;flex-direction:column;align-items:flex-end;justify-content:flex-end}.calc-expr{font-size:13px;color:rgba(255,255,255,.45);font-family:Menlo,Consolas,monospace;min-height:18px;word-break:break-all;text-align:right}.calc-val{font-size:34px;font-weight:700;color:#fff;font-family:Menlo,Consolas,monospace;letter-spacing:-.02em;word-break:break-all;text-align:right}.calc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.calc-btn{height:56px;border:none;border-radius:12px;font-size:18px;font-weight:700;cursor:pointer;font-family:inherit}.calc-btn:active{filter:brightness(1.3)}.calc-btn.fn{background:#505054;color:#fff}.calc-btn.op,.calc-btn.eq{background:#FF9F0A;color:#fff}.calc-btn.num{background:#2c2c2e;color:#fff}.calc-btn.zero{grid-column:span 2;text-align:left;padding-left:22px}
 @media(max-width:390px){:root{--header-h:98px}.brand-name{font-size:21px}.brand-eng{font-size:11px}.hdr-btn{width:43px;height:43px}.tab-btn{font-size:12px}.version{font-size:9.5px}}
 
-/* v136: iPhone 하단 주소창/툴바 가림 방지 - 상단 헤더 스타일은 유지 */
-:root{
-  --ios-bottom-toolbar-space:96px;
-}
-html{
-  background:transparent!important;
-  min-height:100%;
-  min-height:100dvh;
-}
-body{
-  background:linear-gradient(to bottom,#27500A 0,#27500A calc(var(--header-h) + env(safe-area-inset-top)),#f6f4ec calc(var(--header-h) + env(safe-area-inset-top)),#f6f4ec 100%)!important;
-  min-height:100%;
-  min-height:100dvh;
-}
-.app-shell{
-  height:100dvh;
-  min-height:100dvh;
-  background:transparent;
-}
-.frame-zone{
-  bottom:0;
-  padding-bottom:0;
-  background:#f6f4ec;
-}
-.tool-frame{
-  background:transparent;
-}
+/* v137: 하단 영역 색상 통일(흰색→베이지). 상단 헤더 스타일은 그대로 유지 */
+html{background:#f6f4ec;}
+.app-shell{height:100dvh;background:#f6f4ec;}
+.frame-zone{bottom:0;background:#f6f4ec;}
+.tool-frame{background:#f6f4ec;}
 
 </style>
 </head>
@@ -60,7 +38,7 @@ body{
 <div class="app-shell">
   <header class="app-header">
     <div class="top-row"><div><p class="system-title">농작물생산조사 통합시스템</p><div class="brand"><span class="brand-name">텐아르(10a)</span><span class="brand-eng">TEN-AR</span></div></div><div class="action-row"><button class="hdr-btn" type="button" onclick="confirmGoHome()" aria-label="홈"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 9.5L10 3l7 6.5V17a1 1 0 01-1 1H13v-5H7v5H4a1 1 0 01-1-1V9.5z" fill="#fff"/></svg>홈</button><button class="hdr-btn" type="button" onclick="openActiveCalc()" aria-label="계산기"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="16" height="18" rx="2" stroke="#fff" stroke-width="2"/><path d="M8 7h8M8 12h2m4 0h2M8 17h2m4 0h2" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>계산기</button></div></div>
-    <div class="meta-row"><div class="clock" id="clock">--.--.(--) --:--:--</div><div class="version">v136 저장: 2026-06-08 00:29 KST</div></div>
+    <div class="meta-row"><div class="clock" id="clock">--.--.(--) --:--:--</div><div class="version">v137 저장: 2026-06-08 00:41 KST</div></div>
   </header>
   <nav class="tabs" aria-label="계산기 탭"><a class="tab-btn active" data-tab="tonghab" href="https://ubaldos00-ship-it.github.io/home/tonghabb.html#tonghab" onclick="event.preventDefault();switchTab('tonghab',true)">실측계산기</a><a class="tab-btn" data-tab="chungchi" href="https://ubaldos00-ship-it.github.io/home/tonghabb.html#chungchi" onclick="event.preventDefault();switchTab('chungchi',true)">청취계산기</a><a class="tab-btn" data-tab="graph" href="https://ubaldos00-ship-it.github.io/home/tonghabb.html#graph" onclick="event.preventDefault();switchTab('graph',true)">생산량조회기</a></nav>
   <section class="frame-zone"><iframe class="tool-frame active" id="frame-tonghab" title="실측계산기" src="tonghab.html"></iframe><iframe class="tool-frame" id="frame-chungchi" title="청취계산기" src="chungchi.html"></iframe><iframe class="tool-frame" id="frame-graph" title="생산량조회기" src="graph.html"></iframe></section>
@@ -69,7 +47,7 @@ body{
   <div class="calc-modal" id="parentCalcModal"><div class="calc-box"><div class="calc-topbar"><div class="calc-title">계산기</div><button class="calc-top-clear" onclick="pcClear()">초기화</button><button class="calc-top-close" onclick="closeParentCalc()">닫기</button></div><div class="calc-popup-display"><div class="calc-expr" id="pcExpr"></div><div class="calc-val" id="pcVal">0</div></div><div class="calc-grid"><button class="calc-btn fn" onclick="pcClear()">AC</button><button class="calc-btn fn" onclick="pcBack()">⌫</button><button class="calc-btn fn" onclick="pcInput('%')">%</button><button class="calc-btn op" onclick="pcInput('/')">÷</button><button class="calc-btn num" onclick="pcInput('7')">7</button><button class="calc-btn num" onclick="pcInput('8')">8</button><button class="calc-btn num" onclick="pcInput('9')">9</button><button class="calc-btn op" onclick="pcInput('*')">×</button><button class="calc-btn num" onclick="pcInput('4')">4</button><button class="calc-btn num" onclick="pcInput('5')">5</button><button class="calc-btn num" onclick="pcInput('6')">6</button><button class="calc-btn op" onclick="pcInput('-')">−</button><button class="calc-btn num" onclick="pcInput('1')">1</button><button class="calc-btn num" onclick="pcInput('2')">2</button><button class="calc-btn num" onclick="pcInput('3')">3</button><button class="calc-btn op" onclick="pcInput('+')">+</button><button class="calc-btn num zero" onclick="pcInput('0')">0</button><button class="calc-btn num" onclick="pcInput('.')">.</button><button class="calc-btn eq" onclick="pcEqual()">=</button></div></div></div>
 </div>
 <script>
-const APP_VERSION='v136'; const SAVED_AT_KST='2026-06-08 00:29 KST';
+const APP_VERSION='v137'; const SAVED_AT_KST='2026-06-08 00:41 KST';
 const TAB_BASE_URL='https://ubaldos00-ship-it.github.io/home/tonghabb.html';
 const frameUrls={tonghab:'tonghab.html',chungchi:'chungchi.html',graph:'graph.html'};
 const tabNames={tonghab:'실측계산기',chungchi:'청취계산기',graph:'생산량조회기'}; let activeTab='tonghab';
@@ -91,7 +69,7 @@ function getActiveCropLabel(){const w=getActiveWin();try{const d=w&&w.document;i
 function updateCropIndicator(){const crop=getActiveCropLabel();const rail=document.getElementById('cropRailBadge');const chip=document.getElementById('panelCropChip');if(rail)rail.textContent=crop||'선택전';if(chip)chip.textContent=crop||'선택 전'}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';clearTimeout(window.__toastTimer);window.__toastTimer=setTimeout(()=>{t.style.display='none'},1800)}
 function updateClock(){const now=new Date();const parts=new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit',weekday:'short',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).formatToParts(now).reduce((a,p)=>(a[p.type]=p.value,a),{});document.getElementById('clock').textContent=`${parts.year}.${parts.month}.${parts.day}.(${parts.weekday}) ${parts.hour}:${parts.minute}:${parts.second}`}
-function injectFramePolish(frame){try{const d=frame.contentDocument;if(!d)return;let s=d.createElement('style');s.textContent='.sticky-top,.header,.top-bar{display:none!important}html{background:#f6f4ec!important}body{padding-top:0!important;padding-bottom:calc(env(safe-area-inset-bottom) + 96px)!important;background:#f6f4ec!important;min-height:calc(100dvh + 96px)!important}.wrap,.container,.page,.content,.main{padding-bottom:calc(env(safe-area-inset-bottom) + 96px)!important}.wrap{padding-top:0!important}body::after{content:"";display:block;height:calc(env(safe-area-inset-bottom) + 96px)!important}';d.head.appendChild(s);frame.contentWindow.APP_VERSION=APP_VERSION;frame.contentWindow.TENAR_WRAPPER_VERSION=APP_VERSION;frame.contentWindow.TENAR_WRAPPER_SAVED_AT_KST=SAVED_AT_KST}catch(e){}}
+function injectFramePolish(frame){try{const d=frame.contentDocument;if(!d)return;let s=d.createElement('style');s.textContent='.sticky-top,.header,.top-bar{display:none!important}html{background:#f6f4ec!important}body{padding-top:0!important;padding-bottom:calc(env(safe-area-inset-bottom) + 24px)!important;background:#f6f4ec!important}.wrap{padding-top:0!important}';d.head.appendChild(s);frame.contentWindow.APP_VERSION=APP_VERSION;frame.contentWindow.TENAR_WRAPPER_VERSION=APP_VERSION;frame.contentWindow.TENAR_WRAPPER_SAVED_AT_KST=SAVED_AT_KST}catch(e){}}
 document.querySelectorAll('.tool-frame').forEach(f=>f.addEventListener('load',()=>{injectFramePolish(f);setTimeout(updateCropIndicator,300)}));
 let pcExpr='';function openParentCalc(){document.getElementById('parentCalcModal').classList.add('show')}function closeParentCalc(){document.getElementById('parentCalcModal').classList.remove('show')}function pcRender(){document.getElementById('pcExpr').textContent=pcExpr.replace(/\*/g,'×').replace(/\//g,'÷');try{if(pcExpr){let v=Function('return ('+pcExpr.replace(/%/g,'/100')+')')();document.getElementById('pcVal').textContent=isFinite(v)?Number(v.toFixed(10)).toLocaleString('ko-KR'):'오류'}else document.getElementById('pcVal').textContent='0'}catch(e){document.getElementById('pcVal').textContent='0'}}function pcInput(x){if(/[+\-*/]/.test(x)&&/[+\-*/]$/.test(pcExpr))pcExpr=pcExpr.slice(0,-1);pcExpr+=x;pcRender()}function pcBack(){pcExpr=pcExpr.slice(0,-1);pcRender()}function pcClear(){pcExpr='';pcRender()}function pcEqual(){try{let v=Function('return ('+pcExpr.replace(/%/g,'/100')+')')();pcExpr=isFinite(v)?String(Number(v.toFixed(10))):'';pcRender()}catch(e){document.getElementById('pcVal').textContent='오류'}}
 
