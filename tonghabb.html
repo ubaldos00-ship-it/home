@@ -1,4 +1,4 @@
-<!-- tenar_tabs_v130.html · 저장: 2026-06-07 23:16 KST -->
+<!-- tenar_tabs_v131.html · 저장: 2026-06-07 23:33 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -7,13 +7,13 @@
 <meta name="theme-color" content="#27500A">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>농작물생산조사 통합시스템 · 텐아르 v130</title>
+<title>농작물생산조사 통합시스템 · 텐아르 v131</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
 :root{--color-primary:#1f5132;--color-primary-light:#2e7a4e;--color-accent-light:#e6b955;--color-bg:#f6f4ec;--color-border:#e6e2d5;--header-h:98px;--tab-h:48px;--green:#27500A;}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html{background:#27500A;overscroll-behavior:none;width:100%;height:100%;height:100dvh;overflow:hidden;position:fixed;inset:0}
+html{background:#f6f4ec;overscroll-behavior:none;width:100%;height:100%;height:100dvh;overflow:hidden;position:fixed;inset:0}
 body{margin:0;background:linear-gradient(to bottom,#27500A 0,#27500A calc(var(--header-h) + env(safe-area-inset-top)),transparent calc(var(--header-h) + env(safe-area-inset-top)),transparent 100%);font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif;color:#1a1f1a;overflow:hidden;overscroll-behavior:none;width:100%;height:100%;height:100dvh;position:fixed;inset:0;touch-action:none}
 .app-shell{height:100vh;height:100dvh;max-width:600px;width:100%;margin:0 auto;background:transparent;position:fixed;top:0;bottom:0;left:50%;transform:translateX(-50%);box-shadow:0 0 28px rgba(0,0,0,.08);overflow:hidden;overscroll-behavior:none}
 .app-shell::before{content:'';position:absolute;top:0;left:0;right:0;height:calc(var(--header-h) + env(safe-area-inset-top));background:#27500A;z-index:0;pointer-events:none}.app-header{z-index:50}.tabs,.frame-zone{background:#f6f4ec}
@@ -31,7 +31,7 @@ body{margin:0;background:linear-gradient(to bottom,#27500A 0,#27500A calc(var(--
 <div class="app-shell">
   <header class="app-header">
     <div class="top-row"><div><p class="system-title">농작물생산조사 통합시스템</p><div class="brand"><span class="brand-name">텐아르(10a)</span><span class="brand-eng">TEN-AR</span></div></div><div class="action-row"><button class="hdr-btn" type="button" onclick="confirmGoHome()" aria-label="홈"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 9.5L10 3l7 6.5V17a1 1 0 01-1 1H13v-5H7v5H4a1 1 0 01-1-1V9.5z" fill="#fff"/></svg>홈</button><button class="hdr-btn" type="button" onclick="openActiveCalc()" aria-label="계산기"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="16" height="18" rx="2" stroke="#fff" stroke-width="2"/><path d="M8 7h8M8 12h2m4 0h2M8 17h2m4 0h2" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>계산기</button></div></div>
-    <div class="meta-row"><div class="clock" id="clock">--.--.(--) --:--:--</div><div class="version">v130 저장: 2026-06-07 23:16 KST</div></div>
+    <div class="meta-row"><div class="clock" id="clock">--.--.(--) --:--:--</div><div class="version">v131 저장: 2026-06-07 23:33 KST</div></div>
   </header>
   <nav class="tabs" aria-label="계산기 탭"><a class="tab-btn active" data-tab="tonghab" href="https://ubaldos00-ship-it.github.io/home/tonghabb.html#tonghab" onclick="event.preventDefault();switchTab('tonghab',true)">실측계산기</a><a class="tab-btn" data-tab="chungchi" href="https://ubaldos00-ship-it.github.io/home/tonghabb.html#chungchi" onclick="event.preventDefault();switchTab('chungchi',true)">청취계산기</a><a class="tab-btn" data-tab="graph" href="https://ubaldos00-ship-it.github.io/home/tonghabb.html#graph" onclick="event.preventDefault();switchTab('graph',true)">생산량조회기</a></nav>
   <section class="frame-zone"><iframe class="tool-frame active" id="frame-tonghab" title="실측계산기" src="tonghab.html"></iframe><iframe class="tool-frame" id="frame-chungchi" title="청취계산기" src="chungchi.html"></iframe><iframe class="tool-frame" id="frame-graph" title="생산량조회기" src="graph.html"></iframe></section>
@@ -40,7 +40,7 @@ body{margin:0;background:linear-gradient(to bottom,#27500A 0,#27500A calc(var(--
   <div class="calc-modal" id="parentCalcModal"><div class="calc-box"><div class="calc-topbar"><div class="calc-title">계산기</div><button class="calc-top-clear" onclick="pcClear()">초기화</button><button class="calc-top-close" onclick="closeParentCalc()">닫기</button></div><div class="calc-popup-display"><div class="calc-expr" id="pcExpr"></div><div class="calc-val" id="pcVal">0</div></div><div class="calc-grid"><button class="calc-btn fn" onclick="pcClear()">AC</button><button class="calc-btn fn" onclick="pcBack()">⌫</button><button class="calc-btn fn" onclick="pcInput('%')">%</button><button class="calc-btn op" onclick="pcInput('/')">÷</button><button class="calc-btn num" onclick="pcInput('7')">7</button><button class="calc-btn num" onclick="pcInput('8')">8</button><button class="calc-btn num" onclick="pcInput('9')">9</button><button class="calc-btn op" onclick="pcInput('*')">×</button><button class="calc-btn num" onclick="pcInput('4')">4</button><button class="calc-btn num" onclick="pcInput('5')">5</button><button class="calc-btn num" onclick="pcInput('6')">6</button><button class="calc-btn op" onclick="pcInput('-')">−</button><button class="calc-btn num" onclick="pcInput('1')">1</button><button class="calc-btn num" onclick="pcInput('2')">2</button><button class="calc-btn num" onclick="pcInput('3')">3</button><button class="calc-btn op" onclick="pcInput('+')">+</button><button class="calc-btn num zero" onclick="pcInput('0')">0</button><button class="calc-btn num" onclick="pcInput('.')">.</button><button class="calc-btn eq" onclick="pcEqual()">=</button></div></div></div>
 </div>
 <script>
-const APP_VERSION='v130'; const SAVED_AT_KST='2026-06-07 23:16 KST';
+const APP_VERSION='v131'; const SAVED_AT_KST='2026-06-07 23:33 KST';
 const TAB_BASE_URL='https://ubaldos00-ship-it.github.io/home/tonghabb.html';
 const frameUrls={tonghab:'tonghab.html',chungchi:'chungchi.html',graph:'graph.html'};
 const tabNames={tonghab:'실측계산기',chungchi:'청취계산기',graph:'생산량조회기'}; let activeTab='tonghab';
@@ -82,7 +82,7 @@ function confirmGoHome(){
   }
 }
 function setupBackBlock(){
-  try{history.pushState({tenarBackBlock:true},'',location.href)}catch(e){}
+  try{const u=location.href;history.pushState({tenarBackBlock:1},'',u);history.pushState({tenarBackBlock:2},'',u);history.pushState({tenarBackBlock:3},'',u)}catch(e){}
   window.addEventListener('popstate',function(){
     try{history.pushState({tenarBackBlock:true},'',location.href)}catch(e){}
     showToast('뒤로가기 차단중입니다. 초기화, 홈버튼이 안 눌러지면 새로고침 후 눌러주세요.');
