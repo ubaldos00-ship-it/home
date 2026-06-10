@@ -251,6 +251,14 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
 /* v54: 서브작물 버튼 */
 .sub-bc{padding:8px 12px;border:1.5px solid #27ae60;border-radius:8px;background:#f0faf5;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;color:#1a5a3a;transition:all .15s;}
 .sub-bc.on{background:#27ae60;color:#fff;border-color:#27ae60;}
+/* v58: 전체삭제 확인 다이얼로그 */
+.lc-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:9500;display:flex;align-items:center;justify-content:center;padding:24px;}
+.lc-box{background:#fff;border-radius:14px;padding:22px 18px 14px;width:100%;max-width:320px;box-shadow:0 8px 32px rgba(0,0,0,.25);}
+.lc-box p{font-size:15px;color:#1a2e1a;line-height:1.65;margin-bottom:18px;font-weight:500;}
+.lc-btns{display:flex;justify-content:flex-end;gap:10px;}
+.lc-cancel{min-height:38px;padding:7px 18px;border:1.5px solid #1a8a78;border-radius:8px;background:transparent;color:#1a8a78;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;}
+.lc-ok{min-height:38px;padding:7px 18px;border:none;background:transparent;color:#1a8a78;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;}
+.lc-cancel:active,.lc-ok:active{opacity:.7;}
 </style>
 </head>
 <body>
@@ -260,7 +268,7 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
     <div class="hd-t">
       <h1>청취 10a당 생산량 계산기</h1>
       <span class="hd-status-row"><span class="hd-status" id="headStatus">경북 · 사과</span></span>
-      <span class="hd-ver">(v55: 2026-06-06 11:28)</span>
+      <span class="hd-ver">(v59: 2026-06-11 03:21)</span>
     </div>
   </div>
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
@@ -274,7 +282,7 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
     </button>
     <button type="button" class="sl-hdr-btn" onclick="openSaveLoadModal()" aria-label="저장/불러오기">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M17 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V7l-4-4z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M17 3v4H7V3" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><rect x="9" y="13" width="6" height="6" rx="1" stroke="#fff" stroke-width="2"/></svg>
-      저장
+      저장/불러
     </button>
   </div>
 </div>
@@ -506,9 +514,15 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
     </div>
     <div class="sl-body">
       <button class="sl-save-now" id="slSmartSaveBtn" onclick="slSmartSave()">💾 새로 저장</button>
-      <div class="sl-section">저장된 자료 목록 <span style="color:#c0392b;font-size:10px;font-weight:700;letter-spacing:-.01em;">(버튼이 안 눌리면 새로고침 후 사용하세요)</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;gap:8px;">
+        <span class="sl-section" style="margin-bottom:0;flex:1;min-width:0;">저장된 자료 목록 <span style="color:#c0392b;font-size:10px;font-weight:700;letter-spacing:-.01em;">(버튼이 안 눌리면 새로고침)</span></span>
+        <button onclick="confirmDeleteAll_sl()" style="flex-shrink:0;background:none;border:1px solid #d93030;border-radius:7px;color:#d93030;font-size:11px;font-weight:700;padding:4px 9px;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;">전체삭제</button>
+      </div>
       <div class="sl-list" id="sl-list"><div class="sl-empty">저장된 자료가 없습니다.</div></div>
       <hr class="sl-divider">
+      <div style="background:#fff8ec;border:1px solid #f5c842;border-radius:9px;padding:9px 12px;font-size:11.5px;color:#a07800;font-weight:500;line-height:1.65;margin-bottom:10px;">
+        ⚠️ 주의: 브라우저 캐시·데이터 삭제 시 모두 사라집니다. 중요한 자료는 <strong>JSON 내보내기</strong> 버튼으로 파일로 백업해두세요.
+      </div>
       <div class="sl-section" style="margin-bottom:8px;">JSON 파일로 공유 / 내보내기 / 불러오기</div>
       <div class="sl-file-row">
         <button class="sl-file-btn sl-share-btn" onclick="shareJSON()">📱 JSON 공유</button>
@@ -1602,6 +1616,34 @@ var _TRASH_SVG='<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><pat
 /* v44: 자물쇠 SVG */
 var _LOCK_SVG='<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="4" y="11" width="16" height="11" rx="2" fill="#1558D6" stroke="#1558D6" stroke-width="1.2"/><path d="M8 11V8a4 4 0 018 0v3" stroke="#1558D6" stroke-width="2" stroke-linecap="round"/></svg>';
 var _UNLOCK_SVG='<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="4" y="11" width="16" height="11" rx="2" stroke="#aaa" stroke-width="1.5" fill="none"/><path d="M8 11V8a4 4 0 018 0" stroke="#aaa" stroke-width="2" stroke-linecap="round"/></svg>';
+/* v58: 전체삭제 (잠금 해제된 항목만) */
+function confirmDeleteAll_sl(){
+  var list=_ccGetList();
+  var unlocked=list.filter(function(i){return !i.fav;});
+  if(!unlocked.length){alert('삭제할 항목이 없습니다.\n(잠금 해제된 항목만 삭제됩니다.)');return;}
+  var ov=document.createElement('div');
+  ov.className='lc-overlay';ov.id='delAllOverlay';
+  ov.innerHTML='<div class="lc-box">'
+    +'<p>목록 전체를 삭제 하시겠습니까?<br><span style="font-size:12px;opacity:.7;">잠금된 항목은 삭제되지 않습니다.</span></p>'
+    +'<div class="lc-btns">'
+    +'<button class="lc-cancel" onclick="document.getElementById(\'delAllOverlay\').remove()">취소</button>'
+    +'<button class="lc-ok" style="color:#d93030;" onclick="document.getElementById(\'delAllOverlay\').remove();deleteAllUnlocked_sl()">삭제</button>'
+    +'</div></div>';
+  document.body.appendChild(ov);
+}
+function deleteAllUnlocked_sl(){
+  var list=_ccGetList();
+  list.filter(function(i){return !i.fav;}).forEach(function(i){
+    try{localStorage.removeItem(CC_DATA_PFX+i.key);}catch(e){}
+  });
+  var kept=list.filter(function(i){return i.fav;});
+  _ccSetList(kept);
+  if(_slSelectedKey){
+    var still=kept.some(function(i){return i.key===_slSelectedKey;});
+    if(!still){_slSelectedKey=null;if(typeof _slUpdateSaveBtn==='function')_slUpdateSaveBtn();}
+  }
+  _slRenderList();
+}
 function _slRenderList(){
   var raw = _ccGetList();
   var el = document.getElementById('sl-list');
