@@ -1,4 +1,4 @@
-<!-- tonghab_v119.html · 저장: 2026-06-06 11:12 KST -->
+<!-- tonghab_v124.html · 저장: 2026-06-11 03:31 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1312,6 +1312,14 @@ textarea {
   padding: 4px 2px !important;
 }
 
+/* v122: 전체삭제 확인 다이얼로그 */
+.lc-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:9500;display:flex;align-items:center;justify-content:center;padding:24px;}
+.lc-box{background:#fff;border-radius:14px;padding:22px 18px 14px;width:100%;max-width:320px;box-shadow:0 8px 32px rgba(0,0,0,.25);}
+.lc-box p{font-size:15px;color:#1A1918;line-height:1.65;margin-bottom:18px;font-weight:500;}
+.lc-btns{display:flex;justify-content:flex-end;gap:10px;}
+.lc-cancel{min-height:38px;padding:7px 18px;border:1.5px solid #1a8a78;border-radius:8px;background:transparent;color:#1a8a78;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;}
+.lc-ok{min-height:38px;padding:7px 18px;border:none;background:transparent;color:#1a8a78;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;}
+.lc-cancel:active,.lc-ok:active{opacity:.7;}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
@@ -1335,10 +1343,10 @@ textarea {
       </button>
       <button class="sl-hdr-btn" onclick="openSaveLoadModal()" aria-label="저장/불러오기">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M17 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V7l-4-4z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M17 3v4H7V3" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><rect x="9" y="13" width="6" height="6" rx="1" stroke="#fff" stroke-width="2"/></svg>
-        저장
+        저장/불러
       </button>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v119 저장: 2026-06-06 11:12)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v124 저장: 2026-06-11 03:31)</span></div>
   </div>
 </div>
 
@@ -7134,9 +7142,15 @@ document.addEventListener('DOMContentLoaded', function(){
     </div>
     <div class="sl-body">
       <button class="sl-save-now" id="slSmartSaveBtn" onclick="slSmartSave()">💾 새로 저장</button>
-      <div class="sl-section">저장된 자료 목록 <span style="color:#c0392b;font-size:10px;font-weight:700;letter-spacing:-.01em;">(버튼이 안 눌리면 새로고침 후 사용하세요)</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;gap:8px;">
+        <span class="sl-section" style="margin-bottom:0;flex:1;min-width:0;">저장된 자료 목록 <span style="color:#c0392b;font-size:10px;font-weight:700;letter-spacing:-.01em;">(버튼이 안 눌리면 새로고침)</span></span>
+        <button onclick="confirmDeleteAll_sl()" style="flex-shrink:0;background:none;border:1px solid #d93030;border-radius:7px;color:#d93030;font-size:11px;font-weight:700;padding:4px 9px;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;">전체삭제</button>
+      </div>
       <div class="sl-list" id="sl-list"><div class="sl-empty">저장된 자료가 없습니다.</div></div>
       <hr class="sl-divider">
+      <div style="background:#fff8ec;border:1px solid #f5c842;border-radius:9px;padding:9px 12px;font-size:11.5px;color:#a07800;font-weight:500;line-height:1.65;margin-bottom:10px;">
+        ⚠️ 주의: 브라우저 캐시·데이터 삭제 시 모두 사라집니다. 중요한 자료는 <strong>JSON 내보내기</strong> 버튼으로 파일로 백업해두세요.
+      </div>
       <div class="sl-section" style="margin-bottom:8px;">JSON 파일로 공유 / 내보내기 / 불러오기</div>
       <div class="sl-file-row">
         <button class="sl-file-btn sl-share-btn" onclick="shareJSON()">📱 JSON 공유</button>
@@ -8044,6 +8058,34 @@ var _TRASH_SVG='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmln
 /* v111: 자물쇠 SVG 아이콘 */
 var _LOCK_SVG='<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="4" y="11" width="16" height="11" rx="2" fill="#1558D6" stroke="#1558D6" stroke-width="1.2"/><path d="M8 11V8a4 4 0 018 0v3" stroke="#1558D6" stroke-width="2" stroke-linecap="round"/></svg>';
 var _UNLOCK_SVG='<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="4" y="11" width="16" height="11" rx="2" stroke="#aaa" stroke-width="1.5" fill="none"/><path d="M8 11V8a4 4 0 018 0" stroke="#aaa" stroke-width="2" stroke-linecap="round"/></svg>';
+/* v122: 전체삭제 (잠금 해제된 항목만) */
+function confirmDeleteAll_sl(){
+  var list=_slGetList();
+  var unlocked=list.filter(function(i){return !i.fav;});
+  if(!unlocked.length){alert('삭제할 항목이 없습니다.\n(잠금 해제된 항목만 삭제됩니다.)');return;}
+  var ov=document.createElement('div');
+  ov.className='lc-overlay';ov.id='delAllOverlay';
+  ov.innerHTML='<div class="lc-box">'
+    +'<p>목록 전체를 삭제 하시겠습니까?<br><span style="font-size:12px;opacity:.7;">잠금된 항목은 삭제되지 않습니다.</span></p>'
+    +'<div class="lc-btns">'
+    +'<button class="lc-cancel" onclick="document.getElementById(\'delAllOverlay\').remove()">취소</button>'
+    +'<button class="lc-ok" style="color:#d93030;" onclick="document.getElementById(\'delAllOverlay\').remove();deleteAllUnlocked_sl()">삭제</button>'
+    +'</div></div>';
+  document.body.appendChild(ov);
+}
+function deleteAllUnlocked_sl(){
+  var list=_slGetList();
+  list.filter(function(i){return !i.fav;}).forEach(function(i){
+    try{localStorage.removeItem(SL_DATA_PFX+i.key);}catch(e){}
+  });
+  var kept=list.filter(function(i){return i.fav;});
+  _slSetList(kept);
+  if(_slSelectedKey){
+    var still=kept.some(function(i){return i.key===_slSelectedKey;});
+    if(!still){_slSelectedKey=null;if(typeof _slUpdateSaveBtn==='function')_slUpdateSaveBtn();}
+  }
+  _slRenderList();
+}
 function _slRenderList(){
   var list=_slGetList();
   var el=document.getElementById('sl-list');
@@ -8159,6 +8201,7 @@ function importJSON(input){
          (특히 v47 링크진입 자동 reload)로 인한 빈 DOM 저장 차단 */
   function doSave(){
     if(window._allowLeave) return;  // 홈/초기화 이탈 중 — pagehide가 지운 데이터 재저장 차단
+    if(window._tonghabPopupPending) return;  // v124: 이전자료 팝업 대기 중 — 빈 폼이 데이터 덮어쓰기 방지
     if(_restoring) return;
     if(!_initialLoadDone) return;
     try{
@@ -8189,6 +8232,57 @@ function importJSON(input){
   }
 
   /* ── 복원 ── */
+  /* ── v124: 이전 자료가 실제 입력값을 담고 있는지 판별 (기본값만 있으면 false) ── */
+  function _prevDataMeaningful(d){
+    if(!d) return false;
+    var fields = ['address','lenGaNa','heightA','heightB','waAvg','wbAvg','aN','bN',
+      'nbAWidth','nbAHeight','nbBWidth','nbBHeight','nbEffEars','nbTotalGrains','nbCompleteGrains','nbThousandWeight',
+      'rsJeje','rsJeje8','rsGeon8','rsStraw','rsHyeonmi','rsTotal','rsMoist1','rsMoist2',
+      'pa-plants','pb-plants','pa-weight','pb-weight','pa-onion','pb-onion'];
+    for(var i=0;i<fields.length;i++){
+      var v = d[fields[i]];
+      if(v !== undefined && v !== null && String(v).trim() !== '') return true;
+    }
+    /* 비율 가/나/다 값이 기본값('0.')이 아니면 입력으로 간주 */
+    var ratios = ['r1_ga','r1_na','r1_da','r2_ga','r2_na','r2_da'];
+    for(var j=0;j<ratios.length;j++){
+      var rv = d[ratios[j]];
+      if(rv !== undefined && rv !== '' && rv !== '0.' && rv !== '0') return true;
+    }
+    return false;
+  }
+
+  /* ── v124: 이전 자료 안내 팝업 ── */
+  function _showPrevDataPopup(){
+    if(document.getElementById('prevDataOverlay')) return;
+    window._tonghabPopupPending = true;   // 대기 중 저장 차단
+    var ov = document.createElement('div');
+    ov.className = 'lc-overlay'; ov.id = 'prevDataOverlay';
+    ov.innerHTML = '<div class="lc-box">'
+      + '<p>이전 자료가 있습니다.<br>초기화 후에 입력하시겠습니까?<br>'
+      + '<span style="font-size:12px;color:#c0392b;font-weight:700;">⚠ 주의: 초기화 후에는 복원이 안 됩니다.</span></p>'
+      + '<div class="lc-btns">'
+      + '<button class="lc-cancel" onclick="_prevDataContinue()">이어서 입력</button>'
+      + '<button class="lc-ok" style="color:#d93030;" onclick="_prevDataReset()">초기화</button>'
+      + '</div></div>';
+    document.body.appendChild(ov);
+  }
+  /* [이어서 입력]: 팝업 닫고 복원 진행 */
+  window._prevDataContinue = function(){
+    window._tonghabRestoreChoice = 'continue';
+    window._tonghabPopupPending = false;  // 저장 재개
+    var ov = document.getElementById('prevDataOverlay'); if(ov) ov.remove();
+    autoRestore();
+  };
+  /* [초기화]: 이전 자료 삭제 후 깨끗한 상태로 새로고침 */
+  window._prevDataReset = function(){
+    window._tonghabPopupPending = false;
+    try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
+    var ov = document.getElementById('prevDataOverlay'); if(ov) ov.remove();
+    window._allowLeave = true; /* 이탈 직전 재저장 차단 */
+    window.location.href = location.pathname + '?reset=1';
+  };
+
   function autoRestore(){
     try{
       var saved = localStorage.getItem(SAVE_KEY);
@@ -8199,6 +8293,13 @@ function importJSON(input){
         return;
       }
       var d = JSON.parse(saved);
+
+      /* ── v124: 의미있는 이전 자료가 있으면 팝업으로 먼저 확인 ──
+         사용자가 [이어서 입력] 선택 전까지 복원 보류. [초기화] 선택 시 데이터 삭제 후 새로고침 */
+      if(!window._tonghabRestoreChoice && _prevDataMeaningful(d)){
+        _showPrevDataPopup();
+        return;   // 선택 전엔 복원하지 않음
+      }
 
       _restoring = true;  // 복원 시작 — autoSave/doSave 차단
 
