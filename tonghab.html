@@ -1,4 +1,4 @@
-<!-- tonghab_v128.html · 저장: 2026-06-12 06:16 KST -->
+<!-- tonghab_v129.html · 저장: 2026-06-12 07:44 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1364,7 +1364,7 @@ textarea {
         </button>
       </div>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v128 저장: 2026-06-12 06:16)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v129 저장: 2026-06-12 07:44)</span></div>
   </div>
 </div>
 
@@ -7869,6 +7869,11 @@ function _slCollect(){
   var ac=document.querySelector('.crop-btn.active');        if(ac)d['__crop']=ac.getAttribute('data-crop');
   var ar=document.querySelector('.ptog-btn.p-active-region');if(ar)d['__region']=ar.id.replace('prod-btn-','');
   var av=document.querySelector('#prod-variety-btns .ptog-btn.p-active-var');if(av)d['__varIdx']=av.id.replace('pvar-','');
+  /* v129: 결과 div값도 함께 저장 → 기존 저장 데이터 집계에 활용 */
+  ['nbYield10a','rsBaengmi','prod-res-a','prod-res-b'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el){var t=(el.textContent||'').replace(/[^0-9.]/g,'');var v=parseFloat(t);if(isFinite(v)&&v>0)d['__res_'+id]=v;}
+  });
   return d;
 }
 
@@ -7943,6 +7948,15 @@ function _slModalTouchMove(e){
 /* 모달 열기/닫기 */
 function openSaveLoadModal(){
   _slSelectedKey = null; /* v83: 모달 열 때 선택 초기화 */
+  /* v129: 모달 열 때 집계 항상 닫힘 상태로 초기화 */
+  var aggBody  = document.getElementById('sl-agg-body');
+  var aggArrow = document.getElementById('sl-agg-arrow');
+  var aggWrap  = document.getElementById('sl-agg-wrap');
+  var listEl   = document.getElementById('sl-list');
+  if(aggBody)  { aggBody.style.display='none'; }
+  if(aggArrow) { aggArrow.textContent='▼'; }
+  if(aggWrap)  { aggWrap.style.flex=''; aggWrap.style.minHeight=''; aggWrap.style.overflow=''; aggWrap.style.flexDirection=''; }
+  if(listEl)   { listEl.style.maxHeight=''; listEl.style.flex=''; }
   _slRenderList();
   _slUpdateSaveBtn();
   var modal = document.getElementById('sl-modal');
@@ -8001,7 +8015,20 @@ function loadSavedData(key){
     var s=localStorage.getItem(SL_DATA_PFX+key);
     if(!s){alert('저장 데이터를 찾을 수 없습니다.');return;}
     closeSaveLoadModal();
-    _slApply(JSON.parse(s)); // 내부에서 복원 완료 후 자동 스크롤
+    /* v129: 복원 완료 후 yields 자동 갱신 → 기존 저장 데이터도 집계 반영 */
+    _slApply(JSON.parse(s), function(){
+      setTimeout(function(){
+        var list=_slGetList();
+        for(var i=0;i<list.length;i++){
+          if(list[i].key===key){
+            var y=_slCollectYields();
+            var hasVal=(y.genA||y.genB||y.nbExpect||y.nbReal);
+            if(hasVal){list[i].yields=y;_slSetList(list);}
+            break;
+          }
+        }
+      },400);
+    });
   }catch(e){alert('불러오기 실패: '+e.message);}
 }
 
@@ -8150,25 +8177,45 @@ function _slCollectYields(){
   };
 }
 function slToggleAgg(){
-  var body=document.getElementById('sl-agg-body');
-  var arrow=document.getElementById('sl-agg-arrow');
-  var listEl=document.getElementById('sl-list');
+  var body   = document.getElementById('sl-agg-body');
+  var arrow  = document.getElementById('sl-agg-arrow');
+  var wrap   = document.getElementById('sl-agg-wrap');
+  var listEl = document.getElementById('sl-list');
   if(!body) return;
-  var show=(body.style.display==='none');
-  body.style.display=show?'block':'none';
-  if(arrow) arrow.textContent=show?'▲':'▼';
-  /* 펼칠 때: 목록 높이를 줄여 집계 영역 확보, 새로저장 버튼 가려도 됨 */
-  if(listEl){
-    listEl.style.maxHeight=show?'22vh':'';
-    listEl.style.flex=show?'0 0 auto':'';
-  }
+  var show = (body.style.display==='none');
   if(show){
+    /* ── 펼칠 때: sl-agg-wrap을 flex item으로 확장, sl-list 축소 ── */
+    body.style.display = 'block';
+    if(arrow) arrow.textContent = '▲';
+    if(wrap){
+      wrap.style.flex          = '1 1 auto';
+      wrap.style.minHeight     = '0';
+      wrap.style.overflow      = 'hidden';
+      wrap.style.display       = 'flex';
+      wrap.style.flexDirection = 'column';
+    }
+    /* body도 flex item으로 나머지 공간을 모두 사용하고 스크롤 */
+    body.style.flex      = '1 1 auto';
+    body.style.minHeight = '0';
+    body.style.maxHeight = 'none';
+    if(listEl){
+      listEl.style.maxHeight = '20vh';
+      listEl.style.flex      = '0 0 auto';
+    }
     _slRenderAgg();
-    /* 집계 영역이 보이도록 스크롤 */
     setTimeout(function(){
-      var wrap=document.getElementById('sl-agg-wrap');
-      if(wrap) wrap.scrollIntoView({behavior:'smooth',block:'nearest'});
-    },80);
+      if(wrap) wrap.scrollIntoView({behavior:'smooth', block:'nearest'});
+    }, 80);
+  } else {
+    /* ── 닫을 때: 모두 원래대로 ── */
+    body.style.display = 'none';
+    if(arrow) arrow.textContent = '▼';
+    if(wrap){
+      wrap.style.flex=''; wrap.style.minHeight=''; wrap.style.overflow='';
+      wrap.style.display=''; wrap.style.flexDirection='';
+    }
+    body.style.flex=''; body.style.minHeight=''; body.style.maxHeight='';
+    if(listEl){ listEl.style.maxHeight=''; listEl.style.flex=''; }
   }
 }
 function _slRenderAgg(){
@@ -8178,6 +8225,22 @@ function _slRenderAgg(){
   /* v127: 잠금된 항목만 집계 */
   list=list.filter(function(it){return !!it.fav;});
   if(!list.length){ body.innerHTML='<div class="sl-agg-empty">잠금된 자료가 없습니다.<br><span style="font-size:10px;color:#bbb;">목록에서 🔒 잠금 후 집계에 반영됩니다.</span></div>'; return; }
+  /* v129: yields 없는 항목은 저장 데이터의 __res_* 키에서 보완 */
+  list.forEach(function(it){
+    if(it.yields&&(it.yields.genA||it.yields.genB||it.yields.nbExpect||it.yields.nbReal)) return;
+    try{
+      var s=localStorage.getItem(SL_DATA_PFX+it.key);
+      if(!s) return;
+      var d=JSON.parse(s);
+      function rnum(k){var v=parseFloat(d['__res_'+k]);return(isFinite(v)&&v>0)?v:null;}
+      it.yields={
+        nbExpect: rnum('nbYield10a'),
+        nbReal:   rnum('rsBaengmi'),
+        genA:     rnum('prod-res-a'),
+        genB:     rnum('prod-res-b')
+      };
+    }catch(e){}
+  });
   /* 작물별 그룹화 */
   var groups={}; var order=[];
   list.forEach(function(it){
