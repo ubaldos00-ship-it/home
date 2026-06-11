@@ -1,4 +1,4 @@
-<!-- tonghab_v126.html · 저장: 2026-06-12 04:16 KST -->
+<!-- tonghab_v128.html · 저장: 2026-06-12 06:16 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -46,7 +46,7 @@ body{
   overscroll-behavior:contain;
   /* touch-action: 확대/축소 허용 */
 }
-.sticky-top{position:sticky;top:0;z-index:100;background:var(--g800);padding:0 12px;}
+.sticky-top{position:sticky;top:0;z-index:100;background:var(--g800);padding:0 12px;transition:transform .28s ease;}
 .sticky-inner{max-width:500px;margin:0 auto;padding:12px 0 10px;}
 .wrap{max-width:500px;margin:0 auto;display:flex;flex-direction:column;gap:12px;padding:12px 12px 0;}
 
@@ -1268,7 +1268,7 @@ body.nonbye-mode .hide-nonbye { display:none !important; }
 .sl-agg-wrap{flex-shrink:0;margin-bottom:10px;}
 .sl-agg-toggle{width:100%;padding:10px 12px;background:#EBF3FF;border:1.5px solid #b3c8f0;border-radius:9px;color:#0A3A8C;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;text-align:left;display:flex;justify-content:space-between;align-items:center;touch-action:manipulation;}
 .sl-agg-toggle:active{background:#d8e8ff;}
-.sl-agg-body{margin-top:8px;max-height:34vh;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;border:1px solid #e0e6f0;border-radius:9px;padding:8px;background:#fafbfe;}
+.sl-agg-body{margin-top:8px;max-height:60vh;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;border:1px solid #e0e6f0;border-radius:9px;padding:8px;background:#fafbfe;}
 .sl-agg-empty{text-align:center;color:#999;font-size:12px;padding:14px 0;}
 .sl-agg-card{border:1px solid #dbe3f0;border-radius:8px;background:#fff;padding:8px 10px;margin-bottom:7px;}
 .sl-agg-card:last-child{margin-bottom:0;}
@@ -1349,20 +1349,22 @@ textarea {
     <div class="hdr-ttl">
       <span><svg width="28" height="28" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" style="vertical-align:middle;margin-right:4px;"><circle cx="11" cy="12" r="7.5" fill="#2e7a4e" stroke="#1f5132" stroke-width="0.8"/><path d="M6.5 6.5 Q11 4 15.5 6.5" stroke="rgba(255,255,255,0.25)" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="11" cy="12" r="4.2" fill="#f6f4ec" stroke="#1f5132" stroke-width="0.7"/><circle cx="11" cy="12" r="1.6" fill="#c9962b" stroke="#a07020" stroke-width="0.6"/><circle cx="11" cy="12" r="0.7" fill="#fff"/><rect x="18" y="10.8" width="4.5" height="2.4" rx="0.7" fill="#e6b955" stroke="#c9962b" stroke-width="0.7"/><line x1="19.3" y1="10.8" x2="19.3" y2="13.2" stroke="#a07020" stroke-width="0.7"/><line x1="20.6" y1="10.8" x2="20.6" y2="13.2" stroke="#a07020" stroke-width="0.7"/><line x1="21.8" y1="10.8" x2="21.8" y2="13.2" stroke="#a07020" stroke-width="0.7"/></svg> 농작물생산<br><span style="padding-left:33px;">통합 계산기</span></span>
       <span class="hdr-crop-badge" id="hdrCropBadge"></span>
-      <a href="https://ubaldos00-ship-it.github.io/home/" class="home-btn" aria-label="홈" onclick="return goHomeAndReset();">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 9.5L10 3l7 6.5V17a1 1 0 01-1 1H13v-5H7v5H4a1 1 0 01-1-1V9.5z" fill="#fff"/></svg>
-        홈
-      </a>
-      <button class="calc-hdr-btn" onclick="openCalcModal()" aria-label="계산기">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="16" height="18" rx="2" stroke="#fff" stroke-width="2"/><path d="M8 7h8M8 12h2m4 0h2M8 17h2m4 0h2" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
-        계산기
-      </button>
-      <button class="sl-hdr-btn" onclick="openSaveLoadModal()" aria-label="저장/불러오기">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M17 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V7l-4-4z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M17 3v4H7V3" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><rect x="9" y="13" width="6" height="6" rx="1" stroke="#fff" stroke-width="2"/></svg>
-        저장/불러
-      </button>
+      <div id="hdr-btns-wrap" style="display:flex;align-items:center;gap:6px;flex-shrink:0;overflow:hidden;transition:max-width .28s ease,opacity .25s ease;max-width:200px;opacity:1;">
+        <a href="https://ubaldos00-ship-it.github.io/home/" class="home-btn" aria-label="홈" onclick="return goHomeAndReset();">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 9.5L10 3l7 6.5V17a1 1 0 01-1 1H13v-5H7v5H4a1 1 0 01-1-1V9.5z" fill="#fff"/></svg>
+          홈
+        </a>
+        <button class="calc-hdr-btn" onclick="openCalcModal()" aria-label="계산기">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="16" height="18" rx="2" stroke="#fff" stroke-width="2"/><path d="M8 7h8M8 12h2m4 0h2M8 17h2m4 0h2" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+          계산기
+        </button>
+        <button class="sl-hdr-btn" onclick="openSaveLoadModal()" aria-label="저장/불러오기">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M17 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V7l-4-4z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M17 3v4H7V3" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><rect x="9" y="13" width="6" height="6" rx="1" stroke="#fff" stroke-width="2"/></svg>
+          저장/불러
+        </button>
+      </div>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v126 저장: 2026-06-12 04:16)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v128 저장: 2026-06-12 06:16)</span></div>
   </div>
 </div>
 
@@ -7186,6 +7188,28 @@ document.addEventListener('DOMContentLoaded', function(){
 
 
 <script>
+/* ===== v128: 스크롤 시 전체 헤더 자동 숨김/표시 ===== */
+(function(){
+  var lastY=0, ticking=false;
+  var THRESHOLD=40; /* 이 픽셀 이상 스크롤 후 반응 */
+  function onScroll(){
+    var y=window.scrollY||window.pageYOffset;
+    var hdr=document.querySelector('.sticky-top');
+    if(!hdr){lastY=y;ticking=false;return;}
+    if(y>lastY && y>THRESHOLD){
+      /* 아래로 스크롤(화면 올림) → 전체 헤더 위로 숨김 */
+      hdr.style.transform='translateY(-100%)';
+    } else if(y<lastY){
+      /* 위로 스크롤(화면 내림) → 전체 헤더 복귀 */
+      hdr.style.transform='translateY(0)';
+    }
+    lastY=y;
+    ticking=false;
+  }
+  window.addEventListener('scroll',function(){
+    if(!ticking){ticking=true;requestAnimationFrame(onScroll);}
+  },{passive:true});
+})();
 /* ===== 10a 결과 아래 전체 초기화 버튼 보완 ===== */
 function prodFullResetAll(){
   if(!confirm('전체 데이터가 초기화됩니다. 초기화 하시겠습니까?')) return;
@@ -8128,17 +8152,32 @@ function _slCollectYields(){
 function slToggleAgg(){
   var body=document.getElementById('sl-agg-body');
   var arrow=document.getElementById('sl-agg-arrow');
+  var listEl=document.getElementById('sl-list');
   if(!body) return;
   var show=(body.style.display==='none');
   body.style.display=show?'block':'none';
   if(arrow) arrow.textContent=show?'▲':'▼';
-  if(show) _slRenderAgg();
+  /* 펼칠 때: 목록 높이를 줄여 집계 영역 확보, 새로저장 버튼 가려도 됨 */
+  if(listEl){
+    listEl.style.maxHeight=show?'22vh':'';
+    listEl.style.flex=show?'0 0 auto':'';
+  }
+  if(show){
+    _slRenderAgg();
+    /* 집계 영역이 보이도록 스크롤 */
+    setTimeout(function(){
+      var wrap=document.getElementById('sl-agg-wrap');
+      if(wrap) wrap.scrollIntoView({behavior:'smooth',block:'nearest'});
+    },80);
+  }
 }
 function _slRenderAgg(){
   var body=document.getElementById('sl-agg-body');
   if(!body) return;
   var list=_slGetList();
-  if(!list.length){ body.innerHTML='<div class="sl-agg-empty">저장된 자료가 없습니다.</div>'; return; }
+  /* v127: 잠금된 항목만 집계 */
+  list=list.filter(function(it){return !!it.fav;});
+  if(!list.length){ body.innerHTML='<div class="sl-agg-empty">잠금된 자료가 없습니다.<br><span style="font-size:10px;color:#bbb;">목록에서 🔒 잠금 후 집계에 반영됩니다.</span></div>'; return; }
   /* 작물별 그룹화 */
   var groups={}; var order=[];
   list.forEach(function(it){
@@ -8165,12 +8204,14 @@ function _slRenderAgg(){
       rows ='<div class="sl-agg-row"><span class="lbl">예상량 평균 ('+exN+'건)</span><span class="val"><b>'+fmt(ex)+'</b></span></div>';
       rows+='<div class="sl-agg-row"><span class="lbl">실수확량 평균 ('+reN+'건)</span><span class="val"><b>'+fmt(re)+'</b></span></div>';
     } else {
-      var a=avgOf(items.map(function(i){return i.yields&&i.yields.genA;}));
-      var b=avgOf(items.map(function(i){return i.yields&&i.yields.genB;}));
-      var aN=items.filter(function(i){return i.yields&&i.yields.genA;}).length;
-      var bN=items.filter(function(i){return i.yields&&i.yields.genB;}).length;
-      rows ='<div class="sl-agg-row"><span class="lbl">A포구 평균 ('+aN+'건)</span><span class="val"><b>'+fmt(a)+'</b></span></div>';
-      rows+='<div class="sl-agg-row"><span class="lbl">B포구 평균 ('+bN+'건)</span><span class="val"><b>'+fmt(b)+'</b></span></div>';
+      /* v127: A·B포구 합쳐서 전체 평균 */
+      var allVals=[];
+      items.forEach(function(i){
+        if(i.yields&&typeof i.yields.genA==='number') allVals.push(i.yields.genA);
+        if(i.yields&&typeof i.yields.genB==='number') allVals.push(i.yields.genB);
+      });
+      var avg=avgOf(allVals);
+      rows='<div class="sl-agg-row"><span class="lbl">A·B포구 전체 평균 ('+allVals.length+'건)</span><span class="val"><b>'+fmt(avg)+'</b></span></div>';
     }
     if(items.some(function(i){return !i.yields;})) hasOld=true;
     return '<div class="sl-agg-card">'
