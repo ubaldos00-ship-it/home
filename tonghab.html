@@ -1,4 +1,4 @@
-<!-- tonghab_v125.html · 저장: 2026-06-11 19:53 KST -->
+<!-- tonghab_v126.html · 저장: 2026-06-12 04:16 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1264,6 +1264,21 @@ body.nonbye-mode .hide-nonbye { display:none !important; }
 .sl-item.sl-selected{background:#edfbe8;border:2px solid #3a7d44;}
 .sl-item.sl-selected .sl-item-label{color:#1a5c22;}
 .sl-empty{text-align:center;color:#bbb;font-size:13px;padding:22px 0;}
+/* v126: 작물별 집계 */
+.sl-agg-wrap{flex-shrink:0;margin-bottom:10px;}
+.sl-agg-toggle{width:100%;padding:10px 12px;background:#EBF3FF;border:1.5px solid #b3c8f0;border-radius:9px;color:#0A3A8C;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;text-align:left;display:flex;justify-content:space-between;align-items:center;touch-action:manipulation;}
+.sl-agg-toggle:active{background:#d8e8ff;}
+.sl-agg-body{margin-top:8px;max-height:34vh;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;border:1px solid #e0e6f0;border-radius:9px;padding:8px;background:#fafbfe;}
+.sl-agg-empty{text-align:center;color:#999;font-size:12px;padding:14px 0;}
+.sl-agg-card{border:1px solid #dbe3f0;border-radius:8px;background:#fff;padding:8px 10px;margin-bottom:7px;}
+.sl-agg-card:last-child{margin-bottom:0;}
+.sl-agg-crop{font-size:13px;font-weight:800;color:#1a3a1a;margin-bottom:5px;display:flex;justify-content:space-between;align-items:baseline;}
+.sl-agg-crop .cnt{font-size:11px;font-weight:700;color:#0A3A8C;background:#EBF3FF;border-radius:20px;padding:1px 8px;}
+.sl-agg-row{display:flex;justify-content:space-between;font-size:12px;color:#3D3C39;padding:2px 0;line-height:1.5;}
+.sl-agg-row .lbl{color:#666;font-weight:600;}
+.sl-agg-row .val{font-weight:800;color:#111;}
+.sl-agg-row .val b{color:#1565c0;}
+.sl-agg-note{font-size:10px;color:#aaa;margin-top:6px;line-height:1.5;}
 .sl-divider{flex-shrink:0;border:none;border-top:1px solid #e8e5de;margin:4px 0 14px;}
 .sl-file-row{flex-shrink:0;display:flex;gap:8px;}
 .sl-file-btn{flex:1;padding:12px 6px;border:2px solid #d0ccc4;border-radius:10px;background:#fff;color:#3D3C39;font-size:13px;font-weight:700;cursor:pointer;text-align:center;display:block;touch-action:manipulation;}
@@ -1347,7 +1362,7 @@ textarea {
         저장/불러
       </button>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v125 저장: 2026-06-11 19:53)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v126 저장: 2026-06-12 04:16)</span></div>
   </div>
 </div>
 
@@ -7148,6 +7163,11 @@ document.addEventListener('DOMContentLoaded', function(){
         <button onclick="confirmDeleteAll_sl()" style="flex-shrink:0;background:none;border:1px solid #d93030;border-radius:7px;color:#d93030;font-size:11px;font-weight:700;padding:4px 9px;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;">전체삭제</button>
       </div>
       <div class="sl-list" id="sl-list"><div class="sl-empty">저장된 자료가 없습니다.</div></div>
+      <!-- v126: 작물별 10a당 수량 집계 -->
+      <div class="sl-agg-wrap" id="sl-agg-wrap">
+        <button type="button" class="sl-agg-toggle" id="sl-agg-toggle" onclick="slToggleAgg()">📊 작물별 10a당 수량 집계 <span id="sl-agg-arrow">▼</span></button>
+        <div class="sl-agg-body" id="sl-agg-body" style="display:none;"></div>
+      </div>
       <hr class="sl-divider">
       <div style="background:#fff8ec;border:1px solid #f5c842;border-radius:9px;padding:9px 12px;font-size:11.5px;color:#a07800;font-weight:500;line-height:1.65;margin-bottom:10px;">
         ⚠️ 주의: 브라우저 캐시·데이터 삭제 시 모두 사라집니다. 중요한 자료는 <strong>JSON 내보내기</strong> 버튼으로 파일로 백업해두세요.
@@ -7942,7 +7962,7 @@ function saveCurrentData(){
   try{localStorage.setItem(SL_DATA_PFX+key,JSON.stringify(d));}
   catch(e){alert('저장 실패: 저장 공간이 부족합니다.');return;}
   var list=_slGetList();
-  list.unshift({key:key,label:label,ymd:ymd,hm:hh+':'+mm,crop:cropKo,addr:addrShort});
+  list.unshift({key:key,label:label,ymd:ymd,hm:hh+':'+mm,crop:cropKo,addr:addrShort,yields:_slCollectYields()});
   if(list.length>30){var rm=list.splice(30);rm.forEach(function(r){try{localStorage.removeItem(SL_DATA_PFX+r.key);}catch(e){}});}
   _slSetList(list);
   _slRenderList();
@@ -7994,7 +8014,7 @@ function overwriteSavedData(key){
   for(var i=0;i<list.length;i++){
     if(list[i].key===key){
       list[i].label=label;list[i].ymd=ymd;list[i].hm=hh+':'+mm;
-      list[i].crop=cropKo;list[i].addr=addrShort;break;
+      list[i].crop=cropKo;list[i].addr=addrShort;list[i].yields=_slCollectYields();break;
     }
   }
   _slSetList(list);
@@ -8087,9 +8107,85 @@ function deleteAllUnlocked_sl(){
   }
   _slRenderList();
 }
+/* ════ v126: 작물별 10a당 수량 집계 ════ */
+/* 현재 화면의 결과값(10a당 수량) 수집 — 논벼 예상량/실수확량, 일반작물 A/B포구 */
+function _slCollectYields(){
+  function num(id){
+    var el=document.getElementById(id);
+    if(!el) return null;
+    var t=(el.textContent||'').replace(/[^0-9.]/g,'');
+    if(t==='') return null;
+    var v=parseFloat(t);
+    return (isFinite(v)&&v>0)?v:null;
+  }
+  return {
+    nbExpect: num('nbYield10a'),  /* 논벼 예상량 */
+    nbReal:   num('rsBaengmi'),   /* 논벼 실수확량(백미) */
+    genA:     num('prod-res-a'),  /* 일반작물 A포구 */
+    genB:     num('prod-res-b')   /* 일반작물 B포구 */
+  };
+}
+function slToggleAgg(){
+  var body=document.getElementById('sl-agg-body');
+  var arrow=document.getElementById('sl-agg-arrow');
+  if(!body) return;
+  var show=(body.style.display==='none');
+  body.style.display=show?'block':'none';
+  if(arrow) arrow.textContent=show?'▲':'▼';
+  if(show) _slRenderAgg();
+}
+function _slRenderAgg(){
+  var body=document.getElementById('sl-agg-body');
+  if(!body) return;
+  var list=_slGetList();
+  if(!list.length){ body.innerHTML='<div class="sl-agg-empty">저장된 자료가 없습니다.</div>'; return; }
+  /* 작물별 그룹화 */
+  var groups={}; var order=[];
+  list.forEach(function(it){
+    var c=it.crop||'기타';
+    if(!groups[c]){ groups[c]=[]; order.push(c); }
+    groups[c].push(it);
+  });
+  function avgOf(arr){
+    var v=arr.filter(function(x){return typeof x==='number'&&isFinite(x);});
+    if(!v.length) return null;
+    return Math.round(v.reduce(function(a,b){return a+b;},0)/v.length);
+  }
+  function fmt(n){ return (n==null)?'—':n.toLocaleString('ko-KR')+' kg'; }
+  var hasOld=false;
+  var html=order.map(function(c){
+    var items=groups[c];
+    var isRice=(c==='논벼');
+    var rows='';
+    if(isRice){
+      var ex=avgOf(items.map(function(i){return i.yields&&i.yields.nbExpect;}));
+      var re=avgOf(items.map(function(i){return i.yields&&i.yields.nbReal;}));
+      var exN=items.filter(function(i){return i.yields&&i.yields.nbExpect;}).length;
+      var reN=items.filter(function(i){return i.yields&&i.yields.nbReal;}).length;
+      rows ='<div class="sl-agg-row"><span class="lbl">예상량 평균 ('+exN+'건)</span><span class="val"><b>'+fmt(ex)+'</b></span></div>';
+      rows+='<div class="sl-agg-row"><span class="lbl">실수확량 평균 ('+reN+'건)</span><span class="val"><b>'+fmt(re)+'</b></span></div>';
+    } else {
+      var a=avgOf(items.map(function(i){return i.yields&&i.yields.genA;}));
+      var b=avgOf(items.map(function(i){return i.yields&&i.yields.genB;}));
+      var aN=items.filter(function(i){return i.yields&&i.yields.genA;}).length;
+      var bN=items.filter(function(i){return i.yields&&i.yields.genB;}).length;
+      rows ='<div class="sl-agg-row"><span class="lbl">A포구 평균 ('+aN+'건)</span><span class="val"><b>'+fmt(a)+'</b></span></div>';
+      rows+='<div class="sl-agg-row"><span class="lbl">B포구 평균 ('+bN+'건)</span><span class="val"><b>'+fmt(b)+'</b></span></div>';
+    }
+    if(items.some(function(i){return !i.yields;})) hasOld=true;
+    return '<div class="sl-agg-card">'
+      +'<div class="sl-agg-crop">'+c+'<span class="cnt">'+items.length+'건</span></div>'
+      +rows
+      +'</div>';
+  }).join('');
+  if(hasOld){ html+='<div class="sl-agg-note">※ 이 기능 적용 전 저장된 자료는 수량값이 없어 집계에서 제외될 수 있습니다. 해당 자료는 불러온 뒤 [덮어쓰기]하면 집계에 반영됩니다.</div>'; }
+  body.innerHTML=html;
+}
+
 function _slRenderList(){
   var list=_slGetList();
   var el=document.getElementById('sl-list');
+  if(document.getElementById('sl-agg-body') && document.getElementById('sl-agg-body').style.display!=='none'){ _slRenderAgg(); }
   if(!el)return;
   if(!list.length){el.innerHTML='<div class="sl-empty">저장된 자료가 없습니다.</div>';return;}
   /* v111: 잠금 여부와 관계없이 원래 순서 유지 */
