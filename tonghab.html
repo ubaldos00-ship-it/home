@@ -1,4 +1,4 @@
-<!-- tonghab_v129.html · 저장: 2026-06-12 07:44 KST -->
+<!-- tonghab_v130.html · 저장: 2026-06-13 01:52 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1229,7 +1229,7 @@ body.nonbye-mode .hide-nonbye { display:none !important; }
 /* v125: 모달 더블탭 확대 방지 + 하단 버튼 항상 표시(목록만 스크롤) */
 .sl-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:3000;overflow:hidden;padding:16px 14px;overscroll-behavior:contain;touch-action:manipulation;}
 .sl-modal.show{display:flex;justify-content:center;align-items:flex-start;}
-.sl-box{width:100%;max-width:430px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.45);max-height:calc(100dvh - 32px);display:flex;flex-direction:column;touch-action:manipulation;}
+.sl-box{position:relative;width:100%;max-width:430px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.45);max-height:calc(100dvh - 32px);display:flex;flex-direction:column;touch-action:manipulation;}
 .sl-head{flex-shrink:0;padding:13px 16px;background:#27500A;display:flex;justify-content:space-between;align-items:center;}
 .sl-head-title{font-size:15px;font-weight:800;color:#fff;}
 .sl-close{background:rgba(255,255,255,.2);border:none;color:#fff;font-size:18px;width:32px;height:32px;border-radius:8px;cursor:pointer;line-height:1;touch-action:manipulation;}
@@ -1280,10 +1280,16 @@ body.nonbye-mode .hide-nonbye { display:none !important; }
 .sl-agg-row .val b{color:#1565c0;}
 .sl-agg-note{font-size:10px;color:#aaa;margin-top:6px;line-height:1.5;}
 .sl-divider{flex-shrink:0;border:none;border-top:1px solid #e8e5de;margin:4px 0 14px;}
-.sl-file-row{flex-shrink:0;display:flex;gap:8px;}
+.sl-file-row{flex-shrink:0;display:flex;gap:6px;}
 .sl-file-btn{flex:1;padding:12px 6px;border:2px solid #d0ccc4;border-radius:10px;background:#fff;color:#3D3C39;font-size:13px;font-weight:700;cursor:pointer;text-align:center;display:block;touch-action:manipulation;}
 .sl-file-btn:active{opacity:.82;}
-.sl-file-row .sl-file-btn{padding:10px 4px;font-size:12px;}
+/* v130: JSON 버튼 더 작게 (목록 정보를 더 많이 보이도록) */
+.sl-file-row .sl-file-btn{padding:6px 3px;font-size:10.5px;border-width:1.5px;border-radius:8px;}
+/* v130: 캐시 삭제 주의 안내 팝업 (모달 하단) */
+.sl-notice-pop{position:absolute;left:12px;right:12px;bottom:12px;background:#fff8ec;border:1.5px solid #f5c842;border-radius:10px;padding:10px 12px;font-size:11px;color:#a07800;font-weight:600;line-height:1.55;box-shadow:0 6px 22px rgba(0,0,0,.25);display:none;align-items:center;gap:8px;z-index:5;}
+.sl-notice-pop.show{display:flex;}
+.sl-notice-pop strong{color:#7a5c00;font-weight:800;}
+.sl-notice-pop button{flex-shrink:0;background:#a07800;color:#fff;border:none;border-radius:7px;padding:6px 13px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;}
 .sl-file-row .sl-share-btn{background:#1f8a3a;color:#fff;border-color:#1f8a3a;}
 .sl-file-row .sl-file-btn:nth-child(2){background:#6d28d9;color:#fff;border-color:#6d28d9;}
 .sl-file-row .sl-file-btn:last-child{background:#0A3A8C;color:#fff;border-color:#0A3A8C;}
@@ -1364,7 +1370,7 @@ textarea {
         </button>
       </div>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v129 저장: 2026-06-12 07:44)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v130 저장: 2026-06-13 01:52)</span></div>
   </div>
 </div>
 
@@ -2188,7 +2194,7 @@ textarea {
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 018-8 8 8 0 016.93 4H16v2h6V2h-2v2.54A9.99 9.99 0 0012 2C6.48 2 2 6.48 2 12h2z" fill="#C0392B"/><path d="M20 12a8 8 0 01-8 8 8 8 0 01-6.93-4H8v-2H2v6h2v-2.54A9.99 9.99 0 0012 22c5.52 0 10-4.48 10-10h-2z" fill="#C0392B"/></svg>
       초기화
     </button>
-    <button class="btn btn-calc" onclick="runFullCalculationAndScrollB()">AB포구 예상량 계산하기</button>
+    <button class="btn btn-calc" onclick="runFullCalculationAndScrollB()">AB포구 계산하기</button>
   </div>
 
   <div style="border-top:2px solid #d0cfc6;margin:12px 0 2px;opacity:0.6;"></div>
@@ -5211,7 +5217,12 @@ function scrollWithOffset(el, extra){
   if(!el) return;
   const hdr = document.querySelector('.sticky-top');
   const hdrH = hdr ? hdr.offsetHeight : 0;
-  const top = el.getBoundingClientRect().top + window.scrollY - hdrH - (extra || 8);
+  const ex = (extra==null ? 8 : extra);
+  const elemTop = el.getBoundingClientRect().top + window.scrollY;
+  /* v130: 아래로 스크롤 시 헤더가 자동 숨김되므로 헤더 높이를 빼지 않음
+     → 대상(작물/주소/조사일, B포구 결과, 생산량계산기 등)이 화면 맨 위에 정확히 붙도록 */
+  const goingDown = elemTop > window.scrollY + 2;
+  const top = goingDown ? (elemTop - ex) : (elemTop - hdrH - ex);
   window.scrollTo({top: Math.max(0, top), behavior:'smooth'});
 }
 
@@ -6287,7 +6298,8 @@ function prodCalculate() {
   if(hBtn) hBtn.textContent='▲ 접기';
   document.getElementById('prod-result-section').classList.add('show');
   setTimeout(function(){ drawProdLineChart(prodCrop,region); }, 80);
-  setTimeout(function(){ scrollWithOffset(document.getElementById('prod-capture-zone')); }, 80);
+  /* v130: 계산 후 "10a당 생산량 계산 결과"가 화면 맨 위에 보이도록 */
+  setTimeout(function(){ scrollWithOffset(document.getElementById('prod-result-section')); }, 80);
 }
 
 let prodLineChartInst=null;
@@ -6528,8 +6540,12 @@ function showFullResultCapture(){
   /* ── A/B 기점선정 결과 행 ── */
   function gv(id){return document.getElementById(id)?.textContent?.trim()||'—';}
   const aKVisible=document.getElementById('resRowAK')?.style.display!=='none';
+  /* v130: A/B포구 세로(총)길이 — 가로기점과 세로기점 사이에 표시 */
+  const aVlen=(document.getElementById('heightA')?.value||'').trim();
+  const bVlen=(document.getElementById('heightB')?.value||'').trim();
   const portRows=[
     {lbl:'가로 기점', a:gv('outA_ga'), b:gv('outB_ga')},
+    {lbl:'세로 길이', a:(aVlen?aVlen+' cm':'—'), b:(bVlen?bVlen+' cm':'—')},
     {lbl:'세로 기점', a:gv('outA_se'), b:gv('outB_se')},
   ];
   if(aKVisible) portRows.push({lbl:'추출간격 k', a:gv('outA_k'), b:gv('outB_k')});
@@ -7171,17 +7187,19 @@ document.addEventListener('DOMContentLoaded', function(){
         <div class="sl-agg-body" id="sl-agg-body" style="display:none;"></div>
       </div>
       <hr class="sl-divider">
-      <div style="background:#fff8ec;border:1px solid #f5c842;border-radius:9px;padding:9px 12px;font-size:11.5px;color:#a07800;font-weight:500;line-height:1.65;margin-bottom:10px;">
-        ⚠️ 주의: 브라우저 캐시·데이터 삭제 시 모두 사라집니다. 중요한 자료는 <strong>JSON 내보내기</strong> 버튼으로 파일로 백업해두세요.
-      </div>
-      <div class="sl-section" style="margin-bottom:8px;">JSON 파일로 공유 / 내보내기 / 불러오기</div>
+      <div class="sl-section" style="margin-bottom:6px;font-size:10px;">JSON 파일 공유 / 내보내기 / 불러오기</div>
       <div class="sl-file-row">
-        <button class="sl-file-btn sl-share-btn" onclick="shareJSON()">📱 JSON 공유</button>
-        <button class="sl-file-btn" onclick="exportJSON()">📤 JSON 내보내기</button>
-        <label class="sl-file-btn">📥 JSON 불러오기
+        <button class="sl-file-btn sl-share-btn" onclick="shareJSON()">공유</button>
+        <button class="sl-file-btn" onclick="exportJSON()">내보내기</button>
+        <label class="sl-file-btn">불러오기
           <input type="file" accept="application/json,text/plain,.json" style="display:none;" onchange="importJSON(this)">
         </label>
       </div>
+    </div>
+    <!-- v130: 캐시 삭제 주의 안내 팝업 (모달 열 때 하단에 표시) -->
+    <div class="sl-notice-pop" id="sl-notice-pop">
+      <span>⚠️ 브라우저 캐시·데이터 삭제 시 저장 자료가 모두 사라집니다. 중요한 자료는 <strong>내보내기</strong>로 파일 백업하세요.</span>
+      <button type="button" onclick="document.getElementById('sl-notice-pop').classList.remove('show')">확인</button>
     </div>
   </div>
 </div>
@@ -7948,15 +7966,16 @@ function _slModalTouchMove(e){
 /* 모달 열기/닫기 */
 function openSaveLoadModal(){
   _slSelectedKey = null; /* v83: 모달 열 때 선택 초기화 */
-  /* v129: 모달 열 때 집계 항상 닫힘 상태로 초기화 */
+  /* v129/130: 모달 열 때 집계 항상 닫힘 상태로 초기화 + 숨긴 형제 복원 */
   var aggBody  = document.getElementById('sl-agg-body');
   var aggArrow = document.getElementById('sl-agg-arrow');
   var aggWrap  = document.getElementById('sl-agg-wrap');
   var listEl   = document.getElementById('sl-list');
-  if(aggBody)  { aggBody.style.display='none'; }
+  if(aggBody)  { aggBody.style.display='none'; aggBody.style.flex=''; aggBody.style.minHeight=''; aggBody.style.maxHeight=''; }
   if(aggArrow) { aggArrow.textContent='▼'; }
-  if(aggWrap)  { aggWrap.style.flex=''; aggWrap.style.minHeight=''; aggWrap.style.overflow=''; aggWrap.style.flexDirection=''; }
+  if(aggWrap)  { aggWrap.style.flex=''; aggWrap.style.minHeight=''; aggWrap.style.overflow=''; aggWrap.style.display=''; aggWrap.style.flexDirection=''; }
   if(listEl)   { listEl.style.maxHeight=''; listEl.style.flex=''; }
+  if(aggWrap)  { _slAggSiblings(aggWrap).forEach(function(ch){ ch.style.display=(ch.dataset._slPrevDisp||''); }); }
   _slRenderList();
   _slUpdateSaveBtn();
   var modal = document.getElementById('sl-modal');
@@ -7964,6 +7983,13 @@ function openSaveLoadModal(){
   modal.classList.add('show');
   document.body.style.overflow='hidden';
   if(list) list.scrollTop=0;
+  /* v130: 캐시 삭제 주의 안내 팝업 표시 (8초 후 자동 닫힘) */
+  var notice=document.getElementById('sl-notice-pop');
+  if(notice){
+    notice.classList.add('show');
+    clearTimeout(window._slNoticeTimer);
+    window._slNoticeTimer=setTimeout(function(){ notice.classList.remove('show'); },8000);
+  }
   // iOS 스크롤 이벤트 리스너 등록
   if(list){
     list.addEventListener('touchstart', _slListTouchStart, {passive:true});
@@ -7976,6 +8002,8 @@ function closeSaveLoadModal(){
   var list  = document.getElementById('sl-list');
   modal.classList.remove('show');
   document.body.style.overflow='';
+  var notice=document.getElementById('sl-notice-pop'); if(notice) notice.classList.remove('show');
+  clearTimeout(window._slNoticeTimer);
   // 리스너 정리
   if(list){
     list.removeEventListener('touchstart', _slListTouchStart);
@@ -8095,31 +8123,34 @@ function shareJSON(){
   var blob=new Blob([jsonText],{type:'application/json'});
   var file=new File([blob],fname,{type:'application/json'});
 
-  // (1) navigator.share + files 지원 (iOS 16+ Safari, 최신 Android Chrome)
+  // (1) navigator.share + files 지원 (iOS 16+ Safari, 최신 Android Chrome) → 카카오톡 등에 파일 직접 공유
   if(navigator.canShare && navigator.canShare({files:[file]})){
     navigator.share({files:[file], title:fname, text:'통합계산기 데이터 공유'})
       .catch(function(err){
-        if(err && err.name!=='AbortError') _shareJSONFallback(jsonText,fname);
+        if(err && err.name!=='AbortError') _shareJSONFallback(blob,jsonText,fname);
       });
     return;
   }
-  // (2) navigator.share 텍스트만 지원
-  if(navigator.share){
-    navigator.share({title:fname, text:jsonText})
-      .catch(function(err){
-        if(err && err.name!=='AbortError') _shareJSONFallback(jsonText,fname);
-      });
-    return;
-  }
-  // (3) Web Share 미지원 → 클립보드 복사 안내
-  _shareJSONFallback(jsonText,fname);
+  // (2) v130: 파일 공유 미지원(일부 안드로이드) → 실제 .json 파일 다운로드 후 카카오톡 첨부 안내
+  _shareJSONFallback(blob,jsonText,fname);
 }
-function _shareJSONFallback(jsonText,fname){
+/* v130: 안드로이드 등 파일공유 미지원 시 — JSON 파일을 실제로 다운로드시켜 카카오톡에 파일 첨부 가능하게 함 */
+function _shareJSONFallback(blob,jsonText,fname){
   try{
-    navigator.clipboard.writeText(jsonText).then(function(){
-      alert('📋 JSON이 클립보드에 복사되었습니다.\n메시지·카톡 등에 붙여넣기하여 공유하세요.\n\n파일명: '+fname);
-    }).catch(function(){ _shareJSONPrompt(jsonText); });
-  }catch(e){ _shareJSONPrompt(jsonText); }
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');
+    a.href=url; a.download=fname;
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); },1500);
+    alert('📁 JSON 파일이 다운로드되었습니다.\n\n파일명: '+fname+'\n\n카카오톡 → 파일 첨부(+ 또는 📎)에서\n[다운로드] 폴더의 이 파일을 선택해 공유하세요.');
+  }catch(e){
+    /* 다운로드도 실패하면 클립보드/프롬프트로 텍스트 공유 */
+    try{
+      navigator.clipboard.writeText(jsonText).then(function(){
+        alert('📋 JSON이 클립보드에 복사되었습니다.\n메시지·카톡 등에 붙여넣기하여 공유하세요.\n\n파일명: '+fname);
+      }).catch(function(){ _shareJSONPrompt(jsonText); });
+    }catch(e2){ _shareJSONPrompt(jsonText); }
+  }
 }
 function _shareJSONPrompt(jsonText){
   window.prompt('아래 JSON을 복사하여 공유하세요:', jsonText);
@@ -8176,15 +8207,21 @@ function _slCollectYields(){
     genB:     num('prod-res-b')   /* 일반작물 B포구 */
   };
 }
+/* v130: 집계 펼칠 때 모달 내 다른 요소(새로저장 버튼/목록/안내/버튼 등) 숨김 → 집계가 전체 차지 */
+function _slAggSiblings(wrap){
+  var sl=wrap?wrap.parentElement:null; /* sl-body */
+  if(!sl) return [];
+  return Array.prototype.filter.call(sl.children,function(ch){return ch!==wrap;});
+}
 function slToggleAgg(){
   var body   = document.getElementById('sl-agg-body');
   var arrow  = document.getElementById('sl-agg-arrow');
   var wrap   = document.getElementById('sl-agg-wrap');
-  var listEl = document.getElementById('sl-list');
   if(!body) return;
   var show = (body.style.display==='none');
   if(show){
-    /* ── 펼칠 때: sl-agg-wrap을 flex item으로 확장, sl-list 축소 ── */
+    /* ── 펼칠 때: 다른 형제 요소 모두 숨기고 집계가 모달 전체를 차지 ── */
+    _slAggSiblings(wrap).forEach(function(ch){ ch.dataset._slPrevDisp=ch.style.display; ch.style.display='none'; });
     body.style.display = 'block';
     if(arrow) arrow.textContent = '▲';
     if(wrap){
@@ -8194,20 +8231,13 @@ function slToggleAgg(){
       wrap.style.display       = 'flex';
       wrap.style.flexDirection = 'column';
     }
-    /* body도 flex item으로 나머지 공간을 모두 사용하고 스크롤 */
+    /* body가 남은 공간을 모두 사용하고 내부 스크롤 (모바일에서 작물 전체 스크롤로 확인) */
     body.style.flex      = '1 1 auto';
     body.style.minHeight = '0';
     body.style.maxHeight = 'none';
-    if(listEl){
-      listEl.style.maxHeight = '20vh';
-      listEl.style.flex      = '0 0 auto';
-    }
     _slRenderAgg();
-    setTimeout(function(){
-      if(wrap) wrap.scrollIntoView({behavior:'smooth', block:'nearest'});
-    }, 80);
   } else {
-    /* ── 닫을 때: 모두 원래대로 ── */
+    /* ── 닫을 때: 모두 원래대로 복원 ── */
     body.style.display = 'none';
     if(arrow) arrow.textContent = '▼';
     if(wrap){
@@ -8215,7 +8245,7 @@ function slToggleAgg(){
       wrap.style.display=''; wrap.style.flexDirection='';
     }
     body.style.flex=''; body.style.minHeight=''; body.style.maxHeight='';
-    if(listEl){ listEl.style.maxHeight=''; listEl.style.flex=''; }
+    _slAggSiblings(wrap).forEach(function(ch){ ch.style.display=(ch.dataset._slPrevDisp||''); });
   }
 }
 function _slRenderAgg(){
