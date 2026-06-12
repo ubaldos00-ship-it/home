@@ -1,4 +1,4 @@
-<!-- tonghab_v132.html · 저장: 2026-06-13 02:59 KST -->
+<!-- tonghab_v133.html · 저장: 2026-06-13 03:12 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1370,7 +1370,7 @@ textarea {
         </button>
       </div>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v132 저장: 2026-06-13 02:59)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v133 저장: 2026-06-13 03:12)</span></div>
   </div>
 </div>
 
@@ -7856,6 +7856,7 @@ function _pmwRestoreAll(d){
 var SL_LIST_KEY   = 'tonghabSaveList';
 var SL_DATA_PFX   = 'tonghabSave_';
 var _slSelectedKey = null; /* v83: 목록에서 선택된 항목 key */
+var _slLastLoadedKey = null; /* v133: 마지막으로 불러오기/저장한 항목 key (모달 재오픈 시 자동 선택) */
 
 /* 선택 항목 토글 (v83) */
 function slSelectItem(key){
@@ -7987,7 +7988,9 @@ function _slModalTouchMove(e){
 
 /* 모달 열기/닫기 */
 function openSaveLoadModal(){
-  _slSelectedKey = null; /* v83: 모달 열 때 선택 초기화 */
+  /* v133: 마지막으로 불러오기/저장한 항목이 목록에 있으면 자동 선택(덮어쓰기 준비), 없으면 선택 해제 */
+  _slSelectedKey = (_slLastLoadedKey && _slGetList().some(function(i){return i.key===_slLastLoadedKey;}))
+    ? _slLastLoadedKey : null;
   /* v129/130: 모달 열 때 집계 항상 닫힘 상태로 초기화 + 숨긴 형제 복원 */
   var aggBody  = document.getElementById('sl-agg-body');
   var aggArrow = document.getElementById('sl-agg-arrow');
@@ -8005,6 +8008,11 @@ function openSaveLoadModal(){
   modal.classList.add('show');
   document.body.style.overflow='hidden';
   if(list) list.scrollTop=0;
+  /* v133: 자동 선택된(불러온) 항목이 목록에 보이도록 스크롤 */
+  if(list && _slSelectedKey){
+    var selEl=list.querySelector('.sl-item.sl-selected');
+    if(selEl && selEl.scrollIntoView) setTimeout(function(){ try{selEl.scrollIntoView({block:'nearest'});}catch(e){} },60);
+  }
   /* v130: 캐시 삭제 주의 안내 팝업 표시 (8초 후 자동 닫힘) */
   var notice=document.getElementById('sl-notice-pop');
   if(notice){
@@ -8056,6 +8064,7 @@ function saveCurrentData(){
   list.unshift({key:key,label:label,ymd:ymd,hm:hh+':'+mm,crop:cropKo,addr:addrShort,yields:_slCollectYields()});
   if(list.length>30){var rm=list.splice(30);rm.forEach(function(r){try{localStorage.removeItem(SL_DATA_PFX+r.key);}catch(e){}});}
   _slSetList(list);
+  _slLastLoadedKey = key; /* v133: 방금 저장한 항목을 다음 오픈 시 자동 선택 */
   _slRenderList();
   var btn=document.getElementById('slSmartSaveBtn');
   if(btn){var orig=btn.textContent;btn.textContent='✅ 새로 저장 완료!';setTimeout(function(){btn.textContent=orig;_slUpdateSaveBtn();},1600);}
@@ -8067,6 +8076,7 @@ function loadSavedData(key){
   try{
     var s=localStorage.getItem(SL_DATA_PFX+key);
     if(!s){alert('저장 데이터를 찾을 수 없습니다.');return;}
+    _slLastLoadedKey = key; /* v133: 불러온 항목 기억 → 재오픈 시 자동 선택(덮어쓰기 준비) */
     closeSaveLoadModal();
     /* v129: 복원 완료 후 yields 자동 갱신 → 기존 저장 데이터도 집계 반영 */
     _slApply(JSON.parse(s), function(){
@@ -8093,7 +8103,10 @@ function deleteSavedData(key){
   if(!confirm('이 저장 자료를 삭제할까요?'))return;
   try{localStorage.removeItem(SL_DATA_PFX+key);}catch(e){}
   _slSetList(_slGetList().filter(function(i){return i.key!==key;}));
+  if(_slSelectedKey===key) _slSelectedKey=null;
+  if(_slLastLoadedKey===key) _slLastLoadedKey=null; /* v133 */
   _slRenderList();
+  _slUpdateSaveBtn();
 }
 
 /* 덮어쓰기 — 기존 항목을 현재 데이터로 갱신 (key·번호 유지, 라벨/시각만 갱신) */
@@ -8123,6 +8136,7 @@ function overwriteSavedData(key){
   }
   _slSetList(list);
   _slSelectedKey = null; /* v83: 덮어쓰기 후 선택 초기화 */
+  _slLastLoadedKey = key; /* v133: 덮어쓴 항목을 다음 오픈 시에도 자동 선택 */
   _slRenderList();
   _slUpdateSaveBtn();
   // 토스트 안내
