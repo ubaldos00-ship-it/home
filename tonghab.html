@@ -1,4 +1,4 @@
-<!-- tonghab_v130.html · 저장: 2026-06-13 01:52 KST -->
+<!-- tonghab_v132.html · 저장: 2026-06-13 02:59 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1370,7 +1370,7 @@ textarea {
         </button>
       </div>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v130 저장: 2026-06-13 01:52)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v132 저장: 2026-06-13 02:59)</span></div>
   </div>
 </div>
 
@@ -2519,12 +2519,12 @@ textarea {
               <option value="daegu">대구경북권</option>
               <option value="gangwon">강원권</option>
             </select>
-            <select id="nbDistrict" style="font-size:14px;padding:9px 8px;border:1.5px solid #b9d49a;border-radius:8px;background:#f0f7ea;color:#1f4408;font-weight:700;-webkit-appearance:none;appearance:none;">
+            <select id="nbDistrict" onchange="nbCompareCalc(true)" style="font-size:14px;padding:9px 8px;border:1.5px solid #b9d49a;border-radius:8px;background:#f0f7ea;color:#1f4408;font-weight:700;-webkit-appearance:none;appearance:none;">
               <option value="">시군 선택</option>
             </select>
           </div>
         </div>
-        <div style="font-size:12px;color:#555;margin-bottom:10px;">시도·시군 선택 후 <b>[비교 보기]</b>를 누르면 해당 시군의 평년·전년과 조사결과를 비교합니다.</div>
+        <div style="font-size:12px;color:#555;margin-bottom:10px;">시도·시군을 선택하면 해당 시군의 평년·전년과 조사결과가 자동으로 비교됩니다.</div>
         <div id="nbCompareResult" style="display:none;">
           <!-- 평년·전년·조사결과 비교표 -->
           <div style="background:#f8fdf4;border:1px solid #b9d49a;border-radius:10px;padding:12px 14px;margin-bottom:10px;">
@@ -2560,7 +2560,7 @@ textarea {
             <div id="nbCompareTableWrap"></div>
           </div>
         </div>
-        <div id="nbCompareEmpty" style="font-size:12px;color:#aaa;text-align:center;padding:16px 0;">① 공통사항에서 권역·시군을 선택 후 [비교 보기]를 누르세요.</div>
+        <div id="nbCompareEmpty" style="font-size:12px;color:#aaa;text-align:center;padding:16px 0;">위에서 권역·시군을 선택하면 비교표가 자동으로 표시됩니다.</div>
       </div>
     </div>
 
@@ -6770,6 +6770,11 @@ function nbUpdateDistrict(){
     var o=document.createElement('option');
     o.value=n; o.textContent=n; dc.appendChild(o);
   });
+  /* v132: 권역 변경 → 시군 초기화되므로 비교표 숨기고 안내 표시 */
+  var resultDiv=document.getElementById('nbCompareResult');
+  var emptyDiv=document.getElementById('nbCompareEmpty');
+  if(resultDiv) resultDiv.style.display='none';
+  if(emptyDiv)  emptyDiv.style.display='';
 }
 
 /* ════ 논벼 시군별 KOSIS 데이터 (v91) ════
@@ -6842,14 +6847,20 @@ var _nbCmpChart = null;
 var _PY = 302.5; /* 1평 = 10a/303.03 ≈ 302.5 */
 
 /* 논벼 시군별 생산량 비교 실행 (v93) */
-function nbCompareCalc(){
+function nbCompareCalc(silent){
   var dc=document.getElementById('nbDistrict');
   var sigun=dc?dc.value:'';
   var resultDiv=document.getElementById('nbCompareResult');
   var emptyDiv=document.getElementById('nbCompareEmpty');
-  if(!sigun){ alert('① 공통사항에서 권역과 시군을 먼저 선택해주세요.'); return; }
+  /* v132: 시군 미선택 — 자동(silent) 호출이면 비교표 숨기고 조용히 종료, 버튼 클릭이면 안내 */
+  if(!sigun){
+    if(resultDiv) resultDiv.style.display='none';
+    if(emptyDiv)  emptyDiv.style.display='';
+    if(!silent) alert('권역과 시군을 먼저 선택해주세요.');
+    return;
+  }
   var d=NB_SIGUN_DATA[sigun];
-  if(!d){ alert('해당 시군의 데이터가 없습니다.'); return; }
+  if(!d){ if(!silent) alert('해당 시군의 데이터가 없습니다.'); return; }
 
   /* 조사결과: 실수확량 조사표의 백미·조곡 생산량 */
   var baengmiEl=document.getElementById('rsBaengmi');
@@ -7076,7 +7087,8 @@ function nbCompareCalc(){
   /* 결과 표시 */
   resultDiv.style.display='';
   emptyDiv.style.display='none';
-  scrollWithOffset(document.getElementById('nbCompareSection'),20);
+  /* v132: 버튼 클릭 시에만 스크롤, 시군 선택 자동(silent) 호출 시엔 화면 이동 안 함 */
+  if(!silent) scrollWithOffset(document.getElementById('nbCompareSection'),20);
 }
 
 /* A포구 품종명·모내기·비고 → B포구 자동 복사 (B는 이후 독립 수정 가능) (v88) */
@@ -7183,7 +7195,7 @@ document.addEventListener('DOMContentLoaded', function(){
       <div class="sl-list" id="sl-list"><div class="sl-empty">저장된 자료가 없습니다.</div></div>
       <!-- v126: 작물별 10a당 수량 집계 -->
       <div class="sl-agg-wrap" id="sl-agg-wrap">
-        <button type="button" class="sl-agg-toggle" id="sl-agg-toggle" onclick="slToggleAgg()">📊 작물별 10a당 수량 집계 <span id="sl-agg-arrow">▼</span></button>
+        <button type="button" class="sl-agg-toggle" id="sl-agg-toggle" onclick="slToggleAgg()">📊 작물별 10a당 수량 집계 <span id="sl-agg-arrow">▼ 펼치기</span></button>
         <div class="sl-agg-body" id="sl-agg-body" style="display:none;"></div>
       </div>
       <hr class="sl-divider">
@@ -7959,6 +7971,16 @@ function _slListTouchMove(e){
   }
 }
 function _slModalTouchMove(e){
+  /* v131: 집계 영역(sl-agg-body) 안에서는 네이티브 스크롤 허용 (경계에서만 차단)
+     → 작물 8개 이상일 때 스크롤로 전체 확인 가능 */
+  var agg = document.getElementById('sl-agg-body');
+  if(agg && agg.style.display!=='none' && agg.contains(e.target)){
+    var dyA = _slTouchStartY - (e.touches[0]||e.changedTouches[0]).clientY;
+    var atTopA    = agg.scrollTop <= 0;
+    var atBottomA = agg.scrollTop + agg.clientHeight >= agg.scrollHeight - 1;
+    if((atTopA && dyA < 0)||(atBottomA && dyA > 0)){ e.preventDefault(); }
+    return; /* 그 외에는 집계 영역 내부 스크롤 허용 */
+  }
   // 목록 영역 바깥(모달 배경)은 스크롤 완전 차단
   e.preventDefault();
 }
@@ -7972,7 +7994,7 @@ function openSaveLoadModal(){
   var aggWrap  = document.getElementById('sl-agg-wrap');
   var listEl   = document.getElementById('sl-list');
   if(aggBody)  { aggBody.style.display='none'; aggBody.style.flex=''; aggBody.style.minHeight=''; aggBody.style.maxHeight=''; }
-  if(aggArrow) { aggArrow.textContent='▼'; }
+  if(aggArrow) { aggArrow.textContent='▼ 펼치기'; }
   if(aggWrap)  { aggWrap.style.flex=''; aggWrap.style.minHeight=''; aggWrap.style.overflow=''; aggWrap.style.display=''; aggWrap.style.flexDirection=''; }
   if(listEl)   { listEl.style.maxHeight=''; listEl.style.flex=''; }
   if(aggWrap)  { _slAggSiblings(aggWrap).forEach(function(ch){ ch.style.display=(ch.dataset._slPrevDisp||''); }); }
@@ -7995,6 +8017,8 @@ function openSaveLoadModal(){
     list.addEventListener('touchstart', _slListTouchStart, {passive:true});
     list.addEventListener('touchmove',  _slListTouchMove,  {passive:false});
   }
+  /* v131: 모달 전체 touchstart 추적 → 집계 영역 스크롤 시 터치 시작점 갱신 */
+  modal.addEventListener('touchstart', _slListTouchStart, {passive:true});
   modal.addEventListener('touchmove', _slModalTouchMove, {passive:false});
 }
 function closeSaveLoadModal(){
@@ -8009,6 +8033,7 @@ function closeSaveLoadModal(){
     list.removeEventListener('touchstart', _slListTouchStart);
     list.removeEventListener('touchmove',  _slListTouchMove);
   }
+  modal.removeEventListener('touchstart', _slListTouchStart);
   modal.removeEventListener('touchmove', _slModalTouchMove);
 }
 
@@ -8223,7 +8248,7 @@ function slToggleAgg(){
     /* ── 펼칠 때: 다른 형제 요소 모두 숨기고 집계가 모달 전체를 차지 ── */
     _slAggSiblings(wrap).forEach(function(ch){ ch.dataset._slPrevDisp=ch.style.display; ch.style.display='none'; });
     body.style.display = 'block';
-    if(arrow) arrow.textContent = '▲';
+    if(arrow) arrow.textContent = '▲ 접기';
     if(wrap){
       wrap.style.flex          = '1 1 auto';
       wrap.style.minHeight     = '0';
@@ -8239,7 +8264,7 @@ function slToggleAgg(){
   } else {
     /* ── 닫을 때: 모두 원래대로 복원 ── */
     body.style.display = 'none';
-    if(arrow) arrow.textContent = '▼';
+    if(arrow) arrow.textContent = '▼ 펼치기';
     if(wrap){
       wrap.style.flex=''; wrap.style.minHeight=''; wrap.style.overflow='';
       wrap.style.display=''; wrap.style.flexDirection='';
