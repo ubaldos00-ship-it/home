@@ -1,4 +1,4 @@
-<!-- chungchi_v65.html · 저장: 2026-06-14 08:09 KST -->
+<!-- chungchi_v66.html · 저장: 2026-06-14 08:22 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -179,7 +179,7 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
 
 /* ── 저장/불러오기 모달 (tonghab 스타일) ── */
 /* v60: 통합계산기식 flex 레이아웃 (집계 펼치기 + 하단 버튼 고정 + 목록만 스크롤) */
-.sl-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:3000;overflow:hidden;padding:16px 14px;overscroll-behavior:contain;touch-action:none;}
+.sl-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:3000;overflow:hidden;padding:16px 14px;overscroll-behavior:contain;touch-action:pan-y;}
 .sl-modal.show{display:flex;justify-content:center;align-items:flex-start;}
 .sl-box{position:relative;width:100%;max-width:430px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.45);max-height:calc(100dvh - 32px);display:flex;flex-direction:column;touch-action:pan-y;}
 .sl-head{flex-shrink:0;padding:13px 16px;background:#27500A;display:flex;justify-content:space-between;align-items:center;}
@@ -204,9 +204,9 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
 .sl-agg-row .lbl{color:#666;font-weight:600;}
 .sl-agg-row .val{font-weight:800;color:#111;}
 .sl-agg-row .val b{color:#1565c0;}
-.sl-agg-row.sl-agg-avg{background:#FFF8E1;border:1.5px solid #F0C040;border-radius:8px;padding:6px 8px;margin:5px 0;}
-.sl-agg-row.sl-agg-avg .lbl{color:#7A4B00;font-weight:900;}
-.sl-agg-row.sl-agg-avg .val b{color:#C0392B;font-size:15px;font-weight:900;}
+.sl-agg-row.sl-agg-avg{padding:3px 0 4px;margin:2px 0;border-top:1px dashed #e6dfd2;border-bottom:1px dashed #e6dfd2;}
+.sl-agg-row.sl-agg-avg .lbl{color:#333;font-weight:800;}
+.sl-agg-row.sl-agg-avg .val b{color:#0A3A8C;font-size:14px;font-weight:900;}
 .sl-agg-note{font-size:10px;color:#aaa;margin-top:6px;line-height:1.5;}
 /* v63: 작물 클릭 시 세부 목록 */
 .sl-agg-crop-btn{cursor:pointer;user-select:none;}
@@ -312,7 +312,7 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
     <div class="hd-t">
       <h1>청취 10a당 생산량 계산기</h1>
       <span class="hd-status-row"><span class="hd-status" id="headStatus">경북 · 사과</span></span>
-      <span class="hd-ver">(v65: 2026-06-14 08:09)</span>
+      <span class="hd-ver">(v66: 2026-06-14 08:22)</span>
     </div>
   </div>
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
@@ -1836,7 +1836,7 @@ function openSaveLoadModal(){
   var aggArrow=document.getElementById('sl-agg-arrow');
   var aggWrap=document.getElementById('sl-agg-wrap');
   var listEl=document.getElementById('sl-list');
-  if(aggBody){ aggBody.style.display='none'; aggBody.style.flex=''; aggBody.style.minHeight=''; aggBody.style.maxHeight=''; aggBody.style.overflowY=''; }
+  if(aggBody){ aggBody.style.display='none'; aggBody.style.flex=''; aggBody.style.minHeight=''; aggBody.style.maxHeight=''; aggBody.style.overflowY=''; aggBody.style.touchAction=''; }
   if(aggArrow) aggArrow.textContent='▼ 펼치기';
   if(aggWrap){ aggWrap.style.flex=''; aggWrap.style.minHeight=''; aggWrap.style.overflow=''; aggWrap.style.display=''; aggWrap.style.flexDirection=''; }
   if(listEl){ listEl.style.maxHeight=''; listEl.style.flex=''; }
@@ -1890,13 +1890,17 @@ function _slListTouchMove(e){
   var atBottom = list.scrollTop + list.clientHeight >= list.scrollHeight - 1;
   if((atTop && dy < 0)||(atBottom && dy > 0)){ e.preventDefault(); }
 }
+function _slFindScrollable(el){
+  while(el && el !== document.body){
+    if(el.id==='sl-list' || el.id==='sl-agg-body') return el;
+    el = el.parentElement;
+  }
+  return null;
+}
 function _slModalTouchMove(e){
-  /* v65: 저장 목록(sl-list)과 수량 집계(sl-agg-body)는 네이티브 세로 스크롤 허용.
-     모달 배경만 차단하여 iOS에서 위·아래 스크롤이 멈추는 현상을 방지 */
-  var list=document.getElementById('sl-list');
-  var agg=document.getElementById('sl-agg-body');
-  if(list && list.contains(e.target)) return;
-  if(agg && agg.style.display!=='none' && agg.contains(e.target)) return;
+  /* v66: 모달 배경만 차단하고, 집계/목록 내부 터치는 완전히 통과시켜 iOS 스크롤 지연을 줄임 */
+  var sc=_slFindScrollable(e.target);
+  if(sc) return;
   if(e.cancelable) e.preventDefault();
 }
 
@@ -1920,13 +1924,17 @@ function slToggleAgg(){
     /* v61: flex 높이 + 명시적 최대높이 둘 다 지정 → 어떤 환경에서도 작물 많을 때 내부 스크롤 보장 */
     body.style.flex='1 1 auto'; body.style.minHeight='0';
     /* v65: 통합계산기와 동일하게 집계가 모달 남은 높이를 모두 쓰고, 내부에서 위·아래 스크롤되도록 설정 */
-    body.style.maxHeight='none'; body.style.overflowY='auto'; body.style.touchAction='pan-y';
+    body.style.maxHeight='none';
+    body.style.overflowY='auto';
+    body.style.webkitOverflowScrolling='touch';
+    body.style.touchAction='pan-y';
+    body.scrollTop=0;
     _slRenderAgg();
   } else {
     body.style.display='none';
     if(arrow) arrow.textContent='▼ 펼치기';
     if(wrap){ wrap.style.flex=''; wrap.style.minHeight=''; wrap.style.overflow=''; wrap.style.display=''; wrap.style.flexDirection=''; }
-    body.style.flex=''; body.style.minHeight=''; body.style.maxHeight=''; body.style.overflowY='';
+    body.style.flex=''; body.style.minHeight=''; body.style.maxHeight=''; body.style.overflowY=''; body.style.touchAction='';
     _slAggSiblings(wrap).forEach(function(ch){ ch.style.display=(ch.dataset._slPrevDisp||''); });
   }
 }
@@ -1961,7 +1969,7 @@ function _slRenderAgg(){
       +'<div class="sl-agg-crop sl-agg-crop-btn" onclick="slAggToggleCrop('+ci+')">'
         +'<span>'+c+' <span class="ai-arrow" id="sl-agg-arr-'+ci+'">▼</span></span>'
         +'<span class="cnt">'+items.length+'건</span></div>'
-      +'<div class="sl-agg-row sl-agg-avg"><span class="lbl">⭐ 10a당 생산량 평균 ('+n+'건)</span><span class="val"><b>'+fmt(avg)+'</b></span></div>'
+      +'<div class="sl-agg-row sl-agg-avg"><span class="lbl">10a당 생산량 평균 ('+n+'건)</span><span class="val"><b>'+fmt(avg)+'</b></span></div>'
       +'<div class="sl-agg-detail" id="sl-agg-detail-'+ci+'" style="display:none;">'+detail+'</div>'
       +'</div>';
   }).join('');
