@@ -1,4 +1,4 @@
-<!-- tonghab_v135.html · 저장: 2026-06-14 07:35 KST -->
+<!-- tonghab_v136.html · 저장: 2026-06-14 07:51 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1227,13 +1227,13 @@ body.nonbye-mode .hide-nonbye { display:none !important; }
 .calc-btn.close-btn{background:#3a3a3c;color:#fff;font-size:13px;}
 /* ── 저장/불러오기 모달 ── */
 /* v125: 모달 더블탭 확대 방지 + 하단 버튼 항상 표시(목록만 스크롤) */
-.sl-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:3000;overflow:hidden;padding:16px 14px;overscroll-behavior:contain;touch-action:manipulation;}
+.sl-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:3000;overflow:hidden;padding:16px 14px;overscroll-behavior:contain;touch-action:none;}
 .sl-modal.show{display:flex;justify-content:center;align-items:flex-start;}
-.sl-box{position:relative;width:100%;max-width:430px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.45);max-height:calc(100dvh - 32px);display:flex;flex-direction:column;touch-action:manipulation;}
+.sl-box{position:relative;width:100%;max-width:430px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.45);max-height:calc(100dvh - 32px);display:flex;flex-direction:column;touch-action:pan-y;}
 .sl-head{flex-shrink:0;padding:13px 16px;background:#27500A;display:flex;justify-content:space-between;align-items:center;}
 .sl-head-title{font-size:15px;font-weight:800;color:#fff;}
 .sl-close{background:rgba(255,255,255,.2);border:none;color:#fff;font-size:18px;width:32px;height:32px;border-radius:8px;cursor:pointer;line-height:1;touch-action:manipulation;}
-.sl-body{padding:14px 14px 18px;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;}
+.sl-body{padding:14px 14px 18px;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;touch-action:pan-y;}
 .sl-save-now{flex-shrink:0;width:100%;padding:14px;background:#E07000;border:none;border-radius:10px;color:#fff;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:14px;letter-spacing:.02em;touch-action:manipulation;}
 .sl-save-now:active{opacity:.82;}
 .sl-section{flex-shrink:0;font-size:11px;font-weight:700;color:#888;letter-spacing:.06em;text-transform:uppercase;margin-bottom:7px;}
@@ -1268,7 +1268,7 @@ body.nonbye-mode .hide-nonbye { display:none !important; }
 .sl-agg-wrap{flex-shrink:0;margin-bottom:10px;}
 .sl-agg-toggle{width:100%;padding:10px 12px;background:#EBF3FF;border:1.5px solid #b3c8f0;border-radius:9px;color:#0A3A8C;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;text-align:left;display:flex;justify-content:space-between;align-items:center;touch-action:manipulation;}
 .sl-agg-toggle:active{background:#d8e8ff;}
-.sl-agg-body{margin-top:8px;max-height:60vh;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;border:1px solid #e0e6f0;border-radius:9px;padding:8px;background:#fafbfe;}
+.sl-agg-body{margin-top:8px;max-height:calc(100dvh - 190px);overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;border:1px solid #e0e6f0;border-radius:9px;padding:8px;background:#fafbfe;}
 .sl-agg-empty{text-align:center;color:#999;font-size:12px;padding:14px 0;}
 .sl-agg-card{border:1px solid #dbe3f0;border-radius:8px;background:#fff;padding:8px 10px;margin-bottom:7px;}
 .sl-agg-card:last-child{margin-bottom:0;}
@@ -1378,7 +1378,7 @@ textarea {
         </button>
       </div>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v135 저장: 2026-06-14 07:35)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v136 저장: 2026-06-14 07:51)</span></div>
   </div>
 </div>
 
@@ -5641,6 +5641,12 @@ async function shareCaptureFromModal(){
       touchStartY = e.touches ? e.touches[0].clientY : 0;
     }, { passive: true });
     document.addEventListener('touchmove', function(e){
+      /* v136: 저장/불러오기 모달 내부 스크롤은 풀투리프레시 차단에서 제외 */
+      const sm = document.getElementById('sl-modal');
+      if(sm && sm.classList.contains('show') && sm.contains(e.target)){
+        touchStartY = e.touches ? e.touches[0].clientY : touchStartY;
+        return;
+      }
       const y = e.touches ? e.touches[0].clientY : 0;
       const dy = y - touchStartY;
       // 페이지 최상단 + 아래로 당김 → 새로고침 방지
@@ -7979,18 +7985,13 @@ function _slListTouchMove(e){
   }
 }
 function _slModalTouchMove(e){
-  /* v131: 집계 영역(sl-agg-body) 안에서는 네이티브 스크롤 허용 (경계에서만 차단)
-     → 작물 8개 이상일 때 스크롤로 전체 확인 가능 */
-  var agg = document.getElementById('sl-agg-body');
-  if(agg && agg.style.display!=='none' && agg.contains(e.target)){
-    var dyA = _slTouchStartY - (e.touches[0]||e.changedTouches[0]).clientY;
-    var atTopA    = agg.scrollTop <= 0;
-    var atBottomA = agg.scrollTop + agg.clientHeight >= agg.scrollHeight - 1;
-    if((atTopA && dyA < 0)||(atBottomA && dyA > 0)){ e.preventDefault(); }
-    return; /* 그 외에는 집계 영역 내부 스크롤 허용 */
-  }
-  // 목록 영역 바깥(모달 배경)은 스크롤 완전 차단
-  e.preventDefault();
+  /* v136: 저장 목록(sl-list)과 수량 집계(sl-agg-body)는 네이티브 세로 스크롤 허용.
+     모달 배경만 차단하여 iOS에서 위·아래 스크롤이 멈추는 현상을 방지 */
+  var list=document.getElementById('sl-list');
+  var agg=document.getElementById('sl-agg-body');
+  if(list && list.contains(e.target)) return;
+  if(agg && agg.style.display!=='none' && agg.contains(e.target)) return;
+  if(e.cancelable) e.preventDefault();
 }
 
 /* 모달 열기/닫기 */
