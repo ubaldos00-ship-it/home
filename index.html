@@ -1,4 +1,4 @@
-<!-- home_v25_firebase_chat.html · 저장: 2026-06-13 12:25 KST -->
+<!-- home_v28_firebase_chat_buttonfix.html · 저장: 2026-06-13 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -15,14 +15,14 @@
 <meta name="theme-color" content="#27500A" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<title>농작물생산조사 통합시스템 · 텐아르 v1.2-firebase</title>
+<title>농작물생산조사 통합시스템 · 텐아르 v1.3-firebase</title>
 <!-- OG 메타 (카카오톡/링크 공유용) -->
 <meta property="og:type"        content="website" />
-<meta property="og:title"       content="농작물생산조사 통합시스템 · 텐아르 v1.2-firebase" />
+<meta property="og:title"       content="농작물생산조사 통합시스템 · 텐아르 v1.3-firebase" />
 <meta property="og:description" content="실측조사·청취조사·10a당 생산량 조회까지 농작물생산조사 통합 모바일 도구" />
 <meta property="og:url"         content="https://ubaldos00-ship-it.github.io/home/" />
 <meta name="twitter:card"       content="summary" />
-<meta name="twitter:title"      content="농작물생산조사 통합시스템 · 텐아르 v1.2-firebase" />
+<meta name="twitter:title"      content="농작물생산조사 통합시스템 · 텐아르 v1.3-firebase" />
 <meta name="twitter:description" content="실측조사·청취조사·10a당 생산량 조회까지 농작물생산조사 통합 모바일 도구" />
 
 <!-- Pretendard 한국어 웹폰트 -->
@@ -520,7 +520,7 @@
 
 
 
-  /* ===== 실시간 문의/공유 채팅 UI (로컬 저장형) ===== */
+  /* ===== 실시간 문의/공유 채팅 UI (Firebase 연결형) ===== */
   .chat-fab {
     position: fixed;
     right: 16px;
@@ -567,6 +567,22 @@
     justify-content: center;
   }
   .chat-modal.show { display: flex; }
+  /* 채팅창이 열렸을 때 뒤쪽 텐아르 홈화면 스크롤 잠금 */
+  body.chat-scroll-lock {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    left: 0;
+    right: 0;
+    overscroll-behavior: none;
+    touch-action: none;
+  }
+  body.chat-scroll-lock .chat-modal,
+  body.chat-scroll-lock .chat-panel,
+  body.chat-scroll-lock .chat-messages,
+  body.chat-scroll-lock .chat-input {
+    touch-action: auto;
+  }
   .chat-panel {
     width: 100%;
     max-width: 520px;
@@ -580,7 +596,7 @@
     padding-bottom: env(safe-area-inset-bottom);
   }
   .chat-head {
-    background: #27500A;
+    background: linear-gradient(135deg, #f28c28 0%, #d96f00 100%);
     color: #fff;
     padding: 14px 16px 12px;
     display: flex;
@@ -621,20 +637,38 @@
   }
   .chat-user-row {
     display: flex;
-    gap: 8px;
-    padding: 10px 12px;
+    gap: 9px;
+    align-items: center;
+    padding: 11px 12px;
     background: #f8f7f1;
     border-bottom: 1px solid var(--color-border);
+  }
+  .chat-name-label {
+    flex-shrink: 0;
+    font-size: 13px;
+    font-weight: 800;
+    color: #5f3b0b;
+    padding-left: 2px;
+  }
+  .chat-count-note {
+    padding: 7px 12px;
+    background: #fffdf7;
+    border-bottom: 1px solid #efe5ca;
+    color: #7a5a20;
+    font-size: 11.5px;
+    font-weight: 700;
+    text-align: center;
   }
   .chat-user-row input {
     flex: 1;
     border: 1px solid var(--color-border);
     border-radius: 10px;
-    padding: 9px 10px;
+    padding: 10px 11px;
     font-family: inherit;
-    font-size: 13px;
+    font-size: 14px;
     outline: none;
     min-width: 0;
+    height: 42px;
   }
   .chat-user-row button,
   .chat-send-row button,
@@ -649,6 +683,16 @@
     padding: 0 13px;
     cursor: pointer;
     white-space: nowrap;
+  }
+  /* 닉네임 저장 버튼: 모바일에서도 누르기 쉽도록 별도 확대 */
+  .chat-user-row button#chatNameSave {
+    min-width: 76px;
+    height: 42px;
+    padding: 0 18px;
+    font-size: 14px;
+    font-weight: 800;
+    border-radius: 12px;
+    box-shadow: 0 2px 7px rgba(39,80,10,0.18);
   }
   .chat-messages {
     flex: 1;
@@ -1054,7 +1098,7 @@
   <!-- 푸터 -->
   <footer class="info">
     <div class="source">출처 / 참고자료: 국가데이터처 통계설명자료, KOSIS 등</div>
-    <div class="brand-line">농작물생산조사 통합시스템 · 텐아르 v1.2-firebase</div>
+    <div class="brand-line">농작물생산조사 통합시스템 · 텐아르 v1.3-firebase</div>
     <div class="meta" style="display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px;">
       오늘 방문자 <strong id="localDailyCount">…</strong>
       &nbsp;·&nbsp;
@@ -1150,13 +1194,15 @@
       ※ 개인정보, 농가명, 주소, 전화번호 등 민감정보는 입력하지 마세요.<br>
       ※ 현재 버전은 Firebase 실시간 데이터베이스에 연결되어 여러 사용자가 동시에 메시지를 볼 수 있습니다.
     </div>
+    <div class="chat-count-note">최근 80개 메시지만 표시됩니다.</div>
     <div class="chat-user-row">
-      <input id="chatName" type="text" maxlength="18" placeholder="이름/지역 예: 상주1, 조사원A" autocomplete="nickname" />
+      <label class="chat-name-label" for="chatName">닉네임</label>
+      <input id="chatName" type="text" maxlength="18" placeholder="예: 상주1, 조사원A" autocomplete="nickname" />
       <button type="button" id="chatNameSave">저장</button>
     </div>
     <div class="chat-messages" id="chatMessages" aria-live="polite"></div>
     <div class="chat-send-row">
-      <textarea id="chatInput" maxlength="500" placeholder="메시지를 입력하세요. Enter 전송, Shift+Enter 줄바꿈"></textarea>
+      <textarea id="chatInput" maxlength="300" placeholder="메시지를 입력하세요. Enter 전송, Shift+Enter 줄바꿈"></textarea>
       <button type="button" id="chatSend">전송</button>
     </div>
     <div class="chat-actions">
@@ -1455,7 +1501,7 @@
     const list = sortedMessages();
     const me = currentName();
     if (!list.length) {
-      messagesEl.innerHTML = '<div class="chat-empty">아직 남긴 메시지가 없습니다.<br>오류나 개선 의견을 편하게 적어주세요.</div>';
+      messagesEl.innerHTML = '<div class="chat-empty">아직 남긴 메시지가 없습니다.<br>오류나 개선 의견을 편하게 적어주세요.<br><span style="font-size:11.5px;">최근 80개 메시지만 표시됩니다.</span></div>';
     } else {
       messagesEl.innerHTML = list.map(m => {
         const mine = m.name === me ? ' mine' : '';
@@ -1485,7 +1531,19 @@
     localStorage.setItem(LAST_READ_KEY, String(latestMessageTime() || Date.now()));
     updateBadge();
   }
+  let chatSavedScrollY = 0;
+  function lockPageScroll() {
+    chatSavedScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+    document.body.classList.add('chat-scroll-lock');
+    document.body.style.top = `-${chatSavedScrollY}px`;
+  }
+  function unlockPageScroll() {
+    document.body.classList.remove('chat-scroll-lock');
+    document.body.style.top = '';
+    window.scrollTo(0, chatSavedScrollY);
+  }
   function openChat() {
+    lockPageScroll();
     modal.classList.add('show');
     nameInput.value = currentName() === '나' ? '' : currentName();
     render();
@@ -1494,6 +1552,7 @@
   }
   function closeChat() {
     modal.classList.remove('show');
+    unlockPageScroll();
     markRead();
   }
   function saveName() {
@@ -1539,6 +1598,9 @@
     fab.addEventListener('click', openChat);
     closeBtn.addEventListener('click', closeChat);
     modal.addEventListener('click', e => { if (e.target === modal) closeChat(); });
+    modal.addEventListener('touchmove', e => {
+      if (e.target === modal) e.preventDefault();
+    }, { passive: false });
     nameSave.addEventListener('click', saveName);
     sendBtn.addEventListener('click', sendMessage);
     refreshBtn.addEventListener('click', refreshMessages);
@@ -1551,7 +1613,7 @@
 
     status.textContent = 'Firebase 실시간 채팅에 연결 중입니다...';
     get(messagesRef).then(() => {
-      status.textContent = 'Firebase 실시간 채팅 연결 완료';
+      status.textContent = 'Firebase 실시간 채팅 연결 완료 · 최근 80개 표시';
     }).catch(err => {
       console.error(err);
       status.textContent = 'Firebase 읽기 실패: Realtime Database 규칙을 확인해주세요.';
