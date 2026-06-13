@@ -1,4 +1,4 @@
-<!-- home_v28_firebase_chat_buttonfix.html · 저장: 2026-06-13 KST -->
+<!-- home_v32_firebase_chat_userdelete.html · 저장: 2026-06-13 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -772,6 +772,47 @@
     padding: 7px 10px;
     font-size: 11.5px;
   }
+  .chat-admin-btn {
+    background: #d96f00;
+    padding: 7px 10px;
+    font-size: 11.5px;
+  }
+  .chat-delete-btn {
+    margin: 4px 6px 0;
+    border: none;
+    background: transparent;
+    color: #c0392b;
+    font-size: 11px;
+    font-weight: 800;
+    cursor: pointer;
+    padding: 2px 4px;
+    align-self: inherit;
+  }
+  .chat-admin-panel {
+    display: none;
+    gap: 8px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: #fff1e0;
+    border-top: 1px solid #f2c27b;
+    color: #7a3f00;
+    font-size: 11.5px;
+    font-weight: 800;
+  }
+  .chat-admin-panel.show { display: flex; }
+  .chat-admin-reset {
+    border: none;
+    border-radius: 10px;
+    background: #c0392b;
+    color: #fff;
+    padding: 7px 10px;
+    font-family: inherit;
+    font-size: 11.5px;
+    font-weight: 800;
+    cursor: pointer;
+    white-space: nowrap;
+  }
 
   @media (max-width: 360px) {
     header.app-header .brand-name { font-size: 22px; }
@@ -1207,7 +1248,14 @@
     </div>
     <div class="chat-actions">
       <span id="chatStatus">Firebase 연결 준비 중입니다.</span>
-      <button type="button" class="chat-clear-btn" id="chatClear">새로고침</button>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <button type="button" class="chat-admin-btn" id="chatAdminBtn">관리자</button>
+        <button type="button" class="chat-clear-btn" id="chatClear">새로고침</button>
+      </div>
+    </div>
+    <div class="chat-admin-panel" id="chatAdminPanel">
+      <span>관리자 모드 켜짐 · 모든 메시지 삭제 가능</span>
+      <button type="button" class="chat-admin-reset" id="chatResetAll">전체 초기화</button>
     </div>
   </div>
 </div>
@@ -1446,6 +1494,9 @@
     orderByChild,
     limitToLast,
     onChildAdded,
+    onChildRemoved,
+    remove,
+    set,
     get
   } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
 
@@ -1465,7 +1516,11 @@
   const recentMessagesQuery = query(messagesRef, orderByChild("createdAt"), limitToLast(80));
 
   const NAME_KEY = 'tenar_chat_name_v1';
+  const CLIENT_ID_KEY = 'tenar_chat_client_id_v1';
   const LAST_READ_KEY = 'tenar_chat_last_read_v2';
+  // ⚠️ 정적 HTML 관리자 비밀번호입니다. GitHub Pages에 올리면 코드 보기로 확인될 수 있습니다.
+  // 더 강한 보안은 Firebase Authentication 적용이 필요합니다.
+  const ADMIN_PASSWORD = 'tenar2026';
 
   const fab = document.getElementById('chatFab');
   const badge = document.getElementById('chatBadge');
@@ -1477,10 +1532,14 @@
   const input = document.getElementById('chatInput');
   const sendBtn = document.getElementById('chatSend');
   const refreshBtn = document.getElementById('chatClear');
+  const adminBtn = document.getElementById('chatAdminBtn');
+  const adminPanel = document.getElementById('chatAdminPanel');
+  const resetAllBtn = document.getElementById('chatResetAll');
   const status = document.getElementById('chatStatus');
 
   const messages = [];
   const seenKeys = new Set();
+  let isAdminMode = false;
 
   function pad(n) { return String(n).padStart(2, '0'); }
   function timeText(ts) {
@@ -1494,6 +1553,28 @@
     const saved = (localStorage.getItem(NAME_KEY) || '').trim();
     return saved || '나';
   }
+  function updateNameSaveButton() {
+    const saved = (localStorage.getItem(NAME_KEY) || '').trim();
+    if (!nameSave) return;
+    if (saved) {
+      nameSave.textContent = '재설정';
+      nameSave.classList.add('saved');
+      nameSave.setAttribute('aria-label', '닉네임 재설정');
+    } else {
+      nameSave.textContent = '저장';
+      nameSave.classList.remove('saved');
+      nameSave.setAttribute('aria-label', '닉네임 저장');
+    }
+  }
+  function getClientId() {
+    let id = localStorage.getItem(CLIENT_ID_KEY);
+    if (!id) {
+      const rnd = Math.random().toString(36).slice(2);
+      id = 'tenar-' + Date.now().toString(36) + '-' + rnd;
+      localStorage.setItem(CLIENT_ID_KEY, id);
+    }
+    return id;
+  }
   function sortedMessages() {
     return messages.slice().sort((a, b) => Number(a.createdAt || 0) - Number(b.createdAt || 0)).slice(-80);
   }
@@ -1504,10 +1585,15 @@
       messagesEl.innerHTML = '<div class="chat-empty">아직 남긴 메시지가 없습니다.<br>오류나 개선 의견을 편하게 적어주세요.<br><span style="font-size:11.5px;">최근 80개 메시지만 표시됩니다.</span></div>';
     } else {
       messagesEl.innerHTML = list.map(m => {
-        const mine = m.name === me ? ' mine' : '';
+        const mineByClient = m.clientId && m.clientId === getClientId();
+        const mine = (mineByClient || m.name === me) ? ' mine' : '';
+        const canDelete = !!m.key && (mineByClient || isAdminMode);
+        const deleteLabel = isAdminMode && !mineByClient ? '관리자 삭제' : '내 글 삭제';
+        const deleteBtn = canDelete ? `<button type="button" class="chat-delete-btn" data-chat-delete="${escapeHtml(m.key)}">${deleteLabel}</button>` : '';
         return `<div class="chat-msg${mine}">
           <div class="chat-meta">${escapeHtml(m.name || '익명')} · ${escapeHtml(timeText(m.createdAt))}</div>
           <div class="chat-bubble">${escapeHtml(m.text || '')}</div>
+          ${deleteBtn}
         </div>`;
       }).join('');
     }
@@ -1546,6 +1632,9 @@
     lockPageScroll();
     modal.classList.add('show');
     nameInput.value = currentName() === '나' ? '' : currentName();
+    updateNameSaveButton();
+    const savedName = (localStorage.getItem(NAME_KEY) || '').trim();
+    if (savedName) status.textContent = `${savedName} 닉네임이 저장되어 있습니다.`;
     render();
     markRead();
     setTimeout(() => input.focus(), 120);
@@ -1562,7 +1651,8 @@
       return;
     }
     localStorage.setItem(NAME_KEY, name);
-    status.textContent = `${name} 이름으로 저장되었습니다.`;
+    status.textContent = `${name} 닉네임이 저장되었습니다.`;
+    updateNameSaveButton();
     render();
   }
   async function sendMessage() {
@@ -1574,17 +1664,18 @@
       return;
     }
     localStorage.setItem(NAME_KEY, name);
+    updateNameSaveButton();
     sendBtn.disabled = true;
     status.textContent = '메시지 전송 중입니다...';
     try {
-      await push(messagesRef, { name, text, createdAt: Date.now() });
+      await push(messagesRef, { name, text, createdAt: Date.now(), clientId: getClientId() });
       input.value = '';
       status.textContent = '메시지가 실시간 DB에 저장되었습니다.';
       markRead();
     } catch (err) {
       console.error(err);
-      status.textContent = '전송 실패: Firebase 규칙 또는 인터넷 연결을 확인해주세요.';
-      alert('메시지 전송에 실패했습니다. Firebase 규칙이 저장되었는지 확인해주세요.');
+      status.textContent = '전송 실패: Firebase 규칙을 v29/v30 삭제 기능용 규칙으로 바꿔주세요.';
+      alert('메시지 전송에 실패했습니다. Realtime Database 규칙에서 clientId 저장과 삭제가 허용되어야 합니다. 채팅 삭제 기능용 규칙으로 교체 후 다시 전송해주세요.');
     } finally {
       sendBtn.disabled = false;
     }
@@ -1592,6 +1683,62 @@
   function refreshMessages() {
     render();
     status.textContent = '최근 메시지를 다시 표시했습니다.';
+  }
+  async function deleteMessage(key) {
+    if (!key) return;
+    const msg = messages.find(m => m.key === key);
+    const mineByClient = msg && msg.clientId && msg.clientId === getClientId();
+    if (!isAdminMode && !mineByClient) {
+      alert('본인이 보낸 메시지만 삭제할 수 있습니다.');
+      return;
+    }
+    const askText = isAdminMode && !mineByClient ? '관리자 권한으로 이 메시지를 삭제할까요?' : '내가 보낸 이 메시지를 삭제할까요?';
+    if (!confirm(askText)) return;
+    try {
+      await remove(ref(db, 'tenarChat/messages/' + key));
+      status.textContent = mineByClient ? '내 메시지를 삭제했습니다.' : '관리자 권한으로 메시지를 삭제했습니다.';
+    } catch (err) {
+      console.error(err);
+      status.textContent = '삭제 실패: Firebase 규칙을 확인해주세요.';
+      alert('삭제에 실패했습니다. Realtime Database 규칙에서 tenarChat/messages 경로 삭제가 허용되어야 합니다.');
+    }
+  }
+  function openAdminMode() {
+    if (isAdminMode) {
+      isAdminMode = false;
+      adminPanel.classList.remove('show');
+      status.textContent = '관리자 모드를 종료했습니다.';
+      render();
+      return;
+    }
+    const pw = prompt('관리자 비밀번호를 입력하세요.');
+    if (pw === null) return;
+    if (pw !== ADMIN_PASSWORD) {
+      alert('관리자 비밀번호가 맞지 않습니다.');
+      return;
+    }
+    isAdminMode = true;
+    adminPanel.classList.add('show');
+    status.textContent = '관리자 모드가 켜졌습니다.';
+    render();
+  }
+  async function resetAllMessages() {
+    if (!isAdminMode) return;
+    const ok1 = confirm('전체 채팅을 초기화할까요? 모든 메시지가 삭제됩니다.');
+    if (!ok1) return;
+    const ok2 = confirm('정말 삭제할까요? 되돌릴 수 없습니다.');
+    if (!ok2) return;
+    try {
+      await remove(messagesRef);
+      messages.length = 0;
+      seenKeys.clear();
+      render();
+      status.textContent = '전체 채팅을 초기화했습니다.';
+    } catch (err) {
+      console.error(err);
+      status.textContent = '전체 초기화 실패: Firebase 규칙의 messages 경로 쓰기 권한을 확인해주세요.';
+      alert('전체 초기화에 실패했습니다. Realtime Database 규칙에서 tenarChat/messages 경로 삭제가 허용되어야 합니다.');
+    }
   }
 
   if (fab && modal) {
@@ -1604,6 +1751,12 @@
     nameSave.addEventListener('click', saveName);
     sendBtn.addEventListener('click', sendMessage);
     refreshBtn.addEventListener('click', refreshMessages);
+    adminBtn.addEventListener('click', openAdminMode);
+    resetAllBtn.addEventListener('click', resetAllMessages);
+    messagesEl.addEventListener('click', function (e) {
+      const btn = e.target.closest('[data-chat-delete]');
+      if (btn) deleteMessage(btn.getAttribute('data-chat-delete'));
+    });
     input.addEventListener('keydown', function (e) {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
@@ -1632,6 +1785,14 @@
       status.textContent = 'Firebase 수신 실패: 규칙 또는 DB 주소를 확인해주세요.';
     });
 
+    onChildRemoved(messagesRef, snapshot => {
+      const idx = messages.findIndex(m => m.key === snapshot.key);
+      if (idx >= 0) messages.splice(idx, 1);
+      seenKeys.delete(snapshot.key);
+      render();
+    });
+
+    updateNameSaveButton();
     render();
     updateBadge();
   }
