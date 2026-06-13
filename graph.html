@@ -1,3 +1,4 @@
+<!-- graph_v23.html · 저장: 2026-06-13 11:35 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -41,6 +42,7 @@
     z-index: 1000;
     color: #fff;
     overflow: hidden;
+    transition: transform .28s ease; /* v23: 스크롤 시 숨김 */
   }
   .top-bar-flex {
     display: flex;
@@ -56,12 +58,13 @@
     letter-spacing: -0.3px;
     display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
   }
+  /* v23: 작물/지역 태그 — 연두 배경, 흰 글자, 테두리 없음 */
   .header-crop-tag {
     display: inline-block;
-    background: rgba(255,255,255,0.15);
-    border: 2px solid #f87171;
+    background: #97C459;
+    border: none;
     border-radius: 14px;
-    padding: 1px 10px;
+    padding: 3px 12px;
     font-size: 12.5px;
     font-weight: 800;
     color: #fff;
@@ -69,13 +72,13 @@
   }
   .header-region-tag {
     display: inline-block;
-    background: rgba(255,255,255,0.12);
-    border: 2px solid #f87171;
+    background: #97C459;
+    border: none;
     border-radius: 12px;
-    padding: 1px 9px;
+    padding: 3px 11px;
     font-size: 11.5px;
     font-weight: 700;
-    color: rgba(255,255,255,0.97);
+    color: #fff;
     margin-left: 4px;
     white-space: nowrap;
   }
@@ -421,9 +424,21 @@
   .data-popup .pop-region { font-size: 11px; color: #d1d5db; margin-bottom: 2px; }
   .data-popup .pop-val { font-size: 18px; font-weight: 800; margin-top: 4px; }
   .data-popup .unit { font-size: 11px; color:#a7f3d0; margin-left:3px; }
+/* v20: 뒤로가기 차단 토스트 */
+#back-block-toast{display:none;position:fixed;left:50%;bottom:80px;transform:translateX(-50%);background:rgba(17,24,39,.94);color:#fff;border-radius:12px;padding:10px 16px;font-size:13px;font-weight:700;z-index:9999;max-width:88%;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.28);pointer-events:none;}
+#back-block-toast.show{display:block;}
+/* v21: 전체삭제 확인 다이얼로그 */
+.lc-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:9500;display:flex;align-items:center;justify-content:center;padding:24px;}
+.lc-box{background:#fff;border-radius:14px;padding:22px 18px 14px;width:100%;max-width:320px;box-shadow:0 8px 32px rgba(0,0,0,.25);}
+.lc-box p{font-size:15px;color:#1a2e1a;line-height:1.65;margin-bottom:18px;font-weight:500;}
+.lc-btns{display:flex;justify-content:flex-end;gap:10px;}
+.lc-cancel{min-height:38px;padding:7px 18px;border:1.5px solid #1a8a78;border-radius:8px;background:transparent;color:#1a8a78;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;}
+.lc-ok{min-height:38px;padding:7px 18px;border:none;background:transparent;color:#1a8a78;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;}
+.lc-cancel:active,.lc-ok:active{opacity:.7;}
 </style>
 </head>
 <body>
+<div id="back-block-toast"></div>
 <div class="wrap" id="capture-area">
 
   <div class="top-bar">
@@ -440,7 +455,7 @@
         </button>
         <button class="sl-hdr-btn" onclick="openSaveLoadModal()" aria-label="저장/불러오기">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M17 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V7l-4-4z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M17 3v4H7V3" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><rect x="9" y="13" width="6" height="6" rx="1" stroke="#fff" stroke-width="2"/></svg>
-          저장
+          저장/불러
         </button>
       </div>
     </div>
@@ -449,7 +464,7 @@
       <span class="header-crop-tag"   id="headerCropTag"   style="display:none"></span>
       <span class="header-region-tag" id="headerRegionTag" style="display:none"></span>
     </div>
-    <div class="top-sub">출처: KOSIS 농작물생산조사(2021~2025) <span style="opacity:.75;font-size:11px;">· v18 저장: 2026-06-06 11:12</span></div>
+    <div class="top-sub">출처: KOSIS 농작물생산조사(2021~2025) <span style="opacity:.75;font-size:11px;">· v23 저장: 2026-06-13 11:35</span></div>
   </div>
 
   <div class="card">
@@ -1163,9 +1178,15 @@ verifyAndInit();
     </div>
     <div class="sl-body">
       <button class="sl-save-now" id="slSmartSaveBtn" onclick="slSmartSave()">💾 새로 저장</button>
-      <div class="sl-section">저장된 자료 목록 <span style="color:#c0392b;font-size:10px;font-weight:700;letter-spacing:-.01em;">(버튼이 안 눌리면 새로고침 후 사용하세요)</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;gap:8px;">
+        <span class="sl-section" style="margin-bottom:0;flex:1;min-width:0;">저장된 자료 목록 <span style="color:#c0392b;font-size:10px;font-weight:700;letter-spacing:-.01em;">(버튼이 안 눌리면 새로고침)</span></span>
+        <button onclick="confirmDeleteAll_sl()" style="flex-shrink:0;background:none;border:1px solid #d93030;border-radius:7px;color:#d93030;font-size:11px;font-weight:700;padding:4px 9px;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;">전체삭제</button>
+      </div>
       <div class="sl-list" id="sl-list"><div class="sl-empty">저장된 자료가 없습니다.</div></div>
       <hr class="sl-divider">
+      <div style="background:#fff8ec;border:1px solid #f5c842;border-radius:9px;padding:9px 12px;font-size:11.5px;color:#a07800;font-weight:500;line-height:1.65;margin-bottom:10px;">
+        ⚠️ 주의: 브라우저 캐시·데이터 삭제 시 모두 사라집니다. 중요한 자료는 <strong>JSON 내보내기</strong> 버튼으로 파일로 백업해두세요.
+      </div>
       <div class="sl-section" style="margin-bottom:8px;">JSON 파일로 공유 / 내보내기 / 불러오기</div>
       <div class="sl-file-row">
         <button class="sl-file-btn sl-share-btn" onclick="shareJSON()">📱 JSON 공유</button>
@@ -1331,6 +1352,34 @@ var _TRASH_SVG='<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><pat
 /* v16: 자물쇠 SVG */
 var _LOCK_SVG='<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="4" y="11" width="16" height="11" rx="2" fill="#1558D6" stroke="#1558D6" stroke-width="1.2"/><path d="M8 11V8a4 4 0 018 0v3" stroke="#1558D6" stroke-width="2" stroke-linecap="round"/></svg>';
 var _UNLOCK_SVG='<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="4" y="11" width="16" height="11" rx="2" stroke="#aaa" stroke-width="1.5" fill="none"/><path d="M8 11V8a4 4 0 018 0" stroke="#aaa" stroke-width="2" stroke-linecap="round"/></svg>';
+/* v21: 전체삭제 (잠금 해제된 항목만) */
+function confirmDeleteAll_sl(){
+  var list=_grGetList();
+  var unlocked=list.filter(function(i){return !i.fav;});
+  if(!unlocked.length){alert('삭제할 항목이 없습니다.\n(잠금 해제된 항목만 삭제됩니다.)');return;}
+  var ov=document.createElement('div');
+  ov.className='lc-overlay';ov.id='delAllOverlay';
+  ov.innerHTML='<div class="lc-box">'
+    +'<p>목록 전체를 삭제 하시겠습니까?<br><span style="font-size:12px;opacity:.7;">잠금된 항목은 삭제되지 않습니다.</span></p>'
+    +'<div class="lc-btns">'
+    +'<button class="lc-cancel" onclick="document.getElementById(\'delAllOverlay\').remove()">취소</button>'
+    +'<button class="lc-ok" style="color:#d93030;" onclick="document.getElementById(\'delAllOverlay\').remove();deleteAllUnlocked_sl()">삭제</button>'
+    +'</div></div>';
+  document.body.appendChild(ov);
+}
+function deleteAllUnlocked_sl(){
+  var list=_grGetList();
+  list.filter(function(i){return !i.fav;}).forEach(function(i){
+    try{localStorage.removeItem(GR_DATA_PFX+i.key);}catch(e){}
+  });
+  var kept=list.filter(function(i){return i.fav;});
+  _grSetList(kept);
+  if(_slSelectedKey){
+    var still=kept.some(function(i){return i.key===_slSelectedKey;});
+    if(!still){_slSelectedKey=null;if(typeof _slUpdateSaveBtn==='function')_slUpdateSaveBtn();}
+  }
+  _slRenderList();
+}
 function _slRenderList(){
   var raw=_grGetList();
   var el=document.getElementById('sl-list');
@@ -1430,5 +1479,76 @@ function _grShareFallback(jsonText,fname){
 }
 </script>
 
+<!-- ═══ v20: 뒤로가기 차단 + 토스트 ═══ -->
+<script>
+(function(){
+  var _toastTimer;
+  function showBackToast(msg){
+    var el = document.getElementById('back-block-toast');
+    if(!el) return;
+    if(_toastTimer) clearTimeout(_toastTimer);
+    el.textContent = msg;
+    el.classList.add('show');
+    _toastTimer = setTimeout(function(){ el.classList.remove('show'); }, 4000);
+  }
+  var _bbIdx = 0;
+  var _BASE = location.href.split('#')[0];
+  function _pushBlock(){
+    try{
+      var h = '#_' + (++_bbIdx);
+      history.replaceState({_bb:'g',i:_bbIdx}, '', _BASE + h);
+      var h2 = '#_' + (++_bbIdx);
+      history.pushState({_bb:'g',i:_bbIdx}, '', _BASE + h2);
+      var h3 = '#_' + (++_bbIdx);
+      history.pushState({_bb:'g',i:_bbIdx}, '', _BASE + h3);
+    }catch(e){}
+  }
+  function _onBlock(){
+    if(window._allowLeave) return;
+    _pushBlock();
+    showBackToast('뒤로가기 차단중입니다. 초기화, 홈버튼이 안 눌러지면 새로고침 후 눌러주세요.');
+  }
+  _pushBlock();
+  document.addEventListener('DOMContentLoaded', function(){
+    if(!window._allowLeave){ _pushBlock(); }
+  });
+  window.addEventListener('popstate',   _onBlock);
+  window.addEventListener('hashchange', _onBlock);
+})();
+</script>
+
+<!-- ═══ 텐아르 통합앱 임베드 모드 (v19) — 헤더 숨김 + 부모 버튼 수신 ═══ -->
+<script>
+(function(){
+  try{
+    var embed = new URLSearchParams(location.search).get('embed')==='1';
+    if(embed){
+      var h=document.querySelector('.top-bar'); if(h) h.style.display='none';
+    }
+    window.addEventListener('message',function(e){
+      var d=e.data||{};
+      if(d.tenar==='calc'){ if(typeof openCalcModal==='function') openCalcModal(); }
+      else if(d.tenar==='save'){ if(typeof openSaveLoadModal==='function') openSaveLoadModal(); }
+    });
+  }catch(_){}
+})();
+</script>
+<script>
+/* v23: 스크롤 시 헤더 자동 숨김/표시 (통합계산기와 동일) */
+(function(){
+  var lastY=0, ticking=false, THRESHOLD=40;
+  function onScroll(){
+    var y=window.scrollY||window.pageYOffset;
+    var hdr=document.querySelector('.top-bar');
+    if(!hdr){lastY=y;ticking=false;return;}
+    if(y>lastY && y>THRESHOLD){ hdr.style.transform='translateY(-100%)'; }
+    else if(y<lastY){ hdr.style.transform='translateY(0)'; }
+    lastY=y; ticking=false;
+  }
+  window.addEventListener('scroll',function(){
+    if(!ticking){ticking=true;requestAnimationFrame(onScroll);}
+  },{passive:true});
+})();
+</script>
 </body>
 </html>

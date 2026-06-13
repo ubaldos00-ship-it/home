@@ -1,3 +1,4 @@
+<!-- chungchi_v60.html · 저장: 2026-06-13 11:35 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -16,7 +17,7 @@
 html{background:#27500A;overflow-y:scroll;overscroll-behavior:none;}
 html,body{overscroll-behavior:none;touch-action:pan-x pan-y;font-family:'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',sans-serif;color:#1a1a2e;font-size:16px;line-height:1.55}
 body{padding:0 0 80px;background:#f4f7f4;max-width:430px;margin:0 auto;min-height:100vh;box-shadow:0 0 28px rgba(0,0,0,.08)}
-.header{position:sticky;top:0;z-index:100;background:#27500A;color:#fff;padding:11px 14px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 10px rgba(0,0,0,.18)}
+.header{position:sticky;top:0;z-index:100;background:#27500A;color:#fff;padding:11px 14px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 10px rgba(0,0,0,.18);transition:transform .28s ease}
 .hd-left{display:flex;align-items:center;gap:8px;min-width:0;flex:1;}
 .hd-icon{width:32px;height:32px;background:rgba(255,255,255,.16);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:24px;line-height:1;box-shadow:0 1px 4px rgba(0,0,0,.12)}
 .hd-t{min-width:0;overflow:hidden;}
@@ -38,6 +39,10 @@ input.needs-input,input.needs-input:focus{border-color:#F59E0B!important;border-
 input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#e0e0e0!important}
 .s1r{display:flex;gap:5px;align-items:center}
 .s1l{font-size:12px;color:#666;white-space:nowrap}
+/* v60: 입력란 글자 강조 (공통사항·재배면적·수확량) */
+#address,#surveyDate{font-size:16px !important;font-weight:800 !important;color:#1455d9 !important;}
+.pi,.si{font-size:16px !important;font-weight:800 !important;color:#1455d9 !important;}
+.hq{font-size:16px !important;font-weight:800 !important;color:#1455d9 !important;}
 .btn{padding:10px 15px;border:none;border-radius:11px;font-size:14px;font-weight:700;cursor:pointer;min-height:42px;display:inline-flex;align-items:center;justify-content:center;gap:3px}
 .btn:active{opacity:.8}
 .bp{background:#27ae60;color:#fff}.bd{background:#fff;color:#c0392b;border:1.5px solid #f5b7b1}.bdk{background:#2c3e50;color:#fff}
@@ -55,8 +60,12 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
 .hl{font-size:11px;color:#555;white-space:nowrap;flex-shrink:0}
 .tb{background:#fff8dd;border:2px solid #f3d37a;border-radius:14px;padding:12px;margin-top:10px;display:flex;justify-content:space-around;flex-wrap:wrap;gap:8px;box-shadow:inset 0 1px 0 rgba(255,255,255,.8)}
 .ti{text-align:center;flex:1;min-width:70px}
-.tv{font-size:22px;font-weight:900;color:#0f7a3a;letter-spacing:-.5px}
+.tv{font-size:24px;font-weight:900;color:#0f7a3a;letter-spacing:-.5px}
 .tl{font-size:12px;color:#6b7280;font-weight:700}
+/* v60: 합계 라벨을 데이터 위로, 단위는 데이터 옆에 */
+.ti .tl{margin-bottom:2px;}
+.tv-line{display:flex;align-items:baseline;justify-content:center;gap:3px;flex-wrap:wrap;}
+.tu{font-size:13px;font-weight:800;color:#0f7a3a;}
 .sb{background:#eafaf1;border:2px solid #27ae60;border-radius:11px;padding:13px;margin-top:7px}
 .sv{font-size:22px;font-weight:800;color:#27500A;text-align:center}
 .fm{font-size:10px;color:#888;margin-top:4px;word-break:break-all;text-align:center}
@@ -91,7 +100,9 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
 .di{background:#3498db;left:50%}.dd{background:#e74c3c;right:50%}
 .dl{display:flex;justify-content:space-between;margin-top:2px}
 .dl span{font-size:9px;color:#999}
-.dl .mid{font-size:9px;color:#666;font-weight:600;text-align:center}
+/* v60: 국가데이터포털 비교 기준값 강조 */
+.dl .mid{font-size:11.5px;color:#1b5e20;font-weight:900;text-align:center;background:#e8f5e9;border:1px solid #a5d6a7;border-radius:8px;padding:1px 8px;}
+.cl b{font-size:13px;background:#fff3cd;border-radius:6px;padding:0 5px;}
 .leg{display:flex;gap:9px;margin-bottom:11px;flex-wrap:wrap}
 .leg span{display:flex;align-items:center;gap:3px;font-size:11px;color:#555}
 .ld{width:10px;height:10px;border-radius:3px;flex-shrink:0}
@@ -167,17 +178,38 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
 .sl-hdr-btn:active,.home-btn:active{background:rgba(255,255,255,.28);}
 
 /* ── 저장/불러오기 모달 (tonghab 스타일) ── */
-.sl-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:3000;overflow-y:auto;padding:16px 14px 40px;overscroll-behavior:contain;}
+/* v60: 통합계산기식 flex 레이아웃 (집계 펼치기 + 하단 버튼 고정 + 목록만 스크롤) */
+.sl-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:3000;overflow:hidden;padding:16px 14px;overscroll-behavior:contain;touch-action:manipulation;}
 .sl-modal.show{display:flex;justify-content:center;align-items:flex-start;}
-.sl-box{width:100%;max-width:430px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.45);}
-.sl-head{padding:13px 16px;background:#27500A;display:flex;justify-content:space-between;align-items:center;}
+.sl-box{position:relative;width:100%;max-width:430px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.45);max-height:calc(100dvh - 32px);display:flex;flex-direction:column;touch-action:manipulation;}
+.sl-head{flex-shrink:0;padding:13px 16px;background:#27500A;display:flex;justify-content:space-between;align-items:center;}
 .sl-head-title{font-size:15px;font-weight:800;color:#fff;}
 .sl-close{background:rgba(255,255,255,.2);border:none;color:#fff;font-size:18px;width:32px;height:32px;border-radius:8px;cursor:pointer;line-height:1;}
-.sl-body{padding:14px 14px 18px;}
-.sl-save-now{width:100%;padding:14px;background:#E07000;border:none;border-radius:10px;color:#fff;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:14px;letter-spacing:.02em;}
+.sl-body{padding:14px 14px 18px;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;}
+.sl-save-now{flex-shrink:0;width:100%;padding:14px;background:#E07000;border:none;border-radius:10px;color:#fff;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:14px;letter-spacing:.02em;}
 .sl-save-now:active{opacity:.82;}
-.sl-section{font-size:11px;font-weight:700;color:#888;letter-spacing:.06em;margin-bottom:7px;}
-.sl-list{display:flex;flex-direction:column;gap:7px;margin-bottom:14px;max-height:50vh;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;}
+.sl-section{flex-shrink:0;font-size:11px;font-weight:700;color:#888;letter-spacing:.06em;margin-bottom:7px;}
+.sl-list{display:flex;flex-direction:column;gap:7px;margin-bottom:14px;flex:1 1 auto;min-height:60px;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;}
+/* v60: 작물별 10a당 수량 집계 */
+.sl-agg-wrap{flex-shrink:0;margin-bottom:10px;}
+.sl-agg-toggle{width:100%;padding:10px 12px;background:#EBF3FF;border:1.5px solid #b3c8f0;border-radius:9px;color:#0A3A8C;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;text-align:left;display:flex;justify-content:space-between;align-items:center;touch-action:manipulation;}
+.sl-agg-toggle:active{background:#d8e8ff;}
+.sl-agg-body{margin-top:8px;max-height:60vh;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;border:1px solid #e0e6f0;border-radius:9px;padding:8px;background:#fafbfe;}
+.sl-agg-empty{text-align:center;color:#999;font-size:12px;padding:14px 0;}
+.sl-agg-card{border:1px solid #dbe3f0;border-radius:8px;background:#fff;padding:8px 10px;margin-bottom:7px;}
+.sl-agg-card:last-child{margin-bottom:0;}
+.sl-agg-crop{font-size:13px;font-weight:800;color:#1a3a1a;margin-bottom:5px;display:flex;justify-content:space-between;align-items:baseline;}
+.sl-agg-crop .cnt{font-size:11px;font-weight:700;color:#0A3A8C;background:#EBF3FF;border-radius:20px;padding:1px 8px;}
+.sl-agg-row{display:flex;justify-content:space-between;font-size:12px;color:#3D3C39;padding:2px 0;line-height:1.5;}
+.sl-agg-row .lbl{color:#666;font-weight:600;}
+.sl-agg-row .val{font-weight:800;color:#111;}
+.sl-agg-row .val b{color:#1565c0;}
+.sl-agg-note{font-size:10px;color:#aaa;margin-top:6px;line-height:1.5;}
+/* v60: 캐시 삭제 주의 안내 팝업 */
+.sl-notice-pop{position:absolute;left:12px;right:12px;bottom:12px;background:#fff8ec;border:1.5px solid #f5c842;border-radius:10px;padding:10px 12px;font-size:11px;color:#a07800;font-weight:600;line-height:1.55;box-shadow:0 6px 22px rgba(0,0,0,.25);display:none;align-items:center;gap:8px;z-index:5;}
+.sl-notice-pop.show{display:flex;}
+.sl-notice-pop strong{color:#7a5c00;font-weight:800;}
+.sl-notice-pop button{flex-shrink:0;background:#a07800;color:#fff;border:none;border-radius:7px;padding:6px 13px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;}
 .sl-item{background:#f8f6f1;border:1px solid #e0ddd6;border-radius:10px;padding:9px 10px;display:flex;align-items:center;gap:7px;}
 .sl-item-num{min-width:22px;height:22px;background:#27500A;color:#fff;border-radius:50%;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .sl-item-info{flex:1;min-width:0;}
@@ -194,11 +226,12 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
 .sl-item.sl-selected{background:#edfbe8;border:2px solid #3a7d44;}
 .sl-item.sl-selected .sl-item-label{color:#1a5c22;}
 .sl-empty{text-align:center;color:#bbb;font-size:13px;padding:22px 0;}
-.sl-divider{border:none;border-top:1px solid #e8e5de;margin:4px 0 14px;}
-.sl-file-row{display:flex;gap:8px;}
+.sl-divider{flex-shrink:0;border:none;border-top:1px solid #e8e5de;margin:4px 0 14px;}
+.sl-file-row{flex-shrink:0;display:flex;gap:6px;}
 .sl-file-btn{flex:1;padding:12px 6px;border:2px solid #d0ccc4;border-radius:10px;background:#fff;color:#3D3C39;font-size:13px;font-weight:700;cursor:pointer;text-align:center;display:block;}
 .sl-file-btn:active{opacity:.82;}
-.sl-file-row .sl-file-btn{padding:10px 4px;font-size:12px;}
+/* v60: JSON 버튼 더 작게(통합계산기 동일) */
+.sl-file-row .sl-file-btn{padding:6px 3px;font-size:10.5px;border-width:1.5px;border-radius:8px;}
 .sl-file-row .sl-share-btn{background:#1f8a3a;color:#fff;border-color:#1f8a3a;}
 .sl-file-row .sl-file-btn:nth-child(2){background:#6d28d9;color:#fff;border-color:#6d28d9;}
 .sl-file-row .sl-file-btn:last-child{background:#0A3A8C;color:#fff;border-color:#0A3A8C;}
@@ -268,7 +301,7 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
     <div class="hd-t">
       <h1>청취 10a당 생산량 계산기</h1>
       <span class="hd-status-row"><span class="hd-status" id="headStatus">경북 · 사과</span></span>
-      <span class="hd-ver">(v59: 2026-06-11 03:21)</span>
+      <span class="hd-ver">(v60: 2026-06-13 11:35)</span>
     </div>
   </div>
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
@@ -356,8 +389,8 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
     <button class="btn bp bsm right" onclick="addARow()">＋ 추가</button>
   </div>
   <div class="tb">
-    <div class="ti"><div class="tv" id="tPy">0</div><div class="tl">평 합계</div></div>
-    <div class="ti"><div class="tv" id="tSm">0</div><div class="tl">㎡ 합계</div></div>
+    <div class="ti"><div class="tl">평 합계</div><div class="tv-line"><span class="tv" id="tPy">0</span></div></div>
+    <div class="ti"><div class="tl">합계</div><div class="tv-line"><span class="tv" id="tSm">0</span><span class="tu">㎡</span></div></div>
   </div>
 </div>
 
@@ -375,8 +408,8 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
     <button class="btn bp bsm right" onclick="addHR()">＋ 추가</button>
   </div>
   <div class="tb">
-    <div class="ti"><div class="tv" id="tHU">0</div><div class="tl" id="tULbl">단위 합계</div></div>
-    <div class="ti"><div class="tv" id="tHK">0</div><div class="tl">생산량 합계 (kg)</div></div>
+    <div class="ti"><div class="tl">합계</div><div class="tv-line"><span class="tv" id="tHU">0</span><span class="tu" id="tULbl">컨테이너</span></div></div>
+    <div class="ti"><div class="tl">생산량 합계</div><div class="tv-line"><span class="tv" id="tHK">0</span><span class="tu">kg</span></div></div>
   </div>
   <!-- v47: 피해부호/피해율 -->
   <div class="dmg-wrap">
@@ -519,16 +552,23 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
         <button onclick="confirmDeleteAll_sl()" style="flex-shrink:0;background:none;border:1px solid #d93030;border-radius:7px;color:#d93030;font-size:11px;font-weight:700;padding:4px 9px;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;">전체삭제</button>
       </div>
       <div class="sl-list" id="sl-list"><div class="sl-empty">저장된 자료가 없습니다.</div></div>
+      <!-- v60: 작물별 10a당 수량 집계 -->
+      <div class="sl-agg-wrap" id="sl-agg-wrap">
+        <button type="button" class="sl-agg-toggle" id="sl-agg-toggle" onclick="slToggleAgg()">📊 작물별 10a당 수량 집계 <span id="sl-agg-arrow">▼ 펼치기</span></button>
+        <div class="sl-agg-body" id="sl-agg-body" style="display:none;"></div>
+      </div>
       <hr class="sl-divider">
-      <div style="background:#fff8ec;border:1px solid #f5c842;border-radius:9px;padding:9px 12px;font-size:11.5px;color:#a07800;font-weight:500;line-height:1.65;margin-bottom:10px;">
-        ⚠️ 주의: 브라우저 캐시·데이터 삭제 시 모두 사라집니다. 중요한 자료는 <strong>JSON 내보내기</strong> 버튼으로 파일로 백업해두세요.
-      </div>
-      <div class="sl-section" style="margin-bottom:8px;">JSON 파일로 공유 / 내보내기 / 불러오기</div>
+      <div class="sl-section" style="margin-bottom:6px;font-size:10px;">JSON 파일 공유 / 내보내기 / 불러오기</div>
       <div class="sl-file-row">
-        <button class="sl-file-btn sl-share-btn" onclick="shareJSON()">📱 JSON 공유</button>
-        <button class="sl-file-btn" onclick="exportJSON()">📤 JSON 내보내기</button>
-        <button class="sl-file-btn" onclick="importJSON()">📥 JSON 불러오기</button>
+        <button class="sl-file-btn sl-share-btn" onclick="shareJSON()">공유</button>
+        <button class="sl-file-btn" onclick="exportJSON()">내보내기</button>
+        <button class="sl-file-btn" onclick="importJSON()">불러오기</button>
       </div>
+    </div>
+    <!-- v60: 캐시 삭제 주의 안내 팝업 -->
+    <div class="sl-notice-pop" id="sl-notice-pop">
+      <span>⚠️ 브라우저 캐시·데이터 삭제 시 저장 자료가 모두 사라집니다. 중요한 자료는 <strong>내보내기</strong>로 파일 백업하세요.</span>
+      <button type="button" onclick="document.getElementById('sl-notice-pop').classList.remove('show')">확인</button>
     </div>
   </div>
 </div>
@@ -660,7 +700,7 @@ function goHome(){
   try{document.getElementById('uibT').innerHTML='📌 <b>사과</b> 기본단위: 컨테이너 × 18kg';}catch(e){}
   try{document.getElementById('dUnit').textContent='컨테이너';}catch(e){}
   try{document.getElementById('dWeight').textContent='18 kg';}catch(e){}
-  try{document.getElementById('tULbl').textContent='컨테이너 합계';}catch(e){}
+  try{document.getElementById('tULbl').textContent='컨테이너';}catch(e){}
   const apple=document.querySelector('.bc[data-crop="사과"]'); if(apple) apple.classList.add('on');
   try{rstA();}catch(e){}
   try{document.getElementById('hRows').innerHTML='';bldHR();}catch(e){}
@@ -734,7 +774,7 @@ function selCrop(b){
   document.getElementById('dWeight').textContent=f(c.w)+' kg';
   document.getElementById('uib').style.display='block';
   document.getElementById('uibT').innerHTML=`📌 <b>${sC}</b> 기본단위: ${c.u} × ${f(c.w)}kg`;
-  document.getElementById('tULbl').textContent=c.u+' 합계';
+  document.getElementById('tULbl').textContent=c.u;
   document.querySelectorAll('.hr2').forEach(row=>{
     row.querySelector('.hul').textContent=c.u;
     const wi=row.querySelector('.hw');
@@ -1013,8 +1053,8 @@ function niceScale(min,max){
 function drawKosisLine(rgs){
   const cvs=document.getElementById('kosisLine'); if(!cvs||!sC)return;
   if(chartInstance){chartInstance.destroy();chartInstance=null;}
-  const colorMap={'전국':'#8b5cf6','대구':'#0d6640','경북':'#dc2626','강원':'#2563eb'};
-  const fallback=['#8b5cf6','#0d6640','#dc2626','#2563eb','#f59e0b','#0891b2','#db2777'];
+  const colorMap={'전국':'#9ca3af','대구':'#0d6640','경북':'#dc2626','강원':'#2563eb'}; /* v60: 전국 그레이 */
+  const fallback=['#9ca3af','#0d6640','#dc2626','#2563eb','#f59e0b','#0891b2','#db2777'];
   const allVals=[];
   rgs.forEach(r=>(KD[sC]?.[r]||[]).forEach(v=>{if(v!=null&&v>0)allVals.push(v);}));
   if(!allVals.length)return;
@@ -1032,6 +1072,7 @@ function drawKosisLine(rgs){
           borderColor:col,
           backgroundColor:col+'20',
           borderWidth:r===sR?3:2,
+          borderDash:r==='전국'?[6,4]:[], /* v60: 전국 점선 */
           pointRadius:4,pointHoverRadius:7,
           pointBackgroundColor:col,pointBorderColor:'#fff',pointBorderWidth:2,
           tension:0.25,spanGaps:true
@@ -1203,7 +1244,7 @@ function resetAll(scrollTop=false){
   document.getElementById('uibT').innerHTML='📌 <b>사과</b> 기본단위: 컨테이너 × 18kg';
   document.getElementById('dUnit').textContent='컨테이너';
   document.getElementById('dWeight').textContent='18 kg';
-  document.getElementById('tULbl').textContent='컨테이너 합계';
+  document.getElementById('tULbl').textContent='컨테이너';
   const apple=document.querySelector('.bc[data-crop="사과"]'); if(apple) apple.classList.add('on'); updateHeadStatus();
   rstA();
   document.getElementById('hRows').innerHTML='';bldHR();
@@ -1265,6 +1306,22 @@ document.addEventListener('scroll',function(){
   var tip=document.getElementById('cjsTip');
   if(tip&&tip.style.display!=='none') tip.style.display='none';
 },{passive:true});
+
+/* v60: 스크롤 시 헤더 자동 숨김/표시 (통합계산기와 동일) */
+(function(){
+  var lastY=0, ticking=false, THRESHOLD=40;
+  function onScroll(){
+    var y=window.scrollY||window.pageYOffset;
+    var hdr=document.querySelector('.header');
+    if(!hdr){lastY=y;ticking=false;return;}
+    if(y>lastY && y>THRESHOLD){ hdr.style.transform='translateY(-100%)'; }
+    else if(y<lastY){ hdr.style.transform='translateY(0)'; }
+    lastY=y; ticking=false;
+  }
+  window.addEventListener('scroll',function(){
+    if(!ticking){ticking=true;requestAnimationFrame(onScroll);}
+  },{passive:true});
+})();
 </script>
 
 <script>
@@ -1318,7 +1375,20 @@ function _ccCollect(){
     });
   });
   d.__hRows = hRows;
+  /* v60: 10a당 생산량 결과값 저장 (작물별 집계용) */
+  try{
+    var pEl=document.getElementById('resPer10a');
+    var pv=pEl?parseFloat((pEl.textContent||'').replace(/[^0-9.]/g,'')):NaN;
+    if(isFinite(pv)&&pv>0) d.__per10a=pv;
+  }catch(e){}
   return d;
+}
+/* v60: 현재 화면 10a당 생산량 (숫자) */
+function _ccPer10a(){
+  var pEl=document.getElementById('resPer10a');
+  if(!pEl) return null;
+  var pv=parseFloat((pEl.textContent||'').replace(/[^0-9.]/g,''));
+  return (isFinite(pv)&&pv>0)?pv:null;
 }
 
 /* ── 데이터 복원 ── */
@@ -1474,9 +1544,10 @@ function saveCurrentData(){
   try{ localStorage.setItem(CC_DATA_PFX+key, JSON.stringify(d)); }
   catch(e){ alert('저장 실패: 저장 공간이 부족합니다.'); return; }
   var list = _ccGetList();
-  list.unshift({key:key, label:label, ymd:ymd, hm:hh+':'+mm2, crop:crop, addr:addrShort});
+  list.unshift({key:key, label:label, ymd:ymd, hm:hh+':'+mm2, crop:crop, addr:addrShort, per10a:_ccPer10a()});
   if(list.length>30){ var rm=list.splice(30); rm.forEach(function(r){ try{ localStorage.removeItem(CC_DATA_PFX+r.key); }catch(e){} }); }
   _ccSetList(list);
+  _slLastLoadedKey = key; /* v60: 방금 저장한 항목 자동 선택 대상 */
   ccAutoSave();
   _slRenderList();
   var btn=document.getElementById('slSmartSaveBtn');
@@ -1505,11 +1576,12 @@ function overwriteSavedData(key){
   for(var i=0;i<list.length;i++){
     if(list[i].key===key){
       list[i].label=label; list[i].ymd=ymd; list[i].hm=hh+':'+mm2;
-      list[i].crop=crop;   list[i].addr=addrShort; break;
+      list[i].crop=crop;   list[i].addr=addrShort; list[i].per10a=_ccPer10a(); break;
     }
   }
   _ccSetList(list);
   _slSelectedKey = null;
+  _slLastLoadedKey = key; /* v60: 덮어쓴 항목 자동 선택 유지 */
   _slRenderList();
   _slUpdateSaveBtn();
   var t=document.createElement('div');
@@ -1557,6 +1629,7 @@ function loadSavedData(key){
   try{
     var raw = localStorage.getItem(CC_DATA_PFX+key);
     if(!raw){ alert('저장 데이터를 찾을 수 없습니다.'); return; }
+    _slLastLoadedKey = key; /* v60: 불러온 항목 기억 → 재오픈 시 자동 선택(덮어쓰기 준비) */
     closeSaveLoadModal();
     _ccApply(JSON.parse(raw));
     ccAutoSave();
@@ -1576,11 +1649,15 @@ function deleteSavedData(key){
   if(!confirm('이 저장 자료를 삭제할까요?')) return;
   try{ localStorage.removeItem(CC_DATA_PFX+key); }catch(e){}
   _ccSetList(_ccGetList().filter(function(x){ return x.key!==key; }));
+  if(_slSelectedKey===key) _slSelectedKey=null;
+  if(_slLastLoadedKey===key) _slLastLoadedKey=null; /* v60 */
   _slRenderList();
+  _slUpdateSaveBtn();
 }
 
 /* ── 선택 항목 key (v42 추가) ── */
 var _slSelectedKey = null;
+var _slLastLoadedKey = null; /* v60: 마지막 불러오기/저장 항목 → 재오픈 시 자동 선택 */
 
 function slSelectItem(key){
   _slSelectedKey = (_slSelectedKey === key) ? null : key;
@@ -1647,6 +1724,8 @@ function deleteAllUnlocked_sl(){
 function _slRenderList(){
   var raw = _ccGetList();
   var el = document.getElementById('sl-list');
+  var aggBody=document.getElementById('sl-agg-body');
+  if(aggBody && aggBody.style.display!=='none') _slRenderAgg(); /* v60: 집계 열려있으면 갱신 */
   if(!el) return;
   if(!raw.length){ el.innerHTML='<div class="sl-empty">저장된 자료가 없습니다.</div>'; return; }
   /* v44: 순서 변경 없이 원래 순서 유지 */
@@ -1732,7 +1811,19 @@ function importJSON(){
 
 /* ── 모달 열기/닫기 ── */
 function openSaveLoadModal(){
-  _slSelectedKey = null;
+  /* v60: 마지막 불러오기/저장 항목이 목록에 있으면 자동 선택(덮어쓰기 준비) */
+  _slSelectedKey = (_slLastLoadedKey && _ccGetList().some(function(i){return i.key===_slLastLoadedKey;}))
+    ? _slLastLoadedKey : null;
+  /* v60: 집계 닫힘 상태로 초기화 + 숨긴 형제 복원 */
+  var aggBody=document.getElementById('sl-agg-body');
+  var aggArrow=document.getElementById('sl-agg-arrow');
+  var aggWrap=document.getElementById('sl-agg-wrap');
+  var listEl=document.getElementById('sl-list');
+  if(aggBody){ aggBody.style.display='none'; aggBody.style.flex=''; aggBody.style.minHeight=''; aggBody.style.maxHeight=''; }
+  if(aggArrow) aggArrow.textContent='▼ 펼치기';
+  if(aggWrap){ aggWrap.style.flex=''; aggWrap.style.minHeight=''; aggWrap.style.overflow=''; aggWrap.style.display=''; aggWrap.style.flexDirection=''; }
+  if(listEl){ listEl.style.maxHeight=''; listEl.style.flex=''; }
+  if(aggWrap) _slAggSiblings(aggWrap).forEach(function(ch){ ch.style.display=(ch.dataset._slPrevDisp||''); });
   _slRenderList();
   _slUpdateSaveBtn();
   var modal = document.getElementById('sl-modal');
@@ -1740,10 +1831,19 @@ function openSaveLoadModal(){
   modal.classList.add('show');
   document.body.style.overflow = 'hidden';
   if(list) list.scrollTop = 0;
+  /* v60: 자동 선택된 항목이 보이도록 스크롤 */
+  if(list && _slSelectedKey){
+    var selEl=list.querySelector('.sl-item.sl-selected');
+    if(selEl && selEl.scrollIntoView) setTimeout(function(){ try{selEl.scrollIntoView({block:'nearest'});}catch(e){} },60);
+  }
+  /* v60: 캐시 삭제 주의 안내 팝업 (8초 후 자동 닫힘) */
+  var notice=document.getElementById('sl-notice-pop');
+  if(notice){ notice.classList.add('show'); clearTimeout(window._slNoticeTimer); window._slNoticeTimer=setTimeout(function(){ notice.classList.remove('show'); },8000); }
   if(list){
     list.addEventListener('touchstart', _slListTouchStart, {passive:true});
     list.addEventListener('touchmove',  _slListTouchMove,  {passive:false});
   }
+  modal.addEventListener('touchstart', _slListTouchStart, {passive:true});
   modal.addEventListener('touchmove', _slModalTouchMove, {passive:false});
 }
 function closeSaveLoadModal(){
@@ -1751,10 +1851,13 @@ function closeSaveLoadModal(){
   var list  = document.getElementById('sl-list');
   modal.classList.remove('show');
   document.body.style.overflow = '';
+  var notice=document.getElementById('sl-notice-pop'); if(notice) notice.classList.remove('show');
+  clearTimeout(window._slNoticeTimer);
   if(list){
     list.removeEventListener('touchstart', _slListTouchStart);
     list.removeEventListener('touchmove',  _slListTouchMove);
   }
+  modal.removeEventListener('touchstart', _slListTouchStart);
   modal.removeEventListener('touchmove', _slModalTouchMove);
 }
 
@@ -1770,7 +1873,75 @@ function _slListTouchMove(e){
   var atBottom = list.scrollTop + list.clientHeight >= list.scrollHeight - 1;
   if((atTop && dy < 0)||(atBottom && dy > 0)){ e.preventDefault(); }
 }
-function _slModalTouchMove(e){ e.preventDefault(); }
+function _slModalTouchMove(e){
+  /* v60: 집계 영역 안에서는 네이티브 스크롤 허용 (작물 많을 때 스크롤) */
+  var agg=document.getElementById('sl-agg-body');
+  if(agg && agg.style.display!=='none' && agg.contains(e.target)){
+    var dyA=_slTouchStartY-(e.touches[0]||e.changedTouches[0]).clientY;
+    var atTopA=agg.scrollTop<=0;
+    var atBottomA=agg.scrollTop+agg.clientHeight>=agg.scrollHeight-1;
+    if((atTopA&&dyA<0)||(atBottomA&&dyA>0)){ e.preventDefault(); }
+    return;
+  }
+  e.preventDefault();
+}
+
+/* ════ v60: 작물별 10a당 수량 집계 (잠금 항목만, 통합계산기 동일) ════ */
+function _slAggSiblings(wrap){
+  var sl=wrap?wrap.parentElement:null;
+  if(!sl) return [];
+  return Array.prototype.filter.call(sl.children,function(ch){return ch!==wrap;});
+}
+function slToggleAgg(){
+  var body=document.getElementById('sl-agg-body');
+  var arrow=document.getElementById('sl-agg-arrow');
+  var wrap=document.getElementById('sl-agg-wrap');
+  if(!body) return;
+  var show=(body.style.display==='none');
+  if(show){
+    _slAggSiblings(wrap).forEach(function(ch){ ch.dataset._slPrevDisp=ch.style.display; ch.style.display='none'; });
+    body.style.display='block';
+    if(arrow) arrow.textContent='▲ 접기';
+    if(wrap){ wrap.style.flex='1 1 auto'; wrap.style.minHeight='0'; wrap.style.overflow='hidden'; wrap.style.display='flex'; wrap.style.flexDirection='column'; }
+    body.style.flex='1 1 auto'; body.style.minHeight='0'; body.style.maxHeight='none';
+    _slRenderAgg();
+  } else {
+    body.style.display='none';
+    if(arrow) arrow.textContent='▼ 펼치기';
+    if(wrap){ wrap.style.flex=''; wrap.style.minHeight=''; wrap.style.overflow=''; wrap.style.display=''; wrap.style.flexDirection=''; }
+    body.style.flex=''; body.style.minHeight=''; body.style.maxHeight='';
+    _slAggSiblings(wrap).forEach(function(ch){ ch.style.display=(ch.dataset._slPrevDisp||''); });
+  }
+}
+function _slRenderAgg(){
+  var body=document.getElementById('sl-agg-body');
+  if(!body) return;
+  var list=_ccGetList().filter(function(it){return !!it.fav;}); /* 잠금 항목만 */
+  if(!list.length){ body.innerHTML='<div class="sl-agg-empty">잠금된 자료가 없습니다.<br><span style="font-size:10px;color:#bbb;">목록에서 🔒 잠금 후 집계에 반영됩니다.</span></div>'; return; }
+  /* per10a 보완: 메타에 없으면 저장 데이터(__per10a)에서 읽기 */
+  list.forEach(function(it){
+    if(typeof it.per10a==='number'&&it.per10a>0) return;
+    try{ var s=localStorage.getItem(CC_DATA_PFX+it.key); if(s){ var d=JSON.parse(s); var v=parseFloat(d.__per10a); if(isFinite(v)&&v>0) it.per10a=v; } }catch(e){}
+  });
+  var groups={}, order=[];
+  list.forEach(function(it){ var c=it.crop||'기타'; if(!groups[c]){groups[c]=[];order.push(c);} groups[c].push(it); });
+  function avgOf(arr){ var v=arr.filter(function(x){return typeof x==='number'&&isFinite(x)&&x>0;}); if(!v.length) return null; return Math.round(v.reduce(function(a,b){return a+b;},0)/v.length); }
+  function fmt(n){ return (n==null)?'—':n.toLocaleString('ko-KR')+' kg'; }
+  var hasOld=false;
+  var html=order.map(function(c){
+    var items=groups[c];
+    var vals=items.map(function(i){return i.per10a;});
+    var avg=avgOf(vals);
+    var n=vals.filter(function(x){return typeof x==='number'&&isFinite(x)&&x>0;}).length;
+    if(items.some(function(i){return !(typeof i.per10a==='number'&&i.per10a>0);})) hasOld=true;
+    return '<div class="sl-agg-card">'
+      +'<div class="sl-agg-crop">'+c+'<span class="cnt">'+items.length+'건</span></div>'
+      +'<div class="sl-agg-row"><span class="lbl">10a당 생산량 평균 ('+n+'건)</span><span class="val"><b>'+fmt(avg)+'</b></span></div>'
+      +'</div>';
+  }).join('');
+  if(hasOld){ html+='<div class="sl-agg-note">※ 수량값이 없는 옛 자료는 집계에서 제외될 수 있습니다. 불러온 뒤 [덮어쓰기]하면 반영됩니다.</div>'; }
+  body.innerHTML=html;
+}
 
 /* ── 토스트 표시 ── */
 window._showBackToast = function(msg, dur){
