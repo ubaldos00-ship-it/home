@@ -1,4 +1,4 @@
-<!-- chungchi_v62.html · 저장: 2026-06-14 00:00 KST -->
+<!-- chungchi_v63.html · 저장: 2026-06-14 07:26 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -205,6 +205,14 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
 .sl-agg-row .val{font-weight:800;color:#111;}
 .sl-agg-row .val b{color:#1565c0;}
 .sl-agg-note{font-size:10px;color:#aaa;margin-top:6px;line-height:1.5;}
+/* v63: 작물 클릭 시 세부 목록 */
+.sl-agg-crop-btn{cursor:pointer;user-select:none;}
+.sl-agg-crop-btn .ai-arrow{font-size:10px;color:#0A3A8C;}
+.sl-agg-detail{margin-top:6px;border-top:1px dashed #d7e0ee;padding-top:6px;}
+.sl-agg-item{display:flex;justify-content:space-between;gap:8px;font-size:11.5px;padding:3px 0;line-height:1.5;border-bottom:1px solid #f0f3f8;}
+.sl-agg-item:last-child{border-bottom:none;}
+.sl-agg-item .ai-addr{color:#3D3C39;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sl-agg-item .ai-val{color:#1565c0;font-weight:800;flex-shrink:0;}
 /* v60: 캐시 삭제 주의 안내 팝업 */
 .sl-notice-pop{position:absolute;left:12px;right:12px;bottom:12px;background:#fff8ec;border:1.5px solid #f5c842;border-radius:10px;padding:10px 12px;font-size:11px;color:#a07800;font-weight:600;line-height:1.55;box-shadow:0 6px 22px rgba(0,0,0,.25);display:none;align-items:center;gap:8px;z-index:5;}
 .sl-notice-pop.show{display:flex;}
@@ -301,7 +309,7 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
     <div class="hd-t">
       <h1>청취 10a당 생산량 계산기</h1>
       <span class="hd-status-row"><span class="hd-status" id="headStatus">경북 · 사과</span></span>
-      <span class="hd-ver">(v62: 2026-06-14 00:00)</span>
+      <span class="hd-ver">(v63: 2026-06-14 07:26)</span>
     </div>
   </div>
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
@@ -684,7 +692,13 @@ function formatDecimalInput(inp){
 function setInputVal(inp,val){inp.value=(val||val===0)?f(r1(val)):'';}
 let _ly=0;
 document.addEventListener('touchstart',e=>{_ly=e.touches[0].clientY;},{passive:true});
-document.addEventListener('touchmove',e=>{if(window.scrollY===0&&e.touches[0].clientY>_ly&&e.cancelable)e.preventDefault();_ly=e.touches[0].clientY;},{passive:false});
+document.addEventListener('touchmove',e=>{
+  /* v63: 저장/불러오기 모달(특히 집계 스크롤) 내부 터치는 풀투리프레시 차단에서 제외 → 모달 내 위·아래 스크롤 정상 */
+  var sm=document.getElementById('sl-modal');
+  if(sm&&sm.classList.contains('show')&&sm.contains(e.target)) {_ly=e.touches[0].clientY;return;}
+  if(window.scrollY===0&&e.touches[0].clientY>_ly&&e.cancelable)e.preventDefault();
+  _ly=e.touches[0].clientY;
+},{passive:false});
 document.getElementById('surveyDate').valueAsDate=new Date();
 bldHR();
 requestAnimationFrame(()=>{const apple=document.querySelector('.bc[data-crop="사과"]'); if(apple) selCrop(apple);});
@@ -1928,19 +1942,37 @@ function _slRenderAgg(){
   function avgOf(arr){ var v=arr.filter(function(x){return typeof x==='number'&&isFinite(x)&&x>0;}); if(!v.length) return null; return Math.round(v.reduce(function(a,b){return a+b;},0)/v.length); }
   function fmt(n){ return (n==null)?'—':n.toLocaleString('ko-KR')+' kg'; }
   var hasOld=false;
-  var html=order.map(function(c){
+  var html=order.map(function(c,ci){
     var items=groups[c];
     var vals=items.map(function(i){return i.per10a;});
     var avg=avgOf(vals);
     var n=vals.filter(function(x){return typeof x==='number'&&isFinite(x)&&x>0;}).length;
     if(items.some(function(i){return !(typeof i.per10a==='number'&&i.per10a>0);})) hasOld=true;
+    /* v63: 작물 클릭 시 펼쳐지는 세부 목록(필지주소 + 10a당 수량) */
+    var detail=items.map(function(it){
+      var addr=it.addr?it.addr:'주소없음';
+      var pv=(typeof it.per10a==='number'&&it.per10a>0)?it.per10a.toLocaleString('ko-KR')+' kg':'—';
+      return '<div class="sl-agg-item"><span class="ai-addr">📍 '+addr+'</span><span class="ai-val">'+pv+'</span></div>';
+    }).join('');
     return '<div class="sl-agg-card">'
-      +'<div class="sl-agg-crop">'+c+'<span class="cnt">'+items.length+'건</span></div>'
+      +'<div class="sl-agg-crop sl-agg-crop-btn" onclick="slAggToggleCrop('+ci+')">'
+        +'<span>'+c+' <span class="ai-arrow" id="sl-agg-arr-'+ci+'">▼</span></span>'
+        +'<span class="cnt">'+items.length+'건</span></div>'
       +'<div class="sl-agg-row"><span class="lbl">10a당 생산량 평균 ('+n+'건)</span><span class="val"><b>'+fmt(avg)+'</b></span></div>'
+      +'<div class="sl-agg-detail" id="sl-agg-detail-'+ci+'" style="display:none;">'+detail+'</div>'
       +'</div>';
   }).join('');
   if(hasOld){ html+='<div class="sl-agg-note">※ 수량값이 없는 옛 자료는 집계에서 제외될 수 있습니다. 불러온 뒤 [덮어쓰기]하면 반영됩니다.</div>'; }
   body.innerHTML=html;
+}
+/* v63: 집계 작물 클릭 → 해당 작물 세부 목록 펼치기/접기 */
+function slAggToggleCrop(ci){
+  var d=document.getElementById('sl-agg-detail-'+ci);
+  var a=document.getElementById('sl-agg-arr-'+ci);
+  if(!d) return;
+  var show=(d.style.display==='none');
+  d.style.display=show?'block':'none';
+  if(a) a.textContent=show?'▲':'▼';
 }
 
 /* ── 토스트 표시 ── */

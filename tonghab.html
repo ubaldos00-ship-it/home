@@ -1,4 +1,4 @@
-<!-- tonghab_v134.html · 저장: 2026-06-13 23:10 KST -->
+<!-- tonghab_v135.html · 저장: 2026-06-14 07:35 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1279,6 +1279,14 @@ body.nonbye-mode .hide-nonbye { display:none !important; }
 .sl-agg-row .val{font-weight:800;color:#111;}
 .sl-agg-row .val b{color:#1565c0;}
 .sl-agg-note{font-size:10px;color:#aaa;margin-top:6px;line-height:1.5;}
+/* v135: 작물 클릭 시 주소별 세부 목록 */
+.sl-agg-crop-btn{cursor:pointer;user-select:none;}
+.sl-agg-crop-btn .ai-arrow{font-size:10px;color:#0A3A8C;}
+.sl-agg-detail{margin-top:6px;border-top:1px dashed #d7e0ee;padding-top:6px;}
+.sl-agg-item{display:flex;justify-content:space-between;gap:8px;font-size:11.5px;padding:3px 0;line-height:1.5;border-bottom:1px solid #f0f3f8;}
+.sl-agg-item:last-child{border-bottom:none;}
+.sl-agg-item .ai-addr{color:#3D3C39;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sl-agg-item .ai-val{color:#1565c0;font-weight:800;flex-shrink:0;}
 .sl-divider{flex-shrink:0;border:none;border-top:1px solid #e8e5de;margin:4px 0 14px;}
 .sl-file-row{flex-shrink:0;display:flex;gap:6px;}
 .sl-file-btn{flex:1 1 0;min-width:0;padding:12px 6px;border:2px solid #d0ccc4;border-radius:10px;background:#fff;color:#3D3C39;font-size:13px;font-weight:700;cursor:pointer;text-align:center;display:flex;align-items:center;justify-content:center;line-height:1;box-sizing:border-box;touch-action:manipulation;}
@@ -1370,7 +1378,7 @@ textarea {
         </button>
       </div>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v134 저장: 2026-06-13 23:10)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v135 저장: 2026-06-14 07:35)</span></div>
   </div>
 </div>
 
@@ -8322,8 +8330,22 @@ function _slRenderAgg(){
     return Math.round(v.reduce(function(a,b){return a+b;},0)/v.length);
   }
   function fmt(n){ return (n==null)?'—':n.toLocaleString('ko-KR')+' kg'; }
+  /* v135: 항목(주소)별 대표 생산량 — 논벼는 실수확량(없으면 예상량), 일반은 A·B 평균 */
+  function _itemVal(it){
+    if(!it.yields) return null;
+    if(it.crop==='논벼'){
+      if(typeof it.yields.nbReal==='number'&&it.yields.nbReal>0) return Math.round(it.yields.nbReal);
+      if(typeof it.yields.nbExpect==='number'&&it.yields.nbExpect>0) return Math.round(it.yields.nbExpect);
+      return null;
+    }
+    var vv=[];
+    if(typeof it.yields.genA==='number'&&it.yields.genA>0) vv.push(it.yields.genA);
+    if(typeof it.yields.genB==='number'&&it.yields.genB>0) vv.push(it.yields.genB);
+    if(!vv.length) return null;
+    return Math.round(vv.reduce(function(a,b){return a+b;},0)/vv.length);
+  }
   var hasOld=false;
-  var html=order.map(function(c){
+  var html=order.map(function(c,ci){
     var items=groups[c];
     var isRice=(c==='논벼');
     var rows='';
@@ -8345,13 +8367,32 @@ function _slRenderAgg(){
       rows='<div class="sl-agg-row"><span class="lbl">A·B포구 전체 평균 ('+allVals.length+'건)</span><span class="val"><b>'+fmt(avg)+'</b></span></div>';
     }
     if(items.some(function(i){return !i.yields;})) hasOld=true;
+    /* v135: 작물 클릭 시 펼쳐지는 세부 목록(필지주소 + 생산량) */
+    var detail=items.map(function(it){
+      var addr=it.addr?it.addr:'주소없음';
+      var iv=_itemVal(it);
+      var pv=(iv!=null)?iv.toLocaleString('ko-KR')+' kg':'—';
+      return '<div class="sl-agg-item"><span class="ai-addr">📍 '+addr+'</span><span class="ai-val">'+pv+'</span></div>';
+    }).join('');
     return '<div class="sl-agg-card">'
-      +'<div class="sl-agg-crop">'+c+'<span class="cnt">'+items.length+'건</span></div>'
+      +'<div class="sl-agg-crop sl-agg-crop-btn" onclick="slAggToggleCrop('+ci+')">'
+        +'<span>'+c+' <span class="ai-arrow" id="sl-agg-arr-'+ci+'">▼</span></span>'
+        +'<span class="cnt">'+items.length+'건</span></div>'
       +rows
+      +'<div class="sl-agg-detail" id="sl-agg-detail-'+ci+'" style="display:none;">'+detail+'</div>'
       +'</div>';
   }).join('');
   if(hasOld){ html+='<div class="sl-agg-note">※ 이 기능 적용 전 저장된 자료는 수량값이 없어 집계에서 제외될 수 있습니다. 해당 자료는 불러온 뒤 [덮어쓰기]하면 집계에 반영됩니다.</div>'; }
   body.innerHTML=html;
+}
+/* v135: 집계 작물 클릭 → 해당 작물 세부 목록(주소별 생산량) 펼치기/접기 */
+function slAggToggleCrop(ci){
+  var d=document.getElementById('sl-agg-detail-'+ci);
+  var a=document.getElementById('sl-agg-arr-'+ci);
+  if(!d) return;
+  var show=(d.style.display==='none');
+  d.style.display=show?'block':'none';
+  if(a) a.textContent=show?'▲':'▼';
 }
 
 function _slRenderList(){
