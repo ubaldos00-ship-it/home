@@ -1,4 +1,4 @@
-<!-- home_v32_firebase_chat_userdelete.html · 저장: 2026-06-13 KST -->
+<!-- home_v33_firebase_chat_compact.html · 저장: 2026-06-13 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -575,18 +575,17 @@
     left: 0;
     right: 0;
     overscroll-behavior: none;
-    touch-action: none;
   }
   body.chat-scroll-lock .chat-modal,
   body.chat-scroll-lock .chat-panel,
   body.chat-scroll-lock .chat-messages,
-  body.chat-scroll-lock .chat-input {
+  body.chat-scroll-lock .chat-send-row textarea {
     touch-action: auto;
   }
   .chat-panel {
     width: 100%;
-    max-width: 520px;
-    height: min(78vh, 680px);
+    max-width: 540px;
+    height: min(90vh, 760px);
     background: #fff;
     border-radius: 22px 22px 0 0;
     box-shadow: 0 -8px 28px rgba(0,0,0,0.22);
@@ -598,7 +597,7 @@
   .chat-head {
     background: linear-gradient(135deg, #f28c28 0%, #d96f00 100%);
     color: #fff;
-    padding: 14px 16px 12px;
+    padding: 12px 14px 10px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -611,10 +610,10 @@
     letter-spacing: -0.01em;
   }
   .chat-subtitle {
-    margin-top: 2px;
-    font-size: 11.5px;
+    margin-top: 1px;
+    font-size: 11px;
     color: rgba(255,255,255,0.76);
-    line-height: 1.35;
+    line-height: 1.25;
   }
   .chat-close {
     border: none;
@@ -628,18 +627,18 @@
     flex-shrink: 0;
   }
   .chat-notice {
-    padding: 10px 14px;
+    padding: 6px 10px;
     background: #fff8e6;
     border-bottom: 1px solid #f0d68a;
     color: #6b4f0a;
-    font-size: 12px;
-    line-height: 1.45;
+    font-size: 11px;
+    line-height: 1.3;
   }
   .chat-user-row {
     display: flex;
     gap: 9px;
     align-items: center;
-    padding: 11px 12px;
+    padding: 7px 10px;
     background: #f8f7f1;
     border-bottom: 1px solid var(--color-border);
   }
@@ -650,15 +649,7 @@
     color: #5f3b0b;
     padding-left: 2px;
   }
-  .chat-count-note {
-    padding: 7px 12px;
-    background: #fffdf7;
-    border-bottom: 1px solid #efe5ca;
-    color: #7a5a20;
-    font-size: 11.5px;
-    font-weight: 700;
-    text-align: center;
-  }
+  .chat-count-note { display: none; }
   .chat-user-row input {
     flex: 1;
     border: 1px solid var(--color-border);
@@ -697,18 +688,18 @@
   .chat-messages {
     flex: 1;
     overflow-y: auto;
-    padding: 12px;
+    padding: 8px 10px;
     background: #f6f4ec;
   }
   .chat-empty {
     text-align: center;
     color: var(--color-text-soft);
     font-size: 13px;
-    margin-top: 28px;
+    margin-top: 12px;
     line-height: 1.6;
   }
   .chat-msg {
-    margin-bottom: 10px;
+    margin-bottom: 7px;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -721,7 +712,7 @@
   }
   .chat-bubble {
     max-width: 82%;
-    padding: 9px 11px;
+    padding: 8px 10px;
     border-radius: 14px;
     background: #fff;
     border: 1px solid var(--color-border);
@@ -739,14 +730,14 @@
   .chat-send-row {
     display: flex;
     gap: 8px;
-    padding: 10px 12px 12px;
+    padding: 7px 10px 8px;
     border-top: 1px solid var(--color-border);
     background: #fff;
   }
   .chat-send-row textarea {
     flex: 1;
-    height: 44px;
-    max-height: 100px;
+    height: 42px;
+    max-height: 88px;
     resize: none;
     border: 1px solid var(--color-border);
     border-radius: 12px;
@@ -761,7 +752,7 @@
     justify-content: space-between;
     align-items: center;
     gap: 8px;
-    padding: 8px 12px;
+    padding: 5px 10px;
     border-top: 1px solid var(--color-border);
     background: #fafaf5;
     color: var(--color-text-soft);
@@ -793,7 +784,7 @@
     gap: 8px;
     align-items: center;
     justify-content: space-between;
-    padding: 8px 12px;
+    padding: 5px 10px;
     background: #fff1e0;
     border-top: 1px solid #f2c27b;
     color: #7a3f00;
@@ -1232,10 +1223,8 @@
       <button class="chat-close" type="button" id="chatClose" aria-label="채팅 닫기">×</button>
     </div>
     <div class="chat-notice">
-      ※ 개인정보, 농가명, 주소, 전화번호 등 민감정보는 입력하지 마세요.<br>
-      ※ 현재 버전은 Firebase 실시간 데이터베이스에 연결되어 여러 사용자가 동시에 메시지를 볼 수 있습니다.
+      ※ 개인정보, 농가명, 주소, 전화번호 등 민감정보는 입력하지 마세요.
     </div>
-    <div class="chat-count-note">최근 80개 메시지만 표시됩니다.</div>
     <div class="chat-user-row">
       <label class="chat-name-label" for="chatName">닉네임</label>
       <input id="chatName" type="text" maxlength="18" placeholder="예: 상주1, 조사원A" autocomplete="nickname" />
@@ -1243,7 +1232,7 @@
     </div>
     <div class="chat-messages" id="chatMessages" aria-live="polite"></div>
     <div class="chat-send-row">
-      <textarea id="chatInput" maxlength="300" placeholder="메시지를 입력하세요. Enter 전송, Shift+Enter 줄바꿈"></textarea>
+      <textarea id="chatInput" maxlength="300"></textarea>
       <button type="button" id="chatSend">전송</button>
     </div>
     <div class="chat-actions">
@@ -1579,10 +1568,11 @@
     return messages.slice().sort((a, b) => Number(a.createdAt || 0) - Number(b.createdAt || 0)).slice(-80);
   }
   function render() {
+    const shouldStickToBottom = !messagesEl || (messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight < 80);
     const list = sortedMessages();
     const me = currentName();
     if (!list.length) {
-      messagesEl.innerHTML = '<div class="chat-empty">아직 남긴 메시지가 없습니다.<br>오류나 개선 의견을 편하게 적어주세요.<br><span style="font-size:11.5px;">최근 80개 메시지만 표시됩니다.</span></div>';
+      messagesEl.innerHTML = '<div class="chat-empty">아직 남긴 메시지가 없습니다.<br>오류나 개선 의견을 편하게 적어주세요.</div>';
     } else {
       messagesEl.innerHTML = list.map(m => {
         const mineByClient = m.clientId && m.clientId === getClientId();
@@ -1597,7 +1587,7 @@
         </div>`;
       }).join('');
     }
-    messagesEl.scrollTop = messagesEl.scrollHeight;
+    if (shouldStickToBottom) messagesEl.scrollTop = messagesEl.scrollHeight;
     updateBadge();
   }
   function latestMessageTime() {
@@ -1648,6 +1638,7 @@
     const name = nameInput.value.trim().slice(0, 18);
     if (!name) {
       alert('이름이나 지역명을 입력해주세요. 예: 상주1, 조사원A');
+      input.focus();
       return;
     }
     localStorage.setItem(NAME_KEY, name);
@@ -1656,8 +1647,9 @@
     render();
   }
   async function sendMessage() {
+    if (sendBtn.disabled) return;
     const text = input.value.trim().slice(0, 300);
-    if (!text) return;
+    if (!text) { input.focus(); return; }
     const name = (nameInput.value.trim() || currentName()).slice(0, 18);
     if (!name || name === '나') {
       alert('먼저 이름이나 지역명을 입력하고 저장해주세요. 예: 상주1, 조사원A');
@@ -1666,18 +1658,23 @@
     localStorage.setItem(NAME_KEY, name);
     updateNameSaveButton();
     sendBtn.disabled = true;
-    status.textContent = '메시지 전송 중입니다...';
+    status.textContent = '전송 중...';
     try {
       await push(messagesRef, { name, text, createdAt: Date.now(), clientId: getClientId() });
       input.value = '';
-      status.textContent = '메시지가 실시간 DB에 저장되었습니다.';
+      status.textContent = '전송 완료';
       markRead();
+      setTimeout(() => { messagesEl.scrollTop = messagesEl.scrollHeight; }, 30);
     } catch (err) {
       console.error(err);
       status.textContent = '전송 실패: Firebase 규칙을 v29/v30 삭제 기능용 규칙으로 바꿔주세요.';
       alert('메시지 전송에 실패했습니다. Realtime Database 규칙에서 clientId 저장과 삭제가 허용되어야 합니다. 채팅 삭제 기능용 규칙으로 교체 후 다시 전송해주세요.');
     } finally {
       sendBtn.disabled = false;
+      requestAnimationFrame(() => {
+        input.focus();
+        input.setSelectionRange(input.value.length, input.value.length);
+      });
     }
   }
   function refreshMessages() {
@@ -1764,9 +1761,9 @@
       }
     });
 
-    status.textContent = 'Firebase 실시간 채팅에 연결 중입니다...';
+    status.textContent = '연결 중...';
     get(messagesRef).then(() => {
-      status.textContent = 'Firebase 실시간 채팅 연결 완료 · 최근 80개 표시';
+      status.textContent = '연결 완료';
     }).catch(err => {
       console.error(err);
       status.textContent = 'Firebase 읽기 실패: Realtime Database 규칙을 확인해주세요.';
