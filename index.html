@@ -1,4 +1,4 @@
-<!-- home_v34_firebase_chat_compact.html · 저장: 2026-06-14 07:44 KST -->
+<!-- home_v35_firebase_chat_compact.html · 저장: 2026-06-14 08:02 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -628,11 +628,12 @@
   }
   .chat-notice {
     padding: 6px 10px;
-    background: #fff8e6;
-    border-bottom: 1px solid #f0d68a;
-    color: #6b4f0a;
-    font-size: 11px;
-    line-height: 1.3;
+    background: #fdecec; /* v35: 적색 강조 */
+    border-bottom: 1px solid #f0b5b5;
+    color: #c0392b;
+    font-size: 11.5px;
+    font-weight: 800;
+    line-height: 1.35;
   }
   .chat-user-row {
     display: flex;
@@ -689,6 +690,8 @@
     flex: 1;
     min-height: 0; /* v34: 키보드로 패널이 줄어도 메시지 영역이 축소되어 입력창이 항상 보이도록 */
     overflow-y: auto;
+    overscroll-behavior: contain; /* v35: 목록 끝에서 배경(홈화면)으로 스크롤 전파 차단 */
+    -webkit-overflow-scrolling: touch;
     padding: 8px 10px;
     background: #f6f4ec;
   }
@@ -1773,7 +1776,11 @@
     closeBtn.addEventListener('click', closeChat);
     modal.addEventListener('click', e => { if (e.target === modal) closeChat(); });
     modal.addEventListener('touchmove', e => {
-      if (e.target === modal) e.preventDefault();
+      /* v35: 스크롤 가능한 영역(메시지 목록·입력창) 안에서만 스크롤 허용,
+         그 외(배경·헤더·닉네임/입력 바 등)는 뒤쪽 홈화면이 움직이지 않도록 차단 */
+      var t = e.target;
+      if (t && (t.closest('.chat-messages') || t.closest('textarea'))) return;
+      if (e.cancelable) e.preventDefault();
     }, { passive: false });
     nameSave.addEventListener('click', saveName);
     /* v34: 전송 버튼을 눌러도 입력창 포커스(커서·키보드)가 유지되도록 mousedown 기본동작 차단

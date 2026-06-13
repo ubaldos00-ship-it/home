@@ -1,4 +1,4 @@
-<!-- chungchi_v64.html · 저장: 2026-06-14 07:51 KST -->
+<!-- chungchi_v65.html · 저장: 2026-06-14 08:09 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -204,6 +204,9 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
 .sl-agg-row .lbl{color:#666;font-weight:600;}
 .sl-agg-row .val{font-weight:800;color:#111;}
 .sl-agg-row .val b{color:#1565c0;}
+.sl-agg-row.sl-agg-avg{background:#FFF8E1;border:1.5px solid #F0C040;border-radius:8px;padding:6px 8px;margin:5px 0;}
+.sl-agg-row.sl-agg-avg .lbl{color:#7A4B00;font-weight:900;}
+.sl-agg-row.sl-agg-avg .val b{color:#C0392B;font-size:15px;font-weight:900;}
 .sl-agg-note{font-size:10px;color:#aaa;margin-top:6px;line-height:1.5;}
 /* v63: 작물 클릭 시 세부 목록 */
 .sl-agg-crop-btn{cursor:pointer;user-select:none;}
@@ -309,7 +312,7 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
     <div class="hd-t">
       <h1>청취 10a당 생산량 계산기</h1>
       <span class="hd-status-row"><span class="hd-status" id="headStatus">경북 · 사과</span></span>
-      <span class="hd-ver">(v64: 2026-06-14 07:51)</span>
+      <span class="hd-ver">(v65: 2026-06-14 08:09)</span>
     </div>
   </div>
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
@@ -1888,7 +1891,7 @@ function _slListTouchMove(e){
   if((atTop && dy < 0)||(atBottom && dy > 0)){ e.preventDefault(); }
 }
 function _slModalTouchMove(e){
-  /* v64: 저장 목록(sl-list)과 수량 집계(sl-agg-body)는 네이티브 세로 스크롤 허용.
+  /* v65: 저장 목록(sl-list)과 수량 집계(sl-agg-body)는 네이티브 세로 스크롤 허용.
      모달 배경만 차단하여 iOS에서 위·아래 스크롤이 멈추는 현상을 방지 */
   var list=document.getElementById('sl-list');
   var agg=document.getElementById('sl-agg-body');
@@ -1916,7 +1919,8 @@ function slToggleAgg(){
     if(wrap){ wrap.style.flex='1 1 auto'; wrap.style.minHeight='0'; wrap.style.overflow='hidden'; wrap.style.display='flex'; wrap.style.flexDirection='column'; }
     /* v61: flex 높이 + 명시적 최대높이 둘 다 지정 → 어떤 환경에서도 작물 많을 때 내부 스크롤 보장 */
     body.style.flex='1 1 auto'; body.style.minHeight='0';
-    body.style.maxHeight='calc(100dvh - 190px)'; body.style.overflowY='auto'; body.style.touchAction='pan-y';
+    /* v65: 통합계산기와 동일하게 집계가 모달 남은 높이를 모두 쓰고, 내부에서 위·아래 스크롤되도록 설정 */
+    body.style.maxHeight='none'; body.style.overflowY='auto'; body.style.touchAction='pan-y';
     _slRenderAgg();
   } else {
     body.style.display='none';
@@ -1957,7 +1961,7 @@ function _slRenderAgg(){
       +'<div class="sl-agg-crop sl-agg-crop-btn" onclick="slAggToggleCrop('+ci+')">'
         +'<span>'+c+' <span class="ai-arrow" id="sl-agg-arr-'+ci+'">▼</span></span>'
         +'<span class="cnt">'+items.length+'건</span></div>'
-      +'<div class="sl-agg-row"><span class="lbl">10a당 생산량 평균 ('+n+'건)</span><span class="val"><b>'+fmt(avg)+'</b></span></div>'
+      +'<div class="sl-agg-row sl-agg-avg"><span class="lbl">⭐ 10a당 생산량 평균 ('+n+'건)</span><span class="val"><b>'+fmt(avg)+'</b></span></div>'
       +'<div class="sl-agg-detail" id="sl-agg-detail-'+ci+'" style="display:none;">'+detail+'</div>'
       +'</div>';
   }).join('');
