@@ -1,4 +1,4 @@
-<!-- chungchi_v66.html · 저장: 2026-06-14 08:22 KST -->
+<!-- chungchi_v67.html · 저장: 2026-06-14 08:28 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -312,7 +312,7 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
     <div class="hd-t">
       <h1>청취 10a당 생산량 계산기</h1>
       <span class="hd-status-row"><span class="hd-status" id="headStatus">경북 · 사과</span></span>
-      <span class="hd-ver">(v66: 2026-06-14 08:22)</span>
+      <span class="hd-ver">(v67: 2026-06-14 08:28)</span>
     </div>
   </div>
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
@@ -1898,7 +1898,7 @@ function _slFindScrollable(el){
   return null;
 }
 function _slModalTouchMove(e){
-  /* v66: 모달 배경만 차단하고, 집계/목록 내부 터치는 완전히 통과시켜 iOS 스크롤 지연을 줄임 */
+  /* v67: 모달 배경만 차단하고, 집계/목록 내부 터치는 전역 풀투리프레시 차단에서도 제외 */
   var sc=_slFindScrollable(e.target);
   if(sc) return;
   if(e.cancelable) e.preventDefault();
@@ -2176,11 +2176,22 @@ setTimeout(function(){
 /* ── 풀-투-리프레시 차단 (iOS Safari / Android Chrome) ── */
 (function(){
   var startY=0;
-  document.addEventListener('touchstart',function(e){startY=e.touches[0].pageY;},{passive:true});
+  function isInsideSaveLoadModal(target){
+    var modal=document.getElementById('sl-modal');
+    return !!(modal && modal.classList.contains('show') && modal.contains(target));
+  }
+  document.addEventListener('touchstart',function(e){
+    if(e.touches && e.touches[0]) startY=e.touches[0].pageY;
+  },{passive:true});
   document.addEventListener('touchmove',function(e){
+    /* v67: 저장/불러오기 모달 안에서는 pull-to-refresh 차단을 적용하지 않음.
+       기존 v66에서는 이 전역 코드가 집계(sl-agg-body) 스크롤의 '위로 올리기' 동작을 막을 수 있었음. */
+    if(isInsideSaveLoadModal(e.target)) return;
+    if(!e.touches || !e.touches[0]) return;
     var y=e.touches[0].pageY;
-    if(document.scrollingElement.scrollTop===0 && y>startY){
-      e.preventDefault();
+    var se=document.scrollingElement || document.documentElement;
+    if(se.scrollTop===0 && y>startY){
+      if(e.cancelable) e.preventDefault();
     }
   },{passive:false});
 })();
