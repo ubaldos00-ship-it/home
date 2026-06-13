@@ -1,4 +1,4 @@
-<!-- tonghab_v133.html · 저장: 2026-06-13 03:12 KST -->
+<!-- tonghab_v134.html · 저장: 2026-06-13 23:10 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1281,7 +1281,7 @@ body.nonbye-mode .hide-nonbye { display:none !important; }
 .sl-agg-note{font-size:10px;color:#aaa;margin-top:6px;line-height:1.5;}
 .sl-divider{flex-shrink:0;border:none;border-top:1px solid #e8e5de;margin:4px 0 14px;}
 .sl-file-row{flex-shrink:0;display:flex;gap:6px;}
-.sl-file-btn{flex:1;padding:12px 6px;border:2px solid #d0ccc4;border-radius:10px;background:#fff;color:#3D3C39;font-size:13px;font-weight:700;cursor:pointer;text-align:center;display:block;touch-action:manipulation;}
+.sl-file-btn{flex:1 1 0;min-width:0;padding:12px 6px;border:2px solid #d0ccc4;border-radius:10px;background:#fff;color:#3D3C39;font-size:13px;font-weight:700;cursor:pointer;text-align:center;display:flex;align-items:center;justify-content:center;line-height:1;box-sizing:border-box;touch-action:manipulation;}
 .sl-file-btn:active{opacity:.82;}
 /* v130: JSON 버튼 더 작게 (목록 정보를 더 많이 보이도록) */
 .sl-file-row .sl-file-btn{padding:6px 3px;font-size:10.5px;border-width:1.5px;border-radius:8px;}
@@ -1370,7 +1370,7 @@ textarea {
         </button>
       </div>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v133 저장: 2026-06-13 03:12)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v134 저장: 2026-06-13 23:10)</span></div>
   </div>
 </div>
 
@@ -7203,10 +7203,9 @@ document.addEventListener('DOMContentLoaded', function(){
       <div class="sl-file-row">
         <button class="sl-file-btn sl-share-btn" onclick="shareJSON()">공유</button>
         <button class="sl-file-btn" onclick="exportJSON()">내보내기</button>
-        <label class="sl-file-btn">불러오기
-          <input type="file" accept="application/json,text/plain,.json" style="display:none;" onchange="importJSON(this)">
-        </label>
+        <button class="sl-file-btn" onclick="document.getElementById('sl-import-input').click()">불러오기</button>
       </div>
+      <input type="file" id="sl-import-input" accept="application/json,text/plain,.json" tabindex="-1" aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none;" onchange="importJSON(this)">
     </div>
     <!-- v130: 캐시 삭제 주의 안내 팝업 (모달 열 때 하단에 표시) -->
     <div class="sl-notice-pop" id="sl-notice-pop">
