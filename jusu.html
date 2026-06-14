@@ -1,9 +1,12 @@
-<!-- 이삭포기계산기_V17.html · 저장: 2026-06-11 02:54 KST -->
+<!-- 이삭포기계산기_V18.html · 저장: 2026-06-15 01:22 KST -->
 <!DOCTYPE html>
 <html lang="ko" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#2d6a2d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>논벼 이삭 수 계산기</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
@@ -75,15 +78,22 @@
   --focus-ring:   rgba(100,200,100,0.25);
 }
 
+/* 풀투리프레시(아래로 당겨 새로고침) 차단 — iOS 바운스 방지 보강 */
+html { overscroll-behavior: none; }
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Noto Sans KR', sans-serif;
   background: var(--bg-page);
   color: var(--text-main);
   min-height: 100vh;
-  padding-bottom: 30px;
+  padding-bottom: 12px;
   transition: background 0.25s, color 0.25s;
   /* 모바일 당겨서 새로고침 방지 */
   overscroll-behavior-y: contain;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  /* 더블탭 확대 차단 (스크롤·핀치는 허용) */
+  touch-action: manipulation;
 }
 
 header {
@@ -93,7 +103,11 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: background 0.25s;
+  transition: background 0.25s, transform 0.28s ease;
+  /* 상단 고정 + 스크롤 방향에 따라 자동 숨김/표시 */
+  position: sticky;
+  top: 0;
+  z-index: 200;
 }
 .header-titles {
   text-align: left;
@@ -191,6 +205,7 @@ header p  { font-size: 11px; opacity: 0.72; margin-top: 2px; }
   -webkit-appearance: none;
   appearance: none;
   min-height: 44px;
+  touch-action: manipulation;
   transition: background 0.2s, border-color 0.2s, color 0.2s;
 }
 .plant-input:focus {
@@ -270,6 +285,7 @@ header p  { font-size: 11px; opacity: 0.72; margin-top: 2px; }
   min-height: 50px;
   font-size: 14px;
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 .btn:active { transform: scale(0.96); opacity: 0.80; }
 
@@ -347,6 +363,19 @@ header p  { font-size: 11px; opacity: 0.72; margin-top: 2px; }
 .lc-ok{min-height:38px;padding:7px 18px;border:none;background:transparent;color:#1a8a78;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;}
 .lc-cancel:active,.lc-ok:active{opacity:.7;}
 
+/* ── 뒤로가기 차단 토스트 ── */
+#back-block-toast{
+  position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:rgba(30,30,30,.92);color:#fff;
+  padding:12px 18px;border-radius:16px;
+  font-size:13px;font-weight:600;letter-spacing:.01em;
+  white-space:normal;text-align:center;line-height:1.5;
+  max-width:85vw;pointer-events:none;
+  opacity:0;transition:opacity .25s,transform .25s;
+  z-index:99999;box-shadow:0 4px 16px rgba(0,0,0,.35);
+}
+#back-block-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
 /* ── 이미지 모달 ── */
 .img-modal{display:none;position:fixed;inset:0;background:#1a1a1a;z-index:9999;flex-direction:column;align-items:center;overflow-y:auto;}
 .img-modal.open{display:flex;}
@@ -387,7 +416,7 @@ header p  { font-size: 11px; opacity: 0.72; margin-top: 2px; }
 .sl-head-title{color:#fff;font-size:15px;font-weight:800;}
 .sl-close{background:transparent;border:1.5px solid rgba(255,255,255,.5);color:#fff;border-radius:50px;padding:5px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
 .sl-body{padding:14px 14px 18px;}
-.sl-save-now{width:100%;padding:14px;background:#E07000;border:none;border-radius:10px;color:#fff;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:14px;font-family:inherit;}
+.sl-save-now{width:100%;padding:14px;background:#E07000;border:none;border-radius:10px;color:#fff;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:14px;font-family:inherit;touch-action:manipulation;}
 .sl-save-now:active{opacity:.82;}
 .sl-section{font-size:11px;font-weight:700;color:var(--text-muted);letter-spacing:.06em;margin-bottom:7px;}
 .sl-list{display:flex;flex-direction:column;gap:7px;margin-bottom:14px;max-height:50vh;overflow-y:auto;overscroll-behavior:contain;}
@@ -439,14 +468,13 @@ header p  { font-size: 11px; opacity: 0.72; margin-top: 2px; }
 </head>
 <body>
 
-<div id="captureArea">
 <header>
   <div class="header-titles">
     <h1>🌾 논벼 이삭 수 계산기</h1>
-    <p>10포기 이삭수 입력 및 대표 주수 산출 · V17 · 2026-06-11</p>
+    <p>10포기 이삭수 입력 및 대표 주수 산출 · V18 · 2026-06-15 01:22 KST</p>
   </div>
   <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
-    <a href="https://ubaldos00-ship-it.github.io/home" class="home-btn" aria-label="홈">
+    <a href="https://ubaldos00-ship-it.github.io/home" class="home-btn" aria-label="홈" onclick="window._allowLeave=true;">
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 9.5L10 3l7 6.5V17a1 1 0 01-1 1H13v-5H7v5H4a1 1 0 01-1-1V9.5z" fill="#fff"/></svg>
       홈
     </a>
@@ -461,6 +489,7 @@ header p  { font-size: 11px; opacity: 0.72; margin-top: 2px; }
   </div>
 </header>
 
+<div id="captureArea">
 <div id="captureContent" style="padding-top:14px;padding-bottom:0;">
 <div class="section">
   <div class="section-title">조사 정보</div>
@@ -647,12 +676,15 @@ function doReset() {
 function toggleTheme() {
   const html = document.documentElement;
   const btn  = document.getElementById('btnTheme');
+  const meta = document.querySelector('meta[name="theme-color"]');
   if (html.getAttribute('data-theme') === 'light') {
     html.setAttribute('data-theme', 'dark');
     btn.textContent = '☀️ 라이트모드';
+    if (meta) meta.setAttribute('content', '#111111');
   } else {
     html.setAttribute('data-theme', 'light');
     btn.textContent = '🌙 야외모드';
+    if (meta) meta.setAttribute('content', '#2d6a2d');
   }
 }
 
@@ -1046,5 +1078,249 @@ function shareJSON_sl(){
     <img id="modalImg" src="" alt="조사 결과">
   </div>
 </div>
+
+<!-- 데이터 보호 안내 토스트 -->
+<div id="back-block-toast"></div>
+
+<script>
+/* ══════════════════════════════════════════
+   ① 스크롤 시 헤더 자동 숨김/표시 (통합계산기 방식)
+   아래로 스크롤(화면 올림) → 헤더 숨김 / 위로 스크롤 → 헤더 표시
+   ══════════════════════════════════════════ */
+(function(){
+  var lastY=0, ticking=false, THRESHOLD=40;
+  function onScroll(){
+    var y=window.scrollY||window.pageYOffset;
+    var hdr=document.querySelector('header');
+    if(!hdr){lastY=y;ticking=false;return;}
+    if(y>lastY && y>THRESHOLD){ hdr.style.transform='translateY(-100%)'; }
+    else if(y<lastY){ hdr.style.transform='translateY(0)'; }
+    lastY=y; ticking=false;
+  }
+  window.addEventListener('scroll',function(){
+    if(!ticking){ticking=true;requestAnimationFrame(onScroll);}
+  },{passive:true});
+})();
+
+/* ══════════════════════════════════════════
+   ② 링크 진입 시 자동 새로고침 — iOS Safari 뒤로가기 차단 정상화
+   ══════════════════════════════════════════ */
+(function(){
+  var RKEY='_isakRld';
+  if(sessionStorage.getItem(RKEY)){ sessionStorage.removeItem(RKEY); return; }
+  var ref=document.referrer;
+  var curBase=location.href.split('#')[0];
+  if(ref && ref.split('#')[0]!==curBase){
+    sessionStorage.setItem(RKEY,'1');
+    location.reload();
+  }
+})();
+
+/* ══════════════════════════════════════════
+   ③ 뒤로가기 차단 + 안내 토스트 (iOS 완전 차단)
+   고유 해시(#_0,#_1,...) + popstate + hashchange + 좌측 스와이프 4중 방어
+   ══════════════════════════════════════════ */
+(function(){
+  window._allowLeave = false;
+  var _toastTimer=null;
+  window._showBackToast=function(msg,dur){
+    var el=document.getElementById('back-block-toast');
+    if(!el) return;
+    if(_toastTimer) clearTimeout(_toastTimer);
+    el.innerHTML=msg; el.classList.add('show');
+    _toastTimer=setTimeout(function(){ el.classList.remove('show'); }, dur||3500);
+  };
+  var _bbIdx=0;
+  var _BASE=location.pathname+(location.search||'');
+  function _pushBlock(){
+    try{
+      var h1='#_'+(_bbIdx++), h2='#_'+(_bbIdx++), h3='#_'+(_bbIdx++);
+      history.replaceState({_bb:'r',i:_bbIdx},'',_BASE+h1);
+      history.pushState({_bb:'g',i:_bbIdx},'',_BASE+h2);
+      history.pushState({_bb:'g',i:_bbIdx},'',_BASE+h3);
+    }catch(e){}
+  }
+  function _onBlock(){
+    if(window._allowLeave) return;
+    _pushBlock();
+    window._showBackToast(
+      '🔒 뒤로가기 차단 중<br>'
+      +'<span style="font-size:11px;font-weight:500;opacity:.85;">'
+      +'초기화·홈 버튼이 안 눌리면<br>새로고침 후 눌러주세요</span>',
+      4000
+    );
+  }
+  _pushBlock();
+  document.addEventListener('DOMContentLoaded',function(){ if(!window._allowLeave){ _pushBlock(); } });
+  window.addEventListener('popstate',_onBlock);
+  window.addEventListener('hashchange',_onBlock);
+  window.addEventListener('pageshow',function(e){
+    if(e.persisted){
+      _pushBlock();
+      window._showBackToast('✅ 데이터 자동 보호 — 입력 내용이 유지됩니다',3000);
+    }
+  });
+  window.addEventListener('beforeunload',function(e){
+    if(window._allowLeave) return;
+    e.preventDefault(); e.returnValue='';
+  });
+  var _origConfirm=window.confirm.bind(window);
+  window.confirm=function(msg){
+    var t0=(typeof performance!=='undefined')?performance.now():Date.now();
+    var ok=_origConfirm(msg);
+    var elapsed=((typeof performance!=='undefined')?performance.now():Date.now())-t0;
+    if(!ok && elapsed<100){
+      setTimeout(function(){
+        window._showBackToast(
+          '⚠ 새로고침 후 다시 시도하세요<br>'
+          +'<span style="font-size:11px;font-weight:500;opacity:.85;">'
+          +'뒤로가기 차단 중에는 일부 버튼이<br>제한될 수 있습니다</span>',
+          5000
+        );
+      },80);
+      return false;
+    }
+    return ok;
+  };
+  var _tsX=0,_tsY=0;
+  document.addEventListener('touchstart',function(e){
+    if(e.touches && e.touches[0]){ _tsX=e.touches[0].clientX; _tsY=e.touches[0].clientY; }
+  },{passive:true});
+  document.addEventListener('touchmove',function(e){
+    if(window._allowLeave) return;
+    if(!e.touches || !e.touches[0]) return;
+    var dx=e.touches[0].clientX-_tsX;
+    var dy=Math.abs(e.touches[0].clientY-_tsY);
+    if(_tsX<30 && dx>8 && dx>dy){ if(e.cancelable) e.preventDefault(); }
+  },{passive:false});
+})();
+
+/* ══════════════════════════════════════════
+   ④ 자동 저장 / 복원 — localStorage 기반 (비정상 종료 시 데이터 보호)
+   ══════════════════════════════════════════ */
+(function(){
+  var SAVE_KEY='isakAutoSave_v1';
+  var _saveTimer=null;
+  var isReset=location.search.indexOf('reset=')!==-1;
+  var _restoring=false;
+  var _initialLoadDone=false;
+
+  if(isReset){
+    try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
+    try{ history.replaceState(null,'',location.pathname); }catch(e){}
+    _initialLoadDone=true;
+  }
+
+  function doSave(){
+    if(window._allowLeave) return;
+    if(window._isakPopupPending) return;
+    if(_restoring) return;
+    if(!_initialLoadDone) return;
+    try{
+      var d={};
+      document.querySelectorAll('input[id]').forEach(function(el){ d[el.id]=el.value; });
+      d['__theme']=document.documentElement.getAttribute('data-theme')||'light';
+      localStorage.setItem(SAVE_KEY,JSON.stringify(d));
+    }catch(e){}
+  }
+  function autoSave(){
+    if(_restoring) return;
+    clearTimeout(_saveTimer);
+    _saveTimer=setTimeout(doSave,600);
+  }
+
+  function _prevDataMeaningful(d){
+    if(!d) return false;
+    if(d['address'] && String(d['address']).trim()!=='') return true;
+    for(var i=1;i<=10;i++){
+      var v=d['plant-'+i];
+      if(v!==undefined && v!==null && String(v).trim()!=='') return true;
+    }
+    return false;
+  }
+
+  function _showPrevDataPopup(){
+    if(document.getElementById('prevDataOverlay')) return;
+    window._isakPopupPending=true;
+    var ov=document.createElement('div');
+    ov.className='lc-overlay'; ov.id='prevDataOverlay';
+    ov.innerHTML='<div class="lc-box">'
+      +'<p>이전 자료가 있습니다.<br>초기화 후에 입력하시겠습니까?<br>'
+      +'<span style="font-size:12px;color:#c0392b;font-weight:700;">⚠ 주의: 초기화 후에는 복원이 안 됩니다.</span></p>'
+      +'<div class="lc-btns">'
+      +'<button class="lc-cancel" onclick="_prevDataContinue()">이어서 입력</button>'
+      +'<button class="lc-ok" style="color:#d93030;" onclick="_prevDataReset()">초기화</button>'
+      +'</div></div>';
+    document.body.appendChild(ov);
+  }
+  window._prevDataContinue=function(){
+    window._isakRestoreChoice='continue';
+    window._isakPopupPending=false;
+    var ov=document.getElementById('prevDataOverlay'); if(ov) ov.remove();
+    autoRestore();
+  };
+  window._prevDataReset=function(){
+    window._isakPopupPending=false;
+    try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
+    var ov=document.getElementById('prevDataOverlay'); if(ov) ov.remove();
+    window._allowLeave=true;
+    window.location.href=location.pathname+'?reset=1';
+  };
+
+  function autoRestore(){
+    try{
+      var saved=localStorage.getItem(SAVE_KEY);
+      if(!saved){ _initialLoadDone=true; return; }
+      var d=JSON.parse(saved);
+      if(!window._isakRestoreChoice && _prevDataMeaningful(d)){
+        _showPrevDataPopup();
+        return;
+      }
+      _restoring=true;
+      if(d['__theme']==='dark' && document.documentElement.getAttribute('data-theme')!=='dark'){
+        if(typeof toggleTheme==='function') toggleTheme();
+      }
+      document.querySelectorAll('input[id]').forEach(function(el){
+        if(d[el.id]!==undefined && d[el.id]!==''){ el.value=d[el.id]; }
+      });
+      if(typeof calculate==='function') calculate();
+      setTimeout(function(){
+        _restoring=false;
+        _initialLoadDone=true;
+        doSave();
+      },200);
+    }catch(e){
+      _restoring=false; _initialLoadDone=true;
+    }
+  }
+
+  setTimeout(function(){ _initialLoadDone=true; },5000);
+
+  document.addEventListener('input',autoSave);
+  document.addEventListener('change',autoSave);
+  window.addEventListener('beforeunload',function(){ doSave(); });
+  window.addEventListener('pagehide',function(){ doSave(); });
+  document.addEventListener('visibilitychange',function(){
+    if(document.visibilityState==='hidden'){ doSave(); }
+  });
+  window.addEventListener('pageshow',function(e){
+    if(e.persisted && !isReset){ setTimeout(autoRestore,400); }
+  });
+
+  if(!isReset){
+    document.addEventListener('DOMContentLoaded',function(){
+      setTimeout(autoRestore,600);
+      setTimeout(function(){
+        if(_restoring || window._isakPopupPending || window._isakRestoreChoice) return;
+        var chk=null; try{ chk=localStorage.getItem(SAVE_KEY); }catch(e){}
+        if(!chk) return;
+        var addr=document.getElementById('address');
+        if(addr && !addr.value.trim() && _prevDataMeaningful(JSON.parse(chk))===false) return;
+        if(addr && !addr.value.trim()){ autoRestore(); }
+      },3000);
+    });
+  }
+})();
+</script>
 </body>
 </html>
