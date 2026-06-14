@@ -1,4 +1,4 @@
-<!-- 이삭포기계산기_V18.html · 저장: 2026-06-15 01:22 KST -->
+<!-- 이삭포기계산기_V19.html · 저장: 2026-06-15 01:41 KST -->
 <!DOCTYPE html>
 <html lang="ko" data-theme="light">
 <head>
@@ -78,19 +78,20 @@
   --focus-ring:   rgba(100,200,100,0.25);
 }
 
-/* 풀투리프레시(아래로 당겨 새로고침) 차단 — iOS 바운스 방지 보강 */
-html { overscroll-behavior: none; }
+/* 풀투리프레시·고무줄 바운스 차단 — 본문 흔들림 방지 */
+html {
+  overscroll-behavior: none;
+  background: var(--bg-page);
+}
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Noto Sans KR', sans-serif;
   background: var(--bg-page);
   color: var(--text-main);
-  min-height: 100vh;
   padding-bottom: 12px;
   transition: background 0.25s, color 0.25s;
-  /* 모바일 당겨서 새로고침 방지 */
-  overscroll-behavior-y: contain;
-  overscroll-behavior: contain;
+  /* 모바일 당겨서 새로고침·바운스 방지 (min-height 제거로 하단 공백 제거) */
+  overscroll-behavior: none;
   -webkit-overflow-scrolling: touch;
   /* 더블탭 확대 차단 (스크롤·핀치는 허용) */
   touch-action: manipulation;
@@ -471,10 +472,10 @@ header p  { font-size: 11px; opacity: 0.72; margin-top: 2px; }
 <header>
   <div class="header-titles">
     <h1>🌾 논벼 이삭 수 계산기</h1>
-    <p>10포기 이삭수 입력 및 대표 주수 산출 · V18 · 2026-06-15 01:22 KST</p>
+    <p>10포기 이삭수 입력 및 대표 주수 산출 · V19 · 2026-06-15 01:41 KST</p>
   </div>
   <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
-    <a href="https://ubaldos00-ship-it.github.io/home" class="home-btn" aria-label="홈" onclick="window._allowLeave=true;">
+    <a href="https://ubaldos00-ship-it.github.io/home" class="home-btn" aria-label="홈" onclick="return confirmGoHome(event)">
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 9.5L10 3l7 6.5V17a1 1 0 01-1 1H13v-5H7v5H4a1 1 0 01-1-1V9.5z" fill="#fff"/></svg>
       홈
     </a>
@@ -686,6 +687,27 @@ function toggleTheme() {
     btn.textContent = '🌙 야외모드';
     if (meta) meta.setAttribute('content', '#2d6a2d');
   }
+}
+
+/* ── 홈 이동 확인 팝업 ── */
+function confirmGoHome(e){
+  if(e) e.preventDefault();
+  if(document.getElementById('homeOverlay')) return false;
+  var ov = document.createElement('div');
+  ov.className = 'lc-overlay'; ov.id = 'homeOverlay';
+  ov.innerHTML = '<div class="lc-box">'
+    + '<p>모든 데이터가 초기화됩니다.<br>홈으로 가시겠습니까?</p>'
+    + '<div class="lc-btns">'
+    + '<button class="lc-cancel" onclick="document.getElementById(\'homeOverlay\').remove()">취소</button>'
+    + '<button class="lc-ok" onclick="_goHomeNow()">확인</button>'
+    + '</div></div>';
+  document.body.appendChild(ov);
+  return false;
+}
+function _goHomeNow(){
+  window._allowLeave = true;
+  try{ localStorage.removeItem('isakAutoSave_v1'); }catch(e){}
+  location.href = 'https://ubaldos00-ship-it.github.io/home';
 }
 
 /* ── 화면 캡처 ── */
