@@ -1,4 +1,4 @@
-<!-- 이삭포기계산기_V19.html · 저장: 2026-06-15 01:41 KST -->
+<!-- 이삭포기계산기_V20.html · 저장: 2026-06-15 01:53 KST -->
 <!DOCTYPE html>
 <html lang="ko" data-theme="light">
 <head>
@@ -78,23 +78,30 @@
   --focus-ring:   rgba(100,200,100,0.25);
 }
 
-/* 풀투리프레시·고무줄 바운스 차단 — 본문 흔들림 방지 */
-html {
+/* 문서 자체는 고정 — 입력 포커스 시 문서 과(過)스크롤로 생기던 하단 공백 차단 */
+html, body {
+  height: 100%;
+  overflow: hidden;
   overscroll-behavior: none;
   background: var(--bg-page);
 }
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Noto Sans KR', sans-serif;
-  background: var(--bg-page);
   color: var(--text-main);
-  padding-bottom: 12px;
   transition: background 0.25s, color 0.25s;
-  /* 모바일 당겨서 새로고침·바운스 방지 (min-height 제거로 하단 공백 제거) */
-  overscroll-behavior: none;
-  -webkit-overflow-scrolling: touch;
   /* 더블탭 확대 차단 (스크롤·핀치는 허용) */
   touch-action: manipulation;
+}
+
+/* 실제 스크롤은 이 내부 컨테이너에서만 — 내용 끝을 넘어 스크롤되지 않음 */
+#scrollRoot {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: none;
+  padding-bottom: 12px;
 }
 
 header {
@@ -469,10 +476,11 @@ header p  { font-size: 11px; opacity: 0.72; margin-top: 2px; }
 </head>
 <body>
 
+<div id="scrollRoot">
 <header>
   <div class="header-titles">
     <h1>🌾 논벼 이삭 수 계산기</h1>
-    <p>10포기 이삭수 입력 및 대표 주수 산출 · V19 · 2026-06-15 01:41 KST</p>
+    <p>10포기 이삭수 입력 및 대표 주수 산출 · V20 · 2026-06-15 01:53 KST</p>
   </div>
   <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
     <a href="https://ubaldos00-ship-it.github.io/home" class="home-btn" aria-label="홈" onclick="return confirmGoHome(event)">
@@ -539,6 +547,7 @@ header p  { font-size: 11px; opacity: 0.72; margin-top: 2px; }
     <button class="btn btn-capture" id="btnCapture" onclick="captureScreen()">📸 결과 이미지 저장/공유</button>
   </div>
 </div>
+</div><!-- /scrollRoot -->
 
 <script>
 const COUNT = 10;
@@ -1111,15 +1120,17 @@ function shareJSON_sl(){
    ══════════════════════════════════════════ */
 (function(){
   var lastY=0, ticking=false, THRESHOLD=40;
+  var sc=document.getElementById('scrollRoot');
   function onScroll(){
-    var y=window.scrollY||window.pageYOffset;
+    var y=sc?sc.scrollTop:(window.scrollY||window.pageYOffset);
     var hdr=document.querySelector('header');
     if(!hdr){lastY=y;ticking=false;return;}
     if(y>lastY && y>THRESHOLD){ hdr.style.transform='translateY(-100%)'; }
     else if(y<lastY){ hdr.style.transform='translateY(0)'; }
     lastY=y; ticking=false;
   }
-  window.addEventListener('scroll',function(){
+  var target=sc||window;
+  target.addEventListener('scroll',function(){
     if(!ticking){ticking=true;requestAnimationFrame(onScroll);}
   },{passive:true});
 })();
