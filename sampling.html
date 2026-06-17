@@ -1,8 +1,17 @@
+<!-- 계통추출계산기_v13.html · 저장: 2026-06-18 06:06 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<!-- Google Analytics (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-B8ELP4S5PR"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-B8ELP4S5PR');
+</script>
 <title>계통추출 계산기</title>
 <style>
 /* 시스템 폰트만 사용 - 외부 의존성 제거 */
@@ -27,8 +36,6 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);min-height
 .hdr{background:var(--green);color:#fff;padding:12px 14px 10px;position:sticky;top:0;z-index:200;box-shadow:0 2px 10px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:space-between}
 .hdr h1{font-size:17px;font-weight:900;letter-spacing:-.02em}
 .hdr p{font-size:10px;opacity:.7;margin-top:1px}
-.home-btn{display:flex;flex-direction:column;align-items:center;gap:2px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:10px;padding:7px 11px;cursor:pointer;color:#fff;font-size:9px;font-weight:700;letter-spacing:.04em;text-decoration:none}
-.home-btn svg{width:18px;height:18px}
 
 /*── Cards ──*/
 .card{margin:10px 12px 0;background:var(--card);border-radius:var(--r);box-shadow:0 2px 10px rgba(0,0,0,.07);overflow:hidden}
@@ -123,6 +130,10 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);min-height
 .nc-head.blue{background:var(--blue)}
 .nc-head.red {background:var(--red)}
 .nc-meta{padding:7px 14px;font-size:11px;font-family:var(--mono);color:var(--ink2);border-bottom:1px solid var(--border);line-height:1.7}
+.nc-lookup{padding:8px 14px;font-size:11px;line-height:1.6;background:#fafaf7;border-bottom:1px solid var(--border);color:var(--ink2)}
+.nc-lookup b{font-family:var(--mono);font-size:12px}
+.nc-lookup.blue b{color:var(--blue)}
+.nc-lookup.red b{color:var(--red)}
 .nc-grid{padding:12px 12px 14px;display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
 .ncw{display:flex;flex-direction:column;align-items:center;gap:3px;animation:pop .2s ease backwards}
 .ncw-no{font-family:var(--mono);font-size:10px;font-weight:700;color:#aaa;line-height:1}
@@ -166,11 +177,101 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);min-height
 .pi-inp.ink{color:var(--ink)}
 .pi-inp.ink::placeholder{font-size:11px;color:#bbb;font-weight:400}
 
+
+
+/* Random coordinate input */
+.random-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.random-box{border:2px solid var(--border);border-radius:12px;background:#fff;overflow:hidden}
+.random-box.blue{border-color:var(--blue)}
+.random-box.red{border-color:var(--red)}
+.random-head{padding:8px 10px;font-size:13px;font-weight:800;color:#fff;display:flex;align-items:center;gap:6px}
+.random-box.blue .random-head{background:var(--blue)}
+.random-box.red .random-head{background:var(--red)}
+.random-body{padding:10px 8px;display:flex;flex-direction:column;gap:8px}
+.random-row{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.random-mini{display:flex;flex-direction:column;gap:3px;align-items:center}
+.random-mini label{font-size:9px;font-weight:800;color:var(--ink2);letter-spacing:.04em}
+.random-inp{width:100%;font-family:var(--mono);font-size:17px;font-weight:800;text-align:center;padding:8px 2px;border:2px solid var(--border);border-radius:9px;outline:none;background:#fff;-moz-appearance:textfield}
+.random-inp::-webkit-inner-spin-button,.random-inp::-webkit-outer-spin-button{-webkit-appearance:none}
+.random-inp:focus{border-color:var(--green)}
+.random-action{display:none;width:100%;border:none;border-radius:10px;padding:10px 8px;background:var(--green);color:#fff;font-family:var(--sans);font-size:12px;font-weight:800;cursor:pointer}
+.random-action:active{transform:scale(.98)}
+.random-msg{min-height:34px;border-radius:9px;background:#fafaf7;border:1px solid var(--border);padding:7px 8px;font-size:10.5px;line-height:1.45;color:var(--ink2)}
+.random-msg.ok{background:var(--glight);border-color:var(--gmid);color:var(--green);font-weight:700}
+.random-msg.warn{background:var(--rlight);border-color:#ef9a9a;color:var(--red);font-weight:700}
+.random-help{margin-top:10px;padding:10px 12px;border-radius:10px;background:#f8fbff;border-left:3px solid var(--green);font-size:10.5px;line-height:1.65;color:#666}
+@media (max-width:420px){.random-grid{grid-template-columns:1fr 1fr;gap:6px}.random-head{font-size:11px;padding:7px 6px}.random-body{padding:8px 6px}.random-row{gap:4px}.random-inp{font-size:15px;padding:7px 1px}.random-msg{min-height:auto;font-size:9.5px;padding:6px 5px}}
+
+
+.setting-lookup{margin-top:8px;border-radius:9px;padding:8px 9px;font-size:10.5px;line-height:1.55;background:#fafaf7;border:1.5px solid var(--border);color:var(--ink2)}
+.setting-lookup b{font-family:var(--mono);font-size:11.5px}
+.setting-lookup.blue{border-color:#90caf9;background:var(--blight)}
+.setting-lookup.blue b{color:var(--blue)}
+.setting-lookup.red{border-color:#ef9a9a;background:var(--rlight)}
+.setting-lookup.red b{color:var(--red)}
+.setting-lookup.empty{background:#fafaf7;color:#999;border-color:var(--border)}
+
 /* Footnote */
 .foot{margin:14px 12px 0;padding:11px 14px;background:#fff;border-radius:10px;border-left:3px solid var(--gmid);font-size:11px;color:#999;line-height:1.75}
 
 /* Off-screen print area */
 #print-area{position:fixed;left:-9999px;top:0;width:460px;background:var(--paper);z-index:-999;font-family:var(--sans)}
+
+/* ── 저장/불러오기 모달 ── */
+.sl-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9000;padding:16px;overflow-y:auto;}
+.sl-modal.show{display:flex;justify-content:center;align-items:flex-start;}
+.sl-box{background:#fff;border-radius:16px;width:100%;max-width:480px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.3);}
+.sl-head{padding:13px 16px;background:#27500A;display:flex;justify-content:space-between;align-items:center;}
+.sl-head-title{color:#fff;font-size:15px;font-weight:800;}
+.sl-close{background:transparent;border:1.5px solid rgba(255,255,255,.5);color:#fff;border-radius:50px;padding:5px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
+.sl-body{padding:14px 14px 18px;}
+.sl-save-now{width:100%;padding:14px;background:#E07000;border:none;border-radius:10px;color:#fff;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:14px;letter-spacing:.02em;font-family:inherit;}
+.sl-save-now:active{opacity:.82;}
+.sl-section{font-size:11px;font-weight:700;color:#888;letter-spacing:.06em;margin-bottom:7px;}
+.sl-list{display:flex;flex-direction:column;gap:7px;margin-bottom:14px;max-height:50vh;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;}
+.sl-empty{text-align:center;color:#bbb;font-size:13px;padding:18px 0;}
+.sl-item{background:#f8f6f1;border:1px solid #e0ddd6;border-radius:10px;padding:9px 10px;display:flex;align-items:center;gap:7px;}
+.sl-item-num{min-width:22px;height:22px;background:#27500A;color:#fff;border-radius:50%;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sl-item-info{flex:1;min-width:0;cursor:pointer;}
+.sl-item-label{font-size:13px;font-weight:700;color:#1a1918;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sl-item-addr{font-size:11px;color:#5a7a3a;font-weight:600;margin-top:1px;}
+.sl-item-date{font-size:10px;color:#999;margin-top:2px;}
+.sl-item-load{padding:5px 6px;background:#EBF3FF;border:1.5px solid #b3c8f0;border-radius:7px;color:#0A3A8C;font-size:18px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;min-width:32px;height:32px;}
+.sl-item-del{padding:7px 8px;background:#fdecea;border:1.5px solid #f5b8b8;border-radius:7px;color:#c0392b;font-size:0;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;min-width:32px;height:32px;}
+.sl-item-del.del-locked{opacity:.35;cursor:not-allowed;}
+.sl-item-fav{padding:5px 6px;background:none;border:1.5px solid #e0ddd6;border-radius:7px;color:#aaa;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;min-width:32px;height:32px;transition:all .15s;}
+.sl-item-fav.fav-on{border-color:#1558D6;background:#EBF3FF;}
+.sl-item.sl-selected{background:#edfbe8;border:2px solid #3a7d44;}
+.sl-divider{border:none;border-top:1px solid #eee;margin:10px 0;}
+.sl-file-row{display:flex;gap:8px;}
+.sl-file-btn{flex:1;padding:12px 6px;border:2px solid #d0ccc4;border-radius:10px;background:#fff;color:#3D3C39;font-size:13px;font-weight:700;cursor:pointer;text-align:center;font-family:inherit;}
+.home-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;width:48px;height:48px;background:rgba(255,255,255,.18);color:#fff;font-size:10px;font-weight:700;border-radius:12px;text-decoration:none;font-family:inherit;border:1.5px solid rgba(255,255,255,.35);flex-shrink:0;}
+.home-btn:active{background:rgba(255,255,255,.28);}
+.sl-hdr-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;width:48px;height:48px;background:rgba(255,255,255,.18);color:#fff;font-size:10px;font-weight:700;border-radius:12px;border:1.5px solid rgba(255,255,255,.35);flex-shrink:0;cursor:pointer;font-family:inherit;margin-left:auto;}
+.sl-hdr-btn:active{background:rgba(255,255,255,.28);}
+.calc-hdr-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;width:48px;height:48px;background:rgba(255,255,255,.18);color:#fff;font-size:10px;font-weight:700;border-radius:12px;border:1.5px solid rgba(255,255,255,.35);flex-shrink:0;cursor:pointer;font-family:inherit;}
+.calc-hdr-btn:active{background:rgba(255,255,255,.28);}
+.calc-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:4000;align-items:flex-end;justify-content:center;}
+.calc-modal.show{display:flex;}
+.calc-box{width:100%;max-width:340px;background:#1c1c1e;border-radius:20px 20px 0 0;padding:14px 12px 28px;box-shadow:0 -8px 40px rgba(0,0,0,.5);user-select:none;touch-action:manipulation;}
+.calc-topbar{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.calc-topbar .calc-title{font-size:14px;font-weight:800;color:#fff;flex:1;}
+.calc-top-clear{background:#505054;color:#fff;border:none;border-radius:9px;padding:7px 11px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;flex-shrink:0;}
+.calc-top-close{background:#FF453A;color:#fff;border:none;border-radius:9px;padding:7px 14px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;flex-shrink:0;}
+.calc-history{display:none;background:#000;border-radius:12px;padding:6px 12px;margin-bottom:8px;max-height:140px;overflow-y:auto;}
+.calc-history.show{display:block;}
+.calc-history-item{font-size:12px;color:rgba(255,255,255,.5);text-align:right;line-height:1.7;border-bottom:1px solid rgba(255,255,255,.08);padding:3px 0;word-break:break-all;}
+.calc-popup-display{background:#000;border-radius:12px;padding:8px 14px 10px;margin-bottom:10px;text-align:right;}
+.calc-expr{font-size:13px;color:rgba(255,255,255,.45);min-height:18px;}
+.calc-val{font-size:36px;font-weight:700;color:#fff;line-height:1.2;}
+.calc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.calc-btn{height:56px;border:none;border-radius:12px;font-size:18px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+.calc-btn.fn{background:#505054;color:#fff;}
+.calc-btn.op{background:#FF9F0A;color:#fff;}
+.calc-btn.num{background:#2c2c2e;color:#fff;}
+.calc-btn.zero{grid-column:span 2;text-align:left;padding-left:22px;}
+.calc-btn.eq{background:#FF9F0A;color:#fff;}
+.sl-file-row .sl-share-btn{background:#1f8a3a;color:#fff;border-color:#1f8a3a;}
 </style>
 </head>
 <body>
@@ -180,12 +281,20 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);min-height
     <h1>📋 계통추출 계산기</h1>
     <p>농산물 생산조사 · Systematic Sampling</p>
   </div>
-  <a href="https://ubaldos00-ship-it.github.io/home/" class="home-btn">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-      <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H5a1 1 0 01-1-1V9.5z"/>
-      <path d="M9 21V12h6v9"/>
-    </svg>홈
-  </a>
+  <div style="display:flex;align-items:center;gap:6px;">
+      <a href="https://ubaldos00-ship-it.github.io/home/" class="home-btn" aria-label="홈">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 9.5L10 3l7 6.5V17a1 1 0 01-1 1H13v-5H7v5H4a1 1 0 01-1-1V9.5z" fill="#fff"/></svg>
+        홈
+      </a>
+      <button class="calc-hdr-btn" onclick="openCalcModal()" aria-label="계산기">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="16" height="18" rx="2" stroke="#fff" stroke-width="2"/><path d="M8 7h8M8 12h2m4 0h2M8 17h2m4 0h2" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+        계산기
+      </button>
+      <button class="sl-hdr-btn" onclick="openSaveLoadModal()" aria-label="저장/불러오기">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M17 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V7l-4-4z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M17 3v4H7V3" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><rect x="9" y="13" width="6" height="6" rx="1" stroke="#fff" stroke-width="2"/></svg>
+        저장
+      </button>
+  </div>
 </div>
 
 <!-- ① 작물 -->
@@ -261,9 +370,56 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);min-height
   </div>
 </div>
 
-<!-- ③ 추출 설정 -->
+
+<!-- ③ 난수 입력 -->
 <div class="card">
-  <div class="card-head">③ 추출 설정</div>
+  <div class="card-head">③ 난수 입력</div>
+  <div class="card-body">
+    <div class="random-grid">
+      <div class="random-box blue">
+        <div class="random-head">🔎 A포구 난수표 조회</div>
+        <div class="random-body">
+          <div class="random-row">
+            <div class="random-mini">
+              <label for="aRandCol">가로값</label>
+              <input type="number" id="aRandCol" class="random-inp" min="0" max="9" inputmode="numeric" placeholder="0~9">
+            </div>
+            <div class="random-mini">
+              <label for="aRandRow">세로값</label>
+              <input type="number" id="aRandRow" class="random-inp" min="0" max="79" inputmode="numeric" placeholder="0~79">
+            </div>
+          </div>
+          <button type="button" class="random-action" data-port="a">A 난수 r 자동입력</button>
+          <div class="random-msg" id="aRandMsg">가로·세로값과 N 입력 후 아래 계통추출 실행 버튼만 누르세요.</div>
+        </div>
+      </div>
+      <div class="random-box red">
+        <div class="random-head">🔎 B포구 난수표 조회</div>
+        <div class="random-body">
+          <div class="random-row">
+            <div class="random-mini">
+              <label for="bRandCol">가로값</label>
+              <input type="number" id="bRandCol" class="random-inp" min="0" max="9" inputmode="numeric" placeholder="0~9">
+            </div>
+            <div class="random-mini">
+              <label for="bRandRow">세로값</label>
+              <input type="number" id="bRandRow" class="random-inp" min="0" max="79" inputmode="numeric" placeholder="0~79">
+            </div>
+          </div>
+          <button type="button" class="random-action" data-port="b">B 난수 r 자동입력</button>
+          <div class="random-msg" id="bRandMsg">⭐ A포구 가로·세로값을 입력하면 B포구 좌표도 자동으로 동일하게 들어갑니다.</div>
+        </div>
+      </div>
+    </div>
+    <div class="random-help">
+      ※ <strong>중요:</strong> A포구에 가로·세로값을 입력하면 <strong>B포구 좌표도 자동으로 동일하게 들어갑니다.</strong> 아래 전체 N과 추출 n을 입력한 뒤 계통추출 실행 버튼만 누르면 난수 r 조회와 계통추출이 한 번에 실행됩니다. 예: 85693 → 8.5로 판단합니다.
+    </div>
+  </div>
+</div>
+
+<!-- ④ 추출 설정 -->
+<div class="card">
+  <div class="card-head">④ 추출 설정</div>
   <div class="card-body">
     <div class="ports-grid">
       <!-- A포구 -->
@@ -293,6 +449,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);min-height
           <div class="formula-box blue" id="formula-a">
             <div class="fb-title">추출간격</div>k = N ÷ n = <b>?</b>
           </div>
+          <div class="setting-lookup blue empty" id="setting-lookup-a">난수표 조회값: 가로·세로값과 N·n 입력 시 자동 표시</div>
         </div>
       </div>
       <!-- B포구 -->
@@ -322,6 +479,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);min-height
           <div class="formula-box red" id="formula-b">
             <div class="fb-title">추출간격</div>k = N ÷ n = <b>?</b>
           </div>
+          <div class="setting-lookup red empty" id="setting-lookup-b">난수표 조회값: A포구 좌표와 동일하게 자동 표시</div>
         </div>
       </div>
     </div>
@@ -341,7 +499,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);min-height
   </div>
 </div>
 
-<!-- ④ 결과 -->
+<!-- ⑤ 결과 -->
 <div class="results" id="results">
   <div id="capture-area">
     <div class="res-header">
@@ -373,6 +531,29 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);min-height
 <!-- 오프스크린 캡처 전용 영역 -->
 <div id="print-area" style="position:fixed;left:-9999px;top:0;width:460px;background:#f4f4ef;z-index:-999;"></div>
 
+<!-- 저장/불러오기 모달 -->
+<div class="sl-modal" id="slModal">
+  <div class="sl-box">
+    <div class="sl-head">
+      <span class="sl-head-title">💾 저장 / 불러오기</span>
+      <button class="sl-close" onclick="closeSaveLoadModal()">✕</button>
+    </div>
+    <div class="sl-body">
+      <button class="sl-save-now" id="slSmartSaveBtn" onclick="slSmartSave()">💾 새로 저장</button>
+      <div class="sl-section">저장된 자료 목록</div>
+      <div class="sl-list" id="sl-list"><div class="sl-empty">저장된 자료가 없습니다.</div></div>
+      <hr class="sl-divider">
+      <div class="sl-section" style="margin-bottom:8px;">JSON 파일로 내보내기 / 불러오기</div>
+      <div class="sl-file-row">
+        <button class="sl-file-btn sl-share-btn" onclick="shareJSON_sl()">📱 JSON 공유</button>
+        <button class="sl-file-btn" onclick="exportJSON_sl()">📤 JSON 내보내기</button>
+        <button class="sl-file-btn" onclick="importJSON_sl()">📥 JSON 불러오기</button>
+      </div>
+    </div>
+  </div>
+</div>
+<input type="file" id="slJsonFile" accept=".json" style="display:none;" onchange="importJSONFile_sl(this)">
+
 <script>
 // 전역 에러 감지 - 실제 에러 메시지 화면에 표시
 window.addEventListener('error', function(e){
@@ -389,6 +570,90 @@ window.addEventListener('error', function(e){
 
 let selCrop='마늘', selCount=20;
 let lastResult=null;  // 마지막 결과 저장 {A, B, addr, dateStr}
+let randomLookupState={a:null,b:null};  // 난수표 조회 결과 저장
+
+const randomTable = {
+      0:["54463","22662","65905","70639","79365","67382","29085","69831","47058","08186"],
+      1:["15389","85205","18850","39226","42249","90669","96325","23248","60933","26927"],
+      2:["85941","40756","82404","02015","13858","78030","16269","65978","01385","15345"],
+      3:["61149","69440","11286","88218","58925","03638","52862","62733","33451","77455"],
+      4:["05219","81619","10651","67079","92511","59888","84502","72095","83463","75577"],
+      5:["41417","98326","87719","92294","46614","50948","64886","20002","97365","30976"],
+      6:["28358","94070","20652","35774","16249","75019","21145","05217","47286","76305"],
+      7:["17783","00015","10806","83091","91530","36466","39981","62481","49177","75779"],
+      8:["40950","84820","29881","85966","62800","70326","84740","62660","77379","90279"],
+      9:["82995","64157","66164","41180","10089","41757","78258","96488","88629","37231"],
+      10:["96754","17676","55659","44105","47361","34833","86679","23930","53249","27083"],
+      11:["34357","88040","53364","71726","45690","66334","60332","22554","90600","71113"],
+      12:["06318","37403","49927","57715","50423","67372","63116","48888","21505","80182"],
+      13:["62111","52820","07243","79931","89292","84767","85693","73947","22278","11551"],
+      14:["47534","09243","67879","00544","23410","12740","02540","54440","32946","13491"],
+      15:["98614","75993","84460","62846","59844","14922","48730","73443","48167","34770"],
+      16:["24856","03648","44898","09351","98795","18644","39765","17058","90368","44104"],
+      17:["96887","12479","80621","66223","86085","78285","02432","53342","42846","94771"],
+      18:["90801","21472","42815","77408","37390","76766","52615","32141","30268","18106"],
+      19:["55165","77312","83666","36028","28420","70219","83169","41943","47366","41067"],
+      20:["75884","12952","84318","95108","72305","64620","91308","89872","45375","85463"],
+      21:["16777","37116","58550","42958","21460","43910","01175","87894","81378","10620"],
+      22:["46230","43877","80207","88877","89380","32992","91380","03164","98656","59337"],
+      23:["42902","66892","45134","01432","94710","23474","20423","60137","60609","13119"],
+      24:["81007","00333","36993","28039","10154","95425","39220","19774","31782","49037"],
+      25:["63089","01122","51111","72373","06902","74373","96199","97017","41273","21546"],
+      26:["20411","67810","89950","16944","93054","87687","96693","87236","77054","33848"],
+      27:["58212","13160","06488","15718","82627","76999","05999","58680","96739","63700"],
+      28:["70577","42866","24969","61210","76046","67699","42054","12696","93758","03283"],
+      29:["94522","74358","71659","62038","79643","79169","44741","05437","39038","13163"],
+      30:["42626","36819","85651","88678","17401","03252","99547","32404","17918","62880"],
+      31:["16051","33763","57194","16752","54450","19031","58580","47625","94132","60631"],
+      32:["08244","27647","33851","44705","94211","46716","11788","55784","95374","72655"],
+      33:["59497","04392","09419","89964","51211","04894","72882","17805","21896","83864"],
+      34:["97155","13428","40293","09985","58434","01412","69124","82171","59058","82859"],
+      35:["98409","66162","95763","47420","20792","61527","20441","39435","11859","41567"],
+      36:["45476","84882","65109","96597","25930","66790","65706","61203","53634","22557"],
+      37:["89300","69700","50741","30329","11658","23166","05400","66669","48703","03887"],
+      38:["50051","95137","91631","66315","91428","12275","24816","68091","71710","33258"],
+      39:["31753","85178","31310","89642","98364","02306","24617","09609","83942","22716"],
+      40:["79152","53829","77250","20190","56535","18760","69942","71448","33278","48805"],
+      41:["44560","38750","83635","56540","64900","42912","13953","79149","18710","68618"],
+      42:["68328","83378","63369","71381","39564","05615","42451","64559","97501","65747"],
+      43:["46939","38639","58625","08342","30459","85863","20781","09284","26333","91777"],
+      44:["83544","86141","15707","96256","23068","13782","08467","89469","93842","55349"],
+      45:["91621","00881","04900","54224","46177","55309","17852","27491","89415","23466"],
+      46:["91896","67126","04151","03795","59077","11848","12630","98375","52068","60142"],
+      47:["55751","62515","21108","80830","02263","29303","37204","96926","30506","09808"],
+      48:["85156","87698","95493","88842","00664","55017","55539","17771","69448","87530"],
+      49:["07521","56898","12236","60277","39102","62315","12239","07105","11844","01117"],
+      50:["59391","58030","52098","82718","87024","82848","04190","96574","90464","29065"],
+      51:["99657","76364","77204","04615","27062","96621","43918","01896","83991","51141"],
+      52:["10363","97518","51400","25670","98342","61891","27101","37855","06235","33316"],
+      53:["86859","19558","64432","19706","99612","59798","32803","67708","15297","28612"],
+      54:["11258","24591","36863","55368","31721","94335","34936","02566","80972","08188"],
+      55:["95068","88628","35911","14530","33020","80428","39936","31855","34334","64865"],
+      56:["54463","47237","73800","91017","36239","71824","83671","39892","60518","37092"],
+      57:["16874","62677","57412","13125","31389","62233","80827","73917","82802","84420"],
+      58:["92494","63157","76593","91316","03505","72389","96363","52887","01087","66091"],
+      59:["15669","56689","35682","40844","53256","81872","35213","09840","34471","74441"],
+      60:["99116","75486","84989","23476","52967","67104","39495","39100","17217","74073"],
+      61:["15696","10703","65178","90637","63110","17622","53988","71087","84148","11670"],
+      62:["97720","15396","51269","69620","03388","13699","33423","67453","43269","56720"],
+      63:["11666","13841","71681","98000","35979","39719","81899","07449","47985","46967"],
+      64:["71628","73130","78783","75691","41632","09847","61547","18707","85489","69944"],
+      65:["40501","01089","99943","91843","41995","88931","73631","69361","05375","15417"],
+      66:["22518","55576","98215","82068","10798","86211","36584","67466","69373","40054"],
+      67:["75112","30485","62173","02132","14878","92879","22281","16783","86352","00077"],
+      68:["80327","02671","98191","84342","90813","49268","95441","15496","20168","09271"],
+      69:["60251","45548","02146","05597","48228","81366","34598","72856","66762","17002"],
+      70:["57430","82270","10421","05540","43648","75888","66049","21511","47676","33444"],
+      71:["73528","39559","34434","88596","54086","71693","43132","14414","79949","85193"],
+      72:["25991","65959","70769","64721","86413","33475","42740","06175","82758","66248"],
+      73:["78388","16638","09134","59880","63806","48472","39318","35434","24057","74739"],
+      74:["12477","09965","96657","57994","59439","76330","24596","77515","09577","91871"],
+      75:["83266","32883","42451","15579","38155","29793","40914","65990","16255","17777"],
+      76:["76970","80876","10237","39515","79152","74798","39357","09054","73579","92359"],
+      77:["37074","65198","44785","68624","98336","84481","97610","78735","46703","98265"],
+      78:["83712","06514","30101","78295","54656","85417","43189","60048","72781","72606"],
+      79:["20287","56862","69727","64443","64936","08366","27227","05158","50326","59566"]
+    };
 
 /* ── 작물 ── */
 function initCropButtons(){
@@ -411,6 +676,7 @@ function initCropButtons(){
             }
           });
           updateFormulas();
+          scheduleAutoRandomLookup();
         }catch(e){console.error('crop click error:',e);}
       });
     });
@@ -447,12 +713,179 @@ function initInputListeners(){
           try{
             if(id.charAt(0)==='a') updateFormula('a');
             else updateFormula('b');
+            if(id !== 'ar' && id !== 'br') scheduleAutoRandomLookup();
           }catch(e){console.error('input error:',e);}
         });
       }
     });
   }catch(e){console.error('initInputListeners error:',e);}
 }
+
+
+
+/* ── 난수표 좌표 → 난수 r 자동 입력 ── */
+function getRandomNumber(row, col){
+  return randomTable[row]?.[col] ?? null;
+}
+function randomDecimal(value){
+  if(!value || value.length < 2) return null;
+  return parseFloat(value[0] + '.' + value[1]);
+}
+function isIntegerK(k){
+  return Math.abs(k - Math.round(k)) < 1e-9;
+}
+function isValidRandomByK(decimalValue, k){
+  if(decimalValue === null || isNaN(decimalValue)) return false;
+  if(isIntegerK(k)){
+    return decimalValue >= 1 && decimalValue <= k && Number.isInteger(Math.round(decimalValue * 10) / 10);
+  }
+  return decimalValue > 1 && decimalValue <= k;
+}
+function formatRandomForInput(decimalValue, k){
+  if(isIntegerK(k) && Number.isInteger(decimalValue)) return String(decimalValue);
+  return decimalValue.toFixed(1);
+}
+function nextRandomPosition(row, col){
+  let nr=row+1, nc=col;
+  if(nr > 79){
+    nr = 0;
+    nc = col + 1;
+    if(nc > 9) nc = 0;
+  }
+  return {row:nr, col:nc};
+}
+function findRandomForPort(startRow, startCol, k){
+  let row=startRow, col=startCol;
+  for(let step=0; step<800; step++){
+    const value=getRandomNumber(row,col);
+    const decimalValue=randomDecimal(value);
+    if(isValidRandomByK(decimalValue,k)){
+      return {row, col, value, decimalValue, step};
+    }
+    const next=nextRandomPosition(row,col);
+    row=next.row; col=next.col;
+  }
+  return null;
+}
+function setSettingLookup(p, lookup){
+  const el=document.getElementById('setting-lookup-'+p);
+  if(!el) return;
+  const color=p==='a'?'blue':'red';
+  if(!lookup){
+    el.className='setting-lookup '+color+' empty';
+    el.textContent=p==='a'?'난수표 조회값: 가로·세로값과 N·n 입력 시 자동 표시':'난수표 조회값: A포구 좌표와 동일하게 자동 표시';
+    return;
+  }
+  el.className='setting-lookup '+color;
+  el.innerHTML='난수표 조회값: 시작 가로 <b>'+lookup.inputCol+'</b> · 세로 <b>'+lookup.inputRow+'</b>' +
+    ' → 사용 가로 <b>'+lookup.foundCol+'</b> · 세로 <b>'+lookup.foundRow+'</b><br>' +
+    '조회값 <b>'+lookup.value+'</b> → r <b>'+lookup.rText+'</b> / '+lookup.rule;
+}
+
+function setRandomMsg(p,msg,type){
+  const el=document.getElementById(p+'RandMsg');
+  if(!el) return;
+  el.textContent=msg;
+  el.className='random-msg '+(type||'');
+}
+function lookupRandomToR(p, options){
+  options = options || {};
+  if(!options.keepError) clearErr();
+  const label=p==='a'?'A포구':'B포구';
+  randomLookupState[p]=null;
+  setSettingLookup(p, null);
+  const colEl=document.getElementById(p+'RandCol');
+  const rowEl=document.getElementById(p+'RandRow');
+  const NEl=document.getElementById(p+'N');
+  const nEl=document.getElementById(p+'n');
+  const rEl=document.getElementById(p+'r');
+  const col=Number(colEl.value), row=Number(rowEl.value);
+  const N=parseInt(NEl.value,10), n=parseInt(nEl.value,10);
+
+  if(!Number.isInteger(col)||col<0||col>9){setRandomMsg(p,label+' 가로값은 0~9 정수로 입력하세요.','warn');if(!options.silentFocus) colEl.focus();return false;}
+  if(!Number.isInteger(row)||row<0||row>79){setRandomMsg(p,label+' 세로값은 0~79 정수로 입력하세요.','warn');if(!options.silentFocus) rowEl.focus();return false;}
+  if(!N||N<1){setRandomMsg(p,label+' 전체 N을 먼저 입력하세요.','warn');if(!options.silentFocus) NEl.focus();return false;}
+  if(!n||n<1){setRandomMsg(p,label+' 추출 n을 먼저 입력하세요.','warn');if(!options.silentFocus) nEl.focus();return false;}
+  if(n>N){setRandomMsg(p,label+' 추출 n이 전체 N보다 큽니다.','warn');if(!options.silentFocus) nEl.focus();return false;}
+
+  const k=round1(N/n);
+  const found=findRandomForPort(row,col,k);
+  if(!found){setRandomMsg(p,label+' 조건에 맞는 난수 r을 찾지 못했습니다.','warn');return false;}
+  const rText=formatRandomForInput(found.decimalValue,k);
+  rEl.value=rText;
+  updateFormula(p);
+  const rule=isIntegerK(k)?'정수 k 조건(같은값 포함)':'소수 k 조건(1 초과, k 이하)';
+  const moveText=found.step===0?'입력 좌표에서 바로 사용':'아래 방향으로 '+found.step+'칸 이동 후 사용';
+  randomLookupState[p]={
+    inputCol:col, inputRow:row,
+    foundCol:found.col, foundRow:found.row,
+    value:found.value, decimalValue:found.decimalValue,
+    rText:rText, step:found.step, rule:rule, moveText:moveText, k:k
+  };
+  setSettingLookup(p, randomLookupState[p]);
+  setRandomMsg(p,`${label} k=${disp1(k)} · ${rule} · ${moveText} → 가로 ${found.col}, 세로 ${found.row}, ${found.value} = r ${rText}`,'ok');
+  return true;
+}
+function syncRandomCoordsFromA(){
+  const aCol=document.getElementById('aRandCol');
+  const aRow=document.getElementById('aRandRow');
+  const bCol=document.getElementById('bRandCol');
+  const bRow=document.getElementById('bRandRow');
+  if(aCol && bCol) bCol.value=aCol.value;
+  if(aRow && bRow) bRow.value=aRow.value;
+}
+function portNeedsAutoRandom(p){
+  const NEl=document.getElementById(p+'N');
+  const nEl=document.getElementById(p+'n');
+  const colEl=document.getElementById(p+'RandCol');
+  const rowEl=document.getElementById(p+'RandRow');
+  const N=parseInt(NEl.value,10), n=parseInt(nEl.value,10);
+  return !!(N && n && colEl.value!=='' && rowEl.value!=='');
+}
+
+function tryAutoLookupRandom(p){
+  if(portNeedsAutoRandom(p)){
+    lookupRandomToR(p,{keepError:true,silentFocus:true});
+  }
+}
+let autoRandomTimer=null;
+function scheduleAutoRandomLookup(){
+  clearTimeout(autoRandomTimer);
+  autoRandomTimer=setTimeout(function(){
+    syncRandomCoordsFromA();
+    tryAutoLookupRandom('a');
+    tryAutoLookupRandom('b');
+  },120);
+}
+
+function autoLookupRandomsBeforeExtract(){
+  syncRandomCoordsFromA();
+  let ok=true;
+  if(portNeedsAutoRandom('a')) ok = lookupRandomToR('a',{keepError:true,silentFocus:true}) && ok;
+  if(portNeedsAutoRandom('b')) ok = lookupRandomToR('b',{keepError:true,silentFocus:true}) && ok;
+  return ok;
+}
+function initRandomLookup(){
+  document.querySelectorAll('.random-action').forEach(btn=>{
+    btn.addEventListener('click',function(){lookupRandomToR(btn.dataset.port);});
+  });
+  const aCol=document.getElementById('aRandCol');
+  const aRow=document.getElementById('aRandRow');
+  const bCol=document.getElementById('bRandCol');
+  const bRow=document.getElementById('bRandRow');
+  if(bCol) bCol.readOnly=true;
+  if(bRow) bRow.readOnly=true;
+  if(aCol) aCol.addEventListener('input',function(){syncRandomCoordsFromA();scheduleAutoRandomLookup();});
+  if(aRow) aRow.addEventListener('input',function(){syncRandomCoordsFromA();scheduleAutoRandomLookup();});
+  ['a','b'].forEach(p=>{
+    const colEl=document.getElementById(p+'RandCol');
+    const rowEl=document.getElementById(p+'RandRow');
+    if(colEl) colEl.addEventListener('keydown',e=>{if(e.key==='Enter') rowEl.focus();});
+    if(rowEl) rowEl.addEventListener('keydown',e=>{if(e.key==='Enter') document.getElementById('aN').focus();});
+  });
+  syncRandomCoordsFromA();
+}
+
 
 function initButtons(){
   try{
@@ -468,17 +901,17 @@ function initButtons(){
 // DOM 준비 완료 후 이벤트 등록
 if(document.readyState==='loading'){
   document.addEventListener('DOMContentLoaded',function(){
-    initCropButtons(); initInputListeners(); initButtons();
+    initCropButtons(); initInputListeners(); initButtons(); initRandomLookup();
     // 조사일 기본값: 한국 기준 오늘
     var sd=document.getElementById('survey-date');
     if(sd) sd.value=getTodayKST();
-    try{updateFormulas();}catch(e){}
+    try{updateFormulas();scheduleAutoRandomLookup();}catch(e){}
   });
 } else {
-  initCropButtons(); initInputListeners(); initButtons();
+  initCropButtons(); initInputListeners(); initButtons(); initRandomLookup();
   var sd=document.getElementById('survey-date');
   if(sd) sd.value=getTodayKST();
-  try{updateFormulas();}catch(e){}
+  try{updateFormulas();scheduleAutoRandomLookup();}catch(e){}
 }
 
 /* ── 오류 ── */
@@ -491,6 +924,13 @@ function resetAll(){
   document.getElementById('bN').value=''; document.getElementById('br').value='';
   document.getElementById('an').value=20; document.getElementById('bn').value=20;
   document.getElementById('address').value='';
+  randomLookupState={a:null,b:null};
+  ['a','b'].forEach(function(p){
+    var c=document.getElementById(p+'RandCol'), r=document.getElementById(p+'RandRow');
+    if(c) c.value=''; if(r) r.value='';
+    setRandomMsg(p,p==='a'?'가로·세로값과 N·n을 입력하면 난수 r이 자동 계산됩니다.':'⭐ A포구 가로·세로값을 입력하면 B포구 좌표도 자동으로 동일하게 들어갑니다.','');
+    setSettingLookup(p,null);
+  });
   var sd=document.getElementById('survey-date'); if(sd) sd.value=getTodayKST();
   clearErr();
   document.querySelectorAll('.crop-btn').forEach(b=>b.classList.remove('active'));
@@ -523,12 +963,13 @@ function validatePort(p,label){
   if(rv===''||isNaN(r)||r<1){document.getElementById(p+'r').classList.add('err');showErr(`${label} 시작난수를 1 이상 입력하세요.`);return false;}
   if(r>k){document.getElementById(p+'r').classList.add('err');showErr(`${label} 난수는 k(${disp1(k)}) 이하여야 합니다.`);return false;}
   const res=calcSamples(N,n,r);
-  return{pN:N, pn:n, pr:r, k:res.k, kRaw:res.kRaw, samples:res.samples};
+  return{pN:N, pn:n, pr:r, k:res.k, kRaw:res.kRaw, samples:res.samples, lookup:randomLookupState[p]};
 }
 
 /* ── 추출 실행 ── */
 function extract(){
   clearErr();
+  if(!autoLookupRandomsBeforeExtract()) return;
   const A=validatePort('a','A포구');
   if(A===false) return;
   const B=validatePort('b','B포구');
@@ -550,7 +991,7 @@ function renderResults(A,B){
   // 마지막 결과 저장 (캡처용)
   lastResult={A, B, addr, surveyDate:surveyDateDisp, crop:selCrop, dateDisplay:nowDisplay(), dateFile:nowStr()};
 
-  document.getElementById('res-title').innerHTML=`<span style="display:inline-flex;align-items:center;gap:6px;"><span style="font-size:22px;line-height:1;">${icoHTML}</span>${selCrop} 생산조사</span>`;
+  document.getElementById('res-title').innerHTML=`<span style="display:inline-flex;align-items:center;gap:6px;"><span style="font-size:22px;line-height:1;">${icoHTML}</span>${selCrop} 계통추출 결과</span>`;
   document.getElementById('res-meta').innerHTML=
     (addr?`<span class="rchip big">📍 ${addr}</span>`:'')+
     `<span class="rchip">📅 ${surveyDateDisp}</span>`;
@@ -558,8 +999,8 @@ function renderResults(A,B){
 
   /* 번호 카드 */
   const nc=document.getElementById('num-cards'); nc.innerHTML='';
-  if(A) nc.appendChild(makeNumCard('A 포구','blue',A.pN,A.pn,A.k,A.pr,A.samples));
-  if(B) nc.appendChild(makeNumCard('B 포구','red', B.pN,B.pn,B.k,B.pr,B.samples));
+  if(A) nc.appendChild(makeNumCard('A 포구','blue',A.pN,A.pn,A.k,A.pr,A.samples,A.lookup));
+  if(B) nc.appendChild(makeNumCard('B 포구','red', B.pN,B.pn,B.k,B.pr,B.samples,B.lookup));
 
   /* 계산식 표 */
   const head=document.getElementById('ftbl-head');
@@ -588,11 +1029,15 @@ function renderResults(A,B){
   setTimeout(()=>document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'}),80);
 }
 
-function makeNumCard(label,color,N,n,k,r,samples){
+function makeNumCard(label,color,N,n,k,r,samples,lookup){
   const div=document.createElement('div');
   div.className='num-card';
+  const lookupHtml=lookup ?
+    `<div class="nc-lookup ${color}">난수표 조회: 시작 가로 <b>${lookup.inputCol}</b> · 세로 <b>${lookup.inputRow}</b> → 사용 가로 <b>${lookup.foundCol}</b> · 세로 <b>${lookup.foundRow}</b><br>조회값 <b>${lookup.value}</b> → 앞 두 자리 <b>${lookup.rText}</b> / ${lookup.rule}</div>` :
+    `<div class="nc-lookup ${color}">난수표 조회값: 직접 입력 또는 조회 정보 없음</div>`;
   div.innerHTML=`<div class="nc-head ${color}">${PIN_SVG}${label}</div>`+
     `<div class="nc-meta">N=${N} / n=${n} / k=${disp1(k)} / r=${disp1(r)}</div>`+
+    lookupHtml+
     `<div class="nc-grid">${samples.map(({num},i)=>`<div class="ncw" style="animation-delay:${i*20}ms"><div class="ncw-no">${i+1}</div><div class="ncc">${num}</div></div>`).join('')}</div>`;
   return div;
 }
@@ -627,21 +1072,23 @@ function saveCapture(){
 }
 
 function drawResultCanvas(A,B,addr,crop,dt,surveyDate){
-  var W=460, PAD=12, GAP=8;
+  var W=Math.min(window.innerWidth || 460, 480);
+  if(!W || W < 320) W=360;
+  var PAD=12, GAP=8;
   var BLUE='#1565c0', RED='#c62828', GREEN='#2d7a3a';
   var INK='#1a1a18', INK2='#555555', BORDER='#e0ddd5', BG='#f4f4ef';
   var SANS='-apple-system,sans-serif', MONO='Menlo,monospace';
 
   /* 높이 계산 */
-  var HDR=96;  /* 헤더 높이 충분히 확보 (겹침 방지) */
-  var CARD_HEAD=36, CARD_META=28, GRID_PAD=10, CELL_GAP=6;
+  var HDR=112;  /* 모바일 저장 이미지 제목 2행 표시 */
+  var CARD_HEAD=36, CARD_META=28, LOOKUP_H=48, GRID_PAD=10, CELL_GAP=6;
   var CPR=5;
   var CELL_W=Math.floor((W-PAD*2-GRID_PAD*2-CELL_GAP*(CPR-1))/CPR);
   var CELL_AREA=CELL_W+16;
   var F_HEAD=28, F_ROW=30;
 
   function gridH(n){ var r=Math.ceil(n/CPR); return GRID_PAD*2+r*CELL_AREA+(r-1)*CELL_GAP; }
-  function cardH(n){ return CARD_HEAD+CARD_META+gridH(n); }
+  function cardH(n){ return CARD_HEAD+CARD_META+LOOKUP_H+gridH(n); }
 
   var H=10+HDR+GAP;
   if(A) H+=cardH(A.samples.length)+GAP;
@@ -691,14 +1138,14 @@ function drawResultCanvas(A,B,addr,crop,dt,surveyDate){
 
   /* ── 헤더: 4행 레이아웃으로 겹침 완전 방지 ── */
   rr(PAD,y,W-PAD*2,HDR,12,GREEN);
-  /* 행1: 작물명 */
-  txt(crop+' \uc0dd\uc0b0\uc870\uc0ac', PAD+12, y+18, '900 16px '+SANS, '#fff');
+  /* 행1: 제목 */
+  txt(crop+' 계통추출 결과', PAD+12, y+18, '900 16px '+SANS, '#fff');
   /* 행2: 주소 (있을 때만) */
   if(addr){
-    txt('\uD83D\uDCCD '+addr, PAD+12, y+38, '600 12px '+SANS, 'rgba(255,255,255,.95)');
+    txt('\uD83D\uDCCD '+addr, PAD+12, y+40, '600 12px '+SANS, 'rgba(255,255,255,.95)');
   }
   /* 행3: 조사일 칩 + 포구 카운트 칩 — 같은 줄에 좌우 배치 */
-  var row3Y = addr ? y+56 : y+42;
+  var row3Y = addr ? y+61 : y+42;
   /* 조사일 칩 */
   var sdText='\uD83D\uDCC5 \uc870\uc0ac\uc77c: '+(surveyDate||'');
   c.font='600 11px '+SANS;
@@ -726,7 +1173,22 @@ function drawResultCanvas(A,B,addr,crop,dt,surveyDate){
     c.fillText('N='+data.pN+' / n='+data.pn+' / k='+data.k.toFixed(1)+' / r='+data.pr.toFixed(1),cX+14,y+CARD_HEAD+CARD_META/2);
     c.strokeStyle=BORDER; c.lineWidth=1;
     c.beginPath(); c.moveTo(cX,y+CARD_HEAD+CARD_META); c.lineTo(cX+cW,y+CARD_HEAD+CARD_META); c.stroke();
-    var gX=cX+GRID_PAD, gY=y+CARD_HEAD+CARD_META+GRID_PAD;
+
+    /* 난수표 조회 결과: 저장 이미지에도 표시 */
+    var lookupY=y+CARD_HEAD+CARD_META;
+    c.fillStyle=color==BLUE?'#e3f2fd':'#ffebee';
+    c.fillRect(cX,lookupY,cW,LOOKUP_H);
+    c.strokeStyle=BORDER; c.lineWidth=1;
+    c.beginPath(); c.moveTo(cX,lookupY+LOOKUP_H); c.lineTo(cX+cW,lookupY+LOOKUP_H); c.stroke();
+    c.fillStyle=INK2; c.font='700 9.5px '+SANS; c.textAlign='left'; c.textBaseline='middle';
+    if(data.lookup){
+      c.fillText('난수표 조회: 시작 가로 '+data.lookup.inputCol+' · 세로 '+data.lookup.inputRow+' → 사용 가로 '+data.lookup.foundCol+' · 세로 '+data.lookup.foundRow, cX+14, lookupY+15);
+      c.fillText('조회값 '+data.lookup.value+' → r '+data.lookup.rText+' / '+data.lookup.rule, cX+14, lookupY+33);
+    }else{
+      c.fillText('난수표 조회값: 직접 입력 또는 조회 정보 없음', cX+14, lookupY+24);
+    }
+
+    var gX=cX+GRID_PAD, gY=y+CARD_HEAD+CARD_META+LOOKUP_H+GRID_PAD;
     data.samples.forEach(function(s,i){
       var row=Math.floor(i/CPR), col=i%CPR;
       var cx=gX+col*(CELL_W+CELL_GAP), cy=gY+row*(CELL_AREA+CELL_GAP);
@@ -797,7 +1259,7 @@ function showImageOverlay(dataUrl,crop,addr){
 
   // 파일명 생성
   var addrPart=(addr||'\uc8fc\uc18c\uc5c6\uc74c').replace(/\s+/g,'_').replace(/[\\/:*?"<>|]/g,'');
-  var filename=crop+'_'+addrPart+'_'+nowStr()+'.png';
+  var filename='추출결과_'+crop+'_'+addrPart+'_'+nowStr()+'.png';
 
   // 기기 종류 감지
   var isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
@@ -823,17 +1285,17 @@ function showImageOverlay(dataUrl,crop,addr){
 
   /* 이미지 영역 */
   var imgWrap=document.createElement('div');
-  imgWrap.style.cssText='padding:12px 12px 6px;display:flex;flex-direction:column;align-items:center;';
+  imgWrap.style.cssText='padding:10px 8px 14px;display:flex;flex-direction:column;align-items:center;';
 
   var img=document.createElement('img');
   img.src=dataUrl;
-  img.style.cssText='max-width:100%;width:100%;border-radius:10px;display:block;';
+  img.style.cssText='max-width:480px;width:100%;border-radius:10px;display:block;';
   img.alt=crop+' \uACB0\uACFC';
   imgWrap.appendChild(img);
 
   /* 하단 저장 패널 */
   var panel=document.createElement('div');
-  panel.style.cssText='flex-shrink:0;padding:10px 12px 20px;';
+  panel.style.cssText='flex-shrink:0;padding:10px 12px 12px;background:#111;border-bottom:1px solid #222;';
 
   /* 저장 버튼 */
   var dlBtn=document.createElement('button');
@@ -886,11 +1348,213 @@ function showImageOverlay(dataUrl,crop,addr){
   panel.appendChild(info);
 
   ov.appendChild(bar);
-  ov.appendChild(imgWrap);
   ov.appendChild(panel);
+  ov.appendChild(imgWrap);
   document.body.appendChild(ov);
 }
 
+/* ════ 저장/불러오기 (v11) ════ */
+var SL_KEY = 'stSaveList_v1';
+var SL_DATA_PFX = 'stData_';
+var _slSelectedKey = null;
+var _TRASH_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6h14z" stroke="#c0392b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 11v5M14 11v5" stroke="#c0392b" stroke-width="1.8" stroke-linecap="round"/></svg>';
+var _LOCK_SVG = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="4" y="11" width="16" height="11" rx="2" fill="#1558D6" stroke="#1558D6" stroke-width="1.2"/><path d="M8 11V8a4 4 0 018 0v3" stroke="#1558D6" stroke-width="2" stroke-linecap="round"/></svg>';
+var _UNLOCK_SVG = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="4" y="11" width="16" height="11" rx="2" stroke="#aaa" stroke-width="1.5" fill="none"/><path d="M8 11V8a4 4 0 018 0" stroke="#aaa" stroke-width="2" stroke-linecap="round"/></svg>';
+
+function _slGetList(){ try{return JSON.parse(localStorage.getItem(SL_KEY)||'[]');}catch(e){return[];} }
+function _slSetList(l){ try{localStorage.setItem(SL_KEY,JSON.stringify(l));}catch(e){} }
+
+function _slCollect(){
+  var d = {};
+  var ids=['address','survey-date','aRandCol','aRandRow','aN','an','ar','bRandCol','bRandRow','bN','bn','br'];
+  ids.forEach(function(id){ var e=document.getElementById(id); if(e) d[id]=e.value; });
+  return d;
+}
+function _slApply(d){
+  if(!d) return;
+  var ids=['address','survey-date','aRandCol','aRandRow','aN','an','ar','bRandCol','bRandRow','bN','bn','br'];
+  ids.forEach(function(id){ var e=document.getElementById(id); if(e&&d[id]!==undefined) e.value=d[id]; });
+  // 재계산 트리거
+  setTimeout(function(){
+    ['aN','an','ar','bN','bn','br'].forEach(function(id){
+      var e=document.getElementById(id); if(e){var ev=new Event('input');e.dispatchEvent(ev);}
+    });
+  },100);
+}
+function _slNowKST(){
+  var now=new Date(); var kst=new Date(now.getTime()+9*3600000);
+  return {ymd:kst.toISOString().slice(0,10), hm:kst.toISOString().slice(11,16)};
+}
+function openSaveLoadModal(){
+  _slSelectedKey=null; _slUpdateSaveBtn(); _slRenderList();
+  var m=document.getElementById('slModal'); if(m) m.classList.add('show');
+}
+function closeSaveLoadModal(){
+  var m=document.getElementById('slModal'); if(m) m.classList.remove('show');
+}
+function _slUpdateSaveBtn(){
+  var btn=document.getElementById('slSmartSaveBtn'); if(!btn) return;
+  if(_slSelectedKey){
+    var list=_slGetList(); var item=null;
+    for(var i=0;i<list.length;i++){if(list[i].key===_slSelectedKey){item=list[i];break;}}
+    var lbl=item?item.label.slice(0,12):'항목';
+    btn.textContent='💾 덮어쓰기 · '+lbl; btn.style.background='#c0392b';
+  } else { btn.textContent='💾 새로 저장'; btn.style.background='#E07000'; }
+}
+function slSelectItem(key){ _slSelectedKey=(_slSelectedKey===key)?null:key; _slUpdateSaveBtn(); _slRenderList(); }
+function slSmartSave(){ if(_slSelectedKey){overwriteSavedData_sl(_slSelectedKey);}else{saveCurrentData_sl();} }
+function saveCurrentData_sl(){
+  var d=_slCollect(); var addr=(d['address']||'').trim(); var t=_slNowKST();
+  var label='계통추출'+(addr?' · '+addr.slice(0,15):'')+' · '+t.ymd+' '+t.hm;
+  var key=t.ymd.replace(/-/g,'')+t.hm.replace(':','')+Math.random().toString(36).slice(2,6);
+  var list=_slGetList(); if(list.length>=30){alert('최대 30개 저장됩니다.');return;}
+  list.push({key:key,label:label,addr:addr,ymd:t.ymd,hm:t.hm,fav:false});
+  try{localStorage.setItem(SL_DATA_PFX+key,JSON.stringify(d));}catch(e){alert('저장 실패.');return;}
+  _slSetList(list); _slRenderList();
+  var btn=document.getElementById('slSmartSaveBtn');
+  if(btn){btn.textContent='✅ 저장 완료!';setTimeout(function(){_slUpdateSaveBtn();},1600);}
+}
+function overwriteSavedData_sl(key){
+  var chk=_slGetList().find(function(i){return i.key===key;});
+  if(chk&&chk.fav){alert('🔒 잠금 해제 후 덮어쓰기 하세요.');return;}
+  if(!confirm('이 항목에 현재 데이터를 덮어쓰시겠습니까?'))return;
+  var d=_slCollect(); var t=_slNowKST();
+  var addr=(d['address']||'').trim();
+  var label='계통추출'+(addr?' · '+addr.slice(0,15):'')+' · '+t.ymd+' '+t.hm;
+  try{localStorage.setItem(SL_DATA_PFX+key,JSON.stringify(d));}catch(e){alert('덮어쓰기 실패.');return;}
+  var list=_slGetList();
+  for(var i=0;i<list.length;i++){if(list[i].key===key){list[i].label=label;list[i].ymd=t.ymd;list[i].hm=t.hm;list[i].addr=addr;break;}}
+  _slSetList(list); _slSelectedKey=null; _slUpdateSaveBtn(); _slRenderList();
+  var btn=document.getElementById('slSmartSaveBtn');
+  if(btn){btn.textContent='✅ 덮어쓰기 완료';setTimeout(function(){_slUpdateSaveBtn();},1600);}
+}
+function loadSavedData_sl(key){
+  var raw; try{raw=localStorage.getItem(SL_DATA_PFX+key);}catch(e){}
+  if(!raw){alert('데이터를 불러올 수 없습니다.');return;}
+  try{_slApply(JSON.parse(raw));closeSaveLoadModal();}catch(e){alert('불러오기 실패: '+e.message);}
+}
+function deleteSavedData_sl(key){
+  var chk=_slGetList().find(function(i){return i.key===key;});
+  if(chk&&chk.fav){alert('🔒 잠금 해제 후 삭제하세요.');return;}
+  if(!confirm('이 저장 자료를 삭제할까요?'))return;
+  try{localStorage.removeItem(SL_DATA_PFX+key);}catch(e){}
+  _slSetList(_slGetList().filter(function(i){return i.key!==key;}));
+  if(_slSelectedKey===key){_slSelectedKey=null;_slUpdateSaveBtn();}
+  _slRenderList();
+}
+function toggleFav_sl(key){
+  var list=_slGetList();
+  for(var i=0;i<list.length;i++){if(list[i].key===key){list[i].fav=!list[i].fav;break;}}
+  _slSetList(list); _slRenderList();
+}
+function _slRenderList(){
+  var list=_slGetList(); var el=document.getElementById('sl-list'); if(!el) return;
+  if(!list.length){el.innerHTML='<div class="sl-empty">저장된 자료가 없습니다.</div>';return;}
+  el.innerHTML=list.map(function(it,idx){
+    var num=list.length-idx; var locked=!!it.fav;
+    var lockCls=locked?'sl-item-fav fav-on':'sl-item-fav';
+    var lockIcon=locked?_LOCK_SVG:_UNLOCK_SVG;
+    var numBg=locked?'background:#1558D6;':'';
+    var selCls=(_slSelectedKey===it.key)?' sl-selected':'';
+    var addrLine=it.addr?'<div class="sl-item-addr">📍 '+it.addr+'</div>':'';
+    var delBtn=locked?'<button class="sl-item-del del-locked" onclick="alert(\'🔒 잠금 해제 후 삭제하세요.\')">'+_TRASH_SVG+'</button>'
+      :'<button class="sl-item-del" onclick="deleteSavedData_sl(\''+it.key+'\')">'+_TRASH_SVG+'</button>';
+    return '<div class="sl-item'+selCls+'"><div class="sl-item-num" style="'+numBg+'">'+num+'</div>'
+      +'<div class="sl-item-info" onclick="slSelectItem(\''+it.key+'\')">'
+      +'<div class="sl-item-label">'+it.label+'</div>'+addrLine
+      +'<div class="sl-item-date">'+(it.ymd||'')+' '+(it.hm||'')+'</div></div>'
+      +'<button class="'+lockCls+'" onclick="toggleFav_sl(\''+it.key+'\')">'+lockIcon+'</button>'
+      +'<button class="sl-item-load" onclick="loadSavedData_sl(\''+it.key+'\')" aria-label="불러오기">📂</button>'
+      +delBtn+'</div>';
+  }).join('');
+}
+function exportJSON_sl(){
+  var d=_slCollect(); var addr=(d['address']||'주소없음').slice(0,12).replace(/[\/\\:*?"<>|\s]+/g,'_');
+  var t=_slNowKST(); var fileName='계통추출_'+addr+'_'+t.ymd+'_'+t.hm.replace(':','')+'.json';
+  var blob=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});
+  var url=URL.createObjectURL(blob); var a=document.createElement('a');
+  a.href=url; a.download=fileName; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+}
+function importJSON_sl(){ document.getElementById('slJsonFile').click(); }
+function importJSONFile_sl(input){
+  if(!input.files||!input.files[0]) return;
+  var reader=new FileReader();
+  reader.onload=function(e){ try{_slApply(JSON.parse(e.target.result));closeSaveLoadModal();alert('불러오기 완료!');}catch(err){alert('파일 오류: '+err.message);} };
+  reader.readAsText(input.files[0]); input.value='';
+}
+
+</script>
+<div class="calc-modal" id="calcModal" onclick="if(event.target===this)closeCalcModal()">
+  <div class="calc-box">
+    <div class="calc-topbar">
+      <span class="calc-title">🧮 계산기</span>
+      <button class="calc-top-clear" onclick="calcClearHistory()">기록 지우기</button>
+      <button class="calc-top-close" onclick="closeCalcModal()">✕ 닫기</button>
+    </div>
+    <div class="calc-history" id="calcHistory"></div>
+    <div class="calc-popup-display">
+      <div class="calc-expr" id="calcExpr"></div>
+      <div class="calc-val" id="calcVal">0</div>
+    </div>
+    <div class="calc-grid">
+      <button class="calc-btn fn" onclick="calcFn('AC')">AC</button>
+      <button class="calc-btn fn" onclick="calcFn('⌫')">⌫</button>
+      <button class="calc-btn fn" onclick="calcFn('%')">%</button>
+      <button class="calc-btn op" onclick="calcOp('÷')">÷</button>
+      <button class="calc-btn num" onclick="calcNum('7')">7</button>
+      <button class="calc-btn num" onclick="calcNum('8')">8</button>
+      <button class="calc-btn num" onclick="calcNum('9')">9</button>
+      <button class="calc-btn op" onclick="calcOp('×')">×</button>
+      <button class="calc-btn num" onclick="calcNum('4')">4</button>
+      <button class="calc-btn num" onclick="calcNum('5')">5</button>
+      <button class="calc-btn num" onclick="calcNum('6')">6</button>
+      <button class="calc-btn op" onclick="calcOp('−')">−</button>
+      <button class="calc-btn num" onclick="calcNum('1')">1</button>
+      <button class="calc-btn num" onclick="calcNum('2')">2</button>
+      <button class="calc-btn num" onclick="calcNum('3')">3</button>
+      <button class="calc-btn op" onclick="calcOp('+')">+</button>
+      <button class="calc-btn num zero" onclick="calcNum('0')">0</button>
+      <button class="calc-btn num" onclick="calcNum('.')">.</button>
+      <button class="calc-btn eq" onclick="calcEq()">=</button>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  var _cv='0',_expr='',_op=null,_prev=null,_newNum=false,_history=[];
+  function _disp(){document.getElementById('calcVal').textContent=_cv;document.getElementById('calcExpr').textContent=_expr;}
+  function _pushHistory(e,r){_history.push({e:e,r:r});if(_history.length>100)_history.shift();_renderHistory();}
+  function _renderHistory(){var el=document.getElementById('calcHistory');if(!el)return;if(!_history.length){el.classList.remove('show');el.innerHTML='';return;}el.innerHTML=_history.map(function(h){return'<div class="calc-history-item">'+h.e+' <b>'+h.r+'</b></div>';}).join('');el.classList.add('show');el.scrollTop=el.scrollHeight;}
+  window.calcClearHistory=function(){_history=[];_renderHistory();};
+  window.openCalcModal=function(){document.getElementById('calcModal').classList.add('show');_renderHistory();};
+  window.closeCalcModal=function(){document.getElementById('calcModal').classList.remove('show');};
+  window.calcNum=function(d){if(_newNum){_cv='';_newNum=false;}if(d==='.'&&_cv.includes('.'))return;if(_cv==='0'&&d!=='.')_cv=d;else _cv+=d;_disp();};
+  window.calcOp=function(op){var v=parseFloat(_cv);if(_op&&!_newNum){v=_doCalc(_prev,v,_op);_cv=_fmt(v);}  _prev=parseFloat(_cv);_op=op;_expr=_cv+' '+op;_newNum=true;_disp();};
+  window.calcEq=function(){if(!_op)return;var v=_doCalc(_prev,parseFloat(_cv),_op);_expr=_expr+' '+_cv+' =';var r=_fmt(v);_pushHistory(_expr,r);_cv=r;_op=null;_prev=null;_newNum=true;_disp();};
+  window.calcFn=function(fn){if(fn==='AC'){_cv='0';_expr='';_op=null;_prev=null;_newNum=false;}else if(fn==='⌫'){if(_newNum){_cv='0';}else if(_cv.length>1){_cv=_cv.slice(0,-1);}else{_cv='0';}}else if(fn==='%'){_cv=_fmt(parseFloat(_cv)/100);}_disp();};
+  function _doCalc(a,b,op){if(op==='+'||op==='＋')return a+b;if(op==='−'||op==='-')return a-b;if(op==='×'||op==='*')return a*b;if(op==='÷'||op==='/')return b!==0?a/b:0;return b;}
+  function _fmt(v){if(!isFinite(v))return '오류';return parseFloat(v.toPrecision(12)).toString();}
+})();
+function shareJSON_sl(){
+  var d=_slCollect();
+  var addr=(d['address']||'주소없음').slice(0,12).replace(/[\/\\:*?"<>|\s]+/g,'_');
+  var t=_slNowKST();
+  var fileName='계통추출_'+addr+'_'+t.ymd+'_'+t.hm.replace(':','')+'.json';
+  var text=JSON.stringify(d,null,2);
+  if(navigator.canShare){var blob=new Blob([text],{type:'application/json'});var file=new File([blob],fileName,{type:'application/json'});if(navigator.canShare({files:[file]})){navigator.share({files:[file],title:fileName}).catch(function(){});return;}}
+  if(navigator.share){navigator.share({title:fileName,text:text}).catch(function(){});return;}
+  navigator.clipboard.writeText(text).then(function(){alert('JSON이 클립보드에 복사됐습니다.');}).catch(function(){exportJSON_sl();});
+}
+</script>
+
+<!-- 네이버 애널리틱스(Wcslog) -->
+<script type="text/javascript" src="//wcs.pstatic.net/wcslog.js"></script>
+<script type="text/javascript">
+if(!wcs_add) var wcs_add = {};
+wcs_add["wa"] = "19e5d0d688a0f70";
+if(window.wcs) {
+  wcs_do();
+}
 </script>
 </body>
 </html>

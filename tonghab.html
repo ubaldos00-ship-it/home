@@ -1,10 +1,18 @@
-<!-- tonghab_v138.html · 저장: 2026-06-14 08:22 KST -->
+<!-- tonghab_v136.html · 저장: 2026-06-18 06:03 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#27500A">
+<!-- v136: Google Analytics (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-B8ELP4S5PR"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-B8ELP4S5PR');
+</script>
 <title>농작물생산 통합 계산기</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
@@ -1227,13 +1235,13 @@ body.nonbye-mode .hide-nonbye { display:none !important; }
 .calc-btn.close-btn{background:#3a3a3c;color:#fff;font-size:13px;}
 /* ── 저장/불러오기 모달 ── */
 /* v125: 모달 더블탭 확대 방지 + 하단 버튼 항상 표시(목록만 스크롤) */
-.sl-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:3000;overflow:hidden;padding:16px 14px;overscroll-behavior:contain;touch-action:pan-y;}
+.sl-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:3000;overflow:hidden;padding:16px 14px;overscroll-behavior:contain;touch-action:manipulation;}
 .sl-modal.show{display:flex;justify-content:center;align-items:flex-start;}
-.sl-box{position:relative;width:100%;max-width:430px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.45);max-height:calc(100dvh - 32px);display:flex;flex-direction:column;touch-action:pan-y;}
+.sl-box{position:relative;width:100%;max-width:430px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.45);max-height:calc(100dvh - 32px);display:flex;flex-direction:column;touch-action:manipulation;}
 .sl-head{flex-shrink:0;padding:13px 16px;background:#27500A;display:flex;justify-content:space-between;align-items:center;}
 .sl-head-title{font-size:15px;font-weight:800;color:#fff;}
 .sl-close{background:rgba(255,255,255,.2);border:none;color:#fff;font-size:18px;width:32px;height:32px;border-radius:8px;cursor:pointer;line-height:1;touch-action:manipulation;}
-.sl-body{padding:14px 14px 18px;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;touch-action:pan-y;}
+.sl-body{padding:14px 14px 18px;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;}
 .sl-save-now{flex-shrink:0;width:100%;padding:14px;background:#E07000;border:none;border-radius:10px;color:#fff;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:14px;letter-spacing:.02em;touch-action:manipulation;}
 .sl-save-now:active{opacity:.82;}
 .sl-section{flex-shrink:0;font-size:11px;font-weight:700;color:#888;letter-spacing:.06em;text-transform:uppercase;margin-bottom:7px;}
@@ -1268,7 +1276,7 @@ body.nonbye-mode .hide-nonbye { display:none !important; }
 .sl-agg-wrap{flex-shrink:0;margin-bottom:10px;}
 .sl-agg-toggle{width:100%;padding:10px 12px;background:#EBF3FF;border:1.5px solid #b3c8f0;border-radius:9px;color:#0A3A8C;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;text-align:left;display:flex;justify-content:space-between;align-items:center;touch-action:manipulation;}
 .sl-agg-toggle:active{background:#d8e8ff;}
-.sl-agg-body{margin-top:8px;max-height:calc(100dvh - 190px);overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;border:1px solid #e0e6f0;border-radius:9px;padding:8px;background:#fafbfe;}
+.sl-agg-body{margin-top:8px;max-height:60vh;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;border:1px solid #e0e6f0;border-radius:9px;padding:8px;background:#fafbfe;}
 .sl-agg-empty{text-align:center;color:#999;font-size:12px;padding:14px 0;}
 .sl-agg-card{border:1px solid #dbe3f0;border-radius:8px;background:#fff;padding:8px 10px;margin-bottom:7px;}
 .sl-agg-card:last-child{margin-bottom:0;}
@@ -1278,9 +1286,6 @@ body.nonbye-mode .hide-nonbye { display:none !important; }
 .sl-agg-row .lbl{color:#666;font-weight:600;}
 .sl-agg-row .val{font-weight:800;color:#111;}
 .sl-agg-row .val b{color:#1565c0;}
-.sl-agg-row.sl-agg-avg{padding:3px 0 4px;margin:2px 0;border-top:1px dashed #e6dfd2;border-bottom:1px dashed #e6dfd2;}
-.sl-agg-row.sl-agg-avg .lbl{color:#333;font-weight:800;}
-.sl-agg-row.sl-agg-avg .val b{color:#0A3A8C;font-size:14px;font-weight:900;}
 .sl-agg-note{font-size:10px;color:#aaa;margin-top:6px;line-height:1.5;}
 /* v135: 작물 클릭 시 주소별 세부 목록 */
 .sl-agg-crop-btn{cursor:pointer;user-select:none;}
@@ -1381,7 +1386,7 @@ textarea {
         </button>
       </div>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v138 저장: 2026-06-14 08:22)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v136 저장: 2026-06-18 06:03)</span></div>
   </div>
 </div>
 
@@ -5644,12 +5649,6 @@ async function shareCaptureFromModal(){
       touchStartY = e.touches ? e.touches[0].clientY : 0;
     }, { passive: true });
     document.addEventListener('touchmove', function(e){
-      /* v136: 저장/불러오기 모달 내부 스크롤은 풀투리프레시 차단에서 제외 */
-      const sm = document.getElementById('sl-modal');
-      if(sm && sm.classList.contains('show') && sm.contains(e.target)){
-        touchStartY = e.touches ? e.touches[0].clientY : touchStartY;
-        return;
-      }
       const y = e.touches ? e.touches[0].clientY : 0;
       const dy = y - touchStartY;
       // 페이지 최상단 + 아래로 당김 → 새로고침 방지
@@ -7987,18 +7986,19 @@ function _slListTouchMove(e){
     e.preventDefault();
   }
 }
-function _slFindScrollable(el){
-  while(el && el !== document.body){
-    if(el.id==='sl-list' || el.id==='sl-agg-body') return el;
-    el = el.parentElement;
-  }
-  return null;
-}
 function _slModalTouchMove(e){
-  /* v138: 모달 배경만 차단하고, 집계/목록 내부 터치는 완전히 통과시켜 iOS 스크롤 지연을 줄임 */
-  var sc=_slFindScrollable(e.target);
-  if(sc) return;
-  if(e.cancelable) e.preventDefault();
+  /* v131: 집계 영역(sl-agg-body) 안에서는 네이티브 스크롤 허용 (경계에서만 차단)
+     → 작물 8개 이상일 때 스크롤로 전체 확인 가능 */
+  var agg = document.getElementById('sl-agg-body');
+  if(agg && agg.style.display!=='none' && agg.contains(e.target)){
+    var dyA = _slTouchStartY - (e.touches[0]||e.changedTouches[0]).clientY;
+    var atTopA    = agg.scrollTop <= 0;
+    var atBottomA = agg.scrollTop + agg.clientHeight >= agg.scrollHeight - 1;
+    if((atTopA && dyA < 0)||(atBottomA && dyA > 0)){ e.preventDefault(); }
+    return; /* 그 외에는 집계 영역 내부 스크롤 허용 */
+  }
+  // 목록 영역 바깥(모달 배경)은 스크롤 완전 차단
+  e.preventDefault();
 }
 
 /* 모달 열기/닫기 */
@@ -8289,10 +8289,6 @@ function slToggleAgg(){
     body.style.flex      = '1 1 auto';
     body.style.minHeight = '0';
     body.style.maxHeight = 'none';
-    body.style.overflowY = 'auto';
-    body.style.webkitOverflowScrolling = 'touch';
-    body.style.touchAction = 'pan-y';
-    body.scrollTop = 0;
     _slRenderAgg();
   } else {
     /* ── 닫을 때: 모두 원래대로 복원 ── */
@@ -8302,7 +8298,7 @@ function slToggleAgg(){
       wrap.style.flex=''; wrap.style.minHeight=''; wrap.style.overflow='';
       wrap.style.display=''; wrap.style.flexDirection='';
     }
-    body.style.flex=''; body.style.minHeight=''; body.style.maxHeight=''; body.style.overflowY=''; body.style.touchAction='';
+    body.style.flex=''; body.style.minHeight=''; body.style.maxHeight='';
     _slAggSiblings(wrap).forEach(function(ch){ ch.style.display=(ch.dataset._slPrevDisp||''); });
   }
 }
@@ -8366,8 +8362,8 @@ function _slRenderAgg(){
       var re=avgOf(items.map(function(i){return i.yields&&i.yields.nbReal;}));
       var exN=items.filter(function(i){return i.yields&&i.yields.nbExpect;}).length;
       var reN=items.filter(function(i){return i.yields&&i.yields.nbReal;}).length;
-      rows ='<div class="sl-agg-row sl-agg-avg"><span class="lbl">예상량 평균 ('+exN+'건)</span><span class="val"><b>'+fmt(ex)+'</b></span></div>';
-      rows+='<div class="sl-agg-row sl-agg-avg"><span class="lbl">실수확량 평균 ('+reN+'건)</span><span class="val"><b>'+fmt(re)+'</b></span></div>';
+      rows ='<div class="sl-agg-row"><span class="lbl">예상량 평균 ('+exN+'건)</span><span class="val"><b>'+fmt(ex)+'</b></span></div>';
+      rows+='<div class="sl-agg-row"><span class="lbl">실수확량 평균 ('+reN+'건)</span><span class="val"><b>'+fmt(re)+'</b></span></div>';
     } else {
       /* v127: A·B포구 합쳐서 전체 평균 */
       var allVals=[];
@@ -8376,17 +8372,12 @@ function _slRenderAgg(){
         if(i.yields&&typeof i.yields.genB==='number') allVals.push(i.yields.genB);
       });
       var avg=avgOf(allVals);
-      rows='<div class="sl-agg-row sl-agg-avg"><span class="lbl">A·B포구 전체 평균 ('+allVals.length+'건)</span><span class="val"><b>'+fmt(avg)+'</b></span></div>';
+      rows='<div class="sl-agg-row"><span class="lbl">A·B포구 전체 평균 ('+allVals.length+'건)</span><span class="val"><b>'+fmt(avg)+'</b></span></div>';
     }
     if(items.some(function(i){return !i.yields;})) hasOld=true;
     /* v135: 작물 클릭 시 펼쳐지는 세부 목록(필지주소 + 생산량) */
     var detail=items.map(function(it){
       var addr=it.addr?it.addr:'주소없음';
-      if(isRice){
-        var ev=(it.yields&&typeof it.yields.nbExpect==='number'&&it.yields.nbExpect>0)?Math.round(it.yields.nbExpect).toLocaleString('ko-KR')+' kg':'—';
-        var rv=(it.yields&&typeof it.yields.nbReal==='number'&&it.yields.nbReal>0)?Math.round(it.yields.nbReal).toLocaleString('ko-KR')+' kg':'—';
-        return '<div class="sl-agg-item"><span class="ai-addr">📍 '+addr+'</span><span class="ai-val">예상 '+ev+' / 실수확 '+rv+'</span></div>';
-      }
       var iv=_itemVal(it);
       var pv=(iv!=null)?iv.toLocaleString('ko-KR')+' kg':'—';
       return '<div class="sl-agg-item"><span class="ai-addr">📍 '+addr+'</span><span class="ai-val">'+pv+'</span></div>';
@@ -8864,5 +8855,14 @@ function importJSON(input){
 })();
 </script>
 
+<!-- v136: 네이버 애널리틱스(Wcslog) -->
+<script type="text/javascript" src="//wcs.pstatic.net/wcslog.js"></script>
+<script type="text/javascript">
+if(!wcs_add) var wcs_add = {};
+wcs_add["wa"] = "19e5d0d688a0f70";
+if(window.wcs) {
+  wcs_do();
+}
+</script>
 </body>
 </html>
