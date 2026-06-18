@@ -328,6 +328,16 @@ function renderMap(lat, lng, acc){
   hideOv();
 
   setTimeout(function(){
+    /* 컨테이너 크기를 명시적으로 강제 지정 — iOS Safari fixed 레이아웃 대응 */
+    var mapEl = document.getElementById('map');
+    var headerH = 56;
+    mapEl.style.position = 'fixed';
+    mapEl.style.top      = headerH + 'px';
+    mapEl.style.left     = '0';
+    mapEl.style.width    = window.innerWidth  + 'px';
+    mapEl.style.height   = (window.innerHeight - headerH) + 'px';
+    log('컨테이너 크기: ' + window.innerWidth + 'x' + (window.innerHeight - headerH));
+
     var pos = new naver.maps.LatLng(lat, lng);
 
     if(!S.map){
