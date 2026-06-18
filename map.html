@@ -181,7 +181,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 
 <!-- 주소 검색바 -->
 <div id="search-bar">
-  <input id="search-input" type="search" placeholder="주소·지명 검색 (예: 상주시청)"
+  <input id="search-input" type="search" placeholder="주소 검색 (예: 상주시 신봉동)"
          onkeydown="if(event.key==='Enter')searchByAddress()" />
   <button id="search-btn" onclick="searchByAddress()">검색</button>
 </div>
@@ -397,9 +397,11 @@ function renderMap(lat, lng, acc){
   hideOv();
 
   setTimeout(function(){
-    /* 컨테이너 크기를 명시적으로 강제 지정 — iOS Safari fixed 레이아웃 대응 */
+    /* 컨테이너 크기를 명시적으로 강제 지정 — iOS Safari fixed 레이아웃 대응
+       지도를 검색바(상단바56 + 검색바영역) 아래에서 시작 →
+       네이버 위성/일반 컨트롤이 검색바에 가리지 않음 */
     var mapEl = document.getElementById('map');
-    var headerH = 56;
+    var headerH = 112;
     mapEl.style.position = 'fixed';
     mapEl.style.top      = headerH + 'px';
     mapEl.style.left     = '0';
