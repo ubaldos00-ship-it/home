@@ -1,0 +1,1072 @@
+<!-- ladder_v2.html · 저장: 2026-06-19 02:31 KST -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="theme-color" content="#27500A" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+<!-- Google Analytics (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-B8ELP4S5PR"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-B8ELP4S5PR');
+</script>
+
+<title>사다리타기 · 텐아르(10a)</title>
+
+<!-- Pretendard 한국어 웹폰트 -->
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+
+<style>
+  :root {
+    --color-primary: #1f5132;
+    --color-primary-light: #2e7a4e;
+    --color-primary-dark: #143820;
+    --color-accent: #c9962b;
+    --color-accent-light: #e6b955;
+    --color-bg: #f6f4ec;
+    --color-card: #ffffff;
+    --color-text: #1a1f1a;
+    --color-text-soft: #5b6358;
+    --color-border: #e6e2d5;
+    --color-danger: #c0392b;
+    --header-bg: #27500A;
+
+    --shadow-sm: 0 1px 2px rgba(20, 56, 32, 0.05);
+    --shadow-md: 0 4px 12px rgba(20, 56, 32, 0.08);
+    --shadow-lg: 0 8px 24px rgba(20, 56, 32, 0.12);
+
+    --radius-sm: 10px;
+    --radius-md: 14px;
+    --radius-lg: 20px;
+    --header-h: 64px;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html { background-color: var(--header-bg); }
+
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-size: 15px; line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    min-height: 100vh;
+    padding-top: calc(var(--header-h) + env(safe-area-inset-top));
+    padding-bottom: calc(28px + env(safe-area-inset-bottom));
+  }
+
+  /* ===== HEADER ===== */
+  header.app-header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    height: calc(var(--header-h) + env(safe-area-inset-top));
+    padding: 10px 18px; padding-top: calc(10px + env(safe-area-inset-top));
+    background: var(--header-bg); color: #fff;
+    box-shadow: var(--shadow-md);
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  }
+  header.app-header .brand { display: flex; flex-direction: column; line-height: 1.1; }
+  header.app-header .brand-name { font-size: 19px; font-weight: 800; letter-spacing: -0.01em; }
+  header.app-header .brand-sub { font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.78); margin-top: 2px; }
+  header.app-header .home-btn {
+    border: 1px solid rgba(255,255,255,0.35); background: rgba(0,0,0,0.18);
+    color: #fff; font-size: 13px; font-weight: 600; padding: 7px 13px;
+    border-radius: 999px; text-decoration: none; backdrop-filter: blur(6px);
+  }
+  header.app-header .home-btn:active { background: rgba(0,0,0,0.32); }
+
+  main { max-width: 560px; margin: 0 auto; padding: 14px 14px 0; }
+
+  /* ===== SECTION CARD ===== */
+  .section {
+    background: var(--color-card); border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);
+    padding: 16px 15px; margin-bottom: 14px;
+  }
+  .section-title {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 16px; font-weight: 800; margin: 0 0 12px; color: var(--color-primary-dark);
+  }
+  .section-title .icon { font-size: 18px; }
+  .hint { font-size: 12.5px; color: var(--color-text-soft); margin: -4px 0 12px; }
+
+  /* ===== 참여자 수 stepper ===== */
+  .count-row { display: flex; align-items: center; justify-content: center; gap: 16px; }
+  .count-row .stepper-btn {
+    width: 52px; height: 52px; border-radius: 50%; border: none;
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+    color: #fff; font-size: 28px; font-weight: 700; line-height: 1;
+    box-shadow: var(--shadow-md); cursor: pointer; user-select: none;
+  }
+  .count-row .stepper-btn:active { transform: scale(0.92); }
+  .count-row .stepper-btn:disabled { opacity: 0.35; box-shadow: none; }
+  .count-display { min-width: 92px; text-align: center; }
+  .count-display .num { font-size: 40px; font-weight: 800; color: var(--color-primary-dark); line-height: 1; }
+  .count-display .lbl { font-size: 12.5px; color: var(--color-text-soft); margin-top: 2px; }
+
+  /* ===== 입력 그리드 ===== */
+  .field-grid { display: flex; flex-direction: column; gap: 9px; }
+  .field-row { display: flex; align-items: center; gap: 9px; }
+  .field-row .tag {
+    flex: 0 0 auto; width: 54px; font-size: 12.5px; font-weight: 700;
+    color: var(--color-text-soft); text-align: right;
+  }
+  .field-row input {
+    flex: 1 1 auto; min-width: 0; height: 46px; padding: 0 14px;
+    font-size: 16px; font-family: inherit; color: var(--color-text);
+    border: 1.5px solid var(--color-border); border-radius: var(--radius-md);
+    background: #fafaf5; outline: none;
+  }
+  .field-row input:focus { border-color: var(--color-primary-light); background: #fff; box-shadow: 0 0 0 3px rgba(46,122,78,0.12); }
+  .field-row.result .tag { color: var(--color-accent); }
+  .field-row.result input:focus { border-color: var(--color-accent); box-shadow: 0 0 0 3px rgba(201,150,43,0.15); }
+
+  .btn-row { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 12px; }
+  .btn {
+    flex: 1 1 auto; min-height: 50px; padding: 0 16px;
+    font-size: 15.5px; font-weight: 700; font-family: inherit;
+    border: none; border-radius: var(--radius-md); cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%); color: #fff; box-shadow: var(--shadow-md); }
+  .btn-accent { background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-light) 100%); color: #fff; box-shadow: var(--shadow-md); }
+  .btn-outline { background: #fff; color: var(--color-primary); border: 1.5px solid var(--color-border); }
+  .btn-ghost { background: #f0ecdc; color: var(--color-text-soft); }
+  .btn-danger { background: #fff; color: var(--color-danger); border: 1.5px solid #ecc9c4; }
+  .btn-sm { min-height: 42px; font-size: 14px; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  /* ===== 사다리 캔버스 ===== */
+  #ladderCard { display: none; }
+  #ladderWrap { width: 100%; position: relative; }
+  #ladderCanvas { width: 100%; display: block; touch-action: manipulation; border-radius: var(--radius-md); }
+  .canvas-tip {
+    text-align: center; font-size: 12.5px; color: var(--color-primary);
+    background: #eaf5e8; border-radius: 999px; padding: 7px 12px; margin-bottom: 10px; font-weight: 600;
+  }
+
+  /* ===== 전체 결과 테이블 ===== */
+  #resultTableCard { display: none; }
+  table.result-table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+  table.result-table th, table.result-table td { padding: 11px 10px; text-align: center; border-bottom: 1px solid var(--color-border); }
+  table.result-table th { background: #eaf5e8; color: var(--color-primary-dark); font-weight: 700; }
+  table.result-table td.num { font-weight: 800; color: var(--color-primary); width: 48px; }
+  table.result-table td.name { font-weight: 700; color: var(--color-text); }
+  table.result-table td.res { font-weight: 700; color: var(--color-accent); }
+  table.result-table tr.done td { background: #fffaf0; }
+
+  /* ===== 결과 팝업 ===== */
+  .overlay {
+    position: fixed; inset: 0; z-index: 1000; display: none;
+    align-items: center; justify-content: center; padding: 24px;
+    background: rgba(15, 30, 18, 0.62); backdrop-filter: blur(3px);
+  }
+  .overlay.show { display: flex; }
+  .popup {
+    background: #fff; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
+    padding: 26px 24px; text-align: center; max-width: 320px; width: 100%;
+    transform: scale(0.6); opacity: 0; animation: popIn 0.42s cubic-bezier(0.18,0.89,0.32,1.28) forwards;
+  }
+  @keyframes popIn { to { transform: scale(1); opacity: 1; } }
+  .popup .pop-emoji { font-size: 44px; }
+  .popup .pop-title { font-size: 15px; font-weight: 700; color: var(--color-text-soft); margin: 6px 0 14px; }
+  .popup .pop-name { font-size: 26px; font-weight: 800; color: var(--color-primary-dark); }
+  .popup .pop-arrow { font-size: 26px; color: var(--color-accent); margin: 4px 0; }
+  .popup .pop-result {
+    font-size: 30px; font-weight: 800; color: #fff; margin-top: 4px;
+    background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-light) 100%);
+    border-radius: var(--radius-md); padding: 12px 16px; box-shadow: var(--shadow-md);
+  }
+  .popup .btn { margin-top: 18px; width: 100%; }
+  #confettiCanvas { position: fixed; inset: 0; z-index: 1001; pointer-events: none; display: none; }
+
+  .footer-note { text-align: center; font-size: 11.5px; color: var(--color-text-soft); padding: 6px 0 14px; }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="brand">
+    <span class="brand-name">사다리타기</span>
+    <span class="brand-sub">텐아르(10a) · 현장 배정 도구</span>
+  </div>
+  <a class="home-btn" href="https://ubaldos00-ship-it.github.io/home/" id="homeBtn">🏠 홈</a>
+</header>
+
+<main>
+
+  <!-- ① 참여자 수 -->
+  <section class="section">
+    <h2 class="section-title"><span class="icon">👥</span> 참여자 수</h2>
+    <div class="count-row">
+      <button class="stepper-btn" id="minusBtn" aria-label="감소">−</button>
+      <div class="count-display">
+        <div class="num" id="countNum">5</div>
+        <div class="lbl">명 (2~20)</div>
+      </div>
+      <button class="stepper-btn" id="plusBtn" aria-label="증가">+</button>
+    </div>
+  </section>
+
+  <!-- ② 참여자 이름 -->
+  <section class="section">
+    <h2 class="section-title"><span class="icon">✏️</span> 참여자 이름</h2>
+    <p class="hint">빈칸 없이 입력하세요. 엔터/완료 시 다음 칸으로 이동합니다.</p>
+    <div class="field-grid" id="nameGrid"></div>
+    <div class="btn-row">
+      <button class="btn btn-outline btn-sm" id="funNameBtn">🎲 재미있는 이름 자동생성</button>
+    </div>
+  </section>
+
+  <!-- ③ 결과값 -->
+  <section class="section">
+    <h2 class="section-title"><span class="icon">🎯</span> 결과값</h2>
+    <p class="hint">자유 입력 (예: 1등·커피·꽝). 순위가 필요하면 아래 버튼을 누르세요.</p>
+    <div class="field-grid" id="resultGrid"></div>
+    <div class="btn-row">
+      <button class="btn btn-outline btn-sm" id="autoRankBtn">🏅 순위 자동 생성</button>
+    </div>
+  </section>
+
+  <!-- ④ 사다리 생성 -->
+  <section class="section">
+    <h2 class="section-title"><span class="icon">🪜</span> 사다리</h2>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="genBtn">🪜 사다리 생성</button>
+    </div>
+  </section>
+
+  <!-- ⑤ 사다리 캔버스 -->
+  <section class="section" id="ladderCard">
+    <div class="canvas-tip" id="canvasTip">👆 위쪽 참여자 이름을 누르면 시작합니다</div>
+    <div id="ladderWrap">
+      <canvas id="ladderCanvas"></canvas>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-accent" id="startAllBtn">▶ 전체 사다리타기</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-outline btn-sm" id="newLadderBtn">🔀 새로 생성</button>
+      <button class="btn btn-outline btn-sm" id="showResultBtn">📋 전체 결과 보기</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-sm" id="savePngBtn">🖼️ 결과 이미지 저장</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-accent btn-sm" id="shareImgBtn">📤 이미지 공유</button>
+    </div>
+  </section>
+
+  <!-- ⑥ 전체 결과 테이블 -->
+  <section class="section" id="resultTableCard">
+    <h2 class="section-title"><span class="icon">📋</span> 전체 결과</h2>
+    <table class="result-table">
+      <thead><tr><th>번호</th><th>참여자</th><th>결과</th></tr></thead>
+      <tbody id="resultTbody"></tbody>
+    </table>
+  </section>
+
+  <!-- ⑦ 초기화 -->
+  <section class="section">
+    <div class="btn-row">
+      <button class="btn btn-danger btn-sm" id="resetBtn">🗑️ 전체 초기화</button>
+    </div>
+  </section>
+
+  <div class="footer-note">텐아르(10a) · TEN-AR · 현장 조사 도구</div>
+</main>
+
+<!-- 결과 팝업 -->
+<div class="overlay" id="overlay">
+  <div class="popup" id="popup">
+    <div class="pop-emoji">🎉</div>
+    <div class="pop-title">결과</div>
+    <div class="pop-name" id="popName">홍길동</div>
+    <div class="pop-arrow">↓</div>
+    <div class="pop-result" id="popResult">1등</div>
+    <button class="btn btn-primary" id="popCloseBtn">확인</button>
+  </div>
+</div>
+<canvas id="confettiCanvas"></canvas>
+
+<script>
+"use strict";
+
+/* ===================== 상태 ===================== */
+const STORE_KEY = 'ladderState_v1';
+let count = 5;
+let names = ['', '', '', '', ''];
+let results = ['', '', '', '', ''];
+let ladder = null;          // { numLevels, rungs:[Set,...] }
+let geom = null;            // 캔버스 좌표 계산값
+let animating = false;
+let revealed = {};          // 시작column -> end index (확정된 결과)
+
+const MIN_P = 2, MAX_P = 20;
+
+/* ===================== DOM ===================== */
+const $ = (id) => document.getElementById(id);
+const canvas = $('ladderCanvas');
+const ctx = canvas.getContext('2d');
+
+/* ===================== 입력칸 생성 ===================== */
+function buildInputs() {
+  const ng = $('nameGrid'), rg = $('resultGrid');
+  ng.innerHTML = ''; rg.innerHTML = '';
+  for (let i = 0; i < count; i++) {
+    // 이름
+    const nr = document.createElement('div');
+    nr.className = 'field-row';
+    nr.innerHTML = `<span class="tag">참여자 ${i+1}</span>`;
+    const ni = document.createElement('input');
+    ni.type = 'text'; ni.value = names[i] || ''; ni.placeholder = `이름 ${i+1}`;
+    ni.maxLength = 10; ni.dataset.idx = i; ni.setAttribute('enterkeyhint', i < count-1 ? 'next' : 'done');
+    ni.addEventListener('input', () => { names[i] = ni.value; save(); });
+    ni.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); focusNext('name', i); }
+    });
+    nr.appendChild(ni); ng.appendChild(nr);
+
+    // 결과
+    const rr = document.createElement('div');
+    rr.className = 'field-row result';
+    rr.innerHTML = `<span class="tag">결과 ${i+1}</span>`;
+    const ri = document.createElement('input');
+    ri.type = 'text'; ri.value = results[i] || ''; ri.placeholder = `결과 ${i+1}`;
+    ri.maxLength = 12; ri.dataset.idx = i; ri.setAttribute('enterkeyhint', i < count-1 ? 'next' : 'done');
+    ri.addEventListener('input', () => { results[i] = ri.value; save(); });
+    ri.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); focusNext('result', i); }
+    });
+    rr.appendChild(ri); rg.appendChild(rr);
+  }
+}
+function focusNext(kind, i) {
+  const grid = kind === 'name' ? $('nameGrid') : $('resultGrid');
+  const inputs = grid.querySelectorAll('input');
+  if (i + 1 < inputs.length) inputs[i+1].focus();
+  else inputs[i].blur();
+}
+
+/* ===================== 참여자 수 ===================== */
+function setCount(n) {
+  n = Math.max(MIN_P, Math.min(MAX_P, n));
+  // 배열 길이 맞추기 (기존 값 유지)
+  names.length = n; results.length = n;
+  for (let i = 0; i < n; i++) { if (names[i] == null) names[i] = ''; if (results[i] == null) results[i] = ''; }
+  count = n;
+  $('countNum').textContent = n;
+  $('minusBtn').disabled = (n <= MIN_P);
+  $('plusBtn').disabled = (n >= MAX_P);
+  buildInputs();
+  // 인원 변경 시 기존 사다리 무효화
+  hideLadder();
+  save();
+}
+function hideLadder() {
+  ladder = null; geom = null; revealed = {};
+  $('ladderCard').style.display = 'none';
+  $('resultTableCard').style.display = 'none';
+}
+
+/* ===================== 순위 자동 생성 ===================== */
+function autoRank() {
+  for (let i = 0; i < count; i++) results[i] = (i + 1) + '등';
+  buildInputs(); save();
+}
+
+/* ===================== 재미있는 이름 자동생성 ===================== */
+const FUN_NAMES = [
+  '깜짝놀란토끼','졸린부엉이','신난다람쥐','용감한고슴도치','배고픈너구리',
+  '춤추는펭귄','수줍은판다','잽싼치타','느긋한나무늘보','똑똑한여우',
+  '엉뚱한오리','튼튼한코뿔소','상냥한사슴','장난꾸러기원숭이','노래하는고래',
+  '부지런한개미','멋쟁이공작','수다쟁이앵무새','당당한사자','폭신한알파카',
+  '반짝이는반딧불','초록콩벌레','달리는타조','웃는해달','꿈꾸는두더지',
+  '말랑말랑문어','새침한고양이','복슬복슬강아지','쿨쿨자는곰','풍선껌하마',
+  '번개맞은청설모','왕눈이올빼미','구름빵토끼','감자캐는두꺼비','별헤는다람쥐'];
+function funName() {
+  // 중복 없이 무작위 배정
+  const pool = FUN_NAMES.slice();
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  for (let i = 0; i < count; i++) names[i] = pool[i % pool.length];
+  buildInputs(); save();
+}
+
+/* ===================== 입력 검증 ===================== */
+function validateNames() {
+  for (let i = 0; i < count; i++) {
+    if (!names[i] || !names[i].trim()) {
+      const inp = $('nameGrid').querySelectorAll('input')[i];
+      inp.focus(); inp.style.borderColor = 'var(--color-danger)';
+      setTimeout(() => inp.style.borderColor = '', 1200);
+      alert(`참여자 ${i+1}의 이름을 입력하세요.`);
+      return false;
+    }
+  }
+  for (let i = 0; i < count; i++) {
+    if (!results[i] || !results[i].trim()) {
+      const inp = $('resultGrid').querySelectorAll('input')[i];
+      inp.focus(); inp.style.borderColor = 'var(--color-danger)';
+      setTimeout(() => inp.style.borderColor = '', 1200);
+      alert(`결과 ${i+1}을(를) 입력하세요.`);
+      return false;
+    }
+  }
+  return true;
+}
+
+/* ===================== 사다리 생성 ===================== */
+function rungRange(n) {
+  // 기존 기준값에서 가로선 3~4개씩 추가 (더 복잡한 사다리)
+  if (n === 2) return [7, 9];
+  if (n <= 5) return [9, 14];
+  if (n <= 10) return [14, 24];
+  return [n + 9, n * 2 + 9];   // 11~20명
+}
+function generateLadder() {
+  const n = count;
+  const [lo, hi] = rungRange(n);
+  const target = lo + Math.floor(Math.random() * (hi - lo + 1));
+  // 레벨 수: 가로선이 여유있게 분산되도록
+  const numLevels = Math.max(target + 2, n + 3, 8);
+  const rungs = Array.from({ length: numLevels }, () => new Set());
+
+  let placed = 0, attempts = 0;
+  const maxAttempts = target * 60 + 400;
+  while (placed < target && attempts < maxAttempts) {
+    attempts++;
+    const L = Math.floor(Math.random() * numLevels);
+    const c = Math.floor(Math.random() * (n - 1)); // c ~ c+1 연결
+    const s = rungs[L];
+    // 같은 높이 중복/교차 금지: c, c-1, c+1 이 비어 있어야 함
+    if (s.has(c) || s.has(c - 1) || s.has(c + 1)) continue;
+    s.add(c); placed++;
+  }
+
+  // 너무 단순 방지: 모든 세로선이 최소 1회 가로선과 만나도록 보정
+  ensureAllColumnsTouched(rungs, numLevels, n);
+
+  ladder = { numLevels, rungs };
+  revealed = {};
+}
+function ensureAllColumnsTouched(rungs, numLevels, n) {
+  const touched = new Array(n).fill(false);
+  for (let L = 0; L < numLevels; L++) {
+    for (const c of rungs[L]) { touched[c] = true; touched[c + 1] = true; }
+  }
+  for (let col = 0; col < n; col++) {
+    if (touched[col]) continue;
+    // col 에 닿는 가로선 추가 시도 (col-1~col 또는 col~col+1)
+    const cands = [];
+    if (col > 0) cands.push(col - 1);
+    if (col < n - 1) cands.push(col);
+    let added = false;
+    for (let tryN = 0; tryN < 40 && !added; tryN++) {
+      const c = cands[Math.floor(Math.random() * cands.length)];
+      const L = Math.floor(Math.random() * numLevels);
+      const s = rungs[L];
+      if (s.has(c) || s.has(c - 1) || s.has(c + 1)) continue;
+      s.add(c); touched[c] = true; touched[c + 1] = true; added = true;
+    }
+  }
+}
+
+/* ===================== 캔버스 좌표 ===================== */
+function computeGeom() {
+  const n = count;
+  const cssW = Math.min($('ladderWrap').clientWidth || 360, 540);
+  const colW = cssW / n;
+  // 칸이 좁으면(인원 많음) 이름·결과를 세로 텍스트로 표시
+  const vertical = colW < 44;
+  // 상단: 순번 번호 + 이름 표시 공간 확보
+  const nameZone = vertical ? 102 : 62;
+  // 하단: 결과칩 + 도착 참여자 이름 표시 공간 확보
+  const resultZone = vertical ? 150 : 80;
+  const rowGap = ladder.numLevels > 24 ? 18 : 26;
+  const cssH = nameZone + resultZone + (ladder.numLevels + 1) * rowGap;
+
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = Math.round(cssW * dpr);
+  canvas.height = Math.round(cssH * dpr);
+  canvas.style.height = cssH + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  const padX = Math.max(vertical ? 16 : 22, cssW * 0.5 / n);
+  const xs = [];
+  for (let i = 0; i < n; i++) xs.push(padX + (i * (cssW - 2 * padX)) / (n - 1));
+  const yTop = nameZone, yBottom = cssH - resultZone;
+  const yLevel = [];
+  for (let L = 0; L < ladder.numLevels; L++)
+    yLevel.push(yTop + ((L + 1) * (yBottom - yTop)) / (ladder.numLevels + 1));
+
+  geom = { cssW, cssH, n, xs, yTop, yBottom, yLevel, nameZone, resultZone, vertical };
+}
+
+/* 시작 컬럼 -> 점 경로 + 도착 인덱스 */
+function computePath(startCol) {
+  const { xs, yTop, yBottom, yLevel } = geom;
+  let c = startCol;
+  const pts = [{ x: xs[c], y: yTop }];
+  for (let L = 0; L < ladder.numLevels; L++) {
+    const y = yLevel[L];
+    const s = ladder.rungs[L];
+    pts.push({ x: xs[c], y });
+    if (s.has(c)) { c = c + 1; pts.push({ x: xs[c], y }); }
+    else if (s.has(c - 1)) { c = c - 1; pts.push({ x: xs[c], y }); }
+  }
+  pts.push({ x: xs[c], y: yBottom });
+  return { pts, end: c };
+}
+function endOf(startCol) { return computePath(startCol).end; }
+
+/* ===================== 렌더링 ===================== */
+function colorFor(i) {
+  const hues = [145, 35, 205, 0, 265, 95, 320, 180, 50, 235];
+  return `hsl(${hues[i % hues.length]}, 62%, 42%)`;
+}
+function drawBase(highlight) {
+  const { cssW, cssH, n, xs, yTop, yBottom, nameZone } = geom;
+  ctx.clearRect(0, 0, cssW, cssH);
+  ctx.fillStyle = '#fafaf5';
+  ctx.fillRect(0, 0, cssW, cssH);
+
+  // 세로선
+  ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.strokeStyle = '#d8d2c2';
+  for (let i = 0; i < n; i++) {
+    ctx.beginPath(); ctx.moveTo(xs[i], yTop); ctx.lineTo(xs[i], yBottom); ctx.stroke();
+  }
+  // 가로선
+  ctx.strokeStyle = '#b9b09a';
+  for (let L = 0; L < ladder.numLevels; L++) {
+    const y = geom.yLevel[L];
+    for (const c of ladder.rungs[L]) {
+      ctx.beginPath(); ctx.moveTo(xs[c], y); ctx.lineTo(xs[c + 1], y); ctx.stroke();
+    }
+  }
+  // 진행 경로 강조
+  if (highlight && highlight.pts && highlight.upto > 0) {
+    ctx.strokeStyle = highlight.color; ctx.lineWidth = 5; ctx.lineJoin = 'round';
+    ctx.beginPath();
+    const p = highlight.pts;
+    const upto = Math.min(highlight.upto, p.length);
+    ctx.moveTo(p[0].x, p[0].y);
+    for (let i = 1; i < upto; i++) ctx.lineTo(p[i].x, p[i].y);
+    if (highlight.partial) ctx.lineTo(highlight.partial.x, highlight.partial.y);
+    ctx.stroke();
+  }
+
+  // 상단 이름 칩 / 하단 결과 칩
+  drawChips(highlight ? highlight.startCol : -1, highlight ? highlight.endCol : -1);
+
+  // 이동점
+  if (highlight && highlight.dot) {
+    const d = highlight.dot;
+    ctx.beginPath(); ctx.arc(d.x, d.y, 9, 0, Math.PI * 2);
+    ctx.fillStyle = highlight.color; ctx.fill();
+    ctx.lineWidth = 3; ctx.strokeStyle = '#fff'; ctx.stroke();
+  }
+}
+/* 하단 결과(i)에 도착한 참여자의 시작 컬럼 (미공개면 -1) */
+function winnerStartFor(bottomCol) {
+  for (let s = 0; s < count; s++) if (revealed[s] === bottomCol) return s;
+  return -1;
+}
+/* 이름 위 순번 번호 배지 */
+function drawOrderNum(cx, num, color) {
+  const cy = geom.yTop - geom.nameZone + 12;
+  ctx.beginPath(); ctx.arc(cx, cy, 9, 0, Math.PI * 2);
+  ctx.fillStyle = color; ctx.fill();
+  ctx.fillStyle = '#fff';
+  ctx.font = `800 ${num >= 10 ? 9.5 : 11}px Pretendard, sans-serif`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(String(num), cx, cy + 0.5);
+}
+function drawChips(activeStart, activeEnd) {
+  const { n, xs, yTop, yBottom, vertical } = geom;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  if (vertical) {
+    const fs = n >= 16 ? 11 : 12;
+    for (let i = 0; i < n; i++) {
+      drawOrderNum(xs[i], i + 1, colorFor(i));
+      drawChipV(xs[i], names[i] || `${i+1}`, colorFor(i), i === activeStart, fs, false, false, false);
+    }
+    for (let i = 0; i < n; i++) {
+      const showDone = revealed && Object.values(revealed).includes(i);
+      drawChipV(xs[i], results[i] || `${i+1}`, null, false, fs, true, i === activeEnd, showDone);
+    }
+    // 도착한 참여자 이름 (결과 아래)
+    for (let i = 0; i < n; i++) {
+      const s = winnerStartFor(i);
+      if (s >= 0) drawWinnerNameV(xs[i], yBottom + 44, names[s] || `${s+1}`, colorFor(s), fs);
+    }
+    return;
+  }
+  const fs = n >= 8 ? 11 : (n >= 6 ? 12.5 : 14);
+  for (let i = 0; i < n; i++) {
+    // 순번 + 이름 (상단)
+    drawOrderNum(xs[i], i + 1, colorFor(i));
+    drawChip(xs[i], yTop - 24, names[i] || `${i+1}`, colorFor(i), i === activeStart, fs, false);
+  }
+  for (let i = 0; i < n; i++) {
+    const showDone = revealed && Object.values(revealed).includes(i);
+    drawChip(xs[i], yBottom + 26, results[i] || `${i+1}`, 'var', false, fs, true, i === activeEnd, showDone);
+  }
+  // 도착한 참여자 이름 (결과 아래)
+  for (let i = 0; i < n; i++) {
+    const s = winnerStartFor(i);
+    if (s >= 0) drawWinnerName(xs[i], yBottom + 56, names[s] || `${s+1}`, colorFor(s), fs);
+  }
+}
+/* 결과 아래 도착 참여자 이름 (가로 모드) */
+function drawWinnerName(cx, cy, text, color, fs) {
+  const f = Math.min(fs, 12.5);
+  // 결과칩과 이름 사이 ▼ 연결 표시
+  ctx.fillStyle = color;
+  ctx.font = `700 9px Pretendard, sans-serif`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('▼', cx, cy - 13);
+  // 이름 알약
+  ctx.font = `800 ${f}px Pretendard, sans-serif`;
+  let t = text, w = ctx.measureText(t).width;
+  const maxW = (geom.cssW / geom.n) - 4;
+  while (w > maxW - 12 && t.length > 1) { t = t.slice(0, -1); w = ctx.measureText(t + '…').width; }
+  if (t !== text) t = t + '…';
+  const bw = Math.min(maxW, ctx.measureText(t).width + 12), h = 20;
+  roundRect(cx - bw / 2, cy - h / 2, bw, h, 7);
+  ctx.fillStyle = color; ctx.fill();
+  ctx.fillStyle = '#fff';
+  ctx.fillText(t, cx, cy + 0.5);
+}
+/* 결과 아래 도착 참여자 이름 (세로 모드) */
+function drawWinnerNameV(cx, startY0, text, color, fs) {
+  const lineH = fs + 2;
+  const maxChars = Math.max(1, Math.floor((geom.cssH - startY0 - 4) / lineH));
+  let chars = Array.from(String(text)); let tr = false;
+  if (chars.length > maxChars) { chars = chars.slice(0, maxChars - 1); tr = true; }
+  const cells = chars.length + (tr ? 1 : 0);
+  const stackH = cells * lineH;
+  const bw = fs + 9, bx = cx - bw / 2;
+  ctx.font = `800 ${fs}px Pretendard, sans-serif`;
+  roundRect(bx, startY0 - 1, bw, stackH + 2, 6);
+  ctx.fillStyle = color; ctx.fill();
+  ctx.fillStyle = '#fff';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  const sy = startY0 + lineH / 2;
+  let k = 0;
+  for (; k < chars.length; k++) ctx.fillText(chars[k], cx, sy + k * lineH);
+  if (tr) ctx.fillText('…', cx, sy + k * lineH);
+}
+/* 세로 텍스트 칩 (인원 많을 때): 글자를 위→아래로 쌓아 표시 */
+function drawChipV(cx, text, color, active, fs, isResult, hot, done) {
+  const lineH = fs + 2;
+  const zone = isResult ? geom.resultZone : geom.nameZone;
+  // 이름 칸은 위쪽 순번 배지 공간(약 26px) 제외
+  const avail = isResult ? (zone - 8) : (zone - 30);
+  const maxChars = Math.max(1, Math.floor(avail / lineH));
+  let chars = Array.from(String(text));
+  let truncated = false;
+  if (chars.length > maxChars) { chars = chars.slice(0, maxChars - 1); truncated = true; }
+  const cells = chars.length + (truncated ? 1 : 0);
+  const stackH = cells * lineH;
+  const by = isResult ? (geom.yBottom + 5) : (geom.yTop - 5 - stackH);
+  const startY = by + lineH / 2;
+  const bw = fs + 9, bx = cx - bw / 2;
+
+  ctx.font = `700 ${fs}px Pretendard, sans-serif`;
+  roundRect(bx, by - 1, bw, stackH + 2, 6);
+  if (isResult) {
+    ctx.fillStyle = hot ? '#c9962b' : (done ? '#fff4dc' : '#eef3ea'); ctx.fill();
+    ctx.fillStyle = hot ? '#fff' : (done ? '#9a6b12' : '#5b6358');
+  } else {
+    ctx.fillStyle = active ? color : '#eef3ea'; ctx.fill();
+    ctx.fillStyle = active ? '#fff' : '#3a463a';
+  }
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  let k = 0;
+  for (; k < chars.length; k++) ctx.fillText(chars[k], cx, startY + k * lineH);
+  if (truncated) ctx.fillText('…', cx, startY + k * lineH);
+}
+function drawChip(cx, cy, text, color, active, fs, isResult, hot, done) {
+  const padX = 7, h = 24;
+  ctx.font = `700 ${fs}px Pretendard, sans-serif`;
+  let t = text; let w = ctx.measureText(t).width;
+  const maxW = (geom.cssW / geom.n) - 6;
+  while (w > maxW && t.length > 1) { t = t.slice(0, -1); w = ctx.measureText(t + '…').width; }
+  if (t !== text) t = t + '…';
+  const bw = Math.min(maxW, ctx.measureText(t).width + padX * 2);
+  const x = cx - bw / 2, y = cy - h / 2;
+  roundRect(x, y, bw, h, 8);
+  if (isResult) {
+    ctx.fillStyle = hot ? '#c9962b' : (done ? '#fff4dc' : '#eef3ea');
+    ctx.fill();
+    ctx.fillStyle = hot ? '#fff' : (done ? '#9a6b12' : '#5b6358');
+  } else {
+    ctx.fillStyle = active ? color : '#eef3ea';
+    ctx.fill();
+    ctx.fillStyle = active ? '#fff' : '#3a463a';
+  }
+  ctx.fillText(t, cx, cy + 0.5);
+}
+function roundRect(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+function renderLadder() {
+  computeGeom();
+  drawBase(null);
+}
+
+/* ===================== 애니메이션 ===================== */
+function runOne(startCol) {
+  if (animating || !ladder) return;
+  animating = true;
+  $('canvasTip').textContent = '🚶 경로를 따라가는 중...';
+  const path = computePath(startCol);
+  const pts = path.pts;
+  const color = colorFor(startCol);
+
+  // 세그먼트 길이/속도
+  const seg = [];
+  let total = 0;
+  for (let i = 1; i < pts.length; i++) {
+    const dx = pts[i].x - pts[i-1].x, dy = pts[i].y - pts[i-1].y;
+    const len = Math.hypot(dx, dy); seg.push(len); total += len;
+  }
+  const speed = 150; // px/초 — 천천히 따라갈 수 있는 속도
+  const duration = Math.max(1600, (total / speed) * 1000);
+  const start = performance.now();
+
+  function frame(now) {
+    let prog = Math.min(1, (now - start) / duration);
+    const distTarget = prog * total;
+    // 현재 위치 계산
+    let acc = 0, idx = 1, partial = pts[0];
+    for (let i = 1; i < pts.length; i++) {
+      if (acc + seg[i-1] >= distTarget) {
+        const r = seg[i-1] === 0 ? 0 : (distTarget - acc) / seg[i-1];
+        partial = { x: pts[i-1].x + (pts[i].x - pts[i-1].x) * r, y: pts[i-1].y + (pts[i].y - pts[i-1].y) * r };
+        idx = i; break;
+      }
+      acc += seg[i-1]; idx = i + 1; partial = pts[i];
+    }
+    drawBase({ pts, upto: idx, partial, dot: partial, color, startCol, endCol: path.end });
+    if (prog < 1) requestAnimationFrame(frame);
+    else finishOne(startCol, path.end, color);
+  }
+  requestAnimationFrame(frame);
+}
+function finishOne(startCol, endCol, color) {
+  revealed[startCol] = endCol;
+  drawBase({ pts: computePath(startCol).pts, upto: 9999, dot: { x: geom.xs[endCol], y: geom.yBottom }, color, startCol, endCol });
+  animating = false;
+  $('canvasTip').textContent = '👆 위쪽 참여자 이름을 누르면 시작합니다';
+  showPopup(names[startCol], results[endCol]);
+  vibrate(); confetti();
+  buildResultTable();
+}
+
+/* 전체 자동 진행 */
+function runAll() {
+  if (animating || !ladder) return;
+  let i = 0;
+  const order = [];
+  for (let c = 0; c < count; c++) order.push(c);
+  function next() {
+    if (i >= order.length) { showResultTable(); return; }
+    const c = order[i++];
+    if (revealed[c] != null) { next(); return; }
+    runOneThen(c, next);
+  }
+  next();
+}
+function runOneThen(startCol, cb) {
+  // runOne 과 동일하나 종료 후 팝업 없이 콜백 (전체보기용)
+  if (!ladder) return;
+  animating = true;
+  const path = computePath(startCol);
+  const pts = path.pts; const color = colorFor(startCol);
+  const seg = []; let total = 0;
+  for (let i = 1; i < pts.length; i++) { const l = Math.hypot(pts[i].x-pts[i-1].x, pts[i].y-pts[i-1].y); seg.push(l); total += l; }
+  const duration = Math.max(900, (total / 240) * 1000);
+  const start = performance.now();
+  function frame(now) {
+    let prog = Math.min(1, (now - start) / duration);
+    const distTarget = prog * total;
+    let acc = 0, idx = 1, partial = pts[0];
+    for (let i = 1; i < pts.length; i++) {
+      if (acc + seg[i-1] >= distTarget) {
+        const r = seg[i-1] === 0 ? 0 : (distTarget - acc) / seg[i-1];
+        partial = { x: pts[i-1].x + (pts[i].x-pts[i-1].x)*r, y: pts[i-1].y + (pts[i].y-pts[i-1].y)*r };
+        idx = i; break;
+      }
+      acc += seg[i-1]; idx = i + 1; partial = pts[i];
+    }
+    drawBase({ pts, upto: idx, partial, dot: partial, color, startCol, endCol: path.end });
+    if (prog < 1) requestAnimationFrame(frame);
+    else { revealed[startCol] = path.end; animating = false; buildResultTable(); cb(); }
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ===================== 결과 팝업/효과 ===================== */
+function showPopup(name, result) {
+  $('popName').textContent = name;
+  $('popResult').textContent = result;
+  const pop = $('popup');
+  pop.style.animation = 'none'; void pop.offsetWidth; pop.style.animation = '';
+  $('overlay').classList.add('show');
+}
+function vibrate() { try { if (navigator.vibrate) navigator.vibrate([40, 30, 70]); } catch(e){} }
+
+const confettiCanvas = $('confettiCanvas');
+const cctx = confettiCanvas.getContext('2d');
+function confetti() {
+  const W = confettiCanvas.width = window.innerWidth;
+  const H = confettiCanvas.height = window.innerHeight;
+  confettiCanvas.style.display = 'block';
+  const cols = ['#1f5132','#2e7a4e','#c9962b','#e6b955','#c0392b','#2d8fd5'];
+  const parts = [];
+  for (let i = 0; i < 90; i++) {
+    parts.push({
+      x: W/2 + (Math.random()-0.5)*120, y: H*0.34,
+      vx: (Math.random()-0.5)*9, vy: Math.random()*-10 - 4,
+      g: 0.32 + Math.random()*0.18, r: 4 + Math.random()*5,
+      c: cols[i % cols.length], rot: Math.random()*6, vr: (Math.random()-0.5)*0.4,
+      life: 0
+    });
+  }
+  const t0 = performance.now();
+  function loop(now) {
+    const el = now - t0;
+    cctx.clearRect(0, 0, W, H);
+    for (const p of parts) {
+      p.vy += p.g; p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+      cctx.save(); cctx.translate(p.x, p.y); cctx.rotate(p.rot);
+      cctx.fillStyle = p.c; cctx.fillRect(-p.r/2, -p.r/2, p.r, p.r*0.6);
+      cctx.restore();
+    }
+    if (el < 1500) requestAnimationFrame(loop);
+    else { cctx.clearRect(0,0,W,H); confettiCanvas.style.display = 'none'; }
+  }
+  requestAnimationFrame(loop);
+}
+
+/* ===================== 전체 결과 테이블 ===================== */
+function buildResultTable() {
+  const tb = $('resultTbody'); tb.innerHTML = '';
+  for (let i = 0; i < count; i++) {
+    const end = endOf(i);
+    const tr = document.createElement('tr');
+    const done = revealed[i] != null;
+    if (done) tr.className = 'done';
+    tr.innerHTML = `<td class="num">${i + 1}</td>` +
+      `<td class="name">${esc(names[i] || '-')}</td>` +
+      `<td class="res">${done ? esc(results[end] || '-') : '<span style="color:#b9b09a">미공개</span>'}</td>`;
+    tb.appendChild(tr);
+  }
+}
+function showResultTable() {
+  // 전부 공개
+  for (let i = 0; i < count; i++) revealed[i] = endOf(i);
+  buildResultTable();
+  if (ladder && geom) drawBase(null);   // 결과 아래 도착 이름 모두 표시
+  $('resultTableCard').style.display = 'block';
+  $('resultTableCard').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+/* ===================== PNG 저장 ===================== */
+function savePng() {
+  if (!ladder) { alert('먼저 사다리를 생성하세요.'); return; }
+  // 모든 경로 공개 상태로 한 번 렌더 후 저장
+  const link = document.createElement('a');
+  link.download = `사다리타기_${stamp()}.png`;
+  link.href = canvas.toDataURL('image/png');
+  document.body.appendChild(link); link.click(); document.body.removeChild(link);
+}
+function stamp() {
+  const d = new Date();
+  const p = (x) => String(x).padStart(2, '0');
+  return `${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}`;
+}
+/* dataURL → Blob (동기) : iOS는 사용자 제스처 안에서 동기적으로 share를 호출해야 함 */
+function dataURLToBlob(durl) {
+  const parts = durl.split(',');
+  const mime = (parts[0].match(/:(.*?);/) || [, 'image/png'])[1];
+  const bin = atob(parts[1]);
+  const arr = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return new Blob([arr], { type: mime });
+}
+/* 이미지 공유: Web Share(파일) → 클립보드 복사 → PNG 저장 순으로 폴백
+   iOS Safari/카카오톡 공유를 위해 제스처 내 동기 호출 + File 준비 */
+function shareImg() {
+  if (!ladder) { alert('먼저 사다리를 생성하세요.'); return; }
+  const fname = `사다리타기_${stamp()}.png`;
+  let file, blob;
+  try {
+    blob = dataURLToBlob(canvas.toDataURL('image/png'));
+    file = new File([blob], fname, { type: 'image/png' });
+  } catch (e) { savePng(); return; }
+
+  // 1) 파일 공유 (아이폰 공유시트 → 카카오톡·메시지·메모 등)
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    navigator.share({ files: [file], title: '사다리타기 결과', text: '텐아르(10a) 사다리타기 결과' })
+      .catch((e) => { if (e && e.name !== 'AbortError') shareFallback(blob); });
+    return;
+  }
+  // 일부 브라우저는 canShare가 없어도 파일 공유 가능 — 시도
+  if (navigator.share) {
+    navigator.share({ files: [file], title: '사다리타기 결과' })
+      .catch((e) => {
+        if (e && e.name === 'AbortError') return;
+        // 텍스트 공유라도 시도, 실패 시 폴백
+        navigator.share({ title: '사다리타기 결과', text: '텐아르(10a) 사다리타기 결과' })
+          .catch(() => shareFallback(blob));
+      });
+    return;
+  }
+  shareFallback(blob);
+}
+function shareFallback(blob) {
+  // 2) 클립보드 이미지 복사
+  try {
+    if (navigator.clipboard && window.ClipboardItem) {
+      navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+        .then(() => alert('이미지를 클립보드에 복사했습니다. 붙여넣기 하세요.'))
+        .catch(() => savePng());
+      return;
+    }
+  } catch (e) {}
+  // 3) 다운로드 폴백
+  savePng();
+}
+
+/* ===================== 캔버스 클릭(이름 선택 시작) ===================== */
+canvas.addEventListener('click', (e) => {
+  if (animating || !ladder || !geom) return;
+  const rect = canvas.getBoundingClientRect();
+  const x = (e.clientX - rect.left);
+  const y = (e.clientY - rect.top);
+  // 상단 이름 영역 클릭만 허용
+  if (y > geom.nameZone + 6) return;
+  // 가장 가까운 컬럼
+  let best = 0, bd = Infinity;
+  for (let i = 0; i < geom.n; i++) {
+    const d = Math.abs(geom.xs[i] - x);
+    if (d < bd) { bd = d; best = i; }
+  }
+  if (revealed[best] != null) {
+    if (!confirm(`${names[best]} 은(는) 이미 진행했습니다. 다시 볼까요?`)) return;
+  }
+  runOne(best);
+});
+
+/* ===================== 저장/복원 ===================== */
+let saveTimer = null;
+function save() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    try {
+      localStorage.setItem(STORE_KEY, JSON.stringify({ count, names, results }));
+    } catch (e) {}
+  }, 150);
+}
+function restore() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (!raw) return false;
+    const o = JSON.parse(raw);
+    if (o && o.count >= MIN_P && o.count <= MAX_P) {
+      count = o.count;
+      names = Array.isArray(o.names) ? o.names.slice(0, count) : [];
+      results = Array.isArray(o.results) ? o.results.slice(0, count) : [];
+      while (names.length < count) names.push('');
+      while (results.length < count) results.push('');
+      return true;
+    }
+  } catch (e) {}
+  return false;
+}
+
+/* ===================== 이벤트 바인딩 ===================== */
+$('minusBtn').addEventListener('click', () => setCount(count - 1));
+$('plusBtn').addEventListener('click', () => setCount(count + 1));
+$('autoRankBtn').addEventListener('click', autoRank);
+$('funNameBtn').addEventListener('click', funName);
+
+$('genBtn').addEventListener('click', () => {
+  if (!validateNames()) return;
+  generateLadder();
+  $('ladderCard').style.display = 'block';
+  $('resultTableCard').style.display = 'none';
+  renderLadder();
+  buildResultTable();
+  $('canvasTip').textContent = '👆 위쪽 참여자 이름을 누르면 시작합니다';
+  $('ladderCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+
+$('newLadderBtn').addEventListener('click', () => {
+  if (!names.length) return;
+  generateLadder();
+  renderLadder();
+  buildResultTable();
+  $('resultTableCard').style.display = 'none';
+});
+
+$('startAllBtn').addEventListener('click', runAll);
+$('showResultBtn').addEventListener('click', showResultTable);
+$('savePngBtn').addEventListener('click', savePng);
+$('shareImgBtn').addEventListener('click', shareImg);
+
+$('resetBtn').addEventListener('click', () => {
+  if (!confirm('참여자 수·이름·결과·사다리를 모두 초기화할까요?')) return;
+  try { localStorage.removeItem(STORE_KEY); } catch (e) {}
+  count = 5; names = ['','','','','']; results = ['','','','',''];
+  setCount(5);
+  hideLadder();
+});
+
+$('popCloseBtn').addEventListener('click', () => $('overlay').classList.remove('show'));
+$('overlay').addEventListener('click', (e) => { if (e.target === $('overlay')) $('overlay').classList.remove('show'); });
+
+window.addEventListener('resize', () => { if (ladder && geom) renderLadder(); });
+window.addEventListener('pagehide', save);
+
+/* ===================== 초기화 ===================== */
+restore();
+setCount(count);   // 입력칸 생성 + 버튼 상태
+</script>
+
+<!-- 네이버 애널리틱스(Wcslog) -->
+<script type="text/javascript" src="//wcs.pstatic.net/wcslog.js"></script>
+<script type="text/javascript">
+if(!wcs_add) var wcs_add = {};
+wcs_add["wa"] = "19e5d0d688a0f70";
+if(window.wcs) {
+  wcs_do();
+}
+</script>
+</body>
+</html>
