@@ -26,7 +26,7 @@ window.__naverScriptError = false;
 </script>
 
 <script type="text/javascript"
-    src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=yoa6avx1h4&callback=initNaverMap"
+    src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=yoa6avx1h4&submodules=geocoder&callback=initNaverMap"
     onerror="window.__naverScriptError=true;setTimeout(function(){if(typeof window.onNaverFail==='function')window.onNaverFail('스크립트 로드 실패');},200);">
 </script>
 </script>
@@ -96,6 +96,26 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 }
 #locate-btn:active{transform:scale(.9)}
 
+/* ── 주소 카드 ── */
+#addr-card{
+  position:fixed;left:14px;right:14px;bottom:32px;
+  background:rgba(255,255,255,.98);
+  border-radius:14px;
+  box-shadow:0 4px 18px rgba(0,0,0,.20);
+  padding:12px 40px 12px 15px;
+  z-index:450;display:none;
+  font-size:14px;line-height:1.5;color:#111;
+}
+#addr-title{font-size:12px;font-weight:700;color:#0d6640;margin-bottom:4px;}
+#addr-jibun{font-weight:600;word-break:keep-all;}
+#addr-road{color:#6b7280;font-size:12.5px;margin-top:3px;word-break:keep-all;}
+#addr-close{
+  position:absolute;top:8px;right:8px;
+  width:26px;height:26px;border:none;border-radius:50%;
+  background:#f3f4f6;color:#6b7280;font-size:17px;line-height:1;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+}
+
 /* ── 토스트 ── */
 #toast{
   position:fixed;bottom:100px;left:50%;transform:translateX(-50%);
@@ -120,7 +140,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 
 <!-- 상단 바 -->
 <div class="top-bar">
-  <button class="back-btn" onclick="history.back()">
+  <button class="back-btn" onclick="goBack()">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
          stroke="currentColor" stroke-width="2.5"
          stroke-linecap="round" stroke-linejoin="round">
@@ -153,6 +173,14 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
   </svg>
 </button>
 
+<!-- 주소 카드 (길게 누르거나 현재 위치 조회 시 표시) -->
+<div id="addr-card">
+  <div id="addr-title">📍 선택 위치</div>
+  <div id="addr-jibun"></div>
+  <div id="addr-road"></div>
+  <button id="addr-close" onclick="document.getElementById('addr-card').style.display='none'">×</button>
+</div>
+
 <!-- 토스트 -->
 <div id="toast"></div>
 
@@ -171,9 +199,23 @@ var CFG = {
 };
 
 /* ── 상태 ── */
-var S = { map:null, marker:null, circle:null,
+var S = { map:null, marker:null, circle:null, pickMarker:null,
           lat:null, lng:null, acc:null,
           naverReady:false, gpsOk:false, tapCount:0 };
+
+/* ── 뒤로가기 (새 탭으로 열린 경우 창 닫기 → 안되면 홈으로) ── */
+window.goBack = function(){
+  if(window.history.length > 1){
+    history.back();
+    /* 새 탭이라 back이 동작하지 않으면 홈으로 이동 */
+    setTimeout(function(){
+      window.location.href = 'https://ubaldos00-ship-it.github.io/home/';
+    }, 400);
+  } else {
+    window.close();
+    window.location.href = 'https://ubaldos00-ship-it.github.io/home/';
+  }
+};
 
 /* ── DOM ── */
 var overlay   = document.getElementById('overlay');
@@ -359,6 +401,13 @@ function renderMap(lat, lng, acc){
         scaleControl : false
       });
       log('지도 인스턴스 생성 완료');
+
+      /* 지도를 길게 누르면 그 지점의 지번·도로명 주소 조회 */
+      naver.maps.Event.addListener(S.map, 'longtap', function(e){
+        if(S.pickMarker){ S.pickMarker.setMap(null); }
+        S.pickMarker = new naver.maps.Marker({ map:S.map, position:e.coord });
+        searchAddress(e.coord, '📍 선택 위치');
+      });
     } else {
       naver.maps.Event.trigger(S.map, 'resize');
       S.map.setCenter(pos);
@@ -400,7 +449,41 @@ function renderMap(lat, lng, acc){
 
     log('렌더링 완료');
     toast('📍 현재 위치 표시 완료');
+
+    /* 현재 위치의 주소 자동 조회 */
+    searchAddress(pos, '📍 현재 위치');
   }, 200);
+}
+
+/* ================================================================
+   좌표 → 주소(지번·도로명) 변환 (Reverse Geocoding)
+================================================================ */
+function searchAddress(coord, label){
+  if(!naver.maps.Service || !naver.maps.Service.reverseGeocode){
+    log('주소 모듈(geocoder) 미로드', 'warn');
+    return;
+  }
+  naver.maps.Service.reverseGeocode({
+    coords : coord,
+    orders : [
+      naver.maps.Service.OrderType.ADDR,
+      naver.maps.Service.OrderType.ROAD_ADDR
+    ].join(',')
+  }, function(status, response){
+    if(status !== naver.maps.Service.Status.OK){
+      log('주소 조회 실패: ' + status, 'warn');
+      toast('주소를 찾을 수 없습니다');
+      return;
+    }
+    var addr  = (response.v2 && response.v2.address) || {};
+    var jibun = addr.jibunAddress || '';
+    var road  = addr.roadAddress  || '';
+    document.getElementById('addr-title').textContent = label || '📍 선택 위치';
+    document.getElementById('addr-jibun').textContent = jibun ? ('지번  ' + jibun) : '지번 주소 없음';
+    document.getElementById('addr-road').textContent  = road  ? ('도로명  ' + road) : '';
+    document.getElementById('addr-card').style.display = 'block';
+    log('주소: ' + (jibun || road || '없음'));
+  });
 }
 
 /* ================================================================
