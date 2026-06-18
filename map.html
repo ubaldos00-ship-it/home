@@ -465,14 +465,16 @@ function searchAddress(coord, label){
   }
   naver.maps.Service.reverseGeocode({
     coords : coord,
-    orders : [
-      naver.maps.Service.OrderType.ADDR,
-      naver.maps.Service.OrderType.ROAD_ADDR
-    ].join(',')
+    orders : 'addr,roadaddr'
   }, function(status, response){
     if(status !== naver.maps.Service.Status.OK){
-      log('주소 조회 실패: ' + status, 'warn');
-      toast('주소를 찾을 수 없습니다');
+      log('주소 조회 실패: status=' + status, 'err');
+      toast('주소 조회 실패 (' + status + ')');
+      /* 실패 코드도 카드에 표시 — 진단용 */
+      document.getElementById('addr-title').textContent = label || '📍 선택 위치';
+      document.getElementById('addr-jibun').textContent = '주소 조회 실패: ' + status;
+      document.getElementById('addr-road').textContent  = '';
+      document.getElementById('addr-card').style.display = 'block';
       return;
     }
     var addr  = (response.v2 && response.v2.address) || {};
