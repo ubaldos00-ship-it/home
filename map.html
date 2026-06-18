@@ -96,6 +96,26 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 }
 #locate-btn:active{transform:scale(.9)}
 
+/* ── 주소 검색바 ── */
+#search-bar{
+  position:fixed;top:64px;left:10px;right:10px;
+  z-index:420;display:flex;gap:6px;
+}
+#search-input{
+  flex:1;height:44px;border:none;border-radius:12px;
+  padding:0 14px;font-size:15px;outline:none;
+  background:rgba(255,255,255,.98);
+  box-shadow:0 2px 12px rgba(0,0,0,.18);
+  -webkit-appearance:none;appearance:none;
+}
+#search-btn{
+  height:44px;padding:0 18px;border:none;border-radius:12px;
+  background:#0d6640;color:#fff;font-weight:700;font-size:14px;
+  font-family:inherit;cursor:pointer;flex-shrink:0;
+  box-shadow:0 2px 12px rgba(0,0,0,.18);
+}
+#search-btn:active{background:#0a5030}
+
 /* ── 주소 카드 ── */
 #addr-card{
   position:fixed;left:14px;right:14px;bottom:32px;
@@ -157,6 +177,13 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
   <div id="ov-title">🗺 지도 초기화 중</div>
   <div id="ov-sub">Naver Maps API 로드 중…</div>
   <div id="ov-btns"></div>
+</div>
+
+<!-- 주소 검색바 -->
+<div id="search-bar">
+  <input id="search-input" type="search" placeholder="주소·지명 검색 (예: 상주시청)"
+         onkeydown="if(event.key==='Enter')searchByAddress()" />
+  <button id="search-btn" onclick="searchByAddress()">검색</button>
 </div>
 
 <!-- 지도 -->
@@ -386,6 +413,7 @@ function renderMap(lat, lng, acc){
       S.map = new naver.maps.Map('map', {
         center : pos,
         zoom   : 17,
+        mapTypeId : naver.maps.MapTypeId.HYBRID,  /* 기본: 위성(하이브리드 - 위성+지명) */
         mapTypeControl : true,
         mapTypeControlOptions : {
           style      : naver.maps.MapTypeControlStyle.BUTTON,
@@ -454,6 +482,49 @@ function renderMap(lat, lng, acc){
     searchAddress(pos, '📍 현재 위치');
   }, 200);
 }
+
+/* ================================================================
+   주소·지명 검색 → 좌표 변환 (Geocoding) → 지도에 마커
+================================================================ */
+window.searchByAddress = function(){
+  var q = (document.getElementById('search-input').value || '').trim();
+  if(!q){ return; }
+  if(!S.map){ toast('지도 로딩 후 검색해주세요'); return; }
+  if(!naver.maps.Service || !naver.maps.Service.geocode){
+    toast('검색 모듈 미로드'); return;
+  }
+  toast('🔍 검색 중…');
+  naver.maps.Service.geocode({ query:q }, function(status, response){
+    if(status !== naver.maps.Service.Status.OK){
+      log('검색 실패: status=' + status, 'err');
+      toast('검색 실패 (' + status + ')');
+      return;
+    }
+    var items = (response.v2 && response.v2.addresses) || [];
+    if(!items.length){ toast('검색 결과가 없습니다'); return; }
+
+    var item = items[0];
+    var ll   = new naver.maps.LatLng(Number(item.y), Number(item.x));
+    S.map.setCenter(ll);
+    S.map.setZoom(17);
+
+    /* 검색 위치 마커 */
+    if(S.pickMarker){ S.pickMarker.setMap(null); }
+    S.pickMarker = new naver.maps.Marker({ map:S.map, position:ll });
+
+    /* 주소 카드 표시 */
+    var jibun = item.jibunAddress || '';
+    var road  = item.roadAddress  || '';
+    document.getElementById('addr-title').textContent = '🔍 ' + q;
+    document.getElementById('addr-jibun').textContent = jibun ? ('지번  ' + jibun) : (road ? '' : q);
+    document.getElementById('addr-road').textContent  = road  ? ('도로명  ' + road) : '';
+    document.getElementById('addr-card').style.display = 'block';
+    log('검색 성공: ' + (road || jibun));
+
+    /* 키보드 닫기 */
+    document.getElementById('search-input').blur();
+  });
+};
 
 /* ================================================================
    좌표 → 주소(지번·도로명) 변환 (Reverse Geocoding)
