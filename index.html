@@ -1,4 +1,4 @@
-<!-- home_v37_firebase_chat_compact.html · 저장: 2026-06-17 23:45 KST -->
+<!-- home_v45_firebase_chat_compact.html · 저장: 2026-06-19 04:08 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -15,14 +15,14 @@
 <meta name="theme-color" content="#27500A" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<title>농작물생산조사 통합시스템 · 텐아르v1.3</title>
+<title>농작물생산조사 통합시스템 · 텐아르v1.5</title>
 <!-- OG 메타 (카카오톡/링크 공유용) -->
 <meta property="og:type"        content="website" />
-<meta property="og:title"       content="농작물생산조사 통합시스템 · 텐아르v1.3" />
+<meta property="og:title"       content="농작물생산조사 통합시스템 · 텐아르v1.5" />
 <meta property="og:description" content="실측조사·청취조사·10a당 생산량 조회까지 농작물생산조사 통합 모바일 도구" />
 <meta property="og:url"         content="https://ubaldos00-ship-it.github.io/home/" />
 <meta name="twitter:card"       content="summary" />
-<meta name="twitter:title"      content="농작물생산조사 통합시스템 · 텐아르v1.3" />
+<meta name="twitter:title"      content="농작물생산조사 통합시스템 · 텐아르v1.5" />
 <meta name="twitter:description" content="실측조사·청취조사·10a당 생산량 조회까지 농작물생산조사 통합 모바일 도구" />
 
 <!-- Pretendard 한국어 웹폰트 -->
@@ -278,6 +278,22 @@
     opacity: 0.7;
     flex-shrink: 0;
   }
+
+  /* 즐겨찾기(별표)·다운로드 버튼 */
+  .fav-btn, .dl-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    flex-shrink: 0;
+    padding: 2px;
+    line-height: 1;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .fav-btn svg, .dl-btn svg { display: block; }
+  .fav-btn:active, .dl-btn:active { opacity: 0.45; transform: scale(0.9); }
 
   /* 강조 메뉴 (빠른조사) */
   .section.highlight {
@@ -840,7 +856,7 @@
     <strong>● 알림</strong>
     <div style="margin-top:6px;">
       <div>• 베타 시험서비스 중입니다.</div>
-      <div style="margin-top:3px;">• 오류 발견시 <a href="mailto:ubaldos@naver.com">ubaldos@naver.com</a> 연락주세요.</div>
+      <div style="margin-top:3px;">• 오류 발견시에는 오른쪽 아래에 말풍선 채팅으로 문의해주세요.</div>
       <div style="margin-top:5px;">• 농작물 생산조사에 도움을 주기 위해 만들었습니다.</div>
       <div style="margin-top:3px;">• 문제 발생(저장, 공유 등)시 책임을 지지 않습니다.</div>
     </div>
@@ -872,6 +888,9 @@
           <span class="menu-label">실측조사 빠른실행</span>
           <span class="menu-desc">현장 실측조사 계산</span>
         </span>
+        <button type="button" class="dl-btn" title="오프라인 다운로드"
+                data-dl-name="실측조사 계산기"
+                data-dl-href="https://ubaldos00-ship-it.github.io/home/tonghab.html"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="22" height="22" rx="5.5" fill="#8e8e93"/><path d="M11 5.5v8" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path d="M7.5 10l3.5 3.5 3.5-3.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="6.5" y1="17" x2="15.5" y2="17" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></button>
         <span class="menu-arrow">›</span>
       </a>
       <!-- 청취조사 빠른실행 -->
@@ -881,6 +900,9 @@
           <span class="menu-label">청취조사 빠른실행</span>
           <span class="menu-desc">농가 청취조사 계산</span>
         </span>
+        <button type="button" class="dl-btn" title="오프라인 다운로드"
+                data-dl-name="청취조사 계산기"
+                data-dl-href="https://ubaldos00-ship-it.github.io/home/chungchi.html"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="22" height="22" rx="5.5" fill="#8e8e93"/><path d="M11 5.5v8" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path d="M7.5 10l3.5 3.5 3.5-3.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="6.5" y1="17" x2="15.5" y2="17" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></button>
         <span class="menu-arrow">›</span>
       </a>
       <!-- 지역별 10a당 생산량 조회기 (생산량조사 도구에서 이동) -->
@@ -901,8 +923,13 @@
           <span class="menu-label">지역별 10a당 생산량 조회기</span>
           <span class="menu-desc">시·군·구별 생산량 비교</span>
         </span>
+        <button type="button" class="dl-btn" title="오프라인 다운로드"
+                data-dl-name="생산량 조회기"
+                data-dl-href="https://ubaldos00-ship-it.github.io/home/graph.html"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="22" height="22" rx="5.5" fill="#8e8e93"/><path d="M11 5.5v8" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path d="M7.5 10l3.5 3.5 3.5-3.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="6.5" y1="17" x2="15.5" y2="17" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></button>
         <span class="menu-arrow">›</span>
       </a>
+      <!-- 즐겨찾기로 추가된 도구가 여기에 표시됩니다 -->
+      <div id="favMenuContainer"></div>
     </div>
   </section>
 
@@ -922,7 +949,7 @@
     </h2>
     <div class="menu-grid" id="toolsMenuGrid" style="display:none;margin-top:13px;">
       <!-- AB포구 선정 계산기 -->
-      <a class="menu-item" href="https://ubaldos00-ship-it.github.io/home/flag.html" target="_blank" rel="noopener">
+      <a class="menu-item" data-tool-key="flag" href="https://ubaldos00-ship-it.github.io/home/flag.html" target="_blank" rel="noopener">
         <span class="menu-emoji"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
           <line x1="6" y1="3" x2="6" y2="21" stroke="#6b6b6b" stroke-width="1.8" stroke-linecap="round"/>
           <path d="M6 4.5 L19.5 8.5 L6 13 Z" fill="#f0c400" stroke="#c9a000" stroke-width="0.9" stroke-linejoin="round"/>
@@ -934,19 +961,23 @@
           <span class="menu-label">AB포구 선정 계산기</span>
           <span class="menu-desc">실측 포구 선정 도구</span>
         </span>
+        <button type="button" class="fav-btn" title="빠른조사 메뉴에 추가"><svg width="21" height="21" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 2l2.75 5.57 6.14.89-4.44 4.33 1.05 6.1L11 15.9l-5.5 2.89 1.05-6.1L2.11 8.46l6.14-.89L11 2z" stroke="#c9962b" stroke-width="1.8" stroke-linejoin="round"/></svg></button>
+        <button type="button" class="dl-btn" title="오프라인 다운로드"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="22" height="22" rx="5.5" fill="#8e8e93"/><path d="M11 5.5v8" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path d="M7.5 10l3.5 3.5 3.5-3.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="6.5" y1="17" x2="15.5" y2="17" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></button>
         <span class="menu-arrow">›</span>
       </a>
       <!-- 계통 추출 계산기 -->
-      <a class="menu-item" href="https://ubaldos00-ship-it.github.io/home/sampling.html" target="_blank" rel="noopener">
+      <a class="menu-item" data-tool-key="sampling" href="https://ubaldos00-ship-it.github.io/home/sampling.html" target="_blank" rel="noopener">
         <span class="menu-emoji">🎯</span>
         <span class="menu-text">
           <span class="menu-label">계통 추출 계산기</span>
           <span class="menu-desc">계통 추출 표본 계산</span>
         </span>
+        <button type="button" class="fav-btn" title="빠른조사 메뉴에 추가"><svg width="21" height="21" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 2l2.75 5.57 6.14.89-4.44 4.33 1.05 6.1L11 15.9l-5.5 2.89 1.05-6.1L2.11 8.46l6.14-.89L11 2z" stroke="#c9962b" stroke-width="1.8" stroke-linejoin="round"/></svg></button>
+        <button type="button" class="dl-btn" title="오프라인 다운로드"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="22" height="22" rx="5.5" fill="#8e8e93"/><path d="M11 5.5v8" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path d="M7.5 10l3.5 3.5 3.5-3.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="6.5" y1="17" x2="15.5" y2="17" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></button>
         <span class="menu-arrow">›</span>
       </a>
       <!-- 실측 10a당 생산량 계산기 (생산량조사 도구에서 이동) -->
-      <a class="menu-item" href="https://ubaldos00-ship-it.github.io/home/silchuk.html" target="_blank" rel="noopener">
+      <a class="menu-item" data-tool-key="silchuk" href="https://ubaldos00-ship-it.github.io/home/silchuk.html" target="_blank" rel="noopener">
         <span class="menu-emoji"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
           <line x1="12" y1="3" x2="12" y2="20" stroke="#2e7a4e" stroke-width="1.6" stroke-linecap="round"/>
           <rect x="8" y="19" width="8" height="2" rx="1" fill="#2e7a4e"/>
@@ -964,10 +995,12 @@
           <span class="menu-label">실측 10a당 생산량 계산기</span>
           <span class="menu-desc">실측 데이터 기반 계산</span>
         </span>
+        <button type="button" class="fav-btn" title="빠른조사 메뉴에 추가"><svg width="21" height="21" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 2l2.75 5.57 6.14.89-4.44 4.33 1.05 6.1L11 15.9l-5.5 2.89 1.05-6.1L2.11 8.46l6.14-.89L11 2z" stroke="#c9962b" stroke-width="1.8" stroke-linejoin="round"/></svg></button>
+        <button type="button" class="dl-btn" title="오프라인 다운로드"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="22" height="22" rx="5.5" fill="#8e8e93"/><path d="M11 5.5v8" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path d="M7.5 10l3.5 3.5 3.5-3.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="6.5" y1="17" x2="15.5" y2="17" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></button>
         <span class="menu-arrow">›</span>
       </a>
       <!-- 논벼 이삭 수 계산기 -->
-      <a class="menu-item" href="https://ubaldos00-ship-it.github.io/home/jusu.html" target="_blank" rel="noopener">
+      <a class="menu-item" data-tool-key="jusu" href="https://ubaldos00-ship-it.github.io/home/jusu.html" target="_blank" rel="noopener">
         <span class="menu-emoji"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
           <path d="M12 21 Q11.5 17 12 12 Q12.5 8 12 3.5" stroke="#5a8a30" stroke-width="1.6" fill="none" stroke-linecap="round"/>
           <ellipse cx="10.0" cy="5.5"  rx="2.1" ry="1.0" fill="#d4a800" transform="rotate(-38 10.0 5.5)"/>
@@ -991,19 +1024,23 @@
           <span class="menu-label">논벼 이삭 수 계산기</span>
           <span class="menu-desc">포기 평균 이삭 수 계산</span>
         </span>
+        <button type="button" class="fav-btn" title="빠른조사 메뉴에 추가"><svg width="21" height="21" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 2l2.75 5.57 6.14.89-4.44 4.33 1.05 6.1L11 15.9l-5.5 2.89 1.05-6.1L2.11 8.46l6.14-.89L11 2z" stroke="#c9962b" stroke-width="1.8" stroke-linejoin="round"/></svg></button>
+        <button type="button" class="dl-btn" title="오프라인 다운로드"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="22" height="22" rx="5.5" fill="#8e8e93"/><path d="M11 5.5v8" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path d="M7.5 10l3.5 3.5 3.5-3.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="6.5" y1="17" x2="15.5" y2="17" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></button>
         <span class="menu-arrow">›</span>
       </a>
       <!-- 난수표 조회기 -->
-      <a class="menu-item" href="https://ubaldos00-ship-it.github.io/home/nansu.html" target="_blank" rel="noopener">
+      <a class="menu-item" data-tool-key="nansu" href="https://ubaldos00-ship-it.github.io/home/nansu.html" target="_blank" rel="noopener">
         <span class="menu-emoji">🔢</span>
         <span class="menu-text">
           <span class="menu-label">난수표 조회기</span>
           <span class="menu-desc">조사용 난수표 조회</span>
         </span>
+        <button type="button" class="fav-btn" title="빠른조사 메뉴에 추가"><svg width="21" height="21" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 2l2.75 5.57 6.14.89-4.44 4.33 1.05 6.1L11 15.9l-5.5 2.89 1.05-6.1L2.11 8.46l6.14-.89L11 2z" stroke="#c9962b" stroke-width="1.8" stroke-linejoin="round"/></svg></button>
+        <button type="button" class="dl-btn" title="오프라인 다운로드"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="22" height="22" rx="5.5" fill="#8e8e93"/><path d="M11 5.5v8" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path d="M7.5 10l3.5 3.5 3.5-3.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="6.5" y1="17" x2="15.5" y2="17" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></button>
         <span class="menu-arrow">›</span>
       </a>
       <!-- 면적단위 환산 계산기 -->
-      <a class="menu-item" href="https://ubaldos00-ship-it.github.io/home/area.html" target="_blank" rel="noopener">
+      <a class="menu-item" data-tool-key="area" href="https://ubaldos00-ship-it.github.io/home/area.html" target="_blank" rel="noopener">
         <span class="menu-emoji"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
           <!-- 사각형 면적 표시 -->
           <rect x="3" y="4" width="12" height="9" rx="1.2" fill="#e4f2e4" stroke="#2e7a4e" stroke-width="1.5"/>
@@ -1021,6 +1058,8 @@
           <span class="menu-label">면적단위 환산 계산기</span>
           <span class="menu-desc">㎡ · 10a · 평 단위 환산</span>
         </span>
+        <button type="button" class="fav-btn" title="빠른조사 메뉴에 추가"><svg width="21" height="21" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 2l2.75 5.57 6.14.89-4.44 4.33 1.05 6.1L11 15.9l-5.5 2.89 1.05-6.1L2.11 8.46l6.14-.89L11 2z" stroke="#c9962b" stroke-width="1.8" stroke-linejoin="round"/></svg></button>
+        <button type="button" class="dl-btn" title="오프라인 다운로드"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="22" height="22" rx="5.5" fill="#8e8e93"/><path d="M11 5.5v8" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path d="M7.5 10l3.5 3.5 3.5-3.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="6.5" y1="17" x2="15.5" y2="17" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></button>
         <span class="menu-arrow">›</span>
       </a>
     </div>
@@ -1134,19 +1173,18 @@
   <!-- 푸터 -->
   <footer class="info">
     <div class="source">출처 / 참고자료: 국가데이터처 통계설명자료, KOSIS 등</div>
-    <div class="brand-line">농작물생산조사 통합시스템 · 텐아르 v1.3-firebase</div>
+    <div class="brand-line">농작물생산조사 통합시스템 · 텐아르 v1.5-firebase</div>
     <div class="meta" style="display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px;">
-      오늘 방문자 <strong id="localDailyCount">…</strong>
+      실시간 <strong id="realtimeCount">…</strong>명
       &nbsp;·&nbsp;
-      누적 방문자
-      <img src="https://visitor-badge.laobi.icu/badge?page_id=ubaldos&left_text=visitors&query_only=true"
-           alt="누적 방문자" style="height:17px;vertical-align:middle;border-radius:3px;">
+      오늘 <strong id="todayCount">…</strong>명
+      &nbsp;·&nbsp;
+      누적 <strong id="totalCount">…</strong>명
+      &nbsp;·&nbsp;
+      조회수 <strong id="pageviewCount">…</strong>회
       &nbsp;·&nbsp;
       최초 빌드 2026.4.27
     </div>
-    <!-- 방문자 카운터 증가 (숨김) -->
-    <img src="https://visitor-badge.laobi.icu/badge?page_id=ubaldos"
-         style="position:absolute;width:0;height:0;opacity:0;" alt="">
     <div class="meta" style="margin-top:4px;">by <strong>Mr. hyun</strong></div>
     <div class="contact" style="margin-top:8px;">
       <button type="button" id="gmailBtn" style="
@@ -1173,6 +1211,17 @@
   <a class="nav-btn" href="https://ubaldos00-ship-it.github.io/home/jakmul_game.html" target="_blank" rel="noopener">
     <span class="nav-icon">🎮</span>
     <span>게임</span>
+  </a>
+  <!-- 사다리타기 -->
+  <a class="nav-btn" href="https://ubaldos00-ship-it.github.io/home/ladder.html" target="_blank" rel="noopener">
+    <span class="nav-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+      <line x1="7" y1="3" x2="7" y2="21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      <line x1="17" y1="3" x2="17" y2="21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      <line x1="7" y1="7" x2="17" y2="7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      <line x1="7" y1="13" x2="17" y2="13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      <line x1="7" y1="17.5" x2="17" y2="17.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    </svg></span>
+    <span>사다리</span>
   </a>
   <!-- 위치: 준비중 -->
   <button class="nav-btn disabled" type="button" onclick="alert('위치 기능은 준비 중입니다.')">
@@ -1305,8 +1354,16 @@
 </div>
 
 <script>
-  /* ====== 오늘 방문자 (로컬 근사치) ====== */
+  /* ====== 실시간 접속 + 오늘 방문자 + 누적 방문자 (GA4 Apps Script 서버값) ====== */
   (function () {
+    var GAS_URL = 'https://script.google.com/macros/s/AKfycbxQt1S2hdgI9oORFXbOCzmUEoF95UlBA1P1frfIRKGMdwp7E2y0_lKQdDBbN9FmcvLfMg/exec';
+
+    var rtEl  = document.getElementById('realtimeCount');
+    var tdEl  = document.getElementById('todayCount');
+    var totEl = document.getElementById('totalCount');
+    var pvEl  = document.getElementById('pageviewCount');
+
+    /* 오늘 방문자: 로컬 근사치 먼저 표시 */
     try {
       var today = new Date().toISOString().slice(0, 10);
       var raw = localStorage.getItem('tenar_day') || '{}';
@@ -1314,9 +1371,21 @@
       if (d.date !== today) d = { date: today, n: 0 };
       d.n += 1;
       localStorage.setItem('tenar_day', JSON.stringify(d));
-      var el = document.getElementById('localDailyCount');
-      if (el) el.textContent = d.n.toLocaleString();
+      if (tdEl) tdEl.textContent = d.n.toLocaleString();
     } catch (e) {}
+
+    /* GA4 서버값으로 교체 (실시간 + 오늘 + 누적) */
+    if (!GAS_URL) return;
+    fetch(GAS_URL)
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (!data.ok) return;
+        if (rtEl  && typeof data.realtime  === 'number') rtEl.textContent  = data.realtime.toLocaleString();
+        if (tdEl  && typeof data.today     === 'number') tdEl.textContent  = data.today.toLocaleString();
+        if (totEl && typeof data.total     === 'number') totEl.textContent = data.total.toLocaleString();
+        if (pvEl  && typeof data.pageviews === 'number') pvEl.textContent  = data.pageviews.toLocaleString();
+      })
+      .catch(function () { /* 실패 시 로컬값 유지 */ });
   })();
 
   /* ====== 시계 ====== */
@@ -1474,6 +1543,121 @@
     grid.style.display = isHidden ? '' : 'none';
     btn.textContent = isHidden ? '▲ 접기' : '▼ 펼치기';
   }
+
+  /* ====== 즐겨찾기(빠른조사 메뉴 추가) · 오프라인 다운로드 ====== */
+  (function () {
+    var FAV_KEY = 'tenar_fav_tools_v1';
+
+    function getFavs() {
+      try { return JSON.parse(localStorage.getItem(FAV_KEY) || '[]'); }
+      catch (e) { return []; }
+    }
+    function setFavs(arr) {
+      localStorage.setItem(FAV_KEY, JSON.stringify(arr));
+    }
+    function basename(href) {
+      try { return (href.split('/').pop().split('?')[0]) || 'download.html'; }
+      catch (e) { return 'download.html'; }
+    }
+
+    /* 오프라인 다운로드: 실수 방지용 확인창 후 파일 저장 */
+    function downloadTool(name, href) {
+      if (!confirm(name + ' 모바일에 다운로드 하시겠습니까?')) return;
+      var a = document.createElement('a');
+      a.href = href;
+      a.download = basename(href);
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+    window.downloadTool = downloadTool;
+
+    function toolData(el) {
+      return {
+        key:   el.getAttribute('data-tool-key'),
+        href:  el.getAttribute('href'),
+        emoji: el.querySelector('.menu-emoji').innerHTML,
+        label: el.querySelector('.menu-label').textContent.trim(),
+        desc:  el.querySelector('.menu-desc').textContent.trim()
+      };
+    }
+
+    function toggleFav(key) {
+      var favs = getFavs();
+      if (favs.indexOf(key) >= 0) favs = favs.filter(function (k) { return k !== key; });
+      else favs.push(key);
+      setFavs(favs);
+      renderFavs();
+    }
+
+    function renderFavs() {
+      var favs = getFavs();
+      var container = document.getElementById('favMenuContainer');
+      if (!container) return;
+      container.innerHTML = '';
+
+      favs.forEach(function (key) {
+        var src = document.querySelector('[data-tool-key="' + key + '"]');
+        if (!src) return;
+        var d = toolData(src);
+        var a = document.createElement('a');
+        a.className = 'menu-item';
+        a.href = d.href;
+        a.target = '_blank';
+        a.rel = 'noopener';
+        a.innerHTML =
+          '<span class="menu-emoji">' + d.emoji + '</span>' +
+          '<span class="menu-text"><span class="menu-label">' + d.label + '</span>' +
+          '<span class="menu-desc">' + d.desc + '</span></span>' +
+          '<button type="button" class="fav-btn active" title="빠른조사 메뉴에서 제거"><svg width="21" height="21" viewBox="0 0 22 22" fill="none"><path d="M11 2l2.75 5.57 6.14.89-4.44 4.33 1.05 6.1L11 15.9l-5.5 2.89 1.05-6.1L2.11 8.46l6.14-.89L11 2z" fill="#f5b400" stroke="#e6a800" stroke-width="0.8" stroke-linejoin="round"/></svg></button>' +
+          '<button type="button" class="dl-btn" title="오프라인 다운로드"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="22" height="22" rx="5.5" fill="#8e8e93"/><path d="M11 5.5v8" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path d="M7.5 10l3.5 3.5 3.5-3.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="6.5" y1="17" x2="15.5" y2="17" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></button>' +
+          '<span class="menu-arrow">›</span>';
+        a.querySelector('.fav-btn').addEventListener('click', function (e) {
+          e.preventDefault(); e.stopPropagation(); toggleFav(key);
+        });
+        a.querySelector('.dl-btn').addEventListener('click', function (e) {
+          e.preventDefault(); e.stopPropagation(); downloadTool(d.label, d.href);
+        });
+        container.appendChild(a);
+      });
+
+      /* 개별 조사도구 목록의 별표 상태 갱신 */
+      document.querySelectorAll('[data-tool-key]').forEach(function (el) {
+        var k = el.getAttribute('data-tool-key');
+        var star = el.querySelector('.fav-btn');
+        if (!star) return;
+        var svgFull  = '<svg width="21" height="21" viewBox="0 0 22 22" fill="none"><path d="M11 2l2.75 5.57 6.14.89-4.44 4.33 1.05 6.1L11 15.9l-5.5 2.89 1.05-6.1L2.11 8.46l6.14-.89L11 2z" fill="#f5b400" stroke="#e6a800" stroke-width="0.8" stroke-linejoin="round"/></svg>';
+        var svgEmpty = '<svg width="21" height="21" viewBox="0 0 22 22" fill="none"><path d="M11 2l2.75 5.57 6.14.89-4.44 4.33 1.05 6.1L11 15.9l-5.5 2.89 1.05-6.1L2.11 8.46l6.14-.89L11 2z" stroke="#c9962b" stroke-width="1.8" stroke-linejoin="round"/></svg>';
+        if (favs.indexOf(k) >= 0) { star.innerHTML = svgFull;  star.classList.add('active');    star.title = '빠른조사 메뉴에서 제거'; }
+        else                       { star.innerHTML = svgEmpty; star.classList.remove('active'); star.title = '빠른조사 메뉴에 추가'; }
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      /* 개별 조사도구: 별표·다운로드 버튼 연결 */
+      document.querySelectorAll('[data-tool-key]').forEach(function (el) {
+        var d = toolData(el);
+        var star = el.querySelector('.fav-btn');
+        var dl = el.querySelector('.dl-btn');
+        if (star) star.addEventListener('click', function (e) {
+          e.preventDefault(); e.stopPropagation(); toggleFav(d.key);
+        });
+        if (dl) dl.addEventListener('click', function (e) {
+          e.preventDefault(); e.stopPropagation(); downloadTool(d.label, d.href);
+        });
+      });
+
+      /* 빠른조사 메뉴 기본 3종: 다운로드 버튼 연결 */
+      document.querySelectorAll('.dl-btn[data-dl-href]').forEach(function (b) {
+        b.addEventListener('click', function (e) {
+          e.preventDefault(); e.stopPropagation();
+          downloadTool(b.getAttribute('data-dl-name'), b.getAttribute('data-dl-href'));
+        });
+      });
+
+      renderFavs();
+    });
+  })();
 </script>
 
 <script type="module">
