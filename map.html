@@ -1,4 +1,4 @@
-<!-- map_v5.html · 저장: 2026-06-20 12:03 KST -->
+<!-- map_v6.html · 저장: 2026-06-20 18:52 KST · 네이버/카카오/티맵 길찾기 추가 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -237,8 +237,45 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 }
 #info-fav{ background:#fff7e6;color:#a06d00;border:1px solid #f0d68a !important; }
 #info-fav:active{ background:#fdecc8; }
+#info-route{ background:#e7f0ff;color:#1a56c4;border:1px solid #b9d2ff !important; }
+#info-route:active{ background:#d4e4ff; }
 #info-close{ background:#f3f4f6;color:#374151; }
 #info-close:active{ background:#e5e7eb; }
+
+/* ── 길찾기 앱 선택 모달 ── */
+#route-modal{
+  display:none;position:fixed;inset:0;z-index:1300;
+  background:rgba(0,0,0,.45);align-items:flex-end;justify-content:center;
+}
+#route-modal.show{ display:flex; }
+#route-sheet{
+  width:100%;max-width:480px;background:#fff;
+  border-radius:20px 20px 0 0;
+  padding:16px 16px calc(18px + env(safe-area-inset-bottom));
+  box-shadow:0 -6px 24px rgba(0,0,0,.22);
+}
+.route-title{ font-size:16px;font-weight:800;color:#111;margin-bottom:4px; }
+#route-dest{
+  font-size:12.5px;color:#6b7280;margin-bottom:12px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.route-app{
+  display:flex;align-items:center;width:100%;border:none;border-radius:13px;
+  font-family:inherit;font-size:15px;font-weight:700;
+  padding:14px 16px;margin-bottom:9px;cursor:pointer;color:#fff;
+}
+.route-app:active{ filter:brightness(.93); }
+.rb-naver{ background:#03c75a; }
+.rb-kakao{ background:#fee500;color:#3a1d1d !important; }
+.rb-tmap{  background:#1a4fd6; }
+.route-cancel{
+  width:100%;border:none;border-radius:13px;background:#f3f4f6;color:#374151;
+  font-family:inherit;font-size:14px;font-weight:700;padding:12px;cursor:pointer;
+  margin-top:2px;
+}
+.route-cancel:active{ background:#e5e7eb; }
+/* 정보시트 안 길찾기 행(사용 안 함 대비) */
+.route-row{ display:none; }
 
 
 #info-route{
@@ -250,8 +287,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
   background:#d8ebff;
 }
 
-/* ── 토스트 ── */
 
+/* ── 토스트 ── */
 #toast{
   position:fixed;bottom:100px;left:50%;transform:translateX(-50%);
   background:rgba(17,24,39,.85);color:#fff;
@@ -344,8 +381,20 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
   <div id="infoLine2">위치를 조회하면 주소가 표시됩니다</div>
   <div class="info-actions">
     <button id="info-fav" onclick="addCurrentFav()">⭐ 즐겨찾기 저장</button>
-    <button id="info-route" onclick="openNaverRoute()">🚗 네이버 길찾기</button>
+    <button id="info-route" onclick="openRouteMenu()">🚗 길찾기</button>
     <button id="info-close" onclick="hideInfoSheet()">닫기</button>
+  </div>
+</div>
+
+<!-- 길찾기 앱 선택 모달 -->
+<div id="route-modal" onclick="if(event.target===this)closeRouteMenu()">
+  <div id="route-sheet">
+    <div class="route-title">🚗 길찾기 앱 선택</div>
+    <div id="route-dest">목적지: —</div>
+    <button class="route-app rb-naver" onclick="openRoute('naver')">N&nbsp; 네이버지도로 길찾기</button>
+    <button class="route-app rb-kakao" onclick="openRoute('kakao')">K&nbsp; 카카오맵으로 길찾기</button>
+    <button class="route-app rb-tmap"  onclick="openRoute('tmap')">T&nbsp; 티맵으로 길찾기</button>
+    <button class="route-cancel" onclick="closeRouteMenu()">취소</button>
   </div>
 </div>
 
@@ -382,6 +431,7 @@ var CFG = {
 var S = { map:null, marker:null, circle:null, pickMarker:null,
           lat:null, lng:null, acc:null, watchId:null,
           heading:null, compassOn:false, isHybrid:true,
+          destLat:null, destLng:null, destName:'',
           naverReady:false, gpsOk:false, tapCount:0 };
 
 /* ── 뒤로가기 (새 탭으로 열린 경우 창 닫기 → 안되면 홈으로) ── */
@@ -424,9 +474,14 @@ function adjustControls(){
 function showInfoSheet(){ infoSheet.classList.add('show'); requestAnimationFrame(adjustControls); }
 window.hideInfoSheet = function(){ infoSheet.classList.remove('show'); adjustControls(); };
 
+/* ── 길찾기 목적지 설정 ── */
+function setDest(lat, lng, name){
+  S.destLat = Number(lat); S.destLng = Number(lng);
+  S.destName = name || '선택 위치';
+}
+
 /* ── 정보 시트 주소 표시 헬퍼 (앞에 위치 이모지 📍) ── */
 function showAddr(jibun, road, zip){
-  selectedName = road || jibun || '목적지';
   ahLine1.textContent = '📍 ' + (jibun || road || '주소 없음');
   var parts = [];
   if(road) parts.push('도로명 ' + road);
@@ -436,9 +491,8 @@ function showAddr(jibun, road, zip){
 }
 var dbgEl     = document.getElementById('dbg');
 var toastTmr;
-var selectedLat=null;
-var selectedLng=null;
-var selectedName='';
+var selectedLat = null;
+var selectedLng = null;
 
 /* ── 디버그 로그 ── */
 function log(msg, lv){
@@ -706,6 +760,7 @@ window.searchByAddress = function(){
     var jibun = item.jibunAddress || '';
     var road  = item.roadAddress  || '';
     var zip   = extractZip(item.addressElements);
+    setDest(item.y, item.x, jibun || road || q);   /* 길찾기 목적지 */
     showAddr(jibun, road, zip);
     log('검색 성공: ' + (road || jibun));
 
@@ -732,6 +787,7 @@ function extractZip(elements){
 function searchAddress(coord, label){
   selectedLat = coord.lat();
   selectedLng = coord.lng();
+  setDest(coord.lat(), coord.lng(), label || '선택 위치');   /* 길찾기 목적지(주소 확인 후 이름 갱신) */
   if(!naver.maps.Service || !naver.maps.Service.reverseGeocode){
     log('주소 모듈(geocoder) 미로드', 'warn');
     return;
@@ -751,6 +807,7 @@ function searchAddress(coord, label){
     var addr  = (response.v2 && response.v2.address) || {};
     var jibun = addr.jibunAddress || '';
     var road  = addr.roadAddress  || '';
+    if(jibun || road) S.destName = jibun || road;   /* 길찾기 목적지 이름 갱신 */
     /* reverseGeocode 응답엔 우편번호가 없으므로,
        도로명(우선)·지번 주소를 geocode로 재조회해 우편번호를 보강한다 */
     var qAddr = road || jibun;
@@ -804,6 +861,63 @@ function openNaverWeb(){
 function openKakaoWeb(){
   var la = S.lat||CFG.defaultLat, ln = S.lng||CFG.defaultLng;
   window.open('https://map.kakao.com/link/map/현재위치,'+la+','+ln, '_blank');
+}
+
+/* ================================================================
+   길찾기 (네이버 / 카카오 / 티맵 선택 → 앱·웹 연결)
+================================================================ */
+window.openRouteMenu = function(){
+  if(S.destLat == null){ toast('먼저 위치를 조회해주세요'); return; }
+  document.getElementById('route-dest').textContent = '목적지: ' + (S.destName || '선택 위치');
+  document.getElementById('route-modal').classList.add('show');
+};
+window.closeRouteMenu = function(){
+  document.getElementById('route-modal').classList.remove('show');
+};
+window.openRoute = function(provider){
+  if(S.destLat == null){ toast('목적지가 없습니다'); return; }
+  var dLat = S.destLat, dLng = S.destLng, dName = S.destName || '목적지';
+  var sLat = S.lat, sLng = S.lng, hasStart = (sLat != null && sLng != null);
+  var enc = encodeURIComponent;
+  var appUrl = '', webUrl = '';
+
+  if(provider === 'naver'){
+    appUrl = 'nmap://route/car?' +
+             (hasStart ? ('slat=' + sLat + '&slng=' + sLng + '&sname=' + enc('현재위치') + '&') : '') +
+             'dlat=' + dLat + '&dlng=' + dLng + '&dname=' + enc(dName) +
+             '&appname=ubaldos00-ship-it.github.io';
+    webUrl = 'https://map.naver.com/p/directions/' +
+             (hasStart ? (sLng + ',' + sLat + ',' + enc('현재위치') + ',,') : '-') +
+             '/' + dLng + ',' + dLat + ',' + enc(dName) + ',,/-/car';
+  } else if(provider === 'kakao'){
+    appUrl = 'kakaomap://route?' + (hasStart ? ('sp=' + sLat + ',' + sLng + '&') : '') +
+             'ep=' + dLat + ',' + dLng + '&by=CAR';
+    webUrl = 'https://map.kakao.com/link/to/' + enc(dName) + ',' + dLat + ',' + dLng;
+  } else if(provider === 'tmap'){
+    appUrl = 'tmap://route?goalname=' + enc(dName) + '&goalx=' + dLng + '&goaly=' + dLat;
+    webUrl = '';  /* 티맵은 웹 길찾기 미지원 — 앱 전용 */
+  }
+  closeRouteMenu();
+  openAppOrWeb(appUrl, webUrl, provider);
+};
+function openAppOrWeb(appUrl, webUrl, provider){
+  var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  if(!isMobile){
+    if(webUrl){ window.open(webUrl, '_blank'); }
+    else { toast('티맵 길찾기는 모바일 앱에서만 됩니다'); }
+    return;
+  }
+  /* 모바일: 앱 스킴 우선, 앱이 안 열리면 웹으로 폴백 */
+  var fallback = setTimeout(function(){
+    if(webUrl){ window.location.href = webUrl; }
+    else { toast(provider === 'tmap' ? '티맵 앱이 설치되어 있어야 합니다' : '앱을 열 수 없습니다'); }
+  }, 1300);
+  var onHide = function(){
+    clearTimeout(fallback);
+    document.removeEventListener('visibilitychange', onHide);
+  };
+  document.addEventListener('visibilitychange', onHide);
+  window.location.href = appUrl;
 }
 
 /* ================================================================
@@ -992,25 +1106,6 @@ document.head.appendChild(st);
    API 로드 실패 → onerror / navermap_authFailure 자동 호출
    별도 waitAndRun 폴링 불필요
 ── */
-
-window.openNaverRoute = function(){
-
-  if(selectedLat == null || selectedLng == null){
-    toast('길찾기 위치를 먼저 선택해주세요');
-    return;
-  }
-
-  var dname = selectedName || '목적지';
-
-  var appUrl =
-    'nmap://route/car' +
-    '?dlat=' + selectedLat +
-    '&dlng=' + selectedLng +
-    '&dname=' + dname +
-    '&appname=com.tenar.map';
-
-  location.href = appUrl;
-};
 
 log('페이지 로드. Naver API 콜백 대기 중…');
 
