@@ -1,4 +1,4 @@
-<!-- map_v3.html · 저장: 2026-06-20 11:24 KST -->
+<!-- map_v4.html · 저장: 2026-06-20 11:42 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -36,37 +36,27 @@ window.__naverScriptError = false;
 html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
   font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;}
 
-/* ── 상단 바 ── */
-.top-bar{
-  position:fixed;top:0;left:0;right:0;height:56px;
-  background:rgba(255,255,255,.97);backdrop-filter:blur(12px);
-  display:flex;align-items:center;padding:0 12px;gap:10px;
-  z-index:1000;box-shadow:0 2px 8px rgba(0,0,0,.1);
+/* ── 지도 영역 (전체화면) ── */
+#map{position:fixed;top:0;left:0;right:0;bottom:0;}
+
+/* ── 상단 검색 오버레이 (지도 위에 떠 있음) ── */
+#search-bar{
+  position:fixed;
+  top:calc(8px + env(safe-area-inset-top));
+  left:10px;right:10px;
+  z-index:600;display:flex;align-items:center;gap:8px;
 }
 .back-btn{
-  background:none;border:none;width:40px;height:40px;
+  flex-shrink:0;width:44px;height:44px;border:none;border-radius:50%;
+  background:rgba(255,255,255,.98);color:#111;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
-  border-radius:10px;cursor:pointer;color:#111;flex-shrink:0;
+  box-shadow:0 2px 12px rgba(0,0,0,.20);
 }
-.back-btn:active{background:#f3f4f6}
-.title{font-size:16px;font-weight:700;color:#111;flex:1;user-select:none}
-/* 상단바 주소 표시 (지번·도로명·우편번호) */
-.addr-head{flex:1;min-width:0;user-select:none;cursor:pointer;}
-.ah-line1{
-  font-size:13.5px;font-weight:700;color:#111;line-height:1.3;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.ah-line2{
-  font-size:11px;color:#6b7280;line-height:1.35;margin-top:1px;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
+.back-btn:active{ transform:scale(.92); }
 
-/* ── 지도 영역 ── */
-#map{position:fixed;top:56px;left:0;right:0;bottom:0;}
-
-/* ── 오버레이 ── */
+/* ── 오버레이 (로딩/에러) ── */
 #overlay{
-  position:fixed;top:56px;left:0;right:0;bottom:0;
+  position:fixed;top:0;left:0;right:0;bottom:0;
   background:#f0f2f5;
   display:flex;flex-direction:column;
   align-items:center;justify-content:center;
@@ -163,25 +153,92 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
   font-size:12px;font-weight:800;cursor:pointer;padding:6px 8px;
 }
 
-/* ── 주소 검색바 ── */
-#search-bar{
-  position:fixed;top:64px;left:10px;right:10px;
-  z-index:420;display:flex;gap:6px;
-}
+/* ── 검색 입력/버튼 (상단 오버레이 안) ── */
 #search-input{
-  flex:1;height:44px;border:none;border-radius:12px;
-  padding:0 14px;font-size:15px;outline:none;
+  flex:1;height:44px;border:none;border-radius:999px;
+  padding:0 16px;font-size:15px;outline:none;
   background:rgba(255,255,255,.98);
-  box-shadow:0 2px 12px rgba(0,0,0,.18);
+  box-shadow:0 2px 12px rgba(0,0,0,.20);
   -webkit-appearance:none;appearance:none;
 }
 #search-btn{
-  height:44px;padding:0 18px;border:none;border-radius:12px;
+  height:44px;padding:0 18px;border:none;border-radius:999px;
   background:#0d6640;color:#fff;font-weight:700;font-size:14px;
   font-family:inherit;cursor:pointer;flex-shrink:0;
-  box-shadow:0 2px 12px rgba(0,0,0,.18);
+  box-shadow:0 2px 12px rgba(0,0,0,.20);
 }
 #search-btn:active{background:#0a5030}
+
+/* ── 지도 타입(위성/일반) 토글 버튼 ── */
+#layer-btn{
+  position:fixed;right:14px;
+  top:calc(64px + env(safe-area-inset-top));
+  width:46px;height:46px;border:none;border-radius:50%;
+  background:rgba(0,0,0,.78);color:#fff;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 3px 14px rgba(0,0,0,.25);z-index:400;
+  transition:transform .12s;
+}
+#layer-btn:active{ transform:scale(.9); }
+
+/* ── 현재 위치 방향 마커 ── */
+.me-marker{ width:40px;height:40px;position:relative; }
+.me-cone-wrap{
+  position:absolute;left:50%;top:50%;
+  width:40px;height:40px;margin:-20px 0 0 -20px;
+  transform:rotate(0deg);transition:transform .15s ease-out;
+  pointer-events:none;
+}
+.me-cone{
+  position:absolute;left:50%;top:0;
+  width:0;height:0;margin-left:-11px;
+  border-left:11px solid transparent;
+  border-right:11px solid transparent;
+  border-bottom:16px solid rgba(26,115,232,.55);
+}
+.me-dot{
+  position:absolute;left:50%;top:50%;
+  width:16px;height:16px;margin:-8px 0 0 -8px;
+  border-radius:50%;background:#1a73e8;
+  border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4);
+}
+.me-pulse{
+  position:absolute;left:50%;top:50%;
+  width:16px;height:16px;margin:-8px 0 0 -8px;
+  border-radius:50%;background:rgba(26,115,232,.25);
+  animation:gpsPulse 2s ease-in-out infinite;
+}
+
+/* ── 하단 정보 시트 (현재위치·주소) ── */
+#info-sheet{
+  position:fixed;left:0;right:0;bottom:0;z-index:500;
+  background:#fff;border-radius:20px 20px 0 0;
+  box-shadow:0 -4px 22px rgba(0,0,0,.18);
+  padding:8px 18px calc(16px + env(safe-area-inset-bottom));
+  transform:translateY(115%);transition:transform .3s ease;
+}
+#info-sheet.show{ transform:translateY(0); }
+.sheet-handle{
+  width:40px;height:4px;border-radius:99px;background:#d1d5db;
+  margin:2px auto 10px;cursor:pointer;
+}
+#infoLine1{
+  font-size:17px;font-weight:800;color:#111;line-height:1.3;
+  word-break:keep-all;
+}
+#infoLine2{
+  font-size:13px;color:#6b7280;line-height:1.45;margin-top:4px;
+  word-break:keep-all;
+}
+.info-actions{ display:flex;gap:8px;margin-top:12px; }
+.info-actions button{
+  flex:1;border:none;border-radius:12px;font-family:inherit;
+  font-size:14px;font-weight:700;padding:11px;cursor:pointer;
+}
+#info-fav{ background:#fff7e6;color:#a06d00;border:1px solid #f0d68a !important; }
+#info-fav:active{ background:#fdecc8; }
+#info-close{ background:#f3f4f6;color:#374151; }
+#info-close:active{ background:#e5e7eb; }
 
 /* ── 토스트 ── */
 #toast{
@@ -205,38 +262,39 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 </head>
 <body>
 
-<!-- 상단 바 -->
-<div class="top-bar">
-  <button class="back-btn" onclick="goBack()">
+<!-- 지도 (전체화면) -->
+<div id="map"></div>
+
+<!-- 상단 검색 오버레이 (뒤로가기 + 검색) -->
+<div id="search-bar">
+  <button class="back-btn" onclick="goBack()" title="홈으로">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
          stroke="currentColor" stroke-width="2.5"
          stroke-linecap="round" stroke-linejoin="round">
       <polyline points="15 18 9 12 15 6"/>
     </svg>
   </button>
-  <div class="addr-head" id="topTitle">
-    <div class="ah-line1" id="ahLine1">📍 현재 위치</div>
-    <div class="ah-line2" id="ahLine2">위치를 조회하면 주소가 표시됩니다</div>
-  </div>
+  <input id="search-input" type="search" placeholder="주소 검색 (예: 상주시 신봉동)"
+         onkeydown="if(event.key==='Enter')searchByAddress()" />
+  <button id="search-btn" onclick="searchByAddress()">검색</button>
 </div>
 
-<!-- 오버레이 -->
+<!-- 지도 타입(위성/일반) 토글 -->
+<button id="layer-btn" onclick="toggleLayer()" title="위성/일반 전환">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+       stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M12 3 3 8l9 5 9-5-9-5z"/>
+    <path d="M3 13l9 5 9-5"/>
+  </svg>
+</button>
+
+<!-- 오버레이 (로딩/에러) -->
 <div id="overlay">
   <div class="spinner" id="ovSpinner"></div>
   <div id="ov-title">🗺 지도 초기화 중</div>
   <div id="ov-sub">Naver Maps API 로드 중…</div>
   <div id="ov-btns"></div>
 </div>
-
-<!-- 주소 검색바 -->
-<div id="search-bar">
-  <input id="search-input" type="search" placeholder="주소 검색 (예: 상주시 신봉동)"
-         onkeydown="if(event.key==='Enter')searchByAddress()" />
-  <button id="search-btn" onclick="searchByAddress()">검색</button>
-</div>
-
-<!-- 지도 -->
-<div id="map"></div>
 
 <!-- 실시간 추적 버튼 -->
 <button id="track-btn" onclick="toggleTrack()" title="실시간 추적">
@@ -267,6 +325,17 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
     <circle cx="12" cy="12" r="7"/>
   </svg>
 </button>
+
+<!-- 하단 정보 시트 (현재위치·주소) -->
+<div id="info-sheet">
+  <div class="sheet-handle" id="sheetHandle" onclick="hideInfoSheet()"></div>
+  <div id="infoLine1">📍 현재 위치</div>
+  <div id="infoLine2">위치를 조회하면 주소가 표시됩니다</div>
+  <div class="info-actions">
+    <button id="info-fav" onclick="addCurrentFav()">⭐ 즐겨찾기 저장</button>
+    <button id="info-close" onclick="hideInfoSheet()">닫기</button>
+  </div>
+</div>
 
 <!-- 즐겨찾기 패널 (하단 시트) -->
 <div id="fav-modal" onclick="if(event.target===this)closeFavPanel()">
@@ -300,6 +369,7 @@ var CFG = {
 /* ── 상태 ── */
 var S = { map:null, marker:null, circle:null, pickMarker:null,
           lat:null, lng:null, acc:null, watchId:null,
+          heading:null, compassOn:false, isHybrid:true,
           naverReady:false, gpsOk:false, tapCount:0 };
 
 /* ── 뒤로가기 (새 탭으로 열린 경우 창 닫기 → 안되면 홈으로) ── */
@@ -322,17 +392,34 @@ var ovSpinner = document.getElementById('ovSpinner');
 var ovTitle   = document.getElementById('ov-title');
 var ovSub     = document.getElementById('ov-sub');
 var ovBtns    = document.getElementById('ov-btns');
-var ahLine1   = document.getElementById('ahLine1');
-var ahLine2   = document.getElementById('ahLine2');
+var ahLine1   = document.getElementById('infoLine1');
+var ahLine2   = document.getElementById('infoLine2');
+var infoSheet = document.getElementById('info-sheet');
 var toastEl   = document.getElementById('toast');
 
-/* ── 상단바 주소 표시 헬퍼 (앞에 위치 이모지 📍) ── */
+/* ── 하단 정보 시트 표시/숨김 (열리면 우측 버튼을 시트 위로 올림) ── */
+function adjustControls(){
+  var open = infoSheet.classList.contains('show');
+  var h = open ? infoSheet.offsetHeight : 0;
+  var base = h ? (h + 14) : 32;
+  var lb = document.getElementById('locate-btn');
+  var fb = document.getElementById('fav-btn');
+  var tb = document.getElementById('track-btn');
+  if(lb) lb.style.bottom = base + 'px';
+  if(fb) fb.style.bottom = (base + 58) + 'px';
+  if(tb) tb.style.bottom = (base + 116) + 'px';
+}
+function showInfoSheet(){ infoSheet.classList.add('show'); requestAnimationFrame(adjustControls); }
+window.hideInfoSheet = function(){ infoSheet.classList.remove('show'); adjustControls(); };
+
+/* ── 정보 시트 주소 표시 헬퍼 (앞에 위치 이모지 📍) ── */
 function showAddr(jibun, road, zip){
   ahLine1.textContent = '📍 ' + (jibun || road || '주소 없음');
   var parts = [];
   if(road) parts.push('도로명 ' + road);
   if(zip)  parts.push('우편 ' + zip);
   ahLine2.textContent = parts.length ? parts.join('  ·  ') : '';
+  showInfoSheet();
 }
 var dbgEl     = document.getElementById('dbg');
 var toastTmr;
@@ -346,8 +433,8 @@ function log(msg, lv){
   console[lv==='err'?'error':lv==='warn'?'warn':'log']('[MAP]', msg);
 }
 
-/* 제목 5탭 → 디버그 패널 */
-document.getElementById('topTitle').addEventListener('click', function(){
+/* 시트 핸들 5탭 → 디버그 패널 */
+document.getElementById('sheetHandle').addEventListener('click', function(){
   if(++S.tapCount >= 5){
     S.tapCount = 0;
     dbgEl.style.display = dbgEl.style.display==='none'?'block':'none';
@@ -475,17 +562,14 @@ function renderMap(lat, lng, acc){
   hideOv();
 
   setTimeout(function(){
-    /* 컨테이너 크기를 명시적으로 강제 지정 — iOS Safari fixed 레이아웃 대응
-       지도를 검색바(상단바56 + 검색바영역) 아래에서 시작 →
-       네이버 위성/일반 컨트롤이 검색바에 가리지 않음 */
+    /* 컨테이너 크기를 화면 전체로 강제 지정 — iOS Safari fixed 레이아웃 대응 */
     var mapEl = document.getElementById('map');
-    var headerH = 112;
     mapEl.style.position = 'fixed';
-    mapEl.style.top      = headerH + 'px';
+    mapEl.style.top      = '0';
     mapEl.style.left     = '0';
     mapEl.style.width    = window.innerWidth  + 'px';
-    mapEl.style.height   = (window.innerHeight - headerH) + 'px';
-    log('컨테이너 크기: ' + window.innerWidth + 'x' + (window.innerHeight - headerH));
+    mapEl.style.height   = window.innerHeight + 'px';
+    log('컨테이너 크기: ' + window.innerWidth + 'x' + window.innerHeight);
 
     var pos = new naver.maps.LatLng(lat, lng);
 
@@ -494,19 +578,11 @@ function renderMap(lat, lng, acc){
         center : pos,
         zoom   : 17,
         mapTypeId : naver.maps.MapTypeId.HYBRID,  /* 기본: 위성(하이브리드 - 위성+지명) */
-        mapTypeControl : true,
-        mapTypeControlOptions : {
-          style      : naver.maps.MapTypeControlStyle.BUTTON,
-          position   : naver.maps.Position.TOP_RIGHT,
-          mapTypeIds : [
-            naver.maps.MapTypeId.NORMAL,
-            naver.maps.MapTypeId.SATELLITE,
-            naver.maps.MapTypeId.HYBRID
-          ]
-        },
-        zoomControl : true,
-        zoomControlOptions : { position: naver.maps.Position.RIGHT_CENTER },
-        scaleControl : false
+        mapTypeControl : false,   /* 커스텀 레이어 버튼 사용 */
+        zoomControl : false,      /* 줌 바 제거 (손가락 핀치줌 사용) */
+        scaleControl : false,
+        logoControl : true,
+        mapDataControl : false
       });
       log('지도 인스턴스 생성 완료');
 
@@ -535,28 +611,27 @@ function renderMap(lat, lng, acc){
       });
     }
 
-    /* 현재 위치 마커 (파란 점) */
+    /* 현재 위치 방향 마커 (파란 점 + 방향 부채꼴) */
     if(S.marker){ S.marker.setMap(null); }
     S.marker = new naver.maps.Marker({
       map:S.map, position:pos,
       icon:{
         content:
-          '<div style="width:24px;height:24px;position:relative">' +
-            '<div style="position:absolute;inset:0;border-radius:50%;' +
-                 'background:rgba(26,115,232,.22);' +
-                 'animation:gpsPulse 2s ease-in-out infinite"></div>' +
-            '<div style="position:absolute;top:50%;left:50%;' +
-                 'transform:translate(-50%,-50%);' +
-                 'width:14px;height:14px;border-radius:50%;' +
-                 'background:#1a73e8;border:2.5px solid #fff;' +
-                 'box-shadow:0 2px 6px rgba(0,0,0,.35)"></div>' +
+          '<div class="me-marker">' +
+            '<div class="me-cone-wrap" id="meConeWrap"><div class="me-cone"></div></div>' +
+            '<div class="me-pulse"></div>' +
+            '<div class="me-dot"></div>' +
           '</div>',
-        anchor: new naver.maps.Point(12,12)
+        anchor: new naver.maps.Point(20,20)
       }
     });
+    updateMarkerHeading();
 
     log('렌더링 완료');
     toast('📍 현재 위치 표시 완료');
+
+    /* 나침반(방향) 센서 시작 */
+    startCompass();
 
     /* 현재 위치의 주소 자동 조회 */
     searchAddress(pos, '📍 현재 위치');
@@ -633,6 +708,7 @@ function searchAddress(coord, label){
       toast('주소 조회 실패 (' + status + ')');
       ahLine1.textContent = '주소 조회 실패: ' + status;
       ahLine2.textContent = '';
+      showInfoSheet();
       return;
     }
     var addr  = (response.v2 && response.v2.address) || {};
@@ -694,6 +770,56 @@ function openKakaoWeb(){
 }
 
 /* ================================================================
+   지도 타입 토글 (위성 하이브리드 ↔ 일반)
+================================================================ */
+window.toggleLayer = function(){
+  if(!S.map){ return; }
+  S.isHybrid = !S.isHybrid;
+  S.map.setMapTypeId(S.isHybrid ? naver.maps.MapTypeId.HYBRID : naver.maps.MapTypeId.NORMAL);
+  toast(S.isHybrid ? '🛰 위성 지도' : '🗺 일반 지도');
+};
+
+/* ================================================================
+   방향(나침반) 표시 — 현재 위치 마커의 부채꼴 회전
+================================================================ */
+function startCompass(){
+  if(S.compassOn) return;
+  if(!window.DeviceOrientationEvent) return;
+  /* iOS 13+ 는 사용자 제스처에서 권한 요청 필요 */
+  if(typeof DeviceOrientationEvent.requestPermission === 'function'){
+    DeviceOrientationEvent.requestPermission().then(function(res){
+      if(res === 'granted'){
+        window.addEventListener('deviceorientation', onOrient, true);
+        S.compassOn = true;
+        log('나침반 권한 허용');
+      } else { log('나침반 권한 거부', 'warn'); }
+    }).catch(function(e){ log('나침반 요청 오류', 'warn'); });
+  } else {
+    window.addEventListener('deviceorientationabsolute', onOrient, true);
+    window.addEventListener('deviceorientation', onOrient, true);
+    S.compassOn = true;
+  }
+}
+function onOrient(e){
+  var h = null;
+  if(e.webkitCompassHeading != null){
+    h = e.webkitCompassHeading;            /* iOS: 0=북, 시계방향 */
+  } else if(e.alpha != null){
+    h = (360 - e.alpha) % 360;             /* Android 보정(대략) */
+  }
+  if(h == null) return;
+  S.heading = h;
+  updateMarkerHeading();
+}
+function updateMarkerHeading(){
+  var wrap = document.getElementById('meConeWrap');
+  if(!wrap) return;
+  if(S.heading == null){ wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  wrap.style.transform = 'rotate(' + S.heading + 'deg)';
+}
+
+/* ================================================================
    실시간 위치 추적 (watchPosition 토글)
 ================================================================ */
 window.toggleTrack = function(){
@@ -714,6 +840,8 @@ window.toggleTrack = function(){
   btn.classList.add('active');
   toast('🛰 실시간 추적 시작');
   log('추적 시작');
+  startCompass();              /* 추적 중 방향도 함께 표시 */
+  showInfoSheet();
   S.watchId = navigator.geolocation.watchPosition(onTrack, onTrackErr,
     { enableHighAccuracy:true, maximumAge:1000, timeout:12000 });
 };
@@ -721,6 +849,11 @@ function onTrack(pos){
   S.lat = pos.coords.latitude;
   S.lng = pos.coords.longitude;
   S.acc = pos.coords.accuracy;
+  /* GPS heading(이동 방향)이 있으면 나침반 대신 사용 */
+  if(pos.coords.heading != null && !isNaN(pos.coords.heading)){
+    S.heading = pos.coords.heading;
+    updateMarkerHeading();
+  }
   var ll = new naver.maps.LatLng(S.lat, S.lng);
   S.map.setCenter(ll);
   /* 마커 위치 갱신 (없으면 생성) */
@@ -729,7 +862,8 @@ function onTrack(pos){
   /* 정확도 원 갱신 */
   if(S.circle){ S.circle.setCenter(ll); S.circle.setRadius(Math.min(S.acc, 500)); }
   /* 추적 중에는 좌표만 빠르게 표시 (주소 호출 절약) */
-  ahLine2.textContent = '🛰 추적 중  ' + S.lat.toFixed(5) + ', ' + S.lng.toFixed(5) + '  ±' + Math.round(S.acc) + 'm';
+  ahLine1.textContent = '📍 실시간 위치 추적 중';
+  ahLine2.textContent = '🛰 ' + S.lat.toFixed(5) + ', ' + S.lng.toFixed(5) + '  ±' + Math.round(S.acc) + 'm';
 }
 function onTrackErr(err){
   log('추적 오류 code:' + err.code, 'warn');
