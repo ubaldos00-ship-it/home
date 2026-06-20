@@ -1,4 +1,4 @@
-<!-- tonghab_v136.html · 저장: 2026-06-18 06:03 KST -->
+<!-- tonghab_v137.html · 저장: 2026-06-20 07:51 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1386,7 +1386,7 @@ textarea {
         </button>
       </div>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v136 저장: 2026-06-18 06:03)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v137 저장: 2026-06-20 07:51)</span></div>
   </div>
 </div>
 
@@ -7505,9 +7505,10 @@ document.addEventListener('DOMContentLoaded', function(){
     return;
   }
   var ref = document.referrer;
-  /* referrer 가 있고, 현재 페이지 URL(해시 제외)과 다를 때 = 링크 진입 */
-  var curBase = location.href.split('#')[0];
-  if(ref && ref.split('#')[0] !== curBase){
+  /* referrer 가 있고, 현재 페이지 URL(해시·쿼리 제외)과 다를 때 = 링크 진입
+     v137: ?reset= 같은 자기 페이지 내 쿼리는 비교에서 제외 → 초기화 시 reload 2번 발생 방지 */
+  var curBase = location.href.split('#')[0].split('?')[0];
+  if(ref && ref.split('#')[0].split('?')[0] !== curBase){
     sessionStorage.setItem(RKEY, '1');
     location.reload();  /* 1회 새로고침 → 이후 referrer 없어져 루프 없음 */
   }
@@ -7537,6 +7538,7 @@ document.addEventListener('DOMContentLoaded', function(){
      iOS WebKit 은 해시가 다르면 "문서 내 다른 위치"로 인식해
      popstate + hashchange 를 모두 발화함. 이중 차단 보장. */
   var _bbIdx = 0;
+  var _lastBBHash = '';   /* v137: 우리가 마지막으로 설정한 해시 (재진입 가드용) */
   var _BASE = location.pathname + (location.search || '');
 
   function _pushBlock(){
@@ -7549,11 +7551,16 @@ document.addEventListener('DOMContentLoaded', function(){
       /* pushState: 버퍼 엔트리 2개 — iOS가 한 번에 여러 엔트리 건너뛰더라도 차단 */
       history.pushState( {_bb:'g', i:_bbIdx}, '', _BASE + h2);
       history.pushState( {_bb:'g', i:_bbIdx}, '', _BASE + h3);
+      _lastBBHash = h3;   /* v137: 현재 머무는 해시 기록 */
     }catch(e){}
   }
 
   function _onBlock(){
     if(window._allowLeave) return;
+    /* v137: iOS26+ 베타 Safari 회귀 대응 — pushState가 hashchange를 유발해 무한루프(멈춤)가 나는 문제.
+       우리가 방금 설정한 해시 그대로면(자기 유발 이벤트) 무시한다.
+       실제 뒤로가기는 이전 해시로 이동해 location.hash가 달라지므로 정상 차단된다. */
+    if(location.hash === _lastBBHash) return;
     _pushBlock();
     window._showBackToast(
       '🔒 뒤로가기 차단 중<br>'

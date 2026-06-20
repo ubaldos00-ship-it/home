@@ -1,4 +1,4 @@
-<!-- graph_v24.html · 저장: 2026-06-18 06:32 KST -->
+<!-- graph_v25.html · 저장: 2026-06-20 07:51 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -472,7 +472,7 @@
       <span class="header-crop-tag"   id="headerCropTag"   style="display:none"></span>
       <span class="header-region-tag" id="headerRegionTag" style="display:none"></span>
     </div>
-    <div class="top-sub">출처: KOSIS 농작물생산조사(2021~2025) <span style="opacity:.75;font-size:11px;">· v24 저장: 2026-06-18 06:32</span></div>
+    <div class="top-sub">출처: KOSIS 농작물생산조사(2021~2025) <span style="opacity:.75;font-size:11px;">· v25 저장: 2026-06-20 07:51</span></div>
   </div>
 
   <div class="card">
@@ -1500,6 +1500,7 @@ function _grShareFallback(jsonText,fname){
     _toastTimer = setTimeout(function(){ el.classList.remove('show'); }, 4000);
   }
   var _bbIdx = 0;
+  var _lastBBHash = '';   /* v25: 우리가 마지막으로 설정한 해시 (재진입 가드용) */
   var _BASE = location.href.split('#')[0];
   function _pushBlock(){
     try{
@@ -1509,10 +1510,14 @@ function _grShareFallback(jsonText,fname){
       history.pushState({_bb:'g',i:_bbIdx}, '', _BASE + h2);
       var h3 = '#_' + (++_bbIdx);
       history.pushState({_bb:'g',i:_bbIdx}, '', _BASE + h3);
+      _lastBBHash = h3;   /* v25: 현재 머무는 해시 기록 */
     }catch(e){}
   }
   function _onBlock(){
     if(window._allowLeave) return;
+    /* v25: iOS26+ 베타 Safari 회귀 대응 — pushState가 hashchange를 유발해 무한루프(멈춤)가 나는 문제.
+       우리가 방금 설정한 해시 그대로면(자기 유발 이벤트) 무시. 실제 뒤로가기는 이전 해시로 이동해 정상 차단. */
+    if(location.hash === _lastBBHash) return;
     _pushBlock();
     showBackToast('뒤로가기 차단중입니다. 초기화, 홈버튼이 안 눌러지면 새로고침 후 눌러주세요.');
   }
