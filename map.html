@@ -240,6 +240,17 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 #info-close{ background:#f3f4f6;color:#374151; }
 #info-close:active{ background:#e5e7eb; }
 
+
+#info-route{
+  background:#e8f3ff;
+  color:#0066cc;
+  border:1px solid #b8d8ff !important;
+}
+#info-route:active{
+  background:#d8ebff;
+}
+
+
 /* ── 토스트 ── */
 #toast{
   position:fixed;bottom:100px;left:50%;transform:translateX(-50%);
@@ -333,6 +344,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
   <div id="infoLine2">위치를 조회하면 주소가 표시됩니다</div>
   <div class="info-actions">
     <button id="info-fav" onclick="addCurrentFav()">⭐ 즐겨찾기 저장</button>
+    <button id="info-route" onclick="openRouteMenu()">🚗 길찾기</button>
     <button id="info-close" onclick="hideInfoSheet()">닫기</button>
   </div>
 </div>
@@ -423,6 +435,8 @@ function showAddr(jibun, road, zip){
 }
 var dbgEl     = document.getElementById('dbg');
 var toastTmr;
+var selectedLat = null;
+var selectedLng = null;
 
 /* ── 디버그 로그 ── */
 function log(msg, lv){
@@ -677,6 +691,8 @@ window.searchByAddress = function(){
 
     var item = items[0];
     var ll   = new naver.maps.LatLng(Number(item.y), Number(item.x));
+    selectedLat = Number(item.y);
+    selectedLng = Number(item.x);
     S.map.setCenter(ll);
     S.map.setZoom(17);
 
@@ -712,6 +728,8 @@ function extractZip(elements){
    좌표 → 주소(지번·도로명) 변환 (Reverse Geocoding)
 ================================================================ */
 function searchAddress(coord, label){
+  selectedLat = coord.lat();
+  selectedLng = coord.lng();
   if(!naver.maps.Service || !naver.maps.Service.reverseGeocode){
     log('주소 모듈(geocoder) 미로드', 'warn');
     return;
@@ -972,6 +990,39 @@ document.head.appendChild(st);
    API 로드 실패 → onerror / navermap_authFailure 자동 호출
    별도 waitAndRun 폴링 불필요
 ── */
+
+window.openRouteMenu = function(){
+
+  if(selectedLat == null || selectedLng == null){
+    toast('길찾기 위치를 먼저 선택해주세요');
+    return;
+  }
+
+  const choice = prompt(
+`길찾기 앱 선택
+
+1 = 네이버지도
+2 = 카카오맵
+3 = 티맵`
+  );
+
+  if(choice === null) return;
+
+  const lat = selectedLat;
+  const lng = selectedLng;
+
+  if(choice === "1"){
+    window.open(`https://map.naver.com/v5/directions/-/-/${lng},${lat}`, "_blank");
+  }else if(choice === "2"){
+    window.open(`https://map.kakao.com/link/to/목적지,${lat},${lng}`, "_blank");
+  }else if(choice === "3"){
+    window.open(`https://apis.openapi.sk.com/tmap/app/routes?name=목적지&lon=${lng}&lat=${lat}`, "_blank");
+  }else{
+    toast('1~3 중 선택해주세요');
+  }
+};
+
+
 log('페이지 로드. Naver API 콜백 대기 중…');
 
 })();
