@@ -1,4 +1,4 @@
-<!-- map_v11.html · 저장: 2026-06-21 07:15 KST · 즐겨찾기전체보기·거리소수2·면적라벨·상태바투명·브이월드 -->
+<!-- map_v12.html · 저장: 2026-06-21 08:14 KST · 즐겨찾기 파일저장/불러오기/공유·잠금·전체삭제·삭제확인 · 지적도 overlayMapTypes수정 · 디버그버튼 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -179,10 +179,26 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 .fav-item .fi-label{ font-size:14px;font-weight:700;color:#111;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
 .fav-item .fi-coord{ font-size:11px;color:#9ca3af;margin-top:1px; }
+.fav-item .fi-lock{
+  flex-shrink:0;border:none;background:transparent;
+  font-size:16px;cursor:pointer;padding:4px 4px;opacity:.85;
+}
 .fav-item .fi-del{
   flex-shrink:0;border:none;background:transparent;color:#c0392b;
   font-size:12px;font-weight:800;cursor:pointer;padding:6px 8px;
 }
+.fav-item.locked{ background:#fff7e6;border-color:#f0d68a; }
+.fav-item.locked .fi-del{ color:#cbb37a; }
+/* 즐겨찾기 도구 버튼 줄 */
+.fav-tools{ display:flex;gap:6px;margin-bottom:10px; }
+.fav-tool{
+  flex:1;border:1px solid #e2ddcf;border-radius:10px;background:#fafaf5;
+  color:#5b6358;font-family:inherit;font-size:12px;font-weight:700;
+  padding:9px 4px;cursor:pointer;white-space:nowrap;
+}
+.fav-tool:active{ background:#f0ecdc; }
+.fav-tool.danger{ color:#c0392b;border-color:#f0c4c0;background:#fdf2f1; }
+.fav-tool.danger:active{ background:#fae0dd; }
 
 /* ── 검색 입력/버튼 (상단 오버레이 안) ── */
 #search-input{
@@ -431,6 +447,13 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
   padding:8px 12px 16px;z-index:2000;
   display:none;max-height:220px;overflow-y:auto;
 }
+#dbg-btn{
+  position:fixed;left:6px;bottom:calc(6px + env(safe-area-inset-bottom));
+  width:22px;height:22px;border:none;border-radius:50%;
+  background:rgba(0,0,0,.18);color:rgba(255,255,255,.55);
+  font-size:14px;line-height:1;font-weight:900;cursor:pointer;z-index:460;
+  display:flex;align-items:center;justify-content:center;padding:0;
+}
 </style>
 </head>
 <body>
@@ -580,16 +603,26 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
       <span>⭐ 즐겨찾기 위치</span>
       <button onclick="closeFavPanel()" id="fav-close">×</button>
     </div>
-    <div style="display:flex;gap:7px;margin-bottom:10px;">
+    <div style="display:flex;gap:7px;margin-bottom:8px;">
       <button id="fav-add-btn" onclick="addCurrentFav()" style="flex:1;margin-bottom:0;">＋ 현재 위치 저장</button>
       <button id="fav-all-btn" onclick="showAllFavs()">🗺 전체보기</button>
     </div>
+    <div class="fav-tools">
+      <button class="fav-tool" onclick="exportFavs()">💾 파일저장</button>
+      <button class="fav-tool" onclick="document.getElementById('favImport').click()">📂 불러오기</button>
+      <button class="fav-tool" onclick="shareFavs()">🔗 공유</button>
+      <button class="fav-tool danger" onclick="clearAllFavs()">🗑 전체삭제</button>
+    </div>
+    <input type="file" id="favImport" accept=".json,application/json" style="display:none" onchange="importFavs(event)">
     <div id="fav-list"></div>
   </div>
 </div>
 
 <!-- 토스트 -->
 <div id="toast"></div>
+
+<!-- 디버그 토글 버튼 (좌하단 작은 점) -->
+<button id="dbg-btn" onclick="toggleDbg()" title="디버그">·</button>
 
 <!-- 디버그 패널 -->
 <div id="dbg"></div>
@@ -615,7 +648,7 @@ var S = { map:null, marker:null, circle:null, pickMarker:null,
           heading:null, compassOn:false, isHybrid:true,
           destLat:null, destLng:null, destName:'',
           measureMode:'off', mPoints:[], mMarkers:[], mLabels:[], mLine:null, mPoly:null,
-          favMarkers:[], cadLayer:null, cadOn:false,
+          favMarkers:[], cadGround:null, cadOn:false, _cadIdle:null,
           naverReady:false, gpsOk:false, tapCount:0 };
 
 /* ── 뒤로가기 (새 탭으로 열린 경우 창 닫기 → 안되면 홈으로) ── */
@@ -689,13 +722,10 @@ function log(msg, lv){
   console[lv==='err'?'error':lv==='warn'?'warn':'log']('[MAP]', msg);
 }
 
-/* 시트 핸들 5탭 → 디버그 패널 */
-document.getElementById('sheetHandle').addEventListener('click', function(){
-  if(++S.tapCount >= 5){
-    S.tapCount = 0;
-    dbgEl.style.display = dbgEl.style.display==='none'?'block':'none';
-  }
-});
+/* 좌하단 작은 점 버튼 → 디버그 패널 토글 (지도 제목이 없어 별도 버튼) */
+window.toggleDbg = function(){
+  dbgEl.style.display = (dbgEl.style.display === 'none' || !dbgEl.style.display) ? 'block' : 'none';
+};
 
 /* ── 오버레이 헬퍼 ── */
 function showOv(title, sub, spinner){
@@ -1368,6 +1398,37 @@ window.setLayer = function(type){
 /* ================================================================
    브이월드 지적도(필지경계) 오버레이 — 네이버 지도 위에 겹쳐보기
 ================================================================ */
+/* 위경도 → EPSG:3857(웹메르카토르) 변환 */
+function lngLatTo3857(lat, lng){
+  var x = lng * 20037508.342789244 / 180;
+  var y = Math.log(Math.tan((90 + lat) * Math.PI / 360)) / (Math.PI / 180);
+  y = y * 20037508.342789244 / 180;
+  return [x, y];
+}
+/* 현재 화면 영역의 VWorld 지적도 WMS 이미지를 GroundOverlay 로 갱신
+   (네이버 지도는 overlayMapTypes 미지원 → 화면 단위 GroundOverlay 사용) */
+function updateCadOverlay(){
+  if(!S.cadOn || !CFG.vworldKey || !S.map) return;
+  var b  = S.map.getBounds();
+  var sw = b.getSW(), ne = b.getNE();
+  var mapEl = document.getElementById('map');
+  var w = Math.min(mapEl.clientWidth  || 1024, 2048);
+  var h = Math.min(mapEl.clientHeight || 1024, 2048);
+  var p1 = lngLatTo3857(sw.lat(), sw.lng());
+  var p2 = lngLatTo3857(ne.lat(), ne.lng());
+  var bbox = p1[0] + ',' + p1[1] + ',' + p2[0] + ',' + p2[1];   /* minx,miny,maxx,maxy */
+  var url = 'https://api.vworld.kr/req/wms' +
+            '?SERVICE=WMS&REQUEST=GetMap&VERSION=1.3.0' +
+            '&LAYERS=lp_PA_CBND_BUBUN&STYLES=lp_PA_CBND_BUBUN' +
+            '&CRS=EPSG:900913&BBOX=' + bbox +
+            '&WIDTH=' + w + '&HEIGHT=' + h +
+            '&FORMAT=image/png&TRANSPARENT=true' +
+            '&KEY=' + CFG.vworldKey +
+            '&DOMAIN=https://ubaldos00-ship-it.github.io';
+  if(S.cadGround){ S.cadGround.setMap(null); }
+  S.cadGround = new naver.maps.GroundOverlay(url, b);
+  S.cadGround.setMap(S.map);
+}
 window.toggleCadastral = function(){
   if(!S.map){ toast('지도 로딩 후 사용해주세요'); return; }
   if(!S.cadOn){
@@ -1375,49 +1436,22 @@ window.toggleCadastral = function(){
       toast('브이월드 API 키가 필요합니다 (무료 발급)');
       alert('지적도(브이월드) 겹쳐보기를 쓰려면 VWorld 인증키가 필요합니다.\n\n' +
             '① https://www.vworld.kr 회원가입 후 [오픈API → 인증키 발급]\n' +
-            '② 서비스 분류: WMTS, 도메인에 ubaldos00-ship-it.github.io 등록\n' +
-            '③ 발급된 키를 map.html 의 CFG.vworldKey 에 입력\n\n' +
-            '키 입력 후 다시 누르면 지적 필지경계가 지도 위에 표시됩니다.');
+            '② 서비스 분류: WMS, 도메인에 ubaldos00-ship-it.github.io 등록\n' +
+            '③ 발급된 키를 map.html 의 CFG.vworldKey 에 입력');
       return;
     }
-    if(!S.cadLayer){
-      /* 지적도는 VWorld WMTS(타일)로는 제공되지 않으므로 WMS GetMap 으로 호출한다.
-         각 타일(x,y,z)을 EPSG:3857 BBOX 로 변환해 256x256 투명 PNG를 받아 겹친다. */
-      var ORG = 20037508.342789244;
-      function tileBBox(x, y, z){
-        var size = (ORG * 2) / Math.pow(2, z);
-        var minx = -ORG + x * size;
-        var maxy =  ORG - y * size;
-        return [minx, (maxy - size), (minx + size), maxy].join(',');  /* minx,miny,maxx,maxy */
-      }
-      S.cadLayer = new naver.maps.ImageMapType({
-        name: 'vworld-cadastral',
-        tileSize: new naver.maps.Size(256, 256),
-        minZoom: 6, maxZoom: 20, opacity: 0.85,
-        getTileUrl: function(x, y, z){
-          return 'https://api.vworld.kr/req/wms' +
-                 '?SERVICE=WMS&REQUEST=GetMap&VERSION=1.3.0' +
-                 '&LAYERS=lp_PA_CBND_BUBUN&STYLES=lp_PA_CBND_BUBUN' +
-                 '&CRS=EPSG:3857&BBOX=' + tileBBox(x, y, z) +
-                 '&WIDTH=256&HEIGHT=256&FORMAT=image/png&TRANSPARENT=true' +
-                 '&KEY=' + CFG.vworldKey +
-                 '&DOMAIN=https://ubaldos00-ship-it.github.io';
-        }
-      });
+    S.cadOn = true;
+    document.getElementById('cadastralBtn').classList.add('active');
+    document.getElementById('cadState').textContent = 'ON';
+    /* 지도 이동/줌이 끝날 때마다 지적도 갱신 (1회만 등록) */
+    if(!S._cadIdle){
+      S._cadIdle = naver.maps.Event.addListener(S.map, 'idle', updateCadOverlay);
     }
-    try{
-      S.map.overlayMapTypes.setAt(0, S.cadLayer);
-      S.cadOn = true;
-      document.getElementById('cadastralBtn').classList.add('active');
-      document.getElementById('cadState').textContent = 'ON';
-      toast('📐 지적도 겹쳐보기 켜짐');
-    }catch(e){
-      log('지적도 오버레이 실패: ' + e.message, 'err');
-      toast('지적도 오버레이를 지원하지 않는 환경입니다');
-    }
+    updateCadOverlay();
+    toast('📐 지적도 겹쳐보기 켜짐');
   } else {
-    try{ S.map.overlayMapTypes.removeAt(0); }catch(e){}
     S.cadOn = false;
+    if(S.cadGround){ S.cadGround.setMap(null); S.cadGround = null; }
     document.getElementById('cadastralBtn').classList.remove('active');
     document.getElementById('cadState').textContent = 'OFF';
     toast('지적도 겹쳐보기 꺼짐');
@@ -1547,9 +1581,23 @@ window.addCurrentFav = function(){
 
 window.delFav = function(idx){
   var favs = getFavs();
+  var f = favs[idx];
+  if(!f) return;
+  if(f.locked){ toast('🔒 잠긴 항목입니다 — 잠금 해제 후 삭제하세요'); return; }
+  if(!confirm('「' + f.label + '」 을(를) 삭제하시겠습니까?')) return;   /* 삭제 확인 */
   favs.splice(idx, 1);
   setFavs(favs);
   renderFavs();
+  toast('삭제했습니다');
+};
+/* 즐겨찾기 잠금 토글 (잠긴 항목은 삭제·전체삭제에서 제외) */
+window.toggleLock = function(idx){
+  var favs = getFavs();
+  if(!favs[idx]) return;
+  favs[idx].locked = !favs[idx].locked;
+  setFavs(favs);
+  renderFavs();
+  toast(favs[idx].locked ? '🔒 잠금 (삭제 방지)' : '🔓 잠금 해제');
 };
 
 window.gotoFav = function(idx){
@@ -1613,15 +1661,95 @@ function renderFavs(){
     return;
   }
   list.innerHTML = favs.map(function(f, i){
-    return '<div class="fav-item">' +
+    var locked = !!f.locked;
+    return '<div class="fav-item' + (locked ? ' locked' : '') + '">' +
       '<div class="fi-text" onclick="gotoFav(' + i + ')">' +
         '<div class="fi-label">' + escapeHtml(f.label) + '</div>' +
         '<div class="fi-coord">' + f.lat.toFixed(5) + ', ' + f.lng.toFixed(5) + '</div>' +
       '</div>' +
+      '<button class="fi-lock" onclick="toggleLock(' + i + ')" title="' + (locked?'잠금 해제':'잠금') + '">' + (locked ? '🔒' : '🔓') + '</button>' +
       '<button class="fi-del" onclick="delFav(' + i + ')">삭제</button>' +
     '</div>';
   }).join('');
 }
+
+/* ── 즐겨찾기 전체삭제 (잠금 항목 제외) ── */
+window.clearAllFavs = function(){
+  var favs = getFavs();
+  if(!favs.length){ toast('삭제할 항목이 없습니다'); return; }
+  var locked   = favs.filter(function(f){ return f.locked; });
+  var unlocked = favs.filter(function(f){ return !f.locked; });
+  if(!unlocked.length){ toast('🔒 모두 잠겨 있어 삭제할 항목이 없습니다'); return; }
+  if(!confirm('잠금(🔒) ' + locked.length + '개를 제외한 ' + unlocked.length + '개를 전체삭제하시겠습니까?')) return;
+  setFavs(locked);
+  renderFavs();
+  toast('전체삭제 완료 (잠금 ' + locked.length + '개 유지)');
+};
+
+/* ── 즐겨찾기 파일 저장(내보내기) ── */
+window.exportFavs = function(){
+  var favs = getFavs();
+  if(!favs.length){ toast('저장된 즐겨찾기가 없습니다'); return; }
+  var data = JSON.stringify({ app:'tenar-map', type:'favorites', version:1,
+                              exportedAt:new Date().toISOString(), favorites:favs }, null, 2);
+  var blob = new Blob([data], { type:'application/json' });
+  var url  = URL.createObjectURL(blob);
+  var d = new Date(), pad = function(n){ return String(n).padStart(2,'0'); };
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = '텐아르_즐겨찾기_' + d.getFullYear() + pad(d.getMonth()+1) + pad(d.getDate()) + '.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  toast('💾 즐겨찾기 파일을 저장했습니다');
+};
+
+/* ── 즐겨찾기 파일 불러오기 ── */
+window.importFavs = function(ev){
+  var file = ev.target.files && ev.target.files[0];
+  if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      var obj = JSON.parse(e.target.result);
+      var arr = Array.isArray(obj) ? obj : (obj.favorites || []);
+      var valid = (arr || []).filter(function(f){
+        return f && typeof f.lat === 'number' && typeof f.lng === 'number' && f.label;
+      });
+      if(!valid.length){ toast('불러올 즐겨찾기가 없습니다 (형식 확인)'); ev.target.value=''; return; }
+      var add = confirm('불러온 ' + valid.length + '개를 어떻게 할까요?\n\n[확인] 기존 목록에 추가\n[취소] 기존 삭제 후 교체');
+      var merged = add ? getFavs().concat(valid) : valid;
+      setFavs(merged);
+      renderFavs();
+      toast('📂 ' + valid.length + '개 불러오기 완료');
+    }catch(err){
+      toast('파일을 읽을 수 없습니다 (JSON 오류)');
+    }
+    ev.target.value = '';
+  };
+  reader.readAsText(file);
+};
+
+/* ── 즐겨찾기 공유 (파일 → 텍스트 → 클립보드 폴백) ── */
+window.shareFavs = function(){
+  var favs = getFavs();
+  if(!favs.length){ toast('공유할 즐겨찾기가 없습니다'); return; }
+  var data = JSON.stringify({ app:'tenar-map', type:'favorites', version:1, favorites:favs }, null, 2);
+  var fname = '텐아르_즐겨찾기.json';
+  try{
+    if(navigator.canShare){
+      var f = new File([data], fname, { type:'application/json' });
+      if(navigator.canShare({ files:[f] })){
+        navigator.share({ files:[f], title:'텐아르 즐겨찾기' }).catch(function(){});
+        return;
+      }
+    }
+  }catch(e){}
+  try{
+    if(navigator.share){ navigator.share({ title:'텐아르 즐겨찾기', text:data }).catch(function(){}); return; }
+  }catch(e){}
+  copyText(data);
+  toast('🔗 즐겨찾기 데이터를 클립보드에 복사했습니다');
+};
 function escapeHtml(s){
   return String(s).replace(/[&<>'"]/g, function(ch){
     return {'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch];
