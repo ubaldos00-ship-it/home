@@ -999,10 +999,23 @@ window.openNaverRoute = function(){
     return;
   }
 
-  const destination = encodeURIComponent(selectedName || '목적지');
-  const url = `https://map.naver.com/v5/directions/-/-/${selectedLng},${selectedLat},${destination}`;
+  var dname = encodeURIComponent(selectedName || '목적지');
 
-  window.open(url, '_blank');
+  var appUrl =
+    'nmap://route/car?dlat=' + selectedLat +
+    '&dlng=' + selectedLng +
+    '&dname=' + dname +
+    '&appname=com.tenar.map';
+
+  window.location.href = appUrl;
+
+  setTimeout(function(){
+    window.open(
+      'https://map.naver.com/v5/directions/-/-/' +
+      selectedLng + ',' + selectedLat + ',' + dname,
+      '_blank'
+    );
+  }, 700);
 };
 
 log('페이지 로드. Naver API 콜백 대기 중…');
