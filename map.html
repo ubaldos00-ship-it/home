@@ -1,4 +1,4 @@
-<!-- map_v2.html · 저장: 2026-06-20 11:13 KST -->
+<!-- map_v3.html · 저장: 2026-06-20 11:24 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -29,7 +29,6 @@ window.__naverScriptError = false;
 <script type="text/javascript"
     src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=yoa6avx1h4&submodules=geocoder&callback=initNaverMap"
     onerror="window.__naverScriptError=true;setTimeout(function(){if(typeof window.onNaverFail==='function')window.onNaverFail('스크립트 로드 실패');},200);">
-</script>
 </script>
 
 <style>
@@ -102,6 +101,67 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
   cursor:pointer;z-index:400;transition:transform .12s;
 }
 #locate-btn:active{transform:scale(.9)}
+
+/* ── 즐겨찾기·추적 버튼 (현재위치 버튼 위로 세로 스택) ── */
+#fav-btn, #track-btn{
+  position:fixed;right:14px;
+  width:50px;height:50px;
+  background:#fff;border:none;border-radius:50%;
+  box-shadow:0 3px 14px rgba(0,0,0,.18);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;z-index:400;transition:transform .12s;
+}
+#fav-btn{ bottom:90px; }
+#track-btn{ bottom:148px; }
+#fav-btn:active, #track-btn:active{ transform:scale(.9); }
+/* 추적 ON 상태 */
+#track-btn.active{ background:#0d6640; }
+#track-btn.active svg{ stroke:#fff; }
+#track-btn.active svg circle:nth-of-type(2){ fill:#fff; }
+
+/* ── 즐겨찾기 패널 (하단 시트) ── */
+#fav-modal{
+  display:none;position:fixed;inset:0;z-index:1200;
+  background:rgba(0,0,0,.4);align-items:flex-end;justify-content:center;
+}
+#fav-modal.show{ display:flex; }
+#fav-sheet{
+  width:100%;max-width:480px;background:#fff;
+  border-radius:20px 20px 0 0;padding:14px 16px calc(20px + env(safe-area-inset-bottom));
+  max-height:70vh;display:flex;flex-direction:column;
+  box-shadow:0 -6px 24px rgba(0,0,0,.22);
+}
+#fav-head{
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:16px;font-weight:800;color:#111;margin-bottom:10px;
+}
+#fav-close{
+  width:30px;height:30px;border:none;border-radius:50%;
+  background:#f3f4f6;color:#6b7280;font-size:19px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+}
+#fav-add-btn{
+  width:100%;border:none;border-radius:12px;
+  background:#0d6640;color:#fff;font-family:inherit;
+  font-size:14px;font-weight:700;padding:12px;cursor:pointer;
+  margin-bottom:10px;flex-shrink:0;
+}
+#fav-add-btn:active{ background:#0a5030; }
+#fav-list{ overflow-y:auto;-webkit-overflow-scrolling:touch; }
+.fav-empty{ text-align:center;color:#9ca3af;font-size:13px;padding:20px 0; }
+.fav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:11px 10px;border-radius:11px;background:#f8f7f1;
+  border:1px solid #ece8d8;margin-bottom:7px;
+}
+.fav-item .fi-text{ flex:1;min-width:0;cursor:pointer; }
+.fav-item .fi-label{ font-size:14px;font-weight:700;color:#111;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.fav-item .fi-coord{ font-size:11px;color:#9ca3af;margin-top:1px; }
+.fav-item .fi-del{
+  flex-shrink:0;border:none;background:transparent;color:#c0392b;
+  font-size:12px;font-weight:800;cursor:pointer;padding:6px 8px;
+}
 
 /* ── 주소 검색바 ── */
 #search-bar{
@@ -178,6 +238,25 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 <!-- 지도 -->
 <div id="map"></div>
 
+<!-- 실시간 추적 버튼 -->
+<button id="track-btn" onclick="toggleTrack()" title="실시간 추적">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+       stroke="#0d6640" stroke-width="2.2"
+       stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="9"/>
+    <circle cx="12" cy="12" r="3.2" fill="#0d6640" stroke="none"/>
+    <path d="M12 1v3M12 20v3M1 12h3M20 12h3"/>
+  </svg>
+</button>
+
+<!-- 즐겨찾기 버튼 -->
+<button id="fav-btn" onclick="openFavPanel()" title="즐겨찾기">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+       stroke="#c9962b" stroke-width="2" stroke-linejoin="round">
+    <path d="M12 3l2.6 5.3 5.9.85-4.25 4.15 1 5.8L12 16.9l-5.25 2.8 1-5.8L3.5 9.15l5.9-.85L12 3z"/>
+  </svg>
+</button>
+
 <!-- 현재 위치 버튼 -->
 <button id="locate-btn" onclick="startGPS()" title="현재 위치">
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
@@ -188,6 +267,18 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
     <circle cx="12" cy="12" r="7"/>
   </svg>
 </button>
+
+<!-- 즐겨찾기 패널 (하단 시트) -->
+<div id="fav-modal" onclick="if(event.target===this)closeFavPanel()">
+  <div id="fav-sheet">
+    <div id="fav-head">
+      <span>⭐ 즐겨찾기 위치</span>
+      <button onclick="closeFavPanel()" id="fav-close">×</button>
+    </div>
+    <button id="fav-add-btn" onclick="addCurrentFav()">＋ 현재 보고 있는 위치 저장</button>
+    <div id="fav-list"></div>
+  </div>
+</div>
 
 <!-- 토스트 -->
 <div id="toast"></div>
@@ -208,7 +299,7 @@ var CFG = {
 
 /* ── 상태 ── */
 var S = { map:null, marker:null, circle:null, pickMarker:null,
-          lat:null, lng:null, acc:null,
+          lat:null, lng:null, acc:null, watchId:null,
           naverReady:false, gpsOk:false, tapCount:0 };
 
 /* ── 뒤로가기 (새 탭으로 열린 경우 창 닫기 → 안되면 홈으로) ── */
@@ -235,9 +326,9 @@ var ahLine1   = document.getElementById('ahLine1');
 var ahLine2   = document.getElementById('ahLine2');
 var toastEl   = document.getElementById('toast');
 
-/* ── 상단바 주소 표시 헬퍼 ── */
+/* ── 상단바 주소 표시 헬퍼 (앞에 위치 이모지 📍) ── */
 function showAddr(jibun, road, zip){
-  ahLine1.textContent = jibun ? ('지번  ' + jibun) : '지번 주소 없음';
+  ahLine1.textContent = '📍 ' + (jibun || road || '주소 없음');
   var parts = [];
   if(road) parts.push('도로명 ' + road);
   if(zip)  parts.push('우편 ' + zip);
@@ -547,8 +638,20 @@ function searchAddress(coord, label){
     var addr  = (response.v2 && response.v2.address) || {};
     var jibun = addr.jibunAddress || '';
     var road  = addr.roadAddress  || '';
-    /* reverseGeocode 응답엔 우편번호가 없어 지번·도로명만 표시 */
-    showAddr(jibun, road, '');
+    /* reverseGeocode 응답엔 우편번호가 없으므로,
+       도로명(우선)·지번 주소를 geocode로 재조회해 우편번호를 보강한다 */
+    var qAddr = road || jibun;
+    if(qAddr && naver.maps.Service && naver.maps.Service.geocode){
+      naver.maps.Service.geocode({ query:qAddr }, function(st, res){
+        var zip = '';
+        if(st === naver.maps.Service.Status.OK && res.v2 && res.v2.addresses && res.v2.addresses.length){
+          zip = extractZip(res.v2.addresses[0].addressElements);
+        }
+        showAddr(jibun, road, zip);
+      });
+    } else {
+      showAddr(jibun, road, '');
+    }
     log('주소: ' + (jibun || road || '없음'));
   });
 }
@@ -588,6 +691,123 @@ function openNaverWeb(){
 function openKakaoWeb(){
   var la = S.lat||CFG.defaultLat, ln = S.lng||CFG.defaultLng;
   window.open('https://map.kakao.com/link/map/현재위치,'+la+','+ln, '_blank');
+}
+
+/* ================================================================
+   실시간 위치 추적 (watchPosition 토글)
+================================================================ */
+window.toggleTrack = function(){
+  var btn = document.getElementById('track-btn');
+  if(S.watchId != null){
+    /* 추적 정지 */
+    navigator.geolocation.clearWatch(S.watchId);
+    S.watchId = null;
+    btn.classList.remove('active');
+    toast('실시간 추적 정지');
+    log('추적 정지');
+    /* 정지 시 마지막 위치 주소 1회 갱신 */
+    if(S.map && S.lat != null) searchAddress(new naver.maps.LatLng(S.lat, S.lng), '📍 현재 위치');
+    return;
+  }
+  if(!navigator.geolocation){ toast('이 기기는 위치 추적 미지원'); return; }
+  if(!S.map){ toast('지도 로딩 후 사용해주세요'); return; }
+  btn.classList.add('active');
+  toast('🛰 실시간 추적 시작');
+  log('추적 시작');
+  S.watchId = navigator.geolocation.watchPosition(onTrack, onTrackErr,
+    { enableHighAccuracy:true, maximumAge:1000, timeout:12000 });
+};
+function onTrack(pos){
+  S.lat = pos.coords.latitude;
+  S.lng = pos.coords.longitude;
+  S.acc = pos.coords.accuracy;
+  var ll = new naver.maps.LatLng(S.lat, S.lng);
+  S.map.setCenter(ll);
+  /* 마커 위치 갱신 (없으면 생성) */
+  if(S.marker){ S.marker.setPosition(ll); }
+  else { renderMap(S.lat, S.lng, S.acc); }
+  /* 정확도 원 갱신 */
+  if(S.circle){ S.circle.setCenter(ll); S.circle.setRadius(Math.min(S.acc, 500)); }
+  /* 추적 중에는 좌표만 빠르게 표시 (주소 호출 절약) */
+  ahLine2.textContent = '🛰 추적 중  ' + S.lat.toFixed(5) + ', ' + S.lng.toFixed(5) + '  ±' + Math.round(S.acc) + 'm';
+}
+function onTrackErr(err){
+  log('추적 오류 code:' + err.code, 'warn');
+  toast('추적 신호 약함 — 재시도 중');
+}
+
+/* ================================================================
+   즐겨찾기 위치 (이 앱에 직접 저장 · localStorage)
+================================================================ */
+var FAV_KEY = 'tenar_map_favs_v1';
+function getFavs(){
+  try { return JSON.parse(localStorage.getItem(FAV_KEY) || '[]'); }
+  catch(e){ return []; }
+}
+function setFavs(arr){ localStorage.setItem(FAV_KEY, JSON.stringify(arr)); }
+
+window.openFavPanel  = function(){ renderFavs(); document.getElementById('fav-modal').classList.add('show'); };
+window.closeFavPanel = function(){ document.getElementById('fav-modal').classList.remove('show'); };
+
+window.addCurrentFav = function(){
+  if(!S.map){ toast('지도 로딩 후 저장해주세요'); return; }
+  var c = S.map.getCenter();
+  var lat = c.lat(), lng = c.lng();
+  /* 현재 상단바 주소를 기본 이름으로 (이모지 제거) */
+  var def = (ahLine1.textContent || '').replace('📍','').trim();
+  if(!def || def === '현재 위치' || def === '주소 없음') def = lat.toFixed(5) + ', ' + lng.toFixed(5);
+  var name = prompt('저장할 위치 이름을 입력하세요.', def);
+  if(name === null) return;
+  name = (name.trim() || def).slice(0, 40);
+  var favs = getFavs();
+  favs.unshift({ label:name, lat:lat, lng:lng });
+  setFavs(favs);
+  renderFavs();
+  toast('⭐ 즐겨찾기에 저장했습니다');
+};
+
+window.delFav = function(idx){
+  var favs = getFavs();
+  favs.splice(idx, 1);
+  setFavs(favs);
+  renderFavs();
+};
+
+window.gotoFav = function(idx){
+  var favs = getFavs();
+  var f = favs[idx];
+  if(!f || !S.map) return;
+  var ll = new naver.maps.LatLng(f.lat, f.lng);
+  S.map.setCenter(ll);
+  S.map.setZoom(17);
+  if(S.pickMarker){ S.pickMarker.setMap(null); }
+  S.pickMarker = new naver.maps.Marker({ map:S.map, position:ll });
+  searchAddress(ll, '📍 ' + f.label);
+  closeFavPanel();
+  toast('📍 ' + f.label + ' (으)로 이동');
+};
+
+function renderFavs(){
+  var list = document.getElementById('fav-list');
+  var favs = getFavs();
+  if(!favs.length){
+    list.innerHTML = '<div class="fav-empty">저장된 위치가 없습니다.<br>지도를 원하는 곳으로 옮긴 뒤<br>「현재 보고 있는 위치 저장」을 눌러보세요.</div>';
+    return;
+  }
+  list.innerHTML = favs.map(function(f, i){
+    return '<div class="fav-item">' +
+      '<div class="fi-text" onclick="gotoFav(' + i + ')">' +
+        '<div class="fi-label">' + escapeHtml(f.label) + '</div>' +
+        '<div class="fi-coord">' + f.lat.toFixed(5) + ', ' + f.lng.toFixed(5) + '</div>' +
+      '</div>' +
+      '<button class="fi-del" onclick="delFav(' + i + ')">삭제</button>' +
+    '</div>';
+  }).join('');
+}
+function escapeHtml(s){
+  return String(s).replace(/[&<>'"]/g, function(ch){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch];
+  });
 }
 
 /* ── GPS 펄스 애니메이션 ── */
