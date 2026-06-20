@@ -1,4 +1,4 @@
-<!-- map_v4.html · 저장: 2026-06-20 11:42 KST -->
+<!-- map_v5.html · 저장: 2026-06-20 12:03 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -472,7 +472,18 @@ function toast(msg){
 window.initNaverMap = function(){
   log('✅ Naver API 콜백 수신 — 준비 완료');
   S.naverReady = true;
-  startGPS();
+  /* URL ?q=주소 가 있으면 GPS 대신 그 주소를 바로 검색 (통합계산기 연동) */
+  var q = '';
+  try { q = (new URLSearchParams(location.search).get('q') || '').trim(); } catch(e){}
+  if(q){
+    log('URL 주소 검색: ' + q);
+    renderMap(CFG.defaultLat, CFG.defaultLng, 0, true);  /* 지도만 생성 */
+    var inp = document.getElementById('search-input');
+    if(inp) inp.value = q;
+    setTimeout(function(){ window.searchByAddress(); }, 700);
+  } else {
+    startGPS();
+  }
 };
 
 /* ✅ Naver API 실패 (onerror / authFailure 공통 처리) */
@@ -554,7 +565,7 @@ function onGPSErr(err){
 /* ================================================================
    지도 렌더링
 ================================================================ */
-function renderMap(lat, lng, acc){
+function renderMap(lat, lng, acc, skipMe){
   if(!S.naverReady){ log('renderMap: Naver 미준비', 'warn'); return; }
 
   /* 오버레이를 먼저 숨겨서 #map 컨테이너가 실제 크기를 갖게 한 뒤
@@ -596,6 +607,12 @@ function renderMap(lat, lng, acc){
       naver.maps.Event.trigger(S.map, 'resize');
       S.map.setCenter(pos);
       S.map.setZoom(17);
+    }
+
+    /* skipMe: URL 주소검색 모드 — 지도만 만들고 현재위치 마커/주소조회 생략 */
+    if(skipMe){
+      log('지도 생성 (주소검색 모드)');
+      return;
     }
 
     /* 오차 범위 원 */
