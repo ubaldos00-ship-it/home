@@ -994,28 +994,22 @@ document.head.appendChild(st);
 ── */
 
 window.openNaverRoute = function(){
+
   if(selectedLat == null || selectedLng == null){
     toast('길찾기 위치를 먼저 선택해주세요');
     return;
   }
 
-  var dname = encodeURIComponent(selectedName || '목적지');
+  var dname = selectedName || '목적지';
 
   var appUrl =
-    'nmap://route/car?dlat=' + selectedLat +
+    'nmap://route/car' +
+    '?dlat=' + selectedLat +
     '&dlng=' + selectedLng +
     '&dname=' + dname +
     '&appname=com.tenar.map';
 
-  window.location.href = appUrl;
-
-  setTimeout(function(){
-    window.open(
-      'https://map.naver.com/v5/directions/-/-/' +
-      selectedLng + ',' + selectedLat + ',' + dname,
-      '_blank'
-    );
-  }, 700);
+  location.href = appUrl;
 };
 
 log('페이지 로드. Naver API 콜백 대기 중…');
