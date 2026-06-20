@@ -1,9 +1,14 @@
-<!-- map_v10.html · 저장: 2026-06-21 06:58 KST · 구간거리라벨·cm·지도유형시트·전체화면·길찾기탭유지 · 애널리틱스추가 -->
+<!-- map_v11.html · 저장: 2026-06-21 07:15 KST · 즐겨찾기전체보기·거리소수2·면적라벨·상태바투명·브이월드 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<!-- 상단(상태바)·하단 투명 전체화면 (홈 화면 추가 시 적용) -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#000000">
 <!-- Google Analytics (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-B8ELP4S5PR"></script>
 <script>
@@ -149,7 +154,21 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
   margin-bottom:10px;flex-shrink:0;
 }
 #fav-add-btn:active{ background:#0a5030; }
+#fav-all-btn{
+  flex-shrink:0;border:none;border-radius:12px;
+  background:#c9962b;color:#fff;font-family:inherit;
+  font-size:14px;font-weight:700;padding:12px 14px;cursor:pointer;white-space:nowrap;
+}
+#fav-all-btn:active{ background:#a87d1f; }
 #fav-list{ overflow-y:auto;-webkit-overflow-scrolling:touch; }
+/* 즐겨찾기 전체보기 마커 라벨 */
+.fav-pin{
+  background:#c9962b;color:#fff;font-size:11px;font-weight:800;
+  padding:3px 8px;border-radius:11px;white-space:nowrap;
+  box-shadow:0 2px 6px rgba(0,0,0,.35);border:2px solid #fff;
+  font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  max-width:140px;overflow:hidden;text-overflow:ellipsis;
+}
 .fav-empty{ text-align:center;color:#9ca3af;font-size:13px;padding:20px 0; }
 .fav-item{
   display:flex;align-items:center;gap:10px;
@@ -224,6 +243,18 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 }
 .ls-opt.active{ border-color:#0d6640;color:#0d6640;background:#f3faf5; }
 @media(max-width:360px){ .ls-opt{ font-size:11px; } .ls-opt .ls-ic{ width:40px;height:40px;font-size:20px; } }
+.ls-overlay-title{ font-size:12px;font-weight:700;color:#8a8f86;margin:14px 2px 7px; }
+.ls-overlay{
+  display:flex;align-items:center;gap:11px;width:100%;
+  border:2px solid #eee;border-radius:13px;background:#fff;
+  font-family:inherit;font-size:13.5px;font-weight:700;color:#444;
+  padding:9px 12px;cursor:pointer;
+}
+.ls-overlay .ls-ic{ width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0; }
+.ls-ov-text{ flex:1;text-align:left; }
+.ls-ov-state{ font-size:12px;font-weight:800;color:#9ca3af;flex-shrink:0; }
+.ls-overlay.active{ border-color:#c9962b;background:#fffaf0; }
+.ls-overlay.active .ls-ov-state{ color:#c9962b; }
 
 /* ── 현재 위치 방향 마커 ── */
 .me-marker{ width:40px;height:40px;position:relative; }
@@ -331,6 +362,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
   font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
 }
 .m-label.start{ color:#7c3aed;border-color:#d9ccf5; }
+.m-label.area{
+  color:#7c3aed;border-color:#d9ccf5;text-align:center;line-height:1.3;
+  background:rgba(255,255,255,.96);
+}
 
 /* ── 길찾기 앱 선택 모달 ── */
 #route-modal{
@@ -440,6 +475,12 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
       <button class="ls-opt" data-type="terrain"   onclick="setLayer('terrain')">
         <span class="ls-ic" style="background:#e6ddc8">⛰</span>지형</button>
     </div>
+    <div class="ls-overlay-title">겹쳐보기</div>
+    <button class="ls-overlay" id="cadastralBtn" onclick="toggleCadastral()">
+      <span class="ls-ic" style="background:#fdf0c8">📐</span>
+      <span class="ls-ov-text">지적도(브이월드) 필지경계</span>
+      <span class="ls-ov-state" id="cadState">OFF</span>
+    </button>
   </div>
 </div>
 
@@ -539,7 +580,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
       <span>⭐ 즐겨찾기 위치</span>
       <button onclick="closeFavPanel()" id="fav-close">×</button>
     </div>
-    <button id="fav-add-btn" onclick="addCurrentFav()">＋ 현재 보고 있는 위치 저장</button>
+    <div style="display:flex;gap:7px;margin-bottom:10px;">
+      <button id="fav-add-btn" onclick="addCurrentFav()" style="flex:1;margin-bottom:0;">＋ 현재 위치 저장</button>
+      <button id="fav-all-btn" onclick="showAllFavs()">🗺 전체보기</button>
+    </div>
     <div id="fav-list"></div>
   </div>
 </div>
@@ -558,7 +602,11 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 var CFG = {
   defaultLat : 35.8239,
   defaultLng : 128.7358,
-  gpsTimeout : 14000
+  gpsTimeout : 14000,
+  /* 브이월드(VWorld) 지적도 오버레이용 API 키.
+     https://www.vworld.kr 에서 무료 발급(인증키 유형: WMTS, 도메인 등록 필요).
+     발급 후 아래 빈 문자열에 키를 넣으면 지적도 겹쳐보기가 작동합니다. */
+  vworldKey : ''
 };
 
 /* ── 상태 ── */
@@ -567,6 +615,7 @@ var S = { map:null, marker:null, circle:null, pickMarker:null,
           heading:null, compassOn:false, isHybrid:true,
           destLat:null, destLng:null, destName:'',
           measureMode:'off', mPoints:[], mMarkers:[], mLabels:[], mLine:null, mPoly:null,
+          favMarkers:[], cadLayer:null, cadOn:false,
           naverReady:false, gpsOk:false, tapCount:0 };
 
 /* ── 뒤로가기 (새 탭으로 열린 경우 창 닫기 → 안되면 홈으로) ── */
@@ -1116,6 +1165,22 @@ function redrawMeasure(){
         strokeColor:'#7c3aed', strokeWeight:3, strokeOpacity:0.9
       });
     }
+    /* 면적 3점 이상이면 다각형 중심에 ㎡·평 라벨 표시 */
+    if(S.mPoints.length >= 3){
+      var sx = 0, sy = 0;
+      S.mPoints.forEach(function(p){ sx += p.lat(); sy += p.lng(); });
+      var center = new naver.maps.LatLng(sx/S.mPoints.length, sy/S.mPoints.length);
+      var a = areaM2(S.mPoints);
+      var lab = new naver.maps.Marker({
+        map:S.map, position:center,
+        icon:{
+          content:'<div class="m-label area">'+Math.round(a).toLocaleString()+'㎡<br>'+fmtPyeong(a)+'평</div>',
+          anchor:new naver.maps.Point(28, 16)   /* 라벨이 중심에 오도록 */
+        },
+        clickable:false
+      });
+      S.mLabels.push(lab);
+    }
     return;
   }
 
@@ -1231,10 +1296,7 @@ function areaM2(pts){
   return Math.abs(area * R * R / 2);
 }
 function fmtDist(m){
-  if(m < 1)    return Math.round(m * 100) + 'cm';          /* 1m 미만 → cm */
-  if(m < 10)   return m.toFixed(2) + 'm';                  /* 정밀 표시 */
-  if(m < 100)  return m.toFixed(1) + 'm';
-  if(m < 1000) return Math.round(m) + 'm';
+  if(m < 1000) return m.toFixed(2) + 'm';                  /* 항상 소수 둘째자리 */
   return (m/1000).toFixed(2) + 'km';
 }
 function fmtPyeong(m2){ return Math.round(m2 / 3.305785).toLocaleString(); }
@@ -1301,6 +1363,51 @@ window.setLayer = function(type){
   });
   toast('🗺 ' + (label[type] || '지도') + ' 지도');
   closeLayerSheet();
+};
+
+/* ================================================================
+   브이월드 지적도(필지경계) 오버레이 — 네이버 지도 위에 겹쳐보기
+================================================================ */
+window.toggleCadastral = function(){
+  if(!S.map){ toast('지도 로딩 후 사용해주세요'); return; }
+  if(!S.cadOn){
+    if(!CFG.vworldKey){
+      toast('브이월드 API 키가 필요합니다 (무료 발급)');
+      alert('지적도(브이월드) 겹쳐보기를 쓰려면 VWorld 인증키가 필요합니다.\n\n' +
+            '① https://www.vworld.kr 회원가입 후 [오픈API → 인증키 발급]\n' +
+            '② 서비스 분류: WMTS, 도메인에 ubaldos00-ship-it.github.io 등록\n' +
+            '③ 발급된 키를 map.html 의 CFG.vworldKey 에 입력\n\n' +
+            '키 입력 후 다시 누르면 지적 필지경계가 지도 위에 표시됩니다.');
+      return;
+    }
+    if(!S.cadLayer){
+      S.cadLayer = new naver.maps.ImageMapType({
+        name: 'vworld-cadastral',
+        tileSize: new naver.maps.Size(256, 256),
+        minZoom: 6, maxZoom: 20, opacity: 0.9,
+        getTileUrl: function(x, y, z){
+          return 'https://api.vworld.kr/req/wmts/1.0.0/' + CFG.vworldKey +
+                 '/lp_PA_CBND_BUBUN/' + z + '/' + y + '/' + x + '.png';
+        }
+      });
+    }
+    try{
+      S.map.overlayMapTypes.setAt(0, S.cadLayer);
+      S.cadOn = true;
+      document.getElementById('cadastralBtn').classList.add('active');
+      document.getElementById('cadState').textContent = 'ON';
+      toast('📐 지적도 겹쳐보기 켜짐');
+    }catch(e){
+      log('지적도 오버레이 실패: ' + e.message, 'err');
+      toast('지적도 오버레이를 지원하지 않는 환경입니다');
+    }
+  } else {
+    try{ S.map.overlayMapTypes.removeAt(0); }catch(e){}
+    S.cadOn = false;
+    document.getElementById('cadastralBtn').classList.remove('active');
+    document.getElementById('cadState').textContent = 'OFF';
+    toast('지적도 겹쳐보기 꺼짐');
+  }
 };
 
 /* ================================================================
@@ -1443,6 +1550,45 @@ window.gotoFav = function(idx){
   searchAddress(ll, '📍 ' + f.label);
   closeFavPanel();
   toast('📍 ' + f.label + ' (으)로 이동');
+};
+
+/* 저장된 즐겨찾기를 지도 전체에 표시하고 한눈에 보이도록 화면 맞춤 */
+window.clearFavMarkers = function(){
+  S.favMarkers.forEach(function(m){ m.setMap(null); });
+  S.favMarkers = [];
+};
+window.showAllFavs = function(){
+  if(!S.map){ toast('지도 로딩 후 사용해주세요'); return; }
+  var favs = getFavs();
+  if(!favs.length){ toast('저장된 즐겨찾기가 없습니다'); return; }
+  clearFavMarkers();
+  closeFavPanel();
+  var bounds = new naver.maps.LatLngBounds();
+  favs.forEach(function(f){
+    var ll = new naver.maps.LatLng(f.lat, f.lng);
+    bounds.extend(ll);
+    var mk = new naver.maps.Marker({
+      map:S.map, position:ll,
+      title:f.label,
+      icon:{
+        content:'<div class="fav-pin">⭐ ' + escapeHtml(f.label) + '</div>',
+        anchor:new naver.maps.Point(14, 14)
+      }
+    });
+    /* 마커 탭하면 해당 위치 주소 표시 */
+    naver.maps.Event.addListener(mk, 'click', function(){
+      S.map.setCenter(ll);
+      searchAddress(ll, '⭐ ' + f.label);
+    });
+    S.favMarkers.push(mk);
+  });
+  if(favs.length === 1){
+    S.map.setCenter(new naver.maps.LatLng(favs[0].lat, favs[0].lng));
+    S.map.setZoom(16);
+  } else {
+    S.map.fitBounds(bounds, { top:90, right:40, bottom:160, left:40 });
+  }
+  toast('⭐ 즐겨찾기 ' + favs.length + '곳 전체보기');
 };
 
 function renderFavs(){
