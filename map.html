@@ -1,3 +1,4 @@
+<!-- map_v2.html · 저장: 2026-06-20 11:13 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -50,9 +51,15 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 }
 .back-btn:active{background:#f3f4f6}
 .title{font-size:16px;font-weight:700;color:#111;flex:1;user-select:none}
-.coord-pill{
-  font-size:9.5px;color:#6b7280;font-family:ui-monospace,monospace;
-  line-height:1.45;text-align:right;flex-shrink:0;max-width:130px;
+/* 상단바 주소 표시 (지번·도로명·우편번호) */
+.addr-head{flex:1;min-width:0;user-select:none;cursor:pointer;}
+.ah-line1{
+  font-size:13.5px;font-weight:700;color:#111;line-height:1.3;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.ah-line2{
+  font-size:11px;color:#6b7280;line-height:1.35;margin-top:1px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
 
 /* ── 지도 영역 ── */
@@ -116,26 +123,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 }
 #search-btn:active{background:#0a5030}
 
-/* ── 주소 카드 ── */
-#addr-card{
-  position:fixed;left:14px;right:14px;bottom:32px;
-  background:rgba(255,255,255,.98);
-  border-radius:14px;
-  box-shadow:0 4px 18px rgba(0,0,0,.20);
-  padding:12px 40px 12px 15px;
-  z-index:450;display:none;
-  font-size:14px;line-height:1.5;color:#111;
-}
-#addr-title{font-size:12px;font-weight:700;color:#0d6640;margin-bottom:4px;}
-#addr-jibun{font-weight:600;word-break:keep-all;}
-#addr-road{color:#6b7280;font-size:12.5px;margin-top:3px;word-break:keep-all;}
-#addr-close{
-  position:absolute;top:8px;right:8px;
-  width:26px;height:26px;border:none;border-radius:50%;
-  background:#f3f4f6;color:#6b7280;font-size:17px;line-height:1;
-  cursor:pointer;display:flex;align-items:center;justify-content:center;
-}
-
 /* ── 토스트 ── */
 #toast{
   position:fixed;bottom:100px;left:50%;transform:translateX(-50%);
@@ -167,8 +154,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
       <polyline points="15 18 9 12 15 6"/>
     </svg>
   </button>
-  <div class="title" id="topTitle">📍 현재 위치</div>
-  <div class="coord-pill" id="coordPill">—</div>
+  <div class="addr-head" id="topTitle">
+    <div class="ah-line1" id="ahLine1">📍 현재 위치</div>
+    <div class="ah-line2" id="ahLine2">위치를 조회하면 주소가 표시됩니다</div>
+  </div>
 </div>
 
 <!-- 오버레이 -->
@@ -199,14 +188,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
     <circle cx="12" cy="12" r="7"/>
   </svg>
 </button>
-
-<!-- 주소 카드 (길게 누르거나 현재 위치 조회 시 표시) -->
-<div id="addr-card">
-  <div id="addr-title">📍 선택 위치</div>
-  <div id="addr-jibun"></div>
-  <div id="addr-road"></div>
-  <button id="addr-close" onclick="document.getElementById('addr-card').style.display='none'">×</button>
-</div>
 
 <!-- 토스트 -->
 <div id="toast"></div>
@@ -250,8 +231,18 @@ var ovSpinner = document.getElementById('ovSpinner');
 var ovTitle   = document.getElementById('ov-title');
 var ovSub     = document.getElementById('ov-sub');
 var ovBtns    = document.getElementById('ov-btns');
-var coordPill = document.getElementById('coordPill');
+var ahLine1   = document.getElementById('ahLine1');
+var ahLine2   = document.getElementById('ahLine2');
 var toastEl   = document.getElementById('toast');
+
+/* ── 상단바 주소 표시 헬퍼 ── */
+function showAddr(jibun, road, zip){
+  ahLine1.textContent = jibun ? ('지번  ' + jibun) : '지번 주소 없음';
+  var parts = [];
+  if(road) parts.push('도로명 ' + road);
+  if(zip)  parts.push('우편 ' + zip);
+  ahLine2.textContent = parts.length ? parts.join('  ·  ') : '';
+}
 var dbgEl     = document.getElementById('dbg');
 var toastTmr;
 
@@ -388,10 +379,6 @@ function onGPSErr(err){
 function renderMap(lat, lng, acc){
   if(!S.naverReady){ log('renderMap: Naver 미준비', 'warn'); return; }
 
-  coordPill.innerHTML =
-    lat.toFixed(5) + '<br>' + lng.toFixed(5) +
-    (acc > 0 ? '<br><span style="color:#22c55e">±'+Math.round(acc)+'m</span>' : '');
-
   /* 오버레이를 먼저 숨겨서 #map 컨테이너가 실제 크기를 갖게 한 뒤
      지도 인스턴스를 생성해야 Naver Maps가 크기를 0으로 계산하지 않음 */
   hideOv();
@@ -514,19 +501,29 @@ window.searchByAddress = function(){
     if(S.pickMarker){ S.pickMarker.setMap(null); }
     S.pickMarker = new naver.maps.Marker({ map:S.map, position:ll });
 
-    /* 주소 카드 표시 */
+    /* 상단바에 주소 표시 (지번·도로명·우편번호) */
     var jibun = item.jibunAddress || '';
     var road  = item.roadAddress  || '';
-    document.getElementById('addr-title').textContent = '🔍 ' + q;
-    document.getElementById('addr-jibun').textContent = jibun ? ('지번  ' + jibun) : (road ? '' : q);
-    document.getElementById('addr-road').textContent  = road  ? ('도로명  ' + road) : '';
-    document.getElementById('addr-card').style.display = 'block';
+    var zip   = extractZip(item.addressElements);
+    showAddr(jibun, road, zip);
     log('검색 성공: ' + (road || jibun));
 
     /* 키보드 닫기 */
     document.getElementById('search-input').blur();
   });
 };
+
+/* addressElements 배열에서 우편번호(POSTAL_CODE) 추출 */
+function extractZip(elements){
+  if(!elements || !elements.length) return '';
+  for(var i=0;i<elements.length;i++){
+    var t = elements[i].types || [];
+    if(t.indexOf('POSTAL_CODE') >= 0 && elements[i].longName){
+      return elements[i].longName;
+    }
+  }
+  return '';
+}
 
 /* ================================================================
    좌표 → 주소(지번·도로명) 변환 (Reverse Geocoding)
@@ -543,20 +540,15 @@ function searchAddress(coord, label){
     if(status !== naver.maps.Service.Status.OK){
       log('주소 조회 실패: status=' + status, 'err');
       toast('주소 조회 실패 (' + status + ')');
-      /* 실패 코드도 카드에 표시 — 진단용 */
-      document.getElementById('addr-title').textContent = label || '📍 선택 위치';
-      document.getElementById('addr-jibun').textContent = '주소 조회 실패: ' + status;
-      document.getElementById('addr-road').textContent  = '';
-      document.getElementById('addr-card').style.display = 'block';
+      ahLine1.textContent = '주소 조회 실패: ' + status;
+      ahLine2.textContent = '';
       return;
     }
     var addr  = (response.v2 && response.v2.address) || {};
     var jibun = addr.jibunAddress || '';
     var road  = addr.roadAddress  || '';
-    document.getElementById('addr-title').textContent = label || '📍 선택 위치';
-    document.getElementById('addr-jibun').textContent = jibun ? ('지번  ' + jibun) : '지번 주소 없음';
-    document.getElementById('addr-road').textContent  = road  ? ('도로명  ' + road) : '';
-    document.getElementById('addr-card').style.display = 'block';
+    /* reverseGeocode 응답엔 우편번호가 없어 지번·도로명만 표시 */
+    showAddr(jibun, road, '');
     log('주소: ' + (jibun || road || '없음'));
   });
 }
@@ -576,9 +568,8 @@ function gpsOnlyFlow(){
     return;
   }
 
-  coordPill.innerHTML =
-    S.lat.toFixed(5) + '<br>' + S.lng.toFixed(5) +
-    '<br><span style="color:#22c55e">±' + Math.round(S.acc) + 'm</span>';
+  ahLine1.textContent = '📍 GPS 위치 확인됨';
+  ahLine2.textContent = S.lat.toFixed(5) + ', ' + S.lng.toFixed(5) + '  ±' + Math.round(S.acc) + 'm';
 
   showOv('📍 GPS 위치 확인됨',
     '<b style="font-size:16px">' + S.lat.toFixed(6) + '</b><br>' +
