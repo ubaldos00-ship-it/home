@@ -1381,13 +1381,27 @@ window.toggleCadastral = function(){
       return;
     }
     if(!S.cadLayer){
+      /* 지적도는 VWorld WMTS(타일)로는 제공되지 않으므로 WMS GetMap 으로 호출한다.
+         각 타일(x,y,z)을 EPSG:3857 BBOX 로 변환해 256x256 투명 PNG를 받아 겹친다. */
+      var ORG = 20037508.342789244;
+      function tileBBox(x, y, z){
+        var size = (ORG * 2) / Math.pow(2, z);
+        var minx = -ORG + x * size;
+        var maxy =  ORG - y * size;
+        return [minx, (maxy - size), (minx + size), maxy].join(',');  /* minx,miny,maxx,maxy */
+      }
       S.cadLayer = new naver.maps.ImageMapType({
         name: 'vworld-cadastral',
         tileSize: new naver.maps.Size(256, 256),
-        minZoom: 6, maxZoom: 20, opacity: 0.9,
+        minZoom: 6, maxZoom: 20, opacity: 0.85,
         getTileUrl: function(x, y, z){
-          return 'https://api.vworld.kr/req/wmts/1.0.0/' + CFG.vworldKey +
-                 '/lp_PA_CBND_BUBUN/' + z + '/' + y + '/' + x + '.png';
+          return 'https://api.vworld.kr/req/wms' +
+                 '?SERVICE=WMS&REQUEST=GetMap&VERSION=1.3.0' +
+                 '&LAYERS=lp_PA_CBND_BUBUN&STYLES=lp_PA_CBND_BUBUN' +
+                 '&CRS=EPSG:3857&BBOX=' + tileBBox(x, y, z) +
+                 '&WIDTH=256&HEIGHT=256&FORMAT=image/png&TRANSPARENT=true' +
+                 '&KEY=' + CFG.vworldKey +
+                 '&DOMAIN=https://ubaldos00-ship-it.github.io';
         }
       });
     }
