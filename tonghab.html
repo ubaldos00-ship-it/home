@@ -1,4 +1,4 @@
-<!-- tonghab_v137.html · 저장: 2026-06-20 07:51 KST -->
+<!-- tonghab_v137.html · 저장: 2026-06-20 KST · Safari safe save/reset -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1386,7 +1386,7 @@ textarea {
         </button>
       </div>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v137 저장: 2026-06-20 07:51)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v136 저장: 2026-06-18 06:03)</span></div>
   </div>
 </div>
 
@@ -7255,16 +7255,22 @@ document.addEventListener('DOMContentLoaded', function(){
     if(!ticking){ticking=true;requestAnimationFrame(onScroll);}
   },{passive:true});
 })();
-/* ===== 10a 결과 아래 전체 초기화 버튼 보완 ===== */
+/* ===== 10a 결과 아래 전체 초기화 버튼 보완 (v137 Safari 안전화) ===== */
 function prodFullResetAll(){
   if(!confirm('전체 데이터가 초기화됩니다. 초기화 하시겠습니까?')) return;
   try{
+    window._allowLeave = true;
+    window._slBusy = true;
     sessionStorage.setItem('tonghabForceTop','1');
     sessionStorage.setItem('tonghabScrollTopAfterReload','1');
     if('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    localStorage.removeItem('tonghabAutoSave_v1');
   }catch(e){}
-  window._allowLeave = true;
-  window.location.replace(window.location.pathname + '?reset=' + Date.now());
+  /* iOS 27 Safari에서 location.replace('?reset=...') 후 멈춤 가능성이 있어
+     query reset 방식 대신 일반 진입으로 재시작 */
+  setTimeout(function(){
+    window.location.href = window.location.pathname;
+  }, 80);
 }
 function goHomeAndReset(){
   if(!confirm('모든 데이터가 초기화됩니다. 홈으로 가시겠습니까?')) return false;
@@ -7505,12 +7511,12 @@ document.addEventListener('DOMContentLoaded', function(){
     return;
   }
   var ref = document.referrer;
-  /* referrer 가 있고, 현재 페이지 URL(해시·쿼리 제외)과 다를 때 = 링크 진입
-     v137: ?reset= 같은 자기 페이지 내 쿼리는 비교에서 제외 → 초기화 시 reload 2번 발생 방지 */
-  var curBase = location.href.split('#')[0].split('?')[0];
-  if(ref && ref.split('#')[0].split('?')[0] !== curBase){
+  /* referrer 가 있고, 현재 페이지 URL(해시 제외)과 다를 때 = 링크 진입 */
+  var curBase = location.href.split('#')[0];
+  if(ref && ref.split('#')[0] !== curBase){
+    /* v137: iOS 27 Safari에서 링크 진입 자동 reload가 저장/초기화 동작과 충돌할 수 있어 비활성화 */
     sessionStorage.setItem(RKEY, '1');
-    location.reload();  /* 1회 새로고침 → 이후 referrer 없어져 루프 없음 */
+    // location.reload();
   }
 })();
 
@@ -7538,7 +7544,6 @@ document.addEventListener('DOMContentLoaded', function(){
      iOS WebKit 은 해시가 다르면 "문서 내 다른 위치"로 인식해
      popstate + hashchange 를 모두 발화함. 이중 차단 보장. */
   var _bbIdx = 0;
-  var _lastBBHash = '';   /* v137: 우리가 마지막으로 설정한 해시 (재진입 가드용) */
   var _BASE = location.pathname + (location.search || '');
 
   function _pushBlock(){
@@ -7551,16 +7556,11 @@ document.addEventListener('DOMContentLoaded', function(){
       /* pushState: 버퍼 엔트리 2개 — iOS가 한 번에 여러 엔트리 건너뛰더라도 차단 */
       history.pushState( {_bb:'g', i:_bbIdx}, '', _BASE + h2);
       history.pushState( {_bb:'g', i:_bbIdx}, '', _BASE + h3);
-      _lastBBHash = h3;   /* v137: 현재 머무는 해시 기록 */
     }catch(e){}
   }
 
   function _onBlock(){
     if(window._allowLeave) return;
-    /* v137: iOS26+ 베타 Safari 회귀 대응 — pushState가 hashchange를 유발해 무한루프(멈춤)가 나는 문제.
-       우리가 방금 설정한 해시 그대로면(자기 유발 이벤트) 무시한다.
-       실제 뒤로가기는 이전 해시로 이동해 location.hash가 달라지므로 정상 차단된다. */
-    if(location.hash === _lastBBHash) return;
     _pushBlock();
     window._showBackToast(
       '🔒 뒤로가기 차단 중<br>'
@@ -7596,7 +7596,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
   /* ── beforeunload: 탭 닫기 / 주소창 이동 경고 ── */
   window.addEventListener('beforeunload', function(e){
-    if(window._allowLeave) return;
+    if(window._allowLeave || window._slBusy) return;
     e.preventDefault();
     e.returnValue = '';
   });
@@ -7904,10 +7904,15 @@ function _slUpdateSaveBtn(){
 }
 /* 선택 여부에 따라 새로저장 또는 덮어쓰기 (v83) */
 function slSmartSave(){
-  if(_slSelectedKey){
-    overwriteSavedData(_slSelectedKey);
-  } else {
-    saveCurrentData();
+  if(window._slBusy) return;
+  window._slBusy = true;
+  var btn=document.getElementById('slSmartSaveBtn');
+  if(btn) btn.disabled = true;
+  try{
+    if(_slSelectedKey){ overwriteSavedData(_slSelectedKey); }
+    else { saveCurrentData(); }
+  } finally {
+    setTimeout(function(){ window._slBusy=false; if(btn) btn.disabled=false; }, 700);
   }
 }
 
@@ -8525,7 +8530,7 @@ function importJSON(input){
      (2) !_initialLoadDone 차단 — 페이지 로드 직후, 복원 시도 전 pagehide/beforeunload
          (특히 v47 링크진입 자동 reload)로 인한 빈 DOM 저장 차단 */
   function doSave(){
-    if(window._allowLeave) return;  // 홈/초기화 이탈 중 — pagehide가 지운 데이터 재저장 차단
+    if(window._allowLeave || window._slBusy) return;  // 홈/초기화/수동 저장 중 — pagehide가 지운 데이터 재저장 차단
     if(window._tonghabPopupPending) return;  // v124: 이전자료 팝업 대기 중 — 빈 폼이 데이터 덮어쓰기 방지
     if(_restoring) return;
     if(!_initialLoadDone) return;
@@ -8605,7 +8610,7 @@ function importJSON(input){
     try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
     var ov = document.getElementById('prevDataOverlay'); if(ov) ov.remove();
     window._allowLeave = true; /* 이탈 직전 재저장 차단 */
-    window.location.href = location.pathname + '?reset=1';
+    window.location.href = location.pathname;
   };
 
   function autoRestore(){
