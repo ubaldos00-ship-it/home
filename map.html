@@ -1,9 +1,9 @@
-<!-- map_v8.html · 저장: 2026-06-20 19:17 KST · 거리·면적 측정 + 조사표 주소입력 -->
+<!-- map_v9.html · 저장: 2026-06-20 21:49 KST · 구간거리라벨·cm·지도유형시트·전체화면·길찾기탭유지 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>현재 위치 지도</title>
 
 <!--
@@ -185,6 +185,38 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 }
 #layer-btn:active{ transform:scale(.9); }
 
+/* ── 지도 유형 선택 시트 ── */
+#layer-modal{
+  display:none;position:fixed;inset:0;z-index:1250;
+  background:rgba(0,0,0,.45);align-items:flex-end;justify-content:center;
+}
+#layer-modal.show{ display:flex; }
+#layer-sheet{
+  width:100%;max-width:480px;background:#fff;
+  border-radius:20px 20px 0 0;
+  padding:14px 16px calc(18px + env(safe-area-inset-bottom));
+  box-shadow:0 -6px 24px rgba(0,0,0,.22);
+}
+.ls-head{
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:16px;font-weight:800;color:#111;margin-bottom:12px;
+}
+.ls-x{ width:30px;height:30px;border:none;border-radius:50%;
+  background:#f3f4f6;color:#6b7280;font-size:15px;cursor:pointer; }
+.ls-grid{ display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:9px; }
+.ls-opt{
+  border:2px solid #eee;border-radius:13px;background:#fff;
+  font-family:inherit;font-size:12px;font-weight:700;color:#444;
+  padding:9px 4px;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+}
+.ls-opt .ls-ic{
+  width:46px;height:46px;border-radius:11px;
+  display:flex;align-items:center;justify-content:center;font-size:23px;
+}
+.ls-opt.active{ border-color:#0d6640;color:#0d6640;background:#f3faf5; }
+@media(max-width:360px){ .ls-opt{ font-size:11px; } .ls-opt .ls-ic{ width:40px;height:40px;font-size:20px; } }
+
 /* ── 현재 위치 방향 마커 ── */
 .me-marker{ width:40px;height:40px;position:relative; }
 .me-cone-wrap{
@@ -283,6 +315,14 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 .mp-btn:active{ background:#e5e7eb; }
 .mp-fav{ background:#fff7e6;color:#a06d00; }
 .mp-fav:active{ background:#fdecc8; }
+/* 측정 구간 거리 라벨 (지도 위) */
+.m-label{
+  background:#fff;color:#e23b2e;font-size:12px;font-weight:800;
+  padding:2px 7px;border-radius:8px;white-space:nowrap;
+  box-shadow:0 1px 4px rgba(0,0,0,.3);border:1px solid #f3c4c0;
+  font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+}
+.m-label.start{ color:#7c3aed;border-color:#d9ccf5; }
 
 /* ── 길찾기 앱 선택 모달 ── */
 #route-modal{
@@ -370,13 +410,30 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 </div>
 
 <!-- 지도 타입(위성/일반) 토글 -->
-<button id="layer-btn" onclick="toggleLayer()" title="위성/일반 전환">
+<button id="layer-btn" onclick="openLayerSheet()" title="지도 유형">
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
        stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
     <path d="M12 3 3 8l9 5 9-5-9-5z"/>
     <path d="M3 13l9 5 9-5"/>
   </svg>
 </button>
+
+<!-- 지도 유형 선택 시트 -->
+<div id="layer-modal" onclick="if(event.target===this)closeLayerSheet()">
+  <div id="layer-sheet">
+    <div class="ls-head"><span>지도 유형</span><button class="ls-x" onclick="closeLayerSheet()">✕</button></div>
+    <div class="ls-grid">
+      <button class="ls-opt" data-type="normal"    onclick="setLayer('normal')">
+        <span class="ls-ic" style="background:#e8efe1">🗺</span>일반</button>
+      <button class="ls-opt" data-type="satellite" onclick="setLayer('satellite')">
+        <span class="ls-ic" style="background:#cfe0f5">🛰</span>위성</button>
+      <button class="ls-opt active" data-type="hybrid" onclick="setLayer('hybrid')">
+        <span class="ls-ic" style="background:#dfe7c8">🏷</span>위성+지명</button>
+      <button class="ls-opt" data-type="terrain"   onclick="setLayer('terrain')">
+        <span class="ls-ic" style="background:#e6ddc8">⛰</span>지형</button>
+    </div>
+  </div>
+</div>
 
 <!-- 오버레이 (로딩/에러) -->
 <div id="overlay">
@@ -501,7 +558,7 @@ var S = { map:null, marker:null, circle:null, pickMarker:null,
           lat:null, lng:null, acc:null, watchId:null,
           heading:null, compassOn:false, isHybrid:true,
           destLat:null, destLng:null, destName:'',
-          measureMode:'off', mPoints:[], mMarkers:[], mLine:null, mPoly:null,
+          measureMode:'off', mPoints:[], mMarkers:[], mLabels:[], mLine:null, mPoly:null,
           naverReady:false, gpsOk:false, tapCount:0 };
 
 /* ── 뒤로가기 (새 탭으로 열린 경우 창 닫기 → 안되면 홈으로) ── */
@@ -981,22 +1038,14 @@ window.openRoute = function(provider){
 };
 function openAppOrWeb(appUrl, webUrl, provider){
   var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-  if(!isMobile){
-    if(webUrl){ window.open(webUrl, '_blank'); }
-    else { toast('티맵 길찾기는 모바일 앱에서만 됩니다'); }
+  /* ✅ map.html 은 그대로 두고, 길찾기는 항상 새 탭/창에서 연다
+     (window.location.href 로 현재 탭을 이동시키지 않음) */
+  var url = isMobile ? appUrl : webUrl;
+  if(!url){
+    toast(provider === 'tmap' ? '티맵 길찾기는 모바일 앱에서만 됩니다' : '길찾기를 열 수 없습니다');
     return;
   }
-  /* 모바일: 앱 스킴 우선, 앱이 안 열리면 웹으로 폴백 */
-  var fallback = setTimeout(function(){
-    if(webUrl){ window.location.href = webUrl; }
-    else { toast(provider === 'tmap' ? '티맵 앱이 설치되어 있어야 합니다' : '앱을 열 수 없습니다'); }
-  }, 1300);
-  var onHide = function(){
-    clearTimeout(fallback);
-    document.removeEventListener('visibilitychange', onHide);
-  };
-  document.addEventListener('visibilitychange', onHide);
-  window.location.href = appUrl;
+  window.open(url, '_blank');
 }
 
 /* ================================================================
@@ -1040,23 +1089,48 @@ function addMeasurePoint(coord){
   updateMeasureResult();
 }
 
+function clearMeasureLabels(){
+  S.mLabels.forEach(function(l){ l.setMap(null); });
+  S.mLabels = [];
+}
 function redrawMeasure(){
-  /* 선/다각형 초기화 */
+  /* 선/다각형/라벨 초기화 */
   if(S.mLine){ S.mLine.setMap(null); S.mLine = null; }
   if(S.mPoly){ S.mPoly.setMap(null); S.mPoly = null; }
-  if(S.mPoints.length < 2) return;
+  clearMeasureLabels();
+  if(S.mPoints.length < 1) return;
 
   if(S.measureMode === 'area'){
-    S.mPoly = new naver.maps.Polygon({
-      map:S.map, paths:S.mPoints,
-      fillColor:'#7c3aed', fillOpacity:0.18,
-      strokeColor:'#7c3aed', strokeWeight:3, strokeOpacity:0.9
-    });
-  } else {
+    if(S.mPoints.length >= 2){
+      S.mPoly = new naver.maps.Polygon({
+        map:S.map, paths:S.mPoints,
+        fillColor:'#7c3aed', fillOpacity:0.18,
+        strokeColor:'#7c3aed', strokeWeight:3, strokeOpacity:0.9
+      });
+    }
+    return;
+  }
+
+  /* 거리 모드: 선 + 각 점 옆 구간 거리 라벨 (첫 점은 '시작') */
+  if(S.mPoints.length >= 2){
     S.mLine = new naver.maps.Polyline({
       map:S.map, path:S.mPoints,
       strokeColor:'#7c3aed', strokeWeight:4, strokeOpacity:0.95
     });
+  }
+  for(var i=0;i<S.mPoints.length;i++){
+    var txt, cls;
+    if(i === 0){ txt = '시작'; cls = 'm-label start'; }
+    else { txt = fmtDist(distM(S.mPoints[i-1], S.mPoints[i])); cls = 'm-label'; }
+    var lab = new naver.maps.Marker({
+      map:S.map, position:S.mPoints[i],
+      icon:{
+        content:'<div class="'+cls+'">'+txt+'</div>',
+        anchor:new naver.maps.Point(-8, 28)   /* 점 오른쪽 위에 배치 */
+      },
+      clickable:false
+    });
+    S.mLabels.push(lab);
   }
 }
 
@@ -1089,24 +1163,42 @@ window.clearMeasure = function(){
   S.mPoints = [];
   S.mMarkers.forEach(function(m){ m.setMap(null); });
   S.mMarkers = [];
+  clearMeasureLabels();
   if(S.mLine){ S.mLine.setMap(null); S.mLine = null; }
   if(S.mPoly){ S.mPoly.setMap(null); S.mPoly = null; }
   updateMeasureResult();
 };
 
-/* 거리 측정의 마지막 점을 즐겨찾기에 저장 */
+/* 거리 측정의 마지막 점을 즐겨찾기에 저장 (기본 이름 = 끝점 주소) */
 window.saveMeasureFav = function(){
   if(!S.mPoints.length){ toast('먼저 점을 찍어주세요'); return; }
   var p = S.mPoints[S.mPoints.length - 1];
   var lat = p.lat(), lng = p.lng();
-  var def = lat.toFixed(5) + ', ' + lng.toFixed(5);
-  var name = prompt('저장할 위치 이름을 입력하세요.', def);
-  if(name === null) return;
-  name = (name.trim() || def).slice(0, 40);
-  var favs = getFavs();
-  favs.unshift({ label:name, lat:lat, lng:lng });
-  setFavs(favs);
-  toast('⭐ 측정 끝점을 즐겨찾기에 저장했습니다');
+  var coordStr = lat.toFixed(5) + ', ' + lng.toFixed(5);
+
+  function ask(def){
+    var name = prompt('저장할 위치 이름을 입력하세요.', def);
+    if(name === null) return;
+    name = (name.trim() || def).slice(0, 40);
+    var favs = getFavs();
+    favs.unshift({ label:name, lat:lat, lng:lng });
+    setFavs(favs);
+    toast('⭐ 측정 끝점을 즐겨찾기에 저장했습니다');
+  }
+  /* 끝점 주소를 조회해 기본값으로 사용 (실패 시 좌표) */
+  if(naver.maps.Service && naver.maps.Service.reverseGeocode){
+    toast('주소 확인 중…');
+    naver.maps.Service.reverseGeocode({ coords:p, orders:'addr,roadaddr' }, function(st, res){
+      var def = coordStr;
+      if(st === naver.maps.Service.Status.OK){
+        var a = (res.v2 && res.v2.address) || {};
+        def = a.jibunAddress || a.roadAddress || coordStr;
+      }
+      ask(def);
+    });
+  } else {
+    ask(coordStr);
+  }
 };
 
 /* Haversine 거리(m) */
@@ -1131,6 +1223,9 @@ function areaM2(pts){
   return Math.abs(area * R * R / 2);
 }
 function fmtDist(m){
+  if(m < 1)    return Math.round(m * 100) + 'cm';          /* 1m 미만 → cm */
+  if(m < 10)   return m.toFixed(2) + 'm';                  /* 정밀 표시 */
+  if(m < 100)  return m.toFixed(1) + 'm';
   if(m < 1000) return Math.round(m) + 'm';
   return (m/1000).toFixed(2) + 'km';
 }
@@ -1176,13 +1271,28 @@ function copyText(t){
 }
 
 /* ================================================================
-   지도 타입 토글 (위성 하이브리드 ↔ 일반)
+   지도 유형 선택 시트 (일반 / 위성 / 위성+지명 / 지형)
 ================================================================ */
-window.toggleLayer = function(){
+window.openLayerSheet  = function(){
+  if(!S.map){ toast('지도 로딩 후 사용해주세요'); return; }
+  document.getElementById('layer-modal').classList.add('show');
+};
+window.closeLayerSheet = function(){
+  document.getElementById('layer-modal').classList.remove('show');
+};
+window.setLayer = function(type){
   if(!S.map){ return; }
-  S.isHybrid = !S.isHybrid;
-  S.map.setMapTypeId(S.isHybrid ? naver.maps.MapTypeId.HYBRID : naver.maps.MapTypeId.NORMAL);
-  toast(S.isHybrid ? '🛰 위성 지도' : '🗺 일반 지도');
+  var M = naver.maps.MapTypeId;
+  var map = { normal:M.NORMAL, satellite:M.SATELLITE, hybrid:M.HYBRID, terrain:M.TERRAIN };
+  var label = { normal:'일반', satellite:'위성', hybrid:'위성+지명', terrain:'지형' };
+  S.map.setMapTypeId(map[type] || M.HYBRID);
+  S.isHybrid = (type === 'hybrid' || type === 'satellite');
+  /* 선택 표시 갱신 */
+  document.querySelectorAll('#layer-modal .ls-opt').forEach(function(b){
+    b.classList.toggle('active', b.getAttribute('data-type') === type);
+  });
+  toast('🗺 ' + (label[type] || '지도') + ' 지도');
+  closeLayerSheet();
 };
 
 /* ================================================================
