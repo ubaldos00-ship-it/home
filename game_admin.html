@@ -149,7 +149,7 @@
     <div class="login-box">
       <div class="login-emoji">🔐</div>
       <h1 class="login-h">관리자 로그인</h1>
-      <p class="login-sub">ubaldos00@gmail.com<br>Google 계정으로 로그인하세요</p>
+      <p class="login-sub">ubaldos00@gmail.com<br>Google 계정으로 로그인</p>
       <button class="google-btn" id="googleBtn">
         <svg class="google-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -262,7 +262,6 @@
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
-  const ADMIN_EMAIL = 'ubaldos00@gmail.com';
 
   function withTimeout(promise, ms = 4500) {
     return Promise.race([promise, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
@@ -270,7 +269,7 @@
 
   // 인증 상태 감시
   onAuthStateChanged(auth, async (user) => {
-    if (user && user.email === ADMIN_EMAIL) {
+    if (user && user.email === 'ubaldos00@gmail.com') {
       document.getElementById('loginScreen').style.display = 'none';
       document.getElementById('adminScreen').classList.add('show');
       document.getElementById('logoutBtn').style.display = 'block';
@@ -287,9 +286,9 @@
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
-      if (result.user.email !== ADMIN_EMAIL) {
+      if (result.user.email !== 'ubaldos00@gmail.com') {
         await signOut(auth);
-        alert('접근이 거부되었습니다. spiano82@gmail.com으로 로그인하세요.');
+        alert('접근이 거부되었습니다. ubaldos00@gmail.com으로 로그인하세요.');
       }
     } catch (e) {
       alert('로그인 실패: ' + e.message);
