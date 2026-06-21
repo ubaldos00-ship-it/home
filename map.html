@@ -652,7 +652,7 @@ var S = { map:null, marker:null, circle:null, pickMarker:null,
           heading:null, compassOn:false, isHybrid:true,
           destLat:null, destLng:null, destName:'',
           measureMode:'off', mPoints:[], mMarkers:[], mLabels:[], mLine:null, mPoly:null,
-          favMarkers:[], cadOverlay:null, cadOn:false, _cadIdle:null,
+          favMarkers:[], cadOverlay:null, cadOn:false, _cadIdle:null, _cadZoom:null,
           naverReady:false, gpsOk:false, tapCount:0 };
 
 /* ── 뒤로가기 (새 탭으로 열린 경우 창 닫기 → 안되면 홈으로) ── */
@@ -1419,7 +1419,7 @@ function ensureCadOverlay(){
     var img = document.createElement('img');
     /* VWorld 지적도 PNG는 이미 배경이 투명(경계선·지번만) → 그대로 얹는다.
        (mix-blend-mode 는 네이버 레이어 격리 때문에 오히려 뿌옇게 보여 제거) */
-    img.style.cssText = 'position:absolute;pointer-events:none;opacity:0.25;' +
+    img.style.cssText = 'position:absolute;pointer-events:none;opacity:1;' +
                         'user-select:none;-webkit-user-select:none;';
     img.draggable = false;
     this._img = img;
@@ -1442,7 +1442,19 @@ function ensureCadOverlay(){
   };
   Cad.prototype.setData = function(url, b){
     this._b = b;
-    if(this._img){ if(this._img.src !== url) this._img.src = url; this.draw(); }
+    if(!this._img) return;
+    var im = this._img;
+    if(im.src !== url){
+      /* 새 이미지가 로드될 때까지 숨겨서, 줌 중 이전 이미지가 늘어나
+         노란 경계선이 굵게 번지는(뿌염) 현상을 막는다 */
+      im.style.visibility = 'hidden';
+      im.onload  = function(){ im.style.visibility = 'visible'; };
+      im.onerror = function(){ im.style.visibility = 'hidden'; };
+      im.src = url;
+    } else {
+      im.style.visibility = 'visible';
+    }
+    this.draw();
   };
   S.cadOverlay = new Cad();
   return S.cadOverlay;
@@ -1453,20 +1465,19 @@ function updateCadOverlay(){
   var b  = S.map.getBounds();
   var sw = b.getSW(), ne = b.getNE();
   var mapEl = document.getElementById('map');
-  var w = Math.min(mapEl.clientWidth  || 1024, 2048);
-  var h = Math.min(mapEl.clientHeight || 1024, 2048);
+  /* 화면 픽셀 × 기기 해상도(dpr) 로 요청해 고해상도(선명) 이미지를 받는다 */
+  var dpr = Math.min(window.devicePixelRatio || 1, 2);
+  var w = Math.min(Math.round((mapEl.clientWidth  || 1024) * dpr), 2048);
+  var h = Math.min(Math.round((mapEl.clientHeight || 1024) * dpr), 2048);
   var p1 = lngLatTo3857(sw.lat(), sw.lng());
   var p2 = lngLatTo3857(ne.lat(), ne.lng());
   var bbox = p1[0] + ',' + p1[1] + ',' + p2[0] + ',' + p2[1];   /* minx,miny,maxx,maxy */
   var url = 'https://api.vworld.kr/req/wms' +
             '?SERVICE=WMS&REQUEST=GetMap&VERSION=1.3.0' +
-            '&LAYERS=lp_pa_cbnd_bubun' +
-            '&STYLES=' +
+            '&LAYERS=lp_pa_cbnd_bubun&STYLES=lp_pa_cbnd_bubun' +
             '&CRS=EPSG:900913&BBOX=' + bbox +
             '&WIDTH=' + w + '&HEIGHT=' + h +
-            '&FORMAT=image/png' +
-            '&TRANSPARENT=true' +
-            '&BGCOLOR=0xFFFFFF' +
+            '&FORMAT=image/png&TRANSPARENT=true' +
             '&KEY=' + CFG.vworldKey +
             '&DOMAIN=https://ubaldos00-ship-it.github.io';
   var ov = ensureCadOverlay();
@@ -1490,6 +1501,12 @@ window.toggleCadastral = function(){
     /* 지도 이동/줌이 끝날 때마다 지적도 갱신 (1회만 등록) */
     if(!S._cadIdle){
       S._cadIdle = naver.maps.Event.addListener(S.map, 'idle', updateCadOverlay);
+    }
+    /* 줌 시작 즉시 기존 이미지를 숨겨 늘어남(노란 번짐) 방지 */
+    if(!S._cadZoom){
+      S._cadZoom = naver.maps.Event.addListener(S.map, 'zoom_changed', function(){
+        if(S.cadOverlay && S.cadOverlay._img) S.cadOverlay._img.style.visibility = 'hidden';
+      });
     }
     updateCadOverlay();
     toast('📐 지적도 겹쳐보기 켜짐');
