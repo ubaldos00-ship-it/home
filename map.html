@@ -648,7 +648,7 @@ var S = { map:null, marker:null, circle:null, pickMarker:null,
           heading:null, compassOn:false, isHybrid:true,
           destLat:null, destLng:null, destName:'',
           measureMode:'off', mPoints:[], mMarkers:[], mLabels:[], mLine:null, mPoly:null,
-          favMarkers:[], cadGround:null, cadOn:false, _cadIdle:null,
+          favMarkers:[], cadOverlay:null, cadOn:false, _cadIdle:null,
           naverReady:false, gpsOk:false, tapCount:0 };
 
 /* ── 뒤로가기 (새 탭으로 열린 경우 창 닫기 → 안되면 홈으로) ── */
@@ -1405,8 +1405,43 @@ function lngLatTo3857(lat, lng){
   y = y * 20037508.342789244 / 180;
   return [x, y];
 }
-/* 현재 화면 영역의 VWorld 지적도 WMS 이미지를 GroundOverlay 로 갱신
-   (네이버 지도는 overlayMapTypes 미지원 → 화면 단위 GroundOverlay 사용) */
+/* 커스텀 오버레이(OverlayView) — 투명 PNG 를 직접 <img> 로 그려서
+   ① 흰 배경 없이 경계선만 표시(뿌염 제거)  ② pointer-events:none 으로 클릭 통과 */
+function ensureCadOverlay(){
+  if(S.cadOverlay) return S.cadOverlay;
+  function Cad(){}
+  Cad.prototype = new naver.maps.OverlayView();
+  Cad.prototype.onAdd = function(){
+    var img = document.createElement('img');
+    img.style.cssText = 'position:absolute;pointer-events:none;opacity:0.95;' +
+                        'user-select:none;-webkit-user-select:none;';
+    img.draggable = false;
+    this._img = img;
+    this.getPanes().overlayLayer.appendChild(img);   /* 위성 위 · 마커 아래 */
+  };
+  Cad.prototype.draw = function(){
+    if(!this._img || !this._b) return;
+    var proj = this.getProjection();
+    var sw = proj.fromCoordToOffset(this._b.getSW());
+    var ne = proj.fromCoordToOffset(this._b.getNE());
+    var s = this._img.style;
+    s.left   = Math.min(sw.x, ne.x) + 'px';
+    s.top    = Math.min(sw.y, ne.y) + 'px';
+    s.width  = Math.abs(ne.x - sw.x) + 'px';
+    s.height = Math.abs(sw.y - ne.y) + 'px';
+  };
+  Cad.prototype.onRemove = function(){
+    if(this._img && this._img.parentNode) this._img.parentNode.removeChild(this._img);
+    this._img = null;
+  };
+  Cad.prototype.setData = function(url, b){
+    this._b = b;
+    if(this._img){ if(this._img.src !== url) this._img.src = url; this.draw(); }
+  };
+  S.cadOverlay = new Cad();
+  return S.cadOverlay;
+}
+/* 현재 화면 영역의 VWorld 지적도 WMS 이미지를 커스텀 오버레이로 갱신 */
 function updateCadOverlay(){
   if(!S.cadOn || !CFG.vworldKey || !S.map) return;
   var b  = S.map.getBounds();
@@ -1425,9 +1460,9 @@ function updateCadOverlay(){
             '&FORMAT=image/png&TRANSPARENT=true' +
             '&KEY=' + CFG.vworldKey +
             '&DOMAIN=https://ubaldos00-ship-it.github.io';
-  if(S.cadGround){ S.cadGround.setMap(null); }
-  S.cadGround = new naver.maps.GroundOverlay(url, b);
-  S.cadGround.setMap(S.map);
+  var ov = ensureCadOverlay();
+  if(!ov.getMap()) ov.setMap(S.map);
+  ov.setData(url, b);
 }
 window.toggleCadastral = function(){
   if(!S.map){ toast('지도 로딩 후 사용해주세요'); return; }
@@ -1451,7 +1486,7 @@ window.toggleCadastral = function(){
     toast('📐 지적도 겹쳐보기 켜짐');
   } else {
     S.cadOn = false;
-    if(S.cadGround){ S.cadGround.setMap(null); S.cadGround = null; }
+    if(S.cadOverlay){ S.cadOverlay.setMap(null); }
     document.getElementById('cadastralBtn').classList.remove('active');
     document.getElementById('cadState').textContent = 'OFF';
     toast('지적도 겹쳐보기 꺼짐');
