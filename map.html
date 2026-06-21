@@ -1,4 +1,4 @@
-<!-- map_v12.html · 저장: 2026-06-21 08:14 KST · 즐겨찾기 파일저장/불러오기/공유·잠금·전체삭제·삭제확인 · 지적도 overlayMapTypes수정 · 디버그버튼 -->
+<!-- map_v13.html · 저장: 2026-06-21 23:38 KST · 시트 드래그·즐겨찾기 리디자인(번호/색상/주소)·롱탭 액션메뉴·핀마커 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -165,34 +165,95 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 }
 #fav-all-btn:active{ background:#a87d1f; }
 #fav-list{ overflow-y:auto;-webkit-overflow-scrolling:touch; }
-/* 즐겨찾기 전체보기 마커 라벨 */
-.fav-pin{
-  background:#c9962b;color:#fff;font-size:11px;font-weight:800;
-  padding:3px 8px;border-radius:11px;white-space:nowrap;
-  box-shadow:0 2px 6px rgba(0,0,0,.35);border:2px solid #fff;
+/* 즐겨찾기 전체보기 핀 마커 (색상별 물방울 핀) */
+.fav-pinmark{
+  width:22px;height:22px;border-radius:50% 50% 50% 0;
+  transform:rotate(-45deg);border:2.5px solid #fff;
+  box-shadow:0 2px 5px rgba(0,0,0,.45);
+}
+.fav-bubble{
+  background:#fff;color:#111;font-size:12px;font-weight:800;
+  padding:4px 9px;border-radius:10px;white-space:nowrap;
+  box-shadow:0 2px 8px rgba(0,0,0,.3);border:1px solid #e6e2d5;
   font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
-  max-width:140px;overflow:hidden;text-overflow:ellipsis;
+  max-width:160px;overflow:hidden;text-overflow:ellipsis;
 }
 .fav-empty{ text-align:center;color:#9ca3af;font-size:13px;padding:20px 0; }
+/* 목록 항목 — 왼쪽 번호 + 제목/주소/좌표 + 잠금 + 휴지통 */
 .fav-item{
-  display:flex;align-items:center;gap:10px;
-  padding:11px 10px;border-radius:11px;background:#f8f7f1;
+  display:flex;align-items:center;gap:9px;
+  padding:10px 9px;border-radius:12px;background:#f8f7f1;
   border:1px solid #ece8d8;margin-bottom:7px;
 }
+.fav-item .fi-num{
+  flex-shrink:0;width:27px;height:27px;border-radius:50%;
+  background:#2e7a4e;color:#fff;font-size:12.5px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;
+}
+.fav-item.locked .fi-num{ background:#1a73e8; }
 .fav-item .fi-text{ flex:1;min-width:0;cursor:pointer; }
 .fav-item .fi-label{ font-size:14px;font-weight:700;color:#111;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
-.fav-item .fi-coord{ font-size:11px;color:#9ca3af;margin-top:1px; }
-.fav-item .fi-lock{
-  flex-shrink:0;border:none;background:transparent;
-  font-size:16px;cursor:pointer;padding:4px 4px;opacity:.85;
+.fav-item .fi-addr{ font-size:11.5px;color:#5b6358;margin-top:1px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.fav-item .fi-coord{ font-size:10.5px;color:#9ca3af;margin-top:1px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.fav-item .fi-lock, .fav-item .fi-del{
+  flex-shrink:0;border:none;background:transparent;cursor:pointer;
+  font-size:18px;padding:5px;line-height:1;
 }
-.fav-item .fi-del{
-  flex-shrink:0;border:none;background:transparent;color:#c0392b;
-  font-size:12px;font-weight:800;cursor:pointer;padding:6px 8px;
+.fav-item .fi-lock{ color:#9ca3af; }          /* 해제: 회색 */
+.fav-item.locked .fi-lock{ color:#1a73e8; }   /* 잠금: 파랑 */
+.fav-item.locked{ background:#eef4fb;border-color:#c5dcf5; }
+
+/* ── 즐겨찾기 저장 모달 (이름 + 색상) ── */
+#save-modal{
+  display:none;position:fixed;inset:0;z-index:1400;
+  background:rgba(0,0,0,.45);align-items:flex-end;justify-content:center;
 }
-.fav-item.locked{ background:#fff7e6;border-color:#f0d68a; }
-.fav-item.locked .fi-del{ color:#cbb37a; }
+#save-modal.show{ display:flex; }
+#save-sheet{
+  width:100%;max-width:480px;background:#fff;border-radius:20px 20px 0 0;
+  padding:8px 18px calc(18px + env(safe-area-inset-bottom));
+  box-shadow:0 -6px 24px rgba(0,0,0,.22);
+}
+.ss-title{ font-size:16px;font-weight:800;color:#111;margin:6px 0 12px; }
+#saveName{
+  width:100%;height:46px;border:1px solid #d8d3c4;border-radius:12px;
+  padding:0 14px;font-size:15px;font-family:inherit;outline:none;margin-bottom:12px;
+}
+.ss-label{ font-size:12px;font-weight:700;color:#8a8f86;margin-bottom:8px; }
+.ss-colors{ display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px; }
+.ss-color{
+  width:34px;height:34px;border-radius:50%;cursor:pointer;
+  border:3px solid transparent;box-shadow:0 1px 3px rgba(0,0,0,.25);
+}
+.ss-color.sel{ border-color:#111;transform:scale(1.1); }
+.ss-actions{ display:flex;gap:8px; }
+.ss-actions button{
+  flex:1;border:none;border-radius:12px;font-family:inherit;
+  font-size:15px;font-weight:700;padding:13px;cursor:pointer;
+}
+.ss-save{ background:#0d6640;color:#fff; }
+.ss-save:active{ background:#0a5030; }
+.ss-cancel{ background:#f3f4f6;color:#374151; }
+
+/* ── 롱탭 액션 메뉴 (파란 그리드) ── */
+#action-menu{
+  display:none;position:fixed;z-index:1500;
+  background:#2d8cff;border-radius:16px;padding:6px;
+  box-shadow:0 6px 22px rgba(0,0,0,.35);
+  grid-template-columns:repeat(5,1fr);gap:2px;
+}
+#action-menu.show{ display:grid; }
+.am-btn{
+  border:none;background:transparent;color:#fff;cursor:pointer;
+  font-family:inherit;font-size:11px;font-weight:700;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:9px 10px;border-radius:11px;white-space:nowrap;
+}
+.am-btn:active{ background:rgba(255,255,255,.2); }
+.am-ic{ font-size:18px;line-height:1; }
 /* 즐겨찾기 도구 버튼 줄 */
 .fav-tools{ display:flex;gap:6px;margin-bottom:10px; }
 .fav-tool{
@@ -314,10 +375,17 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
   transform:translateY(115%);transition:transform .3s ease;
 }
 #info-sheet.show{ transform:translateY(0); }
+/* 축소 상태: 핸들·주소만 보이고 버튼 숨김 (아래로 쓸어내리면) */
+#info-sheet.collapsed .info-actions{ display:none; }
 .sheet-handle{
-  width:40px;height:4px;border-radius:99px;background:#d1d5db;
-  margin:2px auto 10px;cursor:pointer;
+  width:46px;height:5px;border-radius:99px;background:#cfd3da;
+  margin:4px auto 11px;cursor:grab;touch-action:none;
 }
+/* 핸들 터치 영역 확대 */
+.sheet-handle::before{
+  content:'';position:absolute;left:0;right:0;height:34px;margin-top:-14px;
+}
+#info-sheet, #fav-sheet, #save-sheet{ position:relative; }
 #infoLine1{
   font-size:17px;font-weight:800;color:#111;line-height:1.3;
   word-break:keep-all;
@@ -560,16 +628,13 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 
 <!-- 하단 정보 시트 (현재위치·주소) -->
 <div id="info-sheet">
-  <div class="sheet-handle" id="sheetHandle" onclick="hideInfoSheet()"></div>
+  <div class="sheet-handle" id="sheetHandle"></div>
   <div id="infoLine1">📍 현재 위치</div>
   <div id="infoLine2">위치를 조회하면 주소가 표시됩니다</div>
   <div class="info-actions">
-    <button id="info-fav" onclick="addCurrentFav()">⭐ 즐겨찾기</button>
+    <button id="info-fav" onclick="addCurrentFav()">⭐ 저장</button>
     <button id="info-route" onclick="openRouteMenu()">🚗 길찾기</button>
     <button id="info-survey" onclick="fillSurvey()">📋 조사표 입력</button>
-  </div>
-  <div class="info-actions" style="margin-top:8px;">
-    <button id="info-close" onclick="hideInfoSheet()">닫기</button>
   </div>
 </div>
 
@@ -603,6 +668,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 <!-- 즐겨찾기 패널 (하단 시트) -->
 <div id="fav-modal" onclick="if(event.target===this)closeFavPanel()">
   <div id="fav-sheet">
+    <div class="sheet-handle" id="favHandle"></div>
     <div id="fav-head">
       <span>⭐ 즐겨찾기 위치</span>
       <button onclick="closeFavPanel()" id="fav-close">×</button>
@@ -612,14 +678,38 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
       <button id="fav-all-btn" onclick="showAllFavs()">🗺 전체보기</button>
     </div>
     <div class="fav-tools">
+      <button class="fav-tool" onclick="shareFavs()">🔗 공유</button>
       <button class="fav-tool" onclick="exportFavs()">💾 파일저장</button>
       <button class="fav-tool" onclick="document.getElementById('favImport').click()">📂 불러오기</button>
-      <button class="fav-tool" onclick="shareFavs()">🔗 공유</button>
       <button class="fav-tool danger" onclick="clearAllFavs()">🗑 전체삭제</button>
     </div>
     <input type="file" id="favImport" accept=".json,application/json" style="display:none" onchange="importFavs(event)">
     <div id="fav-list"></div>
   </div>
+</div>
+
+<!-- 즐겨찾기 저장 모달 (이름 + 색상 선택) -->
+<div id="save-modal" onclick="if(event.target===this)closeSaveModal()">
+  <div id="save-sheet">
+    <div class="sheet-handle"></div>
+    <div class="ss-title">⭐ 즐겨찾기 저장</div>
+    <input id="saveName" type="text" placeholder="이름(제목)을 입력하세요" maxlength="40" autocomplete="off">
+    <div class="ss-label">핀 색상</div>
+    <div class="ss-colors" id="saveColors"></div>
+    <div class="ss-actions">
+      <button class="ss-cancel" onclick="closeSaveModal()">취소</button>
+      <button class="ss-save" onclick="confirmSaveFav()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 롱탭 액션 메뉴 (도착·면적측정·주소·공유·저장) -->
+<div id="action-menu">
+  <button class="am-btn" onclick="amAct('dest')"><span class="am-ic">↗</span>도착</button>
+  <button class="am-btn" onclick="amAct('measure')"><span class="am-ic">📐</span>면적측정</button>
+  <button class="am-btn" onclick="amAct('addr')"><span class="am-ic">📍</span>주소</button>
+  <button class="am-btn" onclick="amAct('share')"><span class="am-ic">🔗</span>공유</button>
+  <button class="am-btn" onclick="amAct('save')"><span class="am-ic">⭐</span>저장</button>
 </div>
 
 <!-- 토스트 -->
@@ -653,6 +743,7 @@ var S = { map:null, marker:null, circle:null, pickMarker:null,
           destLat:null, destLng:null, destName:'',
           measureMode:'off', mPoints:[], mMarkers:[], mLabels:[], mLine:null, mPoly:null,
           favMarkers:[], cadOverlay:null, cadOn:false, _cadIdle:null, _cadZoom:null,
+          actLat:null, actLng:null,
           naverReady:false, gpsOk:false, tapCount:0 };
 
 /* ── 뒤로가기 (새 탭으로 열린 경우 창 닫기 → 안되면 홈으로) ── */
@@ -887,12 +978,13 @@ function renderMap(lat, lng, acc, skipMe){
       });
       log('지도 인스턴스 생성 완료');
 
-      /* 지도를 길게 누르면 그 지점의 지번·도로명 주소 조회 */
+      /* 지도를 길게 누르면(롱탭) 액션 메뉴(도착·면적측정·주소·공유·저장) 표시 */
       naver.maps.Event.addListener(S.map, 'longtap', function(e){
         if(S.measureMode !== 'off') return;   /* 측정 중이면 무시 */
         if(S.pickMarker){ S.pickMarker.setMap(null); }
         S.pickMarker = new naver.maps.Marker({ map:S.map, position:e.coord });
-        searchAddress(e.coord, '📍 선택 위치');
+        S.actLat = e.coord.lat(); S.actLng = e.coord.lng();
+        showActionMenu(e);
       });
 
       /* 측정 모드: 지도를 탭하면 측정 점 추가 */
@@ -1620,24 +1712,75 @@ function getFavs(){
 }
 function setFavs(arr){ localStorage.setItem(FAV_KEY, JSON.stringify(arr)); }
 
+/* 핀/번호 색상 팔레트 */
+var FAV_COLORS = [
+  {key:'red',    c:'#e23b2e'}, {key:'orange', c:'#f08c1e'},
+  {key:'yellow', c:'#f0b400'}, {key:'green',  c:'#2e9e4f'},
+  {key:'blue',   c:'#2d6cdf'}, {key:'purple', c:'#8b5cf6'}
+];
+function colorOf(key){
+  for(var i=0;i<FAV_COLORS.length;i++){ if(FAV_COLORS[i].key===key) return FAV_COLORS[i].c; }
+  return FAV_COLORS[0].c;
+}
+
 window.openFavPanel  = function(){ renderFavs(); document.getElementById('fav-modal').classList.add('show'); };
 window.closeFavPanel = function(){ document.getElementById('fav-modal').classList.remove('show'); };
 
+/* ── 저장 모달 (이름 + 색상 선택) ── */
+var _saveCtx = null, _saveColor = 'red';
 window.addCurrentFav = function(){
   if(!S.map){ toast('지도 로딩 후 저장해주세요'); return; }
   var c = S.map.getCenter();
-  var lat = c.lat(), lng = c.lng();
-  /* 현재 상단바 주소를 기본 이름으로 (이모지 제거) */
-  var def = (ahLine1.textContent || '').replace('📍','').trim();
-  if(!def || def === '현재 위치' || def === '주소 없음') def = lat.toFixed(5) + ', ' + lng.toFixed(5);
-  var name = prompt('저장할 위치 이름을 입력하세요.', def);
-  if(name === null) return;
-  name = (name.trim() || def).slice(0, 40);
+  openSaveModal(c.lat(), c.lng());
+};
+function openSaveModal(lat, lng){
+  var def = (ahLine1.textContent || '').replace('📍','').replace('⭐','').trim();
+  if(!def || def==='현재 위치' || def==='주소 없음' || def.indexOf('실시간')>=0 || def.indexOf('조회')>=0)
+    def = lat.toFixed(5) + ', ' + lng.toFixed(5);
+  var addr = (S.destName && S.destName!=='선택 위치') ? S.destName : '';
+  _saveCtx = { lat:lat, lng:lng, addr:addr };
+  _saveColor = 'red';
+  document.getElementById('saveName').value = def;
+  /* 주소가 없으면 좌표→주소 조회해 목록에 함께 저장(좌표 옆 주소 표시용) */
+  if(!addr && naver.maps.Service && naver.maps.Service.reverseGeocode){
+    naver.maps.Service.reverseGeocode(
+      { coords:new naver.maps.LatLng(lat, lng), orders:'addr,roadaddr' },
+      function(stt, res){
+        if(stt === naver.maps.Service.Status.OK){
+          var a = (res.v2 && res.v2.address) || {};
+          var ad = a.roadAddress || a.jibunAddress || '';
+          if(ad){
+            _saveCtx.addr = ad;
+            var ni = document.getElementById('saveName');
+            if(/^[\d.,\s-]+$/.test(ni.value)) ni.value = ad;   /* 기본값이 좌표면 주소로 교체 */
+          }
+        }
+      });
+  }
+  document.getElementById('saveColors').innerHTML = FAV_COLORS.map(function(col){
+    return '<div class="ss-color' + (col.key==='red'?' sel':'') + '" data-color="' + col.key +
+           '" style="background:' + col.c + '" onclick="pickSaveColor(\'' + col.key + '\')"></div>';
+  }).join('');
+  document.getElementById('save-modal').classList.add('show');
+  setTimeout(function(){ var el=document.getElementById('saveName'); el.focus(); el.select(); }, 120);
+}
+window.pickSaveColor = function(key){
+  _saveColor = key;
+  document.querySelectorAll('#saveColors .ss-color').forEach(function(el){
+    el.classList.toggle('sel', el.getAttribute('data-color')===key);
+  });
+};
+window.closeSaveModal = function(){ document.getElementById('save-modal').classList.remove('show'); };
+window.confirmSaveFav = function(){
+  if(!_saveCtx) return;
+  var name = (document.getElementById('saveName').value || '').trim().slice(0,40);
+  if(!name) name = _saveCtx.lat.toFixed(5) + ', ' + _saveCtx.lng.toFixed(5);
   var favs = getFavs();
-  favs.unshift({ label:name, lat:lat, lng:lng });
+  favs.unshift({ label:name, lat:_saveCtx.lat, lng:_saveCtx.lng, addr:_saveCtx.addr||'', color:_saveColor, locked:false });
   setFavs(favs);
+  closeSaveModal();
   renderFavs();
-  toast('⭐ 즐겨찾기에 저장했습니다');
+  toast('⭐ 저장했습니다');
 };
 
 window.delFav = function(idx){
@@ -1661,6 +1804,14 @@ window.toggleLock = function(idx){
   toast(favs[idx].locked ? '🔒 잠금 (삭제 방지)' : '🔓 잠금 해제');
 };
 
+/* 핀 마커 아이콘(색상별 물방울) */
+function favPinIcon(color){
+  return {
+    content:'<div class="fav-pinmark" style="background:' + colorOf(color) + '"></div>',
+    anchor:new naver.maps.Point(11, 22)
+  };
+}
+/* 즐겨찾기 위치로 이동 + 핀 + 제목 시트 표시 */
 window.gotoFav = function(idx){
   var favs = getFavs();
   var f = favs[idx];
@@ -1669,13 +1820,20 @@ window.gotoFav = function(idx){
   S.map.setCenter(ll);
   S.map.setZoom(17);
   if(S.pickMarker){ S.pickMarker.setMap(null); }
-  S.pickMarker = new naver.maps.Marker({ map:S.map, position:ll });
-  searchAddress(ll, '📍 ' + f.label);
+  S.pickMarker = new naver.maps.Marker({ map:S.map, position:ll, icon:favPinIcon(f.color) });
   closeFavPanel();
-  toast('📍 ' + f.label + ' (으)로 이동');
+  showFavInfo(f);
+  toast('📍 ' + f.label);
 };
+/* 즐겨찾기 정보를 하단 시트에 표시 (제목·주소·좌표) */
+function showFavInfo(f){
+  setDest(f.lat, f.lng, f.label);
+  ahLine1.textContent = '⭐ ' + f.label;
+  ahLine2.textContent = (f.addr ? f.addr + '  ·  ' : '') + f.lat.toFixed(5) + ', ' + f.lng.toFixed(5);
+  showInfoSheet();
+}
 
-/* 저장된 즐겨찾기를 지도 전체에 표시하고 한눈에 보이도록 화면 맞춤 */
+/* 저장된 즐겨찾기를 지도 전체에 핀으로 표시하고 한눈에 보이도록 화면 맞춤 */
 window.clearFavMarkers = function(){
   S.favMarkers.forEach(function(m){ m.setMap(null); });
   S.favMarkers = [];
@@ -1690,19 +1848,9 @@ window.showAllFavs = function(){
   favs.forEach(function(f){
     var ll = new naver.maps.LatLng(f.lat, f.lng);
     bounds.extend(ll);
-    var mk = new naver.maps.Marker({
-      map:S.map, position:ll,
-      title:f.label,
-      icon:{
-        content:'<div class="fav-pin">⭐ ' + escapeHtml(f.label) + '</div>',
-        anchor:new naver.maps.Point(14, 14)
-      }
-    });
-    /* 마커 탭하면 해당 위치 주소 표시 */
-    naver.maps.Event.addListener(mk, 'click', function(){
-      S.map.setCenter(ll);
-      searchAddress(ll, '⭐ ' + f.label);
-    });
+    var mk = new naver.maps.Marker({ map:S.map, position:ll, icon:favPinIcon(f.color) });
+    /* 핀 탭하면 저장 제목 표시 */
+    naver.maps.Event.addListener(mk, 'click', function(){ S.map.setCenter(ll); showFavInfo(f); });
     S.favMarkers.push(mk);
   });
   if(favs.length === 1){
@@ -1714,22 +1862,28 @@ window.showAllFavs = function(){
   toast('⭐ 즐겨찾기 ' + favs.length + '곳 전체보기');
 };
 
+/* 목록: 왼쪽 번호(아래=1, 최근=맨위 큰수) + 제목·주소·좌표 + 잠금 + 휴지통 */
 function renderFavs(){
   var list = document.getElementById('fav-list');
   var favs = getFavs();
   if(!favs.length){
-    list.innerHTML = '<div class="fav-empty">저장된 위치가 없습니다.<br>지도를 원하는 곳으로 옮긴 뒤<br>「현재 보고 있는 위치 저장」을 눌러보세요.</div>';
+    list.innerHTML = '<div class="fav-empty">저장된 위치가 없습니다.<br>지도를 원하는 곳으로 옮긴 뒤<br>「현재 위치 저장」을 눌러보세요.</div>';
     return;
   }
+  var n = favs.length;
   list.innerHTML = favs.map(function(f, i){
     var locked = !!f.locked;
+    var num = n - i;   /* 최근(맨위)=큰 번호, 아래로 갈수록 1 */
+    var addrLine = f.addr ? '<div class="fi-addr">' + escapeHtml(f.addr) + '</div>' : '';
     return '<div class="fav-item' + (locked ? ' locked' : '') + '">' +
+      '<div class="fi-num" style="background:' + colorOf(f.color) + '">' + num + '</div>' +
       '<div class="fi-text" onclick="gotoFav(' + i + ')">' +
         '<div class="fi-label">' + escapeHtml(f.label) + '</div>' +
+        addrLine +
         '<div class="fi-coord">' + f.lat.toFixed(5) + ', ' + f.lng.toFixed(5) + '</div>' +
       '</div>' +
       '<button class="fi-lock" onclick="toggleLock(' + i + ')" title="' + (locked?'잠금 해제':'잠금') + '">' + (locked ? '🔒' : '🔓') + '</button>' +
-      '<button class="fi-del" onclick="delFav(' + i + ')">삭제</button>' +
+      '<button class="fi-del" onclick="delFav(' + i + ')" title="삭제">🗑</button>' +
     '</div>';
   }).join('');
 }
@@ -1817,6 +1971,94 @@ function escapeHtml(s){
   });
 }
 
+/* ================================================================
+   롱탭 액션 메뉴 (도착 · 면적측정 · 주소 · 공유 · 저장)
+================================================================ */
+function showActionMenu(e){
+  var menu = document.getElementById('action-menu');
+  /* 롱탭 지점 픽셀 위치 기준 배치 (화면 밖으로 안 나가게 보정) */
+  var px = (e && e.offset) ? e.offset.x : (window.innerWidth/2);
+  var py = (e && e.offset) ? e.offset.y : (window.innerHeight/2);
+  menu.classList.add('show');
+  var mw = menu.offsetWidth || 320, mh = menu.offsetHeight || 70;
+  var left = Math.max(8, Math.min(px - mw/2, window.innerWidth - mw - 8));
+  var top  = py - mh - 14;
+  if(top < 60) top = py + 16;   /* 위 공간 없으면 아래로 */
+  menu.style.left = left + 'px';
+  menu.style.top  = top + 'px';
+}
+window.hideActionMenu = function(){ document.getElementById('action-menu').classList.remove('show'); };
+window.amAct = function(type){
+  hideActionMenu();
+  if(S.actLat == null) return;
+  var ll = new naver.maps.LatLng(S.actLat, S.actLng);
+  if(type === 'addr'){
+    searchAddress(ll, '📍 선택 위치');
+  } else if(type === 'dest'){
+    setDest(S.actLat, S.actLng, '선택 위치');
+    /* 주소를 먼저 조회해 목적지명 보강 후 길찾기 */
+    searchAddress(ll, '📍 선택 위치');
+    setTimeout(openRouteMenu, 400);
+  } else if(type === 'measure'){
+    openMeasure(); setMeasureMode('area');
+    addMeasurePoint(ll);
+    toast('면적 측정: 지도를 탭해 점을 이어 찍으세요');
+  } else if(type === 'share'){
+    setDest(S.actLat, S.actLng, '선택 위치');
+    shareLocation(S.actLat, S.actLng);
+  } else if(type === 'save'){
+    openSaveModal(S.actLat, S.actLng);
+  }
+};
+/* 선택 위치 공유 (네이버지도 링크) */
+function shareLocation(lat, lng){
+  var name = (S.destName && S.destName !== '선택 위치') ? S.destName : (lat.toFixed(5)+', '+lng.toFixed(5));
+  var url = 'https://map.naver.com/p/search/' + lat + ',' + lng;
+  var text = name + '\n' + url;
+  try{
+    if(navigator.share){ navigator.share({ title:name, text:text }).catch(function(){}); return; }
+  }catch(e){}
+  copyText(text);
+  toast('🔗 위치를 복사했습니다');
+}
+
+/* ================================================================
+   하단 시트 드래그 (핸들을 쓸어 축소/확대/닫기)
+================================================================ */
+function addSheetDrag(handle, sheet, opts){
+  if(!handle || !sheet) return;
+  var startY = 0, dy = 0, dragging = false;
+  handle.addEventListener('touchstart', function(e){
+    if(e.touches.length !== 1) return;
+    startY = e.touches[0].clientY; dy = 0; dragging = true;
+    sheet.style.transition = 'none';
+  }, { passive:true });
+  handle.addEventListener('touchmove', function(e){
+    if(!dragging) return;
+    dy = e.touches[0].clientY - startY;
+    if(dy > 0) sheet.style.transform = 'translateY(' + dy + 'px)';   /* 아래로만 따라감 */
+  }, { passive:true });
+  handle.addEventListener('touchend', function(){
+    if(!dragging) return; dragging = false;
+    sheet.style.transition = '';
+    sheet.style.transform = '';
+    if(dy > 55){ opts.down && opts.down(); }
+    else if(dy < -45){ opts.up && opts.up(); }
+  }, { passive:true });
+}
+document.addEventListener('DOMContentLoaded', function(){ /* noop */ });
+(function initSheetDrag(){
+  var infoSheetEl = document.getElementById('info-sheet');
+  var favSheetEl  = document.getElementById('fav-sheet');
+  addSheetDrag(document.getElementById('sheetHandle'), infoSheetEl, {
+    down: function(){ infoSheetEl.classList.add('collapsed'); },   /* 아래로 → 주소만 */
+    up:   function(){ infoSheetEl.classList.remove('collapsed'); } /* 위로 → 전체 */
+  });
+  addSheetDrag(document.getElementById('favHandle'), favSheetEl, {
+    down: function(){ closeFavPanel(); }   /* 아래로 → 닫기 */
+  });
+})();
+
 /* ── GPS 펄스 애니메이션 ── */
 var st = document.createElement('style');
 st.textContent = '@keyframes gpsPulse{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(2.6);opacity:0}}';
@@ -1829,6 +2071,7 @@ document.head.appendChild(st);
    별도 waitAndRun 폴링 불필요
 ── */
 
+window.__t={ fav:function(){openFavPanel();}, save:function(){openSaveModal(35.84,128.74);}, act:function(){S.actLat=35.84;S.actLng=128.74;showActionMenu({offset:{x:400,y:600}});return document.getElementById('action-menu').classList.contains('show');} };
 log('페이지 로드. Naver API 콜백 대기 중…');
 
 })();
