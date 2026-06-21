@@ -1,4 +1,4 @@
-<!-- map_v13.html · 저장: 2026-06-21 23:38 KST · 시트 드래그·즐겨찾기 리디자인(번호/색상/주소)·롱탭 액션메뉴·핀마커 -->
+<!-- map_v14.html · 저장: 2026-06-22 00:15 KST · 목록 색상변경·도구버튼(내보내기/색상)·액션메뉴 지도따라이동·공유 주소만 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -189,6 +189,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
   flex-shrink:0;width:27px;height:27px;border-radius:50%;
   background:#2e7a4e;color:#fff;font-size:12.5px;font-weight:800;
   display:flex;align-items:center;justify-content:center;
+  cursor:pointer;box-shadow:0 0 0 2px rgba(0,0,0,.06);
 }
 .fav-item.locked .fi-num{ background:#1a73e8; }
 .fav-item .fi-text{ flex:1;min-width:0;cursor:pointer; }
@@ -199,20 +200,22 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 .fav-item .fi-coord{ font-size:10.5px;color:#9ca3af;margin-top:1px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
 .fav-item .fi-lock, .fav-item .fi-del{
-  flex-shrink:0;border:none;background:transparent;cursor:pointer;
-  font-size:18px;padding:5px;line-height:1;
+  flex-shrink:0;border:none;cursor:pointer;
+  font-size:17px;line-height:1;width:38px;height:38px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
 }
-.fav-item .fi-lock{ color:#9ca3af; }          /* 해제: 회색 */
-.fav-item.locked .fi-lock{ color:#1a73e8; }   /* 잠금: 파랑 */
+.fav-item .fi-lock{ background:#eceef1; }              /* 잠금해제: 연회색 */
+.fav-item.locked .fi-lock{ background:#dceaff; }       /* 잠금: 연파랑 */
+.fav-item .fi-del{ background:#fdecea; }               /* 삭제: 연빨강 */
 .fav-item.locked{ background:#eef4fb;border-color:#c5dcf5; }
 
-/* ── 즐겨찾기 저장 모달 (이름 + 색상) ── */
-#save-modal{
+/* ── 즐겨찾기 저장 / 색상변경 모달 (이름 + 색상) ── */
+#save-modal, #color-modal{
   display:none;position:fixed;inset:0;z-index:1400;
   background:rgba(0,0,0,.45);align-items:flex-end;justify-content:center;
 }
-#save-modal.show{ display:flex; }
-#save-sheet{
+#save-modal.show, #color-modal.show{ display:flex; }
+#save-sheet, #color-sheet{
   width:100%;max-width:480px;background:#fff;border-radius:20px 20px 0 0;
   padding:8px 18px calc(18px + env(safe-area-inset-bottom));
   box-shadow:0 -6px 24px rgba(0,0,0,.22);
@@ -257,13 +260,15 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 /* 즐겨찾기 도구 버튼 줄 */
 .fav-tools{ display:flex;gap:6px;margin-bottom:10px; }
 .fav-tool{
-  flex:1;border:1px solid #e2ddcf;border-radius:10px;background:#fafaf5;
-  color:#5b6358;font-family:inherit;font-size:12px;font-weight:700;
-  padding:9px 4px;cursor:pointer;white-space:nowrap;
+  flex:1;border:none;border-radius:10px;
+  color:#fff;font-family:inherit;font-size:12px;font-weight:700;
+  padding:10px 4px;cursor:pointer;white-space:nowrap;
 }
-.fav-tool:active{ background:#f0ecdc; }
-.fav-tool.danger{ color:#c0392b;border-color:#f0c4c0;background:#fdf2f1; }
-.fav-tool.danger:active{ background:#fae0dd; }
+.fav-tool:active{ filter:brightness(.92); }
+.fav-tool.t-share{  background:#2e9e4f; }   /* 공유 초록 */
+.fav-tool.t-export{ background:#8b5cf6; }   /* 내보내기 보라 */
+.fav-tool.t-import{ background:#2d6cdf; }   /* 불러오기 파랑 */
+.fav-tool.t-clear{  background:#c0392b; }   /* 전체삭제 빨강 */
 
 /* ── 검색 입력/버튼 (상단 오버레이 안) ── */
 #search-input{
@@ -385,7 +390,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 .sheet-handle::before{
   content:'';position:absolute;left:0;right:0;height:34px;margin-top:-14px;
 }
-#info-sheet, #fav-sheet, #save-sheet{ position:relative; }
+#fav-sheet, #save-sheet, #color-sheet{ position:relative; }
 #infoLine1{
   font-size:17px;font-weight:800;color:#111;line-height:1.3;
   word-break:keep-all;
@@ -678,10 +683,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
       <button id="fav-all-btn" onclick="showAllFavs()">🗺 전체보기</button>
     </div>
     <div class="fav-tools">
-      <button class="fav-tool" onclick="shareFavs()">🔗 공유</button>
-      <button class="fav-tool" onclick="exportFavs()">💾 파일저장</button>
-      <button class="fav-tool" onclick="document.getElementById('favImport').click()">📂 불러오기</button>
-      <button class="fav-tool danger" onclick="clearAllFavs()">🗑 전체삭제</button>
+      <button class="fav-tool t-share" onclick="shareFavs()">🔗 공유</button>
+      <button class="fav-tool t-export" onclick="exportFavs()">📤 내보내기</button>
+      <button class="fav-tool t-import" onclick="document.getElementById('favImport').click()">📥 불러오기</button>
+      <button class="fav-tool t-clear" onclick="clearAllFavs()">🗑 전체삭제</button>
     </div>
     <input type="file" id="favImport" accept=".json,application/json" style="display:none" onchange="importFavs(event)">
     <div id="fav-list"></div>
@@ -699,6 +704,18 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
     <div class="ss-actions">
       <button class="ss-cancel" onclick="closeSaveModal()">취소</button>
       <button class="ss-save" onclick="confirmSaveFav()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 핀 색상 변경 모달 (목록 번호 동그라미 탭 시) -->
+<div id="color-modal" onclick="if(event.target===this)closeColorModal()">
+  <div id="color-sheet">
+    <div class="sheet-handle"></div>
+    <div class="ss-title">🎨 핀 색상 변경</div>
+    <div class="ss-colors" id="colorColors"></div>
+    <div class="ss-actions">
+      <button class="ss-cancel" onclick="closeColorModal()">닫기</button>
     </div>
   </div>
 </div>
@@ -743,7 +760,7 @@ var S = { map:null, marker:null, circle:null, pickMarker:null,
           destLat:null, destLng:null, destName:'',
           measureMode:'off', mPoints:[], mMarkers:[], mLabels:[], mLine:null, mPoly:null,
           favMarkers:[], cadOverlay:null, cadOn:false, _cadIdle:null, _cadZoom:null,
-          actLat:null, actLng:null,
+          actLat:null, actLng:null, _amMove:null,
           naverReady:false, gpsOk:false, tapCount:0 };
 
 /* ── 뒤로가기 (새 탭으로 열린 경우 창 닫기 → 안되면 홈으로) ── */
@@ -1876,17 +1893,37 @@ function renderFavs(){
     var num = n - i;   /* 최근(맨위)=큰 번호, 아래로 갈수록 1 */
     var addrLine = f.addr ? '<div class="fi-addr">' + escapeHtml(f.addr) + '</div>' : '';
     return '<div class="fav-item' + (locked ? ' locked' : '') + '">' +
-      '<div class="fi-num" style="background:' + colorOf(f.color) + '">' + num + '</div>' +
+      '<div class="fi-num" style="background:' + colorOf(f.color) + '" onclick="openColorModal(' + i + ')" title="색상 변경">' + num + '</div>' +
       '<div class="fi-text" onclick="gotoFav(' + i + ')">' +
         '<div class="fi-label">' + escapeHtml(f.label) + '</div>' +
         addrLine +
         '<div class="fi-coord">' + f.lat.toFixed(5) + ', ' + f.lng.toFixed(5) + '</div>' +
       '</div>' +
       '<button class="fi-lock" onclick="toggleLock(' + i + ')" title="' + (locked?'잠금 해제':'잠금') + '">' + (locked ? '🔒' : '🔓') + '</button>' +
-      '<button class="fi-del" onclick="delFav(' + i + ')" title="삭제">🗑</button>' +
+      '<button class="fi-del" onclick="delFav(' + i + ')" title="삭제">🗑️</button>' +
     '</div>';
   }).join('');
 }
+
+/* ── 목록 번호(색상 동그라미) 탭 → 핀 색상 변경 ── */
+var _colorIdx = -1;
+window.openColorModal = function(idx){
+  _colorIdx = idx;
+  var favs = getFavs();
+  var cur = favs[idx] ? favs[idx].color : 'red';
+  document.getElementById('colorColors').innerHTML = FAV_COLORS.map(function(col){
+    return '<div class="ss-color' + (col.key===cur?' sel':'') + '" style="background:' + col.c +
+           '" onclick="setFavColor(\'' + col.key + '\')"></div>';
+  }).join('');
+  document.getElementById('color-modal').classList.add('show');
+};
+window.closeColorModal = function(){ document.getElementById('color-modal').classList.remove('show'); };
+window.setFavColor = function(key){
+  var favs = getFavs();
+  if(favs[_colorIdx]){ favs[_colorIdx].color = key; setFavs(favs); renderFavs(); }
+  closeColorModal();
+  toast('🎨 핀 색상을 변경했습니다');
+};
 
 /* ── 즐겨찾기 전체삭제 (잠금 항목 제외) ── */
 window.clearAllFavs = function(){
@@ -1976,14 +2013,26 @@ function escapeHtml(s){
 ================================================================ */
 function showActionMenu(e){
   var menu = document.getElementById('action-menu');
-  /* 롱탭 지점 픽셀 위치 기준 배치 (화면 밖으로 안 나가게 보정) */
-  var px = (e && e.offset) ? e.offset.x : (window.innerWidth/2);
-  var py = (e && e.offset) ? e.offset.y : (window.innerHeight/2);
   menu.classList.add('show');
+  positionActionMenu();
+  /* 지도가 움직이면 메뉴도 롱탭 좌표를 따라 이동 (1회만 등록) */
+  if(!S._amMove){
+    S._amMove = naver.maps.Event.addListener(S.map, 'bounds_changed', positionActionMenu);
+  }
+}
+/* 롱탭 좌표(actLat/Lng)를 화면 픽셀로 변환해 메뉴 배치 */
+function positionActionMenu(){
+  var menu = document.getElementById('action-menu');
+  if(!menu.classList.contains('show') || S.actLat == null || !S.map) return;
+  var proj = S.map.getProjection();
+  var off  = proj.fromCoordToOffset(new naver.maps.LatLng(S.actLat, S.actLng));
+  var mapRect = document.getElementById('map').getBoundingClientRect();
+  var px = off.x + mapRect.left;
+  var py = off.y + mapRect.top;
   var mw = menu.offsetWidth || 320, mh = menu.offsetHeight || 70;
   var left = Math.max(8, Math.min(px - mw/2, window.innerWidth - mw - 8));
-  var top  = py - mh - 14;
-  if(top < 60) top = py + 16;   /* 위 공간 없으면 아래로 */
+  var top  = py - mh - 16;
+  if(top < 56) top = py + 18;
   menu.style.left = left + 'px';
   menu.style.top  = top + 'px';
 }
@@ -2004,22 +2053,36 @@ window.amAct = function(type){
     addMeasurePoint(ll);
     toast('면적 측정: 지도를 탭해 점을 이어 찍으세요');
   } else if(type === 'share'){
-    setDest(S.actLat, S.actLng, '선택 위치');
-    shareLocation(S.actLat, S.actLng);
+    shareAddressOnly(S.actLat, S.actLng);
   } else if(type === 'save'){
     openSaveModal(S.actLat, S.actLng);
   }
 };
-/* 선택 위치 공유 (네이버지도 링크) */
-function shareLocation(lat, lng){
-  var name = (S.destName && S.destName !== '선택 위치') ? S.destName : (lat.toFixed(5)+', '+lng.toFixed(5));
-  var url = 'https://map.naver.com/p/search/' + lat + ',' + lng;
-  var text = name + '\n' + url;
-  try{
-    if(navigator.share){ navigator.share({ title:name, text:text }).catch(function(){}); return; }
-  }catch(e){}
-  copyText(text);
-  toast('🔗 위치를 복사했습니다');
+/* 선택 위치의 주소만 공유 (좌표·URL 없이 주소 텍스트만) */
+function shareAddressOnly(lat, lng){
+  function doShare(addr){
+    var text = addr || (lat.toFixed(5) + ', ' + lng.toFixed(5));
+    try{
+      if(navigator.share){ navigator.share({ title:'위치 주소', text:text }).catch(function(){}); return; }
+    }catch(e){}
+    copyText(text);
+    toast('🔗 주소를 복사했습니다');
+  }
+  if(naver.maps.Service && naver.maps.Service.reverseGeocode){
+    toast('주소 확인 중…');
+    naver.maps.Service.reverseGeocode(
+      { coords:new naver.maps.LatLng(lat, lng), orders:'addr,roadaddr' },
+      function(st, res){
+        var addr = '';
+        if(st === naver.maps.Service.Status.OK){
+          var a = (res.v2 && res.v2.address) || {};
+          addr = a.roadAddress || a.jibunAddress || '';
+        }
+        doShare(addr);
+      });
+  } else {
+    doShare('');
+  }
 }
 
 /* ================================================================
@@ -2071,7 +2134,6 @@ document.head.appendChild(st);
    별도 waitAndRun 폴링 불필요
 ── */
 
-window.__t={ fav:function(){openFavPanel();}, save:function(){openSaveModal(35.84,128.74);}, act:function(){S.actLat=35.84;S.actLng=128.74;showActionMenu({offset:{x:400,y:600}});return document.getElementById('action-menu').classList.contains('show');} };
 log('페이지 로드. Naver API 콜백 대기 중…');
 
 })();
