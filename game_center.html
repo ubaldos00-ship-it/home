@@ -1,0 +1,596 @@
+<!-- game_center.html · 저장: 2026-06-22 01:01 KST -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-B8ELP4S5PR"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-B8ELP4S5PR');
+</script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#27500A" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title>텐아르 게임센터</title>
+
+<!-- Pretendard 한국어 웹폰트 -->
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+
+<style>
+  :root {
+    --color-primary: #1f5132;
+    --color-primary-light: #2e7a4e;
+    --color-primary-dark: #143820;
+    --color-accent: #c9962b;
+    --color-accent-light: #e6b955;
+    --color-bg: #f6f4ec;
+    --color-card: #ffffff;
+    --color-text: #1a1f1a;
+    --color-text-soft: #5b6358;
+    --color-border: #e6e2d5;
+    --color-danger: #c0392b;
+    --shadow-sm: 0 1px 2px rgba(20, 56, 32, 0.05);
+    --shadow-md: 0 4px 12px rgba(20, 56, 32, 0.08);
+    --shadow-lg: 0 8px 24px rgba(20, 56, 32, 0.12);
+    --radius-sm: 10px;
+    --radius-md: 14px;
+    --radius-lg: 20px;
+    --header-h: 96px;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html { background-color: #27500A; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-size: 15px; line-height: 1.55; -webkit-font-smoothing: antialiased;
+  }
+  body {
+    min-height: 100vh;
+    padding-top: calc(var(--header-h) + env(safe-area-inset-top));
+    padding-bottom: calc(28px + env(safe-area-inset-bottom));
+    background-image:
+      radial-gradient(circle at 10% 0%, rgba(31, 81, 50, 0.04) 0%, transparent 40%),
+      radial-gradient(circle at 90% 100%, rgba(201, 150, 43, 0.05) 0%, transparent 40%);
+  }
+
+  /* ===== HEADER ===== */
+  header.app-header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    height: calc(var(--header-h) + env(safe-area-inset-top));
+    padding: calc(12px + env(safe-area-inset-top)) 18px 12px;
+    background: #27500A; color: #fff;
+    box-shadow: var(--shadow-md);
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .hd-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .hd-title { font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.78); margin: 0; }
+  .hd-brand { display: flex; align-items: baseline; gap: 8px; margin-top: 2px; }
+  .hd-brand .nm {
+    font-size: 24px; font-weight: 800; letter-spacing: -0.02em; color: #fff;
+    background: linear-gradient(180deg, #ffffff 0%, var(--color-accent-light) 130%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    line-height: 1.1;
+  }
+  .hd-brand .eng { font-size: 12px; font-weight: 600; color: var(--color-accent-light); letter-spacing: 0.04em; }
+  .home-link {
+    color: #fff; text-decoration: none; font-size: 1.2rem;
+    width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; background: rgba(255,255,255,0.12); flex-shrink: 0;
+  }
+  .home-link:active { background: rgba(255,255,255,0.25); }
+
+  /* 사용자 요약 바 */
+  .user-bar {
+    margin-top: 8px; display: flex; align-items: center; gap: 8px;
+    background: rgba(0,0,0,0.16); border-radius: 999px; padding: 5px 12px;
+    align-self: flex-start; max-width: 100%;
+  }
+  .user-bar .lv-badge {
+    background: var(--color-accent); color: #2a1c00; font-weight: 800; font-size: 11px;
+    padding: 2px 8px; border-radius: 999px; flex-shrink: 0;
+  }
+  .user-bar .greet { font-size: 12.5px; color: #fff; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* ===== 메인 ===== */
+  main { padding: 16px 16px 24px; max-width: 600px; margin: 0 auto; }
+
+  .section {
+    background: var(--color-card); border: 1px solid var(--color-border);
+    border-radius: var(--radius-md); padding: 14px 14px 12px; margin-bottom: 14px;
+    box-shadow: var(--shadow-sm);
+  }
+  .section-title {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 16px; font-weight: 800; color: var(--color-primary-dark);
+    margin: 0 0 13px; padding: 10px 12px; border-radius: 9px;
+    background: linear-gradient(90deg, rgba(31,81,50,0.08) 0%, rgba(31,81,50,0.02) 100%);
+    border-left: 4px solid var(--color-primary); letter-spacing: -0.01em;
+  }
+  .section-title .icon {
+    width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 9px; background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+    color: #fff; font-size: 16px; flex-shrink: 0; box-shadow: 0 2px 6px rgba(31,81,50,0.25);
+  }
+
+  /* XP 진행 카드 */
+  .xp-card {
+    background: linear-gradient(135deg, #1f5132 0%, #2e7a4e 100%);
+    color: #fff; border-radius: var(--radius-md); padding: 15px 16px; margin-bottom: 14px;
+    box-shadow: var(--shadow-md);
+  }
+  .xp-top { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 9px; }
+  .xp-rank { font-size: 18px; font-weight: 800; letter-spacing: -0.01em; }
+  .xp-rank small { font-size: 12px; font-weight: 600; color: var(--color-accent-light); margin-left: 4px; }
+  .xp-num { font-size: 12px; color: rgba(255,255,255,0.82); font-variant-numeric: tabular-nums; }
+  .xp-bar { height: 9px; background: rgba(255,255,255,0.2); border-radius: 999px; overflow: hidden; }
+  .xp-fill { height: 100%; background: linear-gradient(90deg, var(--color-accent) 0%, var(--color-accent-light) 100%); width: 0%; transition: width 0.6s ease; }
+  .xp-stats { display: flex; gap: 8px; margin-top: 12px; }
+  .xp-stat { flex: 1; background: rgba(255,255,255,0.12); border-radius: 10px; padding: 8px; text-align: center; }
+  .xp-stat .v { font-size: 17px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .xp-stat .l { font-size: 10.5px; color: rgba(255,255,255,0.75); margin-top: 1px; }
+
+  /* 게임 카드 */
+  .game-card {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 12px; background: #fafaf5; border: 1px solid #ece8d8;
+    border-radius: var(--radius-sm); color: var(--color-text); text-decoration: none;
+    margin-bottom: 9px; transition: all 0.15s ease; position: relative;
+  }
+  .game-card:last-child { margin-bottom: 0; }
+  .game-card.playable:active { transform: scale(0.98); background: #f0ecdc; border-color: var(--color-primary-light); }
+  .game-card.soon { opacity: 0.62; }
+  .game-emoji {
+    width: 48px; height: 48px; display: inline-flex; align-items: center; justify-content: center;
+    background: #fff; border: 1px solid var(--color-border); border-radius: 12px;
+    font-size: 25px; flex-shrink: 0;
+  }
+  .game-card.playable .game-emoji {
+    background: linear-gradient(135deg, #f0f8f0 0%, #e4f2e4 100%); border-color: #c0dab8;
+  }
+  .game-info { flex: 1; min-width: 0; }
+  .game-name { font-size: 16px; font-weight: 800; color: var(--color-primary-dark); }
+  .game-desc { font-size: 12px; color: var(--color-text-soft); margin-top: 2px; }
+  .game-best { font-size: 12px; color: var(--color-accent); font-weight: 700; margin-top: 3px; }
+  .game-best span { color: var(--color-text-soft); font-weight: 500; }
+  .game-go {
+    flex-shrink: 0; font-size: 12px; font-weight: 800; color: #fff;
+    background: var(--color-primary); border-radius: 999px; padding: 7px 13px; white-space: nowrap;
+  }
+  .game-soon-tag {
+    flex-shrink: 0; font-size: 11px; font-weight: 700; color: var(--color-text-soft);
+    background: #eceadf; border-radius: 999px; padding: 6px 11px; white-space: nowrap;
+  }
+
+  /* 챔피언 */
+  .champ-row {
+    display: flex; align-items: center; gap: 10px; padding: 9px 4px;
+    border-bottom: 1px dashed var(--color-border);
+  }
+  .champ-row:last-child { border-bottom: none; }
+  .champ-medal { font-size: 18px; flex-shrink: 0; width: 26px; text-align: center; }
+  .champ-game { flex: 1; min-width: 0; font-size: 13.5px; font-weight: 700; color: var(--color-text); }
+  .champ-game small { display: block; font-size: 11px; color: var(--color-text-soft); font-weight: 500; }
+  .champ-name { font-size: 13px; font-weight: 700; color: var(--color-primary); max-width: 38%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .champ-score { font-size: 13px; font-weight: 800; color: var(--color-accent); font-variant-numeric: tabular-nums; flex-shrink: 0; }
+  .champ-empty { color: var(--color-text-soft); font-size: 12px; }
+
+  /* 공지 */
+  .notice-item {
+    background: linear-gradient(90deg, #fff8e6 0%, #fff3d4 100%);
+    border: 1px solid #f0d68a; border-left: 4px solid var(--color-accent);
+    border-radius: var(--radius-sm); padding: 11px 13px; margin-bottom: 9px;
+  }
+  .notice-item:last-child { margin-bottom: 0; }
+  .notice-title { font-size: 14px; font-weight: 800; color: #6b4f0a; }
+  .notice-body { font-size: 12.5px; color: #6b4f0a; margin-top: 3px; line-height: 1.5; white-space: pre-wrap; }
+  .notice-date { font-size: 10.5px; color: #a08a4a; margin-top: 5px; font-variant-numeric: tabular-nums; }
+  .empty-hint { color: var(--color-text-soft); font-size: 12.5px; text-align: center; padding: 6px 0; }
+
+  footer.info {
+    margin-top: 6px; padding: 14px 16px; text-align: center;
+    font-size: 11.5px; color: var(--color-text-soft); line-height: 1.7;
+  }
+  footer.info .brand-line { font-size: 12.5px; font-weight: 700; color: var(--color-primary); margin-bottom: 3px; }
+
+  /* ===== 닉네임 등록 오버레이 ===== */
+  .nick-overlay {
+    display: none; position: fixed; inset: 0; z-index: 500;
+    background: linear-gradient(160deg, #1f5132 0%, #143820 100%);
+    align-items: center; justify-content: center; padding: 24px;
+  }
+  .nick-overlay.show { display: flex; }
+  .nick-box {
+    width: 100%; max-width: 380px; background: #fff; border-radius: var(--radius-lg);
+    padding: 28px 22px; box-shadow: 0 20px 50px rgba(0,0,0,0.35); text-align: center;
+    animation: pop 0.3s ease;
+  }
+  @keyframes pop { from { opacity:0; transform: translateY(14px) scale(0.97); } to { opacity:1; transform: none; } }
+  .nick-emoji { font-size: 44px; }
+  .nick-h { font-size: 21px; font-weight: 800; color: var(--color-primary-dark); margin: 8px 0 4px; }
+  .nick-sub { font-size: 13px; color: var(--color-text-soft); margin-bottom: 18px; line-height: 1.5; }
+  .nick-input {
+    width: 100%; border: 2px solid var(--color-border); border-radius: 12px;
+    padding: 14px 14px; font-family: inherit; font-size: 17px; text-align: center;
+    outline: none; font-weight: 700; transition: border-color 0.15s;
+  }
+  .nick-input:focus { border-color: var(--color-primary-light); }
+  .nick-msg { min-height: 18px; font-size: 12.5px; font-weight: 700; margin: 9px 0 4px; }
+  .nick-msg.err { color: var(--color-danger); }
+  .nick-msg.ok { color: var(--color-primary-light); }
+  .nick-rules { font-size: 11.5px; color: var(--color-text-soft); margin-bottom: 16px; line-height: 1.6; }
+  .nick-btn {
+    width: 100%; border: none; border-radius: 14px; padding: 15px;
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+    color: #fff; font-size: 16px; font-weight: 800; font-family: inherit; cursor: pointer;
+    box-shadow: 0 6px 16px rgba(31,81,50,0.3);
+  }
+  .nick-btn:active { transform: scale(0.98); }
+  .nick-btn:disabled { opacity: 0.5; box-shadow: none; }
+
+  /* 로딩 스켈레톤 */
+  .loading { color: var(--color-text-soft); font-size: 12.5px; text-align: center; padding: 10px 0; }
+
+  @media (max-width: 360px) {
+    .hd-brand .nm { font-size: 21px; }
+    .game-name { font-size: 14.5px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== 헤더 ===== -->
+<header class="app-header">
+  <div class="hd-top">
+    <div>
+      <p class="hd-title">🎮 텐아르 게임센터</p>
+      <div class="hd-brand">
+        <span class="nm">GAME CENTER</span>
+        <span class="eng">TEN-AR</span>
+      </div>
+    </div>
+    <a href="https://ubaldos00-ship-it.github.io/home/" class="home-link" title="홈으로">🏠</a>
+  </div>
+  <div class="user-bar" id="userBar" style="display:none;">
+    <span class="lv-badge" id="userBarLv">LV.1</span>
+    <span class="greet" id="userBarGreet">안녕하세요</span>
+  </div>
+</header>
+
+<!-- ===== 본문 ===== -->
+<main>
+  <!-- XP 카드 -->
+  <div class="xp-card" id="xpCard" style="display:none;">
+    <div class="xp-top">
+      <div class="xp-rank">LV.<span id="xpLv">1</span> <small id="xpRankName">초급 조사원</small></div>
+      <div class="xp-num"><span id="xpCur">0</span> / <span id="xpNext">100</span> XP</div>
+    </div>
+    <div class="xp-bar"><div class="xp-fill" id="xpFill"></div></div>
+    <div class="xp-stats">
+      <div class="xp-stat"><div class="v" id="statPlays">0</div><div class="l">플레이</div></div>
+      <div class="xp-stat"><div class="v" id="statScore">0</div><div class="l">누적점수</div></div>
+      <div class="xp-stat"><div class="v" id="statXp">0</div><div class="l">총 XP</div></div>
+    </div>
+  </div>
+
+  <!-- 게임 목록 -->
+  <section class="section">
+    <h2 class="section-title"><span class="icon">🕹️</span>게임 목록</h2>
+    <div id="gameList"><div class="loading">게임 불러오는 중…</div></div>
+  </section>
+
+  <!-- 챔피언 -->
+  <section class="section">
+    <h2 class="section-title"><span class="icon">🏆</span>게임별 챔피언</h2>
+    <div id="champList"><div class="loading">랭킹 불러오는 중…</div></div>
+  </section>
+
+  <!-- 공지사항 -->
+  <section class="section">
+    <h2 class="section-title"><span class="icon">📢</span>공지사항</h2>
+    <div id="noticeList"><div class="loading">공지 불러오는 중…</div></div>
+  </section>
+
+  <footer class="info">
+    <div class="brand-line">텐아르 게임센터 · TEN-AR</div>
+    <div>농작물생산조사 현장 조사원을 위한 게임</div>
+  </footer>
+</main>
+
+<!-- ===== 닉네임 등록 오버레이 ===== -->
+<div class="nick-overlay" id="nickOverlay">
+  <div class="nick-box">
+    <div class="nick-emoji">🎮</div>
+    <div class="nick-h">텐아르 게임센터</div>
+    <div class="nick-sub">닉네임을 입력하고<br>조사관 랭킹에 도전하세요!</div>
+    <input class="nick-input" id="nickInput" type="text" inputmode="text" maxlength="12" placeholder="닉네임 입력" autocomplete="off" />
+    <div class="nick-msg" id="nickMsg"></div>
+    <div class="nick-rules">2~12자 · 한글/영문/숫자만 · 공백·특수문자 불가</div>
+    <button class="nick-btn" id="nickBtn">시작하기</button>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+  import {
+    getFirestore, doc, getDoc, setDoc, updateDoc,
+    collection, getDocs, query, orderBy, limit, serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAcU8iZR-B5HdvX1FOh4APCm0hXsz1u_X8",
+    authDomain: "tenar-chat-1674c.firebaseapp.com",
+    databaseURL: "https://tenar-chat-1674c-default-rtdb.firebaseio.com",
+    projectId: "tenar-chat-1674c",
+    storageBucket: "tenar-chat-1674c.firebasestorage.app",
+    messagingSenderId: "662688468209",
+    appId: "1:662688468209:web:0f37484e26943d79946d50"
+  };
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  /* Firestore가 비활성/지연돼도 화면이 멈추지 않도록 응답에 시간제한을 둔다 */
+  function withTimeout(promise, ms = 4500) {
+    return Promise.race([
+      promise,
+      new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))
+    ]);
+  }
+
+  /* ===== 공통 상수 (게임 파일과 동일하게 유지) ===== */
+  const LEVELS = [
+    { lv: 1,  xp: 0,    name: '초급 조사원' },
+    { lv: 2,  xp: 100,  name: '견습 조사원' },
+    { lv: 3,  xp: 250,  name: '조사원' },
+    { lv: 4,  xp: 450,  name: '선임 조사원' },
+    { lv: 5,  xp: 700,  name: '전문 조사원' },
+    { lv: 6,  xp: 1000, name: '수석 조사원' },
+    { lv: 7,  xp: 1400, name: '명예 조사원' },
+    { lv: 8,  xp: 1900, name: '조사관' },
+    { lv: 9,  xp: 2500, name: '수석 조사관' },
+    { lv: 10, xp: 3200, name: '텐아르 마스터' },
+  ];
+  function levelFromXp(xp) {
+    xp = xp || 0;
+    let cur = LEVELS[0];
+    for (const L of LEVELS) { if (xp >= L.xp) cur = L; }
+    const idx = LEVELS.indexOf(cur);
+    const next = LEVELS[idx + 1] || null;
+    return { lv: cur.lv, name: cur.name, curBase: cur.xp, nextXp: next ? next.xp : cur.xp, isMax: !next };
+  }
+
+  const GAMES = [
+    { id: 'eagle_eye',            emoji: '🌾', name: '매의 눈 작물조사',   desc: '숨은 다른 작물 찾기', file: 'game_eagle_eye.html',            unit: 'LV', active: true },
+    { id: 'crop_quiz',            emoji: '🌱', name: '작물 판별 퀴즈',     desc: '출시 예정',          file: 'game_crop_quiz.html',            unit: '점', active: false },
+    { id: 'production_challenge', emoji: '📊', name: '생산량 계산 챌린지', desc: '출시 예정',          file: 'game_production_challenge.html', unit: '점', active: false },
+    { id: 'survey_quiz',          emoji: '📝', name: '조사원 퀴즈',       desc: '출시 예정',          file: 'game_survey_quiz.html',          unit: '점', active: false },
+  ];
+
+  /* ===== 사용자 식별 ===== */
+  function getUser() {
+    const userId = localStorage.getItem('tenarGameUserId');
+    const nickname = localStorage.getItem('tenarGameNick');
+    if (userId && nickname) return { userId, nickname };
+    return null;
+  }
+
+  /* ===== 닉네임 등록 ===== */
+  const overlay = document.getElementById('nickOverlay');
+  const nickInput = document.getElementById('nickInput');
+  const nickMsg = document.getElementById('nickMsg');
+  const nickBtn = document.getElementById('nickBtn');
+
+  function validateNick(name) {
+    if (!name) return '닉네임을 입력해주세요.';
+    if (name.length < 2) return '2자 이상 입력해주세요.';
+    if (name.length > 12) return '12자 이하로 입력해주세요.';
+    if (!/^[가-힣a-zA-Z0-9]+$/.test(name)) return '한글·영문·숫자만 사용할 수 있어요.';
+    return null;
+  }
+
+  async function isBlocked(name) {
+    try {
+      const snap = await withTimeout(getDoc(doc(db, 'blockedNames', name)));
+      return snap.exists();
+    } catch (e) { return false; }
+  }
+
+  async function registerNick() {
+    const name = nickInput.value.trim();
+    const err = validateNick(name);
+    if (err) { nickMsg.textContent = err; nickMsg.className = 'nick-msg err'; return; }
+
+    nickBtn.disabled = true;
+    nickMsg.textContent = '확인 중…'; nickMsg.className = 'nick-msg';
+
+    if (await isBlocked(name)) {
+      nickMsg.textContent = '사용할 수 없는 닉네임입니다.'; nickMsg.className = 'nick-msg err';
+      nickBtn.disabled = false; return;
+    }
+
+    const userId = (crypto.randomUUID ? crypto.randomUUID() : 'u_' + Date.now() + '_' + Math.random().toString(36).slice(2));
+    try {
+      await withTimeout(setDoc(doc(db, 'users', userId), {
+        nickname: name, level: 1, xp: 0, totalScore: 0, totalPlayCount: 0,
+        createdAt: serverTimestamp(), lastLogin: serverTimestamp()
+      }), 7000);
+    } catch (e) {
+      nickMsg.textContent = '등록 실패: 네트워크 또는 DB 설정을 확인해주세요.'; nickMsg.className = 'nick-msg err';
+      nickBtn.disabled = false; return;
+    }
+    localStorage.setItem('tenarGameUserId', userId);
+    localStorage.setItem('tenarGameNick', name);
+    overlay.classList.remove('show');
+    boot({ userId, nickname: name });
+  }
+
+  nickBtn.addEventListener('click', registerNick);
+  nickInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') registerNick(); });
+  nickInput.addEventListener('input', () => { nickMsg.textContent = ''; });
+
+  /* ===== 화면 렌더 ===== */
+  function fmt(n) { return (n || 0).toLocaleString('ko-KR'); }
+
+  function renderUser(u, data) {
+    const xp = data.xp || 0;
+    const L = levelFromXp(xp);
+    document.getElementById('userBar').style.display = 'flex';
+    document.getElementById('userBarLv').textContent = 'LV.' + L.lv;
+    document.getElementById('userBarGreet').textContent = u.nickname + '님';
+
+    const card = document.getElementById('xpCard');
+    card.style.display = 'block';
+    document.getElementById('xpLv').textContent = L.lv;
+    document.getElementById('xpRankName').textContent = L.name;
+    document.getElementById('statPlays').textContent = fmt(data.totalPlayCount);
+    document.getElementById('statScore').textContent = fmt(data.totalScore);
+    document.getElementById('statXp').textContent = fmt(xp);
+
+    if (L.isMax) {
+      document.getElementById('xpCur').textContent = fmt(xp);
+      document.getElementById('xpNext').textContent = 'MAX';
+      document.getElementById('xpFill').style.width = '100%';
+    } else {
+      const into = xp - L.curBase;
+      const span = L.nextXp - L.curBase;
+      document.getElementById('xpCur').textContent = fmt(into);
+      document.getElementById('xpNext').textContent = fmt(span);
+      document.getElementById('xpFill').style.width = Math.min(100, Math.round(into / span * 100)) + '%';
+    }
+  }
+
+  async function renderGames(u) {
+    const wrap = document.getElementById('gameList');
+    wrap.innerHTML = '';
+    for (const g of GAMES) {
+      const a = document.createElement(g.active ? 'a' : 'div');
+      a.className = 'game-card ' + (g.active ? 'playable' : 'soon');
+      if (g.active) { a.href = g.file; }
+      a.innerHTML = `
+        <span class="game-emoji">${g.emoji}</span>
+        <div class="game-info">
+          <div class="game-name">${g.name}</div>
+          <div class="game-desc">${g.desc}</div>
+          <div class="game-best" data-best="${g.id}"></div>
+        </div>
+        ${g.active ? '<span class="game-go">게임 시작 ›</span>' : '<span class="game-soon-tag">출시예정</span>'}`;
+      wrap.appendChild(a);
+    }
+    // 내 최고점 채우기
+    for (const g of GAMES) {
+      if (!g.active) continue;
+      const el = wrap.querySelector(`[data-best="${g.id}"]`);
+      try {
+        const snap = await withTimeout(getDoc(doc(db, 'rankings', g.id, 'scores', u.userId)));
+        if (snap.exists()) el.innerHTML = `내 최고기록 ${fmt(snap.data().score)}${g.unit} <span>· 도전하기</span>`;
+        else el.innerHTML = `<span>아직 기록이 없어요 · 첫 도전!</span>`;
+      } catch (e) { el.innerHTML = ''; }
+    }
+  }
+
+  async function renderChampions() {
+    const wrap = document.getElementById('champList');
+    wrap.innerHTML = '';
+    const medals = ['🥇', '🥈', '🥉', '🏅'];
+    let i = 0, any = false;
+    for (const g of GAMES) {
+      const row = document.createElement('div');
+      row.className = 'champ-row';
+      let champHtml = '<span class="champ-empty">기록 없음</span><span class="champ-score"></span>';
+      if (g.active) {
+        try {
+          const q = query(collection(db, 'rankings', g.id, 'scores'), orderBy('score', 'desc'), limit(1));
+          const qs = await withTimeout(getDocs(q));
+          if (!qs.empty) {
+            const d = qs.docs[0].data();
+            champHtml = `<span class="champ-name">${escapeHtml(d.nickname || '익명')}</span><span class="champ-score">${fmt(d.score)}${g.unit}</span>`;
+            any = true;
+          }
+        } catch (e) {}
+      }
+      row.innerHTML = `<span class="champ-medal">${medals[i] || '🏅'}</span>
+        <div class="champ-game">${g.name}<small>${g.active ? '' : '출시 예정'}</small></div>${champHtml}`;
+      wrap.appendChild(row);
+      i++;
+    }
+    if (!any) {
+      const hint = document.createElement('div');
+      hint.className = 'empty-hint';
+      hint.style.marginTop = '6px';
+      hint.textContent = '아직 챔피언이 없어요. 첫 번째 챔피언이 되어보세요!';
+      wrap.appendChild(hint);
+    }
+  }
+
+  async function renderNotices() {
+    const wrap = document.getElementById('noticeList');
+    try {
+      const q = query(collection(db, 'notices'), orderBy('createdAt', 'desc'), limit(5));
+      const qs = await withTimeout(getDocs(q));
+      if (qs.empty) { wrap.innerHTML = '<div class="empty-hint">등록된 공지가 없습니다.</div>'; return; }
+      wrap.innerHTML = '';
+      qs.forEach((d) => {
+        const n = d.data();
+        const dt = n.createdAt && n.createdAt.toDate ? n.createdAt.toDate() : null;
+        const ds = dt ? `${dt.getFullYear()}.${String(dt.getMonth()+1).padStart(2,'0')}.${String(dt.getDate()).padStart(2,'0')}` : '';
+        const item = document.createElement('div');
+        item.className = 'notice-item';
+        item.innerHTML = `<div class="notice-title">${escapeHtml(n.title || '공지')}</div>
+          <div class="notice-body">${escapeHtml(n.content || '')}</div>
+          ${ds ? `<div class="notice-date">${ds}</div>` : ''}`;
+        wrap.appendChild(item);
+      });
+    } catch (e) {
+      wrap.innerHTML = '<div class="empty-hint">공지를 불러오지 못했습니다.</div>';
+    }
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  }
+
+  /* ===== 부팅 ===== */
+  function boot(u) {
+    // 1) 화면을 먼저 그린다 (Firestore 응답을 기다리지 않음)
+    renderUser(u, { xp: 0, totalScore: 0, totalPlayCount: 0, level: 1 });
+    renderGames(u);
+    renderChampions();
+    renderNotices();
+    // 2) 사용자 실데이터는 비동기로 로드해 덮어쓴다
+    loadUserData(u);
+  }
+
+  async function loadUserData(u) {
+    try {
+      const ref = doc(db, 'users', u.userId);
+      const snap = await withTimeout(getDoc(ref));
+      if (snap.exists()) {
+        renderUser(u, snap.data());
+        updateDoc(ref, { lastLogin: serverTimestamp() }).catch(() => {});
+      } else {
+        // localStorage엔 있으나 문서가 없으면 재생성
+        setDoc(ref, {
+          nickname: u.nickname, level: 1, xp: 0, totalScore: 0, totalPlayCount: 0,
+          createdAt: serverTimestamp(), lastLogin: serverTimestamp()
+        }).catch(() => {});
+      }
+    } catch (e) { /* 타임아웃 시 기본값 유지 */ }
+  }
+
+  /* ===== 진입 ===== */
+  const me = getUser();
+  if (me) {
+    boot(me);
+  } else {
+    overlay.classList.add('show');
+    setTimeout(() => nickInput.focus(), 200);
+  }
+</script>
+</body>
+</html>
