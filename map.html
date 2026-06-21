@@ -1419,7 +1419,7 @@ function ensureCadOverlay(){
     var img = document.createElement('img');
     /* VWorld 지적도 PNG는 이미 배경이 투명(경계선·지번만) → 그대로 얹는다.
        (mix-blend-mode 는 네이버 레이어 격리 때문에 오히려 뿌옇게 보여 제거) */
-    img.style.cssText = 'position:absolute;pointer-events:none;opacity:1;' +
+    img.style.cssText = 'position:absolute;pointer-events:none;opacity:0.25;' +
                         'user-select:none;-webkit-user-select:none;';
     img.draggable = false;
     this._img = img;
@@ -1460,10 +1460,13 @@ function updateCadOverlay(){
   var bbox = p1[0] + ',' + p1[1] + ',' + p2[0] + ',' + p2[1];   /* minx,miny,maxx,maxy */
   var url = 'https://api.vworld.kr/req/wms' +
             '?SERVICE=WMS&REQUEST=GetMap&VERSION=1.3.0' +
-            '&LAYERS=lp_pa_cbnd_bubun&STYLES=lp_pa_cbnd_bubun' +
+            '&LAYERS=lp_pa_cbnd_bubun' +
+            '&STYLES=' +
             '&CRS=EPSG:900913&BBOX=' + bbox +
             '&WIDTH=' + w + '&HEIGHT=' + h +
-            '&FORMAT=image/png&TRANSPARENT=true' +
+            '&FORMAT=image/png' +
+            '&TRANSPARENT=true' +
+            '&BGCOLOR=0xFFFFFF' +
             '&KEY=' + CFG.vworldKey +
             '&DOMAIN=https://ubaldos00-ship-it.github.io';
   var ov = ensureCadOverlay();
