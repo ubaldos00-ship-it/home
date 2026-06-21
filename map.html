@@ -1413,7 +1413,10 @@ function ensureCadOverlay(){
   Cad.prototype = new naver.maps.OverlayView();
   Cad.prototype.onAdd = function(){
     var img = document.createElement('img');
-    img.style.cssText = 'position:absolute;pointer-events:none;opacity:0.95;' +
+    /* VWorld 지적도 PNG는 배경이 흰색(투명 아님) → mix-blend-mode:multiply 로
+       흰 배경은 위성이 그대로 비치게 하고 경계선·지번만 남긴다(뿌염 제거) */
+    img.style.cssText = 'position:absolute;pointer-events:none;' +
+                        'mix-blend-mode:multiply;opacity:1;' +
                         'user-select:none;-webkit-user-select:none;';
     img.draggable = false;
     this._img = img;
