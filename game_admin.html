@@ -1,0 +1,451 @@
+<!-- game_admin.html · 저장: 2026-06-22 06:38 KST -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#27500A" />
+<title>텐아르 게임센터 · 관리자</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+
+<style>
+  :root {
+    --primary: #1f5132; --primary-light: #2e7a4e; --primary-dark: #143820;
+    --accent: #c9962b; --accent-light: #e6b955;
+    --bg: #f6f4ec; --card: #fff; --text: #1a1f1a; --text-soft: #5b6358;
+    --border: #e6e2d5; --danger: #c0392b;
+    --radius-sm: 10px; --radius-md: 14px; --radius-lg: 20px;
+    --header-h: 88px;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html { background-color: #27500A; }
+  html, body {
+    margin: 0; padding: 0; background: var(--bg); color: var(--text);
+    font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-size: 15px; line-height: 1.55; -webkit-font-smoothing: antialiased;
+  }
+  body {
+    min-height: 100vh;
+    padding-top: calc(var(--header-h) + env(safe-area-inset-top));
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
+    background-image: radial-gradient(circle at 10% 0%, rgba(31, 81, 50, 0.04) 0%, transparent 40%),
+                      radial-gradient(circle at 90% 100%, rgba(201, 150, 43, 0.05) 0%, transparent 40%);
+  }
+
+  header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    height: calc(var(--header-h) + env(safe-area-inset-top));
+    padding: calc(12px + env(safe-area-inset-top)) 18px 12px;
+    background: #27500A; color: #fff; box-shadow: 0 4px 12px rgba(20, 56, 32, 0.08);
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .hd-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .hd-title { font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.78); margin: 0; }
+  .hd-brand { display: flex; align-items: baseline; gap: 8px; margin-top: 2px; }
+  .hd-brand .nm {
+    font-size: 24px; font-weight: 800; letter-spacing: -0.02em; color: #fff;
+    background: linear-gradient(180deg, #ffffff 0%, var(--accent-light) 130%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    line-height: 1.1;
+  }
+  .hd-brand .eng { font-size: 12px; font-weight: 600; color: var(--accent-light); letter-spacing: 0.04em; }
+  .hd-logout { color: #fff; background: rgba(255,255,255,0.16); border: none; border-radius: 50%;
+    width: 36px; height: 36px; font-size: 18px; cursor: pointer; flex-shrink: 0; }
+  .hd-logout:active { background: rgba(255,255,255,0.25); }
+
+  main { padding: 16px 16px 20px; max-width: 800px; margin: 0 auto; }
+
+  .login-screen { display: flex; flex-direction: column; justify-content: center; align-items: center;
+    min-height: 60vh; padding: 20px; }
+  .login-box { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+    padding: 36px 28px; text-align: center; width: 100%; max-width: 380px; box-shadow: 0 4px 12px rgba(20, 56, 32, 0.08); }
+  .login-emoji { font-size: 52px; margin-bottom: 12px; }
+  .login-h { font-size: 22px; font-weight: 800; color: var(--primary-dark); margin: 8px 0 4px; }
+  .login-sub { font-size: 13.5px; color: var(--text-soft); margin-bottom: 24px; line-height: 1.6; }
+  .google-btn {
+    width: 100%; border: 1px solid #d3d3d3; border-radius: 8px; padding: 14px 16px;
+    background: #fff; color: #3c4043; font-size: 15px; font-weight: 600;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px;
+    transition: background 0.15s;
+  }
+  .google-btn:active { background: #f8f8f8; }
+  .google-icon { width: 20px; height: 20px; }
+
+  .admin-screen { display: none; }
+  .admin-screen.show { display: block; }
+
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-md);
+    padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 2px rgba(20, 56, 32, 0.05); }
+  .section-h { font-size: 16px; font-weight: 800; color: var(--primary-dark);
+    margin: 0 0 14px; padding-bottom: 10px; border-bottom: 2px solid var(--accent); }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+  .stat-box { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    color: #fff; border-radius: var(--radius-sm); padding: 14px; text-align: center; }
+  .stat-v { font-size: 24px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .stat-l { font-size: 11px; color: rgba(255,255,255,0.8); margin-top: 4px; }
+
+  .action-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+  .action-btn { background: var(--primary); color: #fff; border: none; border-radius: var(--radius-sm);
+    padding: 12px 14px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit;
+    transition: background 0.15s;
+  }
+  .action-btn:active { background: var(--primary-dark); }
+  .action-btn.danger { background: var(--danger); }
+  .action-btn.danger:active { background: #a02a22; }
+
+  .notice-list { max-height: 300px; overflow-y: auto; }
+  .notice-item { background: #fafaf5; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 10px; margin-bottom: 8px; font-size: 13px; }
+  .notice-item:last-child { margin-bottom: 0; }
+  .notice-title { font-weight: 700; color: var(--primary-dark); }
+  .notice-date { font-size: 11px; color: var(--text-soft); margin-top: 3px; }
+  .notice-del { color: var(--danger); cursor: pointer; font-size: 11px; font-weight: 700;
+    float: right; }
+
+  .modal { display: none; position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.5); align-items: center; justify-content: center; padding: 20px; }
+  .modal.show { display: flex; }
+  .modal-box { background: var(--card); border-radius: var(--radius-lg); padding: 24px;
+    width: 100%; max-width: 420px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+  .modal-h { font-size: 18px; font-weight: 800; color: var(--primary-dark); margin-bottom: 16px; }
+  .modal-close { position: absolute; top: 16px; right: 16px; background: none; border: none;
+    font-size: 24px; cursor: pointer; color: var(--text-soft); }
+
+  input, textarea { width: 100%; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 10px 12px; font-family: inherit; font-size: 14px; outline: none;
+    margin-bottom: 12px; }
+  input:focus, textarea:focus { border-color: var(--primary-light); }
+  textarea { resize: vertical; min-height: 80px; }
+
+  .empty { text-align: center; color: var(--text-soft); font-size: 13px; padding: 20px 0; }
+
+  @media (max-width: 360px) {
+    .hd-brand .nm { font-size: 20px; }
+    .stat-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 헤더 -->
+<header>
+  <div class="hd-top">
+    <div>
+      <p class="hd-title">🎮 텐아르 게임센터</p>
+      <div class="hd-brand">
+        <span class="nm">ADMIN</span>
+        <span class="eng">TEN-AR</span>
+      </div>
+    </div>
+    <button class="hd-logout" id="logoutBtn" title="로그아웃" style="display:none;">🚪</button>
+  </div>
+</header>
+
+<!-- 로그인 화면 -->
+<main>
+  <div id="loginScreen" class="login-screen">
+    <div class="login-box">
+      <div class="login-emoji">🔐</div>
+      <h1 class="login-h">관리자 로그인</h1>
+      <p class="login-sub">ubaldos00@gmail.com<br>Google 계정으로 로그인하세요</p>
+      <button class="google-btn" id="googleBtn">
+        <svg class="google-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+        </svg>
+        Google로 로그인
+      </button>
+    </div>
+  </div>
+
+  <!-- 관리자 화면 -->
+  <div id="adminScreen" class="admin-screen">
+    <!-- 통계 -->
+    <section class="section">
+      <h2 class="section-h">📊 통계</h2>
+      <div class="stat-grid">
+        <div class="stat-box">
+          <div class="stat-v" id="statUsers">-</div>
+          <div class="stat-l">전체 사용자</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-v" id="statToday">-</div>
+          <div class="stat-l">오늘 방문</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-v" id="statPlays">-</div>
+          <div class="stat-l">전체 플레이</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 게임별 랭킹 초기화 -->
+    <section class="section">
+      <h2 class="section-h">🏆 랭킹 관리</h2>
+      <div class="action-grid">
+        <button class="action-btn danger" onclick="resetRanking('eagle_eye')">🌾 매의 눈 초기화</button>
+        <button class="action-btn danger" onclick="resetRanking('crop_quiz')">🌱 작물퀴즈 초기화</button>
+        <button class="action-btn danger" onclick="resetRanking('production_challenge')">📊 생산량 초기화</button>
+        <button class="action-btn danger" onclick="resetRanking('survey_quiz')">📝 조사원퀴즈 초기화</button>
+        <button class="action-btn danger" onclick="resetAllRankings()" style="grid-column:span 2;">전체 랭킹 초기화</button>
+      </div>
+    </section>
+
+    <!-- 공지사항 -->
+    <section class="section">
+      <h2 class="section-h">📢 공지사항</h2>
+      <button class="action-btn" onclick="showNoticeModal()">+ 공지 추가</button>
+      <div class="notice-list" id="noticeList"></div>
+    </section>
+
+    <!-- 사용자 관리 -->
+    <section class="section">
+      <h2 class="section-h">👤 사용자 관리</h2>
+      <button class="action-btn" onclick="showBlockModal()">차단 닉네임 추가</button>
+      <div id="blockList"></div>
+    </section>
+
+    <!-- 백업 -->
+    <section class="section">
+      <h2 class="section-h">💾 백업</h2>
+      <button class="action-btn" onclick="createBackup()">지금 백업</button>
+      <div id="backupList"></div>
+    </section>
+  </div>
+</main>
+
+<!-- 공지 모달 -->
+<div class="modal" id="noticeModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('noticeModal')">✕</button>
+    <h2 class="modal-h">공지사항 작성</h2>
+    <input type="text" id="noticeTitle" placeholder="제목" />
+    <textarea id="noticeContent" placeholder="내용"></textarea>
+    <button class="action-btn" onclick="saveNotice()">저장</button>
+  </div>
+</div>
+
+<!-- 차단 닉네임 모달 -->
+<div class="modal" id="blockModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('blockModal')">✕</button>
+    <h2 class="modal-h">차단 닉네임 추가</h2>
+    <input type="text" id="blockName" placeholder="차단할 닉네임" />
+    <button class="action-btn" onclick="addBlockName()">추가</button>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+  import {
+    getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+  import {
+    getFirestore, collection, getDocs, deleteDoc, doc, setDoc, query, where,
+    orderBy, limit, serverTimestamp, increment, updateDoc
+  } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAcU8iZR-B5HdvX1FOh4APCm0hXsz1u_X8",
+    authDomain: "tenar-chat-1674c.firebaseapp.com",
+    databaseURL: "https://tenar-chat-1674c-default-rtdb.firebaseio.com",
+    projectId: "tenar-chat-1674c",
+    storageBucket: "tenar-chat-1674c.firebasestorage.app",
+    messagingSenderId: "662688468209",
+    appId: "1:662688468209:web:0f37484e26943d79946d50"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const ADMIN_EMAIL = 'ubaldos00@gmail.com';
+
+  function withTimeout(promise, ms = 4500) {
+    return Promise.race([promise, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
+  }
+
+  // 인증 상태 감시
+  onAuthStateChanged(auth, async (user) => {
+    if (user && user.email === ADMIN_EMAIL) {
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('adminScreen').classList.add('show');
+      document.getElementById('logoutBtn').style.display = 'block';
+      loadAdminData();
+    } else {
+      document.getElementById('loginScreen').style.display = 'flex';
+      document.getElementById('adminScreen').classList.remove('show');
+      document.getElementById('logoutBtn').style.display = 'none';
+    }
+  });
+
+  // Google 로그인
+  document.getElementById('googleBtn').addEventListener('click', async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      if (result.user.email !== ADMIN_EMAIL) {
+        await signOut(auth);
+        alert('접근이 거부되었습니다. spiano82@gmail.com으로 로그인하세요.');
+      }
+    } catch (e) {
+      alert('로그인 실패: ' + e.message);
+    }
+  });
+
+  // 로그아웃
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    signOut(auth).catch(e => alert('로그아웃 실패: ' + e.message));
+  });
+
+  // 통계 로드
+  async function loadAdminData() {
+    try {
+      // 사용자 수
+      const users = await withTimeout(getDocs(collection(db, 'users')));
+      document.getElementById('statUsers').textContent = users.size;
+
+      // 오늘 방문
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const onlineSnap = await withTimeout(getDocs(query(collection(db, 'users'), where('lastLogin', '>=', today))));
+      document.getElementById('statToday').textContent = onlineSnap.size;
+
+      // 전체 플레이
+      const logs = await withTimeout(getDocs(collection(db, 'playLogs')));
+      document.getElementById('statPlays').textContent = logs.size;
+
+      // 공지사항 로드
+      loadNotices();
+    } catch (e) {
+      console.warn('통계 로드 실패', e);
+    }
+  }
+
+  // 공지사항 로드
+  async function loadNotices() {
+    try {
+      const q = query(collection(db, 'notices'), orderBy('createdAt', 'desc'), limit(10));
+      const qs = await withTimeout(getDocs(q));
+      const html = qs.empty ? '<div class="empty">공지사항이 없습니다.</div>' :
+        qs.docs.map(d => {
+          const n = d.data();
+          const date = n.createdAt?.toDate?.() || new Date();
+          return `<div class="notice-item">
+            <span class="notice-title">${escapeHtml(n.title)}</span>
+            <span class="notice-del" onclick="deleteNotice('${d.id}')">삭제</span>
+            <div class="notice-date">${date.toLocaleDateString('ko-KR')}</div>
+          </div>`;
+        }).join('');
+      document.getElementById('noticeList').innerHTML = html;
+    } catch (e) {
+      console.warn('공지 로드 실패', e);
+    }
+  }
+
+  // 모달 열기/닫기
+  window.showNoticeModal = () => document.getElementById('noticeModal').classList.add('show');
+  window.showBlockModal = () => document.getElementById('blockModal').classList.add('show');
+  window.closeModal = (id) => document.getElementById(id).classList.remove('show');
+
+  // 공지 저장
+  window.saveNotice = async () => {
+    const title = document.getElementById('noticeTitle').value.trim();
+    const content = document.getElementById('noticeContent').value.trim();
+    if (!title || !content) { alert('제목과 내용을 입력하세요.'); return; }
+    try {
+      await withTimeout(setDoc(doc(collection(db, 'notices')), {
+        title, content, createdAt: serverTimestamp()
+      }));
+      document.getElementById('noticeTitle').value = '';
+      document.getElementById('noticeContent').value = '';
+      closeModal('noticeModal');
+      loadNotices();
+    } catch (e) {
+      alert('저장 실패: ' + e.message);
+    }
+  };
+
+  // 공지 삭제
+  window.deleteNotice = async (id) => {
+    if (!confirm('정말 삭제할까요?')) return;
+    try {
+      await withTimeout(deleteDoc(doc(db, 'notices', id)));
+      loadNotices();
+    } catch (e) {
+      alert('삭제 실패: ' + e.message);
+    }
+  };
+
+  // 랭킹 초기화
+  window.resetRanking = async (gameId) => {
+    if (!confirm(`${gameId} 랭킹을 정말 초기화할까요?`)) return;
+    try {
+      const q = query(collection(db, 'rankings', gameId, 'scores'));
+      const qs = await withTimeout(getDocs(q));
+      for (const d of qs.docs) await deleteDoc(d.ref);
+      alert('초기화 완료');
+      loadAdminData();
+    } catch (e) {
+      alert('초기화 실패: ' + e.message);
+    }
+  };
+
+  window.resetAllRankings = async () => {
+    if (!confirm('전체 랭킹을 정말 초기화할까요? 이 작업은 되돌릴 수 없습니다.')) return;
+    const games = ['eagle_eye', 'crop_quiz', 'production_challenge', 'survey_quiz'];
+    try {
+      for (const g of games) await resetRanking(g);
+      alert('모든 랭킹이 초기화되었습니다.');
+    } catch (e) {
+      alert('초기화 실패: ' + e.message);
+    }
+  };
+
+  // 차단 닉네임
+  window.addBlockName = async () => {
+    const name = document.getElementById('blockName').value.trim();
+    if (!name) { alert('닉네임을 입력하세요.'); return; }
+    try {
+      await withTimeout(setDoc(doc(db, 'blockedNames', name), { createdAt: serverTimestamp() }));
+      document.getElementById('blockName').value = '';
+      closeModal('blockModal');
+      alert('차단 완료');
+    } catch (e) {
+      alert('추가 실패: ' + e.message);
+    }
+  };
+
+  // 백업
+  window.createBackup = async () => {
+    if (!confirm('지금 백업을 생성할까요?')) return;
+    try {
+      const users = await withTimeout(getDocs(collection(db, 'users')));
+      const games = ['eagle_eye', 'crop_quiz', 'production_challenge', 'survey_quiz'];
+      const rankings = {};
+      for (const g of games) {
+        const q = query(collection(db, 'rankings', g, 'scores'));
+        const qs = await withTimeout(getDocs(q));
+        rankings[g] = qs.docs.map(d => d.data());
+      }
+      await withTimeout(setDoc(doc(db, 'backups', new Date().toISOString()), {
+        usersCount: users.size,
+        rankingsCount: Object.values(rankings).reduce((a, b) => a + b.length, 0),
+        createdAt: serverTimestamp()
+      }));
+      alert('백업 완료');
+      loadAdminData();
+    } catch (e) {
+      alert('백업 실패: ' + e.message);
+    }
+  };
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  }
+</script>
+</body>
+</html>
