@@ -1,4 +1,4 @@
-<!-- game_admin.html · 저장: 2026-06-22 06:38 KST -->
+<!-- game_admin.html · 저장: 2026-06-22 11:05 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -29,15 +29,15 @@
     min-height: 100vh;
     padding-top: calc(var(--header-h) + env(safe-area-inset-top));
     padding-bottom: calc(20px + env(safe-area-inset-bottom));
-    background-image: radial-gradient(circle at 10% 0%, rgba(31, 81, 50, 0.04) 0%, transparent 40%),
-                      radial-gradient(circle at 90% 100%, rgba(201, 150, 43, 0.05) 0%, transparent 40%);
+    background-image: radial-gradient(circle at 10% 0%, rgba(31,81,50,0.04) 0%, transparent 40%),
+                      radial-gradient(circle at 90% 100%, rgba(201,150,43,0.05) 0%, transparent 40%);
   }
 
   header {
     position: fixed; top: 0; left: 0; right: 0; z-index: 100;
     height: calc(var(--header-h) + env(safe-area-inset-top));
     padding: calc(12px + env(safe-area-inset-top)) 18px 12px;
-    background: #27500A; color: #fff; box-shadow: 0 4px 12px rgba(20, 56, 32, 0.08);
+    background: #27500A; color: #fff; box-shadow: 0 4px 12px rgba(20,56,32,0.08);
     display: flex; flex-direction: column; justify-content: center;
   }
   .hd-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
@@ -56,10 +56,11 @@
 
   main { padding: 16px 16px 20px; max-width: 800px; margin: 0 auto; }
 
+  /* 로그인 */
   .login-screen { display: flex; flex-direction: column; justify-content: center; align-items: center;
     min-height: 60vh; padding: 20px; }
   .login-box { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg);
-    padding: 36px 28px; text-align: center; width: 100%; max-width: 380px; box-shadow: 0 4px 12px rgba(20, 56, 32, 0.08); }
+    padding: 36px 28px; text-align: center; width: 100%; max-width: 380px; box-shadow: 0 4px 12px rgba(20,56,32,0.08); }
   .login-emoji { font-size: 52px; margin-bottom: 12px; }
   .login-h { font-size: 22px; font-weight: 800; color: var(--primary-dark); margin: 8px 0 4px; }
   .login-sub { font-size: 13.5px; color: var(--text-soft); margin-bottom: 24px; line-height: 1.6; }
@@ -72,20 +73,32 @@
   .google-btn:active { background: #f8f8f8; }
   .google-icon { width: 20px; height: 20px; }
 
+  /* 관리자 화면 */
   .admin-screen { display: none; }
   .admin-screen.show { display: block; }
 
   .section { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-md);
-    padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 2px rgba(20, 56, 32, 0.05); }
+    padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 2px rgba(20,56,32,0.05); }
   .section-h { font-size: 16px; font-weight: 800; color: var(--primary-dark);
     margin: 0 0 14px; padding-bottom: 10px; border-bottom: 2px solid var(--accent); }
 
-  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+  /* 통계 */
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
   .stat-box { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
     color: #fff; border-radius: var(--radius-sm); padding: 14px; text-align: center; }
   .stat-v { font-size: 24px; font-weight: 800; font-variant-numeric: tabular-nums; }
   .stat-l { font-size: 11px; color: rgba(255,255,255,0.8); margin-top: 4px; }
 
+  /* 게임별 통계 바 */
+  .game-stat-list { margin-top: 14px; display: flex; flex-direction: column; gap: 8px; }
+  .game-stat-row { display: flex; align-items: center; gap: 10px; }
+  .game-stat-label { font-size: 13px; font-weight: 600; color: var(--primary-dark); min-width: 90px; }
+  .game-stat-bar-wrap { flex: 1; background: #eee; border-radius: 20px; height: 14px; overflow: hidden; }
+  .game-stat-bar { height: 100%; background: linear-gradient(90deg, var(--primary), var(--primary-light));
+    border-radius: 20px; transition: width 0.4s ease; }
+  .game-stat-count { font-size: 12px; font-weight: 700; color: var(--text-soft); min-width: 36px; text-align: right; }
+
+  /* 버튼 */
   .action-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
   .action-btn { background: var(--primary); color: #fff; border: none; border-radius: var(--radius-sm);
     padding: 12px 14px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit;
@@ -95,27 +108,33 @@
   .action-btn.danger { background: var(--danger); }
   .action-btn.danger:active { background: #a02a22; }
 
-  .notice-list { max-height: 300px; overflow-y: auto; }
+  /* 공지 목록 */
+  .notice-list { max-height: 300px; overflow-y: auto; margin-top: 10px; }
   .notice-item { background: #fafaf5; border: 1px solid var(--border); border-radius: var(--radius-sm);
     padding: 10px; margin-bottom: 8px; font-size: 13px; }
   .notice-item:last-child { margin-bottom: 0; }
   .notice-title { font-weight: 700; color: var(--primary-dark); }
   .notice-date { font-size: 11px; color: var(--text-soft); margin-top: 3px; }
-  .notice-del { color: var(--danger); cursor: pointer; font-size: 11px; font-weight: 700;
-    float: right; }
+  .notice-del { color: var(--danger); cursor: pointer; font-size: 11px; font-weight: 700; float: right; }
 
+  /* 모달 */
   .modal { display: none; position: fixed; inset: 0; z-index: 200;
     background: rgba(0,0,0,0.5); align-items: center; justify-content: center; padding: 20px; }
   .modal.show { display: flex; }
-  .modal-box { background: var(--card); border-radius: var(--radius-lg); padding: 24px;
-    width: 100%; max-width: 420px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
-  .modal-h { font-size: 18px; font-weight: 800; color: var(--primary-dark); margin-bottom: 16px; }
-  .modal-close { position: absolute; top: 16px; right: 16px; background: none; border: none;
-    font-size: 24px; cursor: pointer; color: var(--text-soft); }
+  .modal-box { background: var(--card); border-radius: var(--radius-lg); padding: 24px 24px 20px;
+    width: 100%; max-width: 420px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    position: relative; }
+  .modal-h { font-size: 18px; font-weight: 800; color: var(--primary-dark); margin: 0 0 16px; padding-right: 28px; }
+  .modal-close {
+    position: absolute; top: 14px; right: 14px; background: rgba(0,0,0,0.07);
+    border: none; border-radius: 50%; width: 32px; height: 32px;
+    font-size: 18px; line-height: 1; cursor: pointer; color: var(--text-soft);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .modal-close:active { background: rgba(0,0,0,0.14); }
 
   input, textarea { width: 100%; border: 1px solid var(--border); border-radius: var(--radius-sm);
-    padding: 10px 12px; font-family: inherit; font-size: 14px; outline: none;
-    margin-bottom: 12px; }
+    padding: 10px 12px; font-family: inherit; font-size: 14px; outline: none; margin-bottom: 12px; }
   input:focus, textarea:focus { border-color: var(--primary-light); }
   textarea { resize: vertical; min-height: 80px; }
 
@@ -143,8 +162,8 @@
   </div>
 </header>
 
-<!-- 로그인 화면 -->
 <main>
+  <!-- 로그인 화면 -->
   <div id="loginScreen" class="login-screen">
     <div class="login-box">
       <div class="login-emoji">🔐</div>
@@ -164,6 +183,7 @@
 
   <!-- 관리자 화면 -->
   <div id="adminScreen" class="admin-screen">
+
     <!-- 통계 -->
     <section class="section">
       <h2 class="section-h">📊 통계</h2>
@@ -181,17 +201,19 @@
           <div class="stat-l">전체 플레이</div>
         </div>
       </div>
+      <!-- 게임별 플레이 통계 -->
+      <div class="game-stat-list" id="gameStatList"></div>
     </section>
 
     <!-- 게임별 랭킹 초기화 -->
     <section class="section">
       <h2 class="section-h">🏆 랭킹 관리</h2>
       <div class="action-grid">
-        <button class="action-btn danger" onclick="resetRanking('eagle_eye')">🌾 매의 눈 초기화</button>
-        <button class="action-btn danger" onclick="resetRanking('crop_quiz')">🌱 작물퀴즈 초기화</button>
-        <button class="action-btn danger" onclick="resetRanking('production_challenge')">📊 생산량 초기화</button>
-        <button class="action-btn danger" onclick="resetRanking('survey_quiz')">📝 조사원퀴즈 초기화</button>
-        <button class="action-btn danger" onclick="resetAllRankings()" style="grid-column:span 2;">전체 랭킹 초기화</button>
+        <button class="action-btn danger" onclick="resetRanking('eagle_eye','매의 눈')">👁️ 매의 눈 초기화</button>
+        <button class="action-btn danger" onclick="resetRanking('crop_quiz','작물퀴즈')">🌱 작물퀴즈 초기화</button>
+        <button class="action-btn danger" onclick="resetRanking('production_challenge','생산량')">📊 생산량 초기화</button>
+        <button class="action-btn danger" onclick="resetRanking('survey_quiz','조사원퀴즈')">📝 조사원퀴즈 초기화</button>
+        <button class="action-btn danger" onclick="resetAllRankings()" style="grid-column:1/-1;">⚠️ 전체 랭킹 초기화</button>
       </div>
     </section>
 
@@ -209,12 +231,6 @@
       <div id="blockList"></div>
     </section>
 
-    <!-- 백업 -->
-    <section class="section">
-      <h2 class="section-h">💾 백업</h2>
-      <button class="action-btn" onclick="createBackup()">지금 백업</button>
-      <div id="backupList"></div>
-    </section>
   </div>
 </main>
 
@@ -242,11 +258,11 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
   import {
-    getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged
+    getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut, onAuthStateChanged
   } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
   import {
     getFirestore, collection, getDocs, deleteDoc, doc, setDoc, query, where,
-    orderBy, limit, serverTimestamp, increment, updateDoc
+    orderBy, limit, serverTimestamp
   } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -263,12 +279,17 @@
   const auth = getAuth(app);
   const db = getFirestore(app);
 
-  function withTimeout(promise, ms = 4500) {
+  function withTimeout(promise, ms = 6000) {
     return Promise.race([promise, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
   }
 
-  // 인증 상태 감시
-  onAuthStateChanged(auth, async (user) => {
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c =>
+      ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  }
+
+  // ─── 인증 ───
+  onAuthStateChanged(auth, (user) => {
     if (user && user.email === 'ubaldos00@gmail.com') {
       document.getElementById('loginScreen').style.display = 'none';
       document.getElementById('adminScreen').classList.add('show');
@@ -281,76 +302,117 @@
     }
   });
 
-  // Google 로그인
+  getRedirectResult(auth).then(result => {
+    if (result && result.user && result.user.email !== 'ubaldos00@gmail.com') {
+      signOut(auth);
+      alert('접근이 거부되었습니다. ubaldos00@gmail.com으로 로그인하세요.');
+    }
+  }).catch(() => {});
+
   document.getElementById('googleBtn').addEventListener('click', async () => {
     try {
-      const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-      if (result.user.email !== 'ubaldos00@gmail.com') {
-        await signOut(auth);
-        alert('접근이 거부되었습니다. ubaldos00@gmail.com으로 로그인하세요.');
-      }
+      await signInWithRedirect(auth, new GoogleAuthProvider());
     } catch (e) {
       alert('로그인 실패: ' + e.message);
     }
   });
 
-  // 로그아웃
   document.getElementById('logoutBtn').addEventListener('click', () => {
     signOut(auth).catch(e => alert('로그아웃 실패: ' + e.message));
   });
 
-  // 통계 로드
+  // ─── 데이터 로드 ───
   async function loadAdminData() {
     try {
-      // 사용자 수
+      // 전체 사용자 수
       const users = await withTimeout(getDocs(collection(db, 'users')));
       document.getElementById('statUsers').textContent = users.size;
 
-      // 오늘 방문
-      const now = new Date();
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const onlineSnap = await withTimeout(getDocs(query(collection(db, 'users'), where('lastLogin', '>=', today))));
-      document.getElementById('statToday').textContent = onlineSnap.size;
+      // 오늘 방문 (lastLogin >= 오늘 자정)
+      const today = new Date(); today.setHours(0,0,0,0);
+      const todaySnap = await withTimeout(getDocs(
+        query(collection(db, 'users'), where('lastLogin', '>=', today))
+      ));
+      document.getElementById('statToday').textContent = todaySnap.size;
 
-      // 전체 플레이
+      // 전체 플레이 수 + 게임별 통계
       const logs = await withTimeout(getDocs(collection(db, 'playLogs')));
       document.getElementById('statPlays').textContent = logs.size;
+      renderGameStats(logs.docs);
 
-      // 공지사항 로드
+      // 공지 + 차단 목록
       loadNotices();
+      loadBlockList();
     } catch (e) {
       console.warn('통계 로드 실패', e);
     }
   }
 
-  // 공지사항 로드
+  // ─── 게임별 플레이 통계 바 ───
+  const GAME_LABELS = {
+    eagle_eye: '👁️ 매의 눈',
+    crop_quiz: '🌱 작물퀴즈',
+    production_challenge: '📊 생산량도전',
+    survey_quiz: '📝 조사원퀴즈',
+  };
+
+  function renderGameStats(logDocs) {
+    const counts = {};
+    for (const d of logDocs) {
+      const g = d.data().gameId || 'unknown';
+      counts[g] = (counts[g] || 0) + 1;
+    }
+    const total = logDocs.length || 1;
+    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+
+    if (!sorted.length) {
+      document.getElementById('gameStatList').innerHTML = '<div class="empty">플레이 기록이 없습니다.</div>';
+      return;
+    }
+
+    const html = sorted.map(([gid, cnt]) => {
+      const label = GAME_LABELS[gid] || gid;
+      const pct = Math.round(cnt / total * 100);
+      return `<div class="game-stat-row">
+        <span class="game-stat-label">${label}</span>
+        <div class="game-stat-bar-wrap">
+          <div class="game-stat-bar" style="width:${pct}%"></div>
+        </div>
+        <span class="game-stat-count">${cnt}회</span>
+      </div>`;
+    }).join('');
+
+    document.getElementById('gameStatList').innerHTML = html;
+  }
+
+  // ─── 공지사항 ───
   async function loadNotices() {
     try {
       const q = query(collection(db, 'notices'), orderBy('createdAt', 'desc'), limit(10));
       const qs = await withTimeout(getDocs(q));
-      const html = qs.empty ? '<div class="empty">공지사항이 없습니다.</div>' :
-        qs.docs.map(d => {
-          const n = d.data();
-          const date = n.createdAt?.toDate?.() || new Date();
-          return `<div class="notice-item">
-            <span class="notice-title">${escapeHtml(n.title)}</span>
-            <span class="notice-del" onclick="deleteNotice('${d.id}')">삭제</span>
-            <div class="notice-date">${date.toLocaleDateString('ko-KR')}</div>
-          </div>`;
-        }).join('');
+      const html = qs.empty
+        ? '<div class="empty">공지사항이 없습니다.</div>'
+        : qs.docs.map(d => {
+            const n = d.data();
+            const date = n.createdAt?.toDate?.() || new Date();
+            return `<div class="notice-item">
+              <span class="notice-del" onclick="deleteNotice('${d.id}')">삭제</span>
+              <div class="notice-title">${escapeHtml(n.title)}</div>
+              <div class="notice-date">${date.toLocaleDateString('ko-KR')}</div>
+            </div>`;
+          }).join('');
       document.getElementById('noticeList').innerHTML = html;
     } catch (e) {
-      console.warn('공지 로드 실패', e);
+      document.getElementById('noticeList').innerHTML = '<div class="empty">로드 실패</div>';
     }
   }
 
-  // 모달 열기/닫기
-  window.showNoticeModal = () => document.getElementById('noticeModal').classList.add('show');
-  window.showBlockModal = () => document.getElementById('blockModal').classList.add('show');
-  window.closeModal = (id) => document.getElementById(id).classList.remove('show');
+  window.showNoticeModal = () => {
+    document.getElementById('noticeTitle').value = '';
+    document.getElementById('noticeContent').value = '';
+    document.getElementById('noticeModal').classList.add('show');
+  };
 
-  // 공지 저장
   window.saveNotice = async () => {
     const title = document.getElementById('noticeTitle').value.trim();
     const content = document.getElementById('noticeContent').value.trim();
@@ -359,8 +421,6 @@
       await withTimeout(setDoc(doc(collection(db, 'notices')), {
         title, content, createdAt: serverTimestamp()
       }));
-      document.getElementById('noticeTitle').value = '';
-      document.getElementById('noticeContent').value = '';
       closeModal('noticeModal');
       loadNotices();
     } catch (e) {
@@ -368,7 +428,6 @@
     }
   };
 
-  // 공지 삭제
   window.deleteNotice = async (id) => {
     if (!confirm('정말 삭제할까요?')) return;
     try {
@@ -379,72 +438,84 @@
     }
   };
 
-  // 랭킹 초기화
-  window.resetRanking = async (gameId) => {
-    if (!confirm(`${gameId} 랭킹을 정말 초기화할까요?`)) return;
+  // ─── 차단 닉네임 ───
+  async function loadBlockList() {
     try {
-      const q = query(collection(db, 'rankings', gameId, 'scores'));
-      const qs = await withTimeout(getDocs(q));
-      for (const d of qs.docs) await deleteDoc(d.ref);
-      alert('초기화 완료');
-      loadAdminData();
+      const qs = await withTimeout(getDocs(collection(db, 'blockedNames')));
+      const html = qs.empty
+        ? '<div class="empty" style="margin-top:10px;">차단 닉네임이 없습니다.</div>'
+        : `<div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;">${
+            qs.docs.map(d =>
+              `<span style="background:#fdecea;color:var(--danger);border-radius:6px;padding:4px 10px;font-size:12px;font-weight:700;">
+                ${escapeHtml(d.id)}
+                <span onclick="removeBlockName('${escapeHtml(d.id)}')" style="cursor:pointer;margin-left:4px;">✕</span>
+              </span>`
+            ).join('')
+          }</div>`;
+      document.getElementById('blockList').innerHTML = html;
+    } catch (e) {
+      document.getElementById('blockList').innerHTML = '<div class="empty" style="margin-top:10px;">로드 실패</div>';
+    }
+  }
+
+  window.showBlockModal = () => {
+    document.getElementById('blockName').value = '';
+    document.getElementById('blockModal').classList.add('show');
+  };
+
+  window.addBlockName = async () => {
+    const name = document.getElementById('blockName').value.trim();
+    if (!name) { alert('닉네임을 입력하세요.'); return; }
+    try {
+      await withTimeout(setDoc(doc(db, 'blockedNames', name), { createdAt: serverTimestamp() }));
+      closeModal('blockModal');
+      loadBlockList();
+    } catch (e) {
+      alert('추가 실패: ' + e.message);
+    }
+  };
+
+  window.removeBlockName = async (name) => {
+    if (!confirm(`"${name}" 차단을 해제할까요?`)) return;
+    try {
+      await withTimeout(deleteDoc(doc(db, 'blockedNames', name)));
+      loadBlockList();
+    } catch (e) {
+      alert('해제 실패: ' + e.message);
+    }
+  };
+
+  // ─── 랭킹 초기화 ───
+  async function deleteAllScores(gameId) {
+    const qs = await withTimeout(getDocs(query(collection(db, 'rankings', gameId, 'scores'))));
+    for (const d of qs.docs) await deleteDoc(d.ref);
+    return qs.size;
+  }
+
+  window.resetRanking = async (gameId, label) => {
+    if (!confirm(`"${label}" 랭킹을 초기화할까요?\n이 작업은 되돌릴 수 없습니다.`)) return;
+    try {
+      const cnt = await deleteAllScores(gameId);
+      alert(`${label} 랭킹 초기화 완료 (${cnt}건 삭제)`);
     } catch (e) {
       alert('초기화 실패: ' + e.message);
     }
   };
 
   window.resetAllRankings = async () => {
-    if (!confirm('전체 랭킹을 정말 초기화할까요? 이 작업은 되돌릴 수 없습니다.')) return;
+    if (!confirm('전체 랭킹을 초기화할까요?\n이 작업은 되돌릴 수 없습니다.')) return;
     const games = ['eagle_eye', 'crop_quiz', 'production_challenge', 'survey_quiz'];
     try {
-      for (const g of games) await resetRanking(g);
-      alert('모든 랭킹이 초기화되었습니다.');
+      let total = 0;
+      for (const g of games) total += await deleteAllScores(g);
+      alert(`전체 랭킹 초기화 완료 (${total}건 삭제)`);
     } catch (e) {
       alert('초기화 실패: ' + e.message);
     }
   };
 
-  // 차단 닉네임
-  window.addBlockName = async () => {
-    const name = document.getElementById('blockName').value.trim();
-    if (!name) { alert('닉네임을 입력하세요.'); return; }
-    try {
-      await withTimeout(setDoc(doc(db, 'blockedNames', name), { createdAt: serverTimestamp() }));
-      document.getElementById('blockName').value = '';
-      closeModal('blockModal');
-      alert('차단 완료');
-    } catch (e) {
-      alert('추가 실패: ' + e.message);
-    }
-  };
-
-  // 백업
-  window.createBackup = async () => {
-    if (!confirm('지금 백업을 생성할까요?')) return;
-    try {
-      const users = await withTimeout(getDocs(collection(db, 'users')));
-      const games = ['eagle_eye', 'crop_quiz', 'production_challenge', 'survey_quiz'];
-      const rankings = {};
-      for (const g of games) {
-        const q = query(collection(db, 'rankings', g, 'scores'));
-        const qs = await withTimeout(getDocs(q));
-        rankings[g] = qs.docs.map(d => d.data());
-      }
-      await withTimeout(setDoc(doc(db, 'backups', new Date().toISOString()), {
-        usersCount: users.size,
-        rankingsCount: Object.values(rankings).reduce((a, b) => a + b.length, 0),
-        createdAt: serverTimestamp()
-      }));
-      alert('백업 완료');
-      loadAdminData();
-    } catch (e) {
-      alert('백업 실패: ' + e.message);
-    }
-  };
-
-  function escapeHtml(s) {
-    return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
-  }
+  // ─── 모달 ───
+  window.closeModal = (id) => document.getElementById(id).classList.remove('show');
 </script>
 </body>
 </html>
