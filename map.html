@@ -1,4 +1,4 @@
-<!-- map_v27.html · 저장: 2026-06-23 06:18 KST · 계산기 저장/덮어쓰기 시 지도 자동반영(storage 실시간 + 지도 열 때 대기열 처리) -->
+<!-- map_v28.html · 저장: 2026-06-23 07:13 KST · 즐겨찾기 목록 선택항목 빨강테두리+자동스크롤, 작물명 표시 기본 ON -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -203,6 +203,12 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
   display:flex;align-items:center;gap:9px;
   padding:10px 9px;border-radius:12px;background:#f8f7f1;
   border:1px solid #ece8d8;margin-bottom:7px;
+}
+/* 지도에서 선택된 즐겨찾기 항목 — 빨강 테두리로 강조 */
+.fav-item.sel{
+  border:2px solid #e23b2e;
+  box-shadow:0 0 0 3px rgba(226,59,46,.18);
+  background:#fff5f4;
 }
 .fav-item .fi-num{
   flex-shrink:0;width:27px;height:27px;border-radius:50%;
@@ -650,7 +656,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 </button>
 
 <!-- 작물명 표시 토글 버튼 (측정 위) -->
-<button id="crop-btn" onclick="toggleCropLabels()" title="즐겨찾기 작물명 표시">🌱</button>
+<button id="crop-btn" class="active" onclick="toggleCropLabels()" title="즐겨찾기 작물명 표시">🌱</button>
 
 <!-- 실시간 추적 버튼 -->
 <button id="track-btn" onclick="toggleTrack()" title="실시간 추적">
@@ -824,7 +830,7 @@ var S = { map:null, marker:null, circle:null, pickMarker:null,
           heading:null, compassOn:false, isHybrid:true,
           destLat:null, destLng:null, destName:'',
           measureMode:'off', mPoints:[], mMarkers:[], mLabels:[], mLine:null, mPoly:null,
-          favMarkers:[], cadOverlay:null, cadOn:false, _cadIdle:null, _cadZoom:null, cropLabelsOn:false,
+          favMarkers:[], cadOverlay:null, cadOn:false, _cadIdle:null, _cadZoom:null, cropLabelsOn:true,
           actLat:null, actLng:null, _amMove:null,
           naverReady:false, gpsOk:false, tapCount:0 };
 
@@ -886,6 +892,7 @@ function showAddr(jibun, road, zip){
   if(zip)  parts.push('우편 ' + zip);
   ahLine2.textContent = parts.length ? parts.join('  ·  ') : '';
   window._curFav = null;          /* 일반 주소 조회 → 조사표 연결 해제 */
+  window._selFavKey = null;       /* 선택 즐겨찾기 강조도 해제 */
   if(typeof _syncSurveyBtn==='function') _syncSurveyBtn();
   showInfoSheet();
 }
@@ -2188,9 +2195,16 @@ function showFavInfo(f){
   }
   /* 계산기 연동: 이 즐겨찾기에 조사표 자료(surveyKey)가 연결돼 있으면 기억 → 조사표 버튼으로 복원 */
   window._curFav = f;
+  window._selFavKey = _favKey(f);   /* 즐겨찾기 목록에서 선택 항목 표시용 */
   _syncSurveyBtn();
   _showCropTip(f);   /* 작물 말풍선 잠시 표시 */
   showInfoSheet();
+}
+/* 즐겨찾기 식별 키 (surveyKey 우선, 없으면 좌표) */
+function _favKey(f){
+  if(!f) return '';
+  if(f.surveyKey) return 'k:' + f.surveyKey;
+  return 'c:' + Number(f.lat).toFixed(6) + ',' + Number(f.lng).toFixed(6);
 }
 /* 즐겨찾기 핀 클릭 시, 연결된 작물명을 핀 위에 잠시(2.5초) 말풍선으로 표시 */
 function _showCropTip(f){
@@ -2264,11 +2278,13 @@ function renderFavs(){
     return;
   }
   var n = favs.length;
+  var sel = window._selFavKey || '';
   list.innerHTML = favs.map(function(f, i){
     var locked = !!f.locked;
     var num = n - i;   /* 최근(맨위)=큰 번호, 아래로 갈수록 1 */
     var addrLine = f.addr ? '<div class="fi-addr">' + escapeHtml(f.addr) + '</div>' : '';
-    return '<div class="fav-item' + (locked ? ' locked' : '') + '">' +
+    var selCls = (sel && _favKey(f) === sel) ? ' sel' : '';   /* 지도에서 선택된 항목 강조 */
+    return '<div class="fav-item' + (locked ? ' locked' : '') + selCls + '" data-favkey="' + escapeHtml(_favKey(f)) + '">' +
       '<div class="fi-num" style="background:' + colorOf(f.color) + '" onclick="openColorModal(' + i + ')" title="색상 변경">' + num + '</div>' +
       '<div class="fi-text" onclick="gotoFav(' + i + ')">' +
         '<div class="fi-label">' + escapeHtml(f.label) + '</div>' +
@@ -2279,6 +2295,11 @@ function renderFavs(){
       '<button class="fi-del" onclick="delFav(' + i + ')" title="삭제">' + (locked ? _TRASH_GRAY_SVG : _TRASH_SVG) + '</button>' +
     '</div>';
   }).join('');
+  /* 선택된 항목이 여러 개 중에 있으면 그 위치로 스크롤 */
+  if(sel){
+    var selEl = list.querySelector('.fav-item.sel');
+    if(selEl){ try{ selEl.scrollIntoView({block:'center'}); }catch(e){ selEl.scrollIntoView(); } }
+  }
 }
 
 /* ── 목록 번호(색상 동그라미) 탭 → 핀 색상 변경 ── */
