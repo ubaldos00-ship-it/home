@@ -1,4 +1,4 @@
-<!-- map_v23.html · 저장: 2026-06-22 23:21 KST · 브이월드 축소 시 자동숨김(뿌염방지)·확대 시 자동표시 -->
+<!-- map_v24.html · 저장: 2026-06-22 23:41 KST · 작물명 토글을 지도 플로팅 버튼(🌱, 측정 위)으로 이동 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -109,8 +109,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 }
 #locate-btn:active{transform:scale(.9)}
 
-/* ── 즐겨찾기·추적·측정 버튼 (현재위치 버튼 위로 세로 스택) ── */
-#fav-btn, #track-btn, #measure-btn{
+/* ── 즐겨찾기·추적·측정·작물명 버튼 (현재위치 버튼 위로 세로 스택) ── */
+#fav-btn, #track-btn, #measure-btn, #crop-btn{
   position:fixed;right:14px;
   width:50px;height:50px;
   background:#fff;border:none;border-radius:50%;
@@ -121,7 +121,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 #fav-btn{ bottom:90px; }
 #track-btn{ bottom:148px; }
 #measure-btn{ bottom:206px; }
-#fav-btn:active, #track-btn:active, #measure-btn:active{ transform:scale(.9); }
+#crop-btn{ bottom:264px; font-size:24px;line-height:1; }   /* 측정 위 — 작물명 토글 */
+#fav-btn:active, #track-btn:active, #measure-btn:active, #crop-btn:active{ transform:scale(.9); }
+/* 작물명 ON 상태 */
+#crop-btn.active{ background:#27500A; }
 /* 측정 ON 상태 */
 #measure-btn.active{ background:#7c3aed; }
 #measure-btn.active svg{ stroke:#fff; }
@@ -618,11 +621,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
       <span class="ls-ov-text">지적도(브이월드) 필지경계</span>
       <span class="ls-ov-state" id="cadState">OFF</span>
     </button>
-    <button class="ls-overlay" id="cropLabelBtn" onclick="toggleCropLabels()">
-      <span class="ls-ic" style="background:#e3f2d6">🌱</span>
-      <span class="ls-ov-text">즐겨찾기 작물명 표시</span>
-      <span class="ls-ov-state" id="cropLabelState">OFF</span>
-    </button>
   </div>
 </div>
 
@@ -642,6 +640,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
     <path d="M7 9l2 2M10 6l2 2M13 9l2 2"/>
   </svg>
 </button>
+
+<!-- 작물명 표시 토글 버튼 (측정 위) -->
+<button id="crop-btn" onclick="toggleCropLabels()" title="즐겨찾기 작물명 표시">🌱</button>
 
 <!-- 실시간 추적 버튼 -->
 <button id="track-btn" onclick="toggleTrack()" title="실시간 추적">
@@ -1899,10 +1900,8 @@ function favCropOf(f){
 /* 레이어: 작물명 상시 표시 토글 */
 window.toggleCropLabels = function(){
   S.cropLabelsOn = !S.cropLabelsOn;
-  var b = document.getElementById('cropLabelBtn');
+  var b = document.getElementById('crop-btn');
   if(b) b.classList.toggle('active', S.cropLabelsOn);
-  var st = document.getElementById('cropLabelState');
-  if(st) st.textContent = S.cropLabelsOn ? 'ON' : 'OFF';
   refreshFavPins();
   toast(S.cropLabelsOn ? '🌱 작물명 표시 켜짐' : '작물명 표시 꺼짐');
 };
