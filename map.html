@@ -1,4 +1,4 @@
-<!-- map_v25.html · 저장: 2026-06-22 23:54 KST · 작물명 라벨 핀색상 배경, 🌱버튼 위치고정(측정 위), 계산기 목록 일괄 지도반영(?bulk) -->
+<!-- map_v26.html · 저장: 2026-06-23 06:03 KST · 🌱작물명 버튼도 정보시트 따라 함께 이동(adjustControls에 포함) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -862,10 +862,12 @@ function adjustControls(){
   var fb = document.getElementById('fav-btn');
   var tb = document.getElementById('track-btn');
   var mb = document.getElementById('measure-btn');
+  var cb = document.getElementById('crop-btn');
   if(lb) lb.style.bottom = base + 'px';
   if(fb) fb.style.bottom = (base + 58) + 'px';
   if(tb) tb.style.bottom = (base + 116) + 'px';
   if(mb) mb.style.bottom = (base + 174) + 'px';
+  if(cb) cb.style.bottom = (base + 232) + 'px';   /* 작물명 버튼도 함께 이동(겹침 방지) */
 }
 function showInfoSheet(){ infoSheet.classList.remove('collapsed'); infoSheet.classList.add('show'); requestAnimationFrame(adjustControls); }
 window.hideInfoSheet = function(){ infoSheet.classList.remove('show'); adjustControls(); };
