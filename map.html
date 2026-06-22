@@ -1,4 +1,4 @@
-<!-- map_v14.html · 저장: 2026-06-22 00:15 KST · 목록 색상변경·도구버튼(내보내기/색상)·액션메뉴 지도따라이동·공유 주소만 -->
+<!-- map_v15.html · 저장: 2026-06-22 13:49 KST · 계산기 풀왕복 연동(?save 즐겨찾기 자동저장·중복갱신, 즐겨찾기→조사표 자료 복원) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -818,6 +818,8 @@ function showAddr(jibun, road, zip){
   if(road) parts.push('도로명 ' + road);
   if(zip)  parts.push('우편 ' + zip);
   ahLine2.textContent = parts.length ? parts.join('  ·  ') : '';
+  window._curFav = null;          /* 일반 주소 조회 → 조사표 연결 해제 */
+  if(typeof _syncSurveyBtn==='function') _syncSurveyBtn();
   showInfoSheet();
 }
 var dbgEl     = document.getElementById('dbg');
@@ -1099,6 +1101,9 @@ window.searchByAddress = function(){
     setDest(item.y, item.x, jibun || road || q);   /* 길찾기 목적지 */
     showAddr(jibun, road, zip);
     log('검색 성공: ' + (road || jibun));
+
+    /* 계산기 연동: URL ?save=1 이면 즐겨찾기에 자동 저장(중복은 갱신) */
+    _maybeAutoFav(jibun, road, selectedLat, selectedLng);
 
     /* 키보드 닫기 */
     document.getElementById('search-input').blur();
@@ -1450,6 +1455,22 @@ function fmtPyeong(m2){ return Math.round(m2 / 3.305785).toLocaleString(); }
    - 아니면 클립보드에 복사
 ================================================================ */
 window.fillSurvey = function(){
+  /* 풀왕복 연동: 즐겨찾기에 조사표 자료(surveyKey)가 연결돼 있으면 그 자료를 계산기에서 복원 */
+  if(window._curFav && window._curFav.surveyKey){
+    var app = (window._curFav.surveyApp === 'chungchi') ? 'chungchi' : 'tonghab';
+    var url = 'https://ubaldos00-ship-it.github.io/home/' + app + '.html?load=' +
+              encodeURIComponent(window._curFav.surveyKey);
+    toast('📋 조사표 자료를 불러옵니다');
+    try{
+      if(window.opener && !window.opener.closed){
+        window.opener.location.href = url;
+        setTimeout(function(){ try{ window.close(); }catch(e){} }, 800);
+        return;
+      }
+    }catch(e){ log('opener 접근 불가: ' + e.message, 'warn'); }
+    location.href = url;   /* 단독으로 열린 경우: 이 창에서 계산기로 이동 */
+    return;
+  }
   var addr = (S.destName && S.destName !== '선택 위치') ? S.destName
              : (document.getElementById('infoLine1').textContent || '').replace('📍','').trim();
   if(!addr || addr === '현재 위치'){ toast('먼저 위치를 조회해주세요'); return; }
@@ -1729,6 +1750,38 @@ function getFavs(){
 }
 function setFavs(arr){ localStorage.setItem(FAV_KEY, JSON.stringify(arr)); }
 
+/* ── 계산기 풀왕복 연동: URL 파라미터 기반 즐겨찾기 자동 저장 ──
+   tonghab/chungchi 목록의 📍버튼이 ?q=주소&save=1&app=..&surveyKey=..&label=..&color=..
+   형태로 열면, 주소 검색이 성공한 시점에 즐겨찾기로 저장한다.
+   같은 surveyKey 또는 거의 같은 좌표가 이미 있으면 새로 추가하지 않고 갱신. */
+var _urlParams; try{ _urlParams = new URLSearchParams(location.search); }catch(e){ _urlParams = null; }
+var _urlAutoFavDone = false;
+function _maybeAutoFav(jibun, road, lat, lng){
+  if(_urlAutoFavDone || !_urlParams) return;
+  if(_urlParams.get('save') !== '1') return;
+  if(!isFinite(lat) || !isFinite(lng)) return;
+  _urlAutoFavDone = true;
+  var addr  = road || jibun || '';
+  var label = (_urlParams.get('label') || '').trim() || addr || '저장 위치';
+  var color = (_urlParams.get('color') || 'green').trim();
+  var sKey  = (_urlParams.get('surveyKey') || '').trim();
+  var sApp  = (_urlParams.get('app') || '').trim();   /* tonghab | chungchi */
+  var _ck = false; for(var c=0;c<FAV_COLORS.length;c++){ if(FAV_COLORS[c].key===color){ _ck=true; break; } }
+  if(!_ck) color = 'green';                            /* 잘못된 색상 방어 */
+  var favs = getFavs();
+  var dup = -1;
+  for(var i=0;i<favs.length;i++){
+    if(sKey && favs[i].surveyKey === sKey){ dup = i; break; }
+    if(Math.abs((favs[i].lat||0) - lat) < 0.0001 && Math.abs((favs[i].lng||0) - lng) < 0.0001){ dup = i; break; }
+  }
+  var rec = { label:label.slice(0,40), lat:lat, lng:lng, addr:addr, color:color,
+              locked: (dup>=0 ? !!favs[dup].locked : false),
+              surveyKey:sKey, surveyApp:sApp };
+  if(dup >= 0){ favs[dup] = rec; toast('⭐ 즐겨찾기 갱신됨 (' + label.slice(0,12) + ')'); }
+  else { favs.unshift(rec); toast('⭐ 즐겨찾기에 저장됨'); }
+  setFavs(favs);
+}
+
 /* 핀/번호 색상 팔레트 */
 var FAV_COLORS = [
   {key:'red',    c:'#e23b2e'}, {key:'orange', c:'#f08c1e'},
@@ -1847,7 +1900,20 @@ function showFavInfo(f){
   setDest(f.lat, f.lng, f.label);
   ahLine1.textContent = '⭐ ' + f.label;
   ahLine2.textContent = (f.addr ? f.addr + '  ·  ' : '') + f.lat.toFixed(5) + ', ' + f.lng.toFixed(5);
+  /* 계산기 연동: 이 즐겨찾기에 조사표 자료(surveyKey)가 연결돼 있으면 기억 → 조사표 버튼으로 복원 */
+  window._curFav = f;
+  _syncSurveyBtn();
   showInfoSheet();
+}
+/* 조사표 입력 버튼 라벨/표시 갱신 (연결된 조사자료 유무에 따라) */
+function _syncSurveyBtn(){
+  var b = document.getElementById('info-survey');
+  if(!b) return;
+  if(window._curFav && window._curFav.surveyKey){
+    b.textContent = '📋 조사표 열기';
+  } else {
+    b.textContent = '📋 조사표 입력';
+  }
 }
 
 /* 저장된 즐겨찾기를 지도 전체에 핀으로 표시하고 한눈에 보이도록 화면 맞춤 */

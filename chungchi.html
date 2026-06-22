@@ -1,4 +1,4 @@
-<!-- chungchi_v71.html · 저장: 2026-06-20 19:35 KST · 필지주소 지도연동(📍) 추가 -->
+<!-- chungchi_v73_safari_safe.html · 저장: 2026-06-22 14:52 KST · 지도 풀왕복 연동(목록 📍→지도 즐겨찾기 자동저장, 지도→?load 조사자료 복원) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1790,10 +1790,30 @@ function _slRenderList(){
         +'<div class="sl-item-date">'+(it.ymd||'')+' '+(it.hm||'')+'</div>'
       +'</div>'
       +'<button class="'+lockCls+'" onclick="toggleFav(\''+it.key+'\')" aria-label="잠금">'+lockIcon+'</button>'
+      +(it.addr?'<button class="sl-item-load" onclick="slOpenMap(\''+it.key+'\')" aria-label="지도에서 위치보기" title="지도에서 위치보기·즐겨찾기 저장">📍</button>':'')
       +'<button class="sl-item-load" onclick="loadSavedData(\''+it.key+'\')" aria-label="불러오기">📂</button>'
       +delBtn
       +'</div>';
   }).join('');
+}
+
+/* ── 지도 연동: 목록 항목의 📍 클릭 → 지도(map.html)에서 그 주소를 띄우고 즐겨찾기에 자동 저장 ──
+   목록의 addr은 15자로 잘린 축약값이라, 정확한 지오코딩을 위해 저장 데이터의 전체 주소를 읽어 넘긴다. */
+function slOpenMap(key){
+  try{
+    var s = localStorage.getItem(CC_DATA_PFX+key);
+    var d = s ? JSON.parse(s) : {};
+    var a = (d.address||'').trim();
+    if(!a){ alert('이 항목에는 필지 주소가 없습니다.'); return; }
+    var crop = d.__sC || '';
+    var label = (crop?crop+' · ':'') + a;
+    var u = 'https://ubaldos00-ship-it.github.io/home/map.html'
+          + '?q='        + encodeURIComponent(a)
+          + '&save=1&app=chungchi&color=blue'
+          + '&surveyKey=' + encodeURIComponent(key)
+          + '&label='    + encodeURIComponent(label);
+    window.open(u, 'tenarMap');
+  }catch(e){ alert('지도 열기 실패: '+e.message); }
 }
 
 /* ── JSON 내보내기/가져오기 ── */
@@ -2344,6 +2364,48 @@ wcs_add["wa"] = "19e5d0d688a0f70";
 if(window.wcs) {
   wcs_do();
 }
+</script>
+
+<!-- ══ 지도 풀왕복 연동: URL 수신부 ══
+     map.html 의 「📋 조사표 열기」가 chungchi.html?load=<key> 로 열면 해당 저장자료를 자동 복원.
+     (map.html 이 ?addr=<주소> 로 주소만 넘기는 경우도 지원) -->
+<script>
+(function(){
+  var p; try{ p = new URLSearchParams(location.search); }catch(e){ return; }
+  var loadKey = (p.get('load') || '').trim();
+  var addrIn  = (p.get('addr') || '').trim();
+  if(!loadKey && !addrIn) return;
+  function cleanUrl(){ try{ history.replaceState(null,'',location.pathname); }catch(e){} }
+  function run(){
+    /* ccAutoRestore(350ms·3000ms)보다 늦게 적용해 덮어쓰기 */
+    setTimeout(function(){
+      if(loadKey){
+        try{
+          var s = localStorage.getItem(CC_DATA_PFX + loadKey);
+          if(s && typeof _ccApply==='function'){
+            if(typeof _slLastLoadedKey!=='undefined') _slLastLoadedKey = loadKey;
+            _ccApply(JSON.parse(s));
+            if(typeof ccAutoSave==='function') ccAutoSave();
+            cleanUrl();
+            return;
+          }
+          alert('연결된 조사자료를 찾을 수 없습니다. (이 기기에 저장된 자료만 열 수 있습니다)');
+        }catch(e){}
+      }
+      if(addrIn){
+        var el = document.getElementById('address');
+        if(el){
+          el.value = addrIn;
+          el.dispatchEvent(new Event('input',  {bubbles:true}));
+          el.dispatchEvent(new Event('change', {bubbles:true}));
+        }
+      }
+      cleanUrl();
+    }, 1300);
+  }
+  if(document.readyState==='complete') run();
+  else window.addEventListener('load', run);
+})();
 </script>
 </body>
 </html>
