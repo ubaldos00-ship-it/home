@@ -1,4 +1,4 @@
-<!-- map_v16.html · 저장: 2026-06-22 15:30 KST · 즐겨찾기핀 클릭시 작물 말풍선, 즐겨찾기버튼 누르면 롱탭메뉴 닫힘, 저장 즉시 핀 표시 -->
+<!-- map_v17.html · 저장: 2026-06-22 15:46 KST · 롱탭메뉴 핀 누른 위치 위에 표시(화면좌표 직접사용)·작물말풍선·즐겨찾기버튼시 메뉴닫힘·저장즉시핀 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -2110,26 +2110,49 @@ function escapeHtml(s){
 ================================================================ */
 function showActionMenu(e){
   var menu = document.getElementById('action-menu');
+  /* 핀(롱탭)한 화면 좌표를 직접 사용 → 항상 누른 지점 위에 표시 (가장 정확) */
+  var cx = null, cy = null;
+  var pe = e && (e.pointerEvent || e.domEvent || e.originalEvent);
+  if(pe){
+    if(pe.clientX != null){ cx = pe.clientX; cy = pe.clientY; }
+    else if(pe.changedTouches && pe.changedTouches[0]){ cx = pe.changedTouches[0].clientX; cy = pe.changedTouches[0].clientY; }
+    else if(pe.touches && pe.touches[0]){ cx = pe.touches[0].clientX; cy = pe.touches[0].clientY; }
+  }
+  /* 폴백: 지도좌표 재투영 */
+  if(cx == null){
+    try{
+      var off = S.map.getProjection().fromCoordToOffset(new naver.maps.LatLng(S.actLat, S.actLng));
+      var r = document.getElementById('map').getBoundingClientRect();
+      cx = off.x + r.left; cy = off.y + r.top;
+    }catch(_){}
+  }
+  S._amCx = cx; S._amCy = cy;
   menu.classList.add('show');
   positionActionMenu();
-  /* 지도가 움직이면 메뉴도 롱탭 좌표를 따라 이동 (1회만 등록) */
+  /* 지도가 움직이면 메뉴도 핀 좌표를 따라 이동 (1회만 등록) */
   if(!S._amMove){
     S._amMove = naver.maps.Event.addListener(S.map, 'bounds_changed', positionActionMenu);
   }
 }
-/* 롱탭 좌표(actLat/Lng)를 화면 픽셀로 변환해 메뉴 배치 */
+/* 저장해 둔 화면 좌표(우선) 또는 지도좌표 재투영으로 메뉴를 핀 위쪽에 배치 */
 function positionActionMenu(){
   var menu = document.getElementById('action-menu');
-  if(!menu.classList.contains('show') || S.actLat == null || !S.map) return;
-  var proj = S.map.getProjection();
-  var off  = proj.fromCoordToOffset(new naver.maps.LatLng(S.actLat, S.actLng));
-  var mapRect = document.getElementById('map').getBoundingClientRect();
-  var px = off.x + mapRect.left;
-  var py = off.y + mapRect.top;
+  if(!menu.classList.contains('show')) return;
+  var px = S._amCx, py = S._amCy;
+  /* 지도 이동 후에는 재투영으로 핀을 따라가도록 갱신 */
+  if(S.actLat != null && S.map && S.map.getProjection){
+    try{
+      var off = S.map.getProjection().fromCoordToOffset(new naver.maps.LatLng(S.actLat, S.actLng));
+      var r = document.getElementById('map').getBoundingClientRect();
+      var rpx = off.x + r.left, rpy = off.y + r.top;
+      if(isFinite(rpx) && isFinite(rpy)){ px = rpx; py = rpy; }
+    }catch(_){}
+  }
+  if(px == null || !isFinite(px)){ px = window.innerWidth/2; py = window.innerHeight/2; }
   var mw = menu.offsetWidth || 320, mh = menu.offsetHeight || 70;
   var left = Math.max(8, Math.min(px - mw/2, window.innerWidth - mw - 8));
-  var top  = py - mh - 16;
-  if(top < 56) top = py + 18;
+  var top  = py - mh - 16;          /* 핀 위쪽 */
+  if(top < 56) top = py + 18;        /* 위 공간 부족하면 아래쪽 */
   menu.style.left = left + 'px';
   menu.style.top  = top + 'px';
 }
