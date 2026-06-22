@@ -258,7 +258,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
   import {
-    getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut, onAuthStateChanged
+    getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged
   } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
   import {
     getFirestore, collection, getDocs, deleteDoc, doc, setDoc, query, where,
@@ -302,18 +302,19 @@
     }
   });
 
-  getRedirectResult(auth).then(result => {
-    if (result && result.user && result.user.email !== 'ubaldos00@gmail.com') {
-      signOut(auth);
-      alert('접근이 거부되었습니다. ubaldos00@gmail.com으로 로그인하세요.');
-    }
-  }).catch(() => {});
-
   document.getElementById('googleBtn').addEventListener('click', async () => {
     try {
-      await signInWithRedirect(auth, new GoogleAuthProvider());
+      const result = await signInWithPopup(auth, new GoogleAuthProvider());
+      if (result.user.email !== 'ubaldos00@gmail.com') {
+        await signOut(auth);
+        alert('접근이 거부되었습니다. ubaldos00@gmail.com으로 로그인하세요.');
+      }
     } catch (e) {
-      alert('로그인 실패: ' + e.message);
+      if (e.code === 'auth/popup-blocked') {
+        alert('팝업이 차단됐습니다.\n브라우저에서 이 사이트의 팝업을 허용해 주세요.');
+      } else if (e.code !== 'auth/popup-closed-by-user') {
+        alert('로그인 실패: ' + e.message);
+      }
     }
   });
 
