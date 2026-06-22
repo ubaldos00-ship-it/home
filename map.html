@@ -140,13 +140,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 #track-btn.active{ background:#0d6640; }
 #track-btn.active svg{ stroke:#fff; }
 #track-btn.active svg circle:nth-of-type(2){ fill:#fff; }
-/* 측정 ON 상태 */
-#measure-btn.active{ background:#7c3aed; }
-#measure-btn.active svg{ stroke:#fff; }
-/* 추적 ON 상태 */
-#track-btn.active{ background:#0d6640; }
-#track-btn.active svg{ stroke:#fff; }
-#track-btn.active svg circle:nth-of-type(2){ fill:#fff; }
 
 /* ── 즐겨찾기 패널 (하단 시트) ── */
 #fav-modal{
@@ -945,9 +938,13 @@ window.initNaverMap = function(){
   log('✅ Naver API 콜백 수신 — 준비 완료');
   S.naverReady = true;
   /* URL ?q=주소 가 있으면 GPS 대신 그 주소를 바로 검색 (통합계산기 연동) */
-  var q = '';
-  try { q = (new URLSearchParams(location.search).get('q') || '').trim(); } catch(e){}
-  if(q){
+  var q = '', bulk = '';
+  try { var sp = new URLSearchParams(location.search); q = (sp.get('q')||'').trim(); bulk = (sp.get('bulk')||'').trim(); } catch(e){}
+  if(bulk === '1'){
+    log('일괄 지도반영 모드');
+    renderMap(CFG.defaultLat, CFG.defaultLng, 0, true);  /* 지도만 생성 */
+    setTimeout(_runBulkSave, 900);
+  } else if(q){
     log('URL 주소 검색: ' + q);
     renderMap(CFG.defaultLat, CFG.defaultLng, 0, true);  /* 지도만 생성 */
     var inp = document.getElementById('search-input');
@@ -957,6 +954,64 @@ window.initNaverMap = function(){
     startGPS();
   }
 };
+
+/* ================================================================
+   계산기 저장목록 일괄 지도반영 (?bulk=1)
+   계산기가 localStorage['tenar_map_bulk'] 에 [{addr,crop,app,surveyKey},…] 를 넣고
+   map.html?bulk=1 로 열면, 각 주소를 지오코딩해 즐겨찾기로 한꺼번에 저장한다.
+================================================================ */
+function _runBulkSave(){
+  var raw = null;
+  try { raw = localStorage.getItem('tenar_map_bulk'); } catch(e){}
+  if(!raw){ startGPS(); return; }
+  try { localStorage.removeItem('tenar_map_bulk'); } catch(e){}
+  var items = [];
+  try { items = JSON.parse(raw) || []; } catch(e){ items = []; }
+  if(!items.length){ startGPS(); return; }
+  if(!naver.maps.Service || !naver.maps.Service.geocode){ toast('검색 모듈 미로드'); return; }
+  var i = 0, done = 0, fail = 0;
+  toast('🗺 ' + items.length + '곳 지도에 반영 중…');
+  function step(){
+    if(i >= items.length){
+      toast('✅ 지도반영 완료: ' + done + '곳' + (fail ? (' / 실패 ' + fail) : ''));
+      refreshFavPins();
+      try { if(getFavs().length) showAllFavs(); } catch(e){}
+      return;
+    }
+    var it = items[i++];
+    var addr = (it.addr || '').trim();
+    if(!addr){ fail++; return step(); }
+    naver.maps.Service.geocode({ query:addr }, function(st, res){
+      try{
+        if(st === naver.maps.Service.Status.OK && res.v2 && res.v2.addresses && res.v2.addresses.length){
+          var a = res.v2.addresses[0];
+          _saveBulkFav(it, Number(a.y), Number(a.x), a.roadAddress || a.jibunAddress || addr);
+          done++;
+        } else { fail++; }
+      }catch(e){ fail++; }
+      setTimeout(step, 250);   /* 지오코딩 간격 (과다호출 방지) */
+    });
+  }
+  step();
+}
+/* 일괄 저장용 — 중복(같은 surveyKey/좌표)은 갱신 */
+function _saveBulkFav(it, lat, lng, addr){
+  if(!isFinite(lat) || !isFinite(lng)) return;
+  var color = (it.app === 'chungchi') ? 'blue' : 'green';
+  var crop  = (it.crop || '').trim();
+  var label = (crop ? crop + ' · ' : '') + addr;
+  var favs = getFavs();
+  var dup = -1;
+  for(var k=0;k<favs.length;k++){
+    if(it.surveyKey && favs[k].surveyKey === it.surveyKey){ dup = k; break; }
+    if(Math.abs((favs[k].lat||0)-lat) < 0.0001 && Math.abs((favs[k].lng||0)-lng) < 0.0001){ dup = k; break; }
+  }
+  var rec = { label:label.slice(0,40), lat:lat, lng:lng, addr:addr, color:color,
+              locked:(dup>=0 ? !!favs[dup].locked : false),
+              surveyKey:it.surveyKey||'', surveyApp:it.app||'', crop:crop };
+  if(dup>=0) favs[dup] = rec; else favs.unshift(rec);
+  setFavs(favs);
+}
 
 /* ✅ Naver API 실패 (onerror / authFailure 공통 처리) */
 window.onNaverFail = function(reason){
@@ -1894,7 +1949,7 @@ window.refreshFavPins = function(){
       if(crop){
         var lbl = new naver.maps.Marker({
           map:S.map, position:ll,
-          icon:{ content:'<div class="crop-label">🌱 ' + escapeHtml(crop) + '</div>',
+          icon:{ content:'<div class="crop-label" style="background:' + colorOf(f.color) + '">🌱 ' + escapeHtml(crop) + '</div>',
                  anchor:new naver.maps.Point(-14, 26) },
           clickable:false, zIndex:50
         });
