@@ -1,4 +1,4 @@
-<!-- map_v26.html · 저장: 2026-06-23 06:03 KST · 🌱작물명 버튼도 정보시트 따라 함께 이동(adjustControls에 포함) -->
+<!-- map_v27.html · 저장: 2026-06-23 06:18 KST · 계산기 저장/덮어쓰기 시 지도 자동반영(storage 실시간 + 지도 열 때 대기열 처리) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -954,6 +954,8 @@ window.initNaverMap = function(){
     setTimeout(function(){ window.searchByAddress(); }, 700);
   } else {
     startGPS();
+    /* 지도가 닫혀 있는 동안 계산기에서 저장된 항목이 대기열에 있으면 지도 열 때 자동 반영 */
+    setTimeout(function(){ try{ _processBulkQueue(false); }catch(_){} }, 1600);
   }
 };
 
@@ -962,22 +964,34 @@ window.initNaverMap = function(){
    계산기가 localStorage['tenar_map_bulk'] 에 [{addr,crop,app,surveyKey},…] 를 넣고
    map.html?bulk=1 로 열면, 각 주소를 지오코딩해 즐겨찾기로 한꺼번에 저장한다.
 ================================================================ */
+/* ?bulk=1 진입용 — 대기열 있으면 처리(화면도 맞춤), 없으면 일반 GPS 시작 */
 function _runBulkSave(){
+  if(!_processBulkQueue(true)) startGPS();
+}
+/* 대기열(tenar_map_bulk) 처리 핵심.
+   fit=true 면 처리 후 전체 핀이 보이도록 화면을 맞춤(명시적 지도반영용),
+   fit=false 면 화면을 움직이지 않고 핀만 갱신(저장 시 실시간 자동반영용).
+   처리할 게 있으면 true 반환. */
+var _bulkBusy = false;
+function _processBulkQueue(fit){
+  if(_bulkBusy) return true;                       /* 진행 중이면 중복 실행 방지 */
+  if(!S.map || !naver.maps.Service || !naver.maps.Service.geocode) return false;
   var raw = null;
   try { raw = localStorage.getItem('tenar_map_bulk'); } catch(e){}
-  if(!raw){ startGPS(); return; }
-  try { localStorage.removeItem('tenar_map_bulk'); } catch(e){}
+  if(!raw) return false;
   var items = [];
   try { items = JSON.parse(raw) || []; } catch(e){ items = []; }
-  if(!items.length){ startGPS(); return; }
-  if(!naver.maps.Service || !naver.maps.Service.geocode){ toast('검색 모듈 미로드'); return; }
+  if(!items.length){ try{ localStorage.removeItem('tenar_map_bulk'); }catch(e){} return false; }
+  try { localStorage.removeItem('tenar_map_bulk'); } catch(e){}   /* 처리 시작과 동시에 비움 */
+  _bulkBusy = true;
   var i = 0, done = 0, fail = 0;
   toast('🗺 ' + items.length + '곳 지도에 반영 중…');
   function step(){
     if(i >= items.length){
-      toast('✅ 지도반영 완료: ' + done + '곳' + (fail ? (' / 실패 ' + fail) : ''));
+      _bulkBusy = false;
+      toast('✅ 지도반영: ' + done + '곳' + (fail ? (' / 실패 ' + fail) : ''));
       refreshFavPins();
-      try { if(getFavs().length) showAllFavs(); } catch(e){}
+      if(fit){ try { if(getFavs().length) showAllFavs(); } catch(e){} }
       return;
     }
     var it = items[i++];
@@ -995,7 +1009,14 @@ function _runBulkSave(){
     });
   }
   step();
+  return true;
 }
+/* 다른 탭(계산기)에서 저장/덮어쓰기로 대기열이 바뀌면 → 화면 안 움직이고 즉시 자동반영 */
+window.addEventListener('storage', function(e){
+  if(e.key === 'tenar_map_bulk' && e.newValue){
+    try{ _processBulkQueue(false); }catch(_){}
+  }
+});
 /* 일괄 저장용 — 중복(같은 surveyKey/좌표)은 갱신 */
 function _saveBulkFav(it, lat, lng, addr){
   if(!isFinite(lat) || !isFinite(lng)) return;
