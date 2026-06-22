@@ -1,4 +1,4 @@
-<!-- map_v17.html · 저장: 2026-06-22 15:46 KST · 롱탭메뉴 핀 누른 위치 위에 표시(화면좌표 직접사용)·작물말풍선·즐겨찾기버튼시 메뉴닫힘·저장즉시핀 -->
+<!-- map_v18.html · 저장: 2026-06-22 17:57 KST · 롱탭메뉴 핀따라이동·지정위치저장(현재위치아님)·롱탭시 하단시트닫힘·현재위치버튼시 롱탭메뉴닫힘 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -802,7 +802,7 @@ function adjustControls(){
   if(tb) tb.style.bottom = (base + 116) + 'px';
   if(mb) mb.style.bottom = (base + 174) + 'px';
 }
-function showInfoSheet(){ infoSheet.classList.add('show'); requestAnimationFrame(adjustControls); }
+function showInfoSheet(){ infoSheet.classList.remove('collapsed'); infoSheet.classList.add('show'); requestAnimationFrame(adjustControls); }
 window.hideInfoSheet = function(){ infoSheet.classList.remove('show'); adjustControls(); };
 
 /* ── 길찾기 목적지 설정 ── */
@@ -901,6 +901,7 @@ window.onNaverFail = function(reason){
    GPS 조회
 ================================================================ */
 window.startGPS = function(){
+  if(typeof hideActionMenu === 'function') hideActionMenu();   /* 현재위치 버튼 → 롱탭 메뉴 닫기 */
   if(!navigator.geolocation){
     log('geolocation 미지원', 'err');
     showOv('GPS 미지원', '이 브라우저는 위치 조회를 지원하지 않습니다.', false);
@@ -1805,15 +1806,14 @@ window.addCurrentFav = function(){
   openSaveModal(c.lat(), c.lng());
 };
 function openSaveModal(lat, lng){
-  var def = (ahLine1.textContent || '').replace('📍','').replace('⭐','').trim();
-  if(!def || def==='현재 위치' || def==='주소 없음' || def.indexOf('실시간')>=0 || def.indexOf('조회')>=0)
-    def = lat.toFixed(5) + ', ' + lng.toFixed(5);
-  var addr = (S.destName && S.destName!=='선택 위치') ? S.destName : '';
-  _saveCtx = { lat:lat, lng:lng, addr:addr };
+  /* 전달받은 좌표(=롱탭으로 지정한 위치 또는 현재위치)를 그대로 저장 대상으로 삼는다.
+     이전엔 하단 시트(현재위치) 주소를 가져와 롱탭 저장 시에도 현재위치가 저장되는 버그가 있었음. */
+  _saveCtx = { lat:lat, lng:lng, addr:'' };
   _saveColor = 'red';
-  document.getElementById('saveName').value = def;
-  /* 주소가 없으면 좌표→주소 조회해 목록에 함께 저장(좌표 옆 주소 표시용) */
-  if(!addr && naver.maps.Service && naver.maps.Service.reverseGeocode){
+  var ni = document.getElementById('saveName');
+  ni.value = lat.toFixed(5) + ', ' + lng.toFixed(5);   /* 임시 기본값(좌표) — 주소 조회되면 교체 */
+  /* 지정 좌표의 실제 주소를 조회해 이름·주소로 채움 */
+  if(naver.maps.Service && naver.maps.Service.reverseGeocode){
     naver.maps.Service.reverseGeocode(
       { coords:new naver.maps.LatLng(lat, lng), orders:'addr,roadaddr' },
       function(stt, res){
@@ -1822,8 +1822,8 @@ function openSaveModal(lat, lng){
           var ad = a.roadAddress || a.jibunAddress || '';
           if(ad){
             _saveCtx.addr = ad;
-            var ni = document.getElementById('saveName');
-            if(/^[\d.,\s-]+$/.test(ni.value)) ni.value = ad;   /* 기본값이 좌표면 주소로 교체 */
+            /* 사용자가 아직 직접 수정하지 않았으면(좌표 그대로면) 주소로 교체 */
+            if(/^[\d.,\s-]+$/.test(ni.value)) ni.value = ad;
           }
         }
       });
@@ -2108,25 +2108,41 @@ function escapeHtml(s){
 /* ================================================================
    롱탭 액션 메뉴 (도착 · 면적측정 · 주소 · 공유 · 저장)
 ================================================================ */
+/* 롱탭 이벤트에서 화면(viewport) 픽셀 좌표 추출 — 여러 소스 폴백 */
+function _evtViewportXY(e){
+  var pe = e && (e.pointerEvent || e.originalEvent || e.domEvent);
+  if(pe){
+    if(pe.clientX != null) return { x:pe.clientX, y:pe.clientY };
+    var t = (pe.changedTouches && pe.changedTouches[0]) || (pe.touches && pe.touches[0]);
+    if(t) return { x:t.clientX, y:t.clientY };
+  }
+  var off = e && (e.offset || e.point);   /* Naver: 지도 컨테이너 기준 픽셀 */
+  if(off){
+    var r = document.getElementById('map').getBoundingClientRect();
+    return { x: off.x + r.left, y: off.y + r.top };
+  }
+  return null;
+}
+/* 지도좌표 → 화면(viewport) 픽셀 재투영 (지도가 움직이면 핀을 따라가기 위함) */
+function _reprojectXY(lat, lng){
+  try{
+    var off = S.map.getProjection().fromCoordToOffset(new naver.maps.LatLng(lat, lng));
+    var r = document.getElementById('map').getBoundingClientRect();
+    return { x: off.x + r.left, y: off.y + r.top };
+  }catch(_){ return null; }
+}
 function showActionMenu(e){
   var menu = document.getElementById('action-menu');
-  /* 핀(롱탭)한 화면 좌표를 직접 사용 → 항상 누른 지점 위에 표시 (가장 정확) */
-  var cx = null, cy = null;
-  var pe = e && (e.pointerEvent || e.domEvent || e.originalEvent);
-  if(pe){
-    if(pe.clientX != null){ cx = pe.clientX; cy = pe.clientY; }
-    else if(pe.changedTouches && pe.changedTouches[0]){ cx = pe.changedTouches[0].clientX; cy = pe.changedTouches[0].clientY; }
-    else if(pe.touches && pe.touches[0]){ cx = pe.touches[0].clientX; cy = pe.touches[0].clientY; }
+  if(typeof hideInfoSheet === 'function') hideInfoSheet();   /* 롱탭 시 하단 현재위치 시트 완전히 닫기 */
+  /* 누른 지점의 실제 화면 좌표를 기준점으로 사용 (가장 정확) */
+  var anchor = _evtViewportXY(e);
+  /* 재투영값과의 차이를 보정값으로 저장 → 지도 이동 시 재투영해도 핀에 정확히 붙어 따라감 */
+  S._amCorr = { dx:0, dy:0 };
+  if(anchor){
+    var rp0 = _reprojectXY(S.actLat, S.actLng);
+    if(rp0){ S._amCorr = { dx: anchor.x - rp0.x, dy: anchor.y - rp0.y }; }
+    S._amAnchor = anchor;
   }
-  /* 폴백: 지도좌표 재투영 */
-  if(cx == null){
-    try{
-      var off = S.map.getProjection().fromCoordToOffset(new naver.maps.LatLng(S.actLat, S.actLng));
-      var r = document.getElementById('map').getBoundingClientRect();
-      cx = off.x + r.left; cy = off.y + r.top;
-    }catch(_){}
-  }
-  S._amCx = cx; S._amCy = cy;
   menu.classList.add('show');
   positionActionMenu();
   /* 지도가 움직이면 메뉴도 핀 좌표를 따라 이동 (1회만 등록) */
@@ -2134,21 +2150,19 @@ function showActionMenu(e){
     S._amMove = naver.maps.Event.addListener(S.map, 'bounds_changed', positionActionMenu);
   }
 }
-/* 저장해 둔 화면 좌표(우선) 또는 지도좌표 재투영으로 메뉴를 핀 위쪽에 배치 */
+/* 재투영(+보정)으로 메뉴를 핀 위쪽에 배치 — 지도 이동 시에도 핀을 따라감 */
 function positionActionMenu(){
   var menu = document.getElementById('action-menu');
-  if(!menu.classList.contains('show')) return;
-  var px = S._amCx, py = S._amCy;
-  /* 지도 이동 후에는 재투영으로 핀을 따라가도록 갱신 */
-  if(S.actLat != null && S.map && S.map.getProjection){
-    try{
-      var off = S.map.getProjection().fromCoordToOffset(new naver.maps.LatLng(S.actLat, S.actLng));
-      var r = document.getElementById('map').getBoundingClientRect();
-      var rpx = off.x + r.left, rpy = off.y + r.top;
-      if(isFinite(rpx) && isFinite(rpy)){ px = rpx; py = rpy; }
-    }catch(_){}
+  if(!menu.classList.contains('show') || S.actLat == null) return;
+  var px = null, py = null;
+  var rp = _reprojectXY(S.actLat, S.actLng);
+  if(rp){
+    var c = S._amCorr || { dx:0, dy:0 };
+    px = rp.x + c.dx; py = rp.y + c.dy;       /* 보정 적용 → 핀에 정확히 고정 */
+  } else if(S._amAnchor){
+    px = S._amAnchor.x; py = S._amAnchor.y;    /* 재투영 실패 시 최초 누른 좌표 */
   }
-  if(px == null || !isFinite(px)){ px = window.innerWidth/2; py = window.innerHeight/2; }
+  if(px == null || !isFinite(px)) return;
   var mw = menu.offsetWidth || 320, mh = menu.offsetHeight || 70;
   var left = Math.max(8, Math.min(px - mw/2, window.innerWidth - mw - 8));
   var top  = py - mh - 16;          /* 핀 위쪽 */
