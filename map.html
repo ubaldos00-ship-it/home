@@ -1,4 +1,4 @@
-<!-- map_v18.html · 저장: 2026-06-22 17:57 KST · 롱탭메뉴 핀따라이동·지정위치저장(현재위치아님)·롱탭시 하단시트닫힘·현재위치버튼시 롱탭메뉴닫힘 -->
+<!-- map_v19.html · 저장: 2026-06-22 20:49 KST · 즐겨찾기핀 항상표시·롱탭핀3배확대/메뉴위로/겹침제거·주소복사버튼·조사표선택창·잠금휴지통 아이콘교체 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -391,10 +391,18 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
   content:'';position:absolute;left:0;right:0;height:34px;margin-top:-14px;
 }
 #fav-sheet, #save-sheet, #color-sheet{ position:relative; }
+.info-line1-row{ display:flex;align-items:center;gap:8px; }
 #infoLine1{
+  flex:1;min-width:0;
   font-size:17px;font-weight:800;color:#111;line-height:1.3;
   word-break:keep-all;
 }
+#info-copy{
+  flex-shrink:0;border:1px solid #cdd9c0;background:#eef6e8;color:#27500A;
+  font-family:inherit;font-size:12px;font-weight:700;border-radius:8px;
+  padding:5px 9px;cursor:pointer;line-height:1;
+}
+#info-copy:active{ background:#dceccf; }
 #infoLine2{
   font-size:13px;color:#6b7280;line-height:1.45;margin-top:4px;
   word-break:keep-all;
@@ -486,6 +494,23 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 .rb-naver{ background:#03c75a; }
 .rb-kakao{ background:#fee500;color:#3a1d1d !important; }
 .rb-tmap{  background:#1a4fd6; }
+/* 조사표 선택창 (route-modal 스타일 재사용) */
+#survey-pick-modal{
+  display:none;position:fixed;inset:0;z-index:1300;
+  background:rgba(0,0,0,.45);align-items:flex-end;justify-content:center;
+}
+#survey-pick-modal.show{ display:flex; }
+#survey-pick-sheet{
+  width:100%;max-width:480px;background:#fff;border-radius:20px 20px 0 0;
+  padding:16px 16px calc(18px + env(safe-area-inset-bottom));
+  box-shadow:0 -6px 24px rgba(0,0,0,.22);
+}
+#sp-addr{
+  font-size:12.5px;color:#6b7280;margin-bottom:12px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.sp-tonghab{ background:#27500A; }
+.sp-chungchi{ background:#1558D6; }
 .route-cancel{
   width:100%;border:none;border-radius:13px;background:#f3f4f6;color:#374151;
   font-family:inherit;font-size:14px;font-weight:700;padding:12px;cursor:pointer;
@@ -634,7 +659,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 <!-- 하단 정보 시트 (현재위치·주소) -->
 <div id="info-sheet">
   <div class="sheet-handle" id="sheetHandle"></div>
-  <div id="infoLine1">📍 현재 위치</div>
+  <div class="info-line1-row">
+    <div id="infoLine1">📍 현재 위치</div>
+    <button id="info-copy" onclick="copyInfoAddr()" title="주소 복사">복사</button>
+  </div>
   <div id="infoLine2">위치를 조회하면 주소가 표시됩니다</div>
   <div class="info-actions">
     <button id="info-fav" onclick="addCurrentFav()">⭐ 저장</button>
@@ -667,6 +695,17 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
     <button class="route-app rb-kakao" onclick="openRoute('kakao')">K&nbsp; 카카오맵으로 길찾기</button>
     <button class="route-app rb-tmap"  onclick="openRoute('tmap')">T&nbsp; 티맵으로 길찾기</button>
     <button class="route-cancel" onclick="closeRouteMenu()">취소</button>
+  </div>
+</div>
+
+<!-- 조사표 선택창 (실측/청취) — 주소를 어느 계산기에 넣을지 선택 -->
+<div id="survey-pick-modal" onclick="if(event.target===this)closeSurveyPick()">
+  <div id="survey-pick-sheet">
+    <div class="route-title">📋 어느 조사표에 주소를 넣을까요?</div>
+    <div id="sp-addr">—</div>
+    <button class="route-app sp-tonghab" onclick="pickSurvey('tonghab')">📐&nbsp; 실측조사표(통합계산기)</button>
+    <button class="route-app sp-chungchi" onclick="pickSurvey('chungchi')">🎧&nbsp; 청취조사표(청취계산기)</button>
+    <button class="route-cancel" onclick="closeSurveyPick()">취소</button>
   </div>
 </div>
 
@@ -1002,7 +1041,7 @@ function renderMap(lat, lng, acc, skipMe){
       naver.maps.Event.addListener(S.map, 'longtap', function(e){
         if(S.measureMode !== 'off') return;   /* 측정 중이면 무시 */
         if(S.pickMarker){ S.pickMarker.setMap(null); }
-        S.pickMarker = new naver.maps.Marker({ map:S.map, position:e.coord });
+        S.pickMarker = new naver.maps.Marker({ map:S.map, position:e.coord, icon:pickPinIcon() });
         S.actLat = e.coord.lat(); S.actLng = e.coord.lng();
         showActionMenu(e);
       });
@@ -1012,6 +1051,9 @@ function renderMap(lat, lng, acc, skipMe){
         if(S.measureMode === 'off') return;
         addMeasurePoint(e.coord);
       });
+
+      /* 지도 준비 직후, 저장돼 있던 즐겨찾기 핀을 모두 표시 */
+      setTimeout(function(){ try{ refreshFavPins(); }catch(_){} }, 400);
     } else {
       naver.maps.Event.trigger(S.map, 'resize');
       S.map.setCenter(pos);
@@ -1209,6 +1251,7 @@ function openKakaoWeb(){
    길찾기 (네이버 / 카카오 / 티맵 선택 → 앱·웹 연결)
 ================================================================ */
 window.openRouteMenu = function(){
+  if(typeof hideActionMenu==='function') hideActionMenu();   /* 다른 팝업 열릴 때 롱탭 메뉴 닫기 */
   if(S.destLat == null){ toast('먼저 위치를 조회해주세요'); return; }
   document.getElementById('route-dest').textContent = '목적지: ' + (S.destName || '선택 위치');
   document.getElementById('route-modal').classList.add('show');
@@ -1258,6 +1301,7 @@ function openAppOrWeb(appUrl, webUrl, provider){
    거리·면적 측정
 ================================================================ */
 window.openMeasure = function(){
+  if(typeof hideActionMenu==='function') hideActionMenu();   /* 다른 팝업 열릴 때 롱탭 메뉴 닫기 */
   if(!S.map){ toast('지도 로딩 후 사용해주세요'); return; }
   hideInfoSheet();
   document.getElementById('measure-btn').classList.add('active');
@@ -1472,25 +1516,45 @@ window.fillSurvey = function(){
     location.href = url;   /* 단독으로 열린 경우: 이 창에서 계산기로 이동 */
     return;
   }
+  /* 일반(현재위치 등) 주소 → 어느 조사표에 넣을지 선택창 표시 */
   var addr = (S.destName && S.destName !== '선택 위치') ? S.destName
-             : (document.getElementById('infoLine1').textContent || '').replace('📍','').trim();
+             : _infoAddrText();
   if(!addr || addr === '현재 위치'){ toast('먼저 위치를 조회해주세요'); return; }
+  _spAddr = addr;
+  var ae = document.getElementById('sp-addr'); if(ae) ae.textContent = addr;
+  document.getElementById('survey-pick-modal').classList.add('show');
+};
+/* 정보시트에 표시된 주소 텍스트 추출 (이모지 접두 제거) */
+function _infoAddrText(){
+  var l1 = (document.getElementById('infoLine1').textContent || '').replace('📍','').replace('⭐','').trim();
+  if(l1 && l1 !== '현재 위치' && l1 !== '주소 없음') return l1;
+  return (document.getElementById('infoLine2').textContent || '').trim();
+}
+/* 현재위치 시트의 주소를 클립보드로 복사 */
+window.copyInfoAddr = function(){
+  var addr = _infoAddrText();
+  if(!addr || /위치를 조회|주소가 표시/.test(addr)){ toast('복사할 주소가 없습니다'); return; }
+  copyText(addr);
+  toast('클립보드 복사되었습니다');
+};
+/* 조사표 선택창 */
+var _spAddr = '';
+window.closeSurveyPick = function(){ document.getElementById('survey-pick-modal').classList.remove('show'); };
+window.pickSurvey = function(app){
+  closeSurveyPick();
+  var a = (app === 'chungchi') ? 'chungchi' : 'tonghab';
+  var url = 'https://ubaldos00-ship-it.github.io/home/' + a + '.html?addr=' + encodeURIComponent(_spAddr);
+  /* 계산기에서 📍로 열었으면 그 창(opener)에 바로 주소 입력, 아니면 새로 연다 */
   try{
     if(window.opener && !window.opener.closed){
-      var inp = window.opener.document.getElementById('address');
-      if(inp){
-        inp.value = addr;
-        inp.dispatchEvent(new Event('input',  { bubbles:true }));
-        inp.dispatchEvent(new Event('change', { bubbles:true }));
-        toast('✅ 조사표에 주소를 입력했습니다');
-        setTimeout(function(){ try{ window.close(); }catch(e){} }, 900);
-        return;
-      }
+      window.opener.location.href = url;
+      toast('✅ ' + (a==='chungchi'?'청취':'실측') + '조사표에 주소를 입력합니다');
+      setTimeout(function(){ try{ window.close(); }catch(e){} }, 800);
+      return;
     }
   }catch(e){ log('opener 접근 불가: ' + e.message, 'warn'); }
-  /* 폴백: 클립보드 복사 */
-  copyText(addr);
-  toast('📋 주소를 복사했습니다 — 조사표에 붙여넣기 하세요');
+  window.open(url, 'tenarCalc');
+  toast('✅ ' + (a==='chungchi'?'청취':'실측') + '조사표를 엽니다');
 };
 function copyText(t){
   try{
@@ -1749,7 +1813,22 @@ function getFavs(){
   try { return JSON.parse(localStorage.getItem(FAV_KEY) || '[]'); }
   catch(e){ return []; }
 }
-function setFavs(arr){ localStorage.setItem(FAV_KEY, JSON.stringify(arr)); }
+function setFavs(arr){
+  localStorage.setItem(FAV_KEY, JSON.stringify(arr));
+  /* 저장/수정/삭제 후 지도에 모든 즐겨찾기 핀을 다시 그려 항상 보이게 유지 */
+  if(typeof refreshFavPins === 'function') refreshFavPins();
+}
+/* 저장된 모든 즐겨찾기를 지도에 핀으로 (화면 이동 없이) 상시 표시 */
+window.refreshFavPins = function(){
+  if(!S.map || typeof naver === 'undefined') return;
+  clearFavMarkers();
+  getFavs().forEach(function(f){
+    var ll = new naver.maps.LatLng(f.lat, f.lng);
+    var mk = new naver.maps.Marker({ map:S.map, position:ll, icon:favPinIcon(f.color) });
+    naver.maps.Event.addListener(mk, 'click', function(){ S.map.setCenter(ll); showFavInfo(f); });
+    S.favMarkers.push(mk);
+  });
+};
 
 /* ── 계산기 풀왕복 연동: URL 파라미터 기반 즐겨찾기 자동 저장 ──
    tonghab/chungchi 목록의 📍버튼이 ?q=주소&save=1&app=..&surveyKey=..&label=..&color=..
@@ -1795,6 +1874,11 @@ function colorOf(key){
   return FAV_COLORS[0].c;
 }
 
+/* 계산기(통합·청취)와 동일한 잠금/휴지통 아이콘 — 시인성 향상 */
+var _LOCK_SVG='<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="4" y="11" width="16" height="11" rx="2" fill="#1558D6" stroke="#1558D6" stroke-width="1.2"/><path d="M8 11V8a4 4 0 018 0v3" stroke="#1558D6" stroke-width="2" stroke-linecap="round"/></svg>';
+var _UNLOCK_SVG='<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="4" y="11" width="16" height="11" rx="2" stroke="#888" stroke-width="1.5" fill="none"/><path d="M8 11V8a4 4 0 018 0" stroke="#888" stroke-width="2" stroke-linecap="round"/></svg>';
+var _TRASH_SVG='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6h14z" stroke="#c0392b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 11v5M14 11v5" stroke="#c0392b" stroke-width="1.8" stroke-linecap="round"/></svg>';
+
 window.openFavPanel  = function(){ if(typeof hideActionMenu==='function') hideActionMenu(); /* 롱탭 액션메뉴 닫고 즐겨찾기 열기 */ renderFavs(); document.getElementById('fav-modal').classList.add('show'); };
 window.closeFavPanel = function(){ document.getElementById('fav-modal').classList.remove('show'); };
 
@@ -1806,6 +1890,7 @@ window.addCurrentFav = function(){
   openSaveModal(c.lat(), c.lng());
 };
 function openSaveModal(lat, lng){
+  if(typeof hideActionMenu==='function') hideActionMenu();   /* 저장창 열릴 때 롱탭 메뉴 닫기 */
   /* 전달받은 좌표(=롱탭으로 지정한 위치 또는 현재위치)를 그대로 저장 대상으로 삼는다.
      이전엔 하단 시트(현재위치) 주소를 가져와 롱탭 저장 시에도 현재위치가 저장되는 버그가 있었음. */
   _saveCtx = { lat:lat, lng:lng, addr:'' };
@@ -1849,14 +1934,11 @@ window.confirmSaveFav = function(){
   var sLat = _saveCtx.lat, sLng = _saveCtx.lng, sColor = _saveColor;
   var favs = getFavs();
   favs.unshift({ label:name, lat:sLat, lng:sLng, addr:_saveCtx.addr||'', color:sColor, locked:false });
-  setFavs(favs);
+  setFavs(favs);                /* → refreshFavPins() 자동 호출: 새 핀 포함 전체 즐겨찾기 핀 표시 */
   closeSaveModal();
   renderFavs();
-  /* 저장 즉시 지도에 핀 표시 (이전엔 전체보기/항목클릭 전까지 핀이 안 보였음) */
-  if(S.map){
-    if(S.pickMarker){ S.pickMarker.setMap(null); }
-    S.pickMarker = new naver.maps.Marker({ map:S.map, position:new naver.maps.LatLng(sLat, sLng), icon:favPinIcon(sColor) });
-  }
+  /* 롱탭 임시 마커 제거 (즐겨찾기 색상 핀으로 대체됨) */
+  if(S.pickMarker){ S.pickMarker.setMap(null); S.pickMarker = null; }
   toast('⭐ 저장했습니다');
 };
 
@@ -1886,6 +1968,16 @@ function favPinIcon(color){
   return {
     content:'<div class="fav-pinmark" style="background:' + colorOf(color) + '"></div>',
     anchor:new naver.maps.Point(11, 22)
+  };
+}
+/* 롱탭 지정위치 핀 — 기존 즐겨찾기 핀(22px)의 약 3배 크기로 크게 표시 */
+function pickPinIcon(){
+  var s = 46;
+  return {
+    content:'<div style="width:' + s + 'px;height:' + s + 'px;border-radius:50% 50% 50% 0;'
+          + 'transform:rotate(-45deg);background:#ff3b30;border:3px solid #fff;'
+          + 'box-shadow:0 4px 10px rgba(0,0,0,.5);"></div>',
+    anchor:new naver.maps.Point(s/2, s)   /* 뾰족한 끝이 좌표에 오도록 */
   };
 }
 /* 즐겨찾기 위치로 이동 + 핀 + 제목 시트 표시 */
@@ -1996,8 +2088,8 @@ function renderFavs(){
         addrLine +
         '<div class="fi-coord">' + f.lat.toFixed(5) + ', ' + f.lng.toFixed(5) + '</div>' +
       '</div>' +
-      '<button class="fi-lock" onclick="toggleLock(' + i + ')" title="' + (locked?'잠금 해제':'잠금') + '">' + (locked ? '🔒' : '🔓') + '</button>' +
-      '<button class="fi-del" onclick="delFav(' + i + ')" title="삭제">🗑️</button>' +
+      '<button class="fi-lock" onclick="toggleLock(' + i + ')" title="' + (locked?'잠금 해제':'잠금') + '">' + (locked ? _LOCK_SVG : _UNLOCK_SVG) + '</button>' +
+      '<button class="fi-del" onclick="delFav(' + i + ')" title="삭제">' + _TRASH_SVG + '</button>' +
     '</div>';
   }).join('');
 }
@@ -2005,6 +2097,7 @@ function renderFavs(){
 /* ── 목록 번호(색상 동그라미) 탭 → 핀 색상 변경 ── */
 var _colorIdx = -1;
 window.openColorModal = function(idx){
+  if(typeof hideActionMenu==='function') hideActionMenu();   /* 다른 팝업 열릴 때 롱탭 메뉴 닫기 */
   _colorIdx = idx;
   var favs = getFavs();
   var cur = favs[idx] ? favs[idx].color : 'red';
@@ -2164,9 +2257,10 @@ function positionActionMenu(){
   }
   if(px == null || !isFinite(px)) return;
   var mw = menu.offsetWidth || 320, mh = menu.offsetHeight || 70;
+  var PIN_H = 54;                    /* 대형 지정핀 높이만큼 더 띄워 핀을 가리지 않게 */
   var left = Math.max(8, Math.min(px - mw/2, window.innerWidth - mw - 8));
-  var top  = py - mh - 16;          /* 핀 위쪽 */
-  if(top < 56) top = py + 18;        /* 위 공간 부족하면 아래쪽 */
+  var top  = py - mh - 14 - PIN_H;  /* 핀 위쪽 (핀 높이만큼 추가로 위로) */
+  if(top < 56) top = py + 28;        /* 위 공간 부족하면 핀 아래쪽 */
   menu.style.left = left + 'px';
   menu.style.top  = top + 'px';
 }
