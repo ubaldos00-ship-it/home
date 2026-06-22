@@ -1,4 +1,4 @@
-<!-- map_v15.html · 저장: 2026-06-22 13:49 KST · 계산기 풀왕복 연동(?save 즐겨찾기 자동저장·중복갱신, 즐겨찾기→조사표 자료 복원) -->
+<!-- map_v16.html · 저장: 2026-06-22 15:30 KST · 즐겨찾기핀 클릭시 작물 말풍선, 즐겨찾기버튼 누르면 롱탭메뉴 닫힘, 저장 즉시 핀 표시 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1774,9 +1774,10 @@ function _maybeAutoFav(jibun, road, lat, lng){
     if(sKey && favs[i].surveyKey === sKey){ dup = i; break; }
     if(Math.abs((favs[i].lat||0) - lat) < 0.0001 && Math.abs((favs[i].lng||0) - lng) < 0.0001){ dup = i; break; }
   }
+  var crop = ''; var _li = label.indexOf(' · '); if(_li > 0) crop = label.slice(0, _li).trim();
   var rec = { label:label.slice(0,40), lat:lat, lng:lng, addr:addr, color:color,
               locked: (dup>=0 ? !!favs[dup].locked : false),
-              surveyKey:sKey, surveyApp:sApp };
+              surveyKey:sKey, surveyApp:sApp, crop:crop };
   if(dup >= 0){ favs[dup] = rec; toast('⭐ 즐겨찾기 갱신됨 (' + label.slice(0,12) + ')'); }
   else { favs.unshift(rec); toast('⭐ 즐겨찾기에 저장됨'); }
   setFavs(favs);
@@ -1793,7 +1794,7 @@ function colorOf(key){
   return FAV_COLORS[0].c;
 }
 
-window.openFavPanel  = function(){ renderFavs(); document.getElementById('fav-modal').classList.add('show'); };
+window.openFavPanel  = function(){ if(typeof hideActionMenu==='function') hideActionMenu(); /* 롱탭 액션메뉴 닫고 즐겨찾기 열기 */ renderFavs(); document.getElementById('fav-modal').classList.add('show'); };
 window.closeFavPanel = function(){ document.getElementById('fav-modal').classList.remove('show'); };
 
 /* ── 저장 모달 (이름 + 색상 선택) ── */
@@ -1845,11 +1846,17 @@ window.confirmSaveFav = function(){
   if(!_saveCtx) return;
   var name = (document.getElementById('saveName').value || '').trim().slice(0,40);
   if(!name) name = _saveCtx.lat.toFixed(5) + ', ' + _saveCtx.lng.toFixed(5);
+  var sLat = _saveCtx.lat, sLng = _saveCtx.lng, sColor = _saveColor;
   var favs = getFavs();
-  favs.unshift({ label:name, lat:_saveCtx.lat, lng:_saveCtx.lng, addr:_saveCtx.addr||'', color:_saveColor, locked:false });
+  favs.unshift({ label:name, lat:sLat, lng:sLng, addr:_saveCtx.addr||'', color:sColor, locked:false });
   setFavs(favs);
   closeSaveModal();
   renderFavs();
+  /* 저장 즉시 지도에 핀 표시 (이전엔 전체보기/항목클릭 전까지 핀이 안 보였음) */
+  if(S.map){
+    if(S.pickMarker){ S.pickMarker.setMap(null); }
+    S.pickMarker = new naver.maps.Marker({ map:S.map, position:new naver.maps.LatLng(sLat, sLng), icon:favPinIcon(sColor) });
+  }
   toast('⭐ 저장했습니다');
 };
 
@@ -1903,7 +1910,31 @@ function showFavInfo(f){
   /* 계산기 연동: 이 즐겨찾기에 조사표 자료(surveyKey)가 연결돼 있으면 기억 → 조사표 버튼으로 복원 */
   window._curFav = f;
   _syncSurveyBtn();
+  _showCropTip(f);   /* 작물 말풍선 잠시 표시 */
   showInfoSheet();
+}
+/* 즐겨찾기 핀 클릭 시, 연결된 작물명을 핀 위에 잠시(2.5초) 말풍선으로 표시 */
+function _showCropTip(f){
+  if(!f || !S.map || typeof naver==='undefined' || !naver.maps.InfoWindow) return;
+  var crop = (f.crop || '').trim();
+  /* 계산기에서 저장한 즐겨찾기는 label이 "작물 · 주소" 형태 → 앞부분이 작물명 */
+  if(!crop && f.surveyApp){
+    var seg = (f.label || '').split(' · ');
+    if(seg.length >= 2) crop = (seg[0] || '').trim();
+  }
+  if(!crop) return;   /* 작물 정보 없는(직접 저장한) 핀은 표시 안 함 */
+  try{ if(window._cropTip) window._cropTip.close(); }catch(e){}
+  var iw = new naver.maps.InfoWindow({
+    content:'<div style="padding:4px 11px;font-size:13px;font-weight:800;color:#1a5c22;'
+          + 'background:#eaf7e6;border:1.5px solid #8BC34A;border-radius:14px;white-space:nowrap;'
+          + 'box-shadow:0 2px 8px rgba(0,0,0,.2);">🌱 ' + escapeHtml(crop) + '</div>',
+    borderWidth:0, disableAnchor:true, backgroundColor:'transparent',
+    pixelOffset:new naver.maps.Point(0, -10)
+  });
+  iw.open(S.map, new naver.maps.LatLng(f.lat, f.lng));
+  window._cropTip = iw;
+  clearTimeout(window._cropTipTimer);
+  window._cropTipTimer = setTimeout(function(){ try{ iw.close(); }catch(e){} }, 2500);
 }
 /* 조사표 입력 버튼 라벨/표시 갱신 (연결된 조사자료 유무에 따라) */
 function _syncSurveyBtn(){
