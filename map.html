@@ -1,4 +1,4 @@
-<!-- map_v20.html · 저장: 2026-06-22 21:46 KST · 잠금/휴지통 테두리·색강화, 추적중 주소표시, 정보시트 2단계 닫힘, 브이월드 지번3배·예외blank -->
+<!-- map_v21.html · 저장: 2026-06-22 22:11 KST · 선택핀1.5배, 작물명 레이어 토글(상시표시), 브이월드 줌범위복구·노란기 완화(투명도/필터) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -179,6 +179,14 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
   max-width:160px;overflow:hidden;text-overflow:ellipsis;
 }
 .fav-empty{ text-align:center;color:#9ca3af;font-size:13px;padding:20px 0; }
+/* 즐겨찾기 핀 옆 작물명 상시 라벨 (레이어 토글 ON 시) */
+.crop-label{
+  display:inline-block;background:rgba(26,92,34,.92);color:#fff;
+  font-size:12px;font-weight:800;padding:3px 8px;border-radius:9px;
+  white-space:nowrap;border:1.5px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4);
+  font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  transform:translateY(-50%);
+}
 /* 목록 항목 — 왼쪽 번호 + 제목/주소/좌표 + 잠금 + 휴지통 */
 .fav-item{
   display:flex;align-items:center;gap:9px;
@@ -610,6 +618,11 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
       <span class="ls-ov-text">지적도(브이월드) 필지경계</span>
       <span class="ls-ov-state" id="cadState">OFF</span>
     </button>
+    <button class="ls-overlay" id="cropLabelBtn" onclick="toggleCropLabels()">
+      <span class="ls-ic" style="background:#e3f2d6">🌱</span>
+      <span class="ls-ov-text">즐겨찾기 작물명 표시</span>
+      <span class="ls-ov-state" id="cropLabelState">OFF</span>
+    </button>
   </div>
 </div>
 
@@ -802,7 +815,7 @@ var S = { map:null, marker:null, circle:null, pickMarker:null,
           heading:null, compassOn:false, isHybrid:true,
           destLat:null, destLng:null, destName:'',
           measureMode:'off', mPoints:[], mMarkers:[], mLabels:[], mLine:null, mPoly:null,
-          favMarkers:[], cadOverlay:null, cadOn:false, _cadIdle:null, _cadZoom:null,
+          favMarkers:[], cadOverlay:null, cadOn:false, _cadIdle:null, _cadZoom:null, cropLabelsOn:false,
           actLat:null, actLng:null, _amMove:null,
           naverReady:false, gpsOk:false, tapCount:0 };
 
@@ -1618,7 +1631,10 @@ function ensureCadOverlay(){
     var img = document.createElement('img');
     /* VWorld 지적도 PNG는 이미 배경이 투명(경계선·지번만) → 그대로 얹는다.
        (mix-blend-mode 는 네이버 레이어 격리 때문에 오히려 뿌옇게 보여 제거) */
-    img.style.cssText = 'position:absolute;pointer-events:none;opacity:1;' +
+    /* 노란 기운(필터처럼 보이던 현상) 완화:
+       hue-rotate 로 노란 경계선·지번을 파란 계열로 바꾸고, 투명도를 낮춰 옅게 표시 */
+    img.style.cssText = 'position:absolute;pointer-events:none;opacity:0.7;' +
+                        'filter:hue-rotate(190deg) saturate(1.2) brightness(1.05);' +
                         'user-select:none;-webkit-user-select:none;';
     img.draggable = false;
     this._img = img;
@@ -1664,11 +1680,11 @@ function updateCadOverlay(){
   var b  = S.map.getBounds();
   var sw = b.getSW(), ne = b.getNE();
   var mapEl = document.getElementById('map');
-  /* 지번 글자를 약 3배 크게 보이게 — 요청 이미지를 화면의 1/3 해상도로 받아
-     오버레이가 화면 크기로 늘려 그리므로 지번·경계선이 3배로 확대된다 */
-  var CAD_SCALE = 3;
-  var w = Math.max(96, Math.round((mapEl.clientWidth  || 1024) / CAD_SCALE));
-  var h = Math.max(96, Math.round((mapEl.clientHeight || 1024) / CAD_SCALE));
+  /* 화면 해상도로 요청 → 모든 줌 단계에서 지적도가 보이도록 복구
+     (1/3 저해상도로 받으면 축척이 커져 최대 확대에서만 표시되던 문제 해결) */
+  var dpr = Math.min(window.devicePixelRatio || 1, 2);
+  var w = Math.min(Math.round((mapEl.clientWidth  || 1024) * dpr), 2048);
+  var h = Math.min(Math.round((mapEl.clientHeight || 1024) * dpr), 2048);
   var p1 = lngLatTo3857(sw.lat(), sw.lng());
   var p2 = lngLatTo3857(ne.lat(), ne.lng());
   var bbox = p1[0] + ',' + p1[1] + ',' + p2[0] + ',' + p2[1];   /* minx,miny,maxx,maxy */
@@ -1847,7 +1863,39 @@ window.refreshFavPins = function(){
     var mk = new naver.maps.Marker({ map:S.map, position:ll, icon:favPinIcon(f.color) });
     naver.maps.Event.addListener(mk, 'click', function(){ S.map.setCenter(ll); showFavInfo(f); });
     S.favMarkers.push(mk);
+    /* 작물명 표시 ON 이고 작물명이 있으면, 핀 옆에 상시 라벨을 함께 표시 */
+    if(S.cropLabelsOn){
+      var crop = favCropOf(f);
+      if(crop){
+        var lbl = new naver.maps.Marker({
+          map:S.map, position:ll,
+          icon:{ content:'<div class="crop-label">🌱 ' + escapeHtml(crop) + '</div>',
+                 anchor:new naver.maps.Point(-14, 26) },
+          clickable:false, zIndex:50
+        });
+        S.favMarkers.push(lbl);   /* clearFavMarkers 로 함께 제거됨 */
+      }
+    }
   });
+};
+/* 즐겨찾기에 연결된 작물명 추출 (명시적 crop 우선, 없으면 라벨 "작물 · 주소"에서) */
+function favCropOf(f){
+  var crop = (f.crop || '').trim();
+  if(!crop){
+    var seg = (f.label || '').split(' · ');
+    if(seg.length >= 2) crop = (seg[0] || '').trim();   /* 작물명이 들어간 경우만 */
+  }
+  return crop;
+}
+/* 레이어: 작물명 상시 표시 토글 */
+window.toggleCropLabels = function(){
+  S.cropLabelsOn = !S.cropLabelsOn;
+  var b = document.getElementById('cropLabelBtn');
+  if(b) b.classList.toggle('active', S.cropLabelsOn);
+  var st = document.getElementById('cropLabelState');
+  if(st) st.textContent = S.cropLabelsOn ? 'ON' : 'OFF';
+  refreshFavPins();
+  toast(S.cropLabelsOn ? '🌱 작물명 표시 켜짐' : '작물명 표시 꺼짐');
 };
 
 /* ── 계산기 풀왕복 연동: URL 파라미터 기반 즐겨찾기 자동 저장 ──
@@ -1992,6 +2040,16 @@ function favPinIcon(color){
     anchor:new naver.maps.Point(11, 22)
   };
 }
+/* 선택된 즐겨찾기 핀 — 기본 핀(22px)의 1.5배(33px)로 강조 */
+function favPinSelIcon(color){
+  var s = 33;
+  return {
+    content:'<div style="width:' + s + 'px;height:' + s + 'px;border-radius:50% 50% 50% 0;'
+          + 'transform:rotate(-45deg);background:' + colorOf(color) + ';border:3px solid #fff;'
+          + 'box-shadow:0 3px 8px rgba(0,0,0,.5);"></div>',
+    anchor:new naver.maps.Point(s/2, s)
+  };
+}
 /* 롱탭 지정위치 핀 — 기존 즐겨찾기 핀(22px)의 약 3배 크기로 크게 표시 */
 function pickPinIcon(){
   var s = 46;
@@ -2021,6 +2079,12 @@ function showFavInfo(f){
   setDest(f.lat, f.lng, f.label);
   ahLine1.textContent = '⭐ ' + f.label;
   ahLine2.textContent = (f.addr ? f.addr + '  ·  ' : '') + f.lat.toFixed(5) + ', ' + f.lng.toFixed(5);
+  /* 선택된 핀을 1.5배 크기로 강조 표시 */
+  if(S.map){
+    if(S.pickMarker){ S.pickMarker.setMap(null); }
+    S.pickMarker = new naver.maps.Marker({ map:S.map, position:new naver.maps.LatLng(f.lat, f.lng),
+                                           icon:favPinSelIcon(f.color), zIndex:1000 });
+  }
   /* 계산기 연동: 이 즐겨찾기에 조사표 자료(surveyKey)가 연결돼 있으면 기억 → 조사표 버튼으로 복원 */
   window._curFav = f;
   _syncSurveyBtn();
