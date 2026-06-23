@@ -588,6 +588,8 @@ const CAT_COLORS = {
 const COLORS = ['#0d6640','#dc2626','#2563eb','#f59e0b','#7c3aed','#0891b2','#db2777','#65a30d',
                 '#ea580c','#0284c7','#16a34a','#9333ea','#4f46e5','#e11d48','#0d9488','#d97706',
                 '#8b5cf6','#c026d3','#059669','#2563eb','#dc2626','#d97706','#4f46e5','#10b981'];
+function getRegionColor(region, index) { return region === '전국' ? '#9ca3af' : COLORS[index % COLORS.length]; }
+function getRegionDash(region) { return region === '전국' ? [6, 4] : []; }
 
 /* ============== 상태 ============== */
 let currentCat = '전체';        // 초기화면 전체로 (3번 요청)
@@ -854,7 +856,7 @@ function render() {
   // 8. 그래프 위 통계 박스 생성
   let statsHtml = '<div class="stats-row">';
   series.forEach((s, i) => {
-    const color = COLORS[i % COLORS.length];
+    const color = getRegionColor(s.region, i);
     const vals = s.values;
     let lIdx = -1;
     for (let j = vals.length - 1; j >= 0; j--) { if (vals[j] !== null && vals[j] !== undefined) { lIdx = j; break; } }
@@ -911,7 +913,7 @@ function render() {
         <tbody>
           ${series.map((s, i) => `
             <tr ${s.region === '전국' ? 'class="total"' : ''}>
-              <td class="region"><span class="lg-dot" style="background:${COLORS[i%COLORS.length]};"></span>${s.region}</td>
+              <td class="region"><span class="lg-dot" style="background:${getRegionColor(s.region, i)};"></span>${s.region}</td>
               ${s.values.map(v => v===null||v===undefined ? '<td class="null">-</td>' : `<td>${fmt(v)}</td>`).join('')}
               <td><b>${fmt(avgOf(s.values))}</b></td>
             </tr>
@@ -932,7 +934,7 @@ function render() {
   series.forEach((s, i) => {
     const el = document.createElement('div');
     el.className = 'lg-item';
-    el.innerHTML = `<span class="lg-dot" style="background:${COLORS[i%COLORS.length]};"></span>${s.region}`;
+    el.innerHTML = `<span class="lg-dot" style="background:${getRegionColor(s.region, i)};"></span>${s.region}`;
     legend.appendChild(el);
   });
 
@@ -952,15 +954,20 @@ function drawChart(series) {
     type: 'line',
     data: {
       labels: DB.years.map(String),
-      datasets: series.map((s, i) => ({
-        label: s.region,
-        data: s.values,
-        borderColor: COLORS[i % COLORS.length],
-        backgroundColor: COLORS[i % COLORS.length] + '20',
-        borderWidth: 2.5, pointRadius: 4, pointHoverRadius: 6,
-        pointBackgroundColor: COLORS[i % COLORS.length], pointBorderColor: '#fff',
-        tension: 0.25, spanGaps: true
-      }))
+      datasets: series.map((s, i) => {
+        const col = getRegionColor(s.region, i);
+        return {
+          label: s.region,
+          data: s.values,
+          borderColor: col,
+          backgroundColor: col + '20',
+          borderWidth: 2.5,
+          borderDash: getRegionDash(s.region),
+          pointRadius: 4, pointHoverRadius: 6,
+          pointBackgroundColor: col, pointBorderColor: '#fff',
+          tension: 0.25, spanGaps: true
+        };
+      })
     },
     options: {
       responsive: true, maintainAspectRatio: false,
