@@ -1,4 +1,4 @@
-<!-- map_v39_full_jibun_labels.html · 저장: 2026-06-24 KST · 브이월드 지번 본번-부번 고정 표시 보완 -->
+<!-- map_v35_vworld_jibun_label.html · 저장: 2026-06-24 KST · 브이월드 지번 본번+부번 표시 및 라벨 확대 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -198,25 +198,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
   font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
   transform:translateY(-50%);
 }
-/* 브이월드 지번 고정 라벨: WMS 이미지 글자 대신 좌표 고정 HTML 라벨로 표시 */
-.cad-jibun-label{
-  display:inline-block;
-  color:#111;
-  background:rgba(255,255,255,.88);
-  border:1.5px solid rgba(39,80,10,.45);
-  border-radius:7px;
-  padding:2px 6px;
-  font-size:20px;
-  font-weight:900;
-  line-height:1.15;
-  white-space:nowrap;
-  text-shadow:0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
-  box-shadow:0 1px 3px rgba(0,0,0,.18);
-  font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
-  transform:translate(-50%,-50%);
-  pointer-events:none;
-}
-@media(max-width:430px){.cad-jibun-label{font-size:18px;padding:2px 5px;}}
 /* 목록 항목 — 왼쪽 번호 + 제목/주소/좌표 + 잠금 + 휴지통 */
 .fav-item{
   display:flex;align-items:center;gap:9px;
@@ -849,7 +830,7 @@ var S = { map:null, marker:null, circle:null, pickMarker:null,
           heading:null, compassOn:false, isHybrid:true,
           destLat:null, destLng:null, destName:'',
           measureMode:'off', mPoints:[], mMarkers:[], mLabels:[], mLine:null, mPoly:null,
-          favMarkers:[], cadLabelMarkers:[], cadOverlay:null, cadOn:false, _cadIdle:null, _cadZoom:null, _cadMove:null, _cadCenter:null, _cadBounds:null, _cadTimer:null, _cadWfsTimer:null, _cadWfsSeq:0, _cadTailTimers:[], _favIdle:null, _favTimer:null, _layerWatch:null, cropLabelsOn:true,
+          favMarkers:[], cadOverlay:null, cadOn:false, _cadIdle:null, _cadZoom:null, _cadMove:null, _cadTimer:null, _favIdle:null, _favTimer:null, cropLabelsOn:true,
           actLat:null, actLng:null, _amMove:null,
           naverReady:false, gpsOk:false, tapCount:0 };
 
@@ -1217,17 +1198,11 @@ function renderMap(lat, lng, acc, skipMe){
         addMeasurePoint(e.coord);
       });
 
-      /* 지도 준비 직후와 이동/확대 완료 후, 저장핀·브이월드 레이어를 안정적으로 다시 확인 */
+      /* 지도 준비 직후와 이동/확대 완료 후, 저장핀·작물명 라벨을 안정적으로 다시 확인 */
       if(!S._favIdle){
-        S._favIdle = naver.maps.Event.addListener(S.map, 'idle', function(){ scheduleStableLayerRefresh(120); });
-        S._favZoom = naver.maps.Event.addListener(S.map, 'zoom_changed', function(){ scheduleStableLayerRefresh(220); scheduleLayerTailRefresh(); });
-        S._favDrag = naver.maps.Event.addListener(S.map, 'dragend', function(){ scheduleStableLayerRefresh(160); scheduleLayerTailRefresh(); });
+        S._favIdle = naver.maps.Event.addListener(S.map, 'idle', function(){ scheduleStableLayerRefresh(140); });
       }
-      /* v37: center_changed/bounds_changed 중에는 브이월드 WMS를 갱신하지 않는다.
-         최대확대 후 축소·이동 중 계속 재요청하면 지번 라벨 위치가 흔들리고
-         핀 레이어가 순간적으로 비는 현상이 생겨, idle/dragend/zoom_changed 완료 시점에만 갱신한다. */
-      startLayerWatchdog();
-      setTimeout(function(){ try{ refreshFavPins(); scheduleLayerTailRefresh(); }catch(_){} }, 400);
+      setTimeout(function(){ try{ refreshFavPins(); }catch(_){} }, 400);
     } else {
       naver.maps.Event.trigger(S.map, 'resize');
       S.map.setCenter(pos);
@@ -1832,12 +1807,8 @@ function ensureCadOverlay(){
        확대/이동 중 visibility:hidden 처리로 레이어가 깜빡이던 현상을 줄이기 위한 방식이다. */
     if(im.getAttribute('data-url') !== url){
       var self = this;
-      self._reqSeq = (self._reqSeq || 0) + 1;
-      var seq = self._reqSeq;
       var pre = new Image();
       pre.onload = function(){
-        /* v36: 빠르게 이동/확대할 때 이전 요청이 늦게 도착해 최신 레이어를 덮지 않도록 방지 */
-        if(seq !== self._reqSeq) return;
         self._b = b;
         im.setAttribute('data-url', url);
         im.src = url;
@@ -1845,7 +1816,6 @@ function ensureCadOverlay(){
         self.draw();
       };
       pre.onerror = function(){
-        if(seq !== self._reqSeq) return;
         /* 오류가 나도 기존 지적도 이미지는 유지한다. 기존 이미지가 없을 때만 숨긴다. */
         if(!im.getAttribute('data-url')) im.style.visibility = 'hidden';
       };
@@ -1862,94 +1832,27 @@ function ensureCadOverlay(){
 /* 현재 화면 영역의 VWorld 지적도 WMS 이미지를 커스텀 오버레이로 갱신 */
 /* 이 줌 미만이면 필지선이 빽빽해 뿌옇게 보이므로 지적도를 자동으로 숨김 (확대하면 자동 표시).
    더 확대해야 깨끗하면 숫자를 올리고, 더 축소에서도 보이려면 내리면 됨 */
-var MIN_CAD_ZOOM = 13;
+var MIN_CAD_ZOOM = 17;
 /* v35: 브이월드 지번 표시 보완
    - 기존 lp_pa_cbnd_bubun 단독 사용 시 347-37 중 '37'처럼 부번만 보이는 경우가 있음
    - 본번+부번 레이어를 함께 요청해서 347-37 형태가 보이도록 보완
    - WMS는 이미지라 폰트 크기를 직접 지정하기 어려워, 요청 해상도를 1/2로 낮춘 뒤 전체 크기로 늘려 약 2배 크게 표시 */
-var CAD_WMS_LABEL_SCALE = 1.0;
-/* v36: 확대·이동 중 화면 가장자리에서 브이월드가 비는 현상 방지용 여유 범위.
-   현재 화면보다 넓은 영역의 WMS 이미지를 받아 작은 이동에도 기존 레이어가 계속 덮도록 한다. */
-var CAD_BOUNDS_PAD_RATIO = 0.06;
-var CAD_WMS_LAYERS = 'lp_pa_cbnd';
-var CAD_WMS_STYLES = 'lp_pa_cbnd';
-function paddedCadBounds(b){
-  try{
-    var sw = b.getSW(), ne = b.getNE();
-    var latPad = Math.abs(ne.lat() - sw.lat()) * CAD_BOUNDS_PAD_RATIO;
-    var lngPad = Math.abs(ne.lng() - sw.lng()) * CAD_BOUNDS_PAD_RATIO;
-    var psw = new naver.maps.LatLng(sw.lat() - latPad, sw.lng() - lngPad);
-    var pne = new naver.maps.LatLng(ne.lat() + latPad, ne.lng() + lngPad);
-    return new naver.maps.LatLngBounds(psw, pne);
-  }catch(e){ return b; }
-}
-function cadOverlayNeedsRepair(){
-  if(!S.cadOn || !S.cadOverlay || !S.cadOverlay._img) return true;
-  var im = S.cadOverlay._img;
-  if(!S.cadOverlay.getMap || !S.cadOverlay.getMap()) return true;
-  if(im.style.visibility === 'hidden') return true;
-  if(!im.getAttribute('data-url')) return true;
-  var r = im.getBoundingClientRect ? im.getBoundingClientRect() : null;
-  if(r && (r.width < 20 || r.height < 20)) return true;
-  return false;
-}
-function favPinsNeedRepair(){
-  var favs = getFavs ? getFavs() : [];
-  if(!favs.length) return false;
-  var need = favs.length;
-  if(S.cropLabelsOn){
-    favs.forEach(function(f){ if(favCropOf(f)) need++; });
-  }
-  return !S.favMarkers || S.favMarkers.length < need;
-}
-function reviveFavMarkerMaps(){
-  if(!S.map || !S.favMarkers) return;
-  S.favMarkers.forEach(function(m){
-    try{ if(m && (!m.getMap || !m.getMap())) m.setMap(S.map); }catch(e){}
-  });
-}
-function scheduleLayerTailRefresh(){
-  if(!S.map) return;
-  (S._cadTailTimers || []).forEach(function(t){ clearTimeout(t); });
-  S._cadTailTimers = [];
-  /* v37: 지도 이동·줌 애니메이션 중 즐겨찾기 핀을 지웠다 다시 그리지 않는다.
-     네이버 마커는 좌표에 고정되어 자동 이동하므로, 필요하면 setMap만 복구한다.
-     브이월드는 줌/드래그가 끝난 뒤 정확한 범위로 2회만 재확인한다. */
-  [360, 950].forEach(function(ms){
-    S._cadTailTimers.push(setTimeout(function(){
-      try{
-        reviveFavMarkerMaps();
-        refreshFavPins();
-        if(S.cadOn){ updateCadOverlay(); scheduleCadJibunLabels(260); }
-      }catch(e){}
-    }, ms));
-  });
-}
-function startLayerWatchdog(){
-  if(S._layerWatch) return;
-  S._layerWatch = setInterval(function(){
-    try{
-      if(!S.map) return;
-      reviveFavMarkerMaps();
-      if(favPinsNeedRepair()) refreshFavPins();
-      if(S.cadOn){ if(cadOverlayNeedsRepair()) updateCadOverlay(); if(!S.cadLabelMarkers || !S.cadLabelMarkers.length) scheduleCadJibunLabels(200); }
-    }catch(e){}
-  }, 2200);
-}
+var CAD_WMS_LABEL_SCALE = 0.5;
+var CAD_WMS_LAYERS = 'lp_pa_cbnd_bonbun,lp_pa_cbnd_bubun';
+var CAD_WMS_STYLES = 'lp_pa_cbnd_bonbun,lp_pa_cbnd_bubun';
 function updateCadOverlay(){
   if(!S.cadOn || !CFG.vworldKey || !S.map) return;
   if(S.map.getZoom() < MIN_CAD_ZOOM){
     if(S.cadOverlay && S.cadOverlay._img) S.cadOverlay._img.style.visibility = 'hidden';
-    clearCadJibunLabels();
     if(!S._cadZoomHintShown){ toast('🔎 확대하면 지적도가 또렷하게 표시됩니다'); S._cadZoomHintShown = true; }
     return;
   }
-  var rawB = S.map.getBounds();
-  var b  = paddedCadBounds(rawB);
+  var b  = S.map.getBounds();
   var sw = b.getSW(), ne = b.getNE();
   var mapEl = document.getElementById('map');
-  /* v37: 지번 글자 확대와 표시 안정성의 균형값으로 요청 해상도를 0.75배로 설정.
-     0.5배는 글자는 크지만 최대확대 후 1~2단계 축소에서 본번이 생략되는 경우가 있어 보정한다. */
+  /* 1:1 해상도로 요청 (늘이거나 줄이지 않음)
+     → ① 늘림에 의한 뿌염(흐릿함) 제거  ② dpr 2배로 줄여 그리던 때보다 지번 글자가 더 크게 보임
+        ③ 축척이 과하게 커지지 않아 모든 줌 단계에서 표시됨 */
   var baseW = mapEl.clientWidth  || 1024;
   var baseH = mapEl.clientHeight || 1024;
   var w = Math.max(320, Math.min(Math.round(baseW * CAD_WMS_LABEL_SCALE), 2048));
@@ -1968,151 +1871,6 @@ function updateCadOverlay(){
   var ov = ensureCadOverlay();
   if(!ov.getMap()) ov.setMap(S.map);
   ov.setData(url, b);
-  scheduleCadJibunLabels(180);
-}
-
-/* v38: 지번 본번/부번은 WMS 이미지에 맡기면 축척·이동 때 자동 배치가 흔들린다.
-   그래서 WMS는 필지 경계만 표시하고, 지번은 WFS 속성값을 받아 좌표 고정 HTML 라벨로 올린다. */
-function clearCadJibunLabels(){
-  (S.cadLabelMarkers || []).forEach(function(m){ try{ m.setMap(null); }catch(e){} });
-  S.cadLabelMarkers = [];
-}
-function cadFeatureLabel(props){
-  props = props || {};
-  function val(names){
-    for(var i=0;i<names.length;i++){
-      var k = names[i];
-      if(props[k] !== undefined && props[k] !== null && String(props[k]).trim() !== '') return String(props[k]).trim();
-      var up = k.toUpperCase();
-      if(props[up] !== undefined && props[up] !== null && String(props[up]).trim() !== '') return String(props[up]).trim();
-      var lo = k.toLowerCase();
-      if(props[lo] !== undefined && props[lo] !== null && String(props[lo]).trim() !== '') return String(props[lo]).trim();
-    }
-    return '';
-  }
-  function cleanNum(x){
-    x = String(x || '').replace(/[^0-9]/g,'');
-    if(!x) return '';
-    return String(parseInt(x,10));
-  }
-  function formatJibun(bon, bu, san){
-    bon = cleanNum(bon); bu = cleanNum(bu);
-    if(!bon) return '';
-    var prefix = (san === '2' || san === '산' || /산/.test(String(san || ''))) ? '산' : '';
-    return prefix + bon + (bu && bu !== '0' ? '-' + bu : '');
-  }
-
-  /* v39: 브이월드 속성 중 mnum/slno가 축척에 따라 부번만 내려오는 경우가 있어
-     PNU를 최우선으로 파싱한다. PNU가 있으면 항상 본번-부번 전체 지번을 만든다. */
-  var pnu = val(['pnu','PNU','ldreg_pnu','LDREG_PNU','pnu_cd','PNU_CD','a0','A0']);
-  var pnuDigits = String(pnu || '').replace(/[^0-9]/g,'');
-  if(pnuDigits.length >= 19){
-    var pnu19 = pnuDigits.slice(0,19);
-    var sanFlag = pnu19.charAt(10);
-    var pnuLabel = formatJibun(pnu19.slice(11,15), pnu19.slice(15,19), sanFlag);
-    if(pnuLabel) return pnuLabel;
-  }
-
-  /* PNU가 없을 때는 본번/부번 속성을 조합한다. */
-  var bon = val(['bonbun','BONBUN','bon_bun','BON_BUN','bon','BON','mnnm','MNNM','bubun1','BUBUN1','bun','BUN','main_no','MAIN_NO']);
-  var bu  = val(['bubun','BUBUN','bu_bun','BU_BUN','bu','BU','slno','SLNO','ji','JI','JIBUN2','sub_no','SUB_NO']);
-  var san = val(['san','SAN','san_yn','SAN_YN','gubun','GUBUN','land_gbn','LAND_GBN']);
-  var composed = formatJibun(bon, bu, san);
-  if(composed) return composed;
-
-  /* 마지막 fallback: 이미 완성된 지번 문자열이 있을 때만 사용한다.
-     숫자 하나만 있는 값은 부번만 표시되는 원인이므로 사용하지 않는다. */
-  var direct = val(['jibun','JIBUN','addr','ADDR','a1','A1','mnum','MNUM','jibun_no','JIBUN_NO']);
-  if(direct && /\d/.test(direct)){
-    var m = direct.match(/(산\s*)?\d+\s*-\s*\d+|(산\s*)?\d{2,}/);
-    if(m) return m[0].replace(/\s+/g,'');
-  }
-  return '';
-}
-function geomCenter4326(geom){
-  if(!geom || !geom.coordinates) return null;
-  var pts = [];
-  function walk(c){
-    if(!c) return;
-    if(typeof c[0] === 'number' && typeof c[1] === 'number'){
-      var lng = Number(c[0]), lat = Number(c[1]);
-      if(isFinite(lat) && isFinite(lng)) pts.push([lat,lng]);
-      return;
-    }
-    for(var i=0;i<c.length;i++) walk(c[i]);
-  }
-  walk(geom.coordinates);
-  if(!pts.length) return null;
-  var minLat=pts[0][0], maxLat=pts[0][0], minLng=pts[0][1], maxLng=pts[0][1];
-  pts.forEach(function(p){
-    if(p[0]<minLat) minLat=p[0]; if(p[0]>maxLat) maxLat=p[0];
-    if(p[1]<minLng) minLng=p[1]; if(p[1]>maxLng) maxLng=p[1];
-  });
-  return {lat:(minLat+maxLat)/2, lng:(minLng+maxLng)/2};
-}
-function renderCadJibunLabels(data){
-  if(!S.cadOn || !S.map || S.map.getZoom() < MIN_CAD_ZOOM) return;
-  clearCadJibunLabels();
-  var feats = (data && data.features) ? data.features : [];
-  if(!feats.length) return;
-  var maxLabels = 520;
-  for(var i=0;i<feats.length && S.cadLabelMarkers.length<maxLabels;i++){
-    var f = feats[i] || {};
-    var label = cadFeatureLabel(f.properties || {});
-    if(!label) continue;
-    var c = geomCenter4326(f.geometry);
-    if(!c) continue;
-    var mk = new naver.maps.Marker({
-      map:S.map,
-      position:new naver.maps.LatLng(c.lat, c.lng),
-      icon:{ content:'<div class="cad-jibun-label">' + escapeHtml(label) + '</div>', anchor:new naver.maps.Point(0,0) },
-      clickable:false,
-      zIndex:2200 + S.cadLabelMarkers.length
-    });
-    S.cadLabelMarkers.push(mk);
-  }
-}
-function requestCadJibunLabels(){
-  if(!S.cadOn || !S.map || !CFG.vworldKey) return;
-  if(S.map.getZoom() < MIN_CAD_ZOOM){ clearCadJibunLabels(); return; }
-  var b = S.map.getBounds();
-  if(!b) return;
-  var sw = b.getSW(), ne = b.getNE();
-  var bbox = [sw.lng(), sw.lat(), ne.lng(), ne.lat()].join(',');
-  var seq = ++S._cadWfsSeq;
-  var base = 'https://api.vworld.kr/req/wfs' +
-    '?SERVICE=WFS&version=1.1.0&request=GetFeature' +
-    '&TYPENAME=lt_c_landinfobasemap' +
-    '&SRSNAME=EPSG:4326&BBOX=' + encodeURIComponent(bbox) +
-    '&MAXFEATURES=900' +
-    '&KEY=' + encodeURIComponent(CFG.vworldKey) +
-    '&DOMAIN=https://ubaldos00-ship-it.github.io';
-  var jsonUrl = base + '&OUTPUT=application/json&_=' + Date.now();
-  if(window.fetch){
-    fetch(jsonUrl, {cache:'no-store'}).then(function(r){ return r.json(); }).then(function(data){
-      if(seq !== S._cadWfsSeq) return;
-      renderCadJibunLabels(data);
-    }).catch(function(){ requestCadJibunLabelsJsonp(seq, base); });
-  } else {
-    requestCadJibunLabelsJsonp(seq, base);
-  }
-}
-function requestCadJibunLabelsJsonp(seq, base){
-  var old = document.getElementById('cadWfsJsonp');
-  if(old && old.parentNode) old.parentNode.removeChild(old);
-  window.parseResponse = function(data){
-    try{ if(seq === S._cadWfsSeq) renderCadJibunLabels(data); }catch(e){}
-  };
-  var sc = document.createElement('script');
-  sc.id = 'cadWfsJsonp';
-  sc.src = base + '&OUTPUT=text/javascript&_=' + Date.now();
-  sc.onerror = function(){ if(seq === S._cadWfsSeq) clearCadJibunLabels(); };
-  document.head.appendChild(sc);
-}
-function scheduleCadJibunLabels(delay){
-  if(!S.cadOn || !S.map) return;
-  clearTimeout(S._cadWfsTimer);
-  S._cadWfsTimer = setTimeout(function(){ try{ requestCadJibunLabels(); }catch(e){} }, delay || 250);
 }
 function scheduleCadOverlayUpdate(delay){
   if(!S.cadOn || !S.map) return;
@@ -2123,12 +1881,10 @@ function scheduleStableLayerRefresh(delay){
   clearTimeout(S._favTimer);
   S._favTimer = setTimeout(function(){
     try{
-      reviveFavMarkerMaps();
-      refreshFavPins();
-      if(S.cadOn){ updateCadOverlay(); scheduleCadJibunLabels(220); }
-      scheduleLayerTailRefresh();
+      if(typeof refreshFavPins === 'function') refreshFavPins();
+      if(S.cadOn) updateCadOverlay();
     }catch(e){}
-  }, delay || 220);
+  }, delay || 160);
 }
 window.toggleCadastral = function(){
   if(!S.map){ toast('지도 로딩 후 사용해주세요'); return; }
@@ -2148,20 +1904,19 @@ window.toggleCadastral = function(){
     /* 지도 이동/줌이 끝날 때마다 지적도 갱신 (1회만 등록)
        v34: 이동·확대 중 기존 레이어를 숨기지 않고, 끝난 뒤 짧게 한 번 더 갱신한다. */
     if(!S._cadIdle){
-      S._cadIdle = naver.maps.Event.addListener(S.map, 'idle', function(){ scheduleCadOverlayUpdate(40); scheduleStableLayerRefresh(100); scheduleLayerTailRefresh(); });
+      S._cadIdle = naver.maps.Event.addListener(S.map, 'idle', function(){ scheduleCadOverlayUpdate(60); scheduleStableLayerRefresh(120); });
     }
     if(!S._cadZoom){
-      S._cadZoom = naver.maps.Event.addListener(S.map, 'zoom_changed', function(){ scheduleCadOverlayUpdate(80); scheduleStableLayerRefresh(140); scheduleLayerTailRefresh(); });
+      S._cadZoom = naver.maps.Event.addListener(S.map, 'zoom_changed', function(){ scheduleCadOverlayUpdate(120); scheduleStableLayerRefresh(180); });
     }
     if(!S._cadMove){
-      S._cadMove = naver.maps.Event.addListener(S.map, 'dragend', function(){ scheduleCadOverlayUpdate(50); scheduleStableLayerRefresh(120); scheduleLayerTailRefresh(); });
+      S._cadMove = naver.maps.Event.addListener(S.map, 'dragend', function(){ scheduleCadOverlayUpdate(80); scheduleStableLayerRefresh(150); });
     }
     updateCadOverlay();
     toast('📐 지적도 겹쳐보기 켜짐');
   } else {
     S.cadOn = false;
     if(S.cadOverlay){ S.cadOverlay.setMap(null); }
-    clearCadJibunLabels();
     document.getElementById('cadastralBtn').classList.remove('active');
     document.getElementById('cadState').textContent = 'OFF';
     toast('지적도 겹쳐보기 꺼짐');
@@ -2296,7 +2051,7 @@ window.refreshFavPins = function(){
   favs.forEach(function(f, idx){
     var pos = posList[idx] || {lat:Number(f.lat), lng:Number(f.lng)};
     var ll = new naver.maps.LatLng(pos.lat, pos.lng);
-    var mk = new naver.maps.Marker({ map:S.map, position:ll, icon:favPinIcon(f.color), zIndex:5000 + idx });
+    var mk = new naver.maps.Marker({ map:S.map, position:ll, icon:favPinIcon(f.color), zIndex:100 + idx });
     naver.maps.Event.addListener(mk, 'click', function(){ S.map.setCenter(ll); showFavInfo(f); });
     S.favMarkers.push(mk);
     /* 작물명 표시 ON 이고 작물명이 있으면, 전체보기/확대/이동 후에도 즉시 표시 */
@@ -2307,7 +2062,7 @@ window.refreshFavPins = function(){
           map:S.map, position:ll,
           icon:{ content:'<div class="crop-label" style="background:' + colorOf(f.color) + '">🌱 ' + escapeHtml(crop) + '</div>',
                  anchor:new naver.maps.Point(-14, 26) },
-          clickable:false, zIndex:4900 + idx
+          clickable:false, zIndex:60 + idx
         });
         S.favMarkers.push(lbl);   /* clearFavMarkers 로 함께 제거됨 */
       }
@@ -2633,7 +2388,7 @@ window.showAllFavs = function(){
   } else {
     S.map.fitBounds(bounds, { top:90, right:40, bottom:160, left:40 });
   }
-  setTimeout(function(){ try{ refreshFavPins(); if(S.cadOn) updateCadOverlay(); scheduleLayerTailRefresh(); }catch(e){} }, 350);
+  setTimeout(function(){ try{ refreshFavPins(); if(S.cadOn) updateCadOverlay(); }catch(e){} }, 350);
   toast('⭐ 즐겨찾기 ' + favs.length + '곳 전체보기');
 };
 
