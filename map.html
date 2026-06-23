@@ -1,4 +1,4 @@
-<!-- map_v38_cad_vector_labels.html · 저장: 2026-06-24 KST · 브이월드 경계/핀 확대축소 안정화 + 지번 고정 HTML 라벨 -->
+<!-- map_v39_full_jibun_labels.html · 저장: 2026-06-24 KST · 브이월드 지번 본번-부번 고정 표시 보완 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1862,7 +1862,7 @@ function ensureCadOverlay(){
 /* 현재 화면 영역의 VWorld 지적도 WMS 이미지를 커스텀 오버레이로 갱신 */
 /* 이 줌 미만이면 필지선이 빽빽해 뿌옇게 보이므로 지적도를 자동으로 숨김 (확대하면 자동 표시).
    더 확대해야 깨끗하면 숫자를 올리고, 더 축소에서도 보이려면 내리면 됨 */
-var MIN_CAD_ZOOM = 14;
+var MIN_CAD_ZOOM = 13;
 /* v35: 브이월드 지번 표시 보완
    - 기존 lp_pa_cbnd_bubun 단독 사용 시 347-37 중 '37'처럼 부번만 보이는 경우가 있음
    - 본번+부번 레이어를 함께 요청해서 347-37 형태가 보이도록 보완
@@ -1990,30 +1990,42 @@ function cadFeatureLabel(props){
     }
     return '';
   }
-  var direct = val(['jibun','JIBUN','addr','a1','mnum','MNUM']);
-  if(direct && /\d/.test(direct)){
-    var m = direct.match(/(산\s*)?\d+\s*(-\s*\d+)?/);
-    if(m) return m[0].replace(/\s+/g,'');
-  }
-  var bon = val(['bonbun','bon_bun','bon','mnnm','bubun1','bun','BUN']);
-  var bu  = val(['bubun','bu_bun','bu','slno','ji','JIBUN2']);
-  var san = val(['san','san_yn','gubun','land_gbn']);
   function cleanNum(x){
     x = String(x || '').replace(/[^0-9]/g,'');
     if(!x) return '';
     return String(parseInt(x,10));
   }
-  bon = cleanNum(bon); bu = cleanNum(bu);
-  if(bon){
-    var prefix = (san === '2' || san === '산' || /산/.test(san)) ? '산' : '';
+  function formatJibun(bon, bu, san){
+    bon = cleanNum(bon); bu = cleanNum(bu);
+    if(!bon) return '';
+    var prefix = (san === '2' || san === '산' || /산/.test(String(san || ''))) ? '산' : '';
     return prefix + bon + (bu && bu !== '0' ? '-' + bu : '');
   }
-  var pnu = val(['pnu','PNU']);
-  if(pnu && pnu.length >= 19){
-    var sanFlag = pnu.charAt(10);
-    bon = cleanNum(pnu.slice(11,15));
-    bu = cleanNum(pnu.slice(15,19));
-    if(bon) return (sanFlag === '2' ? '산' : '') + bon + (bu && bu !== '0' ? '-' + bu : '');
+
+  /* v39: 브이월드 속성 중 mnum/slno가 축척에 따라 부번만 내려오는 경우가 있어
+     PNU를 최우선으로 파싱한다. PNU가 있으면 항상 본번-부번 전체 지번을 만든다. */
+  var pnu = val(['pnu','PNU','ldreg_pnu','LDREG_PNU','pnu_cd','PNU_CD','a0','A0']);
+  var pnuDigits = String(pnu || '').replace(/[^0-9]/g,'');
+  if(pnuDigits.length >= 19){
+    var pnu19 = pnuDigits.slice(0,19);
+    var sanFlag = pnu19.charAt(10);
+    var pnuLabel = formatJibun(pnu19.slice(11,15), pnu19.slice(15,19), sanFlag);
+    if(pnuLabel) return pnuLabel;
+  }
+
+  /* PNU가 없을 때는 본번/부번 속성을 조합한다. */
+  var bon = val(['bonbun','BONBUN','bon_bun','BON_BUN','bon','BON','mnnm','MNNM','bubun1','BUBUN1','bun','BUN','main_no','MAIN_NO']);
+  var bu  = val(['bubun','BUBUN','bu_bun','BU_BUN','bu','BU','slno','SLNO','ji','JI','JIBUN2','sub_no','SUB_NO']);
+  var san = val(['san','SAN','san_yn','SAN_YN','gubun','GUBUN','land_gbn','LAND_GBN']);
+  var composed = formatJibun(bon, bu, san);
+  if(composed) return composed;
+
+  /* 마지막 fallback: 이미 완성된 지번 문자열이 있을 때만 사용한다.
+     숫자 하나만 있는 값은 부번만 표시되는 원인이므로 사용하지 않는다. */
+  var direct = val(['jibun','JIBUN','addr','ADDR','a1','A1','mnum','MNUM','jibun_no','JIBUN_NO']);
+  if(direct && /\d/.test(direct)){
+    var m = direct.match(/(산\s*)?\d+\s*-\s*\d+|(산\s*)?\d{2,}/);
+    if(m) return m[0].replace(/\s+/g,'');
   }
   return '';
 }
@@ -2043,7 +2055,7 @@ function renderCadJibunLabels(data){
   clearCadJibunLabels();
   var feats = (data && data.features) ? data.features : [];
   if(!feats.length) return;
-  var maxLabels = 180;
+  var maxLabels = 520;
   for(var i=0;i<feats.length && S.cadLabelMarkers.length<maxLabels;i++){
     var f = feats[i] || {};
     var label = cadFeatureLabel(f.properties || {});
@@ -2072,7 +2084,7 @@ function requestCadJibunLabels(){
     '?SERVICE=WFS&version=1.1.0&request=GetFeature' +
     '&TYPENAME=lt_c_landinfobasemap' +
     '&SRSNAME=EPSG:4326&BBOX=' + encodeURIComponent(bbox) +
-    '&MAXFEATURES=250' +
+    '&MAXFEATURES=900' +
     '&KEY=' + encodeURIComponent(CFG.vworldKey) +
     '&DOMAIN=https://ubaldos00-ship-it.github.io';
   var jsonUrl = base + '&OUTPUT=application/json&_=' + Date.now();
