@@ -1,9 +1,9 @@
-<!-- map_v30_coord_sync.html · 저장: 2026-06-23 16:00 KST · 조사표 연동 좌표 우선 저장(lat/lng) 보완 -->
+<!-- map_v33_addr_fallback_color_keep.html · 저장: 2026-06-23 KST · 주소 fallback + 기존 핀 색상 유지 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <!-- 캐시 방지: 갱신된 버전이 바로 반영되도록 -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
@@ -940,26 +940,6 @@ function toast(msg){
   toastTmr = setTimeout(function(){ toastEl.classList.remove('show'); }, 2800);
 }
 
-/* v31: 현장 사용 중 메뉴/버튼이 브라우저 확대되는 것을 방지한다.
-   지도(#map) 영역의 핀치·드래그 조작은 그대로 두고, 오버레이 UI의 더블탭/핀치 확대만 차단한다. */
-(function preventPageZoomOnControls(){
-  var lastTouchEnd = 0;
-  function isMapTarget(t){
-    try{ return !!(t && t.closest && t.closest('#map')); }catch(e){ return false; }
-  }
-  document.addEventListener('gesturestart', function(e){ e.preventDefault(); }, { passive:false });
-  document.addEventListener('gesturechange', function(e){ e.preventDefault(); }, { passive:false });
-  document.addEventListener('gestureend', function(e){ e.preventDefault(); }, { passive:false });
-  document.addEventListener('touchmove', function(e){
-    if(e.touches && e.touches.length > 1 && !isMapTarget(e.target)) e.preventDefault();
-  }, { passive:false });
-  document.addEventListener('touchend', function(e){
-    var now = Date.now();
-    if(!isMapTarget(e.target) && now - lastTouchEnd <= 320) e.preventDefault();
-    lastTouchEnd = now;
-  }, { passive:false });
-})();
-
 /* ================================================================
    ✅ Naver API callback — 로드 완료 시 자동 호출
 ================================================================ */
@@ -1052,40 +1032,38 @@ window.addEventListener('storage', function(e){
     try{ _processBulkQueue(false); }catch(_){}
   }
 });
-/* v32: 조사표 저장 후 지도 화면으로 돌아왔을 때 bfcache/같은 탭 환경에서도 즉시 최신 핀 표시 */
-function _refreshFavsOnReturn(){
-  try{ _processBulkQueue(false); }catch(e){}
-  try{ refreshFavPins(); }catch(e){}
-  try{ renderFavs(); }catch(e){}
-}
-window.addEventListener('pageshow', _refreshFavsOnReturn);
-window.addEventListener('focus', _refreshFavsOnReturn);
-document.addEventListener('visibilitychange', function(){ if(!document.hidden) _refreshFavsOnReturn(); });
 /* 일괄 저장용 — 중복(같은 surveyKey/좌표)은 갱신 */
 function _saveBulkFav(it, lat, lng, addr){
   if(!isFinite(lat) || !isFinite(lng)) return;
-  var color = (it.app === 'chungchi') ? 'blue' : 'green';
   var crop  = (it.crop || '').trim();
   var label = (crop ? crop + ' · ' : '') + addr;
   var favs = getFavs();
   var dup = -1;
-  /* v32: 조사표 저장 직후에는 기존 '위치만 저장된 핀'에 조사표 정보를 바로 붙인다.
-     1순위 surveyKey, 2순위 같은 좌표의 미연결 핀, 3순위 일반 위치저장 중복. */
+
+  /* v33: 조사표 저장 직후에는 기존 위치핀을 조사표핀으로 승격한다.
+     - surveyKey가 같으면 같은 조사자료 갱신
+     - surveyKey가 있고 같은 좌표에 아직 조사표가 연결되지 않은 기존 위치핀이 있으면 그 핀을 갱신
+     - 이때 기존 핀 색상(보라/빨강 등)은 유지한다. */
   for(var k=0;k<favs.length;k++){
     if(it.surveyKey && favs[k].surveyKey === it.surveyKey){ dup = k; break; }
   }
   if(dup < 0 && it.surveyKey){
     for(var k2=0;k2<favs.length;k2++){
-      var hasSurvey = !!favs[k2].surveyKey;
-      var near = Math.abs((Number(favs[k2].lat)||0)-lat) < 0.00003 && Math.abs((Number(favs[k2].lng)||0)-lng) < 0.00003;
-      if(!hasSurvey && near){ dup = k2; break; }
+      var close = Math.abs((favs[k2].lat||0)-lat) < 0.0001 && Math.abs((favs[k2].lng||0)-lng) < 0.0001;
+      if(close && !favs[k2].surveyKey){ dup = k2; break; }
     }
   }
   if(dup < 0 && !it.surveyKey){
     for(var k3=0;k3<favs.length;k3++){
-      if(Math.abs((Number(favs[k3].lat)||0)-lat) < 0.0001 && Math.abs((Number(favs[k3].lng)||0)-lng) < 0.0001){ dup = k3; break; }
+      if(Math.abs((favs[k3].lat||0)-lat) < 0.0001 && Math.abs((favs[k3].lng||0)-lng) < 0.0001){ dup = k3; break; }
     }
   }
+
+  var defaultColor = (it.app === 'chungchi') ? 'blue' : 'green';
+  var color = (dup>=0 && favs[dup].color) ? favs[dup].color : ((it.color || '').trim() || defaultColor);
+  var _ck=false; for(var ci=0;ci<FAV_COLORS.length;ci++){ if(FAV_COLORS[ci].key===color){ _ck=true; break; } }
+  if(!_ck) color = defaultColor;
+
   var rec = { label:label.slice(0,40), lat:lat, lng:lng, addr:addr, color:color,
               locked:(dup>=0 ? !!favs[dup].locked : false),
               surveyKey:it.surveyKey||'', surveyApp:it.app||'', crop:crop };
@@ -1691,6 +1669,7 @@ window.fillSurvey = function(){
   _spAddr = addr;
   _spLat = (S.destLat != null ? Number(S.destLat) : (selectedLat != null ? Number(selectedLat) : null));
   _spLng = (S.destLng != null ? Number(S.destLng) : (selectedLng != null ? Number(selectedLng) : null));
+  _spColor = (window._curFav && window._curFav.color) ? window._curFav.color : '';
   var ae = document.getElementById('sp-addr'); if(ae) ae.textContent = addr + (isFinite(_spLat)&&isFinite(_spLng) ? ' · ' + _spLat.toFixed(6) + ', ' + _spLng.toFixed(6) : '');
   document.getElementById('survey-pick-modal').classList.add('show');
 };
@@ -1709,29 +1688,21 @@ window.copyInfoAddr = function(){
 };
 /* 조사표 선택창 */
 var _spAddr = '';
-var _spLat = null, _spLng = null;
+var _spLat = null, _spLng = null, _spColor = '';
 window.closeSurveyPick = function(){ document.getElementById('survey-pick-modal').classList.remove('show'); };
-function _makeCoordToken(){
-  return 'mc_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,10);
-}
-function _savePendingSurveyCoord(app, addr, lat, lng, token){
-  try{
-    if(!isFinite(lat) || !isFinite(lng)) return;
-    localStorage.setItem('tenar_pending_survey_coord', JSON.stringify({
-      token: token || '', app: app || '', addr: addr || '', lat: Number(lat), lng: Number(lng), ts: Date.now()
-    }));
-  }catch(e){}
-}
 window.pickSurvey = function(app){
   closeSurveyPick();
   var a = (app === 'chungchi') ? 'chungchi' : 'tonghab';
-  var coordToken = _makeCoordToken();
   var url = 'https://ubaldos00-ship-it.github.io/home/' + a + '.html?addr=' + encodeURIComponent(_spAddr);
   if(isFinite(_spLat) && isFinite(_spLng)){
-    _savePendingSurveyCoord(a, _spAddr, _spLat, _spLng, coordToken);
-    url += '&lat=' + encodeURIComponent(_spLat.toFixed(8)) + '&lng=' + encodeURIComponent(_spLng.toFixed(8))
-        + '&coordToken=' + encodeURIComponent(coordToken);
+    url += '&lat=' + encodeURIComponent(_spLat.toFixed(8)) + '&lng=' + encodeURIComponent(_spLng.toFixed(8));
   }
+  if(_spColor){ url += '&color=' + encodeURIComponent(_spColor); }
+  try{
+    localStorage.setItem('tenar_pending_survey_coord', JSON.stringify({
+      addr:_spAddr, lat:isFinite(_spLat)?_spLat:null, lng:isFinite(_spLng)?_spLng:null, color:_spColor||''
+    }));
+  }catch(e){}
   /* 계산기에서 📍로 열었으면 그 창(opener)에 바로 주소 입력, 아니면 새로 연다 */
   try{
     if(window.opener && !window.opener.closed){
@@ -2034,40 +2005,14 @@ function setFavs(arr){
   /* 저장/수정/삭제 후 지도에 모든 즐겨찾기 핀을 다시 그려 항상 보이게 유지 */
   if(typeof refreshFavPins === 'function') refreshFavPins();
 }
-/* v31: 같은 좌표/같은 필지에 여러 개의 핀이 있을 때 지도 표시용 위치만 살짝 분산한다.
-   저장 좌표는 그대로 유지하고, 전체보기/상시표시가 같은 계산을 공유하도록 공통 함수화. */
-function _favDisplayItems(favs){
-  var seen = {};
-  var out = [];
-  (favs || []).forEach(function(f){
-    var baseLat = Number(f.lat), baseLng = Number(f.lng);
-    if(!isFinite(baseLat) || !isFinite(baseLng)) return;
-    var k = baseLat.toFixed(7) + ',' + baseLng.toFixed(7);
-    var n = seen[k] || 0;
-    seen[k] = n + 1;
-    var lat = baseLat, lng = baseLng;
-    if(n > 0){
-      var angle = (n - 1) * 2.399963;
-      var r = 0.000032 * Math.ceil(n / 6);   /* 약 3m 단위 — 한 필지 다중핀 구분 */
-      lat = baseLat + Math.sin(angle) * r;
-      lng = baseLng + Math.cos(angle) * r;
-    }
-    out.push({ f:f, baseLat:baseLat, baseLng:baseLng, lat:lat, lng:lng, n:n });
-  });
-  return out;
-}
 /* 저장된 모든 즐겨찾기를 지도에 핀으로 (화면 이동 없이) 상시 표시 */
 window.refreshFavPins = function(){
   if(!S.map || typeof naver === 'undefined') return;
   clearFavMarkers();
-  _favDisplayItems(getFavs()).forEach(function(it){
-    var f = it.f;
-    var ll = new naver.maps.LatLng(it.lat, it.lng);
-    var mk = new naver.maps.Marker({ map:S.map, position:ll, icon:favPinIcon(f.color), zIndex:100 + it.n });
-    naver.maps.Event.addListener(mk, 'click', function(){
-      S.map.setCenter(new naver.maps.LatLng(it.baseLat, it.baseLng));
-      showFavInfo(f);
-    });
+  getFavs().forEach(function(f){
+    var ll = new naver.maps.LatLng(f.lat, f.lng);
+    var mk = new naver.maps.Marker({ map:S.map, position:ll, icon:favPinIcon(f.color) });
+    naver.maps.Event.addListener(mk, 'click', function(){ S.map.setCenter(ll); showFavInfo(f); });
     S.favMarkers.push(mk);
     /* 작물명 표시 ON 이고 작물명이 있으면, 핀 옆에 상시 라벨을 함께 표시 */
     if(S.cropLabelsOn){
@@ -2077,9 +2022,9 @@ window.refreshFavPins = function(){
           map:S.map, position:ll,
           icon:{ content:'<div class="crop-label" style="background:' + colorOf(f.color) + '">🌱 ' + escapeHtml(crop) + '</div>',
                  anchor:new naver.maps.Point(-14, 26) },
-          clickable:false, zIndex:50 + it.n
+          clickable:false, zIndex:50
         });
-        S.favMarkers.push(lbl);
+        S.favMarkers.push(lbl);   /* clearFavMarkers 로 함께 제거됨 */
       }
     }
   });
@@ -2118,18 +2063,32 @@ function _maybeAutoFav(jibun, road, lat, lng){
   _urlAutoFavDone = true;
   var addr  = road || jibun || '';
   var label = (_urlParams.get('label') || '').trim() || addr || '저장 위치';
-  var color = (_urlParams.get('color') || 'green').trim();
+  var color = (_urlParams.get('color') || '').trim();
   var sKey  = (_urlParams.get('surveyKey') || '').trim();
   var sApp  = (_urlParams.get('app') || '').trim();   /* tonghab | chungchi */
   var _ck = false; for(var c=0;c<FAV_COLORS.length;c++){ if(FAV_COLORS[c].key===color){ _ck=true; break; } }
-  if(!_ck) color = 'green';                            /* 잘못된 색상 방어 */
+  if(color && !_ck) color = 'green';                 /* 잘못된 색상 방어 */
   var favs = getFavs();
   var dup = -1;
   for(var i=0;i<favs.length;i++){
     if(sKey && favs[i].surveyKey === sKey){ dup = i; break; }
-    if(!sKey && Math.abs((favs[i].lat||0) - lat) < 0.0001 && Math.abs((favs[i].lng||0) - lng) < 0.0001){ dup = i; break; }
+  }
+  if(dup < 0 && sKey){
+    for(var i2=0;i2<favs.length;i2++){
+      var close2 = Math.abs((favs[i2].lat||0) - lat) < 0.0001 && Math.abs((favs[i2].lng||0) - lng) < 0.0001;
+      if(close2 && !favs[i2].surveyKey){ dup = i2; break; }
+    }
+  }
+  if(dup < 0 && !sKey){
+    for(var i3=0;i3<favs.length;i3++){
+      if(Math.abs((favs[i3].lat||0) - lat) < 0.0001 && Math.abs((favs[i3].lng||0) - lng) < 0.0001){ dup = i3; break; }
+    }
   }
   var crop = ''; var _li = label.indexOf(' · '); if(_li > 0) crop = label.slice(0, _li).trim();
+  if(dup>=0 && favs[dup].color){ color = favs[dup].color; }
+  else if(!color){ color = (sApp === 'chungchi') ? 'blue' : 'green'; }
+  var _ck2 = false; for(var c2=0;c2<FAV_COLORS.length;c2++){ if(FAV_COLORS[c2].key===color){ _ck2=true; break; } }
+  if(!_ck2) color = (sApp === 'chungchi') ? 'blue' : 'green';
   var rec = { label:label.slice(0,40), lat:lat, lng:lng, addr:addr, color:color,
               locked: (dup>=0 ? !!favs[dup].locked : false),
               surveyKey:sKey, surveyApp:sApp, crop:crop };
@@ -2296,7 +2255,7 @@ function showFavInfo(f){
   window._curFav = f;
   window._selFavKey = _favKey(f);   /* 즐겨찾기 목록에서 선택 항목 표시용 */
   _syncSurveyBtn();
-  /* v31: 핀 클릭 시 작물명 팝업은 표시하지 않음(상시 라벨만 사용) */
+  /* v33: 핀 클릭 시 작물명 팝업은 띄우지 않음 — 작물명 보기 라벨만 사용 */
   showInfoSheet();
 }
 /* 즐겨찾기 식별 키 (surveyKey 우선, 없으면 좌표) */
@@ -2305,10 +2264,28 @@ function _favKey(f){
   if(f.surveyKey) return 'k:' + f.surveyKey;
   return 'c:' + Number(f.lat).toFixed(6) + ',' + Number(f.lng).toFixed(6);
 }
-/* v31: 핀 클릭 시 작물명 말풍선 팝업은 삭제 — 작물명은 🌱 버튼 ON 상태의 상시 라벨로만 표시 */
+/* 즐겨찾기 핀 클릭 시, 연결된 작물명을 핀 위에 잠시(2.5초) 말풍선으로 표시 */
 function _showCropTip(f){
+  if(!f || !S.map || typeof naver==='undefined' || !naver.maps.InfoWindow) return;
+  var crop = (f.crop || '').trim();
+  /* 계산기에서 저장한 즐겨찾기는 label이 "작물 · 주소" 형태 → 앞부분이 작물명 */
+  if(!crop && f.surveyApp){
+    var seg = (f.label || '').split(' · ');
+    if(seg.length >= 2) crop = (seg[0] || '').trim();
+  }
+  if(!crop) return;   /* 작물 정보 없는(직접 저장한) 핀은 표시 안 함 */
   try{ if(window._cropTip) window._cropTip.close(); }catch(e){}
+  var iw = new naver.maps.InfoWindow({
+    content:'<div style="padding:4px 11px;font-size:13px;font-weight:800;color:#1a5c22;'
+          + 'background:#eaf7e6;border:1.5px solid #8BC34A;border-radius:14px;white-space:nowrap;'
+          + 'box-shadow:0 2px 8px rgba(0,0,0,.2);">🌱 ' + escapeHtml(crop) + '</div>',
+    borderWidth:0, disableAnchor:true, backgroundColor:'transparent',
+    pixelOffset:new naver.maps.Point(0, -10)
+  });
+  iw.open(S.map, new naver.maps.LatLng(f.lat, f.lng));
+  window._cropTip = iw;
   clearTimeout(window._cropTipTimer);
+  window._cropTipTimer = setTimeout(function(){ try{ iw.close(); }catch(e){} }, 2500);
 }
 /* 조사표 입력 버튼 라벨/표시 갱신 (연결된 조사자료 유무에 따라) */
 function _syncSurveyBtn(){
@@ -2330,21 +2307,23 @@ window.showAllFavs = function(){
   if(!S.map){ toast('지도 로딩 후 사용해주세요'); return; }
   var favs = getFavs();
   if(!favs.length){ toast('저장된 즐겨찾기가 없습니다'); return; }
+  clearFavMarkers();
   closeFavPanel();
-  /* v31: 전체보기에서도 refreshFavPins와 같은 분산/라벨 로직을 사용해 핀 누락·겹침을 방지 */
-  refreshFavPins();
-  var items = _favDisplayItems(favs);
-  if(!items.length){ toast('표시할 좌표가 없습니다'); return; }
-  if(items.length === 1){
-    S.map.setCenter(new naver.maps.LatLng(items[0].lat, items[0].lng));
+  var bounds = new naver.maps.LatLngBounds();
+  favs.forEach(function(f){
+    var ll = new naver.maps.LatLng(f.lat, f.lng);
+    bounds.extend(ll);
+    var mk = new naver.maps.Marker({ map:S.map, position:ll, icon:favPinIcon(f.color) });
+    /* 핀 탭하면 저장 제목 표시 */
+    naver.maps.Event.addListener(mk, 'click', function(){ S.map.setCenter(ll); showFavInfo(f); });
+    S.favMarkers.push(mk);
+  });
+  if(favs.length === 1){
+    S.map.setCenter(new naver.maps.LatLng(favs[0].lat, favs[0].lng));
     S.map.setZoom(16);
   } else {
-    var bounds = new naver.maps.LatLngBounds();
-    items.forEach(function(it){ bounds.extend(new naver.maps.LatLng(it.lat, it.lng)); });
-    S.map.fitBounds(bounds, { top:90, right:48, bottom:170, left:48 });
+    S.map.fitBounds(bounds, { top:90, right:40, bottom:160, left:40 });
   }
-  var b = document.getElementById('crop-btn');
-  if(b) b.classList.toggle('active', !!S.cropLabelsOn);
   toast('⭐ 즐겨찾기 ' + favs.length + '곳 전체보기');
 };
 

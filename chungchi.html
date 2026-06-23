@@ -1,4 +1,4 @@
-<!-- chungchi_v81_coord_sync.html · 저장: 2026-06-23 16:00 KST · 지도 연동 좌표(lat/lng) 저장 보완 -->
+<!-- chungchi_v84_addr_fallback_color_keep.html · 저장: 2026-06-23 KST · 주소 fallback + 지도 핀 색상 유지 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1366,34 +1366,21 @@ var CC_LIST_KEY  = 'chungchiSaveList';
 var CC_DATA_PFX  = 'chungchiSave_';
 
 /* 지도에서 조사표 입력으로 넘어온 실제 클릭 좌표 보관 */
-var _tenarMapLat = null, _tenarMapLng = null, _tenarCoordToken = '';
-function _tenarSetMapCoord(lat, lng, token){
+var _tenarMapLat = null, _tenarMapLng = null, _tenarMapColor = '';
+function _tenarSetMapCoord(lat, lng, color){
   lat = Number(lat); lng = Number(lng);
   if(isFinite(lat) && isFinite(lng)){ _tenarMapLat = lat; _tenarMapLng = lng; }
-  if(token) _tenarCoordToken = String(token);
-}
-function _tenarNormAddr(a){ return String(a||'').replace(/\s+/g,'').replace(/[()]/g,''); }
-function _tenarPendingCoord(d){
-  try{
-    var raw = localStorage.getItem('tenar_pending_survey_coord');
-    if(!raw) return null;
-    var p = JSON.parse(raw) || {};
-    var age = Date.now() - Number(p.ts||0);
-    if(age < 0 || age > 24*3600*1000) return null;
-    if(p.app && p.app !== 'chungchi') return null;
-    if(_tenarCoordToken && p.token && p.token !== _tenarCoordToken) return null;
-    var a1 = _tenarNormAddr(d && d.address), a2 = _tenarNormAddr(p.addr);
-    if(!_tenarCoordToken && a1 && a2 && a1 !== a2) return null;
-    var lat = Number(p.lat), lng = Number(p.lng);
-    if(isFinite(lat) && isFinite(lng)) return {lat:lat, lng:lng};
-  }catch(e){}
-  return null;
+  if(color){ _tenarMapColor = String(color).trim(); }
 }
 function _tenarGetMapCoordFromSaved(d){
   var lat = Number(d && d.__mapLat), lng = Number(d && d.__mapLng);
-  if(isFinite(lat) && isFinite(lng)) return {lat:lat, lng:lng};
-  if(isFinite(_tenarMapLat) && isFinite(_tenarMapLng)) return {lat:_tenarMapLat, lng:_tenarMapLng};
-  return _tenarPendingCoord(d);
+  var color = (d && d.__mapColor) ? String(d.__mapColor).trim() : (_tenarMapColor || '');
+  if(isFinite(lat) && isFinite(lng)) return {lat:lat, lng:lng, color:color};
+  if(isFinite(_tenarMapLat) && isFinite(_tenarMapLng)) return {lat:_tenarMapLat, lng:_tenarMapLng, color:color};
+  return null;
+}
+function _tenarGetMapColorFromSaved(d){
+  return (d && d.__mapColor) ? String(d.__mapColor).trim() : (_tenarMapColor || '');
 }
 
 /* ── 데이터 수집 ── */
@@ -1444,11 +1431,11 @@ function _ccCollect(){
     var pv=pEl?parseFloat((pEl.textContent||'').replace(/[^0-9.]/g,'')):NaN;
     if(isFinite(pv)&&pv>0) d.__per10a=pv;
   }catch(e){}
-  var _mc = _tenarGetMapCoordFromSaved(d);
-  if(_mc){
-    d.__mapLat = _mc.lat;
-    d.__mapLng = _mc.lng;
+  if(isFinite(_tenarMapLat) && isFinite(_tenarMapLng)){
+    d.__mapLat = _tenarMapLat;
+    d.__mapLng = _tenarMapLng;
   }
+  if(_tenarMapColor){ d.__mapColor = _tenarMapColor; }
   return d;
 }
 /* v60: 현재 화면 10a당 생산량 (숫자) */
@@ -1462,7 +1449,8 @@ function _ccPer10a(){
 /* ── 데이터 복원 ── */
 function _ccApply(d){
   if(!d) return;
-  if(d.__mapLat !== undefined && d.__mapLng !== undefined) _tenarSetMapCoord(d.__mapLat, d.__mapLng);
+  if(d.__mapLat !== undefined && d.__mapLng !== undefined) _tenarSetMapCoord(d.__mapLat, d.__mapLng, d.__mapColor||'');
+  else if(d.__mapColor) _tenarMapColor = String(d.__mapColor).trim();
 
   // 1. 정적 입력
   ['address','surveyDate','memo'].forEach(function(id){
@@ -1600,32 +1588,6 @@ function _ccSetList(arr){ localStorage.setItem(CC_LIST_KEY, JSON.stringify(arr))
 
 /* 저장/덮어쓰기 시 지도 자동반영 대기열(tenar_map_bulk)에 등록.
    지도가 열려 있으면 storage 이벤트로 즉시, 닫혀 있으면 다음에 지도 열 때 반영된다. */
-
-/* v148/v83: 조사표 저장 직후 지도 즐겨찾기에도 직접 반영 — 지도 복귀 시 바로 조사표 열기 가능 */
-function _tenarDirectFavSync(entry){
-  try{
-    if(!entry) return;
-    var lat=Number(entry.lat), lng=Number(entry.lng);
-    if(!isFinite(lat)||!isFinite(lng)) return;
-    var FAV_KEY='tenar_map_favs_v1';
-    var favs=[]; try{ favs=JSON.parse(localStorage.getItem(FAV_KEY)||'[]')||[]; }catch(e){ favs=[]; }
-    var crop=(entry.crop||'').trim();
-    var addr=(entry.addr||'').trim();
-    var label=((crop?crop+' · ':'')+(addr||lat.toFixed(6)+', '+lng.toFixed(6))).slice(0,40);
-    var sKey=entry.surveyKey||'';
-    var dup=-1;
-    for(var i=0;i<favs.length;i++){ if(sKey && favs[i].surveyKey===sKey){ dup=i; break; } }
-    if(dup<0 && sKey){
-      for(var j=0;j<favs.length;j++){
-        var near=Math.abs((Number(favs[j].lat)||0)-lat)<0.00003 && Math.abs((Number(favs[j].lng)||0)-lng)<0.00003;
-        if(!favs[j].surveyKey && near){ dup=j; break; }
-      }
-    }
-    var rec={label:label,lat:lat,lng:lng,addr:addr,color:entry.color||'blue',locked:(dup>=0?!!favs[dup].locked:false),surveyKey:sKey,surveyApp:entry.app||'chungchi',crop:crop};
-    if(dup>=0) favs[dup]=rec; else favs.unshift(rec);
-    localStorage.setItem(FAV_KEY, JSON.stringify(favs));
-  }catch(e){}
-}
 function _queueMapSync(key){
   try{
     var s = localStorage.getItem(CC_DATA_PFX+key);
@@ -1635,9 +1597,10 @@ function _queueMapSync(key){
     var item = (typeof _ccGetList==='function') ? _ccGetList().find(function(x){return x.key===key;}) : null;
     var crop = (item && item.crop) ? item.crop : (d.__sC||'');
     var coord = _tenarGetMapCoordFromSaved(d);
-    var entry = { addr:a, crop:crop, app:'chungchi', surveyKey:key, color:'blue' };
+    var entry = { addr:a, crop:crop, app:'chungchi', surveyKey:key };
+    var mapColor = (coord && coord.color) ? coord.color : _tenarGetMapColorFromSaved(d);
+    if(mapColor){ entry.color = mapColor; }
     if(coord){ entry.lat = coord.lat; entry.lng = coord.lng; }
-    _tenarDirectFavSync(entry);
     var q = [];
     try{ q = JSON.parse(localStorage.getItem('tenar_map_bulk')||'[]')||[]; }catch(e){ q=[]; }
     q = q.filter(function(x){ return x.surveyKey !== key; });
@@ -1899,7 +1862,7 @@ function slOpenMap(key){
     var coord = _tenarGetMapCoordFromSaved(d);
     var u = 'https://ubaldos00-ship-it.github.io/home/map.html'
           + '?q='        + encodeURIComponent(a)
-          + '&save=1&app=chungchi&color=blue'
+          + '&save=1&app=chungchi&color=' + encodeURIComponent((coord && coord.color) || _tenarGetMapColorFromSaved(d) || 'blue')
           + '&surveyKey=' + encodeURIComponent(key)
           + '&label='    + encodeURIComponent(label);
     if(coord){ u += '&lat=' + encodeURIComponent(coord.lat.toFixed(8)) + '&lng=' + encodeURIComponent(coord.lng.toFixed(8)); }
@@ -1918,8 +1881,10 @@ function slBulkToMap(){
     var a = (d && d.address ? d.address : '').trim();
     if(!a) return;
     var crop = it.crop || (d.__sC||'');
-    var entry = { addr:a, crop:crop, app:'chungchi', surveyKey:it.key, color:'blue' };
+    var entry = { addr:a, crop:crop, app:'chungchi', surveyKey:it.key };
     var coord = _tenarGetMapCoordFromSaved(d);
+    var mapColor = (coord && coord.color) ? coord.color : _tenarGetMapColorFromSaved(d);
+    if(mapColor){ entry.color = mapColor; }
     if(coord){ entry.lat = coord.lat; entry.lng = coord.lng; }
     items.push(entry);
   });
@@ -2490,14 +2455,18 @@ if(window.wcs) {
   var addrIn  = (p.get('addr') || '').trim();
   var latIn   = Number(p.get('lat'));
   var lngIn   = Number(p.get('lng'));
-  var coordTokenIn = (p.get('coordToken') || '').trim();
-  if(coordTokenIn) _tenarCoordToken = coordTokenIn;
+  var colorIn = (p.get('color') || '').trim();
+  try{
+    var pend = JSON.parse(localStorage.getItem('tenar_pending_survey_coord') || 'null');
+    if(pend && (!addrIn || !pend.addr || pend.addr === addrIn)){
+      if(!isFinite(latIn) && isFinite(Number(pend.lat))) latIn = Number(pend.lat);
+      if(!isFinite(lngIn) && isFinite(Number(pend.lng))) lngIn = Number(pend.lng);
+      if(!colorIn && pend.color) colorIn = String(pend.color).trim();
+    }
+  }catch(e){}
   if(isFinite(latIn) && isFinite(lngIn)){
-    try{ _tenarSetMapCoord(latIn, lngIn, coordTokenIn); }catch(e){ window._tenarMapLat = latIn; window._tenarMapLng = lngIn; }
-  } else {
-    var pc = _tenarPendingCoord({address:addrIn});
-    if(pc) _tenarSetMapCoord(pc.lat, pc.lng, coordTokenIn);
-  }
+    try{ _tenarSetMapCoord(latIn, lngIn, colorIn); }catch(e){ window._tenarMapLat = latIn; window._tenarMapLng = lngIn; window._tenarMapColor = colorIn; }
+  } else if(colorIn){ _tenarMapColor = colorIn; }
   if(!loadKey && !addrIn) return;
   function cleanUrl(){ try{ history.replaceState(null,'',location.pathname); }catch(e){} }
   /* 입력 중(자동저장) 자료가 의미있게 있는지 확인 */
