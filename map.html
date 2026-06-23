@@ -1,4 +1,4 @@
-<!-- map_v35_vworld_jibun_label.html · 저장: 2026-06-24 KST · 브이월드 지번 본번+부번 표시 및 라벨 확대 -->
+<!-- map_v37_layer_zoom_fix.html · 저장: 2026-06-24 KST · 최대확대 후 축소 시 브이월드/핀 안정화 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1202,12 +1202,9 @@ function renderMap(lat, lng, acc, skipMe){
       if(!S._favIdle){
         S._favIdle = naver.maps.Event.addListener(S.map, 'idle', function(){ scheduleStableLayerRefresh(120); });
       }
-      if(!S._cadCenter){
-        S._cadCenter = naver.maps.Event.addListener(S.map, 'center_changed', function(){ scheduleStableLayerRefresh(360); });
-      }
-      if(!S._cadBounds){
-        S._cadBounds = naver.maps.Event.addListener(S.map, 'bounds_changed', function(){ scheduleStableLayerRefresh(480); });
-      }
+      /* v37: center_changed/bounds_changed 중에는 브이월드 WMS를 갱신하지 않는다.
+         최대확대 후 축소·이동 중 계속 재요청하면 지번 라벨 위치가 흔들리고
+         핀 레이어가 순간적으로 비는 현상이 생겨, idle/dragend/zoom_changed 완료 시점에만 갱신한다. */
       startLayerWatchdog();
       setTimeout(function(){ try{ refreshFavPins(); scheduleLayerTailRefresh(); }catch(_){} }, 400);
     } else {
@@ -1844,15 +1841,15 @@ function ensureCadOverlay(){
 /* 현재 화면 영역의 VWorld 지적도 WMS 이미지를 커스텀 오버레이로 갱신 */
 /* 이 줌 미만이면 필지선이 빽빽해 뿌옇게 보이므로 지적도를 자동으로 숨김 (확대하면 자동 표시).
    더 확대해야 깨끗하면 숫자를 올리고, 더 축소에서도 보이려면 내리면 됨 */
-var MIN_CAD_ZOOM = 17;
+var MIN_CAD_ZOOM = 16;
 /* v35: 브이월드 지번 표시 보완
    - 기존 lp_pa_cbnd_bubun 단독 사용 시 347-37 중 '37'처럼 부번만 보이는 경우가 있음
    - 본번+부번 레이어를 함께 요청해서 347-37 형태가 보이도록 보완
    - WMS는 이미지라 폰트 크기를 직접 지정하기 어려워, 요청 해상도를 1/2로 낮춘 뒤 전체 크기로 늘려 약 2배 크게 표시 */
-var CAD_WMS_LABEL_SCALE = 0.5;
+var CAD_WMS_LABEL_SCALE = 0.75;
 /* v36: 확대·이동 중 화면 가장자리에서 브이월드가 비는 현상 방지용 여유 범위.
    현재 화면보다 넓은 영역의 WMS 이미지를 받아 작은 이동에도 기존 레이어가 계속 덮도록 한다. */
-var CAD_BOUNDS_PAD_RATIO = 0.42;
+var CAD_BOUNDS_PAD_RATIO = 0.06;
 var CAD_WMS_LAYERS = 'lp_pa_cbnd_bonbun,lp_pa_cbnd_bubun';
 var CAD_WMS_STYLES = 'lp_pa_cbnd_bonbun,lp_pa_cbnd_bubun';
 function paddedCadBounds(b){
@@ -1884,13 +1881,23 @@ function favPinsNeedRepair(){
   }
   return !S.favMarkers || S.favMarkers.length < need;
 }
+function reviveFavMarkerMaps(){
+  if(!S.map || !S.favMarkers) return;
+  S.favMarkers.forEach(function(m){
+    try{ if(m && (!m.getMap || !m.getMap())) m.setMap(S.map); }catch(e){}
+  });
+}
 function scheduleLayerTailRefresh(){
   if(!S.map) return;
   (S._cadTailTimers || []).forEach(function(t){ clearTimeout(t); });
   S._cadTailTimers = [];
-  [220, 650, 1200].forEach(function(ms){
+  /* v37: 지도 이동·줌 애니메이션 중 즐겨찾기 핀을 지웠다 다시 그리지 않는다.
+     네이버 마커는 좌표에 고정되어 자동 이동하므로, 필요하면 setMap만 복구한다.
+     브이월드는 줌/드래그가 끝난 뒤 정확한 범위로 2회만 재확인한다. */
+  [360, 950].forEach(function(ms){
     S._cadTailTimers.push(setTimeout(function(){
       try{
+        reviveFavMarkerMaps();
         if(favPinsNeedRepair()) refreshFavPins();
         if(S.cadOn) updateCadOverlay();
       }catch(e){}
@@ -1902,10 +1909,11 @@ function startLayerWatchdog(){
   S._layerWatch = setInterval(function(){
     try{
       if(!S.map) return;
+      reviveFavMarkerMaps();
       if(favPinsNeedRepair()) refreshFavPins();
       if(S.cadOn && cadOverlayNeedsRepair()) updateCadOverlay();
     }catch(e){}
-  }, 1800);
+  }, 2200);
 }
 function updateCadOverlay(){
   if(!S.cadOn || !CFG.vworldKey || !S.map) return;
@@ -1918,9 +1926,8 @@ function updateCadOverlay(){
   var b  = paddedCadBounds(rawB);
   var sw = b.getSW(), ne = b.getNE();
   var mapEl = document.getElementById('map');
-  /* 1:1 해상도로 요청 (늘이거나 줄이지 않음)
-     → ① 늘림에 의한 뿌염(흐릿함) 제거  ② dpr 2배로 줄여 그리던 때보다 지번 글자가 더 크게 보임
-        ③ 축척이 과하게 커지지 않아 모든 줌 단계에서 표시됨 */
+  /* v37: 지번 글자 확대와 표시 안정성의 균형값으로 요청 해상도를 0.75배로 설정.
+     0.5배는 글자는 크지만 최대확대 후 1~2단계 축소에서 본번이 생략되는 경우가 있어 보정한다. */
   var baseW = mapEl.clientWidth  || 1024;
   var baseH = mapEl.clientHeight || 1024;
   var w = Math.max(320, Math.min(Math.round(baseW * CAD_WMS_LABEL_SCALE), 2048));
@@ -1949,11 +1956,12 @@ function scheduleStableLayerRefresh(delay){
   clearTimeout(S._favTimer);
   S._favTimer = setTimeout(function(){
     try{
+      reviveFavMarkerMaps();
       if(favPinsNeedRepair()) refreshFavPins();
       if(S.cadOn) updateCadOverlay();
       scheduleLayerTailRefresh();
     }catch(e){}
-  }, delay || 160);
+  }, delay || 220);
 }
 window.toggleCadastral = function(){
   if(!S.map){ toast('지도 로딩 후 사용해주세요'); return; }
