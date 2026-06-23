@@ -1052,6 +1052,15 @@ window.addEventListener('storage', function(e){
     try{ _processBulkQueue(false); }catch(_){}
   }
 });
+/* v32: 조사표 저장 후 지도 화면으로 돌아왔을 때 bfcache/같은 탭 환경에서도 즉시 최신 핀 표시 */
+function _refreshFavsOnReturn(){
+  try{ _processBulkQueue(false); }catch(e){}
+  try{ refreshFavPins(); }catch(e){}
+  try{ renderFavs(); }catch(e){}
+}
+window.addEventListener('pageshow', _refreshFavsOnReturn);
+window.addEventListener('focus', _refreshFavsOnReturn);
+document.addEventListener('visibilitychange', function(){ if(!document.hidden) _refreshFavsOnReturn(); });
 /* 일괄 저장용 — 중복(같은 surveyKey/좌표)은 갱신 */
 function _saveBulkFav(it, lat, lng, addr){
   if(!isFinite(lat) || !isFinite(lng)) return;
@@ -1060,11 +1069,22 @@ function _saveBulkFav(it, lat, lng, addr){
   var label = (crop ? crop + ' · ' : '') + addr;
   var favs = getFavs();
   var dup = -1;
+  /* v32: 조사표 저장 직후에는 기존 '위치만 저장된 핀'에 조사표 정보를 바로 붙인다.
+     1순위 surveyKey, 2순위 같은 좌표의 미연결 핀, 3순위 일반 위치저장 중복. */
   for(var k=0;k<favs.length;k++){
     if(it.surveyKey && favs[k].surveyKey === it.surveyKey){ dup = k; break; }
-    /* v29: 조사표 저장자료(surveyKey 있음)는 같은 주소/근접좌표라도 서로 다른 조사건으로 보존한다.
-       surveyKey가 없는 일반 위치 저장만 근접좌표 중복을 갱신한다. */
-    if(!it.surveyKey && Math.abs((favs[k].lat||0)-lat) < 0.0001 && Math.abs((favs[k].lng||0)-lng) < 0.0001){ dup = k; break; }
+  }
+  if(dup < 0 && it.surveyKey){
+    for(var k2=0;k2<favs.length;k2++){
+      var hasSurvey = !!favs[k2].surveyKey;
+      var near = Math.abs((Number(favs[k2].lat)||0)-lat) < 0.00003 && Math.abs((Number(favs[k2].lng)||0)-lng) < 0.00003;
+      if(!hasSurvey && near){ dup = k2; break; }
+    }
+  }
+  if(dup < 0 && !it.surveyKey){
+    for(var k3=0;k3<favs.length;k3++){
+      if(Math.abs((Number(favs[k3].lat)||0)-lat) < 0.0001 && Math.abs((Number(favs[k3].lng)||0)-lng) < 0.0001){ dup = k3; break; }
+    }
   }
   var rec = { label:label.slice(0,40), lat:lat, lng:lng, addr:addr, color:color,
               locked:(dup>=0 ? !!favs[dup].locked : false),

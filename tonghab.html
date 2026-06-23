@@ -8118,6 +8118,32 @@ function closeSaveLoadModal(){
 /* 지금 바로 저장 */
 /* 저장/덮어쓰기 시 지도 자동반영 대기열(tenar_map_bulk)에 등록.
    지도가 열려 있으면 storage 이벤트로 즉시, 닫혀 있으면 다음에 지도 열 때 반영된다. */
+
+/* v148/v83: 조사표 저장 직후 지도 즐겨찾기에도 직접 반영 — 지도 복귀 시 바로 조사표 열기 가능 */
+function _tenarDirectFavSync(entry){
+  try{
+    if(!entry) return;
+    var lat=Number(entry.lat), lng=Number(entry.lng);
+    if(!isFinite(lat)||!isFinite(lng)) return;
+    var FAV_KEY='tenar_map_favs_v1';
+    var favs=[]; try{ favs=JSON.parse(localStorage.getItem(FAV_KEY)||'[]')||[]; }catch(e){ favs=[]; }
+    var crop=(entry.crop||'').trim();
+    var addr=(entry.addr||'').trim();
+    var label=((crop?crop+' · ':'')+(addr||lat.toFixed(6)+', '+lng.toFixed(6))).slice(0,40);
+    var sKey=entry.surveyKey||'';
+    var dup=-1;
+    for(var i=0;i<favs.length;i++){ if(sKey && favs[i].surveyKey===sKey){ dup=i; break; } }
+    if(dup<0 && sKey){
+      for(var j=0;j<favs.length;j++){
+        var near=Math.abs((Number(favs[j].lat)||0)-lat)<0.00003 && Math.abs((Number(favs[j].lng)||0)-lng)<0.00003;
+        if(!favs[j].surveyKey && near){ dup=j; break; }
+      }
+    }
+    var rec={label:label,lat:lat,lng:lng,addr:addr,color:entry.color||'green',locked:(dup>=0?!!favs[dup].locked:false),surveyKey:sKey,surveyApp:entry.app||'tonghab',crop:crop};
+    if(dup>=0) favs[dup]=rec; else favs.unshift(rec);
+    localStorage.setItem(FAV_KEY, JSON.stringify(favs));
+  }catch(e){}
+}
 function _queueMapSync(key){
   try{
     var s = localStorage.getItem(SL_DATA_PFX+key);
@@ -8127,8 +8153,9 @@ function _queueMapSync(key){
     var item = (typeof _slGetList==='function') ? _slGetList().find(function(x){return x.key===key;}) : null;
     var crop = (item && item.crop) ? item.crop : (d['__crop']||'');
     var coord = _tenarGetMapCoordFromSaved(d);
-    var entry = { addr:a, crop:crop, app:'tonghab', surveyKey:key };
+    var entry = { addr:a, crop:crop, app:'tonghab', surveyKey:key, color:'green' };
     if(coord){ entry.lat = coord.lat; entry.lng = coord.lng; }
+    _tenarDirectFavSync(entry);
     var q = [];
     try{ q = JSON.parse(localStorage.getItem('tenar_map_bulk')||'[]')||[]; }catch(e){ q=[]; }
     q = q.filter(function(x){ return x.surveyKey !== key; });   /* 같은 항목 중복 제거 */
@@ -8551,7 +8578,7 @@ function slBulkToMap(){
     var a = (d && d['address'] ? d['address'] : '').trim();
     if(!a) return;
     var crop = it.crop || (d['__crop']||'');
-    var entry = { addr:a, crop:crop, app:'tonghab', surveyKey:it.key };
+    var entry = { addr:a, crop:crop, app:'tonghab', surveyKey:it.key, color:'green' };
     var coord = _tenarGetMapCoordFromSaved(d);
     if(coord){ entry.lat = coord.lat; entry.lng = coord.lng; }
     items.push(entry);
