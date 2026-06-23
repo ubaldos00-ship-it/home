@@ -1,4 +1,4 @@
-<!-- tonghab_v145.html · 저장: 2026-06-23 06:31 KST · 지도 ?load 진입 시 초기화팝업 억제(데이터 보호)+저장된 자료입니다 확인팝업 -->
+<!-- tonghab_v146_coord_sync.html · 저장: 2026-06-23 16:00 KST · 지도 연동 좌표(lat/lng) 저장 보완 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -7922,6 +7922,19 @@ function slSmartSave(){
   }
 }
 
+/* 지도에서 조사표 입력으로 넘어온 실제 클릭 좌표 보관 */
+var _tenarMapLat = null, _tenarMapLng = null;
+function _tenarSetMapCoord(lat, lng){
+  lat = Number(lat); lng = Number(lng);
+  if(isFinite(lat) && isFinite(lng)){ _tenarMapLat = lat; _tenarMapLng = lng; }
+}
+function _tenarGetMapCoordFromSaved(d){
+  var lat = Number(d && d.__mapLat), lng = Number(d && d.__mapLng);
+  if(isFinite(lat) && isFinite(lng)) return {lat:lat, lng:lng};
+  if(isFinite(_tenarMapLat) && isFinite(_tenarMapLng)) return {lat:_tenarMapLat, lng:_tenarMapLng};
+  return null;
+}
+
 /* 현재 화면 데이터 수집 (자동저장과 동일 방식) */
 function _slCollect(){
   var d={};
@@ -7938,11 +7951,16 @@ function _slCollect(){
     var el=document.getElementById(id);
     if(el){var t=(el.textContent||'').replace(/[^0-9.]/g,'');var v=parseFloat(t);if(isFinite(v)&&v>0)d['__res_'+id]=v;}
   });
+  if(isFinite(_tenarMapLat) && isFinite(_tenarMapLng)){
+    d['__mapLat'] = _tenarMapLat;
+    d['__mapLng'] = _tenarMapLng;
+  }
   return d;
 }
 
 /* 데이터 화면에 적용 (자동저장 복원과 동일 방식) */
 function _slApply(d, _onDone){
+  if(d && d['__mapLat'] !== undefined && d['__mapLng'] !== undefined) _tenarSetMapCoord(d['__mapLat'], d['__mapLng']);
   if(d['__crop']&&typeof selectCrop==='function'){
     var cb=document.querySelector('.crop-btn[data-crop="'+d['__crop']+'"]');if(cb)selectCrop(cb);
   }
@@ -8089,7 +8107,9 @@ function _queueMapSync(key){
     if(!a) return;   /* 주소 없으면 지도반영 안 함 */
     var item = (typeof _slGetList==='function') ? _slGetList().find(function(x){return x.key===key;}) : null;
     var crop = (item && item.crop) ? item.crop : (d['__crop']||'');
+    var coord = _tenarGetMapCoordFromSaved(d);
     var entry = { addr:a, crop:crop, app:'tonghab', surveyKey:key };
+    if(coord){ entry.lat = coord.lat; entry.lng = coord.lng; }
     var q = [];
     try{ q = JSON.parse(localStorage.getItem('tenar_map_bulk')||'[]')||[]; }catch(e){ q=[]; }
     q = q.filter(function(x){ return x.surveyKey !== key; });   /* 같은 항목 중복 제거 */
@@ -8489,11 +8509,13 @@ function slOpenMap(key){
     var cropKo = (item && item.crop) ? item.crop
                : ((typeof PROD_CROP_KO!=='undefined' && PROD_CROP_KO[crop]) ? PROD_CROP_KO[crop] : crop);
     var label = (cropKo?cropKo+' · ':'') + a;
+    var coord = _tenarGetMapCoordFromSaved(d);
     var u = 'https://ubaldos00-ship-it.github.io/home/map.html'
           + '?q='        + encodeURIComponent(a)
           + '&save=1&app=tonghab&color=green'
           + '&surveyKey=' + encodeURIComponent(key)
           + '&label='    + encodeURIComponent(label);
+    if(coord){ u += '&lat=' + encodeURIComponent(coord.lat.toFixed(8)) + '&lng=' + encodeURIComponent(coord.lng.toFixed(8)); }
     window.open(u, 'tenarMap');
   }catch(e){ alert('지도 열기 실패: '+e.message); }
 }
@@ -8510,7 +8532,10 @@ function slBulkToMap(){
     var a = (d && d['address'] ? d['address'] : '').trim();
     if(!a) return;
     var crop = it.crop || (d['__crop']||'');
-    items.push({ addr:a, crop:crop, app:'tonghab', surveyKey:it.key });
+    var entry = { addr:a, crop:crop, app:'tonghab', surveyKey:it.key };
+    var coord = _tenarGetMapCoordFromSaved(d);
+    if(coord){ entry.lat = coord.lat; entry.lng = coord.lng; }
+    items.push(entry);
   });
   if(!items.length){ alert('지도에 반영할 주소가 있는 저장 항목이 없습니다.'); return; }
   if(!confirm('저장된 '+items.length+'곳의 주소를 지도 즐겨찾기에 한꺼번에 반영합니다.\n(작물명도 함께 표시됩니다) 계속할까요?')) return;
@@ -8957,6 +8982,11 @@ if(window.wcs) {
   var p; try{ p = new URLSearchParams(location.search); }catch(e){ return; }
   var loadKey = (p.get('load') || '').trim();
   var addrIn  = (p.get('addr') || '').trim();
+  var latIn   = Number(p.get('lat'));
+  var lngIn   = Number(p.get('lng'));
+  if(isFinite(latIn) && isFinite(lngIn)){
+    try{ _tenarSetMapCoord(latIn, lngIn); }catch(e){ window._tenarMapLat = latIn; window._tenarMapLng = lngIn; }
+  }
   if(!loadKey && !addrIn) return;
   /* ★ 데이터 보호: 지도에서 ?load 로 열렸을 때는 위험한 "이전 자료/초기화" 팝업을 막고
      입력 중 자료는 그대로(조용히) 복원되게 한다. (초기화 선택으로 데이터가 삭제되던 문제 방지) */
@@ -9011,6 +9041,7 @@ if(window.wcs) {
           el.dispatchEvent(new Event('input',  {bubbles:true}));
           el.dispatchEvent(new Event('change', {bubbles:true}));
         }
+        if(isFinite(latIn) && isFinite(lngIn)) _tenarSetMapCoord(latIn, lngIn);
       }
       cleanUrl();
     }, 1500);

@@ -1,4 +1,4 @@
-<!-- chungchi_v79_safari_safe.html · 저장: 2026-06-23 09:52 KST · 맥류 조곡 기준 반영 -->
+<!-- chungchi_v81_coord_sync.html · 저장: 2026-06-23 16:00 KST · 지도 연동 좌표(lat/lng) 저장 보완 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1365,6 +1365,19 @@ var CC_AUTO_KEY  = 'chungchiAutoSave_v1';
 var CC_LIST_KEY  = 'chungchiSaveList';
 var CC_DATA_PFX  = 'chungchiSave_';
 
+/* 지도에서 조사표 입력으로 넘어온 실제 클릭 좌표 보관 */
+var _tenarMapLat = null, _tenarMapLng = null;
+function _tenarSetMapCoord(lat, lng){
+  lat = Number(lat); lng = Number(lng);
+  if(isFinite(lat) && isFinite(lng)){ _tenarMapLat = lat; _tenarMapLng = lng; }
+}
+function _tenarGetMapCoordFromSaved(d){
+  var lat = Number(d && d.__mapLat), lng = Number(d && d.__mapLng);
+  if(isFinite(lat) && isFinite(lng)) return {lat:lat, lng:lng};
+  if(isFinite(_tenarMapLat) && isFinite(_tenarMapLng)) return {lat:_tenarMapLat, lng:_tenarMapLng};
+  return null;
+}
+
 /* ── 데이터 수집 ── */
 function _ccCollect(){
   var d = {};
@@ -1413,6 +1426,10 @@ function _ccCollect(){
     var pv=pEl?parseFloat((pEl.textContent||'').replace(/[^0-9.]/g,'')):NaN;
     if(isFinite(pv)&&pv>0) d.__per10a=pv;
   }catch(e){}
+  if(isFinite(_tenarMapLat) && isFinite(_tenarMapLng)){
+    d.__mapLat = _tenarMapLat;
+    d.__mapLng = _tenarMapLng;
+  }
   return d;
 }
 /* v60: 현재 화면 10a당 생산량 (숫자) */
@@ -1426,6 +1443,7 @@ function _ccPer10a(){
 /* ── 데이터 복원 ── */
 function _ccApply(d){
   if(!d) return;
+  if(d.__mapLat !== undefined && d.__mapLng !== undefined) _tenarSetMapCoord(d.__mapLat, d.__mapLng);
 
   // 1. 정적 입력
   ['address','surveyDate','memo'].forEach(function(id){
@@ -1571,7 +1589,9 @@ function _queueMapSync(key){
     if(!a) return;
     var item = (typeof _ccGetList==='function') ? _ccGetList().find(function(x){return x.key===key;}) : null;
     var crop = (item && item.crop) ? item.crop : (d.__sC||'');
+    var coord = _tenarGetMapCoordFromSaved(d);
     var entry = { addr:a, crop:crop, app:'chungchi', surveyKey:key };
+    if(coord){ entry.lat = coord.lat; entry.lng = coord.lng; }
     var q = [];
     try{ q = JSON.parse(localStorage.getItem('tenar_map_bulk')||'[]')||[]; }catch(e){ q=[]; }
     q = q.filter(function(x){ return x.surveyKey !== key; });
@@ -1830,11 +1850,13 @@ function slOpenMap(key){
     var item = (typeof _ccGetList==='function') ? _ccGetList().find(function(x){return x.key===key;}) : null;
     var crop = (item && item.crop) ? item.crop : (d.__sC || '');
     var label = (crop?crop+' · ':'') + a;
+    var coord = _tenarGetMapCoordFromSaved(d);
     var u = 'https://ubaldos00-ship-it.github.io/home/map.html'
           + '?q='        + encodeURIComponent(a)
           + '&save=1&app=chungchi&color=blue'
           + '&surveyKey=' + encodeURIComponent(key)
           + '&label='    + encodeURIComponent(label);
+    if(coord){ u += '&lat=' + encodeURIComponent(coord.lat.toFixed(8)) + '&lng=' + encodeURIComponent(coord.lng.toFixed(8)); }
     window.open(u, 'tenarMap');
   }catch(e){ alert('지도 열기 실패: '+e.message); }
 }
@@ -1850,7 +1872,10 @@ function slBulkToMap(){
     var a = (d && d.address ? d.address : '').trim();
     if(!a) return;
     var crop = it.crop || (d.__sC||'');
-    items.push({ addr:a, crop:crop, app:'chungchi', surveyKey:it.key });
+    var entry = { addr:a, crop:crop, app:'chungchi', surveyKey:it.key };
+    var coord = _tenarGetMapCoordFromSaved(d);
+    if(coord){ entry.lat = coord.lat; entry.lng = coord.lng; }
+    items.push(entry);
   });
   if(!items.length){ alert('지도에 반영할 주소가 있는 저장 항목이 없습니다.'); return; }
   if(!confirm('저장된 '+items.length+'곳의 주소를 지도 즐겨찾기에 한꺼번에 반영합니다.\n(작물명도 함께 표시됩니다) 계속할까요?')) return;
@@ -2417,6 +2442,11 @@ if(window.wcs) {
   var p; try{ p = new URLSearchParams(location.search); }catch(e){ return; }
   var loadKey = (p.get('load') || '').trim();
   var addrIn  = (p.get('addr') || '').trim();
+  var latIn   = Number(p.get('lat'));
+  var lngIn   = Number(p.get('lng'));
+  if(isFinite(latIn) && isFinite(lngIn)){
+    try{ _tenarSetMapCoord(latIn, lngIn); }catch(e){ window._tenarMapLat = latIn; window._tenarMapLng = lngIn; }
+  }
   if(!loadKey && !addrIn) return;
   function cleanUrl(){ try{ history.replaceState(null,'',location.pathname); }catch(e){} }
   /* 입력 중(자동저장) 자료가 의미있게 있는지 확인 */
@@ -2468,6 +2498,7 @@ if(window.wcs) {
           el.dispatchEvent(new Event('input',  {bubbles:true}));
           el.dispatchEvent(new Event('change', {bubbles:true}));
         }
+        if(isFinite(latIn) && isFinite(lngIn)) _tenarSetMapCoord(latIn, lngIn);
       }
       cleanUrl();
     }, 1300);
