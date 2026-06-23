@@ -1,4 +1,4 @@
-<!-- map_v35_vworld_jibun_label.html · 저장: 2026-06-24 KST · 브이월드 지번 본번+부번 표시 및 라벨 확대 -->
+<!-- map_v40_vworld_layers.html · 저장: 2026-06-24 KST · v35 안정본 기준 + 브이월드 행정경계/용도지역/영상지도 레이어 추가 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -370,6 +370,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 .ls-ov-state{ font-size:12px;font-weight:800;color:#9ca3af;flex-shrink:0; }
 .ls-overlay.active{ border-color:#c9962b;background:#fffaf0; }
 .ls-overlay.active .ls-ov-state{ color:#c9962b; }
+.ls-overlay.vw-bg.active{ border-color:#2d6cdf;background:#edf4ff; }
+.ls-overlay.vw-bg.active .ls-ov-state{ color:#2d6cdf; }
+.ls-layer-note{font-size:10.5px;color:#8a8f86;line-height:1.45;margin:7px 2px 0;word-break:keep-all;}
 
 /* ── 현재 위치 방향 마커 ── */
 .me-marker{ width:40px;height:40px;position:relative; }
@@ -635,6 +638,33 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
       <span class="ls-ov-text">지적도(브이월드) 필지경계</span>
       <span class="ls-ov-state" id="cadState">OFF</span>
     </button>
+    <button class="ls-overlay" id="siggBtn" onclick="toggleVworldWmsLayer('sigg')">
+      <span class="ls-ic" style="background:#e8f0ff">🧭</span>
+      <span class="ls-ov-text">시군구 경계(브이월드)</span>
+      <span class="ls-ov-state" id="siggState">OFF</span>
+    </button>
+    <button class="ls-overlay" id="emdBtn" onclick="toggleVworldWmsLayer('emd')">
+      <span class="ls-ic" style="background:#f0f7e8">🏘</span>
+      <span class="ls-ov-text">읍면동 경계(브이월드)</span>
+      <span class="ls-ov-state" id="emdState">OFF</span>
+    </button>
+    <button class="ls-overlay" id="riBtn" onclick="toggleVworldWmsLayer('ri')">
+      <span class="ls-ic" style="background:#f5edff">🌾</span>
+      <span class="ls-ov-text">리 경계(브이월드)</span>
+      <span class="ls-ov-state" id="riState">OFF</span>
+    </button>
+    <button class="ls-overlay" id="usezoneBtn" onclick="toggleVworldWmsLayer('usezone')">
+      <span class="ls-ic" style="background:#fff1e8">🟫</span>
+      <span class="ls-ov-text">토지이용/용도지역</span>
+      <span class="ls-ov-state" id="usezoneState">OFF</span>
+    </button>
+    <div class="ls-overlay-title">브이월드 배경</div>
+    <button class="ls-overlay vw-bg" id="vworldPhotoBtn" onclick="toggleVworldPhoto()">
+      <span class="ls-ic" style="background:#e6f3ff">🛰</span>
+      <span class="ls-ov-text">브이월드 영상지도</span>
+      <span class="ls-ov-state" id="vworldPhotoState">OFF</span>
+    </button>
+    <div class="ls-layer-note">※ 참고 레이어는 브이월드 제공 축척·지역에 따라 일부 구간에서 늦게 보이거나 보이지 않을 수 있습니다.</div>
   </div>
 </div>
 
@@ -830,7 +860,7 @@ var S = { map:null, marker:null, circle:null, pickMarker:null,
           heading:null, compassOn:false, isHybrid:true,
           destLat:null, destLng:null, destName:'',
           measureMode:'off', mPoints:[], mMarkers:[], mLabels:[], mLine:null, mPoly:null,
-          favMarkers:[], cadOverlay:null, cadOn:false, _cadIdle:null, _cadZoom:null, _cadMove:null, _cadTimer:null, _favIdle:null, _favTimer:null, cropLabelsOn:true,
+          favMarkers:[], cadOverlay:null, cadOn:false, vwOverlays:{}, vwLayerOn:{}, _vwLayerIdle:null, _vwLayerZoom:null, _vwLayerMove:null, _vwLayerTimer:null, vworldPhotoOn:false, _vworldPhotoReady:false, _prevMapTypeId:null, _cadIdle:null, _cadZoom:null, _cadMove:null, _cadTimer:null, _favIdle:null, _favTimer:null, cropLabelsOn:true,
           actLat:null, actLng:null, _amMove:null,
           naverReady:false, gpsOk:false, tapCount:0 };
 
@@ -1747,6 +1777,11 @@ window.setLayer = function(type){
   var map = { normal:M.NORMAL, satellite:M.SATELLITE, hybrid:M.HYBRID, terrain:M.TERRAIN };
   var label = { normal:'일반', satellite:'위성', hybrid:'위성+지명', terrain:'지형' };
   S.map.setMapTypeId(map[type] || M.HYBRID);
+  if(S.vworldPhotoOn){
+    S.vworldPhotoOn = false;
+    var vb = document.getElementById('vworldPhotoBtn'), vs = document.getElementById('vworldPhotoState');
+    if(vb) vb.classList.remove('active'); if(vs) vs.textContent = 'OFF';
+  }
   S.isHybrid = (type === 'hybrid' || type === 'satellite');
   /* 선택 표시 갱신 */
   document.querySelectorAll('#layer-modal .ls-opt').forEach(function(b){
@@ -1872,6 +1907,177 @@ function updateCadOverlay(){
   if(!ov.getMap()) ov.setMap(S.map);
   ov.setData(url, b);
 }
+
+/* ================================================================
+   브이월드 추가 WMS 레이어
+   - 행정경계: 시군구 / 읍면동 / 리
+   - 용도지역: 도시·관리·농림·자연환경보전지역
+   ※ 레이어명은 브이월드 WMS 표준 레이어명을 소문자로 사용한다.
+================================================================ */
+var VW_WMS_LAYERS = {
+  sigg:{ btn:'siggBtn', state:'siggState', label:'시군구 경계', layers:'lt_c_adsigg', styles:'lt_c_adsigg', minZoom:8, opacity:0.95 },
+  emd:{ btn:'emdBtn', state:'emdState', label:'읍면동 경계', layers:'lt_c_ademd', styles:'lt_c_ademd', minZoom:10, opacity:0.95 },
+  ri:{ btn:'riBtn', state:'riState', label:'리 경계', layers:'lt_c_adri', styles:'lt_c_adri', minZoom:12, opacity:0.95 },
+  usezone:{ btn:'usezoneBtn', state:'usezoneState', label:'토지이용/용도지역', layers:'lt_c_uq111,lt_c_uq112,lt_c_uq113,lt_c_uq114', styles:'lt_c_uq111,lt_c_uq112,lt_c_uq113,lt_c_uq114', minZoom:9, opacity:0.60 }
+};
+function ensureVwOverlay(key){
+  if(S.vwOverlays[key]) return S.vwOverlays[key];
+  function VwImg(){}
+  VwImg.prototype = new naver.maps.OverlayView();
+  VwImg.prototype.onAdd = function(){
+    var img = document.createElement('img');
+    img.style.cssText = 'position:absolute;pointer-events:none;opacity:1;user-select:none;-webkit-user-select:none;';
+    img.draggable = false;
+    this._img = img;
+    this.getPanes().overlayLayer.appendChild(img);
+  };
+  VwImg.prototype.draw = function(){
+    if(!this._img || !this._b) return;
+    var proj = this.getProjection();
+    var sw = proj.fromCoordToOffset(this._b.getSW());
+    var ne = proj.fromCoordToOffset(this._b.getNE());
+    var st = this._img.style;
+    st.left = Math.min(sw.x, ne.x) + 'px';
+    st.top = Math.min(sw.y, ne.y) + 'px';
+    st.width = Math.abs(ne.x - sw.x) + 'px';
+    st.height = Math.abs(sw.y - ne.y) + 'px';
+  };
+  VwImg.prototype.onRemove = function(){
+    if(this._img && this._img.parentNode) this._img.parentNode.removeChild(this._img);
+    this._img = null;
+  };
+  VwImg.prototype.setData = function(url, b, opacity){
+    if(!this._img) return;
+    var im = this._img, self = this;
+    if(im.getAttribute('data-url') !== url){
+      var pre = new Image();
+      pre.onload = function(){
+        self._b = b;
+        im.setAttribute('data-url', url);
+        im.src = url;
+        im.style.opacity = (opacity == null ? 1 : opacity);
+        im.style.visibility = 'visible';
+        self.draw();
+      };
+      pre.onerror = function(){ if(!im.getAttribute('data-url')) im.style.visibility = 'hidden'; };
+      pre.src = url;
+    } else {
+      this._b = b;
+      im.style.opacity = (opacity == null ? 1 : opacity);
+      im.style.visibility = 'visible';
+      this.draw();
+    }
+  };
+  S.vwOverlays[key] = new VwImg();
+  return S.vwOverlays[key];
+}
+function buildVwWmsUrl(cfg, bounds){
+  var sw = bounds.getSW(), ne = bounds.getNE();
+  var mapEl = document.getElementById('map');
+  var w = Math.max(320, Math.min(mapEl.clientWidth || 1024, 2048));
+  var h = Math.max(320, Math.min(mapEl.clientHeight || 1024, 2048));
+  var p1 = lngLatTo3857(sw.lat(), sw.lng());
+  var p2 = lngLatTo3857(ne.lat(), ne.lng());
+  var bbox = p1[0] + ',' + p1[1] + ',' + p2[0] + ',' + p2[1];
+  return 'https://api.vworld.kr/req/wms' +
+         '?SERVICE=WMS&REQUEST=GetMap&VERSION=1.3.0' +
+         '&LAYERS=' + encodeURIComponent(cfg.layers) +
+         '&STYLES=' + encodeURIComponent(cfg.styles) +
+         '&CRS=EPSG:900913&BBOX=' + bbox +
+         '&WIDTH=' + w + '&HEIGHT=' + h +
+         '&FORMAT=image/png&TRANSPARENT=true&EXCEPTIONS=BLANK' +
+         '&KEY=' + CFG.vworldKey +
+         '&DOMAIN=https://ubaldos00-ship-it.github.io';
+}
+function updateVworldWmsLayer(key){
+  if(!S.map || !S.vwLayerOn[key] || !CFG.vworldKey) return;
+  var cfg = VW_WMS_LAYERS[key]; if(!cfg) return;
+  var ov = ensureVwOverlay(key);
+  if(S.map.getZoom() < cfg.minZoom){
+    if(ov && ov._img) ov._img.style.visibility = 'hidden';
+    return;
+  }
+  var b = S.map.getBounds();
+  if(!ov.getMap()) ov.setMap(S.map);
+  ov.setData(buildVwWmsUrl(cfg, b), b, cfg.opacity);
+}
+function updateVworldWmsLayers(){
+  Object.keys(VW_WMS_LAYERS).forEach(function(k){ try{ updateVworldWmsLayer(k); }catch(e){ log('브이월드 레이어 갱신 오류 ' + k + ': ' + e.message, 'warn'); } });
+}
+function scheduleVworldWmsLayers(delay){
+  clearTimeout(S._vwLayerTimer);
+  S._vwLayerTimer = setTimeout(updateVworldWmsLayers, delay || 120);
+}
+function ensureVworldWmsEvents(){
+  if(!S.map) return;
+  if(!S._vwLayerIdle) S._vwLayerIdle = naver.maps.Event.addListener(S.map, 'idle', function(){ scheduleVworldWmsLayers(80); });
+  if(!S._vwLayerZoom) S._vwLayerZoom = naver.maps.Event.addListener(S.map, 'zoom_changed', function(){ scheduleVworldWmsLayers(160); });
+  if(!S._vwLayerMove) S._vwLayerMove = naver.maps.Event.addListener(S.map, 'dragend', function(){ scheduleVworldWmsLayers(100); });
+}
+function setVworldLayerUi(key, on){
+  var cfg = VW_WMS_LAYERS[key]; if(!cfg) return;
+  var btn = document.getElementById(cfg.btn), st = document.getElementById(cfg.state);
+  if(btn) btn.classList.toggle('active', !!on);
+  if(st) st.textContent = on ? 'ON' : 'OFF';
+}
+window.toggleVworldWmsLayer = function(key){
+  if(!S.map){ toast('지도 로딩 후 사용해주세요'); return; }
+  if(!CFG.vworldKey){ toast('브이월드 API 키가 필요합니다'); return; }
+  var cfg = VW_WMS_LAYERS[key]; if(!cfg) return;
+  S.vwLayerOn[key] = !S.vwLayerOn[key];
+  setVworldLayerUi(key, S.vwLayerOn[key]);
+  ensureVworldWmsEvents();
+  if(S.vwLayerOn[key]){
+    updateVworldWmsLayer(key);
+    toast('🗺 ' + cfg.label + ' 켜짐');
+  } else {
+    if(S.vwOverlays[key]) S.vwOverlays[key].setMap(null);
+    toast(cfg.label + ' 꺼짐');
+  }
+};
+
+/* 브이월드 영상지도(WMTS) — 필요 시 네이버 배경 대신 브이월드 영상 배경으로 전환 */
+function ensureVworldPhotoMapType(){
+  if(S._vworldPhotoReady || !S.map || !naver.maps.ImageMapType) return !!S._vworldPhotoReady;
+  try{
+    var imgType = new naver.maps.ImageMapType({
+      name:'VWorld Satellite',
+      minZoom:6,
+      maxZoom:19,
+      tileSize:new naver.maps.Size(256, 256),
+      getTileUrl:function(x, y, z){
+        if(typeof x === 'object'){ z = y; y = x.y; x = x.x; }
+        var zz = Math.max(6, Math.min(19, z));
+        return 'https://api.vworld.kr/req/wmts/1.0.0/' + CFG.vworldKey + '/Satellite/' + zz + '/' + y + '/' + x + '.jpeg';
+      }
+    });
+    S.map.mapTypes.set('vworld_satellite', imgType);
+    S._vworldPhotoReady = true;
+  }catch(e){
+    log('브이월드 영상지도 준비 실패: ' + e.message, 'warn');
+    S._vworldPhotoReady = false;
+  }
+  return !!S._vworldPhotoReady;
+}
+window.toggleVworldPhoto = function(){
+  if(!S.map){ toast('지도 로딩 후 사용해주세요'); return; }
+  if(!CFG.vworldKey){ toast('브이월드 API 키가 필요합니다'); return; }
+  var btn = document.getElementById('vworldPhotoBtn'), st = document.getElementById('vworldPhotoState');
+  if(!S.vworldPhotoOn){
+    if(!ensureVworldPhotoMapType()){ toast('브이월드 영상지도 준비 실패'); return; }
+    S._prevMapTypeId = S.map.getMapTypeId ? S.map.getMapTypeId() : naver.maps.MapTypeId.HYBRID;
+    S.map.setMapTypeId('vworld_satellite');
+    S.vworldPhotoOn = true;
+    if(btn) btn.classList.add('active'); if(st) st.textContent = 'ON';
+    toast('🛰 브이월드 영상지도 켜짐');
+  } else {
+    S.map.setMapTypeId(S._prevMapTypeId || naver.maps.MapTypeId.HYBRID);
+    S.vworldPhotoOn = false;
+    if(btn) btn.classList.remove('active'); if(st) st.textContent = 'OFF';
+    toast('브이월드 영상지도 꺼짐');
+  }
+};
+
 function scheduleCadOverlayUpdate(delay){
   if(!S.cadOn || !S.map) return;
   clearTimeout(S._cadTimer);
@@ -1883,6 +2089,7 @@ function scheduleStableLayerRefresh(delay){
     try{
       if(typeof refreshFavPins === 'function') refreshFavPins();
       if(S.cadOn) updateCadOverlay();
+      updateVworldWmsLayers();
     }catch(e){}
   }, delay || 160);
 }
