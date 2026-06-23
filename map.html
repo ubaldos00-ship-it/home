@@ -1,4 +1,4 @@
-<!-- map_v34_layer_stable.html · 저장: 2026-06-24 KST · 지도 확대/이동 시 브이월드·핀 레이어 안정화 -->
+<!-- map_v35_vworld_jibun_label.html · 저장: 2026-06-24 KST · 브이월드 지번 본번+부번 표시 및 라벨 확대 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1833,6 +1833,13 @@ function ensureCadOverlay(){
 /* 이 줌 미만이면 필지선이 빽빽해 뿌옇게 보이므로 지적도를 자동으로 숨김 (확대하면 자동 표시).
    더 확대해야 깨끗하면 숫자를 올리고, 더 축소에서도 보이려면 내리면 됨 */
 var MIN_CAD_ZOOM = 17;
+/* v35: 브이월드 지번 표시 보완
+   - 기존 lp_pa_cbnd_bubun 단독 사용 시 347-37 중 '37'처럼 부번만 보이는 경우가 있음
+   - 본번+부번 레이어를 함께 요청해서 347-37 형태가 보이도록 보완
+   - WMS는 이미지라 폰트 크기를 직접 지정하기 어려워, 요청 해상도를 1/2로 낮춘 뒤 전체 크기로 늘려 약 2배 크게 표시 */
+var CAD_WMS_LABEL_SCALE = 0.5;
+var CAD_WMS_LAYERS = 'lp_pa_cbnd_bonbun,lp_pa_cbnd_bubun';
+var CAD_WMS_STYLES = 'lp_pa_cbnd_bonbun,lp_pa_cbnd_bubun';
 function updateCadOverlay(){
   if(!S.cadOn || !CFG.vworldKey || !S.map) return;
   if(S.map.getZoom() < MIN_CAD_ZOOM){
@@ -1846,14 +1853,16 @@ function updateCadOverlay(){
   /* 1:1 해상도로 요청 (늘이거나 줄이지 않음)
      → ① 늘림에 의한 뿌염(흐릿함) 제거  ② dpr 2배로 줄여 그리던 때보다 지번 글자가 더 크게 보임
         ③ 축척이 과하게 커지지 않아 모든 줌 단계에서 표시됨 */
-  var w = Math.min(mapEl.clientWidth  || 1024, 2048);
-  var h = Math.min(mapEl.clientHeight || 1024, 2048);
+  var baseW = mapEl.clientWidth  || 1024;
+  var baseH = mapEl.clientHeight || 1024;
+  var w = Math.max(320, Math.min(Math.round(baseW * CAD_WMS_LABEL_SCALE), 2048));
+  var h = Math.max(320, Math.min(Math.round(baseH * CAD_WMS_LABEL_SCALE), 2048));
   var p1 = lngLatTo3857(sw.lat(), sw.lng());
   var p2 = lngLatTo3857(ne.lat(), ne.lng());
   var bbox = p1[0] + ',' + p1[1] + ',' + p2[0] + ',' + p2[1];   /* minx,miny,maxx,maxy */
   var url = 'https://api.vworld.kr/req/wms' +
             '?SERVICE=WMS&REQUEST=GetMap&VERSION=1.3.0' +
-            '&LAYERS=lp_pa_cbnd_bubun&STYLES=lp_pa_cbnd_bubun' +
+            '&LAYERS=' + CAD_WMS_LAYERS + '&STYLES=' + CAD_WMS_STYLES +
             '&CRS=EPSG:900913&BBOX=' + bbox +
             '&WIDTH=' + w + '&HEIGHT=' + h +
             '&FORMAT=image/png&TRANSPARENT=true&EXCEPTIONS=BLANK' +  /* 오류 시 노란 에러타일 대신 투명 처리(뿌염·노란필터 방지) */
