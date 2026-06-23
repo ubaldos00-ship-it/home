@@ -1,4 +1,4 @@
-<!-- map_v33_addr_fallback_color_keep.html · 저장: 2026-06-23 KST · 주소 fallback + 기존 핀 색상 유지 -->
+<!-- map_v34_layer_stable.html · 저장: 2026-06-24 KST · 지도 확대/이동 시 브이월드·핀 레이어 안정화 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -830,7 +830,7 @@ var S = { map:null, marker:null, circle:null, pickMarker:null,
           heading:null, compassOn:false, isHybrid:true,
           destLat:null, destLng:null, destName:'',
           measureMode:'off', mPoints:[], mMarkers:[], mLabels:[], mLine:null, mPoly:null,
-          favMarkers:[], cadOverlay:null, cadOn:false, _cadIdle:null, _cadZoom:null, cropLabelsOn:true,
+          favMarkers:[], cadOverlay:null, cadOn:false, _cadIdle:null, _cadZoom:null, _cadMove:null, _cadTimer:null, _favIdle:null, _favTimer:null, cropLabelsOn:true,
           actLat:null, actLng:null, _amMove:null,
           naverReady:false, gpsOk:false, tapCount:0 };
 
@@ -1198,7 +1198,10 @@ function renderMap(lat, lng, acc, skipMe){
         addMeasurePoint(e.coord);
       });
 
-      /* 지도 준비 직후, 저장돼 있던 즐겨찾기 핀을 모두 표시 */
+      /* 지도 준비 직후와 이동/확대 완료 후, 저장핀·작물명 라벨을 안정적으로 다시 확인 */
+      if(!S._favIdle){
+        S._favIdle = naver.maps.Event.addListener(S.map, 'idle', function(){ scheduleStableLayerRefresh(140); });
+      }
       setTimeout(function(){ try{ refreshFavPins(); }catch(_){} }, 400);
     } else {
       naver.maps.Event.trigger(S.map, 'resize');
@@ -1798,20 +1801,30 @@ function ensureCadOverlay(){
     this._img = null;
   };
   Cad.prototype.setData = function(url, b){
-    this._b = b;
     if(!this._img) return;
     var im = this._img;
-    if(im.src !== url){
-      /* 새 이미지가 로드될 때까지 숨겨서, 줌 중 이전 이미지가 늘어나
-         노란 경계선이 굵게 번지는(뿌염) 현상을 막는다 */
-      im.style.visibility = 'hidden';
-      im.onload  = function(){ im.style.visibility = 'visible'; };
-      im.onerror = function(){ im.style.visibility = 'hidden'; };
-      im.src = url;
+    /* v34: 새 브이월드 이미지가 완전히 로드되기 전까지 기존 이미지를 유지한다.
+       확대/이동 중 visibility:hidden 처리로 레이어가 깜빡이던 현상을 줄이기 위한 방식이다. */
+    if(im.getAttribute('data-url') !== url){
+      var self = this;
+      var pre = new Image();
+      pre.onload = function(){
+        self._b = b;
+        im.setAttribute('data-url', url);
+        im.src = url;
+        im.style.visibility = 'visible';
+        self.draw();
+      };
+      pre.onerror = function(){
+        /* 오류가 나도 기존 지적도 이미지는 유지한다. 기존 이미지가 없을 때만 숨긴다. */
+        if(!im.getAttribute('data-url')) im.style.visibility = 'hidden';
+      };
+      pre.src = url;
     } else {
+      this._b = b;
       im.style.visibility = 'visible';
+      this.draw();
     }
-    this.draw();
   };
   S.cadOverlay = new Cad();
   return S.cadOverlay;
@@ -1850,6 +1863,20 @@ function updateCadOverlay(){
   if(!ov.getMap()) ov.setMap(S.map);
   ov.setData(url, b);
 }
+function scheduleCadOverlayUpdate(delay){
+  if(!S.cadOn || !S.map) return;
+  clearTimeout(S._cadTimer);
+  S._cadTimer = setTimeout(function(){ try{ updateCadOverlay(); }catch(e){} }, delay || 90);
+}
+function scheduleStableLayerRefresh(delay){
+  clearTimeout(S._favTimer);
+  S._favTimer = setTimeout(function(){
+    try{
+      if(typeof refreshFavPins === 'function') refreshFavPins();
+      if(S.cadOn) updateCadOverlay();
+    }catch(e){}
+  }, delay || 160);
+}
 window.toggleCadastral = function(){
   if(!S.map){ toast('지도 로딩 후 사용해주세요'); return; }
   if(!S.cadOn){
@@ -1865,15 +1892,16 @@ window.toggleCadastral = function(){
     S._cadZoomHintShown = false;   /* 켤 때마다 줌 안내 1회 가능 */
     document.getElementById('cadastralBtn').classList.add('active');
     document.getElementById('cadState').textContent = 'ON';
-    /* 지도 이동/줌이 끝날 때마다 지적도 갱신 (1회만 등록) */
+    /* 지도 이동/줌이 끝날 때마다 지적도 갱신 (1회만 등록)
+       v34: 이동·확대 중 기존 레이어를 숨기지 않고, 끝난 뒤 짧게 한 번 더 갱신한다. */
     if(!S._cadIdle){
-      S._cadIdle = naver.maps.Event.addListener(S.map, 'idle', updateCadOverlay);
+      S._cadIdle = naver.maps.Event.addListener(S.map, 'idle', function(){ scheduleCadOverlayUpdate(60); scheduleStableLayerRefresh(120); });
     }
-    /* 줌 시작 즉시 기존 이미지를 숨겨 늘어남(노란 번짐) 방지 */
     if(!S._cadZoom){
-      S._cadZoom = naver.maps.Event.addListener(S.map, 'zoom_changed', function(){
-        if(S.cadOverlay && S.cadOverlay._img) S.cadOverlay._img.style.visibility = 'hidden';
-      });
+      S._cadZoom = naver.maps.Event.addListener(S.map, 'zoom_changed', function(){ scheduleCadOverlayUpdate(120); scheduleStableLayerRefresh(180); });
+    }
+    if(!S._cadMove){
+      S._cadMove = naver.maps.Event.addListener(S.map, 'dragend', function(){ scheduleCadOverlayUpdate(80); scheduleStableLayerRefresh(150); });
     }
     updateCadOverlay();
     toast('📐 지적도 겹쳐보기 켜짐');
@@ -2009,12 +2037,15 @@ function setFavs(arr){
 window.refreshFavPins = function(){
   if(!S.map || typeof naver === 'undefined') return;
   clearFavMarkers();
-  getFavs().forEach(function(f){
-    var ll = new naver.maps.LatLng(f.lat, f.lng);
-    var mk = new naver.maps.Marker({ map:S.map, position:ll, icon:favPinIcon(f.color) });
+  var favs = getFavs();
+  var posList = _favDisplayPositions(favs);
+  favs.forEach(function(f, idx){
+    var pos = posList[idx] || {lat:Number(f.lat), lng:Number(f.lng)};
+    var ll = new naver.maps.LatLng(pos.lat, pos.lng);
+    var mk = new naver.maps.Marker({ map:S.map, position:ll, icon:favPinIcon(f.color), zIndex:100 + idx });
     naver.maps.Event.addListener(mk, 'click', function(){ S.map.setCenter(ll); showFavInfo(f); });
     S.favMarkers.push(mk);
-    /* 작물명 표시 ON 이고 작물명이 있으면, 핀 옆에 상시 라벨을 함께 표시 */
+    /* 작물명 표시 ON 이고 작물명이 있으면, 전체보기/확대/이동 후에도 즉시 표시 */
     if(S.cropLabelsOn){
       var crop = favCropOf(f);
       if(crop){
@@ -2022,13 +2053,39 @@ window.refreshFavPins = function(){
           map:S.map, position:ll,
           icon:{ content:'<div class="crop-label" style="background:' + colorOf(f.color) + '">🌱 ' + escapeHtml(crop) + '</div>',
                  anchor:new naver.maps.Point(-14, 26) },
-          clickable:false, zIndex:50
+          clickable:false, zIndex:60 + idx
         });
         S.favMarkers.push(lbl);   /* clearFavMarkers 로 함께 제거됨 */
       }
     }
   });
 };
+/* 같은 필지·같은 좌표의 핀도 모두 보이도록 화면 표시 위치만 원형으로 살짝 분산한다.
+   저장 좌표는 절대 변경하지 않는다. */
+function _favDisplayPositions(favs){
+  var groups = {};
+  favs.forEach(function(f, i){
+    var lat = Number(f.lat), lng = Number(f.lng);
+    if(!isFinite(lat) || !isFinite(lng)) return;
+    var key = lat.toFixed(6) + ',' + lng.toFixed(6);   /* 약 10cm 단위 그룹 */
+    (groups[key] = groups[key] || []).push(i);
+  });
+  var out = favs.map(function(f){ return {lat:Number(f.lat), lng:Number(f.lng)}; });
+  Object.keys(groups).forEach(function(k){
+    var arr = groups[k];
+    if(arr.length <= 1) return;
+    var base = out[arr[0]];
+    var latRad = base.lat * Math.PI / 180;
+    var meters = 2.2;   /* 현장 핀 분리 거리: 저장좌표가 아닌 화면표시용 */
+    var dLat = meters / 111320;
+    var dLng = meters / (111320 * Math.max(0.25, Math.cos(latRad)));
+    arr.forEach(function(idx, j){
+      var ang = (Math.PI * 2 * j / arr.length) - Math.PI / 2;
+      out[idx] = { lat: base.lat + Math.sin(ang) * dLat, lng: base.lng + Math.cos(ang) * dLng };
+    });
+  });
+  return out;
+}
 /* 즐겨찾기에 연결된 작물명 추출 (명시적 crop 우선, 없으면 라벨 "작물 · 주소"에서) */
 function favCropOf(f){
   var crop = (f.crop || '').trim();
@@ -2307,16 +2364,14 @@ window.showAllFavs = function(){
   if(!S.map){ toast('지도 로딩 후 사용해주세요'); return; }
   var favs = getFavs();
   if(!favs.length){ toast('저장된 즐겨찾기가 없습니다'); return; }
-  clearFavMarkers();
   closeFavPanel();
+  /* v34: 전체보기에서도 일반 핀 표시 함수 하나만 사용한다.
+     그래야 같은 좌표 분산표시와 작물명 라벨 ON 상태가 항상 동일하게 적용된다. */
+  refreshFavPins();
   var bounds = new naver.maps.LatLngBounds();
   favs.forEach(function(f){
-    var ll = new naver.maps.LatLng(f.lat, f.lng);
-    bounds.extend(ll);
-    var mk = new naver.maps.Marker({ map:S.map, position:ll, icon:favPinIcon(f.color) });
-    /* 핀 탭하면 저장 제목 표시 */
-    naver.maps.Event.addListener(mk, 'click', function(){ S.map.setCenter(ll); showFavInfo(f); });
-    S.favMarkers.push(mk);
+    var lat = Number(f.lat), lng = Number(f.lng);
+    if(isFinite(lat) && isFinite(lng)) bounds.extend(new naver.maps.LatLng(lat, lng));
   });
   if(favs.length === 1){
     S.map.setCenter(new naver.maps.LatLng(favs[0].lat, favs[0].lng));
@@ -2324,6 +2379,7 @@ window.showAllFavs = function(){
   } else {
     S.map.fitBounds(bounds, { top:90, right:40, bottom:160, left:40 });
   }
+  setTimeout(function(){ try{ refreshFavPins(); if(S.cadOn) updateCadOverlay(); }catch(e){} }, 350);
   toast('⭐ 즐겨찾기 ' + favs.length + '곳 전체보기');
 };
 
