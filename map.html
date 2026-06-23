@@ -1655,9 +1655,52 @@ function fmtPyeong(m2){ return Math.round(m2 / 3.305785).toLocaleString(); }
    - 통합계산기에서 📍로 열었으면 window.opener 로 직접 입력
    - 아니면 클립보드에 복사
 ================================================================ */
+
+/* v45: 연결된 조사표 자료가 삭제된 지도 핀 안내/정리 */
+function _surveyStoragePrefix(app){
+  return (app === 'chungchi') ? 'chungchiSave_' : 'tonghabSave_';
+}
+function _surveyRecordExists(f){
+  if(!f || !f.surveyKey) return false;
+  try{ return !!localStorage.getItem(_surveyStoragePrefix(f.surveyApp) + f.surveyKey); }
+  catch(e){ return false; }
+}
+function _clearStaleSurveyLink(f){
+  if(!f || !f.surveyKey) return;
+  try{
+    var favs = getFavs();
+    var changed = false;
+    for(var i=0;i<favs.length;i++){
+      if(favs[i] && favs[i].surveyKey === f.surveyKey){
+        delete favs[i].surveyKey;
+        delete favs[i].surveyApp;
+        /* crop/label/addr/좌표/색상은 위치 정보로 남김 */
+        changed = true;
+      }
+    }
+    if(changed) setFavs(favs);
+  }catch(e){}
+  try{
+    if(window._curFav && window._curFav.surveyKey === f.surveyKey){
+      delete window._curFav.surveyKey;
+      delete window._curFav.surveyApp;
+    }
+  }catch(e){}
+}
+function _alertStaleSurveyAndClean(f){
+  alert('연결된 조사표 자료가 삭제되었거나 찾을 수 없습니다.\n\n지도 핀은 위치 정보로만 남기고, 조사표 연결정보는 정리했습니다.');
+  _clearStaleSurveyLink(f);
+  if(typeof _syncSurveyBtn === 'function') _syncSurveyBtn();
+  if(typeof refreshFavPins === 'function') refreshFavPins();
+}
+
 window.fillSurvey = function(){
   /* 풀왕복 연동: 즐겨찾기에 조사표 자료(surveyKey)가 연결돼 있으면 그 자료를 계산기에서 복원 */
   if(window._curFav && window._curFav.surveyKey){
+    if(!_surveyRecordExists(window._curFav)){
+      _alertStaleSurveyAndClean(window._curFav);
+      return;
+    }
     var app = (window._curFav.surveyApp === 'chungchi') ? 'chungchi' : 'tonghab';
     var url = 'https://ubaldos00-ship-it.github.io/home/' + app + '.html?load=' +
               encodeURIComponent(window._curFav.surveyKey);
@@ -2327,6 +2370,9 @@ function showFavInfo(f){
   /* 계산기 연동: 이 즐겨찾기에 조사표 자료(surveyKey)가 연결돼 있으면 기억 → 조사표 버튼으로 복원 */
   window._curFav = f;
   window._selFavKey = _favKey(f);   /* 즐겨찾기 목록에서 선택 항목 표시용 */
+  if(f && f.surveyKey && !_surveyRecordExists(f)){
+    setTimeout(function(){ _alertStaleSurveyAndClean(f); }, 80);
+  }
   _syncSurveyBtn();
   /* v33: 핀 클릭 시 작물명 팝업은 띄우지 않음 — 작물명 보기 라벨만 사용 */
   showInfoSheet();

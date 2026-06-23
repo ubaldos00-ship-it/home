@@ -8126,6 +8126,29 @@ function _queueMapSync(key){
     localStorage.setItem('tenar_map_bulk', JSON.stringify(q));
   }catch(e){}
 }
+
+/* v150: 조사표 삭제 시 연결된 지도 핀도 자동 삭제 */
+function _removeMapFavBySurveyKey(app, key){
+  if(!key) return 0;
+  var removed = 0;
+  try{
+    var favKey = 'tenar_map_favs_v1';
+    var favs = JSON.parse(localStorage.getItem(favKey) || '[]') || [];
+    var kept = [];
+    favs.forEach(function(f){
+      if(f && f.surveyKey === key && (!app || !f.surveyApp || f.surveyApp === app)) removed++;
+      else kept.push(f);
+    });
+    if(removed) localStorage.setItem(favKey, JSON.stringify(kept));
+  }catch(e){}
+  try{
+    var q = JSON.parse(localStorage.getItem('tenar_map_bulk') || '[]') || [];
+    q = q.filter(function(x){ return x && x.surveyKey !== key; });
+    localStorage.setItem('tenar_map_bulk', JSON.stringify(q));
+  }catch(e){}
+  return removed;
+}
+
 function saveCurrentData(){
   var d=_slCollect();
   var crop=d['__crop']||'unknown';
@@ -8142,7 +8165,7 @@ function saveCurrentData(){
   catch(e){alert('저장 실패: 저장 공간이 부족합니다.');return;}
   var list=_slGetList();
   list.unshift({key:key,label:label,ymd:ymd,hm:hh+':'+mm,crop:cropKo,addr:addrShort,yields:_slCollectYields()});
-  if(list.length>30){var rm=list.splice(30);rm.forEach(function(r){try{localStorage.removeItem(SL_DATA_PFX+r.key);}catch(e){}});}
+  if(list.length>30){var rm=list.splice(30);rm.forEach(function(r){try{localStorage.removeItem(SL_DATA_PFX+r.key);}catch(e){} _removeMapFavBySurveyKey('tonghab', r.key);});}
   _slSetList(list);
   _queueMapSync(key);   /* 지도 자동반영 대기열 등록 */
   _slLastLoadedKey = key; /* v133: 방금 저장한 항목을 다음 오픈 시 자동 선택 */
@@ -8183,6 +8206,7 @@ function deleteSavedData(key){
   if(chk&&chk.fav){alert('🔒 잠금 해제 후 삭제하세요.');return;}
   if(!confirm('이 저장 자료를 삭제할까요?'))return;
   try{localStorage.removeItem(SL_DATA_PFX+key);}catch(e){}
+  _removeMapFavBySurveyKey('tonghab', key);
   _slSetList(_slGetList().filter(function(i){return i.key!==key;}));
   if(_slSelectedKey===key) _slSelectedKey=null;
   if(_slLastLoadedKey===key) _slLastLoadedKey=null; /* v133 */
@@ -8301,6 +8325,7 @@ function deleteAllUnlocked_sl(){
   var list=_slGetList();
   list.filter(function(i){return !i.fav;}).forEach(function(i){
     try{localStorage.removeItem(SL_DATA_PFX+i.key);}catch(e){}
+    _removeMapFavBySurveyKey('tonghab', i.key);
   });
   var kept=list.filter(function(i){return i.fav;});
   _slSetList(kept);
