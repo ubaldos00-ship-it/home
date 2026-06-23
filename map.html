@@ -830,7 +830,7 @@ var S = { map:null, marker:null, circle:null, pickMarker:null,
           heading:null, compassOn:false, isHybrid:true,
           destLat:null, destLng:null, destName:'',
           measureMode:'off', mPoints:[], mMarkers:[], mLabels:[], mLine:null, mPoly:null,
-          favMarkers:[], cadOverlay:null, cadOn:false, _cadIdle:null, _cadZoom:null, _cadMove:null, _cadTimer:null, _favIdle:null, _favTimer:null, cropLabelsOn:true,
+          favMarkers:[], cadOverlay:null, cadOn:false, _cadIdle:null, _cadZoom:null, _cadMove:null, _cadCenter:null, _cadBounds:null, _cadTimer:null, _cadTailTimers:[], _favIdle:null, _favTimer:null, _layerWatch:null, cropLabelsOn:true,
           actLat:null, actLng:null, _amMove:null,
           naverReady:false, gpsOk:false, tapCount:0 };
 
@@ -1198,11 +1198,18 @@ function renderMap(lat, lng, acc, skipMe){
         addMeasurePoint(e.coord);
       });
 
-      /* 지도 준비 직후와 이동/확대 완료 후, 저장핀·작물명 라벨을 안정적으로 다시 확인 */
+      /* 지도 준비 직후와 이동/확대 완료 후, 저장핀·브이월드 레이어를 안정적으로 다시 확인 */
       if(!S._favIdle){
-        S._favIdle = naver.maps.Event.addListener(S.map, 'idle', function(){ scheduleStableLayerRefresh(140); });
+        S._favIdle = naver.maps.Event.addListener(S.map, 'idle', function(){ scheduleStableLayerRefresh(120); });
       }
-      setTimeout(function(){ try{ refreshFavPins(); }catch(_){} }, 400);
+      if(!S._cadCenter){
+        S._cadCenter = naver.maps.Event.addListener(S.map, 'center_changed', function(){ scheduleStableLayerRefresh(360); });
+      }
+      if(!S._cadBounds){
+        S._cadBounds = naver.maps.Event.addListener(S.map, 'bounds_changed', function(){ scheduleStableLayerRefresh(480); });
+      }
+      startLayerWatchdog();
+      setTimeout(function(){ try{ refreshFavPins(); scheduleLayerTailRefresh(); }catch(_){} }, 400);
     } else {
       naver.maps.Event.trigger(S.map, 'resize');
       S.map.setCenter(pos);
@@ -1807,8 +1814,12 @@ function ensureCadOverlay(){
        확대/이동 중 visibility:hidden 처리로 레이어가 깜빡이던 현상을 줄이기 위한 방식이다. */
     if(im.getAttribute('data-url') !== url){
       var self = this;
+      self._reqSeq = (self._reqSeq || 0) + 1;
+      var seq = self._reqSeq;
       var pre = new Image();
       pre.onload = function(){
+        /* v36: 빠르게 이동/확대할 때 이전 요청이 늦게 도착해 최신 레이어를 덮지 않도록 방지 */
+        if(seq !== self._reqSeq) return;
         self._b = b;
         im.setAttribute('data-url', url);
         im.src = url;
@@ -1816,6 +1827,7 @@ function ensureCadOverlay(){
         self.draw();
       };
       pre.onerror = function(){
+        if(seq !== self._reqSeq) return;
         /* 오류가 나도 기존 지적도 이미지는 유지한다. 기존 이미지가 없을 때만 숨긴다. */
         if(!im.getAttribute('data-url')) im.style.visibility = 'hidden';
       };
@@ -1838,8 +1850,63 @@ var MIN_CAD_ZOOM = 17;
    - 본번+부번 레이어를 함께 요청해서 347-37 형태가 보이도록 보완
    - WMS는 이미지라 폰트 크기를 직접 지정하기 어려워, 요청 해상도를 1/2로 낮춘 뒤 전체 크기로 늘려 약 2배 크게 표시 */
 var CAD_WMS_LABEL_SCALE = 0.5;
+/* v36: 확대·이동 중 화면 가장자리에서 브이월드가 비는 현상 방지용 여유 범위.
+   현재 화면보다 넓은 영역의 WMS 이미지를 받아 작은 이동에도 기존 레이어가 계속 덮도록 한다. */
+var CAD_BOUNDS_PAD_RATIO = 0.42;
 var CAD_WMS_LAYERS = 'lp_pa_cbnd_bonbun,lp_pa_cbnd_bubun';
 var CAD_WMS_STYLES = 'lp_pa_cbnd_bonbun,lp_pa_cbnd_bubun';
+function paddedCadBounds(b){
+  try{
+    var sw = b.getSW(), ne = b.getNE();
+    var latPad = Math.abs(ne.lat() - sw.lat()) * CAD_BOUNDS_PAD_RATIO;
+    var lngPad = Math.abs(ne.lng() - sw.lng()) * CAD_BOUNDS_PAD_RATIO;
+    var psw = new naver.maps.LatLng(sw.lat() - latPad, sw.lng() - lngPad);
+    var pne = new naver.maps.LatLng(ne.lat() + latPad, ne.lng() + lngPad);
+    return new naver.maps.LatLngBounds(psw, pne);
+  }catch(e){ return b; }
+}
+function cadOverlayNeedsRepair(){
+  if(!S.cadOn || !S.cadOverlay || !S.cadOverlay._img) return true;
+  var im = S.cadOverlay._img;
+  if(!S.cadOverlay.getMap || !S.cadOverlay.getMap()) return true;
+  if(im.style.visibility === 'hidden') return true;
+  if(!im.getAttribute('data-url')) return true;
+  var r = im.getBoundingClientRect ? im.getBoundingClientRect() : null;
+  if(r && (r.width < 20 || r.height < 20)) return true;
+  return false;
+}
+function favPinsNeedRepair(){
+  var favs = getFavs ? getFavs() : [];
+  if(!favs.length) return false;
+  var need = favs.length;
+  if(S.cropLabelsOn){
+    favs.forEach(function(f){ if(favCropOf(f)) need++; });
+  }
+  return !S.favMarkers || S.favMarkers.length < need;
+}
+function scheduleLayerTailRefresh(){
+  if(!S.map) return;
+  (S._cadTailTimers || []).forEach(function(t){ clearTimeout(t); });
+  S._cadTailTimers = [];
+  [220, 650, 1200].forEach(function(ms){
+    S._cadTailTimers.push(setTimeout(function(){
+      try{
+        if(favPinsNeedRepair()) refreshFavPins();
+        if(S.cadOn) updateCadOverlay();
+      }catch(e){}
+    }, ms));
+  });
+}
+function startLayerWatchdog(){
+  if(S._layerWatch) return;
+  S._layerWatch = setInterval(function(){
+    try{
+      if(!S.map) return;
+      if(favPinsNeedRepair()) refreshFavPins();
+      if(S.cadOn && cadOverlayNeedsRepair()) updateCadOverlay();
+    }catch(e){}
+  }, 1800);
+}
 function updateCadOverlay(){
   if(!S.cadOn || !CFG.vworldKey || !S.map) return;
   if(S.map.getZoom() < MIN_CAD_ZOOM){
@@ -1847,7 +1914,8 @@ function updateCadOverlay(){
     if(!S._cadZoomHintShown){ toast('🔎 확대하면 지적도가 또렷하게 표시됩니다'); S._cadZoomHintShown = true; }
     return;
   }
-  var b  = S.map.getBounds();
+  var rawB = S.map.getBounds();
+  var b  = paddedCadBounds(rawB);
   var sw = b.getSW(), ne = b.getNE();
   var mapEl = document.getElementById('map');
   /* 1:1 해상도로 요청 (늘이거나 줄이지 않음)
@@ -1881,8 +1949,9 @@ function scheduleStableLayerRefresh(delay){
   clearTimeout(S._favTimer);
   S._favTimer = setTimeout(function(){
     try{
-      if(typeof refreshFavPins === 'function') refreshFavPins();
+      if(favPinsNeedRepair()) refreshFavPins();
       if(S.cadOn) updateCadOverlay();
+      scheduleLayerTailRefresh();
     }catch(e){}
   }, delay || 160);
 }
@@ -1904,13 +1973,13 @@ window.toggleCadastral = function(){
     /* 지도 이동/줌이 끝날 때마다 지적도 갱신 (1회만 등록)
        v34: 이동·확대 중 기존 레이어를 숨기지 않고, 끝난 뒤 짧게 한 번 더 갱신한다. */
     if(!S._cadIdle){
-      S._cadIdle = naver.maps.Event.addListener(S.map, 'idle', function(){ scheduleCadOverlayUpdate(60); scheduleStableLayerRefresh(120); });
+      S._cadIdle = naver.maps.Event.addListener(S.map, 'idle', function(){ scheduleCadOverlayUpdate(40); scheduleStableLayerRefresh(100); scheduleLayerTailRefresh(); });
     }
     if(!S._cadZoom){
-      S._cadZoom = naver.maps.Event.addListener(S.map, 'zoom_changed', function(){ scheduleCadOverlayUpdate(120); scheduleStableLayerRefresh(180); });
+      S._cadZoom = naver.maps.Event.addListener(S.map, 'zoom_changed', function(){ scheduleCadOverlayUpdate(80); scheduleStableLayerRefresh(140); scheduleLayerTailRefresh(); });
     }
     if(!S._cadMove){
-      S._cadMove = naver.maps.Event.addListener(S.map, 'dragend', function(){ scheduleCadOverlayUpdate(80); scheduleStableLayerRefresh(150); });
+      S._cadMove = naver.maps.Event.addListener(S.map, 'dragend', function(){ scheduleCadOverlayUpdate(50); scheduleStableLayerRefresh(120); scheduleLayerTailRefresh(); });
     }
     updateCadOverlay();
     toast('📐 지적도 겹쳐보기 켜짐');
@@ -2388,7 +2457,7 @@ window.showAllFavs = function(){
   } else {
     S.map.fitBounds(bounds, { top:90, right:40, bottom:160, left:40 });
   }
-  setTimeout(function(){ try{ refreshFavPins(); if(S.cadOn) updateCadOverlay(); }catch(e){} }, 350);
+  setTimeout(function(){ try{ refreshFavPins(); if(S.cadOn) updateCadOverlay(); scheduleLayerTailRefresh(); }catch(e){} }, 350);
   toast('⭐ 즐겨찾기 ' + favs.length + '곳 전체보기');
 };
 
