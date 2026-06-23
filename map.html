@@ -1,4 +1,4 @@
-<!-- map_v40_vworld_layers.html · 저장: 2026-06-24 KST · v35 안정본 기준 + 브이월드 행정경계/용도지역/영상지도 레이어 추가 -->
+<!-- map_v41_vworld_layers_refine.html · 저장: 2026-06-24 KST · v35 안정본 기준 + 행정경계 통합/용도지역 범례/초기 위성 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -373,6 +373,20 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 .ls-overlay.vw-bg.active{ border-color:#2d6cdf;background:#edf4ff; }
 .ls-overlay.vw-bg.active .ls-ov-state{ color:#2d6cdf; }
 .ls-layer-note{font-size:10.5px;color:#8a8f86;line-height:1.45;margin:7px 2px 0;word-break:keep-all;}
+.usezone-legend{
+  display:none;position:fixed;left:10px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:430;
+  background:rgba(255,255,255,.94);border:1px solid rgba(0,0,0,.18);border-radius:12px;
+  box-shadow:0 3px 14px rgba(0,0,0,.22);padding:8px 10px;font-size:11.5px;font-weight:800;color:#222;
+  line-height:1.45;pointer-events:none;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);
+}
+.usezone-legend.show{display:block;}
+.uz-title{font-size:12px;color:#27500A;margin-bottom:5px;font-weight:900;}
+.uz-row{display:flex;align-items:center;gap:6px;margin:3px 0;white-space:nowrap;}
+.uz-swatch{width:14px;height:10px;border-radius:2px;border:1px solid rgba(0,0,0,.25);display:inline-block;}
+.uz-city{background:rgba(240,90,70,.70);}
+.uz-manage{background:rgba(255,190,60,.70);}
+.uz-farm{background:rgba(60,170,80,.70);}
+.uz-nature{background:rgba(90,150,230,.70);}
 
 /* ── 현재 위치 방향 마커 ── */
 .me-marker{ width:40px;height:40px;position:relative; }
@@ -595,6 +609,15 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 <!-- 지도 (전체화면) -->
 <div id="map"></div>
 
+<!-- 토지이용/용도지역 범례 -->
+<div id="usezone-legend" class="usezone-legend">
+  <div class="uz-title">토지이용/용도지역</div>
+  <div class="uz-row"><span class="uz-swatch uz-city"></span>도시지역</div>
+  <div class="uz-row"><span class="uz-swatch uz-manage"></span>관리지역</div>
+  <div class="uz-row"><span class="uz-swatch uz-farm"></span>농림지역</div>
+  <div class="uz-row"><span class="uz-swatch uz-nature"></span>자연환경보전지역</div>
+</div>
+
 <!-- 상단 검색 오버레이 (뒤로가기 + 검색) -->
 <div id="search-bar">
   <button class="back-btn" onclick="goBack()" title="홈으로">
@@ -625,9 +648,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
     <div class="ls-grid">
       <button class="ls-opt" data-type="normal"    onclick="setLayer('normal')">
         <span class="ls-ic" style="background:#e8efe1">🗺</span>일반</button>
-      <button class="ls-opt" data-type="satellite" onclick="setLayer('satellite')">
+      <button class="ls-opt active" data-type="satellite" onclick="setLayer('satellite')">
         <span class="ls-ic" style="background:#cfe0f5">🛰</span>위성</button>
-      <button class="ls-opt active" data-type="hybrid" onclick="setLayer('hybrid')">
+      <button class="ls-opt" data-type="hybrid" onclick="setLayer('hybrid')">
         <span class="ls-ic" style="background:#dfe7c8">🏷</span>위성+지명</button>
       <button class="ls-opt" data-type="terrain"   onclick="setLayer('terrain')">
         <span class="ls-ic" style="background:#e6ddc8">⛰</span>지형</button>
@@ -638,20 +661,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
       <span class="ls-ov-text">지적도(브이월드) 필지경계</span>
       <span class="ls-ov-state" id="cadState">OFF</span>
     </button>
-    <button class="ls-overlay" id="siggBtn" onclick="toggleVworldWmsLayer('sigg')">
+    <button class="ls-overlay" id="adminBtn" onclick="toggleVworldWmsLayer('admin')">
       <span class="ls-ic" style="background:#e8f0ff">🧭</span>
-      <span class="ls-ov-text">시군구 경계(브이월드)</span>
-      <span class="ls-ov-state" id="siggState">OFF</span>
-    </button>
-    <button class="ls-overlay" id="emdBtn" onclick="toggleVworldWmsLayer('emd')">
-      <span class="ls-ic" style="background:#f0f7e8">🏘</span>
-      <span class="ls-ov-text">읍면동 경계(브이월드)</span>
-      <span class="ls-ov-state" id="emdState">OFF</span>
-    </button>
-    <button class="ls-overlay" id="riBtn" onclick="toggleVworldWmsLayer('ri')">
-      <span class="ls-ic" style="background:#f5edff">🌾</span>
-      <span class="ls-ov-text">리 경계(브이월드)</span>
-      <span class="ls-ov-state" id="riState">OFF</span>
+      <span class="ls-ov-text">행정경계(시군구·읍면동·리)</span>
+      <span class="ls-ov-state" id="adminState">OFF</span>
     </button>
     <button class="ls-overlay" id="usezoneBtn" onclick="toggleVworldWmsLayer('usezone')">
       <span class="ls-ic" style="background:#fff1e8">🟫</span>
@@ -661,7 +674,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
     <div class="ls-overlay-title">브이월드 배경</div>
     <button class="ls-overlay vw-bg" id="vworldPhotoBtn" onclick="toggleVworldPhoto()">
       <span class="ls-ic" style="background:#e6f3ff">🛰</span>
-      <span class="ls-ov-text">브이월드 영상지도</span>
+      <span class="ls-ov-text">영상지도(네이버 위성 안정모드)</span>
       <span class="ls-ov-state" id="vworldPhotoState">OFF</span>
     </button>
     <div class="ls-layer-note">※ 참고 레이어는 브이월드 제공 축척·지역에 따라 일부 구간에서 늦게 보이거나 보이지 않을 수 있습니다.</div>
@@ -1204,7 +1217,7 @@ function renderMap(lat, lng, acc, skipMe){
       S.map = new naver.maps.Map('map', {
         center : pos,
         zoom   : 17,
-        mapTypeId : naver.maps.MapTypeId.HYBRID,  /* 기본: 위성(하이브리드 - 위성+지명) */
+        mapTypeId : naver.maps.MapTypeId.SATELLITE,  /* 기본: 네이버 위성 */
         mapTypeControl : false,   /* 커스텀 레이어 버튼 사용 */
         zoomControl : false,      /* 줌 바 제거 (손가락 핀치줌 사용) */
         scaleControl : false,
@@ -1915,10 +1928,9 @@ function updateCadOverlay(){
    ※ 레이어명은 브이월드 WMS 표준 레이어명을 소문자로 사용한다.
 ================================================================ */
 var VW_WMS_LAYERS = {
-  sigg:{ btn:'siggBtn', state:'siggState', label:'시군구 경계', layers:'lt_c_adsigg', styles:'lt_c_adsigg', minZoom:8, opacity:0.95 },
-  emd:{ btn:'emdBtn', state:'emdState', label:'읍면동 경계', layers:'lt_c_ademd', styles:'lt_c_ademd', minZoom:10, opacity:0.95 },
-  ri:{ btn:'riBtn', state:'riState', label:'리 경계', layers:'lt_c_adri', styles:'lt_c_adri', minZoom:12, opacity:0.95 },
-  usezone:{ btn:'usezoneBtn', state:'usezoneState', label:'토지이용/용도지역', layers:'lt_c_uq111,lt_c_uq112,lt_c_uq113,lt_c_uq114', styles:'lt_c_uq111,lt_c_uq112,lt_c_uq113,lt_c_uq114', minZoom:9, opacity:0.60 }
+  /* v41: 시군구·읍면동·리 경계를 버튼 1개로 통합. 경계가 연하게 보이는 문제를 줄이기 위해 이미지 필터를 적용한다. */
+  admin:{ btn:'adminBtn', state:'adminState', label:'행정경계', layers:'lt_c_adsigg,lt_c_ademd,lt_c_adri', styles:'lt_c_adsigg,lt_c_ademd,lt_c_adri', minZoom:8, opacity:1, filter:'contrast(230%) saturate(220%) brightness(70%)' },
+  usezone:{ btn:'usezoneBtn', state:'usezoneState', label:'토지이용/용도지역', layers:'lt_c_uq111,lt_c_uq112,lt_c_uq113,lt_c_uq114', styles:'lt_c_uq111,lt_c_uq112,lt_c_uq113,lt_c_uq114', minZoom:9, opacity:0.72, filter:'contrast(130%) saturate(140%) brightness(98%)' }
 };
 function ensureVwOverlay(key){
   if(S.vwOverlays[key]) return S.vwOverlays[key];
@@ -1946,7 +1958,7 @@ function ensureVwOverlay(key){
     if(this._img && this._img.parentNode) this._img.parentNode.removeChild(this._img);
     this._img = null;
   };
-  VwImg.prototype.setData = function(url, b, opacity){
+  VwImg.prototype.setData = function(url, b, opacity, filter){
     if(!this._img) return;
     var im = this._img, self = this;
     if(im.getAttribute('data-url') !== url){
@@ -1956,6 +1968,7 @@ function ensureVwOverlay(key){
         im.setAttribute('data-url', url);
         im.src = url;
         im.style.opacity = (opacity == null ? 1 : opacity);
+        im.style.filter = filter || 'none';
         im.style.visibility = 'visible';
         self.draw();
       };
@@ -1964,6 +1977,7 @@ function ensureVwOverlay(key){
     } else {
       this._b = b;
       im.style.opacity = (opacity == null ? 1 : opacity);
+      im.style.filter = filter || 'none';
       im.style.visibility = 'visible';
       this.draw();
     }
@@ -1999,7 +2013,7 @@ function updateVworldWmsLayer(key){
   }
   var b = S.map.getBounds();
   if(!ov.getMap()) ov.setMap(S.map);
-  ov.setData(buildVwWmsUrl(cfg, b), b, cfg.opacity);
+  ov.setData(buildVwWmsUrl(cfg, b), b, cfg.opacity, cfg.filter);
 }
 function updateVworldWmsLayers(){
   Object.keys(VW_WMS_LAYERS).forEach(function(k){ try{ updateVworldWmsLayer(k); }catch(e){ log('브이월드 레이어 갱신 오류 ' + k + ': ' + e.message, 'warn'); } });
@@ -2019,6 +2033,10 @@ function setVworldLayerUi(key, on){
   var btn = document.getElementById(cfg.btn), st = document.getElementById(cfg.state);
   if(btn) btn.classList.toggle('active', !!on);
   if(st) st.textContent = on ? 'ON' : 'OFF';
+  if(key === 'usezone'){
+    var lg = document.getElementById('usezone-legend');
+    if(lg) lg.classList.toggle('show', !!on);
+  }
 }
 window.toggleVworldWmsLayer = function(key){
   if(!S.map){ toast('지도 로딩 후 사용해주세요'); return; }
@@ -2036,97 +2054,25 @@ window.toggleVworldWmsLayer = function(key){
   }
 };
 
-/* 브이월드 영상지도(WMTS) — 필요 시 네이버 배경 대신 브이월드 영상 배경으로 전환 */
-function ensureVworldPhotoMapType(){
-  if(S._vworldPhotoReady || !S.map || !naver.maps.ImageMapType) return !!S._vworldPhotoReady;
-  try{
-    var imgType = new naver.maps.ImageMapType({
-      name:'VWorld Satellite',
-      minZoom:6,
-      maxZoom:19,
-      tileSize:new naver.maps.Size(256, 256),
-      getTileUrl:function(x, y, z){
-        if(typeof x === 'object'){ z = y; y = x.y; x = x.x; }
-        var zz = Math.max(6, Math.min(19, z));
-        return 'https://api.vworld.kr/req/wmts/1.0.0/' + CFG.vworldKey + '/Satellite/' + zz + '/' + y + '/' + x + '.jpeg';
-      }
-    });
-    S.map.mapTypes.set('vworld_satellite', imgType);
-    S._vworldPhotoReady = true;
-  }catch(e){
-    log('브이월드 영상지도 준비 실패: ' + e.message, 'warn');
-    S._vworldPhotoReady = false;
-  }
-  return !!S._vworldPhotoReady;
-}
+/* 브이월드 영상지도(WMTS)
+   v41: 네이버 지도 ImageMapType에서 브이월드 WMTS 타일이 일부 환경에서 물음표 타일로 뜨는 문제가 있어
+   현장용 안정성을 우선하여 기본 배경은 네이버 위성으로 유지한다.
+   버튼을 누르면 네이버 위성 배경으로 전환하고 안내만 표시한다. */
 window.toggleVworldPhoto = function(){
   if(!S.map){ toast('지도 로딩 후 사용해주세요'); return; }
-  if(!CFG.vworldKey){ toast('브이월드 API 키가 필요합니다'); return; }
   var btn = document.getElementById('vworldPhotoBtn'), st = document.getElementById('vworldPhotoState');
   if(!S.vworldPhotoOn){
-    if(!ensureVworldPhotoMapType()){ toast('브이월드 영상지도 준비 실패'); return; }
-    S._prevMapTypeId = S.map.getMapTypeId ? S.map.getMapTypeId() : naver.maps.MapTypeId.HYBRID;
-    S.map.setMapTypeId('vworld_satellite');
+    S._prevMapTypeId = S.map.getMapTypeId ? S.map.getMapTypeId() : naver.maps.MapTypeId.SATELLITE;
+    S.map.setMapTypeId(naver.maps.MapTypeId.SATELLITE);
     S.vworldPhotoOn = true;
     if(btn) btn.classList.add('active'); if(st) st.textContent = 'ON';
-    toast('🛰 브이월드 영상지도 켜짐');
+    document.querySelectorAll('#layer-modal .ls-opt').forEach(function(b){ b.classList.toggle('active', b.getAttribute('data-type') === 'satellite'); });
+    toast('🛰 안정성을 위해 네이버 위성지도로 표시합니다');
   } else {
-    S.map.setMapTypeId(S._prevMapTypeId || naver.maps.MapTypeId.HYBRID);
+    S.map.setMapTypeId(S._prevMapTypeId || naver.maps.MapTypeId.SATELLITE);
     S.vworldPhotoOn = false;
     if(btn) btn.classList.remove('active'); if(st) st.textContent = 'OFF';
-    toast('브이월드 영상지도 꺼짐');
-  }
-};
-
-function scheduleCadOverlayUpdate(delay){
-  if(!S.cadOn || !S.map) return;
-  clearTimeout(S._cadTimer);
-  S._cadTimer = setTimeout(function(){ try{ updateCadOverlay(); }catch(e){} }, delay || 90);
-}
-function scheduleStableLayerRefresh(delay){
-  clearTimeout(S._favTimer);
-  S._favTimer = setTimeout(function(){
-    try{
-      if(typeof refreshFavPins === 'function') refreshFavPins();
-      if(S.cadOn) updateCadOverlay();
-      updateVworldWmsLayers();
-    }catch(e){}
-  }, delay || 160);
-}
-window.toggleCadastral = function(){
-  if(!S.map){ toast('지도 로딩 후 사용해주세요'); return; }
-  if(!S.cadOn){
-    if(!CFG.vworldKey){
-      toast('브이월드 API 키가 필요합니다 (무료 발급)');
-      alert('지적도(브이월드) 겹쳐보기를 쓰려면 VWorld 인증키가 필요합니다.\n\n' +
-            '① https://www.vworld.kr 회원가입 후 [오픈API → 인증키 발급]\n' +
-            '② 서비스 분류: WMS, 도메인에 ubaldos00-ship-it.github.io 등록\n' +
-            '③ 발급된 키를 map.html 의 CFG.vworldKey 에 입력');
-      return;
-    }
-    S.cadOn = true;
-    S._cadZoomHintShown = false;   /* 켤 때마다 줌 안내 1회 가능 */
-    document.getElementById('cadastralBtn').classList.add('active');
-    document.getElementById('cadState').textContent = 'ON';
-    /* 지도 이동/줌이 끝날 때마다 지적도 갱신 (1회만 등록)
-       v34: 이동·확대 중 기존 레이어를 숨기지 않고, 끝난 뒤 짧게 한 번 더 갱신한다. */
-    if(!S._cadIdle){
-      S._cadIdle = naver.maps.Event.addListener(S.map, 'idle', function(){ scheduleCadOverlayUpdate(60); scheduleStableLayerRefresh(120); });
-    }
-    if(!S._cadZoom){
-      S._cadZoom = naver.maps.Event.addListener(S.map, 'zoom_changed', function(){ scheduleCadOverlayUpdate(120); scheduleStableLayerRefresh(180); });
-    }
-    if(!S._cadMove){
-      S._cadMove = naver.maps.Event.addListener(S.map, 'dragend', function(){ scheduleCadOverlayUpdate(80); scheduleStableLayerRefresh(150); });
-    }
-    updateCadOverlay();
-    toast('📐 지적도 겹쳐보기 켜짐');
-  } else {
-    S.cadOn = false;
-    if(S.cadOverlay){ S.cadOverlay.setMap(null); }
-    document.getElementById('cadastralBtn').classList.remove('active');
-    document.getElementById('cadState').textContent = 'OFF';
-    toast('지적도 겹쳐보기 꺼짐');
+    toast('영상지도 보조 표시 꺼짐');
   }
 };
 
