@@ -1,4 +1,4 @@
-<!-- map_v29_coord_sync.html · 저장: 2026-06-23 16:00 KST · 조사표 연동 좌표 우선 저장(lat/lng) 보완 -->
+<!-- map_v30_coord_sync.html · 저장: 2026-06-23 16:00 KST · 조사표 연동 좌표 우선 저장(lat/lng) 보완 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1671,12 +1671,26 @@ window.copyInfoAddr = function(){
 var _spAddr = '';
 var _spLat = null, _spLng = null;
 window.closeSurveyPick = function(){ document.getElementById('survey-pick-modal').classList.remove('show'); };
+function _makeCoordToken(){
+  return 'mc_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,10);
+}
+function _savePendingSurveyCoord(app, addr, lat, lng, token){
+  try{
+    if(!isFinite(lat) || !isFinite(lng)) return;
+    localStorage.setItem('tenar_pending_survey_coord', JSON.stringify({
+      token: token || '', app: app || '', addr: addr || '', lat: Number(lat), lng: Number(lng), ts: Date.now()
+    }));
+  }catch(e){}
+}
 window.pickSurvey = function(app){
   closeSurveyPick();
   var a = (app === 'chungchi') ? 'chungchi' : 'tonghab';
+  var coordToken = _makeCoordToken();
   var url = 'https://ubaldos00-ship-it.github.io/home/' + a + '.html?addr=' + encodeURIComponent(_spAddr);
   if(isFinite(_spLat) && isFinite(_spLng)){
-    url += '&lat=' + encodeURIComponent(_spLat.toFixed(8)) + '&lng=' + encodeURIComponent(_spLng.toFixed(8));
+    _savePendingSurveyCoord(a, _spAddr, _spLat, _spLng, coordToken);
+    url += '&lat=' + encodeURIComponent(_spLat.toFixed(8)) + '&lng=' + encodeURIComponent(_spLng.toFixed(8))
+        + '&coordToken=' + encodeURIComponent(coordToken);
   }
   /* 계산기에서 📍로 열었으면 그 창(opener)에 바로 주소 입력, 아니면 새로 연다 */
   try{
@@ -1984,10 +1998,24 @@ function setFavs(arr){
 window.refreshFavPins = function(){
   if(!S.map || typeof naver === 'undefined') return;
   clearFavMarkers();
+  var seen = {};
   getFavs().forEach(function(f){
-    var ll = new naver.maps.LatLng(f.lat, f.lng);
-    var mk = new naver.maps.Marker({ map:S.map, position:ll, icon:favPinIcon(f.color) });
-    naver.maps.Event.addListener(mk, 'click', function(){ S.map.setCenter(ll); showFavInfo(f); });
+    var baseLat = Number(f.lat), baseLng = Number(f.lng);
+    if(!isFinite(baseLat) || !isFinite(baseLng)) return;
+    /* v30: 같은 지번/주소에서 같은 좌표로 들어온 핀도 서로 겹쳐 1개처럼 보이지 않도록
+       화면 표시용 위치만 아주 작게 벌린다. 저장 좌표 자체는 변경하지 않는다. */
+    var k = baseLat.toFixed(7) + ',' + baseLng.toFixed(7);
+    var n = seen[k] || 0; seen[k] = n + 1;
+    var lat = baseLat, lng = baseLng;
+    if(n > 0){
+      var angle = (n - 1) * 2.399963;      /* golden angle */
+      var r = 0.000025 * Math.ceil(n / 6); /* 약 2~3m 단위 */
+      lat = baseLat + Math.sin(angle) * r;
+      lng = baseLng + Math.cos(angle) * r;
+    }
+    var ll = new naver.maps.LatLng(lat, lng);
+    var mk = new naver.maps.Marker({ map:S.map, position:ll, icon:favPinIcon(f.color), zIndex:100 + n });
+    naver.maps.Event.addListener(mk, 'click', function(){ S.map.setCenter(new naver.maps.LatLng(baseLat, baseLng)); showFavInfo(f); });
     S.favMarkers.push(mk);
     /* 작물명 표시 ON 이고 작물명이 있으면, 핀 옆에 상시 라벨을 함께 표시 */
     if(S.cropLabelsOn){
@@ -1997,7 +2025,7 @@ window.refreshFavPins = function(){
           map:S.map, position:ll,
           icon:{ content:'<div class="crop-label" style="background:' + colorOf(f.color) + '">🌱 ' + escapeHtml(crop) + '</div>',
                  anchor:new naver.maps.Point(-14, 26) },
-          clickable:false, zIndex:50
+          clickable:false, zIndex:50 + n
         });
         S.favMarkers.push(lbl);   /* clearFavMarkers 로 함께 제거됨 */
       }

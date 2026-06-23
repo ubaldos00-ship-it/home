@@ -1366,16 +1366,34 @@ var CC_LIST_KEY  = 'chungchiSaveList';
 var CC_DATA_PFX  = 'chungchiSave_';
 
 /* 지도에서 조사표 입력으로 넘어온 실제 클릭 좌표 보관 */
-var _tenarMapLat = null, _tenarMapLng = null;
-function _tenarSetMapCoord(lat, lng){
+var _tenarMapLat = null, _tenarMapLng = null, _tenarCoordToken = '';
+function _tenarSetMapCoord(lat, lng, token){
   lat = Number(lat); lng = Number(lng);
   if(isFinite(lat) && isFinite(lng)){ _tenarMapLat = lat; _tenarMapLng = lng; }
+  if(token) _tenarCoordToken = String(token);
+}
+function _tenarNormAddr(a){ return String(a||'').replace(/\s+/g,'').replace(/[()]/g,''); }
+function _tenarPendingCoord(d){
+  try{
+    var raw = localStorage.getItem('tenar_pending_survey_coord');
+    if(!raw) return null;
+    var p = JSON.parse(raw) || {};
+    var age = Date.now() - Number(p.ts||0);
+    if(age < 0 || age > 24*3600*1000) return null;
+    if(p.app && p.app !== 'chungchi') return null;
+    if(_tenarCoordToken && p.token && p.token !== _tenarCoordToken) return null;
+    var a1 = _tenarNormAddr(d && d.address), a2 = _tenarNormAddr(p.addr);
+    if(!_tenarCoordToken && a1 && a2 && a1 !== a2) return null;
+    var lat = Number(p.lat), lng = Number(p.lng);
+    if(isFinite(lat) && isFinite(lng)) return {lat:lat, lng:lng};
+  }catch(e){}
+  return null;
 }
 function _tenarGetMapCoordFromSaved(d){
   var lat = Number(d && d.__mapLat), lng = Number(d && d.__mapLng);
   if(isFinite(lat) && isFinite(lng)) return {lat:lat, lng:lng};
   if(isFinite(_tenarMapLat) && isFinite(_tenarMapLng)) return {lat:_tenarMapLat, lng:_tenarMapLng};
-  return null;
+  return _tenarPendingCoord(d);
 }
 
 /* ── 데이터 수집 ── */
@@ -1426,9 +1444,10 @@ function _ccCollect(){
     var pv=pEl?parseFloat((pEl.textContent||'').replace(/[^0-9.]/g,'')):NaN;
     if(isFinite(pv)&&pv>0) d.__per10a=pv;
   }catch(e){}
-  if(isFinite(_tenarMapLat) && isFinite(_tenarMapLng)){
-    d.__mapLat = _tenarMapLat;
-    d.__mapLng = _tenarMapLng;
+  var _mc = _tenarGetMapCoordFromSaved(d);
+  if(_mc){
+    d.__mapLat = _mc.lat;
+    d.__mapLng = _mc.lng;
   }
   return d;
 }
@@ -2444,8 +2463,13 @@ if(window.wcs) {
   var addrIn  = (p.get('addr') || '').trim();
   var latIn   = Number(p.get('lat'));
   var lngIn   = Number(p.get('lng'));
+  var coordTokenIn = (p.get('coordToken') || '').trim();
+  if(coordTokenIn) _tenarCoordToken = coordTokenIn;
   if(isFinite(latIn) && isFinite(lngIn)){
-    try{ _tenarSetMapCoord(latIn, lngIn); }catch(e){ window._tenarMapLat = latIn; window._tenarMapLng = lngIn; }
+    try{ _tenarSetMapCoord(latIn, lngIn, coordTokenIn); }catch(e){ window._tenarMapLat = latIn; window._tenarMapLng = lngIn; }
+  } else {
+    var pc = _tenarPendingCoord({address:addrIn});
+    if(pc) _tenarSetMapCoord(pc.lat, pc.lng, coordTokenIn);
   }
   if(!loadKey && !addrIn) return;
   function cleanUrl(){ try{ history.replaceState(null,'',location.pathname); }catch(e){} }
