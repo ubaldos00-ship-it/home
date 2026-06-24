@@ -1,4 +1,4 @@
-<!-- map_v35_vworld_jibun_label.html · 저장: 2026-06-24 KST · 브이월드 지번 본번+부번 표시 및 라벨 확대 -->
+<!-- map_v42_satellite_measure_sheet.html · 저장: 2026-06-24 KST · v35 안정본 기준: 초기 위성, 하단시트 드래그 닫기, 면적 기본, 거리 누적표시 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -134,8 +134,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 #crop-btn:active{ transform:scale(.9); }
 #crop-btn.active{ background:#27500A; }
 /* 측정 ON 상태 */
-#measure-btn.active{ background:#7c3aed; }
-#measure-btn.active svg{ stroke:#fff; }
+#measure-btn{ font-size:24px;line-height:1; }
+#measure-btn.active{ background:#7c3aed;color:#fff; }
 /* 추적 ON 상태 */
 #track-btn.active{ background:#0d6640; }
 #track-btn.active svg{ stroke:#fff; }
@@ -419,7 +419,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 .sheet-handle::before{
   content:'';position:absolute;left:0;right:0;height:34px;margin-top:-14px;
 }
-#fav-sheet, #save-sheet, #color-sheet{ position:relative; }
+#fav-sheet, #save-sheet, #color-sheet, #layer-sheet, #route-sheet, #survey-pick-sheet, #measure-panel{ position:relative; }
 .info-line1-row{ display:flex;align-items:center;gap:8px; }
 #infoLine1{
   flex:1;min-width:0;
@@ -486,12 +486,14 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 .mp-fav:active{ background:#fdecc8; }
 /* 측정 구간 거리 라벨 (지도 위) */
 .m-label{
-  background:#fff;color:#e23b2e;font-size:12px;font-weight:800;
-  padding:2px 7px;border-radius:8px;white-space:nowrap;
-  box-shadow:0 1px 4px rgba(0,0,0,.3);border:1px solid #f3c4c0;
+  background:rgba(255,255,255,.68);color:#b91c1c;font-size:12px;font-weight:900;
+  padding:3px 7px;border-radius:8px;white-space:nowrap;line-height:1.35;text-align:center;
+  box-shadow:0 2px 6px rgba(0,0,0,.28);border:1px solid rgba(185,28,28,.55);
   font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  text-shadow:0 1px 1px rgba(255,255,255,.95);
+  pointer-events:none;
 }
-.m-label.start{ color:#7c3aed;border-color:#d9ccf5; }
+.m-label.start{ background:rgba(255,255,255,.62);color:#6d28d9;border-color:rgba(109,40,217,.55); }
 .m-label.area{
   color:#7c3aed;border-color:#d9ccf5;text-align:center;line-height:1.3;
   background:rgba(255,255,255,.96);
@@ -618,13 +620,14 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 <!-- 지도 유형 선택 시트 -->
 <div id="layer-modal" onclick="if(event.target===this)closeLayerSheet()">
   <div id="layer-sheet">
+    <div class="sheet-handle" id="layerHandle"></div>
     <div class="ls-head"><span>지도 유형</span><button class="ls-x" onclick="closeLayerSheet()">✕</button></div>
     <div class="ls-grid">
       <button class="ls-opt" data-type="normal"    onclick="setLayer('normal')">
         <span class="ls-ic" style="background:#e8efe1">🗺</span>일반</button>
-      <button class="ls-opt" data-type="satellite" onclick="setLayer('satellite')">
+      <button class="ls-opt active" data-type="satellite" onclick="setLayer('satellite')">
         <span class="ls-ic" style="background:#cfe0f5">🛰</span>위성</button>
-      <button class="ls-opt active" data-type="hybrid" onclick="setLayer('hybrid')">
+      <button class="ls-opt" data-type="hybrid" onclick="setLayer('hybrid')">
         <span class="ls-ic" style="background:#dfe7c8">🏷</span>위성+지명</button>
       <button class="ls-opt" data-type="terrain"   onclick="setLayer('terrain')">
         <span class="ls-ic" style="background:#e6ddc8">⛰</span>지형</button>
@@ -647,13 +650,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 </div>
 
 <!-- 측정(거리·면적) 버튼 -->
-<button id="measure-btn" onclick="openMeasure()" title="거리·면적 측정">
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
-       stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M3 17 17 3l4 4L7 21z"/>
-    <path d="M7 9l2 2M10 6l2 2M13 9l2 2"/>
-  </svg>
-</button>
+<button id="measure-btn" onclick="openMeasure()" title="면적·거리 측정">📐</button>
 
 <!-- 작물명 표시 토글 버튼 (측정 위) -->
 <button id="crop-btn" class="active" onclick="toggleCropLabels()" title="즐겨찾기 작물명 표시">🌱</button>
@@ -705,9 +702,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 
 <!-- 거리·면적 측정 패널 -->
 <div id="measure-panel">
+  <div class="sheet-handle" id="measureHandle"></div>
   <div class="mp-head">
-    <button class="mp-tab active" id="mpTabDist" onclick="setMeasureMode('dist')">📏 거리</button>
-    <button class="mp-tab" id="mpTabArea" onclick="setMeasureMode('area')">📐 면적</button>
+    <button class="mp-tab active" id="mpTabArea" onclick="setMeasureMode('area')">📐 면적</button>
+    <button class="mp-tab" id="mpTabDist" onclick="setMeasureMode('dist')">📏 거리</button>
     <button class="mp-x" onclick="exitMeasure()" title="측정 종료">✕</button>
   </div>
   <div id="mp-result">지도를 탭하여 점을 찍으세요</div>
@@ -721,6 +719,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 <!-- 길찾기 앱 선택 모달 -->
 <div id="route-modal" onclick="if(event.target===this)closeRouteMenu()">
   <div id="route-sheet">
+    <div class="sheet-handle" id="routeHandle"></div>
     <div class="route-title">🚗 길찾기 앱 선택</div>
     <div id="route-dest">목적지: —</div>
     <button class="route-app rb-naver" onclick="openRoute('naver')">N&nbsp; 네이버지도로 길찾기</button>
@@ -733,6 +732,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
 <!-- 조사표 선택창 (실측/청취) — 주소를 어느 계산기에 넣을지 선택 -->
 <div id="survey-pick-modal" onclick="if(event.target===this)closeSurveyPick()">
   <div id="survey-pick-sheet">
+    <div class="sheet-handle" id="surveyHandle"></div>
     <div class="route-title">📋 어느 조사표에 주소를 넣을까요?</div>
     <div id="sp-addr">—</div>
     <button class="route-app sp-tonghab" onclick="pickSurvey('tonghab')">📐&nbsp; 실측조사표(통합계산기)</button>
@@ -979,6 +979,80 @@ function _runBulkSave(){
    fit=true 면 처리 후 전체 핀이 보이도록 화면을 맞춤(명시적 지도반영용),
    fit=false 면 화면을 움직이지 않고 핀만 갱신(저장 시 실시간 자동반영용).
    처리할 게 있으면 true 반환. */
+
+/* v47: 주소만 입력한 조사표가 엉뚱한 곳으로 지오코딩되는 문제 보완
+   - 예: "북사리 359"처럼 시군구가 빠진 주소는 네이버 geocode 첫 결과가 다른 지역으로 잡힐 수 있음
+   - 주소 토큰이 실제 결과 주소에 얼마나 들어있는지 점수화하고, 짧은 주소는 경산시/경북 접두 검색을 먼저 시도 */
+function _tenarAddrTokens(q){
+  q = String(q||'').replace(/\([^)]*\)/g,' ').replace(/[,_]/g,' ').trim();
+  if(!q) return [];
+  var raw = q.split(/\s+/).filter(Boolean);
+  var out = [];
+  raw.forEach(function(t){
+    t = t.trim(); if(!t) return;
+    if(/^(경상북도|경북|대한민국|주소|필지주소)$/.test(t)) return;
+    out.push(t);
+  });
+  return out;
+}
+function _tenarAddressScore(q, item){
+  var text = ((item.jibunAddress||'') + ' ' + (item.roadAddress||'') + ' ' + (item.englishAddress||''));
+  text = text.replace(/\s+/g,' ');
+  var toks = _tenarAddrTokens(q);
+  var score = 0;
+  toks.forEach(function(t){
+    if(!t) return;
+    if(text.indexOf(t) >= 0) score += 8;
+    if(/^\d+(-\d+)?$/.test(t)){
+      var re = new RegExp('(^|[^0-9])' + t.replace('-', '\\-') + '([^0-9]|$)');
+      if(re.test(text)) score += 4;
+    }
+  });
+  if(/(^|\s)산\s*\d/.test(text) && !/(^|\s)산\s*\d/.test(q)) score -= 8;
+  if(/경산시/.test(text)) score += 3;
+  return score;
+}
+function _tenarBuildGeocodeQueries(addr){
+  addr = String(addr||'').trim();
+  var arr = [];
+  function add(x){ x=String(x||'').replace(/\s+/g,' ').trim(); if(x && arr.indexOf(x)<0) arr.push(x); }
+  var hasSgg = /(시|군|구)\s*/.test(addr);
+  if(addr && !hasSgg){
+    add('경상북도 경산시 ' + addr);
+    add('경산시 ' + addr);
+  }
+  add(addr);
+  return arr;
+}
+function _tenarGeocodeSmart(addr, cb){
+  if(!naver.maps.Service || !naver.maps.Service.geocode){ cb(null); return; }
+  var queries = _tenarBuildGeocodeQueries(addr), qi = 0, best = null, bestScore = -999;
+  function tryNext(){
+    if(qi >= queries.length){ cb(best); return; }
+    var q = queries[qi++];
+    naver.maps.Service.geocode({ query:q }, function(st, res){
+      try{
+        if(st === naver.maps.Service.Status.OK && res.v2 && res.v2.addresses && res.v2.addresses.length){
+          var items = res.v2.addresses;
+          for(var i=0;i<items.length;i++){
+            var sc = _tenarAddressScore(addr, items[i]) + _tenarAddressScore(q, items[i]) * 0.25;
+            if(sc > bestScore){ bestScore = sc; best = items[i]; }
+          }
+          var toks = _tenarAddrTokens(addr);
+          var required = toks.filter(function(t){ return /[가-힣]/.test(t) || /^\d+(-\d+)?$/.test(t); });
+          if(best){
+            var tx = (best.jibunAddress||'') + ' ' + (best.roadAddress||'');
+            var ok = required.length ? required.every(function(t){ return tx.indexOf(t) >= 0; }) : true;
+            if(ok && bestScore >= 8){ cb(best); return; }
+          }
+        }
+      }catch(e){}
+      tryNext();
+    });
+  }
+  tryNext();
+}
+
 var _bulkBusy = false;
 function _processBulkQueue(fit){
   if(_bulkBusy) return true;                       /* 진행 중이면 중복 실행 방지 */
@@ -1012,10 +1086,9 @@ function _processBulkQueue(fit){
       return setTimeout(step, 40);
     }
     if(!addr){ fail++; return step(); }
-    naver.maps.Service.geocode({ query:addr }, function(st, res){
+    _tenarGeocodeSmart(addr, function(a){
       try{
-        if(st === naver.maps.Service.Status.OK && res.v2 && res.v2.addresses && res.v2.addresses.length){
-          var a = res.v2.addresses[0];
+        if(a){
           _saveBulkFav(it, Number(a.y), Number(a.x), a.roadAddress || a.jibunAddress || addr);
           done++;
         } else { fail++; }
@@ -1030,6 +1103,15 @@ function _processBulkQueue(fit){
 window.addEventListener('storage', function(e){
   if(e.key === 'tenar_map_bulk' && e.newValue){
     try{ _processBulkQueue(false); }catch(_){}
+  }
+  /* v46: 다른 창(실측/청취/지도)에서 즐겨찾기 핀이 삭제·변경되면 지도 화면도 즉시 갱신 */
+  if(e.key === FAV_KEY){
+    try{
+      if(typeof _syncSelectedFavAfterChange === 'function') _syncSelectedFavAfterChange();
+      if(typeof refreshFavPins === 'function') refreshFavPins();
+      var fm = document.getElementById('fav-modal');
+      if(fm && fm.classList.contains('show') && typeof renderFavs === 'function') renderFavs();
+    }catch(_){}
   }
 });
 /* 일괄 저장용 — 중복(같은 surveyKey/좌표)은 갱신 */
@@ -1174,7 +1256,7 @@ function renderMap(lat, lng, acc, skipMe){
       S.map = new naver.maps.Map('map', {
         center : pos,
         zoom   : 17,
-        mapTypeId : naver.maps.MapTypeId.HYBRID,  /* 기본: 위성(하이브리드 - 위성+지명) */
+        mapTypeId : naver.maps.MapTypeId.SATELLITE,  /* 기본: 위성 */
         mapTypeControl : false,   /* 커스텀 레이어 버튼 사용 */
         zoomControl : false,      /* 줌 바 제거 (손가락 핀치줌 사용) */
         scaleControl : false,
@@ -1266,16 +1348,9 @@ window.searchByAddress = function(){
     toast('검색 모듈 미로드'); return;
   }
   toast('🔍 검색 중…');
-  naver.maps.Service.geocode({ query:q }, function(status, response){
-    if(status !== naver.maps.Service.Status.OK){
-      log('검색 실패: status=' + status, 'err');
-      toast('검색 실패 (' + status + ')');
-      return;
-    }
-    var items = (response.v2 && response.v2.addresses) || [];
-    if(!items.length){ toast('검색 결과가 없습니다'); return; }
+  _tenarGeocodeSmart(q, function(item){
+    if(!item){ toast('검색 결과가 없습니다'); return; }
 
-    var item = items[0];
     var ll   = new naver.maps.LatLng(Number(item.y), Number(item.x));
     selectedLat = Number(item.y);
     selectedLng = Number(item.x);
@@ -1455,7 +1530,7 @@ window.openMeasure = function(){
   hideInfoSheet();
   document.getElementById('measure-btn').classList.add('active');
   document.getElementById('measure-panel').classList.add('show');
-  setMeasureMode(S.measureMode === 'off' ? 'dist' : S.measureMode);
+  setMeasureMode(S.measureMode === 'off' ? 'area' : S.measureMode);
   toast('지도를 탭하여 점을 찍으세요');
 };
 window.exitMeasure = function(){
@@ -1526,22 +1601,29 @@ function redrawMeasure(){
     return;
   }
 
-  /* 거리 모드: 선 + 각 점 옆 구간 거리 라벨 (첫 점은 '시작') */
+  /* 거리 모드: 선 + 각 점 옆 구간거리와 시작점부터 누적거리 라벨 */
   if(S.mPoints.length >= 2){
     S.mLine = new naver.maps.Polyline({
       map:S.map, path:S.mPoints,
       strokeColor:'#7c3aed', strokeWeight:4, strokeOpacity:0.95
     });
   }
+  var cum = 0;
   for(var i=0;i<S.mPoints.length;i++){
     var txt, cls;
-    if(i === 0){ txt = '시작'; cls = 'm-label start'; }
-    else { txt = fmtDist(distM(S.mPoints[i-1], S.mPoints[i])); cls = 'm-label'; }
+    if(i === 0){
+      txt = '시작'; cls = 'm-label start';
+    } else {
+      var seg = distM(S.mPoints[i-1], S.mPoints[i]);
+      cum += seg;
+      txt = '구간 ' + fmtDist(seg) + '<br>누적 ' + fmtDist(cum);
+      cls = 'm-label';
+    }
     var lab = new naver.maps.Marker({
       map:S.map, position:S.mPoints[i],
       icon:{
         content:'<div class="'+cls+'">'+txt+'</div>',
-        anchor:new naver.maps.Point(-8, 28)   /* 점 오른쪽 위에 배치 */
+        anchor:new naver.maps.Point(-12, 50)   /* 점을 가리지 않도록 라벨을 더 위쪽·오른쪽에 배치 */
       },
       clickable:false
     });
@@ -1648,9 +1730,52 @@ function fmtPyeong(m2){ return Math.round(m2 / 3.305785).toLocaleString(); }
    - 통합계산기에서 📍로 열었으면 window.opener 로 직접 입력
    - 아니면 클립보드에 복사
 ================================================================ */
+
+/* v45: 연결된 조사표 자료가 삭제된 지도 핀 안내/정리 */
+function _surveyStoragePrefix(app){
+  return (app === 'chungchi') ? 'chungchiSave_' : 'tonghabSave_';
+}
+function _surveyRecordExists(f){
+  if(!f || !f.surveyKey) return false;
+  try{ return !!localStorage.getItem(_surveyStoragePrefix(f.surveyApp) + f.surveyKey); }
+  catch(e){ return false; }
+}
+function _clearStaleSurveyLink(f){
+  if(!f || !f.surveyKey) return;
+  try{
+    var favs = getFavs();
+    var changed = false;
+    for(var i=0;i<favs.length;i++){
+      if(favs[i] && favs[i].surveyKey === f.surveyKey){
+        delete favs[i].surveyKey;
+        delete favs[i].surveyApp;
+        /* crop/label/addr/좌표/색상은 위치 정보로 남김 */
+        changed = true;
+      }
+    }
+    if(changed) setFavs(favs);
+  }catch(e){}
+  try{
+    if(window._curFav && window._curFav.surveyKey === f.surveyKey){
+      delete window._curFav.surveyKey;
+      delete window._curFav.surveyApp;
+    }
+  }catch(e){}
+}
+function _alertStaleSurveyAndClean(f){
+  alert('연결된 조사표 자료가 삭제되었거나 찾을 수 없습니다.\n\n지도 핀은 위치 정보로만 남기고, 조사표 연결정보는 정리했습니다.');
+  _clearStaleSurveyLink(f);
+  if(typeof _syncSurveyBtn === 'function') _syncSurveyBtn();
+  if(typeof refreshFavPins === 'function') refreshFavPins();
+}
+
 window.fillSurvey = function(){
   /* 풀왕복 연동: 즐겨찾기에 조사표 자료(surveyKey)가 연결돼 있으면 그 자료를 계산기에서 복원 */
   if(window._curFav && window._curFav.surveyKey){
+    if(!_surveyRecordExists(window._curFav)){
+      _alertStaleSurveyAndClean(window._curFav);
+      return;
+    }
     var app = (window._curFav.surveyApp === 'chungchi') ? 'chungchi' : 'tonghab';
     var url = 'https://ubaldos00-ship-it.github.io/home/' + app + '.html?load=' +
               encodeURIComponent(window._curFav.surveyKey);
@@ -2041,6 +2166,7 @@ function setFavs(arr){
   localStorage.setItem(FAV_KEY, JSON.stringify(arr));
   /* 저장/수정/삭제 후 지도에 모든 즐겨찾기 핀을 다시 그려 항상 보이게 유지 */
   if(typeof refreshFavPins === 'function') refreshFavPins();
+  requestAnimationFrame(function(){ try{ if(typeof refreshFavPins === 'function') refreshFavPins(); }catch(e){} });
 }
 /* 저장된 모든 즐겨찾기를 지도에 핀으로 (화면 이동 없이) 상시 표시 */
 window.refreshFavPins = function(){
@@ -2250,8 +2376,18 @@ window.delFav = function(idx){
   if(!f) return;
   if(f.locked){ toast('🔒 잠긴 항목입니다 — 잠금 해제 후 삭제하세요'); return; }
   if(!confirm('「' + f.label + '」 을(를) 삭제하시겠습니까?')) return;   /* 삭제 확인 */
+  var delKey = _favKey(f);
   favs.splice(idx, 1);
   setFavs(favs);
+  /* v46: 삭제한 핀이 현재 선택/강조된 핀이면 화면에서 즉시 제거 */
+  if(window._selFavKey === delKey){
+    window._selFavKey = null;
+    window._curFav = null;
+    if(S.pickMarker){ S.pickMarker.setMap(null); S.pickMarker = null; }
+    hideInfoSheet();
+    if(typeof _syncSurveyBtn === 'function') _syncSurveyBtn();
+  }
+  _forceFavRefreshNow();
   renderFavs();
   toast('삭제했습니다');
 };
@@ -2320,6 +2456,9 @@ function showFavInfo(f){
   /* 계산기 연동: 이 즐겨찾기에 조사표 자료(surveyKey)가 연결돼 있으면 기억 → 조사표 버튼으로 복원 */
   window._curFav = f;
   window._selFavKey = _favKey(f);   /* 즐겨찾기 목록에서 선택 항목 표시용 */
+  if(f && f.surveyKey && !_surveyRecordExists(f)){
+    setTimeout(function(){ _alertStaleSurveyAndClean(f); }, 80);
+  }
   _syncSurveyBtn();
   /* v33: 핀 클릭 시 작물명 팝업은 띄우지 않음 — 작물명 보기 라벨만 사용 */
   showInfoSheet();
@@ -2329,6 +2468,25 @@ function _favKey(f){
   if(!f) return '';
   if(f.surveyKey) return 'k:' + f.surveyKey;
   return 'c:' + Number(f.lat).toFixed(6) + ',' + Number(f.lng).toFixed(6);
+}
+/* v46: 선택 중인 즐겨찾기가 삭제되었으면 강조 핀/하단시트를 즉시 정리 */
+function _syncSelectedFavAfterChange(){
+  var sel = window._selFavKey || '';
+  if(!sel) return;
+  var favs = getFavs();
+  var alive = false;
+  for(var i=0;i<favs.length;i++){ if(_favKey(favs[i]) === sel){ alive = true; break; } }
+  if(alive) return;
+  window._selFavKey = null;
+  window._curFav = null;
+  if(S.pickMarker){ S.pickMarker.setMap(null); S.pickMarker = null; }
+  if(typeof _syncSurveyBtn === 'function') _syncSurveyBtn();
+  try{ infoSheet.classList.remove('show'); adjustControls(); }catch(e){}
+}
+function _forceFavRefreshNow(){
+  try{ clearFavMarkers(); }catch(e){}
+  try{ refreshFavPins(); }catch(e){}
+  setTimeout(function(){ try{ refreshFavPins(); }catch(e){} }, 80);
 }
 /* 즐겨찾기 핀 클릭 시, 연결된 작물명을 핀 위에 잠시(2.5초) 말풍선으로 표시 */
 function _showCropTip(f){
@@ -2455,6 +2613,8 @@ window.clearAllFavs = function(){
   if(!unlocked.length){ toast('🔒 모두 잠겨 있어 삭제할 항목이 없습니다'); return; }
   if(!confirm('잠금(🔒) ' + locked.length + '개를 제외한 ' + unlocked.length + '개를 전체삭제하시겠습니까?')) return;
   setFavs(locked);
+  _syncSelectedFavAfterChange();
+  _forceFavRefreshNow();
   renderFavs();
   toast('전체삭제 완료 (잠금 ' + locked.length + '개 유지)');
 };
@@ -2672,6 +2832,10 @@ document.addEventListener('DOMContentLoaded', function(){ /* noop */ });
 (function initSheetDrag(){
   var infoSheetEl = document.getElementById('info-sheet');
   var favSheetEl  = document.getElementById('fav-sheet');
+  var layerSheetEl = document.getElementById('layer-sheet');
+  var routeSheetEl = document.getElementById('route-sheet');
+  var surveySheetEl = document.getElementById('survey-pick-sheet');
+  var measurePanelEl = document.getElementById('measure-panel');
   addSheetDrag(document.getElementById('sheetHandle'), infoSheetEl, {
     down: function(){
       /* 1단계: 전체 → 주소만(축소) / 2단계: 축소 상태에서 또 내리면 → 완전히 닫힘 */
@@ -2681,7 +2845,19 @@ document.addEventListener('DOMContentLoaded', function(){ /* noop */ });
     up:   function(){ infoSheetEl.classList.remove('collapsed'); } /* 위로 → 전체 */
   });
   addSheetDrag(document.getElementById('favHandle'), favSheetEl, {
-    down: function(){ closeFavPanel(); }   /* 아래로 → 닫기 */
+    down: function(){ closeFavPanel(); }
+  });
+  addSheetDrag(document.getElementById('layerHandle'), layerSheetEl, {
+    down: function(){ closeLayerSheet(); }
+  });
+  addSheetDrag(document.getElementById('routeHandle'), routeSheetEl, {
+    down: function(){ closeRouteMenu(); }
+  });
+  addSheetDrag(document.getElementById('surveyHandle'), surveySheetEl, {
+    down: function(){ closeSurveyPick(); }
+  });
+  addSheetDrag(document.getElementById('measureHandle'), measurePanelEl, {
+    down: function(){ exitMeasure(); }
   });
 })();
 
