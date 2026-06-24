@@ -959,6 +959,9 @@ window.initNaverMap = function(){
     var inp = document.getElementById('search-input');
     if(inp) inp.value = q;
     setTimeout(function(){ window.searchByAddress(); }, 700);
+    /* v48: 주소검색으로 지도에 들어온 경우에도, 계산기 저장 시 쌓인 주소-only 지도반영 대기열을 함께 처리한다.
+       좌표가 없는 저장자료는 map.html에서 주소 지오코딩 후 핀으로 저장된다. */
+    setTimeout(function(){ try{ _processBulkQueue(false); }catch(_){} }, 1800);
   } else {
     startGPS();
     /* 지도가 닫혀 있는 동안 계산기에서 저장된 항목이 대기열에 있으면 지도 열 때 자동 반영 */

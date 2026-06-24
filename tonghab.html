@@ -8123,7 +8123,13 @@ function _queueMapSync(key){
     var entry = { addr:a, crop:crop, app:'tonghab', surveyKey:key };
     var mapColor = (coord && coord.color) ? coord.color : _tenarGetMapColorFromSaved(d);
     if(mapColor){ entry.color = mapColor; }
-    if(coord){ entry.lat = coord.lat; entry.lng = coord.lng; }
+    if(coord){
+      entry.lat = coord.lat; entry.lng = coord.lng;
+    } else {
+      /* v153/v88: 좌표 없이 주소만 저장된 조사표임을 명시한다.
+         실제 좌표 생성은 map.html 이 이 주소를 지오코딩해서 처리한다. */
+      entry.needsGeocode = true;
+    }
     var q = [];
     try{ q = JSON.parse(localStorage.getItem('tenar_map_bulk')||'[]')||[]; }catch(e){ q=[]; }
     q = q.filter(function(x){ return x.surveyKey !== key; });   /* 같은 항목 중복 제거 */
