@@ -979,80 +979,6 @@ function _runBulkSave(){
    fit=true 면 처리 후 전체 핀이 보이도록 화면을 맞춤(명시적 지도반영용),
    fit=false 면 화면을 움직이지 않고 핀만 갱신(저장 시 실시간 자동반영용).
    처리할 게 있으면 true 반환. */
-
-/* v47: 주소만 입력한 조사표가 엉뚱한 곳으로 지오코딩되는 문제 보완
-   - 예: "북사리 359"처럼 시군구가 빠진 주소는 네이버 geocode 첫 결과가 다른 지역으로 잡힐 수 있음
-   - 주소 토큰이 실제 결과 주소에 얼마나 들어있는지 점수화하고, 짧은 주소는 경산시/경북 접두 검색을 먼저 시도 */
-function _tenarAddrTokens(q){
-  q = String(q||'').replace(/\([^)]*\)/g,' ').replace(/[,_]/g,' ').trim();
-  if(!q) return [];
-  var raw = q.split(/\s+/).filter(Boolean);
-  var out = [];
-  raw.forEach(function(t){
-    t = t.trim(); if(!t) return;
-    if(/^(경상북도|경북|대한민국|주소|필지주소)$/.test(t)) return;
-    out.push(t);
-  });
-  return out;
-}
-function _tenarAddressScore(q, item){
-  var text = ((item.jibunAddress||'') + ' ' + (item.roadAddress||'') + ' ' + (item.englishAddress||''));
-  text = text.replace(/\s+/g,' ');
-  var toks = _tenarAddrTokens(q);
-  var score = 0;
-  toks.forEach(function(t){
-    if(!t) return;
-    if(text.indexOf(t) >= 0) score += 8;
-    if(/^\d+(-\d+)?$/.test(t)){
-      var re = new RegExp('(^|[^0-9])' + t.replace('-', '\\-') + '([^0-9]|$)');
-      if(re.test(text)) score += 4;
-    }
-  });
-  if(/(^|\s)산\s*\d/.test(text) && !/(^|\s)산\s*\d/.test(q)) score -= 8;
-  if(/경산시/.test(text)) score += 3;
-  return score;
-}
-function _tenarBuildGeocodeQueries(addr){
-  addr = String(addr||'').trim();
-  var arr = [];
-  function add(x){ x=String(x||'').replace(/\s+/g,' ').trim(); if(x && arr.indexOf(x)<0) arr.push(x); }
-  var hasSgg = /(시|군|구)\s*/.test(addr);
-  if(addr && !hasSgg){
-    add('경상북도 경산시 ' + addr);
-    add('경산시 ' + addr);
-  }
-  add(addr);
-  return arr;
-}
-function _tenarGeocodeSmart(addr, cb){
-  if(!naver.maps.Service || !naver.maps.Service.geocode){ cb(null); return; }
-  var queries = _tenarBuildGeocodeQueries(addr), qi = 0, best = null, bestScore = -999;
-  function tryNext(){
-    if(qi >= queries.length){ cb(best); return; }
-    var q = queries[qi++];
-    naver.maps.Service.geocode({ query:q }, function(st, res){
-      try{
-        if(st === naver.maps.Service.Status.OK && res.v2 && res.v2.addresses && res.v2.addresses.length){
-          var items = res.v2.addresses;
-          for(var i=0;i<items.length;i++){
-            var sc = _tenarAddressScore(addr, items[i]) + _tenarAddressScore(q, items[i]) * 0.25;
-            if(sc > bestScore){ bestScore = sc; best = items[i]; }
-          }
-          var toks = _tenarAddrTokens(addr);
-          var required = toks.filter(function(t){ return /[가-힣]/.test(t) || /^\d+(-\d+)?$/.test(t); });
-          if(best){
-            var tx = (best.jibunAddress||'') + ' ' + (best.roadAddress||'');
-            var ok = required.length ? required.every(function(t){ return tx.indexOf(t) >= 0; }) : true;
-            if(ok && bestScore >= 8){ cb(best); return; }
-          }
-        }
-      }catch(e){}
-      tryNext();
-    });
-  }
-  tryNext();
-}
-
 var _bulkBusy = false;
 function _processBulkQueue(fit){
   if(_bulkBusy) return true;                       /* 진행 중이면 중복 실행 방지 */
@@ -1086,9 +1012,10 @@ function _processBulkQueue(fit){
       return setTimeout(step, 40);
     }
     if(!addr){ fail++; return step(); }
-    _tenarGeocodeSmart(addr, function(a){
+    naver.maps.Service.geocode({ query:addr }, function(st, res){
       try{
-        if(a){
+        if(st === naver.maps.Service.Status.OK && res.v2 && res.v2.addresses && res.v2.addresses.length){
+          var a = res.v2.addresses[0];
           _saveBulkFav(it, Number(a.y), Number(a.x), a.roadAddress || a.jibunAddress || addr);
           done++;
         } else { fail++; }
@@ -1348,9 +1275,16 @@ window.searchByAddress = function(){
     toast('검색 모듈 미로드'); return;
   }
   toast('🔍 검색 중…');
-  _tenarGeocodeSmart(q, function(item){
-    if(!item){ toast('검색 결과가 없습니다'); return; }
+  naver.maps.Service.geocode({ query:q }, function(status, response){
+    if(status !== naver.maps.Service.Status.OK){
+      log('검색 실패: status=' + status, 'err');
+      toast('검색 실패 (' + status + ')');
+      return;
+    }
+    var items = (response.v2 && response.v2.addresses) || [];
+    if(!items.length){ toast('검색 결과가 없습니다'); return; }
 
+    var item = items[0];
     var ll   = new naver.maps.LatLng(Number(item.y), Number(item.x));
     selectedLat = Number(item.y);
     selectedLng = Number(item.x);
