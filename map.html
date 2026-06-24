@@ -1,4 +1,4 @@
-<!-- map_v42_satellite_measure_sheet.html · 저장: 2026-06-24 KST · v35 안정본 기준: 초기 위성, 하단시트 드래그 닫기, 면적 기본, 거리 누적표시 -->
+<!-- map_v49_addr_geocode_heal.html · 저장: 2026-06-25 02:04 KST · 좌표없는 주소-only 즐겨찾기 자동 지오코딩→좌표채움→핀 표시(자가복구) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -967,6 +967,8 @@ window.initNaverMap = function(){
     /* 지도가 닫혀 있는 동안 계산기에서 저장된 항목이 대기열에 있으면 지도 열 때 자동 반영 */
     setTimeout(function(){ try{ _processBulkQueue(false); }catch(_){} }, 1600);
   }
+  /* 어느 경로로 들어오든, 좌표 없이 주소만 있는 즐겨찾기가 있으면 자동 지오코딩해 핀 표시 */
+  setTimeout(function(){ try{ _healFavsNeedingGeocode(); }catch(_){} }, 2600);
 };
 
 /* ================================================================
@@ -1076,6 +1078,7 @@ function _processBulkQueue(fit){
       toast('✅ 지도반영: ' + done + '곳' + (fail ? (' / 실패 ' + fail) : ''));
       refreshFavPins();
       if(fit){ try { if(getFavs().length) showAllFavs(); } catch(e){} }
+      try{ _healFavsNeedingGeocode(); }catch(_){}   /* 좌표 못 채운 항목 자가복구 */
       return;
     }
     var it = items[i++];
@@ -1114,9 +1117,48 @@ window.addEventListener('storage', function(e){
       if(typeof refreshFavPins === 'function') refreshFavPins();
       var fm = document.getElementById('fav-modal');
       if(fm && fm.classList.contains('show') && typeof renderFavs === 'function') renderFavs();
+      try{ _healFavsNeedingGeocode(); }catch(_){}   /* 좌표 없는 즐겨찾기 자동 지오코딩 */
     }catch(_){}
   }
 });
+/* ★ 자가복구: 주소는 있으나 좌표가 비어있는(또는 needsGeocode) 즐겨찾기를
+   자동으로 지오코딩해 좌표를 채우고 핀으로 표시한다.
+   (계산기에서 주소만 저장돼 좌표 변환이 안 된 채 핀이 안 찍히는 문제 보완) */
+var _healBusy = false;
+function _healFavsNeedingGeocode(){
+  if(_healBusy) return;
+  if(!S.map || !naver.maps.Service || !naver.maps.Service.geocode) return;
+  var favs = getFavs(), todo = [];
+  for(var i=0;i<favs.length;i++){
+    var f = favs[i] || {}, lat = Number(f.lat), lng = Number(f.lng);
+    var bad = (!isFinite(lat) || !isFinite(lng) || (Math.abs(lat) < 0.0001 && Math.abs(lng) < 0.0001));
+    if((f.addr||'').trim() && (bad || f.needsGeocode)) todo.push(i);
+  }
+  if(!todo.length) return;
+  _healBusy = true;
+  var k = 0;
+  toast('📍 주소를 좌표로 변환 중… (' + todo.length + '곳)');
+  function step(){
+    if(k >= todo.length){ _healBusy = false; refreshFavPins(); return; }
+    var idx = todo[k++];
+    var f0 = getFavs()[idx] || {}, addr = (f0.addr||'').trim();
+    if(!addr){ return setTimeout(step, 10); }
+    _tenarGeocodeSmart(addr, function(a){
+      try{
+        if(a){
+          var favs2 = getFavs(), ff = favs2[idx];
+          if(ff){
+            ff.lat = Number(a.y); ff.lng = Number(a.x);
+            if(ff.needsGeocode) delete ff.needsGeocode;
+            localStorage.setItem(FAV_KEY, JSON.stringify(favs2));   /* 갱신만, 핀은 마지막에 한 번 */
+          }
+        }
+      }catch(e){}
+      setTimeout(step, 250);   /* 지오코딩 간격 */
+    });
+  }
+  step();
+}
 /* 일괄 저장용 — 중복(같은 surveyKey/좌표)은 갱신 */
 function _saveBulkFav(it, lat, lng, addr){
   if(!isFinite(lat) || !isFinite(lng)) return;
