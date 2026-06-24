@@ -1269,6 +1269,11 @@ body.nonbye-mode .hide-nonbye { display:none !important; }
 .sl-item-date{font-size:10px;color:#999;margin-top:2px;}
 .sl-item-load{padding:5px 6px;background:#EBF3FF;border:1.5px solid #b3c8f0;border-radius:7px;color:#0A3A8C;font-size:18px;cursor:pointer;white-space:nowrap;flex-shrink:0;display:flex;align-items:center;justify-content:center;min-width:32px;height:32px;transition:background .12s;}
 .sl-item-load:active{background:#d0e4ff;}
+/* 지도 핀 연결 상태: 회색=아직 지도 핀 없음 / 컬러=지도 핀 연결됨 */
+.sl-item-map-unlinked{background:#f1f3f5!important;border-color:#c7cbd1!important;color:#9aa0a6!important;filter:grayscale(1);}
+.sl-item-map-unlinked:active{background:#e5e7eb!important;}
+.sl-item-map-linked{background:#eaf7e6!important;border-color:#7fbf78!important;color:#1a5c22!important;box-shadow:0 0 0 2px rgba(46,158,79,.14);}
+.sl-item-map-linked:active{background:#d8f0d2!important;}
 .sl-item.sl-selected{background:#edfbe8;border:2px solid #3a7d44;}
 .sl-item.sl-selected .sl-item-label{color:#1a5c22;}
 .sl-empty{text-align:center;color:#bbb;font-size:13px;padding:22px 0;}
@@ -8124,6 +8129,7 @@ function _queueMapSync(key){
     q = q.filter(function(x){ return x.surveyKey !== key; });   /* 같은 항목 중복 제거 */
     q.push(entry);
     localStorage.setItem('tenar_map_bulk', JSON.stringify(q));
+    _upsertMapFavIfCoord(entry);
   }catch(e){}
 }
 
@@ -8147,6 +8153,51 @@ function _removeMapFavBySurveyKey(app, key){
     localStorage.setItem('tenar_map_bulk', JSON.stringify(q));
   }catch(e){}
   return removed;
+}
+
+
+/* v152/v87: 저장목록 위치 아이콘 상태 표시용 — 지도 즐겨찾기에 surveyKey가 연결돼 있는지 확인 */
+function _tenarMapFavLinked(app, key){
+  if(!key) return false;
+  try{
+    var favs = JSON.parse(localStorage.getItem('tenar_map_favs_v1') || '[]') || [];
+    for(var i=0;i<favs.length;i++){
+      var f = favs[i] || {};
+      if(f.surveyKey === key && (!app || !f.surveyApp || f.surveyApp === app)) return true;
+    }
+  }catch(e){}
+  return false;
+}
+/* 좌표가 이미 있는 조사표는 지도 화면을 열지 않아도 즐겨찾기 핀을 바로 갱신한다.
+   좌표가 없으면 기존처럼 tenar_map_bulk 대기열에 넣고 map.html 이 지오코딩한다. */
+function _upsertMapFavIfCoord(entry){
+  try{
+    if(!entry || !entry.surveyKey) return false;
+    var lat = Number(entry.lat), lng = Number(entry.lng);
+    if(!isFinite(lat) || !isFinite(lng)) return false;
+    var favKey = 'tenar_map_favs_v1';
+    var favs = JSON.parse(localStorage.getItem(favKey) || '[]') || [];
+    var dup = -1;
+    for(var i=0;i<favs.length;i++){
+      if(favs[i] && favs[i].surveyKey === entry.surveyKey && (!entry.app || !favs[i].surveyApp || favs[i].surveyApp === entry.app)){ dup = i; break; }
+    }
+    if(dup < 0){
+      for(var j=0;j<favs.length;j++){
+        var f=favs[j]||{};
+        if(!f.surveyKey && Math.abs((Number(f.lat)||0)-lat)<0.0001 && Math.abs((Number(f.lng)||0)-lng)<0.0001){ dup=j; break; }
+      }
+    }
+    var old = dup>=0 ? (favs[dup]||{}) : {};
+    var color = old.color || entry.color || (entry.app==='chungchi'?'blue':'green');
+    var crop = (entry.crop||'').trim();
+    var addr = (entry.addr||'').trim();
+    var label = (crop ? crop + ' · ' : '') + (addr || (lat.toFixed(6)+', '+lng.toFixed(6)));
+    var rec = { label:label.slice(0,40), lat:lat, lng:lng, addr:addr, color:color,
+                locked:!!old.locked, surveyKey:entry.surveyKey, surveyApp:entry.app||'', crop:crop };
+    if(dup>=0) favs[dup]=rec; else favs.unshift(rec);
+    localStorage.setItem(favKey, JSON.stringify(favs));
+    return true;
+  }catch(e){ return false; }
 }
 
 function saveCurrentData(){
@@ -8521,7 +8572,7 @@ function _slRenderList(){
         +'<div class="sl-item-date">'+it.ymd+' '+it.hm+'</div>'
       +'</div>'
       +'<button class="'+lockCls+'" onclick="toggleFav(\''+it.key+'\')" aria-label="잠금">'+lockIcon+'</button>'
-      +(it.addr?'<button class="sl-item-load" onclick="slOpenMap(\''+it.key+'\')" aria-label="지도에서 위치보기" title="지도에서 위치보기·즐겨찾기 저장">📍</button>':'')
+      +(it.addr?'<button class="sl-item-load '+(_tenarMapFavLinked('tonghab', it.key)?'sl-item-map-linked':'sl-item-map-unlinked')+'" onclick="slOpenMap(\''+it.key+'\')" aria-label="지도에서 위치보기" title="'+(_tenarMapFavLinked('tonghab', it.key)?'지도 핀 연결됨 · 위치보기':'지도 핀 미연결 · 누르면 지도에 저장')+'">📍</button>':'')
       +'<button class="sl-item-load" onclick="loadSavedData(\''+it.key+'\')" aria-label="불러오기">📂</button>'
       +delBtn
       +'</div>';
@@ -8537,6 +8588,17 @@ function _tenarOpenMapUrl(u){
 }
 function _tenarOpenMapFromAddress(){
   var a = (document.getElementById('address') && document.getElementById('address').value || '').trim();
+  /* 저장/불러오기 목록의 위치 버튼과 같은 흐름으로 동작:
+     현재 선택·불러온 저장자료가 있으면 surveyKey를 포함해 지도 핀 연결까지 수행한다. */
+  var linkedKey = _slSelectedKey || _slLastLoadedKey || null;
+  if(linkedKey){
+    try{
+      var raw = localStorage.getItem(SL_DATA_PFX+linkedKey);
+      var d = raw ? JSON.parse(raw) : null;
+      var savedAddr = d ? ((d.address || d['address'] || '')+'').trim() : '';
+      if(savedAddr && (!a || savedAddr === a)){ slOpenMap(linkedKey); return; }
+    }catch(e){}
+  }
   var base = 'https://ubaldos00-ship-it.github.io/home/map.html';
   _tenarOpenMapUrl(a ? base + '?q=' + encodeURIComponent(a) : base);
 }
