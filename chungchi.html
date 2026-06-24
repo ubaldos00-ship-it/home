@@ -346,7 +346,7 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
     <span class="s1l">필지</span>
     <input type="text" id="address" placeholder="필지주소 입력" inputmode="text" style="flex:1.1;font-size:16px;min-width:0">
     <button type="button" id="addrMapBtn" title="지도에서 위치 보기"
-      onclick="_tenarOpenMapFromAddress()"
+      onclick="(function(){var a=(document.getElementById('address').value||'').trim(); var base='https://ubaldos00-ship-it.github.io/home/map.html'; window.open(a?base+'?q='+encodeURIComponent(a):base,'tenarMap');})()"
       style="flex-shrink:0;width:38px;height:42px;border:1px solid #cdd9c0;border-radius:8px;background:#eef6e8;font-size:18px;line-height:1;cursor:pointer;padding:0;">📍</button>
     <span class="s1l" style="min-width:36px;text-align:center">조사일</span>
     <input type="date" id="surveyDate" style="flex:1.2;font-size:16px;padding:10px 8px">
@@ -1872,19 +1872,6 @@ function _slRenderList(){
   }).join('');
 }
 
-
-/* ── 지도 열기 공통 함수: 모바일/PWA에서 window.open이 기존 탭만 갱신하고 화면 전환이 안 되는 문제 방지 ── */
-function _tenarOpenMapUrl(u){
-  try{ sessionStorage.setItem('tenar_last_calc_url', location.href); }catch(e){}
-  /* 현장 사용 기준: 새 창이 아니라 현재 화면을 지도 화면으로 확실히 이동 */
-  location.href = u;
-}
-function _tenarOpenMapFromAddress(){
-  var a = (document.getElementById('address') && document.getElementById('address').value || '').trim();
-  var base = 'https://ubaldos00-ship-it.github.io/home/map.html';
-  _tenarOpenMapUrl(a ? base + '?q=' + encodeURIComponent(a) : base);
-}
-
 /* ── 지도 연동: 목록 항목의 📍 클릭 → 지도(map.html)에서 그 주소를 띄우고 즐겨찾기에 자동 저장 ──
    목록의 addr은 15자로 잘린 축약값이라, 정확한 지오코딩을 위해 저장 데이터의 전체 주소를 읽어 넘긴다. */
 function slOpenMap(key){
@@ -1904,7 +1891,7 @@ function slOpenMap(key){
           + '&surveyKey=' + encodeURIComponent(key)
           + '&label='    + encodeURIComponent(label);
     if(coord){ u += '&lat=' + encodeURIComponent(coord.lat.toFixed(8)) + '&lng=' + encodeURIComponent(coord.lng.toFixed(8)); }
-    _tenarOpenMapUrl(u);
+    window.open(u, 'tenarMap');
   }catch(e){ alert('지도 열기 실패: '+e.message); }
 }
 
@@ -1930,7 +1917,7 @@ function slBulkToMap(){
   if(!confirm('저장된 '+items.length+'곳의 주소를 지도 즐겨찾기에 한꺼번에 반영합니다.\n(작물명도 함께 표시됩니다) 계속할까요?')) return;
   try{ localStorage.setItem('tenar_map_bulk', JSON.stringify(items)); }
   catch(e){ alert('지도반영 준비 실패: '+e.message); return; }
-  _tenarOpenMapUrl('https://ubaldos00-ship-it.github.io/home/map.html?bulk=1');
+  window.open('https://ubaldos00-ship-it.github.io/home/map.html?bulk=1', 'tenarMap');
 }
 
 /* ── JSON 내보내기/가져오기 ── */

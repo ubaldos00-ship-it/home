@@ -1031,15 +1031,6 @@ window.addEventListener('storage', function(e){
   if(e.key === 'tenar_map_bulk' && e.newValue){
     try{ _processBulkQueue(false); }catch(_){}
   }
-  /* v46: 다른 창(실측/청취/지도)에서 즐겨찾기 핀이 삭제·변경되면 지도 화면도 즉시 갱신 */
-  if(e.key === FAV_KEY){
-    try{
-      if(typeof _syncSelectedFavAfterChange === 'function') _syncSelectedFavAfterChange();
-      if(typeof refreshFavPins === 'function') refreshFavPins();
-      var fm = document.getElementById('fav-modal');
-      if(fm && fm.classList.contains('show') && typeof renderFavs === 'function') renderFavs();
-    }catch(_){}
-  }
 });
 /* 일괄 저장용 — 중복(같은 surveyKey/좌표)은 갱신 */
 function _saveBulkFav(it, lat, lng, addr){
@@ -2100,7 +2091,6 @@ function setFavs(arr){
   localStorage.setItem(FAV_KEY, JSON.stringify(arr));
   /* 저장/수정/삭제 후 지도에 모든 즐겨찾기 핀을 다시 그려 항상 보이게 유지 */
   if(typeof refreshFavPins === 'function') refreshFavPins();
-  requestAnimationFrame(function(){ try{ if(typeof refreshFavPins === 'function') refreshFavPins(); }catch(e){} });
 }
 /* 저장된 모든 즐겨찾기를 지도에 핀으로 (화면 이동 없이) 상시 표시 */
 window.refreshFavPins = function(){
@@ -2310,18 +2300,8 @@ window.delFav = function(idx){
   if(!f) return;
   if(f.locked){ toast('🔒 잠긴 항목입니다 — 잠금 해제 후 삭제하세요'); return; }
   if(!confirm('「' + f.label + '」 을(를) 삭제하시겠습니까?')) return;   /* 삭제 확인 */
-  var delKey = _favKey(f);
   favs.splice(idx, 1);
   setFavs(favs);
-  /* v46: 삭제한 핀이 현재 선택/강조된 핀이면 화면에서 즉시 제거 */
-  if(window._selFavKey === delKey){
-    window._selFavKey = null;
-    window._curFav = null;
-    if(S.pickMarker){ S.pickMarker.setMap(null); S.pickMarker = null; }
-    hideInfoSheet();
-    if(typeof _syncSurveyBtn === 'function') _syncSurveyBtn();
-  }
-  _forceFavRefreshNow();
   renderFavs();
   toast('삭제했습니다');
 };
@@ -2402,25 +2382,6 @@ function _favKey(f){
   if(!f) return '';
   if(f.surveyKey) return 'k:' + f.surveyKey;
   return 'c:' + Number(f.lat).toFixed(6) + ',' + Number(f.lng).toFixed(6);
-}
-/* v46: 선택 중인 즐겨찾기가 삭제되었으면 강조 핀/하단시트를 즉시 정리 */
-function _syncSelectedFavAfterChange(){
-  var sel = window._selFavKey || '';
-  if(!sel) return;
-  var favs = getFavs();
-  var alive = false;
-  for(var i=0;i<favs.length;i++){ if(_favKey(favs[i]) === sel){ alive = true; break; } }
-  if(alive) return;
-  window._selFavKey = null;
-  window._curFav = null;
-  if(S.pickMarker){ S.pickMarker.setMap(null); S.pickMarker = null; }
-  if(typeof _syncSurveyBtn === 'function') _syncSurveyBtn();
-  try{ infoSheet.classList.remove('show'); adjustControls(); }catch(e){}
-}
-function _forceFavRefreshNow(){
-  try{ clearFavMarkers(); }catch(e){}
-  try{ refreshFavPins(); }catch(e){}
-  setTimeout(function(){ try{ refreshFavPins(); }catch(e){} }, 80);
 }
 /* 즐겨찾기 핀 클릭 시, 연결된 작물명을 핀 위에 잠시(2.5초) 말풍선으로 표시 */
 function _showCropTip(f){
@@ -2547,8 +2508,6 @@ window.clearAllFavs = function(){
   if(!unlocked.length){ toast('🔒 모두 잠겨 있어 삭제할 항목이 없습니다'); return; }
   if(!confirm('잠금(🔒) ' + locked.length + '개를 제외한 ' + unlocked.length + '개를 전체삭제하시겠습니까?')) return;
   setFavs(locked);
-  _syncSelectedFavAfterChange();
-  _forceFavRefreshNow();
   renderFavs();
   toast('전체삭제 완료 (잠금 ' + locked.length + '개 유지)');
 };
