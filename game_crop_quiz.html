@@ -1,0 +1,583 @@
+<!-- game_crop_quiz.html · 저장: 2026-06-25 03:45 KST -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <!-- Google Analytics (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-B8ELP4S5PR"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-B8ELP4S5PR');
+    </script>
+    <title>작물 판별 퀴즈 · 텐아르 게임센터</title>
+    <style>
+        * {
+            box-sizing: border-box; margin: 0; padding: 0;
+            user-select: none; -webkit-tap-highlight-color: transparent;
+            font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+        body {
+            background-color: #f6f4ec;
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; overflow: hidden;
+        }
+        #app-container {
+            width: 100%; max-width: 420px; height: 100%;
+            background-color: #fff; display: flex; flex-direction: column;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        header {
+            background: linear-gradient(135deg, #143820 0%, #2e7a4e 100%);
+            color: white; padding: 15px 18px; text-align: center; position: relative;
+            padding-top: calc(15px + env(safe-area-inset-top));
+        }
+        .header-top {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 14px; height: 38px;
+        }
+        .q-progress {
+            font-size: 0.85rem; background: rgba(255,255,255,0.15);
+            padding: 4px 11px; border-radius: 15px; font-weight: bold;
+        }
+        .title-info {
+            font-size: 1.1rem; font-weight: bold;
+            position: absolute; left: 50%; transform: translateX(-50%); white-space: nowrap;
+        }
+        .home-link {
+            color: white; text-decoration: none; font-size: 1.25rem;
+            width: 36px; height: 36px; display: flex; justify-content: center; align-items: center;
+            border-radius: 50%; background: rgba(255,255,255,0.12); z-index: 10; cursor: pointer; border: none;
+        }
+        .timer-container {
+            width: 100%; height: 12px; background: rgba(255,255,255,0.3);
+            border-radius: 6px; overflow: hidden; margin-top: 5px;
+        }
+        #timer-bar { width: 100%; height: 100%; background: #c9962b; transition: width 0.1s linear; }
+        .screen {
+            flex: 1; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; padding: 20px; overflow-y: auto;
+        }
+        .hidden { display: none !important; }
+
+        /* 게임 화면 */
+        #game-screen { justify-content: flex-start; padding: 14px 16px 16px; }
+        .q-img-wrap {
+            width: 100%; aspect-ratio: 4 / 3; border-radius: 16px; overflow: hidden;
+            background: #eef1ed; border: 1px solid #e0e6e0; margin-bottom: 14px;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .q-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .q-ask { font-size: 0.92rem; color: #5b6358; font-weight: 600; margin-bottom: 12px; }
+        .q-ask b { color: #143820; }
+        .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+        .choice-btn {
+            background: #f9fbf9; border: 1.5px solid #d8e2d4; border-radius: 14px;
+            padding: 18px 8px; font-size: 1.1rem; font-weight: 700; color: #1f5132;
+            cursor: pointer; font-family: inherit; transition: transform 0.08s, background 0.12s;
+        }
+        .choice-btn:active { transform: scale(0.96); }
+        .choice-btn.picked { background: #2e7a4e; color: #fff; border-color: #2e7a4e; }
+        .choice-btn:disabled { cursor: default; }
+
+        /* 시작/결과 카드 */
+        .result-card {
+            text-align: center; padding: 28px 24px; background: #f9fbf9;
+            border-radius: 20px; border: 1px solid #e0e6e0; width: 92%; max-width: 360px;
+        }
+        .btn {
+            background-color: #2e7a4e; color: white; border: none;
+            padding: 15px 36px; font-size: 1.05rem; font-weight: bold;
+            border-radius: 30px; cursor: pointer; margin-top: 16px;
+            box-shadow: 0 4px 10px rgba(45, 106, 79, 0.3); font-family: inherit;
+        }
+        .btn:active { transform: scale(0.95); }
+        .btn:disabled { opacity: 0.6; cursor: default; }
+        .btn-row { display: flex; gap: 9px; margin-top: 18px; }
+        .btn-sm {
+            flex: 1; padding: 13px 8px; font-size: 0.95rem; font-weight: 700;
+            border-radius: 14px; border: none; cursor: pointer; font-family: inherit;
+        }
+        .btn-primary { background: #2e7a4e; color: #fff; box-shadow: 0 4px 10px rgba(45,106,79,0.28); }
+        .btn-ghost { background: #eef3ec; color: #1f5132; border: 1px solid #cfe0c8; }
+        .btn-sm:active { transform: scale(0.96); }
+
+        /* 결과 통계 */
+        .res-score { font-size: 2.6rem; font-weight: 800; color: #2e7a4e; line-height: 1.1; margin: 6px 0; }
+        .res-grid { display: flex; gap: 8px; margin: 16px 0 4px; }
+        .res-box { flex: 1; background: #fff; border: 1px solid #e0e6e0; border-radius: 12px; padding: 10px 6px; }
+        .res-box .v { font-size: 1.25rem; font-weight: 800; color: #1f5132; }
+        .res-box .l { font-size: 0.72rem; color: #6b7268; margin-top: 2px; }
+        .xp-gain { margin-top: 12px; font-size: 0.9rem; font-weight: 700; color: #c9962b; }
+        .new-best { display:inline-block; margin-top: 8px; background:#c9962b; color:#fff; font-size:0.78rem; font-weight:800; padding:4px 12px; border-radius:999px; }
+
+        /* 정답 리뷰 */
+        .review-toggle { margin-top: 16px; font-size: 0.85rem; color: #2e7a4e; font-weight: 700; cursor: pointer; text-decoration: underline; }
+        .review-list { margin-top: 12px; text-align: left; max-height: 38vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        .review-item {
+            display: flex; align-items: center; gap: 9px; padding: 8px 4px;
+            border-bottom: 1px solid #eee; font-size: 0.88rem;
+        }
+        .review-item:last-child { border-bottom: none; }
+        .rv-no { width: 22px; color: #8a8f86; font-weight: 700; flex-shrink: 0; font-size: 0.8rem; }
+        .rv-mark { width: 20px; text-align: center; flex-shrink: 0; }
+        .rv-ans { flex: 1; min-width: 0; }
+        .rv-correct { font-weight: 700; color: #1f5132; }
+        .rv-mine { font-size: 0.78rem; color: #c0392b; }
+
+        /* 로딩 */
+        .loading-dots { color:#6b7268; font-size:0.9rem; margin-top:14px; }
+
+        /* 랭킹 모달 */
+        .rank-modal {
+            display: none; position: fixed; inset: 0; z-index: 300;
+            background: rgba(0,0,0,0.5); align-items: flex-end; justify-content: center;
+        }
+        .rank-modal.show { display: flex; }
+        .rank-panel {
+            width: 100%; max-width: 420px; background: #fff;
+            border-radius: 22px 22px 0 0; max-height: 82vh; display: flex; flex-direction: column;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        .rank-head {
+            background: linear-gradient(135deg, #143820 0%, #2e7a4e 100%); color: #fff;
+            padding: 14px 16px; border-radius: 22px 22px 0 0;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .rank-head h3 { font-size: 1.05rem; font-weight: 800; }
+        .rank-close { background: rgba(255,255,255,0.16); border: none; color: #fff; width: 32px; height: 32px; border-radius: 50%; font-size: 17px; cursor: pointer; }
+        .rank-list { overflow-y: auto; padding: 8px 12px 16px; -webkit-overflow-scrolling: touch; }
+        .rank-row {
+            display: flex; align-items: center; gap: 11px; padding: 11px 6px;
+            border-bottom: 1px solid #eee;
+        }
+        .rank-row.me { background: #eef7ef; border-radius: 10px; border-bottom: 1px solid transparent; }
+        .rank-pos { width: 30px; text-align: center; font-weight: 800; font-size: 0.95rem; color: #5b6358; flex-shrink: 0; }
+        .rank-pos.top { font-size: 1.25rem; }
+        .rank-nick { flex: 1; min-width: 0; font-weight: 700; font-size: 0.95rem; color: #1a1f1a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .rank-nick small { color: #2e7a4e; font-weight: 800; margin-left: 5px; }
+        .rank-sc { font-weight: 800; color: #c9962b; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+        .rank-empty, .rank-loading { text-align: center; color: #6b7268; font-size: 0.9rem; padding: 24px 0; }
+    </style>
+</head>
+<body>
+
+<div id="app-container">
+    <header>
+        <div class="header-top">
+            <div class="q-progress"><span id="q-cur">0</span>/20</div>
+            <div class="title-info">🌱 작물 판별 퀴즈</div>
+            <button class="home-link" id="homeBtn" title="게임센터로">🏠</button>
+        </div>
+        <div class="timer-container"><div id="timer-bar"></div></div>
+    </header>
+
+    <!-- 시작 화면 -->
+    <div id="start-screen" class="screen">
+        <div class="result-card">
+            <div style="font-size:2.4rem;">🌱</div>
+            <h2 style="color:#143820; margin:8px 0 12px;">작물 판별 퀴즈</h2>
+            <p style="color:#666; line-height:1.6; margin-bottom:8px;">
+                사진 속 작물의 이름을<br>
+                <b>4지선다</b>에서 맞히세요!<br><br>
+                한 문제당 <b>3초</b> · 총 <b>20문제</b><br>
+                한 문제 <b>5점</b> · 100점 만점<br>
+                <span style="font-size:0.85rem;color:#999;">선택은 되돌릴 수 없어요.</span>
+            </p>
+            <button class="btn" id="startBtn" disabled>사진 준비 중…</button>
+            <div class="btn-row">
+                <button class="btn-sm btn-ghost" id="startRankBtn">🏆 랭킹보기</button>
+                <button class="btn-sm btn-ghost" id="startCenterBtn">🎮 게임센터</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 게임 화면 -->
+    <div id="game-screen" class="screen hidden">
+        <div class="q-img-wrap"><img id="q-img" alt="작물 사진" /></div>
+        <div class="q-ask">이 작물은 <b>무엇</b>일까요?</div>
+        <div class="choices" id="choices"></div>
+    </div>
+
+    <!-- 결과 화면 -->
+    <div id="result-screen" class="screen hidden">
+        <div class="result-card">
+            <h2 style="color:#143820">퀴즈 완료!</h2>
+            <div class="res-score"><span id="final-score">0</span><span style="font-size:1.1rem;"> 점</span></div>
+            <p id="rank-text" style="font-weight: bold; color: #555;"></p>
+            <div id="newBest" class="new-best hidden">🎉 최고기록 갱신!</div>
+            <div class="res-grid">
+                <div class="res-box"><div class="v" id="resCorrect">-</div><div class="l">맞힌 개수</div></div>
+                <div class="res-box"><div class="v" id="resBest">-</div><div class="l">내 최고점</div></div>
+                <div class="res-box"><div class="v" id="resRank">-</div><div class="l">현재 순위</div></div>
+            </div>
+            <div class="xp-gain" id="xpGain"></div>
+            <div class="review-toggle" id="reviewToggle">정답 확인하기 ▾</div>
+            <div class="review-list hidden" id="reviewList"></div>
+            <div class="btn-row">
+                <button class="btn-sm btn-primary" id="retryBtn">다시하기</button>
+                <button class="btn-sm btn-ghost" id="resultRankBtn">랭킹보기</button>
+                <button class="btn-sm btn-ghost" id="resultCenterBtn">게임센터</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 랭킹 모달 -->
+<div class="rank-modal" id="rankModal">
+    <div class="rank-panel">
+        <div class="rank-head">
+            <h3>🏆 작물 판별 퀴즈 TOP 10</h3>
+            <button class="rank-close" id="rankCloseBtn">✕</button>
+        </div>
+        <div class="rank-list" id="rankList"><div class="rank-loading">불러오는 중…</div></div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+    import {
+        getFirestore, doc, getDoc, setDoc, updateDoc, increment,
+        collection, getDocs, query, orderBy, limit, where, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAcU8iZR-B5HdvX1FOh4APCm0hXsz1u_X8",
+        authDomain: "tenar-chat-1674c.firebaseapp.com",
+        databaseURL: "https://tenar-chat-1674c-default-rtdb.firebaseio.com",
+        projectId: "tenar-chat-1674c",
+        storageBucket: "tenar-chat-1674c.firebasestorage.app",
+        messagingSenderId: "662688468209",
+        appId: "1:662688468209:web:0f37484e26943d79946d50"
+    };
+    const fbApp = initializeApp(firebaseConfig);
+    const db = getFirestore(fbApp);
+    const GAME_ID = 'crop_quiz';
+
+    function withTimeout(promise, ms = 4500) {
+        return Promise.race([promise, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
+    }
+
+    /* ===== 사용자 ===== */
+    const USER = {
+        userId: localStorage.getItem('tenarGameUserId'),
+        nickname: localStorage.getItem('tenarGameNick')
+    };
+    if (!USER.userId || !USER.nickname) location.replace('game_center.html');
+
+    /* ===== 작물 데이터 (파일명 = 정답, 같은 분류에서 오답 보기 추출) ===== */
+    const IMG_BASE = 'quiz_crops/';
+    const CROPS = [
+        { n:'복숭아',      c:'과수',     f:['복숭아.JPG'] },
+        { n:'자두',        c:'과수',     f:['자두.JPG'] },
+        { n:'매실',        c:'과수',     f:['매실.JPG'] },
+        { n:'보리수',      c:'과수',     f:['보리수.JPG'] },
+        { n:'양배추',      c:'채소',     f:['양배추.JPG','양배추2.JPG','양배추3.JPG'] },
+        { n:'케일',        c:'채소',     f:['케일.JPG','케일2.JPG'] },
+        { n:'아스파라거스', c:'채소',     f:['아스파라거스.JPG'] },
+        { n:'오이',        c:'채소',     f:['오이.JPG'] },
+        { n:'여주',        c:'채소',     f:['여주.JPG'] },
+        { n:'주키니',      c:'채소',     f:['주키니.JPG'] },
+        { n:'참외',        c:'채소',     f:['참외.JPG'] },
+        { n:'더덕',        c:'뿌리채소', f:['더덕.JPG'] },
+        { n:'우엉',        c:'뿌리채소', f:['우엉.JPG'] },
+        { n:'도라지',      c:'뿌리채소', f:['도라지.JPG'] },
+        { n:'감자',        c:'뿌리채소', f:['감자.JPG'] },
+        { n:'밀',          c:'곡물콩',   f:['밀.JPG'] },
+        { n:'율무',        c:'곡물콩',   f:['율무.JPG'] },
+        { n:'참깨',        c:'곡물콩',   f:['참깨.JPG'] },
+        { n:'유월콩',      c:'곡물콩',   f:['유월콩.JPG'] },
+        { n:'결명자',      c:'약용허브', f:['결명자.JPG'] },
+        { n:'엉겅퀴',      c:'약용허브', f:['엉겅퀴.JPG'] },
+        { n:'바질',        c:'약용허브', f:['바질.JPG'] },
+        { n:'삼립국화',    c:'약용허브', f:['삼립국화.JPG'] },
+    ];
+
+    const TOTAL_Q = 20;
+    const TIME_PER_Q = 3;       // 초
+    const POINT_PER_Q = 5;      // 문제당 점수
+
+    function shuffle(arr) {
+        const a = arr.slice();
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+    }
+    function imgUrl(file) { return IMG_BASE + encodeURIComponent(file); }
+
+    /* 문제 생성: 20개 서로 다른 작물, 보기는 같은 분류 우선 */
+    function buildQuestions() {
+        const pick = shuffle(CROPS).slice(0, Math.min(TOTAL_Q, CROPS.length));
+        return pick.map(crop => {
+            // 같은 분류의 다른 작물에서 오답 3개
+            let pool = CROPS.filter(x => x.c === crop.c && x.n !== crop.n);
+            pool = shuffle(pool);
+            let distractors = pool.slice(0, 3).map(x => x.n);
+            // 같은 분류가 3개 미만이면 전체에서 보충
+            if (distractors.length < 3) {
+                const extra = shuffle(CROPS.filter(x => x.n !== crop.n && !distractors.includes(x.n)))
+                    .map(x => x.n);
+                for (const e of extra) {
+                    if (distractors.length >= 3) break;
+                    distractors.push(e);
+                }
+            }
+            const file = crop.f[Math.floor(Math.random() * crop.f.length)];
+            return {
+                answer: crop.n,
+                file,
+                choices: shuffle([crop.n, ...distractors])
+            };
+        });
+    }
+
+    /* ===== 게임 상태 ===== */
+    let questions = [];
+    let qIndex = 0;
+    let correctCount = 0;
+    let answers = [];      // {answer, mine, ok}
+    let timerInt = null;
+    let timeLeft = 0;
+    let locked = false;
+
+    const imgEl = document.getElementById('q-img');
+    const choicesEl = document.getElementById('choices');
+    const timerBar = document.getElementById('timer-bar');
+    const qCur = document.getElementById('q-cur');
+
+    function startGame() {
+        questions = buildQuestions();
+        qIndex = 0; correctCount = 0; answers = [];
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.add('hidden');
+        document.getElementById('game-screen').classList.remove('hidden');
+        showQuestion();
+    }
+
+    function showQuestion() {
+        locked = false;
+        const q = questions[qIndex];
+        qCur.textContent = qIndex + 1;
+        imgEl.src = imgUrl(q.file);
+        choicesEl.innerHTML = '';
+        q.choices.forEach(name => {
+            const b = document.createElement('button');
+            b.className = 'choice-btn';
+            b.textContent = name;
+            b.addEventListener('click', () => choose(name, b));
+            choicesEl.appendChild(b);
+        });
+        startTimer();
+    }
+
+    function startTimer() {
+        timeLeft = TIME_PER_Q * 1000;
+        timerBar.style.transition = 'width 0.1s linear';
+        timerBar.style.width = '100%';
+        timerBar.style.background = '#c9962b';
+        if (timerInt) clearInterval(timerInt);
+        timerInt = setInterval(() => {
+            timeLeft -= 100;
+            const pct = Math.max(0, timeLeft / (TIME_PER_Q * 1000) * 100);
+            timerBar.style.width = pct + '%';
+            if (pct < 34) timerBar.style.background = '#ff4d4d';
+            else if (pct < 67) timerBar.style.background = '#ffa500';
+            if (timeLeft <= 0) { clearInterval(timerInt); timeUp(); }
+        }, 100);
+    }
+
+    function choose(name, btn) {
+        if (locked) return;
+        locked = true;
+        clearInterval(timerInt);
+        btn.classList.add('picked');
+        [...choicesEl.children].forEach(c => c.disabled = true);
+        const q = questions[qIndex];
+        const ok = (name === q.answer);
+        if (ok) correctCount++;
+        answers.push({ answer: q.answer, mine: name, ok });
+        setTimeout(nextQuestion, 220);
+    }
+
+    function timeUp() {
+        if (locked) return;
+        locked = true;
+        [...choicesEl.children].forEach(c => c.disabled = true);
+        const q = questions[qIndex];
+        answers.push({ answer: q.answer, mine: '시간초과', ok: false });
+        setTimeout(nextQuestion, 220);
+    }
+
+    function nextQuestion() {
+        qIndex++;
+        if (qIndex >= questions.length) finishGame();
+        else showQuestion();
+    }
+
+    /* ===== 결과 ===== */
+    function finishGame() {
+        clearInterval(timerInt);
+        const score = correctCount * POINT_PER_Q;   // 최대 100
+        document.getElementById('game-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.remove('hidden');
+        document.getElementById('final-score').textContent = score;
+        document.getElementById('resCorrect').textContent = correctCount + '개';
+
+        let rank = "";
+        if (score === 100) rank = "🏅 작물 박사";
+        else if (score >= 80) rank = "👨‍🌾 베테랑 조사관";
+        else if (score >= 50) rank = "🌿 성장하는 조사원";
+        else rank = "🌱 새내기 관찰자";
+        document.getElementById('rank-text').textContent = rank;
+
+        // 정답 리뷰
+        const rv = document.getElementById('reviewList');
+        rv.innerHTML = answers.map((a, i) => {
+            const mark = a.ok ? '✅' : '❌';
+            const mineTxt = a.ok ? '' : `<span class="rv-mine">내 답: ${escapeHtml(a.mine)}</span>`;
+            return `<div class="review-item">
+                <span class="rv-no">${i+1}</span>
+                <span class="rv-mark">${mark}</span>
+                <span class="rv-ans"><span class="rv-correct">${escapeHtml(a.answer)}</span> ${mineTxt}</span>
+            </div>`;
+        }).join('');
+
+        submitScore(score);
+    }
+
+    /* ===== 점수 저장 / XP / 랭킹 ===== */
+    const XP_PER_PLAY = 10;
+    function xpForScore(score) { return XP_PER_PLAY + correctCount; }
+
+    async function submitScore(score) {
+        const xpGain = xpForScore(score);
+        document.getElementById('xpGain').textContent = `+${xpGain} XP 획득`;
+        document.getElementById('resBest').textContent = '…';
+        document.getElementById('resRank').textContent = '…';
+        document.getElementById('newBest').classList.add('hidden');
+
+        if (!USER.userId) return;
+        const scoreRef = doc(db, 'rankings', GAME_ID, 'scores', USER.userId);
+        let prevBest = 0, isNewBest = false;
+        try {
+            const prev = await withTimeout(getDoc(scoreRef));
+            prevBest = prev.exists() ? (prev.data().score || 0) : 0;
+            isNewBest = score > prevBest;
+            if (isNewBest) {
+                await withTimeout(setDoc(scoreRef, {
+                    userId: USER.userId, nickname: USER.nickname,
+                    score: score, playedAt: serverTimestamp()
+                }));
+            }
+        } catch (e) {}
+
+        withTimeout(setDoc(doc(collection(db, 'playLogs')), {
+            gameId: GAME_ID, userId: USER.userId, nickname: USER.nickname,
+            score: score, playedAt: serverTimestamp()
+        })).catch(() => {});
+
+        withTimeout(updateDoc(doc(db, 'users', USER.userId), {
+            totalPlayCount: increment(1),
+            totalScore: increment(score),
+            xp: increment(xpGain),
+            lastLogin: serverTimestamp()
+        })).catch(() => {});
+
+        const myBest = Math.max(prevBest, score);
+        document.getElementById('resBest').textContent = myBest + '점';
+        if (isNewBest) document.getElementById('newBest').classList.remove('hidden');
+
+        try {
+            const higher = await withTimeout(getDocs(query(collection(db, 'rankings', GAME_ID, 'scores'), where('score', '>', myBest))));
+            document.getElementById('resRank').textContent = (higher.size + 1) + '위';
+        } catch (e) {
+            document.getElementById('resRank').textContent = '-';
+        }
+    }
+
+    /* ===== 랭킹 모달 ===== */
+    const rankModal = document.getElementById('rankModal');
+    async function openRanking() {
+        rankModal.classList.add('show');
+        const list = document.getElementById('rankList');
+        list.innerHTML = '<div class="rank-loading">불러오는 중…</div>';
+        try {
+            const qs = await withTimeout(getDocs(query(collection(db, 'rankings', GAME_ID, 'scores'), orderBy('score', 'desc'), limit(10))));
+            if (qs.empty) { list.innerHTML = '<div class="rank-empty">아직 기록이 없어요.<br>첫 번째 기록의 주인공이 되어보세요!</div>'; return; }
+            const medals = ['🥇', '🥈', '🥉'];
+            let html = '', pos = 0;
+            qs.forEach((d) => {
+                pos++;
+                const r = d.data();
+                const mine = r.userId === USER.userId;
+                const posCell = pos <= 3 ? `<div class="rank-pos top">${medals[pos-1]}</div>` : `<div class="rank-pos">${pos}</div>`;
+                html += `<div class="rank-row ${mine ? 'me' : ''}">${posCell}
+                    <div class="rank-nick">${escapeHtml(r.nickname || '익명')}${mine ? '<small>나</small>' : ''}</div>
+                    <div class="rank-sc">${r.score}점</div></div>`;
+            });
+            list.innerHTML = html;
+        } catch (e) {
+            list.innerHTML = '<div class="rank-empty">랭킹을 불러오지 못했습니다.</div>';
+        }
+    }
+    function closeRanking() { rankModal.classList.remove('show'); }
+    function goCenter() { location.href = 'game_center.html'; }
+    function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+    }
+
+    /* ===== 이미지 미리 로드 (3초 타이머 공정성) ===== */
+    function preloadImages() {
+        const startBtn = document.getElementById('startBtn');
+        const files = [];
+        CROPS.forEach(c => c.f.forEach(f => files.push(f)));
+        let loaded = 0;
+        const done = () => {
+            loaded++;
+            if (loaded >= files.length) {
+                startBtn.disabled = false;
+                startBtn.textContent = '퀴즈 시작';
+            }
+        };
+        files.forEach(f => {
+            const im = new Image();
+            im.onload = done; im.onerror = done;
+            im.src = imgUrl(f);
+        });
+        // 안전장치: 6초 후 무조건 활성화
+        setTimeout(() => { startBtn.disabled = false; startBtn.textContent = '퀴즈 시작'; }, 6000);
+    }
+
+    /* ===== 이벤트 ===== */
+    document.getElementById('startBtn').addEventListener('click', startGame);
+    document.getElementById('retryBtn').addEventListener('click', startGame);
+    document.getElementById('startRankBtn').addEventListener('click', openRanking);
+    document.getElementById('resultRankBtn').addEventListener('click', openRanking);
+    document.getElementById('rankCloseBtn').addEventListener('click', closeRanking);
+    document.getElementById('startCenterBtn').addEventListener('click', goCenter);
+    document.getElementById('resultCenterBtn').addEventListener('click', goCenter);
+    document.getElementById('homeBtn').addEventListener('click', goCenter);
+    document.getElementById('reviewToggle').addEventListener('click', () => {
+        const rv = document.getElementById('reviewList');
+        const t = document.getElementById('reviewToggle');
+        const hidden = rv.classList.toggle('hidden');
+        t.textContent = hidden ? '정답 확인하기 ▾' : '정답 접기 ▴';
+    });
+    rankModal.addEventListener('click', (e) => { if (e.target === rankModal) closeRanking(); });
+
+    preloadImages();
+</script>
+
+<!-- 네이버 애널리틱스(Wcslog) -->
+<script type="text/javascript" src="//wcs.pstatic.net/wcslog.js"></script>
+<script type="text/javascript">
+if(!wcs_add) var wcs_add = {};
+wcs_add["wa"] = "19e5d0d688a0f70";
+if(window.wcs) { wcs_do(); }
+</script>
+</body>
+</html>
