@@ -27,7 +27,7 @@
         #app-container {
             width: 100%; max-width: 420px; height: 100%;
             background-color: #fff; display: flex; flex-direction: column;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            box-shadow: 0 0 20px rgba(0,0,0,0.1); position: relative;
         }
         header {
             background: linear-gradient(135deg, #143820 0%, #2e7a4e 100%);
@@ -137,6 +137,25 @@
         .rank-nick small { color: #2e7a4e; font-weight: 800; margin-left: 5px; }
         .rank-sc { font-weight: 800; color: #c9962b; font-variant-numeric: tabular-nums; flex-shrink: 0; }
         .rank-empty, .rank-loading { text-align: center; color: #6b7268; font-size: 0.9rem; padding: 24px 0; }
+        .rank-note { font-size: 0.74rem; color: #c9962b; font-weight: 700; padding: 8px 16px 0; text-align: center; }
+
+        /* 폭죽 + 1등 배너 */
+        #fxCanvas {
+            display: none; position: absolute; inset: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 400;
+        }
+        .champ-banner {
+            display: none; position: absolute; top: 18%; left: 50%; transform: translateX(-50%) scale(0.6);
+            z-index: 401; background: linear-gradient(135deg,#c9962b,#e6b955); color: #fff;
+            padding: 14px 26px; border-radius: 999px; font-size: 1.15rem; font-weight: 900;
+            box-shadow: 0 10px 30px rgba(201,150,43,0.5); white-space: nowrap; opacity: 0;
+        }
+        .champ-banner.show { display: block; animation: pop-banner 0.5s ease forwards; }
+        @keyframes pop-banner {
+            0% { opacity: 0; transform: translateX(-50%) scale(0.6); }
+            60% { opacity: 1; transform: translateX(-50%) scale(1.1); }
+            100% { opacity: 1; transform: translateX(-50%) scale(1); }
+        }
     </style>
 </head>
 <body>
@@ -194,15 +213,20 @@
             </div>
         </div>
     </div>
+
+    <!-- 폭죽 + 1등 배너 -->
+    <canvas id="fxCanvas"></canvas>
+    <div class="champ-banner" id="champBanner">🎉 이번 주 1위! 🎉</div>
 </div>
 
 <!-- 랭킹 모달 -->
 <div class="rank-modal" id="rankModal">
     <div class="rank-panel">
         <div class="rank-head">
-            <h3>🏆 매의 눈 TOP 10</h3>
+            <h3>🏆 매의 눈 주간랭킹</h3>
             <button class="rank-close" id="rankCloseBtn">✕</button>
         </div>
+        <div class="rank-note">매주 월요일 오전 9시 초기화 · 이번 주 TOP 10</div>
         <div class="rank-list" id="rankList"><div class="rank-loading">불러오는 중…</div></div>
     </div>
 </div>
@@ -235,6 +259,21 @@
         ]);
     }
 
+    /* ===== 주간 키 (매주 월요일 09:00 KST 리셋) ===== */
+    function currentWeekKey(now = new Date()) {
+        const kst = new Date(now.getTime() + 9 * 3600 * 1000);
+        const day = kst.getUTCDay();
+        const daysSinceMon = (day + 6) % 7;
+        const kstMid = Date.UTC(kst.getUTCFullYear(), kst.getUTCMonth(), kst.getUTCDate());
+        let boundary = kstMid - daysSinceMon * 86400000 + 9 * 3600 * 1000;
+        if (kst.getTime() < boundary) boundary -= 7 * 86400000;
+        const b = new Date(boundary);
+        return `${b.getUTCFullYear()}-${String(b.getUTCMonth()+1).padStart(2,'0')}-${String(b.getUTCDate()).padStart(2,'0')}`;
+    }
+    const WEEK = currentWeekKey();
+    const weeklyCol = () => collection(db, 'rankings', GAME_ID, 'wk_' + WEEK);
+    const weeklyDoc = (uid) => doc(db, 'rankings', GAME_ID, 'wk_' + WEEK, uid);
+
     /* ===== 사용자 (없으면 게임센터로) ===== */
     const USER = {
         userId: localStorage.getItem('tenarGameUserId'),
@@ -265,6 +304,7 @@
             this.topLevelText.innerText = this.highScore;
         },
         start() {
+            try { ensureAudio(); } catch (e) {}   // 사용자 동작 시점에 오디오 준비
             this.level = 1; this.time = 100; this.isPlaying = true;
             document.getElementById('start-screen').classList.add('hidden');
             document.getElementById('result-screen').classList.add('hidden');
@@ -359,13 +399,14 @@
         document.getElementById('newBest').classList.add('hidden');
 
         if (!USER.userId) return;
+
+        // 1) 개인 통산 최고점 (계속 유지)
         const scoreRef = doc(db, 'rankings', GAME_ID, 'scores', USER.userId);
         let prevBest = 0, isNewBest = false;
         try {
             const prev = await withTimeout(getDoc(scoreRef));
             prevBest = prev.exists() ? (prev.data().score || 0) : 0;
             isNewBest = score > prevBest;
-            // 최고점만 갱신
             if (isNewBest) {
                 await withTimeout(setDoc(scoreRef, {
                     userId: USER.userId, nickname: USER.nickname,
@@ -374,13 +415,25 @@
             }
         } catch (e) {}
 
-        // 플레이 로그 (통계용)
+        // 2) 이번 주 최고점 (주간랭킹)
+        const wkRef = weeklyDoc(USER.userId);
+        let wkPrev = 0;
+        try {
+            const wp = await withTimeout(getDoc(wkRef));
+            wkPrev = wp.exists() ? (wp.data().score || 0) : 0;
+            if (score > wkPrev) {
+                await withTimeout(setDoc(wkRef, {
+                    userId: USER.userId, nickname: USER.nickname,
+                    score: score, weekKey: WEEK, playedAt: serverTimestamp()
+                }));
+            }
+        } catch (e) {}
+
+        // 3) 플레이 로그 + 사용자 누적 XP
         withTimeout(setDoc(doc(collection(db, 'playLogs')), {
             gameId: GAME_ID, userId: USER.userId, nickname: USER.nickname,
             score: score, playedAt: serverTimestamp()
         })).catch(() => {});
-
-        // 사용자 누적치 + XP
         withTimeout(updateDoc(doc(db, 'users', USER.userId), {
             totalPlayCount: increment(1),
             totalScore: increment(score),
@@ -388,17 +441,95 @@
             lastLogin: serverTimestamp()
         })).catch(() => {});
 
-        // 최종 최고점 / 순위 표시
+        // 통산 최고점 표시
         const myBest = Math.max(prevBest, score);
         document.getElementById('resBest').textContent = myBest + ' LV';
         if (isNewBest) document.getElementById('newBest').classList.remove('hidden');
 
+        // 주간 순위 계산 + 1등이면 폭죽
+        const wkBest = Math.max(wkPrev, score);
         try {
-            const higher = await withTimeout(getDocs(query(collection(db, 'rankings', GAME_ID, 'scores'), where('score', '>', myBest))));
-            document.getElementById('resRank').textContent = (higher.size + 1) + '위';
+            const higher = await withTimeout(getDocs(query(weeklyCol(), where('score', '>', wkBest))));
+            const weekRank = higher.size + 1;
+            document.getElementById('resRank').textContent = weekRank + '위';
+            if (weekRank === 1 && wkBest > 0) celebrate();
         } catch (e) {
             document.getElementById('resRank').textContent = '-';
         }
+    }
+
+    /* ===== 폭죽 + 팡파르 ===== */
+    let _actx = null;
+    function ensureAudio() {
+        if (!_actx) _actx = new (window.AudioContext || window.webkitAudioContext)();
+        if (_actx.state === 'suspended') _actx.resume();
+    }
+    function playFanfare() {
+        try {
+            ensureAudio();
+            const now = _actx.currentTime;
+            const seq = [523.25, 659.25, 783.99, 1046.5];
+            seq.forEach((f, i) => {
+                const o = _actx.createOscillator(), g = _actx.createGain();
+                o.type = 'triangle'; o.frequency.value = f;
+                const t0 = now + i * 0.16;
+                g.gain.setValueAtTime(0.0001, t0);
+                g.gain.exponentialRampToValueAtTime(0.25, t0 + 0.03);
+                g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.42);
+                o.connect(g).connect(_actx.destination);
+                o.start(t0); o.stop(t0 + 0.45);
+            });
+            [523.25, 659.25, 783.99, 1046.5].forEach(f => {
+                const o = _actx.createOscillator(), g = _actx.createGain();
+                o.type = 'triangle'; o.frequency.value = f;
+                const t0 = now + 0.66;
+                g.gain.setValueAtTime(0.0001, t0);
+                g.gain.exponentialRampToValueAtTime(0.22, t0 + 0.04);
+                g.gain.exponentialRampToValueAtTime(0.0001, t0 + 1.0);
+                o.connect(g).connect(_actx.destination);
+                o.start(t0); o.stop(t0 + 1.05);
+            });
+        } catch (e) {}
+    }
+    function runFireworks() {
+        const cv = document.getElementById('fxCanvas');
+        cv.style.display = 'block';
+        cv.width = cv.clientWidth; cv.height = cv.clientHeight;
+        const ctx = cv.getContext('2d');
+        const parts = [];
+        const colors = ['#ff5252','#ffd740','#69f0ae','#40c4ff','#e040fb','#ffab40'];
+        function burst(x, y) {
+            const n = 34;
+            for (let i = 0; i < n; i++) {
+                const a = (Math.PI * 2) * i / n, s = 2 + Math.random() * 4.5;
+                parts.push({ x, y, vx: Math.cos(a)*s, vy: Math.sin(a)*s, life: 1, color: colors[(Math.random()*colors.length)|0] });
+            }
+        }
+        let t = 0;
+        function frame() {
+            ctx.clearRect(0, 0, cv.width, cv.height);
+            if (t % 16 === 0 && t < 100) burst(40 + Math.random()*(cv.width-80), 40 + Math.random()*cv.height*0.55);
+            for (let i = parts.length - 1; i >= 0; i--) {
+                const p = parts[i];
+                p.x += p.vx; p.y += p.vy; p.vy += 0.06; p.life -= 0.011;
+                if (p.life <= 0) { parts.splice(i, 1); continue; }
+                ctx.globalAlpha = Math.max(0, p.life);
+                ctx.fillStyle = p.color;
+                ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, 7); ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+            t++;
+            if (t < 210 || parts.length) requestAnimationFrame(frame);
+            else cv.style.display = 'none';
+        }
+        frame();
+    }
+    function celebrate() {
+        playFanfare();
+        runFireworks();
+        const b = document.getElementById('champBanner');
+        b.classList.add('show');
+        setTimeout(() => { b.classList.remove('show'); b.style.display = 'none'; }, 3200);
     }
 
     /* ===== 랭킹 모달 ===== */
@@ -408,8 +539,8 @@
         const list = document.getElementById('rankList');
         list.innerHTML = '<div class="rank-loading">불러오는 중…</div>';
         try {
-            const qs = await withTimeout(getDocs(query(collection(db, 'rankings', GAME_ID, 'scores'), orderBy('score', 'desc'), limit(10))));
-            if (qs.empty) { list.innerHTML = '<div class="rank-empty">아직 기록이 없어요.<br>첫 번째 기록의 주인공이 되어보세요!</div>'; return; }
+            const qs = await withTimeout(getDocs(query(weeklyCol(), orderBy('score', 'desc'), limit(10))));
+            if (qs.empty) { list.innerHTML = '<div class="rank-empty">이번 주 기록이 아직 없어요.<br>첫 1위에 도전해보세요!</div>'; return; }
             const medals = ['🥇', '🥈', '🥉'];
             let html = '', pos = 0;
             qs.forEach((d) => {

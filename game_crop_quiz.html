@@ -1,10 +1,9 @@
-<!-- game_crop_quiz.html · 저장: 2026-06-25 03:45 KST -->
+<!-- game_crop_quiz.html · 저장: 2026-06-25 17:56 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <!-- Google Analytics (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-B8ELP4S5PR"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -12,7 +11,7 @@
       gtag('js', new Date());
       gtag('config', 'G-B8ELP4S5PR');
     </script>
-    <title>작물 판별 퀴즈 · 텐아르 게임센터</title>
+    <title>작물 구별 퀴즈 · 텐아르 게임센터</title>
     <style>
         * {
             box-sizing: border-box; margin: 0; padding: 0;
@@ -27,7 +26,7 @@
         #app-container {
             width: 100%; max-width: 420px; height: 100%;
             background-color: #fff; display: flex; flex-direction: column;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            box-shadow: 0 0 20px rgba(0,0,0,0.1); position: relative;
         }
         header {
             background: linear-gradient(135deg, #143820 0%, #2e7a4e 100%);
@@ -62,7 +61,6 @@
         }
         .hidden { display: none !important; }
 
-        /* 게임 화면 */
         #game-screen { justify-content: flex-start; padding: 14px 16px 16px; }
         .q-img-wrap {
             width: 100%; aspect-ratio: 4 / 3; border-radius: 16px; overflow: hidden;
@@ -82,7 +80,6 @@
         .choice-btn.picked { background: #2e7a4e; color: #fff; border-color: #2e7a4e; }
         .choice-btn:disabled { cursor: default; }
 
-        /* 시작/결과 카드 */
         .result-card {
             text-align: center; padding: 28px 24px; background: #f9fbf9;
             border-radius: 20px; border: 1px solid #e0e6e0; width: 92%; max-width: 360px;
@@ -104,7 +101,6 @@
         .btn-ghost { background: #eef3ec; color: #1f5132; border: 1px solid #cfe0c8; }
         .btn-sm:active { transform: scale(0.96); }
 
-        /* 결과 통계 */
         .res-score { font-size: 2.6rem; font-weight: 800; color: #2e7a4e; line-height: 1.1; margin: 6px 0; }
         .res-grid { display: flex; gap: 8px; margin: 16px 0 4px; }
         .res-box { flex: 1; background: #fff; border: 1px solid #e0e6e0; border-radius: 12px; padding: 10px 6px; }
@@ -113,7 +109,6 @@
         .xp-gain { margin-top: 12px; font-size: 0.9rem; font-weight: 700; color: #c9962b; }
         .new-best { display:inline-block; margin-top: 8px; background:#c9962b; color:#fff; font-size:0.78rem; font-weight:800; padding:4px 12px; border-radius:999px; }
 
-        /* 정답 리뷰 */
         .review-toggle { margin-top: 16px; font-size: 0.85rem; color: #2e7a4e; font-weight: 700; cursor: pointer; text-decoration: underline; }
         .review-list { margin-top: 12px; text-align: left; max-height: 38vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
         .review-item {
@@ -126,9 +121,6 @@
         .rv-ans { flex: 1; min-width: 0; }
         .rv-correct { font-weight: 700; color: #1f5132; }
         .rv-mine { font-size: 0.78rem; color: #c0392b; }
-
-        /* 로딩 */
-        .loading-dots { color:#6b7268; font-size:0.9rem; margin-top:14px; }
 
         /* 랭킹 모달 */
         .rank-modal {
@@ -148,11 +140,9 @@
         }
         .rank-head h3 { font-size: 1.05rem; font-weight: 800; }
         .rank-close { background: rgba(255,255,255,0.16); border: none; color: #fff; width: 32px; height: 32px; border-radius: 50%; font-size: 17px; cursor: pointer; }
+        .rank-note { font-size: 0.74rem; color: #c9962b; font-weight: 700; padding: 8px 16px 0; text-align: center; }
         .rank-list { overflow-y: auto; padding: 8px 12px 16px; -webkit-overflow-scrolling: touch; }
-        .rank-row {
-            display: flex; align-items: center; gap: 11px; padding: 11px 6px;
-            border-bottom: 1px solid #eee;
-        }
+        .rank-row { display: flex; align-items: center; gap: 11px; padding: 11px 6px; border-bottom: 1px solid #eee; }
         .rank-row.me { background: #eef7ef; border-radius: 10px; border-bottom: 1px solid transparent; }
         .rank-pos { width: 30px; text-align: center; font-weight: 800; font-size: 0.95rem; color: #5b6358; flex-shrink: 0; }
         .rank-pos.top { font-size: 1.25rem; }
@@ -160,6 +150,24 @@
         .rank-nick small { color: #2e7a4e; font-weight: 800; margin-left: 5px; }
         .rank-sc { font-weight: 800; color: #c9962b; font-variant-numeric: tabular-nums; flex-shrink: 0; }
         .rank-empty, .rank-loading { text-align: center; color: #6b7268; font-size: 0.9rem; padding: 24px 0; }
+
+        /* 폭죽 + 1등 배너 */
+        #fxCanvas {
+            display: none; position: absolute; inset: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 400;
+        }
+        .champ-banner {
+            display: none; position: absolute; top: 18%; left: 50%; transform: translateX(-50%) scale(0.6);
+            z-index: 401; background: linear-gradient(135deg,#c9962b,#e6b955); color: #fff;
+            padding: 14px 26px; border-radius: 999px; font-size: 1.15rem; font-weight: 900;
+            box-shadow: 0 10px 30px rgba(201,150,43,0.5); white-space: nowrap; opacity: 0;
+        }
+        .champ-banner.show { display: block; animation: pop-banner 0.5s ease forwards; }
+        @keyframes pop-banner {
+            0% { opacity: 0; transform: translateX(-50%) scale(0.6); }
+            60% { opacity: 1; transform: translateX(-50%) scale(1.1); }
+            100% { opacity: 1; transform: translateX(-50%) scale(1); }
+        }
     </style>
 </head>
 <body>
@@ -168,7 +176,7 @@
     <header>
         <div class="header-top">
             <div class="q-progress"><span id="q-cur">0</span>/20</div>
-            <div class="title-info">🌱 작물 판별 퀴즈</div>
+            <div class="title-info">🌱 작물 구별 퀴즈</div>
             <button class="home-link" id="homeBtn" title="게임센터로">🏠</button>
         </div>
         <div class="timer-container"><div id="timer-bar"></div></div>
@@ -178,17 +186,17 @@
     <div id="start-screen" class="screen">
         <div class="result-card">
             <div style="font-size:2.4rem;">🌱</div>
-            <h2 style="color:#143820; margin:8px 0 12px;">작물 판별 퀴즈</h2>
+            <h2 style="color:#143820; margin:8px 0 12px;">작물 구별 퀴즈</h2>
             <p style="color:#666; line-height:1.6; margin-bottom:8px;">
                 사진 속 작물의 이름을<br>
                 <b>4지선다</b>에서 맞히세요!<br><br>
-                한 문제당 <b>3초</b> · 총 <b>20문제</b><br>
+                한 문제당 <b>4초</b> · 총 <b>20문제</b><br>
                 한 문제 <b>5점</b> · 100점 만점<br>
                 <span style="font-size:0.85rem;color:#999;">선택은 되돌릴 수 없어요.</span>
             </p>
             <button class="btn" id="startBtn" disabled>사진 준비 중…</button>
             <div class="btn-row">
-                <button class="btn-sm btn-ghost" id="startRankBtn">🏆 랭킹보기</button>
+                <button class="btn-sm btn-ghost" id="startRankBtn">🏆 주간랭킹</button>
                 <button class="btn-sm btn-ghost" id="startCenterBtn">🎮 게임센터</button>
             </div>
         </div>
@@ -211,27 +219,32 @@
             <div class="res-grid">
                 <div class="res-box"><div class="v" id="resCorrect">-</div><div class="l">맞힌 개수</div></div>
                 <div class="res-box"><div class="v" id="resBest">-</div><div class="l">내 최고점</div></div>
-                <div class="res-box"><div class="v" id="resRank">-</div><div class="l">현재 순위</div></div>
+                <div class="res-box"><div class="v" id="resRank">-</div><div class="l">주간 순위</div></div>
             </div>
             <div class="xp-gain" id="xpGain"></div>
             <div class="review-toggle" id="reviewToggle">정답 확인하기 ▾</div>
             <div class="review-list hidden" id="reviewList"></div>
             <div class="btn-row">
                 <button class="btn-sm btn-primary" id="retryBtn">다시하기</button>
-                <button class="btn-sm btn-ghost" id="resultRankBtn">랭킹보기</button>
+                <button class="btn-sm btn-ghost" id="resultRankBtn">주간랭킹</button>
                 <button class="btn-sm btn-ghost" id="resultCenterBtn">게임센터</button>
             </div>
         </div>
     </div>
+
+    <!-- 폭죽 + 1등 배너 -->
+    <canvas id="fxCanvas"></canvas>
+    <div class="champ-banner" id="champBanner">🎉 이번 주 1위! 🎉</div>
 </div>
 
 <!-- 랭킹 모달 -->
 <div class="rank-modal" id="rankModal">
     <div class="rank-panel">
         <div class="rank-head">
-            <h3>🏆 작물 판별 퀴즈 TOP 10</h3>
+            <h3>🏆 작물 구별 퀴즈 주간랭킹</h3>
             <button class="rank-close" id="rankCloseBtn">✕</button>
         </div>
+        <div class="rank-note">매주 월요일 오전 9시 초기화 · 이번 주 TOP 10</div>
         <div class="rank-list" id="rankList"><div class="rank-loading">불러오는 중…</div></div>
     </div>
 </div>
@@ -260,6 +273,21 @@
         return Promise.race([promise, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
     }
 
+    /* ===== 주간 키 (매주 월요일 09:00 KST 리셋) ===== */
+    function currentWeekKey(now = new Date()) {
+        const kst = new Date(now.getTime() + 9 * 3600 * 1000);
+        const day = kst.getUTCDay();
+        const daysSinceMon = (day + 6) % 7;
+        const kstMid = Date.UTC(kst.getUTCFullYear(), kst.getUTCMonth(), kst.getUTCDate());
+        let boundary = kstMid - daysSinceMon * 86400000 + 9 * 3600 * 1000;
+        if (kst.getTime() < boundary) boundary -= 7 * 86400000;
+        const b = new Date(boundary);
+        return `${b.getUTCFullYear()}-${String(b.getUTCMonth()+1).padStart(2,'0')}-${String(b.getUTCDate()).padStart(2,'0')}`;
+    }
+    const WEEK = currentWeekKey();
+    const weeklyCol = () => collection(db, 'rankings', GAME_ID, 'wk_' + WEEK);
+    const weeklyDoc = (uid) => doc(db, 'rankings', GAME_ID, 'wk_' + WEEK, uid);
+
     /* ===== 사용자 ===== */
     const USER = {
         userId: localStorage.getItem('tenarGameUserId'),
@@ -267,37 +295,57 @@
     };
     if (!USER.userId || !USER.nickname) location.replace('game_center.html');
 
-    /* ===== 작물 데이터 (파일명 = 정답, 같은 분류에서 오답 보기 추출) ===== */
+    /* ===== 작물 데이터 (파일명=정답, 같은 분류에서 오답 추출) ===== */
     const IMG_BASE = 'quiz_crops/';
     const CROPS = [
-        { n:'복숭아',      c:'과수',     f:['복숭아.JPG'] },
-        { n:'자두',        c:'과수',     f:['자두.JPG'] },
-        { n:'매실',        c:'과수',     f:['매실.JPG'] },
-        { n:'보리수',      c:'과수',     f:['보리수.JPG'] },
-        { n:'양배추',      c:'채소',     f:['양배추.JPG','양배추2.JPG','양배추3.JPG'] },
-        { n:'케일',        c:'채소',     f:['케일.JPG','케일2.JPG'] },
-        { n:'아스파라거스', c:'채소',     f:['아스파라거스.JPG'] },
-        { n:'오이',        c:'채소',     f:['오이.JPG'] },
-        { n:'여주',        c:'채소',     f:['여주.JPG'] },
-        { n:'주키니',      c:'채소',     f:['주키니.JPG'] },
-        { n:'참외',        c:'채소',     f:['참외.JPG'] },
-        { n:'더덕',        c:'뿌리채소', f:['더덕.JPG'] },
-        { n:'우엉',        c:'뿌리채소', f:['우엉.JPG'] },
-        { n:'도라지',      c:'뿌리채소', f:['도라지.JPG'] },
-        { n:'감자',        c:'뿌리채소', f:['감자.JPG'] },
-        { n:'밀',          c:'곡물콩',   f:['밀.JPG'] },
-        { n:'율무',        c:'곡물콩',   f:['율무.JPG'] },
-        { n:'참깨',        c:'곡물콩',   f:['참깨.JPG'] },
-        { n:'유월콩',      c:'곡물콩',   f:['유월콩.JPG'] },
-        { n:'결명자',      c:'약용허브', f:['결명자.JPG'] },
-        { n:'엉겅퀴',      c:'약용허브', f:['엉겅퀴.JPG'] },
-        { n:'바질',        c:'약용허브', f:['바질.JPG'] },
-        { n:'삼립국화',    c:'약용허브', f:['삼립국화.JPG'] },
+        // 과수
+        { n:'복숭아',   c:'과수',     f:['복숭아.JPG'] },
+        { n:'자두',     c:'과수',     f:['자두.JPG'] },
+        { n:'매실',     c:'과수',     f:['매실.JPG'] },
+        { n:'보리수',   c:'과수',     f:['보리수.JPG'] },
+        { n:'비파나무', c:'과수',     f:['비파나무.JPG'] },
+        // 과채
+        { n:'오이',     c:'과채',     f:['오이.JPG'] },
+        { n:'여주',     c:'과채',     f:['여주.JPG'] },
+        { n:'주키니',   c:'과채',     f:['주키니.JPG'] },
+        { n:'참외',     c:'과채',     f:['참외.JPG'] },
+        { n:'박',       c:'과채',     f:['박.JPG','박2.JPG'] },
+        { n:'방울토마토', c:'과채',   f:['방울토마토.JPG'] },
+        { n:'가지',     c:'과채',     f:['가지.JPG','가지2.JPG'] },
+        // 엽채
+        { n:'양배추',   c:'엽채',     f:['양배추.JPG','양배추2.JPG','양배추3.JPG'] },
+        { n:'케일',     c:'엽채',     f:['케일.JPG','케일2.JPG'] },
+        { n:'아스파라거스', c:'엽채', f:['아스파라거스.JPG'] },
+        { n:'대파',     c:'엽채',     f:['대파.JPG'] },
+        { n:'콜라비',   c:'엽채',     f:['콜라비.JPG'] },
+        // 뿌리채소
+        { n:'더덕',     c:'뿌리채소', f:['더덕.JPG'] },
+        { n:'우엉',     c:'뿌리채소', f:['우엉.JPG'] },
+        { n:'도라지',   c:'뿌리채소', f:['도라지.JPG'] },
+        { n:'감자',     c:'뿌리채소', f:['감자.JPG','감자2.JPG'] },
+        { n:'당근',     c:'뿌리채소', f:['당근.JPG'] },
+        { n:'토란',     c:'뿌리채소', f:['토란.JPG'] },
+        // 곡물·콩
+        { n:'밀',       c:'곡물콩',   f:['밀.JPG'] },
+        { n:'옥수수',   c:'곡물콩',   f:['옥수수.JPG','옥수수2.JPG','옥수수3.JPG'] },
+        { n:'참깨',     c:'곡물콩',   f:['참깨.JPG'] },
+        { n:'땅콩',     c:'곡물콩',   f:['땅콩.JPG'] },
+        { n:'유월콩',   c:'곡물콩',   f:['유월콩.JPG'] },
+        { n:'작두콩',   c:'곡물콩',   f:['작두콩.JPG'] },
+        // 약용·허브
+        { n:'결명자',   c:'약용허브', f:['결명자.JPG','결명자2.JPG'] },
+        { n:'엉겅퀴',   c:'약용허브', f:['엉겅퀴.JPG'] },
+        { n:'바질',     c:'약용허브', f:['바질.JPG'] },
+        { n:'삼립국화', c:'약용허브', f:['삼립국화.JPG'] },
+        { n:'도꼬마리', c:'약용허브', f:['도꼬마리.JPG'] },
+        { n:'방풍',     c:'약용허브', f:['방풍.JPG'] },
+        { n:'현삼',     c:'약용허브', f:['현삼.JPG'] },
+        { n:'소엽',     c:'약용허브', f:['소엽.JPG'] },
     ];
 
     const TOTAL_Q = 20;
-    const TIME_PER_Q = 3;       // 초
-    const POINT_PER_Q = 5;      // 문제당 점수
+    const TIME_PER_Q = 4;       // 초 (3 → 4)
+    const POINT_PER_Q = 5;
 
     function shuffle(arr) {
         const a = arr.slice();
@@ -309,40 +357,23 @@
     }
     function imgUrl(file) { return IMG_BASE + encodeURIComponent(file); }
 
-    /* 문제 생성: 20개 서로 다른 작물, 보기는 같은 분류 우선 */
     function buildQuestions() {
         const pick = shuffle(CROPS).slice(0, Math.min(TOTAL_Q, CROPS.length));
         return pick.map(crop => {
-            // 같은 분류의 다른 작물에서 오답 3개
-            let pool = CROPS.filter(x => x.c === crop.c && x.n !== crop.n);
-            pool = shuffle(pool);
+            let pool = shuffle(CROPS.filter(x => x.c === crop.c && x.n !== crop.n));
             let distractors = pool.slice(0, 3).map(x => x.n);
-            // 같은 분류가 3개 미만이면 전체에서 보충
             if (distractors.length < 3) {
-                const extra = shuffle(CROPS.filter(x => x.n !== crop.n && !distractors.includes(x.n)))
-                    .map(x => x.n);
-                for (const e of extra) {
-                    if (distractors.length >= 3) break;
-                    distractors.push(e);
-                }
+                const extra = shuffle(CROPS.filter(x => x.n !== crop.n && !distractors.includes(x.n))).map(x => x.n);
+                for (const e of extra) { if (distractors.length >= 3) break; distractors.push(e); }
             }
             const file = crop.f[Math.floor(Math.random() * crop.f.length)];
-            return {
-                answer: crop.n,
-                file,
-                choices: shuffle([crop.n, ...distractors])
-            };
+            return { answer: crop.n, file, choices: shuffle([crop.n, ...distractors]) };
         });
     }
 
     /* ===== 게임 상태 ===== */
-    let questions = [];
-    let qIndex = 0;
-    let correctCount = 0;
-    let answers = [];      // {answer, mine, ok}
-    let timerInt = null;
-    let timeLeft = 0;
-    let locked = false;
+    let questions = [], qIndex = 0, correctCount = 0, answers = [];
+    let timerInt = null, timeLeft = 0, locked = false;
 
     const imgEl = document.getElementById('q-img');
     const choicesEl = document.getElementById('choices');
@@ -350,6 +381,7 @@
     const qCur = document.getElementById('q-cur');
 
     function startGame() {
+        try { ensureAudio(); } catch (e) {}   // 사용자 동작 시점에 오디오 준비
         questions = buildQuestions();
         qIndex = 0; correctCount = 0; answers = [];
         document.getElementById('start-screen').classList.add('hidden');
@@ -421,7 +453,7 @@
     /* ===== 결과 ===== */
     function finishGame() {
         clearInterval(timerInt);
-        const score = correctCount * POINT_PER_Q;   // 최대 100
+        const score = correctCount * POINT_PER_Q;
         document.getElementById('game-screen').classList.add('hidden');
         document.getElementById('result-screen').classList.remove('hidden');
         document.getElementById('final-score').textContent = score;
@@ -434,7 +466,6 @@
         else rank = "🌱 새내기 관찰자";
         document.getElementById('rank-text').textContent = rank;
 
-        // 정답 리뷰
         const rv = document.getElementById('reviewList');
         rv.innerHTML = answers.map((a, i) => {
             const mark = a.ok ? '✅' : '❌';
@@ -449,65 +480,150 @@
         submitScore(score);
     }
 
-    /* ===== 점수 저장 / XP / 랭킹 ===== */
+    /* ===== 점수 저장 / XP / 주간랭킹 ===== */
     const XP_PER_PLAY = 10;
-    function xpForScore(score) { return XP_PER_PLAY + correctCount; }
+    function xpForScore() { return XP_PER_PLAY + correctCount; }
 
     async function submitScore(score) {
-        const xpGain = xpForScore(score);
+        const xpGain = xpForScore();
         document.getElementById('xpGain').textContent = `+${xpGain} XP 획득`;
         document.getElementById('resBest').textContent = '…';
         document.getElementById('resRank').textContent = '…';
         document.getElementById('newBest').classList.add('hidden');
-
         if (!USER.userId) return;
-        const scoreRef = doc(db, 'rankings', GAME_ID, 'scores', USER.userId);
-        let prevBest = 0, isNewBest = false;
+
+        // 1) 개인 통산 최고점 (계속 유지)
+        const allRef = doc(db, 'rankings', GAME_ID, 'scores', USER.userId);
+        let allPrev = 0, allNewBest = false;
         try {
-            const prev = await withTimeout(getDoc(scoreRef));
-            prevBest = prev.exists() ? (prev.data().score || 0) : 0;
-            isNewBest = score > prevBest;
-            if (isNewBest) {
-                await withTimeout(setDoc(scoreRef, {
-                    userId: USER.userId, nickname: USER.nickname,
-                    score: score, playedAt: serverTimestamp()
-                }));
+            const prev = await withTimeout(getDoc(allRef));
+            allPrev = prev.exists() ? (prev.data().score || 0) : 0;
+            allNewBest = score > allPrev;
+            if (allNewBest) {
+                await withTimeout(setDoc(allRef, { userId: USER.userId, nickname: USER.nickname, score, playedAt: serverTimestamp() }));
             }
         } catch (e) {}
 
-        withTimeout(setDoc(doc(collection(db, 'playLogs')), {
-            gameId: GAME_ID, userId: USER.userId, nickname: USER.nickname,
-            score: score, playedAt: serverTimestamp()
-        })).catch(() => {});
-
-        withTimeout(updateDoc(doc(db, 'users', USER.userId), {
-            totalPlayCount: increment(1),
-            totalScore: increment(score),
-            xp: increment(xpGain),
-            lastLogin: serverTimestamp()
-        })).catch(() => {});
-
-        const myBest = Math.max(prevBest, score);
-        document.getElementById('resBest').textContent = myBest + '점';
-        if (isNewBest) document.getElementById('newBest').classList.remove('hidden');
-
+        // 2) 이번 주 최고점 (주간랭킹)
+        const wkRef = weeklyDoc(USER.userId);
+        let wkPrev = 0;
         try {
-            const higher = await withTimeout(getDocs(query(collection(db, 'rankings', GAME_ID, 'scores'), where('score', '>', myBest))));
-            document.getElementById('resRank').textContent = (higher.size + 1) + '위';
+            const wp = await withTimeout(getDoc(wkRef));
+            wkPrev = wp.exists() ? (wp.data().score || 0) : 0;
+            if (score > wkPrev) {
+                await withTimeout(setDoc(wkRef, { userId: USER.userId, nickname: USER.nickname, score, weekKey: WEEK, playedAt: serverTimestamp() }));
+            }
+        } catch (e) {}
+
+        // 3) 플레이 로그 + 사용자 누적 XP
+        withTimeout(setDoc(doc(collection(db, 'playLogs')), {
+            gameId: GAME_ID, userId: USER.userId, nickname: USER.nickname, score, playedAt: serverTimestamp()
+        })).catch(() => {});
+        withTimeout(updateDoc(doc(db, 'users', USER.userId), {
+            totalPlayCount: increment(1), totalScore: increment(score),
+            xp: increment(xpGain), lastLogin: serverTimestamp()
+        })).catch(() => {});
+
+        // 통산 최고점 표시
+        const allBest = Math.max(allPrev, score);
+        document.getElementById('resBest').textContent = allBest + '점';
+        if (allNewBest) document.getElementById('newBest').classList.remove('hidden');
+
+        // 주간 순위 계산 + 1등이면 폭죽
+        const wkBest = Math.max(wkPrev, score);
+        try {
+            const higher = await withTimeout(getDocs(query(weeklyCol(), where('score', '>', wkBest))));
+            const weekRank = higher.size + 1;
+            document.getElementById('resRank').textContent = weekRank + '위';
+            if (weekRank === 1 && wkBest > 0) celebrate();
         } catch (e) {
             document.getElementById('resRank').textContent = '-';
         }
     }
 
-    /* ===== 랭킹 모달 ===== */
+    /* ===== 폭죽 + 팡파르 ===== */
+    let _actx = null;
+    function ensureAudio() {
+        if (!_actx) _actx = new (window.AudioContext || window.webkitAudioContext)();
+        if (_actx.state === 'suspended') _actx.resume();
+    }
+    function playFanfare() {
+        try {
+            ensureAudio();
+            const now = _actx.currentTime;
+            const seq = [523.25, 659.25, 783.99, 1046.5];
+            seq.forEach((f, i) => {
+                const o = _actx.createOscillator(), g = _actx.createGain();
+                o.type = 'triangle'; o.frequency.value = f;
+                const t0 = now + i * 0.16;
+                g.gain.setValueAtTime(0.0001, t0);
+                g.gain.exponentialRampToValueAtTime(0.25, t0 + 0.03);
+                g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.42);
+                o.connect(g).connect(_actx.destination);
+                o.start(t0); o.stop(t0 + 0.45);
+            });
+            [523.25, 659.25, 783.99, 1046.5].forEach(f => {
+                const o = _actx.createOscillator(), g = _actx.createGain();
+                o.type = 'triangle'; o.frequency.value = f;
+                const t0 = now + 0.66;
+                g.gain.setValueAtTime(0.0001, t0);
+                g.gain.exponentialRampToValueAtTime(0.22, t0 + 0.04);
+                g.gain.exponentialRampToValueAtTime(0.0001, t0 + 1.0);
+                o.connect(g).connect(_actx.destination);
+                o.start(t0); o.stop(t0 + 1.05);
+            });
+        } catch (e) {}
+    }
+    function runFireworks() {
+        const cv = document.getElementById('fxCanvas');
+        cv.style.display = 'block';
+        cv.width = cv.clientWidth; cv.height = cv.clientHeight;
+        const ctx = cv.getContext('2d');
+        const parts = [];
+        const colors = ['#ff5252','#ffd740','#69f0ae','#40c4ff','#e040fb','#ffab40'];
+        function burst(x, y) {
+            const n = 34;
+            for (let i = 0; i < n; i++) {
+                const a = (Math.PI * 2) * i / n, s = 2 + Math.random() * 4.5;
+                parts.push({ x, y, vx: Math.cos(a)*s, vy: Math.sin(a)*s, life: 1, color: colors[(Math.random()*colors.length)|0] });
+            }
+        }
+        let t = 0;
+        function frame() {
+            ctx.clearRect(0, 0, cv.width, cv.height);
+            if (t % 16 === 0 && t < 100) burst(40 + Math.random()*(cv.width-80), 40 + Math.random()*cv.height*0.55);
+            for (let i = parts.length - 1; i >= 0; i--) {
+                const p = parts[i];
+                p.x += p.vx; p.y += p.vy; p.vy += 0.06; p.life -= 0.011;
+                if (p.life <= 0) { parts.splice(i, 1); continue; }
+                ctx.globalAlpha = Math.max(0, p.life);
+                ctx.fillStyle = p.color;
+                ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, 7); ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+            t++;
+            if (t < 210 || parts.length) requestAnimationFrame(frame);
+            else cv.style.display = 'none';
+        }
+        frame();
+    }
+    function celebrate() {
+        playFanfare();
+        runFireworks();
+        const b = document.getElementById('champBanner');
+        b.classList.add('show');
+        setTimeout(() => { b.classList.remove('show'); b.style.display = 'none'; }, 3200);
+    }
+
+    /* ===== 주간랭킹 모달 ===== */
     const rankModal = document.getElementById('rankModal');
     async function openRanking() {
         rankModal.classList.add('show');
         const list = document.getElementById('rankList');
         list.innerHTML = '<div class="rank-loading">불러오는 중…</div>';
         try {
-            const qs = await withTimeout(getDocs(query(collection(db, 'rankings', GAME_ID, 'scores'), orderBy('score', 'desc'), limit(10))));
-            if (qs.empty) { list.innerHTML = '<div class="rank-empty">아직 기록이 없어요.<br>첫 번째 기록의 주인공이 되어보세요!</div>'; return; }
+            const qs = await withTimeout(getDocs(query(weeklyCol(), orderBy('score', 'desc'), limit(10))));
+            if (qs.empty) { list.innerHTML = '<div class="rank-empty">이번 주 기록이 아직 없어요.<br>첫 1위에 도전해보세요!</div>'; return; }
             const medals = ['🥇', '🥈', '🥉'];
             let html = '', pos = 0;
             qs.forEach((d) => {
@@ -530,26 +646,15 @@
         return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
     }
 
-    /* ===== 이미지 미리 로드 (3초 타이머 공정성) ===== */
+    /* ===== 이미지 미리 로드 ===== */
     function preloadImages() {
         const startBtn = document.getElementById('startBtn');
         const files = [];
         CROPS.forEach(c => c.f.forEach(f => files.push(f)));
         let loaded = 0;
-        const done = () => {
-            loaded++;
-            if (loaded >= files.length) {
-                startBtn.disabled = false;
-                startBtn.textContent = '퀴즈 시작';
-            }
-        };
-        files.forEach(f => {
-            const im = new Image();
-            im.onload = done; im.onerror = done;
-            im.src = imgUrl(f);
-        });
-        // 안전장치: 6초 후 무조건 활성화
-        setTimeout(() => { startBtn.disabled = false; startBtn.textContent = '퀴즈 시작'; }, 6000);
+        const done = () => { if (++loaded >= files.length) { startBtn.disabled = false; startBtn.textContent = '퀴즈 시작'; } };
+        files.forEach(f => { const im = new Image(); im.onload = done; im.onerror = done; im.src = imgUrl(f); });
+        setTimeout(() => { startBtn.disabled = false; startBtn.textContent = '퀴즈 시작'; }, 7000);
     }
 
     /* ===== 이벤트 ===== */
@@ -572,7 +677,6 @@
     preloadImages();
 </script>
 
-<!-- 네이버 애널리틱스(Wcslog) -->
 <script type="text/javascript" src="//wcs.pstatic.net/wcslog.js"></script>
 <script type="text/javascript">
 if(!wcs_add) var wcs_add = {};
