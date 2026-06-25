@@ -1,4 +1,4 @@
-<!-- map_v50_pin_select_scroll.html · 저장: 2026-06-25 04:17 KST · 📍진입 시 해당 핀 자동선택(조사표 바로열기), 즐겨찾기 선택항목 자동스크롤, 검색예시 변경 -->
+<!-- map_v51_pin_move.html · 저장: 2026-06-25 19:43 KST · 선택된 핀 위치변경(십자선 이동→좌표저장, 계산기 역기록)·검색란 초기화 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -210,6 +210,29 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
   box-shadow:0 0 0 3px rgba(226,59,46,.18);
   background:#fff5f4;
 }
+/* ── 핀 위치 변경 모드 ── */
+#pin-move-cross{
+  display:none;position:fixed;left:50%;top:50%;
+  transform:translate(-50%,-50%);
+  z-index:1500;pointer-events:none;
+  filter:drop-shadow(0 1px 2px rgba(0,0,0,.5));
+}
+#pin-move-bar{
+  display:none;position:fixed;left:0;right:0;bottom:0;
+  z-index:1501;background:#fff;border-top:1px solid #e6e2d6;
+  padding:12px 14px calc(12px + env(safe-area-inset-bottom));
+  box-shadow:0 -4px 18px rgba(0,0,0,.16);
+  flex-direction:column;gap:10px;
+}
+#pmb-text{ font-size:13.5px;font-weight:700;color:#2a2a2a;text-align:center;line-height:1.4;white-space:pre-line; }
+#pmb-btns{ display:flex;gap:9px; }
+#pmb-btns button{
+  flex:1;padding:13px 8px;border-radius:11px;border:none;
+  font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;
+}
+#pmb-cancel{ background:#f0eee6;color:#555;border:1px solid #ddd8c8; }
+#pmb-ok{ background:#1a7a3e;color:#fff; }
+#pmb-ok:active{ transform:scale(.97); }
 .fav-item .fi-num{
   flex-shrink:0;width:27px;height:27px;border-radius:50%;
   background:#2e7a4e;color:#fff;font-size:12.5px;font-weight:800;
@@ -695,8 +718,28 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
   <div id="infoLine2">위치를 조회하면 주소가 표시됩니다</div>
   <div class="info-actions">
     <button id="info-fav" onclick="addCurrentFav()">⭐ 저장</button>
+    <button id="info-move" onclick="enterPinMoveMode()" style="display:none">📍 위치변경</button>
     <button id="info-route" onclick="openRouteMenu()">🚗 길찾기</button>
     <button id="info-survey" onclick="fillSurvey()">📋 조사표 입력</button>
+  </div>
+</div>
+
+<!-- 핀 위치 변경 모드: 가운데 십자선 + 하단 확인바 -->
+<div id="pin-move-cross" aria-hidden="true">
+  <svg width="46" height="46" viewBox="0 0 46 46">
+    <circle cx="23" cy="23" r="18" fill="none" stroke="#e23b2e" stroke-width="2.5"/>
+    <line x1="23" y1="1"  x2="23" y2="14" stroke="#e23b2e" stroke-width="2.5"/>
+    <line x1="23" y1="32" x2="23" y2="45" stroke="#e23b2e" stroke-width="2.5"/>
+    <line x1="1"  y1="23" x2="14" y2="23" stroke="#e23b2e" stroke-width="2.5"/>
+    <line x1="32" y1="23" x2="45" y2="23" stroke="#e23b2e" stroke-width="2.5"/>
+    <circle cx="23" cy="23" r="3.2" fill="#e23b2e"/>
+  </svg>
+</div>
+<div id="pin-move-bar">
+  <div id="pmb-text">지도를 움직여 십자선을 정확한 위치에 맞추세요</div>
+  <div id="pmb-btns">
+    <button id="pmb-cancel" onclick="cancelPinMove()">취소</button>
+    <button id="pmb-ok" onclick="confirmPinMove()">✓ 여기로 저장</button>
   </div>
 </div>
 
@@ -894,7 +937,13 @@ function showAddr(jibun, road, zip){
   window._curFav = null;          /* 일반 주소 조회 → 조사표 연결 해제 */
   window._selFavKey = null;       /* 선택 즐겨찾기 강조도 해제 */
   if(typeof _syncSurveyBtn==='function') _syncSurveyBtn();
+  _setMoveBtn(false);             /* 일반 주소엔 위치변경 버튼 숨김(저장된 핀만 변경 가능) */
   showInfoSheet();
+}
+/* 선택된 즐겨찾기일 때만 '위치변경' 버튼 표시 */
+function _setMoveBtn(show){
+  var b = document.getElementById('info-move');
+  if(b) b.style.display = show ? '' : 'none';
 }
 var dbgEl     = document.getElementById('dbg');
 var toastTmr;
@@ -1191,8 +1240,15 @@ function _saveBulkFav(it, lat, lng, addr){
   var _ck=false; for(var ci=0;ci<FAV_COLORS.length;ci++){ if(FAV_COLORS[ci].key===color){ _ck=true; break; } }
   if(!_ck) color = defaultColor;
 
+  /* 손으로 위치를 정한(manualPos) 기존 핀은 좌표를 보존한다.
+     단, 계산기가 보정좌표(it.lat/lng)를 명시적으로 넘긴 경우는 그 값을 따른다. */
+  var manual = (dup>=0 && favs[dup].manualPos) || false;
+  if(manual && !(isFinite(Number(it.lat)) && isFinite(Number(it.lng)))){
+    lat = favs[dup].lat; lng = favs[dup].lng;
+  }
   var rec = { label:label.slice(0,40), lat:lat, lng:lng, addr:addr, color:color,
               locked:(dup>=0 ? !!favs[dup].locked : false),
+              manualPos: manual,
               surveyKey:it.surveyKey||'', surveyApp:it.app||'', crop:crop };
   if(dup>=0) favs[dup] = rec; else favs.unshift(rec);
   setFavs(favs);
@@ -1422,8 +1478,9 @@ window.searchByAddress = function(){
       showFavInfo(_savedFav);
     }
 
-    /* 키보드 닫기 */
-    document.getElementById('search-input').blur();
+    /* 키보드 닫고 검색란 비우기 (주소는 상단바·핀에 표시되므로 입력칸은 초기화) */
+    var _si = document.getElementById('search-input');
+    if(_si){ _si.blur(); _si.value = ''; }
   });
 };
 
@@ -2327,12 +2384,18 @@ function _maybeAutoFav(jibun, road, lat, lng){
     }
   }
   var crop = ''; var _li = label.indexOf(' · '); if(_li > 0) crop = label.slice(0, _li).trim();
+  /* 사용자가 손으로 핀 위치를 정한(manualPos) 기존 즐겨찾기는 좌표를 보존한다.
+     단, URL에 명시적 lat/lng가 오면(보정된 좌표 전달) 그 값을 우선한다. */
+  if(dup>=0 && favs[dup].manualPos && !(isFinite(urlLat) && isFinite(urlLng))){
+    lat = favs[dup].lat; lng = favs[dup].lng;
+  }
   if(dup>=0 && favs[dup].color){ color = favs[dup].color; }
   else if(!color){ color = (sApp === 'chungchi') ? 'blue' : 'green'; }
   var _ck2 = false; for(var c2=0;c2<FAV_COLORS.length;c2++){ if(FAV_COLORS[c2].key===color){ _ck2=true; break; } }
   if(!_ck2) color = (sApp === 'chungchi') ? 'blue' : 'green';
   var rec = { label:label.slice(0,40), lat:lat, lng:lng, addr:addr, color:color,
               locked: (dup>=0 ? !!favs[dup].locked : false),
+              manualPos: (dup>=0 ? !!favs[dup].manualPos : false),
               surveyKey:sKey, surveyApp:sApp, crop:crop };
   if(dup >= 0){ favs[dup] = rec; toast('⭐ 즐겨찾기 갱신됨 (' + label.slice(0,12) + ')'); }
   else { favs.unshift(rec); toast('⭐ 즐겨찾기에 저장됨'); }
@@ -2526,8 +2589,76 @@ function showFavInfo(f){
     setTimeout(function(){ _alertStaleSurveyAndClean(f); }, 80);
   }
   _syncSurveyBtn();
+  _setMoveBtn(true);   /* 저장된 핀이므로 위치변경 가능 */
   /* v33: 핀 클릭 시 작물명 팝업은 띄우지 않음 — 작물명 보기 라벨만 사용 */
   showInfoSheet();
+}
+/* ================================================================
+   핀 위치 변경 — 선택된 즐겨찾기를 십자선(지도 가운데)으로 옮겨 좌표 저장.
+   애매한 도로명 지오코딩으로 핀이 엉뚱한 곳에 찍혔을 때 정확한 위치로 보정한다.
+   저장 시 계산기 저장자료에도 좌표(__mapLat/__mapLng)를 역기록해 이후에도 그 좌표를 사용한다.
+================================================================ */
+var _pinMoving = false, _pinMoveFav = null;
+function enterPinMoveMode(){
+  var f = window._curFav;
+  if(!f || !isFinite(Number(f.lat)) || !isFinite(Number(f.lng))){ toast('먼저 핀을 선택하세요'); return; }
+  if(!S.map){ return; }
+  _pinMoving = true; _pinMoveFav = f;
+  window.hideInfoSheet();
+  if(S.pickMarker){ S.pickMarker.setMap(null); }   /* 십자선이 잘 보이게 선택핀 숨김 */
+  S.map.setCenter(new naver.maps.LatLng(Number(f.lat), Number(f.lng)));
+  document.getElementById('pin-move-cross').style.display = 'block';
+  document.getElementById('pin-move-bar').style.display = 'flex';
+  var t = document.getElementById('pmb-text');
+  if(t) t.textContent = '「' + (f.label||'') + '」\n지도를 움직여 십자선을 정확한 위치에 맞추세요';
+  toast('지도를 움직여 정확한 위치로 맞추세요');
+}
+function _exitPinMoveMode(){
+  _pinMoving = false;
+  var c = document.getElementById('pin-move-cross'); if(c) c.style.display = 'none';
+  var b = document.getElementById('pin-move-bar');   if(b) b.style.display = 'none';
+}
+window.cancelPinMove = function(){
+  var f = _pinMoveFav; _pinMoveFav = null;
+  _exitPinMoveMode();
+  refreshFavPins();
+  if(f) showFavInfo(f);   /* 원래 선택 상태로 복귀 */
+};
+window.confirmPinMove = function(){
+  if(!_pinMoving || !_pinMoveFav || !S.map){ _exitPinMoveMode(); return; }
+  var c = S.map.getCenter();
+  var nlat = c.lat(), nlng = c.lng();
+  var key = _favKey(_pinMoveFav), sKey = _pinMoveFav.surveyKey || '';
+  var favs = getFavs(), idx = -1;
+  for(var i=0;i<favs.length;i++){ if(_favKey(favs[i]) === key){ idx = i; break; } }
+  if(idx < 0 && sKey){ for(var j=0;j<favs.length;j++){ if(favs[j].surveyKey === sKey){ idx = j; break; } } }
+  var moved = null;
+  if(idx >= 0){
+    favs[idx].lat = nlat; favs[idx].lng = nlng; favs[idx].manualPos = true;
+    setFavs(favs);
+    moved = favs[idx];
+    _writeBackMapCoord(moved);   /* 계산기 저장자료에 좌표 역기록 */
+    window._curFav = moved;
+  }
+  _pinMoveFav = null;
+  _exitPinMoveMode();
+  refreshFavPins();
+  toast('✅ 핀 위치를 변경했습니다');
+  if(moved) showFavInfo(moved);
+};
+/* 변경된 좌표를 계산기(통합/청취) 저장자료에 역기록 → 다음에 열 때도 이 좌표 사용 */
+function _writeBackMapCoord(f){
+  try{
+    if(!f || !f.surveyKey) return;
+    var pfx = _surveyStoragePrefix(f.surveyApp);
+    var raw = localStorage.getItem(pfx + f.surveyKey);
+    if(!raw) return;
+    var d = JSON.parse(raw);
+    d.__mapLat = Number(f.lat);
+    d.__mapLng = Number(f.lng);
+    if(f.color) d.__mapColor = f.color;
+    localStorage.setItem(pfx + f.surveyKey, JSON.stringify(d));
+  }catch(e){}
 }
 /* 즐겨찾기 식별 키 (surveyKey 우선, 없으면 좌표) */
 function _favKey(f){
