@@ -1,4 +1,4 @@
-<!-- tonghab_v149_addr_fallback_color_keep.html · 저장: 2026-06-23 KST · 주소 fallback + 지도 핀 색상 유지 -->
+<!-- tonghab_v154_addr_fullview.html · 저장: 2026-06-26 06:07 KST · 필지주소 입력란 아래에 전체 주소 작은글씨 표시 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1525,6 +1525,17 @@ textarea {
         <input type="date" id="surveyDate" style="width:auto;min-width:128px;">
       </div>
     </div>
+    <!-- v154: 입력란에서 잘리는 필지주소 전체를 작은 글씨로 표시 -->
+    <div id="addrFull" style="display:none;font-size:11px;color:#5a6b50;line-height:1.4;margin-top:5px;word-break:break-all;background:#f3f7ef;border:1px solid #e3ecdb;border-radius:7px;padding:5px 8px;"></div>
+    <script>
+    (function(){
+      var ai=document.getElementById('address'), af=document.getElementById('addrFull');
+      if(!ai||!af) return;
+      function sync(){ var v=(ai.value||'').trim(); af.textContent=v?('📍 '+v):''; af.style.display=v?'block':'none'; }
+      ai.addEventListener('input',sync); ai.addEventListener('change',sync);
+      setTimeout(sync,1200); setTimeout(sync,3200);
+    })();
+    </script>
     <!-- v106: 시군 선택을 논벼 시군별 비교 섹션으로 이동 -->
   </div>
 

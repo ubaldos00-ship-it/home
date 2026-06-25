@@ -1,4 +1,4 @@
-<!-- chungchi_v84_addr_fallback_color_keep.html · 저장: 2026-06-23 KST · 주소 fallback + 지도 핀 색상 유지 -->
+<!-- chungchi_v89_addr_fullview.html · 저장: 2026-06-26 06:07 KST · 필지주소 입력란 아래에 전체 주소 작은글씨 표시 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -356,6 +356,17 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
     <span class="s1l" style="min-width:36px;text-align:center">조사일</span>
     <input type="date" id="surveyDate" style="flex:1.2;font-size:16px;padding:10px 8px">
   </div>
+  <!-- v89: 입력란에서 잘리는 필지주소 전체를 작은 글씨로 표시 -->
+  <div id="addrFull" style="display:none;font-size:11px;color:#4a5b6b;line-height:1.4;margin-top:6px;word-break:break-all;background:#eef3f8;border:1px solid #d9e3ee;border-radius:7px;padding:5px 8px;"></div>
+  <script>
+  (function(){
+    var ai=document.getElementById('address'), af=document.getElementById('addrFull');
+    if(!ai||!af) return;
+    function sync(){ var v=(ai.value||'').trim(); af.textContent=v?('📍 '+v):''; af.style.display=v?'block':'none'; }
+    ai.addEventListener('input',sync); ai.addEventListener('change',sync);
+    setTimeout(sync,1200); setTimeout(sync,3200);
+  })();
+  </script>
 
 </div>
 
