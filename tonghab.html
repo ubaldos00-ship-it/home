@@ -1,4 +1,4 @@
-<!-- tonghab_v160_addrpin_always.html · 저장: 2026-06-27 07:41 KST · 주소필지 옆 📍 항상 save=1 전달(핀 무조건 생성·선택 1.5배)+좌표 있으면 그 좌표로 -->
+<!-- tonghab_v159_addrpin_coord.html · 저장: 2026-06-27 06:51 KST · 주소필지 옆 📍에 현재 좌표 함께 전달(지번중앙 아닌 핀 좌표로) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1391,7 +1391,7 @@ textarea {
         </button>
       </div>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v160 저장: 2026-06-27 07:41)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v159 저장: 2026-06-27 06:51)</span></div>
   </div>
 </div>
 
@@ -8618,13 +8618,15 @@ function _tenarOpenMapFromAddress(){
   }
   var base = 'https://ubaldos00-ship-it.github.io/home/map.html';
   if(!a){ _tenarOpenMapUrl(base); return; }
-  /* 항상 save=1 로 지도 핀을 생성·선택(1.5배)되게 하고, 현재 조사표에 좌표가 있으면 지번중앙이 아니라 그 좌표로 이동 */
-  var u = base + '?q=' + encodeURIComponent(a)
-        + '&save=1&app=tonghab&color=' + encodeURIComponent(_tenarMapColor || 'green');
-  if(linkedKey){ u += '&surveyKey=' + encodeURIComponent(linkedKey); }
+  var u = base + '?q=' + encodeURIComponent(a);
+  /* 현재 조사표에 지도 좌표가 있으면 함께 전달 → 지도가 지번중앙이 아니라 그 핀 좌표로 이동·선택(1.5배) */
   if(isFinite(_tenarMapLat) && isFinite(_tenarMapLng)){
     u += '&lat=' + encodeURIComponent(Number(_tenarMapLat).toFixed(8))
        + '&lng=' + encodeURIComponent(Number(_tenarMapLng).toFixed(8));
+    if(linkedKey){
+      u += '&save=1&app=tonghab&surveyKey=' + encodeURIComponent(linkedKey)
+         + '&color=' + encodeURIComponent(_tenarMapColor || 'green');
+    }
   }
   _tenarOpenMapUrl(u);
 }
