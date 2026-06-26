@@ -1,4 +1,4 @@
-<!-- chungchi_v91_200pyeong_hdr.html · 저장: 2026-06-26 15:56 KST · ⑤ 200평 칼럼 헤더를 'kg / 200평'으로 변경 -->
+<!-- chungchi_v92_mapaddr_protect.html · 저장: 2026-06-26 16:28 KST · 지도 ?addr 복귀 시 지도주소 최종반영(복원에 안 밀리게) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -2630,13 +2630,18 @@ if(window.wcs) {
         }catch(e){}
       }
       if(addrIn){
-        var el = document.getElementById('address');
-        if(el){
-          el.value = addrIn;
-          el.dispatchEvent(new Event('input',  {bubbles:true}));
-          el.dispatchEvent(new Event('change', {bubbles:true}));
-        }
-        if(isFinite(latIn) && isFinite(lngIn)) _tenarSetMapCoord(latIn, lngIn);
+        /* 지도 주소를 최종값으로 반영 — 복원(ccAutoRestore)이 늦게 끝나도 지도 주소가 이기도록 한 번 더 적용 */
+        var applyMapAddr = function(){
+          var el = document.getElementById('address');
+          if(el && el.value !== addrIn){
+            el.value = addrIn;
+            el.dispatchEvent(new Event('input',  {bubbles:true}));
+            el.dispatchEvent(new Event('change', {bubbles:true}));
+          }
+          if(isFinite(latIn) && isFinite(lngIn)) _tenarSetMapCoord(latIn, lngIn);
+        };
+        applyMapAddr();
+        setTimeout(applyMapAddr, 900);   /* 복원 완료 후 다시 한 번(지도 주소 우선) */
       }
       cleanUrl();
     }, 1300);

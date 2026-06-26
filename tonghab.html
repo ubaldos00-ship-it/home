@@ -1,4 +1,4 @@
-<!-- tonghab_v154_addr_fullview.html · 저장: 2026-06-26 06:07 KST · 필지주소 입력란 아래에 전체 주소 작은글씨 표시 -->
+<!-- tonghab_v155_mapaddr_protect.html · 저장: 2026-06-26 16:28 KST · 지도 ?addr 복귀 시 초기화팝업 차단(데이터보호)+지도주소 최종반영 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -9127,7 +9127,7 @@ if(window.wcs) {
   if(!loadKey && !addrIn) return;
   /* ★ 데이터 보호: 지도에서 ?load 로 열렸을 때는 위험한 "이전 자료/초기화" 팝업을 막고
      입력 중 자료는 그대로(조용히) 복원되게 한다. (초기화 선택으로 데이터가 삭제되던 문제 방지) */
-  if(loadKey){ try{ window._tonghabRestoreChoice = 'continue'; }catch(e){} }
+  if(loadKey || addrIn){ try{ window._tonghabRestoreChoice = 'continue'; }catch(e){} }
   function cleanUrl(){ try{ history.replaceState(null,'',location.pathname); }catch(e){} }
   /* 입력 중(자동저장) 자료가 의미있게 있는지 가볍게 확인 */
   function _hasPrev(){
@@ -9172,13 +9172,18 @@ if(window.wcs) {
         }catch(e){}
       }
       if(addrIn){
-        var el = document.getElementById('address');
-        if(el){
-          el.value = addrIn;
-          el.dispatchEvent(new Event('input',  {bubbles:true}));
-          el.dispatchEvent(new Event('change', {bubbles:true}));
-        }
-        if(isFinite(latIn) && isFinite(lngIn)) _tenarSetMapCoord(latIn, lngIn);
+        /* 지도 주소를 최종값으로 반영 — 복원(autoRestore)이 늦게 끝나도 지도 주소가 이기도록 한 번 더 적용 */
+        var applyMapAddr = function(){
+          var el = document.getElementById('address');
+          if(el && el.value !== addrIn){
+            el.value = addrIn;
+            el.dispatchEvent(new Event('input',  {bubbles:true}));
+            el.dispatchEvent(new Event('change', {bubbles:true}));
+          }
+          if(isFinite(latIn) && isFinite(lngIn)) _tenarSetMapCoord(latIn, lngIn);
+        };
+        applyMapAddr();
+        setTimeout(applyMapAddr, 900);   /* 복원 완료 후 다시 한 번(지도 주소 우선) */
       }
       cleanUrl();
     }, 1500);
