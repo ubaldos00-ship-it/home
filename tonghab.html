@@ -1,4 +1,4 @@
-<!-- tonghab_v156_addr_choice.html · 저장: 2026-06-26 17:35 KST · 위치변경 복귀 시 입력자료 유지+주소 [네=새/아니요=기존] 선택 팝업 -->
+<!-- tonghab_v157_addr_notice.html · 저장: 2026-06-26 22:23 KST · 위치변경 복귀 팝업을 단일 확인(항상 새 주소 적용, 기존주소=현재주소) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -9152,19 +9152,17 @@ if(window.wcs) {
     document.getElementById('mapLoadOk').onclick=function(){ ov.remove(); onYes(); };
   }
   function _esc(s){ return (''+(s||'')).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
-  /* 지도에서 주소가 바뀐 채 돌아온 경우 — 입력중 자료는 그대로 두고 주소만 선택 */
-  function _addrChoiceConfirm(oldAddr, newAddr, cb){
+  /* 지도에서 주소가 바뀐 채 돌아온 경우 — 입력중 자료는 그대로 두고, 새 주소를 적용(안내+확인 단일버튼) */
+  function _addrChangeNotice(oldAddr, newAddr, onOk){
     if(document.getElementById('mapLoadOverlay')) return;
     var ov=document.createElement('div'); ov.className='lc-overlay'; ov.id='mapLoadOverlay';
     ov.innerHTML='<div class="lc-box"><p><b>지도에서 주소가 변경되었습니다.</b><br>'
       +'<span style="font-size:12.5px;color:#1a7a3e;font-weight:700">새 주소: '+_esc(newAddr)+'</span><br>'
       +'<span style="font-size:12px;color:#888">기존 주소: '+_esc(oldAddr||'(없음)')+'</span><br>'
       +'<span style="font-size:11px;color:#888">입력 중인 자료는 그대로 유지됩니다.</span></p>'
-      +'<div class="lc-btns"><button class="lc-cancel" id="addrNo">아니요 (기존 주소)</button>'
-      +'<button class="lc-ok" id="addrYes">네 (새 주소)</button></div></div>';
+      +'<div class="lc-btns"><button class="lc-ok" id="addrOk" style="width:100%">확인</button></div></div>';
     document.body.appendChild(ov);
-    document.getElementById('addrNo').onclick=function(){ ov.remove(); cb(false); };
-    document.getElementById('addrYes').onclick=function(){ ov.remove(); cb(true); };
+    document.getElementById('addrOk').onclick=function(){ ov.remove(); onOk(); };
   }
   function run(){
     /* autoRestore(800ms·3000ms)보다 늦게 적용 */
@@ -9176,14 +9174,19 @@ if(window.wcs) {
             var d = JSON.parse(s);
             var savedAddr = ((d && d.address) ? d.address : '').toString().trim();
             var setAddr = function(v){
-              var el = document.getElementById('address');
-              if(el){ el.value = v; el.dispatchEvent(new Event('input',{bubbles:true})); el.dispatchEvent(new Event('change',{bubbles:true})); }
+              var ap = function(){ var el = document.getElementById('address');
+                if(el){ el.value = v; el.dispatchEvent(new Event('input',{bubbles:true})); el.dispatchEvent(new Event('change',{bubbles:true})); } };
+              ap(); setTimeout(ap, 900);   /* 복원이 늦게 끝나도 새 주소가 최종 반영 */
             };
             cleanUrl();   /* 새로고침 시 재실행 방지 */
-            /* 지도에서 주소가 바뀐 채 돌아온 경우(addrIn≠저장주소): 입력중 자료 유지, 주소만 [네/아니요] 선택 */
-            if(addrIn && addrIn !== savedAddr){
+            /* 지도에서 주소가 바뀐 채 돌아온 경우: 입력중 자료 유지, '새 주소'를 적용(안내+확인).
+               기존주소 = 현재(입력중) 주소 → 다음 변경 때 이 값이 기존주소가 된다. */
+            if(addrIn){
               if(!_hasPrev()){ if(typeof _slLastLoadedKey!=='undefined') _slLastLoadedKey = loadKey; _slApply(d); }  /* 입력 중 자료 없으면 저장자료 불러옴 */
-              _addrChoiceConfirm(savedAddr, addrIn, function(useNew){ setAddr(useNew ? addrIn : savedAddr); });
+              var _el0 = document.getElementById('address');
+              var curAddr = (_el0 ? (_el0.value||'').trim() : ''); if(!curAddr) curAddr = savedAddr;
+              if(addrIn !== curAddr){ _addrChangeNotice(curAddr, addrIn, function(){ setAddr(addrIn); }); }
+              else { setAddr(addrIn); }
               return;
             }
             /* 주소 변동 없음 → 기존 동작 (입력중 자료 있으면 저장자료 불러오기 확인) */
