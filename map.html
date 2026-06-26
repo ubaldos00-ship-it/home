@@ -1,4 +1,4 @@
-<!-- map_v58_nopinselect.html · 저장: 2026-06-26 22:23 KST · 핀 꾹누름 시 파란색 선택/콜아웃 방지 -->
+<!-- map_v59_pincoord.html · 저장: 2026-06-27 06:33 KST · 계산기 핀 진입 시 지번중앙 아닌 핀 좌표로 이동(선택핀 화면중앙·1.5배) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1000,6 +1000,7 @@ function toast(msg){
 /* ================================================================
    ✅ Naver API callback — 로드 완료 시 자동 호출
 ================================================================ */
+var _pendingPinLat = NaN, _pendingPinLng = NaN;   /* 계산기 핀 좌표 1회용 (지번중앙 대신 이 좌표로 이동) */
 window.initNaverMap = function(){
   log('✅ Naver API 콜백 수신 — 준비 완료');
   S.naverReady = true;
@@ -1012,6 +1013,7 @@ window.initNaverMap = function(){
     setTimeout(_runBulkSave, 900);
   } else if(q){
     log('URL 주소 검색: ' + q);
+    try{ _pendingPinLat = Number(sp.get('lat')); _pendingPinLng = Number(sp.get('lng')); }catch(e){}
     renderMap(CFG.defaultLat, CFG.defaultLng, 0, true);  /* 지도만 생성 */
     var inp = document.getElementById('search-input');
     if(inp) inp.value = q;
@@ -1466,6 +1468,12 @@ window.searchByAddress = function(){
     var ll   = new naver.maps.LatLng(Number(item.y), Number(item.x));
     selectedLat = Number(item.y);
     selectedLng = Number(item.x);
+    /* 계산기 핀 좌표가 URL로 전달된 경우: 지번 중앙이 아니라 그 핀 좌표로 이동(1회만) → 선택핀이 화면 중앙·1.5배로 보임 */
+    if(isFinite(_pendingPinLat) && isFinite(_pendingPinLng)){
+      ll = new naver.maps.LatLng(_pendingPinLat, _pendingPinLng);
+      selectedLat = _pendingPinLat; selectedLng = _pendingPinLng;
+      _pendingPinLat = _pendingPinLng = NaN;
+    }
     S.map.setCenter(ll);
     S.map.setZoom(17);
 
