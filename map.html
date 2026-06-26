@@ -1,4 +1,4 @@
-<!-- map_v52_pin_move_fix.html · 저장: 2026-06-25 21:41 KST · 위치변경 버튼 작동수정(window전역), 더블탭 확대 끔, 위치변경 중 검색으로 십자선 이동 -->
+<!-- map_v53_noPull_pinSelect.html · 저장: 2026-06-26 16:41 KST · 당겨서새로고침 차단(데이터보호), 📍 진입 시 근처 저장핀 자동선택 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -51,7 +51,11 @@ window.__naverScriptError = false;
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{width:100%;height:100%;overflow:hidden;background:#f0f2f5;
-  font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;}
+  font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  overscroll-behavior:none;}   /* 당겨서 새로고침 차단 (데이터 보호) */
+body{position:fixed;top:0;left:0;right:0;bottom:0;}   /* iOS 당겨서새로고침/바운스 차단 */
+/* 내부 스크롤 영역의 오버스크롤이 문서로 전파돼 새로고침되는 것 방지 */
+#fav-list,#fav-sheet,#save-sheet,#layer-sheet,#info-sheet{overscroll-behavior:contain;}
 
 /* ── 지도 영역 (전체화면) ── */
 #map{position:fixed;top:0;left:0;right:0;bottom:0;}
@@ -1484,10 +1488,14 @@ window.searchByAddress = function(){
 
     /* 계산기 연동: URL ?save=1 이면 즐겨찾기에 자동 저장(중복은 갱신) */
     var _savedFav = _maybeAutoFav(jibun, road, selectedLat, selectedLng);
-    /* 계산기 📍로 들어온 경우(surveyKey 있음): 해당 핀을 바로 '선택' 상태로 만들어
-       하단시트에 [조사표 열기]가 활성화되게 한다 → 핀을 다시 안 눌러도 조사표 열기 가능 */
-    if(_savedFav && _savedFav.surveyKey){
+    /* 📍로 들어온 경우 해당 핀을 바로 '선택' 상태로 만든다 → 핀을 다시 안 눌러도
+       하단시트(조사표 열기·위치변경)가 바로 활성화. 저장된(?save=1) 핀이 아니어도
+       그 위치 근처에 저장된 즐겨찾기가 있으면 그 핀을 선택한다. */
+    if(_savedFav){
       showFavInfo(_savedFav);
+    } else {
+      var _near = _findFavNear(selectedLat, selectedLng);
+      if(_near) showFavInfo(_near);
     }
 
     /* 키보드 닫고 검색란 비우기 (주소는 상단바·핀에 표시되므로 입력칸은 초기화) */
@@ -2364,6 +2372,15 @@ window.toggleCropLabels = function(){
    같은 surveyKey 또는 거의 같은 좌표가 이미 있으면 새로 추가하지 않고 갱신. */
 var _urlParams; try{ _urlParams = new URLSearchParams(location.search); }catch(e){ _urlParams = null; }
 var _urlAutoFavDone = false;
+/* 주어진 좌표 근처(약 60m 이내)에 저장된 즐겨찾기가 있으면 반환 */
+function _findFavNear(lat, lng){
+  if(!isFinite(lat) || !isFinite(lng)) return null;
+  var favs = getFavs();
+  for(var i=0;i<favs.length;i++){
+    if(Math.abs((favs[i].lat||0) - lat) < 0.0006 && Math.abs((favs[i].lng||0) - lng) < 0.0006) return favs[i];
+  }
+  return null;
+}
 function _maybeAutoFav(jibun, road, lat, lng){
   if(_urlAutoFavDone || !_urlParams) return;
   if(_urlParams.get('save') !== '1') return;
