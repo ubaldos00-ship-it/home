@@ -1,4 +1,4 @@
-<!-- graph_v25.html · 저장: 2026-06-23 09:52 KST · 맥류 조곡 기준 반영 -->
+<!-- graph_v27.html · 저장: 2026-06-26 15:56 KST · 추이박스에 200평 생산량 추가+평년/전년 세로배치, 툴팁 점에서만·스크롤시 숨김 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -211,8 +211,10 @@
     box-shadow: 0 1px 2px rgba(0,0,0,0.02);
   }
   .stat-block b { font-size: 11.5px; display: block; margin-bottom: 2px; }
-  .stat-pyeong { margin-top: 5px; padding-top: 5px; border-top: 1px solid #e5e7eb; font-size: 10px; color: #555; line-height: 1.7; }
+  .stat-pyeong { margin-top: 5px; padding-top: 5px; border-top: 1px solid #e5e7eb; font-size: 10px; color: #555; line-height: 1.55; }
   .stat-pyeong span { font-weight: 700; color: #166534; }
+  .stat-pyeong .sp-h { font-weight: 800; color: #15803d; margin-top: 3px; }
+  .stat-pyeong .sp-r { display: flex; justify-content: space-between; gap: 6px; }
 
   /* ── 그래프 ── */
   .chart-wrap { position: relative; height: 320px; margin-top: 4px; }
@@ -880,15 +882,20 @@ function render() {
           : `<span style="color:#2563eb">▼${Math.abs(v)}%</span>`);
 
       const PY = 302.5;
-      const fmtPy = v => (v != null && v > 0) ? (v / PY).toFixed(2) : '-';
+      const fmtPy  = v => (v != null && v > 0) ? (v / PY).toFixed(2) : '-';
+      const fmt200 = v => (v != null && v > 0) ? Math.round(v * 200 / PY).toLocaleString('ko-KR') : '-';
       const prevYearVal = prev;
       statsHtml += `
         <div class="stat-block" style="border-left: 3px solid ${color};">
           <b style="color:${color}">${s.region}</b>
           평년대비: ${fmtDiff(avgRatio)}<br>전년대비: ${fmtDiff(yoy)}
           <div class="stat-pyeong">
-            평년 <span>${fmtPy(avg5)} kg/평</span> &nbsp;
-            전년 <span>${fmtPy(prevYearVal)} kg/평</span>
+            <div class="sp-h">200평 생산량</div>
+            <div class="sp-r">평년 <span>${fmt200(avg5)} kg</span></div>
+            <div class="sp-r">전년 <span>${fmt200(prevYearVal)} kg</span></div>
+            <div class="sp-h">1평당 생산량</div>
+            <div class="sp-r">평년 <span>${fmtPy(avg5)} kg/평</span></div>
+            <div class="sp-r">전년 <span>${fmtPy(prevYearVal)} kg/평</span></div>
           </div>
         </div>
       `;
@@ -971,11 +978,12 @@ function drawChart(series) {
     },
     options: {
       responsive: true, maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false },
+      interaction: { mode: 'index', intersect: true },   /* 점 위에서만 툴팁(같은 세로줄 빈공간 클릭 시 안 뜸) */
       plugins: {
         legend: { display: false },
         tooltip: {
           enabled: false,
+          mode: 'index', intersect: true,   /* 점 위에서만 */
           external: _extTip
         },
         datalabels: {
@@ -1072,6 +1080,12 @@ function _extTip(context) {
   tip.style.top = top + 'px';
   tip.style.display = 'block';
 }
+
+/* 스크롤하면 툴팁이 헤더 위에 떠 있는 문제 → 스크롤 시 자동으로 숨김 */
+window.addEventListener('scroll', function(){
+  var t = document.getElementById('graphTip');
+  if (t && t.style.display !== 'none') t.style.display = 'none';
+}, { passive: true });
 
 /* ============== 7. 캡처 및 모달 ============== */
 let _captureDataUrl = null;
