@@ -1,4 +1,4 @@
-<!-- map_v54_btn_2line.html · 저장: 2026-06-26 16:54 KST · 하단버튼 위치/변경·조사표/열기 2줄 줄바꿈+열 정렬 -->
+<!-- map_v57_repos_addr.html · 저장: 2026-06-26 17:27 KST · 위치변경 시 새 위치 주소로 핀 주소 갱신+조사표 열기에 새 주소 전달 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -941,6 +941,7 @@ function showAddr(jibun, road, zip){
   ahLine2.textContent = parts.length ? parts.join('  ·  ') : '';
   window._curFav = null;          /* 일반 주소 조회 → 조사표 연결 해제 */
   window._selFavKey = null;       /* 선택 즐겨찾기 강조도 해제 */
+  if(typeof refreshFavPins==='function') refreshFavPins();   /* 이전 선택 핀을 일반 크기로 복귀 */
   if(typeof _syncSurveyBtn==='function') _syncSurveyBtn();
   _setMoveBtn(false);             /* 일반 주소엔 위치변경 버튼 숨김(저장된 핀만 변경 가능) */
   showInfoSheet();
@@ -1907,6 +1908,10 @@ window.fillSurvey = function(){
     var app = (window._curFav.surveyApp === 'chungchi') ? 'chungchi' : 'tonghab';
     var url = 'https://ubaldos00-ship-it.github.io/home/' + app + '.html?load=' +
               encodeURIComponent(window._curFav.surveyKey);
+    /* 지도에서 (위치변경 등으로) 바뀐 주소·좌표를 함께 전달 → 계산기에서 새 주소 적용 여부 선택 */
+    if(window._curFav.addr){ url += '&addr=' + encodeURIComponent(window._curFav.addr); }
+    var _fl = Number(window._curFav.lat), _fn = Number(window._curFav.lng);
+    if(isFinite(_fl) && isFinite(_fn)){ url += '&lat=' + _fl.toFixed(8) + '&lng=' + _fn.toFixed(8); }
     toast('📋 조사표 자료를 불러옵니다');
     try{
       if(window.opener && !window.opener.closed){
@@ -2305,7 +2310,11 @@ window.refreshFavPins = function(){
   favs.forEach(function(f, idx){
     var pos = posList[idx] || {lat:Number(f.lat), lng:Number(f.lng)};
     var ll = new naver.maps.LatLng(pos.lat, pos.lng);
-    var mk = new naver.maps.Marker({ map:S.map, position:ll, icon:favPinIcon(f.color), zIndex:100 + idx });
+    /* 선택된 핀(_selFavKey)은 1.5배(favPinSelIcon)로 그려 항상 강조 — 📍 진입/클릭 모두 동일 적용 */
+    var isSel = (window._selFavKey && _favKey(f) === window._selFavKey);
+    var mk = new naver.maps.Marker({ map:S.map, position:ll,
+              icon: isSel ? favPinSelIcon(f.color) : favPinIcon(f.color),
+              zIndex: isSel ? 1000 : (100 + idx) });
     naver.maps.Event.addListener(mk, 'click', function(){ S.map.setCenter(ll); showFavInfo(f); });
     S.favMarkers.push(mk);
     /* 작물명 표시 ON 이고 작물명이 있으면, 전체보기/확대/이동 후에도 즉시 표시 */
@@ -2526,6 +2535,9 @@ window.confirmSaveFav = function(){
   renderFavs();
   /* 롱탭 임시 마커 제거 (즐겨찾기 색상 핀으로 대체됨) */
   if(S.pickMarker){ S.pickMarker.setMap(null); S.pickMarker = null; }
+  /* 저장과 동시에 방금 저장한 핀을 '선택' 상태로 → 1.5배 강조 + 하단시트(조사표 입력 등) 바로 활성화 */
+  var _nf = getFavs();
+  if(_nf[0]) showFavInfo(_nf[0]);
   toast('⭐ 저장했습니다');
 };
 
@@ -2606,15 +2618,14 @@ function showFavInfo(f){
   setDest(f.lat, f.lng, f.label);
   ahLine1.textContent = '⭐ ' + f.label;
   ahLine2.textContent = (f.addr ? f.addr + '  ·  ' : '') + f.lat.toFixed(5) + ', ' + f.lng.toFixed(5);
-  /* 선택된 핀을 1.5배 크기로 강조 표시 */
-  if(S.map){
-    if(S.pickMarker){ S.pickMarker.setMap(null); }
-    S.pickMarker = new naver.maps.Marker({ map:S.map, position:new naver.maps.LatLng(f.lat, f.lng),
-                                           icon:favPinSelIcon(f.color), zIndex:1000 });
-  }
   /* 계산기 연동: 이 즐겨찾기에 조사표 자료(surveyKey)가 연결돼 있으면 기억 → 조사표 버튼으로 복원 */
   window._curFav = f;
-  window._selFavKey = _favKey(f);   /* 즐겨찾기 목록에서 선택 항목 표시용 */
+  window._selFavKey = _favKey(f);   /* 선택 핀 표시용 — refreshFavPins가 이 핀을 1.5배로 그림 */
+  /* 선택된 핀을 1.5배로 강조: 검색 임시핀 제거 후 refreshFavPins로 다시 그린다(타이밍 무관 항상 적용) */
+  if(S.map){
+    if(S.pickMarker){ S.pickMarker.setMap(null); S.pickMarker = null; }
+    refreshFavPins();
+  }
   if(f && f.surveyKey && !_surveyRecordExists(f)){
     setTimeout(function(){ _alertStaleSurveyAndClean(f); }, 80);
   }
@@ -2673,8 +2684,33 @@ window.confirmPinMove = function(){
   _pinMoveFav = null;
   _exitPinMoveMode();
   refreshFavPins();
-  toast('✅ 핀 위치를 변경했습니다');
   if(moved) showFavInfo(moved);
+  /* 위치변경 → 새 위치의 지번주소로 핀 주소를 자동 갱신 (reverse-geocode) */
+  if(moved && naver.maps.Service && naver.maps.Service.reverseGeocode){
+    toast('📍 새 위치 주소 확인 중…');
+    naver.maps.Service.reverseGeocode({ coords:new naver.maps.LatLng(nlat, nlng), orders:'addr,roadaddr' }, function(st, res){
+      var newAddr = '';
+      try{ if(st === naver.maps.Service.Status.OK){ var a=(res.v2 && res.v2.address)||{}; newAddr=(a.jibunAddress || a.roadAddress || '').trim(); } }catch(e){}
+      if(newAddr){
+        var fv = getFavs(), k2 = -1;
+        for(var i=0;i<fv.length;i++){ if(_favKey(fv[i]) === _favKey(moved)){ k2 = i; break; } }
+        if(k2 >= 0){
+          fv[k2].addr = newAddr;
+          var crop = (fv[k2].crop||'').trim();
+          if(crop) fv[k2].label = crop + ' · ' + newAddr;
+          else if(!fv[k2].label || fv[k2].label === moved.addr || fv[k2].label === moved.label) fv[k2].label = newAddr;
+          setFavs(fv);
+          window._curFav = fv[k2];
+          showFavInfo(fv[k2]);
+          toast('✅ 핀 위치·주소 변경: ' + newAddr.slice(0,20));
+          return;
+        }
+      }
+      toast('✅ 핀 위치를 변경했습니다 (주소 확인 실패)');
+    });
+  } else {
+    toast('✅ 핀 위치를 변경했습니다');
+  }
 };
 /* 변경된 좌표를 계산기(통합/청취) 저장자료에 역기록 → 다음에 열 때도 이 좌표 사용 */
 function _writeBackMapCoord(f){
