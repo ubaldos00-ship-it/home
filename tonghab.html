@@ -1,4 +1,4 @@
-<!-- tonghab_v162_geocode_save.html · 저장: 2026-06-27 08:56 KST · 📍 주소 지오코딩→이동→핀저장→선택(save=1) -->
+<!-- tonghab_v163_croplabel.html · 저장: 2026-06-27 22:45 KST · 📍 저장 시 선택 작물명도 함께 전달(지도 즐겨찾기 작물·지번) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1391,7 +1391,7 @@ textarea {
         </button>
       </div>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v162 저장: 2026-06-27 08:56)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v163 저장: 2026-06-27 22:45)</span></div>
   </div>
 </div>
 
@@ -8621,6 +8621,9 @@ function _tenarOpenMapFromAddress(){
   /* 주소를 지오코딩해 이동 → 핀 저장 → 선택 (save=1). 저장자료면 surveyKey 연결 */
   var u = base + '?q=' + encodeURIComponent(a) + '&save=1&app=tonghab&color=' + encodeURIComponent(_tenarMapColor || 'green');
   if(linkedKey){ u += '&surveyKey=' + encodeURIComponent(linkedKey); }
+  /* 선택된 작물명을 함께 전달 → 지도 즐겨찾기에 "작물 · 지번"으로 저장, 핀 옆 작물명 표시 */
+  var _crop = (typeof selectedCrop !== 'undefined' && selectedCrop) ? selectedCrop : '';
+  if(_crop){ u += '&label=' + encodeURIComponent(_crop + ' · ' + a); }
   _tenarOpenMapUrl(u);
 }
 
