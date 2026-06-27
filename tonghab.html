@@ -1,4 +1,4 @@
-<!-- tonghab_v161_revert.html · 저장: 2026-06-27 08:45 KST · 주소필지 옆 📍 원래 동작으로 복원(작동본) -->
+<!-- tonghab_v162_geocode_save.html · 저장: 2026-06-27 08:56 KST · 📍 주소 지오코딩→이동→핀저장→선택(save=1) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1391,7 +1391,7 @@ textarea {
         </button>
       </div>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v161 저장: 2026-06-27 08:45)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v162 저장: 2026-06-27 08:56)</span></div>
   </div>
 </div>
 
@@ -8617,7 +8617,11 @@ function _tenarOpenMapFromAddress(){
     }catch(e){}
   }
   var base = 'https://ubaldos00-ship-it.github.io/home/map.html';
-  _tenarOpenMapUrl(a ? base + '?q=' + encodeURIComponent(a) : base);
+  if(!a){ _tenarOpenMapUrl(base); return; }
+  /* 주소를 지오코딩해 이동 → 핀 저장 → 선택 (save=1). 저장자료면 surveyKey 연결 */
+  var u = base + '?q=' + encodeURIComponent(a) + '&save=1&app=tonghab&color=' + encodeURIComponent(_tenarMapColor || 'green');
+  if(linkedKey){ u += '&surveyKey=' + encodeURIComponent(linkedKey); }
+  _tenarOpenMapUrl(u);
 }
 
 /* ── 지도 연동: 목록 항목의 📍 클릭 → 지도(map.html)에서 그 주소를 띄우고 즐겨찾기에 자동 저장 ──

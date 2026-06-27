@@ -1,4 +1,4 @@
-<!-- map_v59_pincoord.html · 저장: 2026-06-27 06:33 KST · 계산기 핀 진입 시 지번중앙 아닌 핀 좌표로 이동(선택핀 화면중앙·1.5배) -->
+<!-- map_v60_zerofix.html · 저장: 2026-06-27 08:56 KST · lat/lng 없을 때 Number(null)=0 → (0,0) 이동 버그 수정(parseFloat+0가드) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1013,7 +1013,7 @@ window.initNaverMap = function(){
     setTimeout(_runBulkSave, 900);
   } else if(q){
     log('URL 주소 검색: ' + q);
-    try{ _pendingPinLat = Number(sp.get('lat')); _pendingPinLng = Number(sp.get('lng')); }catch(e){}
+    try{ _pendingPinLat = parseFloat(sp.get('lat')); _pendingPinLng = parseFloat(sp.get('lng')); }catch(e){}   /* Number(null)=0 버그 방지 */
     renderMap(CFG.defaultLat, CFG.defaultLng, 0, true);  /* 지도만 생성 */
     var inp = document.getElementById('search-input');
     if(inp) inp.value = q;
@@ -1469,7 +1469,7 @@ window.searchByAddress = function(){
     selectedLat = Number(item.y);
     selectedLng = Number(item.x);
     /* 계산기 핀 좌표가 URL로 전달된 경우: 지번 중앙이 아니라 그 핀 좌표로 이동(1회만) → 선택핀이 화면 중앙·1.5배로 보임 */
-    if(isFinite(_pendingPinLat) && isFinite(_pendingPinLng)){
+    if(isFinite(_pendingPinLat) && isFinite(_pendingPinLng) && _pendingPinLat !== 0 && _pendingPinLng !== 0){
       ll = new naver.maps.LatLng(_pendingPinLat, _pendingPinLng);
       selectedLat = _pendingPinLat; selectedLng = _pendingPinLng;
       _pendingPinLat = _pendingPinLng = NaN;
@@ -2404,9 +2404,9 @@ function _findFavNear(lat, lng){
 function _maybeAutoFav(jibun, road, lat, lng){
   if(_urlAutoFavDone || !_urlParams) return;
   if(_urlParams.get('save') !== '1') return;
-  var urlLat = Number(_urlParams.get('lat'));
-  var urlLng = Number(_urlParams.get('lng'));
-  if(isFinite(urlLat) && isFinite(urlLng)){ lat = urlLat; lng = urlLng; }
+  var urlLat = parseFloat(_urlParams.get('lat'));   /* Number(null)=0 버그 방지: parseFloat → 없으면 NaN */
+  var urlLng = parseFloat(_urlParams.get('lng'));
+  if(isFinite(urlLat) && isFinite(urlLng) && urlLat !== 0 && urlLng !== 0){ lat = urlLat; lng = urlLng; }
   if(!isFinite(lat) || !isFinite(lng)) return;
   _urlAutoFavDone = true;
   var addr  = road || jibun || '';
