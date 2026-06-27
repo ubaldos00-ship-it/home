@@ -1,4 +1,4 @@
-<!-- tonghab_v163_croplabel.html · 저장: 2026-06-27 22:45 KST · 📍 저장 시 선택 작물명도 함께 전달(지도 즐겨찾기 작물·지번) -->
+<!-- tonghab_v164_addronly.html · 저장: 2026-06-27 23:18 KST · 지도→조사표 주소필지엔 작물 접두 제거(주소만) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1391,7 +1391,7 @@ textarea {
         </button>
       </div>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v163 저장: 2026-06-27 22:45)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v164 저장: 2026-06-27 23:18)</span></div>
   </div>
 </div>
 
@@ -9117,6 +9117,8 @@ if(window.wcs) {
   var p; try{ p = new URLSearchParams(location.search); }catch(e){ return; }
   var loadKey = (p.get('load') || '').trim();
   var addrIn  = (p.get('addr') || '').trim();
+  /* 지도에서 "작물 · 주소" 형태로 올 수 있음 → 주소필지엔 주소만 넣도록 작물 접두 제거 */
+  (function(){ var _d = addrIn.indexOf(' · '); if(_d > 0) addrIn = addrIn.slice(_d + 3).trim(); })();
   var latIn   = Number(p.get('lat'));
   var lngIn   = Number(p.get('lng'));
   var colorIn = (p.get('color') || '').trim();
