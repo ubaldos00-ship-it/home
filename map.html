@@ -1,4 +1,4 @@
-<!-- map_v64_measure_polish.html · 저장: 2026-06-28 10:32 KST · 측정 패널 이미지버튼·끝점저장삭제, 버튼겹침해결, 덮어쓰기버튼, SVG잠금/휴지통, 모달 쓸어내려닫기 -->
+<!-- map_v66_shotguide.html · 저장: 2026-06-28 21:56 KST · 🖼 누르면 '전원+볼륨 스크린샷' 안내 팝업(+요약 이미지 저장) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -527,6 +527,7 @@ button{ touch-action:manipulation; }
 #meas-sheet{ width:100%;max-height:82vh;overflow-y:auto;background:#fff;border-radius:20px 20px 0 0;padding:14px 16px calc(16px + env(safe-area-inset-bottom));overscroll-behavior:contain; }
 #meas-head{ display:flex;justify-content:space-between;align-items:center;font-size:16px;font-weight:800;color:#5b21b6;margin-bottom:12px; }
 #meas-close{ border:none;background:#f3f4f6;color:#6b7280;width:34px;height:34px;border-radius:50%;font-size:18px;cursor:pointer; }
+#meas-clearall{ border:1px solid #f0b8b8;background:none;color:#d93030;border-radius:8px;font-family:inherit;font-size:12px;font-weight:700;padding:6px 10px;cursor:pointer; }
 #meas-newbtn{ width:100%;border:none;border-radius:12px;background:#7c3aed;color:#fff;font-family:inherit;font-size:15px;font-weight:800;padding:13px;cursor:pointer;margin-bottom:12px; }
 .meas-item{ display:flex;align-items:center;gap:9px;padding:10px 9px;border-radius:12px;background:#f7f5fc;border:1px solid #e7e0f7;margin-bottom:7px; }
 .meas-item.locked{ background:#eef4fb;border-color:#c5dcf5; }
@@ -796,7 +797,7 @@ button{ touch-action:manipulation; }
   <div class="mp-actions" style="margin-top:7px;">
     <button class="mp-btn mp-save" onclick="saveMeasure()">💾 측정 저장</button>
     <button class="mp-btn mp-save" onclick="openMeasList()">📂 저장 목록</button>
-    <button class="mp-btn mp-img" onclick="saveMeasImageCurrent()">🖼 이미지</button>
+    <button class="mp-btn mp-img" onclick="showShotGuide()">🖼 이미지</button>
   </div>
 </div>
 
@@ -804,7 +805,7 @@ button{ touch-action:manipulation; }
 <div id="meas-modal" onclick="if(event.target===this)closeMeasList()">
   <div id="meas-sheet">
     <div class="sheet-handle"></div>
-    <div id="meas-head"><span>📐 측정 저장 / 불러오기</span><button onclick="closeMeasList()" id="meas-close">×</button></div>
+    <div id="meas-head"><span>📐 측정 저장 / 불러오기</span><span style="display:flex;gap:8px;align-items:center"><button onclick="clearAllMeas()" id="meas-clearall">전체삭제</button><button onclick="closeMeasList()" id="meas-close">×</button></span></div>
     <button id="meas-newbtn" onclick="measSaveBtnClick()">💾 현재 측정 새로 저장</button>
     <div id="meas-list"></div>
     <div class="meas-tools">
@@ -962,8 +963,11 @@ var toastEl   = document.getElementById('toast');
 
 /* ── 하단 정보 시트 표시/숨김 (열리면 우측 버튼을 시트 위로 올림) ── */
 function adjustControls(){
-  var open = infoSheet.classList.contains('show');
-  var h = open ? infoSheet.offsetHeight : 0;
+  /* 정보시트와 측정패널 중 열려있는(더 높은) 것을 기준으로 모든 버튼을 한 번에 정렬 → 겹침/가림 방지 (#1) */
+  var h = 0;
+  if(infoSheet && infoSheet.classList.contains('show')) h = Math.max(h, infoSheet.offsetHeight);
+  var mp = document.getElementById('measure-panel');
+  if(mp && mp.classList.contains('show')) h = Math.max(h, mp.offsetHeight);
   var base = h ? (h + 14) : 32;
   var lb = document.getElementById('locate-btn');
   var fb = document.getElementById('fav-btn');
@@ -974,7 +978,7 @@ function adjustControls(){
   if(fb) fb.style.bottom = (base + 58) + 'px';
   if(tb) tb.style.bottom = (base + 116) + 'px';
   if(mb) mb.style.bottom = (base + 174) + 'px';
-  if(cb) cb.style.bottom = (base + 232) + 'px';   /* 작물명 버튼도 함께 이동(겹침 방지) */
+  if(cb) cb.style.bottom = (base + 232) + 'px';
 }
 function showInfoSheet(){ infoSheet.classList.remove('collapsed'); infoSheet.classList.add('show'); requestAnimationFrame(adjustControls); }
 window.hideInfoSheet = function(){ infoSheet.classList.remove('show'); adjustControls(); };
@@ -1736,18 +1740,7 @@ window.exitMeasure = function(){
   _adjustMeasureBtn();
 };
 /* 측정 패널이 올라온 만큼 측정 버튼도 위로 올려 가리지 않게 한다 */
-function _adjustMeasureBtn(){
-  var mb = document.getElementById('measure-btn'), cb = document.getElementById('crop-btn'), mp = document.getElementById('measure-panel');
-  if(!mb || !mp) return;
-  if(mp.classList.contains('show')){
-    var base = mp.offsetHeight + 12;
-    mb.style.bottom = base + 'px';                 /* 측정 버튼: 패널 바로 위 */
-    if(cb) cb.style.bottom = (base + 58) + 'px';   /* 작물 버튼: 그 위 (둘 다 보이게 #2) */
-  } else {
-    mb.style.bottom = '';
-    if(cb) cb.style.bottom = '';
-  }
-}
+function _adjustMeasureBtn(){ adjustControls(); }   /* 통합 정렬 사용(#1) */
 window.setMeasureMode = function(mode){
   S.measureMode = mode;
   document.getElementById('mpTabDist').classList.toggle('active', mode === 'dist');
@@ -1949,9 +1942,9 @@ function renderMeasList(){
     /* #4: 계산기와 동일한 SVG 아이콘 — 잠금(잠김:파랑/해제:회색), 휴지통(잠김:회색/해제:빨강) */
     return '<div class="meas-item'+(locked?' locked':'')+sel+'">'
       +'<div class="mi-num">'+num+'</div>'
-      +'<div class="mi-text" onclick="loadMeasure(\''+e.id+'\')"><div class="mi-label">'+escapeHtml(e.label||'측정')+'</div><div class="mi-date">'+ds+' · 점 '+(e.pts?e.pts.length:0)+'개</div></div>'
+      +'<div class="mi-text" onclick="selectMeas(\''+e.id+'\')"><div class="mi-label">'+escapeHtml(e.label||'측정')+'</div><div class="mi-date">'+ds+' · 점 '+(e.pts?e.pts.length:0)+'개</div></div>'
       +'<button class="mi-btn" onclick="toggleMeasLock(\''+e.id+'\')" title="'+(locked?'잠금 해제':'잠금')+'">'+(locked?_LOCK_SVG:_UNLOCK_SVG)+'</button>'
-      +'<button class="mi-btn" onclick="loadMeasure(\''+e.id+'\')" title="불러오기">📂</button>'
+      +'<button class="mi-btn" onclick="loadMeasureConfirm(\''+e.id+'\')" title="불러오기">📂</button>'
       +'<button class="mi-btn" onclick="delMeas(\''+e.id+'\')" title="삭제">'+(locked?_TRASH_GRAY_SVG:_TRASH_SVG)+'</button>'
       +'</div>';
   }).join('');
@@ -1966,6 +1959,25 @@ function _updateMeasSaveBtn(){
 window.measSaveBtnClick = function(){
   if(_measSelId){ overwriteMeas(_measSelId); }
   else { saveMeasure(); }
+};
+/* #3: 항목 탭 = 선택만(덮어쓰기 활성). 지도로 보려면 📂 불러오기 버튼 */
+window.selectMeas = function(id){
+  _measSelId = (_measSelId === id) ? null : id;   /* 다시 누르면 해제 */
+  _updateMeasSaveBtn(); renderMeasList();
+};
+window.loadMeasureConfirm = function(id){
+  if(confirm('이 측정을 지도에 불러올까요?')) loadMeasure(id);
+};
+/* #4: 잠금 안 된 항목 전체삭제 */
+window.clearAllMeas = function(){
+  var list = getMeas();
+  var locked = list.filter(function(x){ return x.locked; });
+  var unlocked = list.length - locked.length;
+  if(!unlocked){ toast('삭제할(잠금 해제) 항목이 없습니다'); return; }
+  if(!confirm('잠금 안 된 ' + unlocked + '개를 모두 삭제할까요?\n(잠긴 항목은 유지됩니다)')) return;
+  setMeas(locked);
+  if(_measSelId && !locked.some(function(x){return x.id===_measSelId;})){ _measSelId=null; _updateMeasSaveBtn(); }
+  renderMeasList(); toast('🗑 삭제 완료');
 };
 window.openMeasList = function(){ renderMeasList(); _updateMeasSaveBtn(); document.getElementById('meas-modal').classList.add('show'); _initMeasSwipe(); };
 window.closeMeasList = function(){ var sh=document.getElementById('meas-sheet'); if(sh) sh.style.transform=''; document.getElementById('meas-modal').classList.remove('show'); };
@@ -1993,6 +2005,23 @@ window.importMeas = function(ev){
   var f=ev.target.files&&ev.target.files[0]; if(!f) return;
   var r=new FileReader(); r.onload=function(){ try{ var arr=JSON.parse(r.result); if(Array.isArray(arr)){ setMeas(arr); renderMeasList(); toast('📥 불러왔습니다'); } }catch(e){ toast('파일 형식 오류'); } };
   r.readAsText(f); ev.target.value='';
+};
+/* 🖼 안내 팝업: 지도 화면은 전원+볼륨 버튼으로 캡처, 요약 이미지는 버튼으로 저장 */
+window.showShotGuide = function(){
+  if(document.getElementById('shotGuideOv')) return;
+  var ov=document.createElement('div'); ov.id='shotGuideOv';
+  ov.style.cssText='position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:24px;';
+  ov.innerHTML='<div style="background:#fff;border-radius:16px;max-width:340px;width:100%;padding:20px;text-align:center;font-family:inherit">'
+    +'<div style="font-size:34px;margin-bottom:4px">📸</div>'
+    +'<div style="font-size:16px;font-weight:800;color:#222;margin-bottom:8px">지도 화면 캡처</div>'
+    +'<div style="font-size:12.5px;color:#666;line-height:1.5;margin-bottom:8px">지도(위성·측정 도형) 그림은 모든 브라우저에서 자동 저장이 안 됩니다.</div>'
+    +'<div style="font-size:14.5px;font-weight:800;color:#1558D6;line-height:1.5;margin-bottom:16px">전원 + 볼륨(위) 버튼을<br>동시에 눌러 스크린샷하세요.</div>'
+    +'<div style="display:flex;gap:8px">'
+    +'<button onclick="var o=document.getElementById(\'shotGuideOv\');if(o)o.remove();" style="flex:1;border:1px solid #ddd;background:#f3f4f6;color:#555;border-radius:11px;padding:12px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer">닫기</button>'
+    +'<button onclick="var o=document.getElementById(\'shotGuideOv\');if(o)o.remove();saveMeasImageCurrent();" style="flex:1;border:none;background:#7c3aed;color:#fff;border-radius:11px;padding:12px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer">측정 요약 이미지</button>'
+    +'</div></div>';
+  ov.addEventListener('click', function(e){ if(e.target===ov) ov.remove(); });
+  document.body.appendChild(ov);
 };
 /* #1: 현재 측정(면적/거리) 결과를 이미지(요약 카드)로 저장·공유 */
 window.saveMeasImageCurrent = function(){
