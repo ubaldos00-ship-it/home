@@ -1,4 +1,4 @@
-<!-- tonghab_v164_addronly.html · 저장: 2026-06-27 23:18 KST · 지도→조사표 주소필지엔 작물 접두 제거(주소만) -->
+<!-- tonghab_v165_autoselect.html · 저장: 2026-06-29 17:25 KST · 지도 조사표열기 시 항상 _slLastLoadedKey 설정(저장/불러오기 자동선택·스크롤) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1391,7 +1391,7 @@ textarea {
         </button>
       </div>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v164 저장: 2026-06-27 23:18)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v165 저장: 2026-06-29 17:25)</span></div>
   </div>
 </div>
 
@@ -9180,6 +9180,7 @@ if(window.wcs) {
         try{
           var s = localStorage.getItem(SL_DATA_PFX + loadKey);
           if(s && typeof _slApply==='function'){
+            if(typeof _slLastLoadedKey!=='undefined') _slLastLoadedKey = loadKey;   /* 항상 기억 → 저장/불러오기 자동선택(덮어쓰기 준비) */
             var d = JSON.parse(s);
             var savedAddr = ((d && d.address) ? d.address : '').toString().trim();
             var setAddr = function(v){
