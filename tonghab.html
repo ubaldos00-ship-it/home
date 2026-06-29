@@ -1,4 +1,4 @@
-<!-- tonghab_v166_loadfix.html · 저장: 2026-06-29 17:51 KST · 지도 조사표열기 시 항상 선택 조사표 데이터 불러오기(주소만 오던 버그 수정) -->
+<!-- tonghab_v167_loadui.html · 저장: 2026-06-30 08:43 KST · 핀이동 주소변경 시 데이터유지+주소만반영 선택, 불러오기 진행표시+완료팝업 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1391,7 +1391,7 @@ textarea {
         </button>
       </div>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v166 저장: 2026-06-29 17:51)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v167 저장: 2026-06-30 08:43)</span></div>
   </div>
 </div>
 
@@ -9173,6 +9173,37 @@ if(window.wcs) {
     document.body.appendChild(ov);
     document.getElementById('addrOk').onclick=function(){ ov.remove(); onOk(); };
   }
+  /* #1 핀 이동(주소변경): 기존 데이터 유지하고 주소만 반영할지 선택 [반영(주소변경)] [취소(기존유지)] */
+  function _addrApplyConfirm(oldAddr, newAddr, onApply){
+    if(document.getElementById('mapLoadOverlay')) return;
+    var ov=document.createElement('div'); ov.className='lc-overlay'; ov.id='mapLoadOverlay';
+    ov.innerHTML='<div class="lc-box"><p><b>저장된 자료입니다.</b><br>지도에서 위치 주소가 변경되었습니다. 반영하시겠습니까?<br>'
+      +'<span style="font-size:12.5px;color:#1a7a3e;font-weight:700">새 주소: '+_esc(newAddr)+'</span><br>'
+      +'<span style="font-size:12px;color:#888">기존 주소: '+_esc(oldAddr||'(없음)')+'</span><br>'
+      +'<span style="font-size:11px;color:#888">기존 데이터는 그대로 유지되고 주소만 바뀝니다.</span></p>'
+      +'<div class="lc-btns"><button class="lc-cancel" id="addrKeep">취소(기존유지)</button><button class="lc-ok" id="addrApply">반영(주소변경)</button></div></div>';
+    document.body.appendChild(ov);
+    document.getElementById('addrKeep').onclick=function(){ ov.remove(); };
+    document.getElementById('addrApply').onclick=function(){ ov.remove(); onApply(); };
+  }
+  /* #2 불러오는 중 진행표시 */
+  function _loadProgressShow(){
+    if(document.getElementById('loadProgOv')) return;
+    var ov=document.createElement('div'); ov.id='loadProgOv';
+    ov.style.cssText='position:fixed;inset:0;z-index:3000;background:rgba(255,255,255,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:inherit;';
+    ov.innerHTML='<div style="width:44px;height:44px;border:4px solid #e0e0e0;border-top-color:#1a7a3e;border-radius:50%;animation:_ldspin .8s linear infinite"></div><div style="margin-top:14px;font-size:15px;font-weight:800;color:#333">자료 불러오는 중…</div><style>@keyframes _ldspin{to{transform:rotate(360deg)}}</style>';
+    document.body.appendChild(ov);
+  }
+  /* #2 불러오기 완료 팝업 */
+  function _loadDoneShow(){
+    var p=document.getElementById('loadProgOv'); if(p) p.remove();
+    if(document.getElementById('loadDoneOv')) return;
+    var ov=document.createElement('div'); ov.id='loadDoneOv';
+    ov.style.cssText='position:fixed;inset:0;z-index:3001;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;padding:24px;font-family:inherit;';
+    ov.innerHTML='<div style="background:#fff;border-radius:16px;max-width:300px;width:100%;padding:22px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.25)"><div style="font-size:34px">✅</div><div style="font-size:16px;font-weight:800;color:#1a5c22;margin:8px 0 16px">불러오기 완료</div><button id="loadDoneOk" style="width:100%;border:none;background:#1a7a3e;color:#fff;border-radius:11px;padding:12px;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer">확인</button></div>';
+    document.body.appendChild(ov);
+    document.getElementById('loadDoneOk').onclick=function(){ ov.remove(); };
+  }
   function run(){
     /* autoRestore(800ms·3000ms)보다 늦게 적용 */
     setTimeout(function(){
@@ -9189,12 +9220,15 @@ if(window.wcs) {
               ap(); setTimeout(ap, 900);   /* 복원이 늦게 끝나도 새 주소가 최종 반영 */
             };
             cleanUrl();   /* 새로고침 시 재실행 방지 */
-            /* 지도에서 주소가 바뀐 채 돌아온 경우: 입력중 자료 유지, '새 주소'를 적용(안내+확인).
-               기존주소 = 현재(입력중) 주소 → 다음 변경 때 이 값이 기존주소가 된다. */
-            /* ?load: 항상 선택한 조사표 데이터를 불러온다(주소만 오던 버그 수정).
-               지도에서 주소가 바뀌었으면 불러온 뒤 새 주소를 적용. 입력 중 자료가 있으면 확인 후 불러오기. */
+            /* #1 핀 이동으로 주소만 바뀌고 입력 중 자료가 있으면 → 데이터 유지, 주소만 반영할지 선택 */
+            if(addrIn && addrIn !== savedAddr && _hasPrev()){
+              _addrApplyConfirm(savedAddr, addrIn, function(){ setAddr(addrIn); });
+              return;
+            }
+            /* 그 외: 선택한 조사표 데이터를 불러온다(#2 진행표시+완료팝업). _slApply 완료콜백에서 완료팝업 */
             var doLoad = function(){
-              _slApply(d);
+              _loadProgressShow();
+              _slApply(d, function(){ _loadDoneShow(); });
               if(addrIn && addrIn !== savedAddr) setAddr(addrIn);   /* 지도에서 바뀐 새 주소 적용 */
               cleanUrl();
             };
