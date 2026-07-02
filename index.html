@@ -1,4 +1,4 @@
-<!-- home_v53_sido.html · 저장: 2026-07-03 04:28 KST · 홈 '작물별 10a당 생산량 조회' 설명 시·군·구별→시도 생산량 비교 -->
+<!-- home_v54_notices2.html · 저장: 2026-07-03 05:20 KST · 알림3개+줄간격축소, 게시물 고정/전체목록/수정, 채팅 열때 맨아래+이동버튼 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -187,17 +187,29 @@
   }
   .notice-admin-btn:hover { opacity: 1; }
   .notice-item-row {
-    display: flex; align-items: flex-start; gap: 8px;
-    padding: 6px 0; border-bottom: 1px solid rgba(240,214,138,0.5);
+    display: flex; align-items: flex-start; gap: 7px;
+    padding: 3px 0; border-bottom: 1px solid rgba(240,214,138,0.5);
     cursor: pointer;
   }
   .notice-item-row:last-of-type { border-bottom: none; }
   .notice-item-row:active { opacity: 0.7; }
   .notice-dot { color: var(--color-accent); font-weight: 700; flex-shrink: 0; margin-top: 1px; }
   .notice-item-title {
-    flex: 1; font-weight: 600; color: #6b4f0a; font-size: 13px; line-height: 1.5;
+    flex: 1; font-weight: 600; color: #6b4f0a; font-size: 13px; line-height: 1.35;
     text-decoration: underline; text-underline-offset: 2px; text-decoration-color: rgba(201,150,43,0.4);
   }
+  /* 고정(공지) 뱃지 + 관리자 핀/수정 버튼 + 전체보기 */
+  .notice-pin-badge { color: #c9962b; font-size: 11px; flex-shrink: 0; margin-top: 2px; }
+  .notice-pin-btn, .notice-edit-btn {
+    background: none; border: none; cursor: pointer; font-size: 12px; flex-shrink: 0;
+    padding: 0 2px; opacity: .75; font-family: inherit;
+  }
+  .notice-pin-btn.on { opacity: 1; }
+  .notice-more-btn {
+    background: none; border: none; color: #a07020; font-size: 12px; font-weight: 700;
+    cursor: pointer; font-family: inherit; padding: 6px 0 0; text-decoration: underline;
+  }
+  .notice-head-left { display: flex; align-items: center; gap: 8px; }
   .notice-item-date { font-size: 11px; color: #a07020; flex-shrink: 0; white-space: nowrap; margin-top: 2px; }
   .notice-admin-bar {
     display: none; margin-top: 10px; padding-top: 10px;
@@ -733,7 +745,16 @@
     flex-direction: column;
     overflow: hidden;
     padding-bottom: env(safe-area-inset-bottom);
+    position: relative;
   }
+  /* 채팅 맨 아래로 이동 버튼 (#4) */
+  .chat-jump-btn {
+    position: absolute; right: 14px; bottom: 84px; z-index: 6;
+    background: #d96f00; color: #fff; border: none; border-radius: 999px;
+    padding: 8px 13px; font-size: 12px; font-weight: 700; font-family: inherit;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.28); cursor: pointer; display: none;
+  }
+  .chat-jump-btn.show { display: block; }
   .chat-head {
     background: linear-gradient(135deg, #f28c28 0%, #d96f00 100%);
     color: #fff;
@@ -978,7 +999,10 @@
   <!-- 알림 (Firestore 공지) -->
   <div class="notice-wrap">
     <div class="notice-head">
-      <strong>● 알림</strong>
+      <div class="notice-head-left">
+        <strong id="noticeHeadStrong" style="cursor:pointer;">● 알림</strong>
+        <button class="notice-more-btn" id="noticeMoreBtn" style="padding:0;">전체보기 ›</button>
+      </div>
       <button class="notice-admin-btn" id="noticeAdminBtn" title="관리자">🔐</button>
     </div>
     <div id="noticeListHome">
@@ -1380,6 +1404,7 @@
       <button type="button" id="chatNameSave">저장</button>
     </div>
     <div class="chat-messages" id="chatMessages" aria-live="polite"></div>
+    <button type="button" class="chat-jump-btn" id="chatJumpBtn">▼ 맨 아래로</button>
     <div class="chat-send-row">
       <textarea id="chatInput" maxlength="300"></textarea>
       <button type="button" id="chatSend">전송</button>
@@ -1408,11 +1433,20 @@
   </div>
 </div>
 
+<!-- 전체 게시물 목록 팝업 (#2) -->
+<div class="notice-modal" id="noticeListModal" style="z-index:240;">
+  <div class="notice-modal-box">
+    <button class="notice-modal-close" id="noticeListClose">✕</button>
+    <div class="notice-modal-title" style="margin-bottom:12px;">📋 전체 게시물</div>
+    <div id="noticeListFull"></div>
+  </div>
+</div>
+
 <!-- 공지 작성 팝업 -->
 <div class="notice-write-modal" id="noticeWriteModal">
   <div class="notice-write-box">
     <button class="notice-write-close" id="noticeWriteClose">✕</button>
-    <div class="notice-write-h">공지사항 작성</div>
+    <div class="notice-write-h" id="noticeWriteH">공지사항 작성</div>
     <input type="text" id="noticeInputTitle" placeholder="제목" />
     <textarea id="noticeInputContent" placeholder="내용"></textarea>
     <button class="notice-save-btn" id="noticeSaveBtn">저장</button>
@@ -1839,6 +1873,7 @@
     }
     if (shouldStickToBottom) messagesEl.scrollTop = messagesEl.scrollHeight;
     updateBadge();
+    if (typeof updateChatJumpBtn === 'function') updateChatJumpBtn();
   }
   function latestMessageTime() {
     return messages.reduce((max, m) => Math.max(max, Number(m.createdAt || 0)), 0);
@@ -1896,6 +1931,10 @@
     if (savedName) status.textContent = `${savedName} 닉네임이 저장되어 있습니다.`;
     render();
     markRead();
+    /* #4: 처음 열 때 맨 아래(최신 글)로 이동 */
+    scrollChatToBottom();
+    setTimeout(scrollChatToBottom, 60);
+    setTimeout(scrollChatToBottom, 250);
     if (window.visualViewport) {
       window.visualViewport.addEventListener('resize', adjustChatViewport);
       window.visualViewport.addEventListener('scroll', adjustChatViewport);
@@ -1903,6 +1942,22 @@
     adjustChatViewport();
     setTimeout(() => { input.focus(); adjustChatViewport(); }, 120);
   }
+  /* #4: 채팅 맨 아래로 이동 + 버튼 표시 제어 */
+  function scrollChatToBottom() {
+    if (messagesEl) messagesEl.scrollTop = messagesEl.scrollHeight;
+    updateChatJumpBtn();
+  }
+  function updateChatJumpBtn() {
+    const btn = document.getElementById('chatJumpBtn');
+    if (!btn || !messagesEl) return;
+    const nearBottom = messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight < 120;
+    btn.classList.toggle('show', !nearBottom);
+  }
+  (function initChatJump() {
+    const btn = document.getElementById('chatJumpBtn');
+    if (btn) btn.addEventListener('click', scrollChatToBottom);
+    if (messagesEl) messagesEl.addEventListener('scroll', updateChatJumpBtn, { passive: true });
+  })();
   function closeChat() {
     modal.classList.remove('show');
     if (window.visualViewport) {
@@ -2091,7 +2146,7 @@
     getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged
   } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
   import {
-    getFirestore, collection, getDocs, addDoc, deleteDoc, doc,
+    getFirestore, collection, getDocs, addDoc, deleteDoc, updateDoc, doc,
     query, orderBy, limit, serverTimestamp
   } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
@@ -2125,51 +2180,108 @@
   }
 
   /* ── 공지 목록 렌더 ── */
-  function renderNotices(docs) {
-    const el = document.getElementById('noticeListHome');
-    if (!el) return;
-    if (!docs.length) {
-      el.innerHTML = '<div style="color:#a07020;font-size:12px;">• 등록된 공지가 없습니다.</div>';
-      return;
-    }
-    el.innerHTML = docs.map((d, i) => {
-      const n = d.data;
-      const delBtn = isAdmin
-        ? `<button class="notice-del-btn" data-del-id="${escHtml(d.id)}" title="삭제">✕</button>`
-        : '';
-      return `<div class="notice-item-row" data-notice-idx="${i}">
-        <span class="notice-dot">•</span>
-        <span class="notice-item-title">${escHtml(n.title || '(제목 없음)')}</span>
-        <span class="notice-item-date">${fmtDate(n.createdAt)}</span>
-        ${delBtn}
-      </div>`;
-    }).join('');
+  let editingId = null;
 
-    /* 클릭: 삭제 or 상세보기 */
-    el.querySelectorAll('[data-notice-idx]').forEach(row => {
+  /* 타임스탬프 → ms */
+  function tsMs(x) { return x?.toMillis?.() ?? (x?.seconds ? x.seconds * 1000 : 0); }
+  /* 고정(pinned) 먼저, 그다음 최신순 정렬 (#2) */
+  function sortNotices(arr) {
+    return arr.slice().sort((a, b) => {
+      const pa = a.data.pinned ? 1 : 0, pb = b.data.pinned ? 1 : 0;
+      if (pa !== pb) return pb - pa;
+      if (pa && pb) return tsMs(b.data.pinnedAt) - tsMs(a.data.pinnedAt);
+      return tsMs(b.data.createdAt) - tsMs(a.data.createdAt);
+    });
+  }
+
+  /* 한 줄 렌더 (홈/전체목록 공용) — 관리자면 고정·수정·삭제 버튼 */
+  function rowHtml(d) {
+    const n = d.data;
+    const pinned = !!n.pinned;
+    const lead = pinned ? '<span class="notice-pin-badge">📌</span>' : '<span class="notice-dot">•</span>';
+    let adminBtns = '';
+    if (isAdmin) {
+      adminBtns =
+        `<button class="notice-pin-btn ${pinned ? 'on' : ''}" data-pin-id="${escHtml(d.id)}" title="${pinned ? '고정 해제' : '맨 위 고정'}">${pinned ? '📌' : '📍'}</button>` +
+        `<button class="notice-edit-btn" data-edit-id="${escHtml(d.id)}" title="수정">✎</button>` +
+        `<button class="notice-del-btn" data-del-id="${escHtml(d.id)}" title="삭제">✕</button>`;
+    }
+    return `<div class="notice-item-row" data-open-id="${escHtml(d.id)}">
+      ${lead}
+      <span class="notice-item-title">${escHtml(n.title || '(제목 없음)')}</span>
+      <span class="notice-item-date">${fmtDate(n.createdAt)}</span>
+      ${adminBtns}
+    </div>`;
+  }
+  function bindRows(container) {
+    container.querySelectorAll('.notice-item-row').forEach(row => {
       row.addEventListener('click', e => {
-        const delBtn = e.target.closest('[data-del-id]');
-        if (delBtn) { e.stopPropagation(); deleteNotice(delBtn.dataset.delId); return; }
-        const idx = parseInt(row.dataset.noticeIdx);
-        showDetail(docs[idx]);
+        const pin = e.target.closest('[data-pin-id]');
+        if (pin) { e.stopPropagation(); togglePin(pin.dataset.pinId); return; }
+        const ed = e.target.closest('[data-edit-id]');
+        if (ed) { e.stopPropagation(); openEdit(ed.dataset.editId); return; }
+        const del = e.target.closest('[data-del-id]');
+        if (del) { e.stopPropagation(); deleteNotice(del.dataset.delId); return; }
+        openDetailById(row.dataset.openId);
       });
     });
+  }
+
+  /* ── 홈 목록: 상위 3개만 (#1) ── */
+  function renderNotices() {
+    const el = document.getElementById('noticeListHome');
+    if (!el) return;
+    const sorted = sortNotices(noticesCache);
+    if (!sorted.length) {
+      el.innerHTML = '<div style="color:#a07020;font-size:12px;">• 등록된 공지가 없습니다.</div>';
+    } else {
+      el.innerHTML = sorted.slice(0, 3).map(rowHtml).join('');
+      bindRows(el);
+    }
+    const more = document.getElementById('noticeMoreBtn');
+    if (more) more.style.display = sorted.length > 3 ? '' : 'none';
+  }
+  /* ── 전체 목록 모달 (#2) ── */
+  function renderFullList() {
+    const el = document.getElementById('noticeListFull');
+    if (!el) return;
+    const sorted = sortNotices(noticesCache);
+    el.innerHTML = sorted.length ? sorted.map(rowHtml).join('')
+      : '<div style="color:#a07020;font-size:12px;">• 등록된 공지가 없습니다.</div>';
+    bindRows(el);
+  }
+  function refreshNoticeViews() {
+    renderNotices();
+    if (document.getElementById('noticeListModal').classList.contains('show')) renderFullList();
   }
 
   /* ── 공지 로드 ── */
   async function loadNotices() {
     try {
-      const q = query(collection(db, 'notices'), orderBy('createdAt', 'desc'), limit(10));
+      const q = query(collection(db, 'notices'), orderBy('createdAt', 'desc'), limit(50));
       const qs = await withTimeout(getDocs(q));
       noticesCache = qs.docs.map(d => ({ id: d.id, data: d.data() }));
-      renderNotices(noticesCache);
+      refreshNoticeViews();
     } catch (e) {
       const el = document.getElementById('noticeListHome');
       if (el) el.innerHTML = '<div style="color:#a07020;font-size:12px;">• 베타 시험서비스 중입니다. 오류 발견 시 채팅으로 문의해주세요.</div>';
     }
   }
 
+  /* ── 전체보기 열기/닫기 ── */
+  function openFullList() { renderFullList(); document.getElementById('noticeListModal').classList.add('show'); }
+  document.getElementById('noticeMoreBtn').addEventListener('click', openFullList);
+  document.getElementById('noticeHeadStrong').addEventListener('click', openFullList);
+  document.getElementById('noticeListClose').addEventListener('click', () => {
+    document.getElementById('noticeListModal').classList.remove('show');
+  });
+  document.getElementById('noticeListModal').addEventListener('click', e => {
+    if (e.target === document.getElementById('noticeListModal'))
+      document.getElementById('noticeListModal').classList.remove('show');
+  });
+
   /* ── 상세 팝업 ── */
+  function openDetailById(id) { const it = noticesCache.find(n => n.id === id); if (it) showDetail(it); }
   function showDetail(d) {
     const n = d.data;
     document.getElementById('noticeDetailTitle').textContent = n.title || '';
@@ -2185,18 +2297,43 @@
       document.getElementById('noticeDetailModal').classList.remove('show');
   });
 
+  /* ── 고정 토글 (#2) ── */
+  async function togglePin(id) {
+    const it = noticesCache.find(n => n.id === id);
+    if (!it) return;
+    const next = !it.data.pinned;
+    try {
+      await withTimeout(updateDoc(doc(db, 'notices', id), { pinned: next, pinnedAt: next ? serverTimestamp() : null }));
+      await loadNotices();
+    } catch (e) { alert('고정 변경 실패: ' + e.message); }
+  }
+
   /* ── 공지 삭제 ── */
   async function deleteNotice(id) {
-    if (!confirm('이 공지를 삭제할까요?')) return;
+    if (!confirm('이 게시물을 삭제할까요?')) return;
     try {
       await withTimeout(deleteDoc(doc(db, 'notices', id)));
-      noticesCache = noticesCache.filter(n => n.id !== id);
-      renderNotices(noticesCache);
+      await loadNotices();
     } catch (e) { alert('삭제 실패: ' + e.message); }
   }
 
-  /* ── 공지 작성 팝업 ── */
+  /* ── 수정 열기 (#3) ── */
+  function openEdit(id) {
+    const it = noticesCache.find(n => n.id === id);
+    if (!it) return;
+    editingId = id;
+    document.getElementById('noticeWriteH').textContent = '게시물 수정';
+    document.getElementById('noticeSaveBtn').textContent = '수정 저장';
+    document.getElementById('noticeInputTitle').value = it.data.title || '';
+    document.getElementById('noticeInputContent').value = it.data.content || '';
+    document.getElementById('noticeWriteModal').classList.add('show');
+  }
+
+  /* ── 공지 작성/수정 팝업 ── */
   document.getElementById('noticeAddBtn').addEventListener('click', () => {
+    editingId = null;
+    document.getElementById('noticeWriteH').textContent = '공지사항 작성';
+    document.getElementById('noticeSaveBtn').textContent = '저장';
     document.getElementById('noticeInputTitle').value = '';
     document.getElementById('noticeInputContent').value = '';
     document.getElementById('noticeWriteModal').classList.add('show');
@@ -2213,10 +2350,13 @@
     const content = document.getElementById('noticeInputContent').value.trim();
     if (!title || !content) { alert('제목과 내용을 입력하세요.'); return; }
     try {
-      const ref = await withTimeout(addDoc(collection(db, 'notices'), {
-        title, content, createdAt: serverTimestamp()
-      }));
+      if (editingId) {
+        await withTimeout(updateDoc(doc(db, 'notices', editingId), { title, content }));
+      } else {
+        await withTimeout(addDoc(collection(db, 'notices'), { title, content, pinned: false, createdAt: serverTimestamp() }));
+      }
       document.getElementById('noticeWriteModal').classList.remove('show');
+      editingId = null;
       await loadNotices();
     } catch (e) { alert('저장 실패: ' + e.message); }
   });
@@ -2228,7 +2368,7 @@
     const adminBtn = document.getElementById('noticeAdminBtn');
     if (adminBar) adminBar.classList.toggle('show', isAdmin);
     if (adminBtn) adminBtn.style.opacity = isAdmin ? '1' : '0.5';
-    renderNotices(noticesCache);
+    refreshNoticeViews();
   });
 
   document.getElementById('noticeAdminBtn').addEventListener('click', async () => {
