@@ -1,4 +1,4 @@
-<!-- graph_v27.html · 저장: 2026-06-26 15:56 KST · 추이박스에 200평 생산량 추가+평년/전년 세로배치, 툴팁 점에서만·스크롤시 숨김 -->
+<!-- graph_v28_trend.html · 저장: 2026-07-03 03:40 KST · 추이박스 글자키움·평년/전년대비 좌우정렬·홀수확대방지, 순서(그래프→표→통계), 툴팁 근처터치 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -206,15 +206,16 @@
   }
   .stat-block {
     background: #fff; border: 1px solid #e5e7eb;
-    border-radius: 6px; padding: 6px 8px; font-size: 10.5px;
-    flex: 1 1 calc(50% - 6px); min-width: 120px;
+    border-radius: 6px; padding: 7px 9px; font-size: 12px;
+    flex: 0 1 calc(50% - 3px); min-width: 130px;   /* 홀수여도 마지막 항목이 확대되지 않게 grow 0 (#4) */
     box-shadow: 0 1px 2px rgba(0,0,0,0.02);
   }
-  .stat-block b { font-size: 11.5px; display: block; margin-bottom: 2px; }
-  .stat-pyeong { margin-top: 5px; padding-top: 5px; border-top: 1px solid #e5e7eb; font-size: 10px; color: #555; line-height: 1.55; }
+  .stat-block b { font-size: 13px; display: block; margin-bottom: 3px; }
+  .stat-block .sp-r { display: flex; justify-content: space-between; gap: 6px; }   /* 라벨 왼쪽·데이터 오른쪽 (#3) */
+  .sp-r.cmp { font-size: 12px; font-weight: 600; color: #444; padding: 1px 0; }
+  .stat-pyeong { margin-top: 6px; padding-top: 6px; border-top: 1px solid #e5e7eb; font-size: 11.5px; color: #555; line-height: 1.6; }
   .stat-pyeong span { font-weight: 700; color: #166534; }
-  .stat-pyeong .sp-h { font-weight: 800; color: #15803d; margin-top: 3px; }
-  .stat-pyeong .sp-r { display: flex; justify-content: space-between; gap: 6px; }
+  .stat-pyeong .sp-h { font-weight: 800; color: #15803d; margin-top: 4px; font-size: 11.5px; }
 
   /* ── 그래프 ── */
   .chart-wrap { position: relative; height: 320px; margin-top: 4px; }
@@ -888,7 +889,8 @@ function render() {
       statsHtml += `
         <div class="stat-block" style="border-left: 3px solid ${color};">
           <b style="color:${color}">${s.region}</b>
-          평년대비: ${fmtDiff(avgRatio)}<br>전년대비: ${fmtDiff(yoy)}
+          <div class="sp-r cmp">평년대비 <span>${fmtDiff(avgRatio)}</span></div>
+          <div class="sp-r cmp">전년대비 <span>${fmtDiff(yoy)}</span></div>
           <div class="stat-pyeong">
             <div class="sp-h">200평 생산량</div>
             <div class="sp-r">평년 <span>${fmt200(avg5)} kg</span></div>
@@ -903,9 +905,9 @@ function render() {
   });
   statsHtml += '</div>';
 
-  let html = statsHtml + `
+  let html = `
     <div class="chart-wrap"><canvas id="line-chart"></canvas></div>
-    
+
     <div class="legend-box" id="legend-row"></div>
 
     <div class="table-box">
@@ -928,6 +930,7 @@ function render() {
         </tbody>
       </table>
     </div>
+    ` + statsHtml + `
     <div class="note">
       📌 <b>${currentLabel}</b> · 단위: kg/10a (10a = 1,000㎡)<br>
       ${currentCrop === '논벼' ? '※ 논벼 정곡 기준. 시군별 자료는 강원·경북 한정.<br>' : ''}${['겉보리','쌀보리','밀'].includes(currentCrop) ? '※ 맥류(겉보리·쌀보리·밀)는 조곡 기준입니다.<br>' : ''}
@@ -970,7 +973,7 @@ function drawChart(series) {
           backgroundColor: col + '20',
           borderWidth: 2.5,
           borderDash: getRegionDash(s.region),
-          pointRadius: 4, pointHoverRadius: 6,
+          pointRadius: 4, pointHoverRadius: 7, pointHitRadius: 22,   /* 근처만 터치해도 잡히도록 히트영역 확대 (#6) */
           pointBackgroundColor: col, pointBorderColor: '#fff',
           tension: 0.25, spanGaps: true
         };
@@ -978,12 +981,12 @@ function drawChart(series) {
     },
     options: {
       responsive: true, maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: true },   /* 점 위에서만 툴팁(같은 세로줄 빈공간 클릭 시 안 뜸) */
+      interaction: { mode: 'index', intersect: false },   /* 점 근처(같은 세로줄)만 터치해도 툴팁 (#6) */
       plugins: {
         legend: { display: false },
         tooltip: {
           enabled: false,
-          mode: 'index', intersect: true,   /* 점 위에서만 */
+          mode: 'index', intersect: false,   /* 근처 터치 허용 */
           external: _extTip
         },
         datalabels: {
