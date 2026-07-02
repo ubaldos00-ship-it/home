@@ -1,4 +1,4 @@
-<!-- tonghab_v169_addrfix.html · 저장: 2026-07-02 15:35 KST · 반영=새(풀)주소 복원데이터에 주입해 경합 제거, 취소=기존주소 -->
+<!-- tonghab_v170_datachoice.html · 저장: 2026-07-02 16:20 KST · 조사표열기 시 작성중/저장된 자료 선택, 위치는 항상 지도선택 위치 반영 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1391,7 +1391,7 @@ textarea {
         </button>
       </div>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v169 저장: 2026-07-02 15:35)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v170 저장: 2026-07-02 16:20)</span></div>
   </div>
 </div>
 
@@ -9186,6 +9186,17 @@ if(window.wcs) {
     document.getElementById('addrKeep').onclick=function(){ ov.remove(); if(typeof onKeep==='function') onKeep(); };
     document.getElementById('addrApply').onclick=function(){ ov.remove(); onApply(); };
   }
+  /* #2 조사표 열기: 작성중 자료 vs 저장된 자료 선택 (위치는 항상 지도에서 선택한 위치로 반영) */
+  function _dataChoiceConfirm(onDraft, onSaved){
+    if(document.getElementById('mapLoadOverlay')) return;
+    var ov=document.createElement('div'); ov.className='lc-overlay'; ov.id='mapLoadOverlay';
+    ov.innerHTML='<div class="lc-box"><p><b>작성 중인 자료가 있습니다.</b><br>어느 자료로 여시겠습니까?<br>'
+      +'<span style="font-size:11px;color:#888">위치(주소·좌표)는 지도에서 선택한 위치로 반영됩니다.</span></p>'
+      +'<div class="lc-btns"><button class="lc-cancel" id="dcDraft">작성중 자료</button><button class="lc-ok" id="dcSaved">저장된 자료</button></div></div>';
+    document.body.appendChild(ov);
+    document.getElementById('dcDraft').onclick=function(){ ov.remove(); onDraft(); };
+    document.getElementById('dcSaved').onclick=function(){ ov.remove(); onSaved(); };
+  }
   /* #2 불러오는 중 진행표시 */
   function _loadProgressShow(){
     if(document.getElementById('loadProgOv')) return;
@@ -9220,32 +9231,38 @@ if(window.wcs) {
               ap(); setTimeout(ap, 900);   /* 복원이 늦게 끝나도 새 주소가 최종 반영 */
             };
             cleanUrl();   /* 새로고침 시 재실행 방지 */
-            /* 핀에 연결된 조사표 데이터를 불러온다(#2 진행표시+완료팝업). useNewAddr=true면 지도에서 옮긴 새 위치 반영 */
-            var loadData = function(useNewAddr){
-              var useNew = !!(useNewAddr && addrIn && addrIn !== savedAddr);
+            var pinLat = Number(latIn), pinLng = Number(lngIn);
+            var hasPin = !!addrIn || (isFinite(pinLat) && isFinite(pinLng));
+            /* 주소/좌표를 지도에서 선택한(변경된) 위치로 강제 반영 — 복원 후에도 유지 */
+            var applyPinLoc = function(){
+              if(addrIn){ setAddr(addrIn); setTimeout(function(){ setAddr(addrIn); }, 3300); }
+              if(isFinite(pinLat) && isFinite(pinLng)) _tenarSetMapCoord(pinLat, pinLng);
+            };
+            /* 저장된 자료 불러오기(#2 진행표시+완료). 위치는 항상 지도에서 선택한 위치 */
+            var applySaved = function(){
               var dd = d;
-              if(useNew){
-                /* 복원 데이터 자체의 주소·좌표를 새 값으로 → 복원(_slApply)이 새 주소를 덮어쓰는 경합 제거 */
-                try{ dd = JSON.parse(JSON.stringify(d)); }catch(e){ dd = d; }
-                dd.address = addrIn;
-                if(isFinite(latIn) && isFinite(lngIn)){ dd.__mapLat = latIn; dd.__mapLng = lngIn; }
+              if(hasPin){
+                try{ dd = JSON.parse(JSON.stringify(d)); }catch(e){ dd = d; }   /* 복원 데이터 자체에 새 위치 주입(경합 제거) */
+                if(addrIn) dd.address = addrIn;
+                if(isFinite(pinLat) && isFinite(pinLng)){ dd.__mapLat = pinLat; dd.__mapLng = pinLng; }
               }
               _loadProgressShow();
               _slApply(dd, function(){
-                if(useNew) setAddr(addrIn);   /* 복원 완료 후 새 주소 최종 확정 */
+                if(hasPin && addrIn) setAddr(addrIn);   /* 복원 완료 후 새 주소 최종 확정 */
                 _loadDoneShow();
               });
-              if(useNew) setTimeout(function(){ setAddr(addrIn); }, 3300);   /* autoRestore 늦은 재적용 대비(보험) */
+              if(hasPin) applyPinLoc();
               cleanUrl();
             };
-            /* #1 핀을 옮겨(위치변경) 주소가 달라졌으면 → 데이터는 반드시 불러오고, 새 위치 반영 여부만 선택 */
-            if(addrIn && addrIn !== savedAddr){
-              _addrApplyConfirm(savedAddr, addrIn, function(){ loadData(true); }, function(){ loadData(false); });
-              return;
-            }
-            /* 위치 변화 없음: 입력중 자료 있으면 확인 후 불러오기, 없으면 바로 */
-            if(_hasPrev()){ _mapLoadConfirm(function(){ loadData(false); }); }
-            else { loadData(false); }
+            /* 작성중(현재) 자료 유지 + 위치만 지도에서 선택한 위치로 반영 */
+            var keepDraft = function(){
+              applyPinLoc();
+              cleanUrl();
+              setTimeout(_loadDoneShow, 700);
+            };
+            /* #2 작성중 자료가 있으면 [작성중]/[저장된] 선택, 없으면 저장된 자료 불러오기. 위치는 항상 새 위치 */
+            if(_hasPrev()){ _dataChoiceConfirm(keepDraft, applySaved); }
+            else { applySaved(); }
             return;
           }
           alert('연결된 조사자료를 찾을 수 없습니다. (이 기기에 저장된 자료만 열 수 있습니다)');

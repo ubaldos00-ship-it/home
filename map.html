@@ -1,4 +1,4 @@
-<!-- map_v70_pinaddr.html · 저장: 2026-07-02 15:35 KST · 핀 위치변경 시 역지오코딩 새(풀)주소를 즐겨찾기에 확정해 조사표로 전달 -->
+<!-- map_v71_pinsave.html · 저장: 2026-07-02 16:20 KST · 핀 위치변경 시 지도에 머물며 좌표+주소 바로 저장(조사표 자동이동 제거) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -2972,33 +2972,27 @@ window.cancelPinMove = function(){
   refreshFavPins();
   if(f) showFavInfo(f);   /* 원래 선택 상태로 복귀 */
 };
-/* 핀 위치·주소 변경 안내 — 조사표에서 저장해야 최종 반영됨을 명시 (#2) */
+/* 핀 위치·주소 변경 안내 — 핀 이동 시 조사표 저장자료에 바로 저장됨 (#1) */
 function _pinMovedNotice(addr){
   if(document.getElementById('pinMoveOv')) return;
   var ov=document.createElement('div'); ov.id='pinMoveOv';
   ov.style.cssText='position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:24px;';
   ov.innerHTML='<div style="background:#fff;border-radius:16px;max-width:330px;width:100%;padding:20px;text-align:center;font-family:inherit">'
     +'<div style="font-size:30px;margin-bottom:4px">📍</div>'
-    +'<div style="font-size:15.5px;font-weight:800;color:#222;margin-bottom:6px">핀 위치·주소가 변경되었습니다</div>'
+    +'<div style="font-size:15.5px;font-weight:800;color:#222;margin-bottom:6px">핀 위치·주소가 저장되었습니다</div>'
     +'<div style="font-size:12.5px;color:#1558D6;font-weight:700;margin-bottom:8px;word-break:break-all">새 주소: '+escapeHtml(addr||'')+'</div>'
-    +'<div style="font-size:13px;color:#c0392b;font-weight:800;line-height:1.5;margin-bottom:16px">⚠️ 조사표에서 저장(덮어쓰기)해야<br>최종 반영됩니다.</div>'
+    +'<div style="font-size:12px;color:#555;line-height:1.5;margin-bottom:16px">조사표를 열려면 <b>📋 조사표</b>를 누르세요.</div>'
     +'<button onclick="var o=document.getElementById(\'pinMoveOv\');if(o)o.remove();" style="width:100%;border:none;background:#1a7a3e;color:#fff;border-radius:11px;padding:12px;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer">확인</button>'
     +'</div>';
   ov.addEventListener('click', function(e){ if(e.target===ov) ov.remove(); });
   document.body.appendChild(ov);
 }
-/* 핀 이동 완료 후: 조사표에 연결된 핀이면 조사표 화면으로 자동 이동(주목적=조사표 작성),
-   연결 안 된 일반 핀이면 지도에 머물며 안내만 표시 */
+/* 핀 이동 완료 후(#1): 지도에 머물며 핀 위치·주소를 조사표 저장자료에 '바로 저장'하고 안내만 표시.
+   (조사표는 사용자가 [📋 조사표]로 직접 열며, 그때 작성중/저장 자료를 선택) */
 function _afterPinMoved(fav, newAddr){
-  if(fav && fav.surveyKey){
-    if(newAddr){ fav.addr = newAddr; }   /* 새(풀)주소를 즐겨찾기에 확정 → 조사표로 그대로 전달 */
-    window._curFav = fav;
-    toast('📋 조사표로 이동합니다 — 새 위치를 반영/취소하세요');
-    setTimeout(function(){ try{ fillSurvey(); }catch(e){ _pinMovedNotice(newAddr || fav.addr || ''); } }, 400);
-    return;
-  }
-  if(newAddr) _pinMovedNotice(newAddr);
-  else toast('✅ 핀 위치를 변경했습니다');
+  if(fav && newAddr){ fav.addr = newAddr; }
+  if(fav && fav.surveyKey){ _writeBackMapCoord(fav); }   /* 좌표+주소를 조사표 저장자료에 즉시 반영 */
+  _pinMovedNotice(newAddr || (fav && fav.addr) || '');
 }
 window.confirmPinMove = function(){
   if(!_pinMoving || !_pinMoveFav || !S.map){ _exitPinMoveMode(); return; }
@@ -3058,6 +3052,7 @@ function _writeBackMapCoord(f){
     d.__mapLat = Number(f.lat);
     d.__mapLng = Number(f.lng);
     if(f.color) d.__mapColor = f.color;
+    if(f.addr) d.address = f.addr;   /* 핀 이동 시 새(풀)주소도 저장자료에 바로 반영(#1) */
     localStorage.setItem(pfx + f.surveyKey, JSON.stringify(d));
   }catch(e){}
 }
