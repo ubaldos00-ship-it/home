@@ -1,4 +1,4 @@
-<!-- map_v68_measmode.html · 저장: 2026-06-29 07:04 KST · 측정모드 표시(주소창 아래 보라색), 핀이동 안내팝업(조사표 저장해야 최종반영) -->
+<!-- map_v69_pinmovenav.html · 저장: 2026-07-02 15:13 KST · 조사표 연결 핀 위치변경 시 조사표 화면으로 자동 이동(반영/취소) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -2987,6 +2987,18 @@ function _pinMovedNotice(addr){
   ov.addEventListener('click', function(e){ if(e.target===ov) ov.remove(); });
   document.body.appendChild(ov);
 }
+/* 핀 이동 완료 후: 조사표에 연결된 핀이면 조사표 화면으로 자동 이동(주목적=조사표 작성),
+   연결 안 된 일반 핀이면 지도에 머물며 안내만 표시 */
+function _afterPinMoved(fav, newAddr){
+  if(fav && fav.surveyKey){
+    window._curFav = fav;
+    toast('📋 조사표로 이동합니다 — 새 위치를 반영/취소하세요');
+    setTimeout(function(){ try{ fillSurvey(); }catch(e){ _pinMovedNotice(newAddr || fav.addr || ''); } }, 400);
+    return;
+  }
+  if(newAddr) _pinMovedNotice(newAddr);
+  else toast('✅ 핀 위치를 변경했습니다');
+}
 window.confirmPinMove = function(){
   if(!_pinMoving || !_pinMoveFav || !S.map){ _exitPinMoveMode(); return; }
   var c = S.map.getCenter();
@@ -3024,14 +3036,14 @@ window.confirmPinMove = function(){
           setFavs(fv);
           window._curFav = fv[k2];
           showFavInfo(fv[k2]);
-          _pinMovedNotice(newAddr);
+          _afterPinMoved(fv[k2], newAddr);   /* 연결된 조사표면 조사표로 자동 이동 */
           return;
         }
       }
-      toast('✅ 핀 위치를 변경했습니다 (주소 확인 실패)');
+      _afterPinMoved(moved, '');   /* 주소 확인 실패 — 연결된 조사표면 이동, 아니면 안내 */
     });
   } else {
-    toast('✅ 핀 위치를 변경했습니다');
+    _afterPinMoved(moved, '');
   }
 };
 /* 변경된 좌표를 계산기(통합/청취) 저장자료에 역기록 → 다음에 열 때도 이 좌표 사용 */
