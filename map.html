@@ -1,4 +1,4 @@
-<!-- map_v71_pinsave.html · 저장: 2026-07-02 16:20 KST · 핀 위치변경 시 지도에 머물며 좌표+주소 바로 저장(조사표 자동이동 제거) -->
+<!-- map_v72_pinnum.html · 저장: 2026-07-02 16:52 KST · 팝업닫기·측정 시 선택핀 제거, 거리모드 점에 순서번호(동그라미) 표시 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -991,7 +991,7 @@ function adjustControls(){
   if(cb) cb.style.bottom = (base + 232) + 'px';
 }
 function showInfoSheet(){ infoSheet.classList.remove('collapsed'); infoSheet.classList.add('show'); requestAnimationFrame(adjustControls); }
-window.hideInfoSheet = function(){ infoSheet.classList.remove('show'); adjustControls(); };
+window.hideInfoSheet = function(keepPin){ infoSheet.classList.remove('show'); if(!keepPin && S.pickMarker){ S.pickMarker.setMap(null); S.pickMarker = null; } adjustControls(); };  /* 팝업 닫으면 선택핀 제거(#2) */
 
 /* ── 길찾기 목적지 설정 ── */
 function setDest(lat, lng, name){
@@ -1780,18 +1780,34 @@ window.setMeasureMode = function(mode){
   /* 주소창 아래 측정모드 표시 (보라색) */
   var _ind = document.getElementById('measmode-ind');
   if(_ind){ _ind.style.display=''; _ind.textContent = (mode === 'dist') ? '📏 거리측정 모드' : '📐 면적측정 모드'; }
+  _updateMeasMarkers();   /* 모드에 맞게 점 마커 번호/모양 갱신 (#4) */
   redrawMeasure();
   updateMeasureResult();
 };
 
+/* 측정 점 마커 아이콘 — 거리 모드는 순서 번호(동그라미 숫자), 면적 모드는 작은 점 (#4) */
+function _measMarkerIcon(idx){
+  if(S.measureMode === 'dist'){
+    return {
+      content:'<div style="width:20px;height:20px;border-radius:50%;background:#7c3aed;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.45);color:#fff;font-size:11px;font-weight:800;line-height:16px;text-align:center;font-family:sans-serif">'+idx+'</div>',
+      anchor:new naver.maps.Point(10,10)
+    };
+  }
+  return {
+    content:'<div style="width:12px;height:12px;border-radius:50%;background:#7c3aed;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.4)"></div>',
+    anchor:new naver.maps.Point(6,6)
+  };
+}
+/* 모드 전환·순서 변화 시 모든 점 마커의 번호/모양 갱신 */
+function _updateMeasMarkers(){
+  if(!S.mMarkers) return;
+  S.mMarkers.forEach(function(m, i){ try{ m.setIcon(_measMarkerIcon(i+1)); }catch(e){} });
+}
 function addMeasurePoint(coord){
   S.mPoints.push(coord);
   var m = new naver.maps.Marker({
     map:S.map, position:coord,
-    icon:{
-      content:'<div style="width:12px;height:12px;border-radius:50%;background:#7c3aed;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.4)"></div>',
-      anchor:new naver.maps.Point(6,6)
-    }
+    icon:_measMarkerIcon(S.mPoints.length)
   });
   S.mMarkers.push(m);
   redrawMeasure();
@@ -3310,7 +3326,7 @@ function _reprojectXY(lat, lng){
 }
 function showActionMenu(e){
   var menu = document.getElementById('action-menu');
-  if(typeof hideInfoSheet === 'function') hideInfoSheet();   /* 롱탭 시 하단 현재위치 시트 완전히 닫기 */
+  if(typeof hideInfoSheet === 'function') hideInfoSheet(true);   /* 롱탭 시 하단 시트만 닫고 방금 찍은 선택핀은 유지 */
   /* 누른 지점의 실제 화면 좌표를 기준점으로 사용 (가장 정확) */
   var anchor = _evtViewportXY(e);
   /* 재투영값과의 차이를 보정값으로 저장 → 지도 이동 시 재투영해도 핀에 정확히 붙어 따라감 */
