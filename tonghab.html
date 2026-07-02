@@ -1,4 +1,4 @@
-<!-- tonghab_v171_maplabel.html · 저장: 2026-07-02 16:52 KST · 주소 옆 핀 버튼에 '지도' 라벨 표기 -->
+<!-- tonghab_v172_hdrscroll.html · 저장: 2026-07-03 03:59 KST · 헤더 스크롤 표시 조건 완화(위로 충분히 올려야 표시) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1391,7 +1391,7 @@ textarea {
         </button>
       </div>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v171 저장: 2026-07-02 16:52)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v172 저장: 2026-07-03 03:59)</span></div>
   </div>
 </div>
 
@@ -7259,17 +7259,14 @@ document.addEventListener('DOMContentLoaded', function(){
 (function(){
   var lastY=0, ticking=false;
   var THRESHOLD=40; /* 이 픽셀 이상 스크롤 후 반응 */
+  var UP_NEEDED=56, refUp=0; /* 위로 이만큼 이상 올려야 헤더 표시(작은 스크롤엔 안 내려옴) */
   function onScroll(){
     var y=window.scrollY||window.pageYOffset;
     var hdr=document.querySelector('.sticky-top');
     if(!hdr){lastY=y;ticking=false;return;}
-    if(y>lastY && y>THRESHOLD){
-      /* 아래로 스크롤(화면 올림) → 전체 헤더 위로 숨김 */
-      hdr.style.transform='translateY(-100%)';
-    } else if(y<lastY){
-      /* 위로 스크롤(화면 내림) → 전체 헤더 복귀 */
-      hdr.style.transform='translateY(0)';
-    }
+    if(y<=THRESHOLD){ hdr.style.transform='translateY(0)'; refUp=y; }          /* 최상단 근처: 항상 표시 */
+    else if(y>lastY){ hdr.style.transform='translateY(-100%)'; refUp=y; }       /* 아래로: 숨김 + 위전환 기준점 리셋 */
+    else if(y<lastY && (refUp - y) > UP_NEEDED){ hdr.style.transform='translateY(0)'; }  /* 충분히 위로 올렸을 때만 표시 */
     lastY=y;
     ticking=false;
   }

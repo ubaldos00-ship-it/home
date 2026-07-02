@@ -1,4 +1,4 @@
-<!-- graph_v28_trend.html · 저장: 2026-07-03 03:40 KST · 추이박스 글자키움·평년/전년대비 좌우정렬·홀수확대방지, 순서(그래프→표→통계), 툴팁 근처터치 -->
+<!-- graph_v29_header.html · 저장: 2026-07-03 03:59 KST · 헤더 타이틀 축소·출처 헤더제거→③추이 하단 이동, 1평당→1평 생산량, 헤더 스크롤 완화 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -61,7 +61,7 @@
     margin-bottom: 4px;
   }
   .top-title {
-    font-size: 16.5px;
+    font-size: 13.5px;
     font-weight: 800;
     letter-spacing: -0.3px;
     display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
@@ -475,7 +475,6 @@
       <span class="header-crop-tag"   id="headerCropTag"   style="display:none"></span>
       <span class="header-region-tag" id="headerRegionTag" style="display:none"></span>
     </div>
-    <div class="top-sub">출처: KOSIS 농작물생산조사(2021~2025) <span style="opacity:.75;font-size:11px;">· v25 저장: 2026-06-23 09:52 · 맥류 조곡 반영</span></div>
   </div>
 
   <div class="card">
@@ -895,7 +894,7 @@ function render() {
             <div class="sp-h">200평 생산량</div>
             <div class="sp-r">평년 <span>${fmt200(avg5)} kg</span></div>
             <div class="sp-r">전년 <span>${fmt200(prevYearVal)} kg</span></div>
-            <div class="sp-h">1평당 생산량</div>
+            <div class="sp-h">1평 생산량</div>
             <div class="sp-r">평년 <span>${fmtPy(avg5)} kg/평</span></div>
             <div class="sp-r">전년 <span>${fmtPy(prevYearVal)} kg/평</span></div>
           </div>
@@ -934,7 +933,8 @@ function render() {
     <div class="note">
       📌 <b>${currentLabel}</b> · 단위: kg/10a (10a = 1,000㎡)<br>
       ${currentCrop === '논벼' ? '※ 논벼 정곡 기준. 시군별 자료는 강원·경북 한정.<br>' : ''}${['겉보리','쌀보리','밀'].includes(currentCrop) ? '※ 맥류(겉보리·쌀보리·밀)는 조곡 기준입니다.<br>' : ''}
-      값이 <b>"-"</b>로 표시된 항목은 미공표 또는 결측 데이터입니다.
+      값이 <b>"-"</b>로 표시된 항목은 미공표 또는 결측 데이터입니다.<br>
+      <span style="color:#9ca3af;">출처: KOSIS 농작물생산조사(2021~2025)</span>
     </div>
   `;
   resultArea.innerHTML = html;
@@ -1568,13 +1568,14 @@ function _grShareFallback(jsonText,fname){
 <script>
 /* v23: 스크롤 시 헤더 자동 숨김/표시 (통합계산기와 동일) */
 (function(){
-  var lastY=0, ticking=false, THRESHOLD=40;
+  var lastY=0, ticking=false, THRESHOLD=40, UP_NEEDED=56, refUp=0;   /* 위로 UP_NEEDED 이상 올려야 헤더 표시(작은 스크롤엔 안 내려옴) */
   function onScroll(){
     var y=window.scrollY||window.pageYOffset;
     var hdr=document.querySelector('.top-bar');
     if(!hdr){lastY=y;ticking=false;return;}
-    if(y>lastY && y>THRESHOLD){ hdr.style.transform='translateY(-100%)'; }
-    else if(y<lastY){ hdr.style.transform='translateY(0)'; }
+    if(y<=THRESHOLD){ hdr.style.transform='translateY(0)'; refUp=y; }        /* 최상단 근처: 항상 표시 */
+    else if(y>lastY){ hdr.style.transform='translateY(-100%)'; refUp=y; }     /* 아래로: 숨김 + 위전환 기준점 리셋 */
+    else if(y<lastY && (refUp - y) > UP_NEEDED){ hdr.style.transform='translateY(0)'; }  /* 충분히 위로 올렸을 때만 표시 */
     lastY=y; ticking=false;
   }
   window.addEventListener('scroll',function(){
