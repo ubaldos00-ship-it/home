@@ -1,4 +1,4 @@
-<!-- tonghab_v168_synclink.html · 저장: 2026-07-02 15:13 KST · 핀 위치변경 시 연결 조사표 데이터 항상 불러오기+위치만 선택(반영/취소) -->
+<!-- tonghab_v169_addrfix.html · 저장: 2026-07-02 15:35 KST · 반영=새(풀)주소 복원데이터에 주입해 경합 제거, 취소=기존주소 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1391,7 +1391,7 @@ textarea {
         </button>
       </div>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v168 저장: 2026-07-02 15:13)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v169 저장: 2026-07-02 15:35)</span></div>
   </div>
 </div>
 
@@ -9222,9 +9222,20 @@ if(window.wcs) {
             cleanUrl();   /* 새로고침 시 재실행 방지 */
             /* 핀에 연결된 조사표 데이터를 불러온다(#2 진행표시+완료팝업). useNewAddr=true면 지도에서 옮긴 새 위치 반영 */
             var loadData = function(useNewAddr){
+              var useNew = !!(useNewAddr && addrIn && addrIn !== savedAddr);
+              var dd = d;
+              if(useNew){
+                /* 복원 데이터 자체의 주소·좌표를 새 값으로 → 복원(_slApply)이 새 주소를 덮어쓰는 경합 제거 */
+                try{ dd = JSON.parse(JSON.stringify(d)); }catch(e){ dd = d; }
+                dd.address = addrIn;
+                if(isFinite(latIn) && isFinite(lngIn)){ dd.__mapLat = latIn; dd.__mapLng = lngIn; }
+              }
               _loadProgressShow();
-              _slApply(d, function(){ _loadDoneShow(); });
-              if(useNewAddr && addrIn && addrIn !== savedAddr) setAddr(addrIn);   /* 지도에서 옮긴 새 주소 반영 */
+              _slApply(dd, function(){
+                if(useNew) setAddr(addrIn);   /* 복원 완료 후 새 주소 최종 확정 */
+                _loadDoneShow();
+              });
+              if(useNew) setTimeout(function(){ setAddr(addrIn); }, 3300);   /* autoRestore 늦은 재적용 대비(보험) */
               cleanUrl();
             };
             /* #1 핀을 옮겨(위치변경) 주소가 달라졌으면 → 데이터는 반드시 불러오고, 새 위치 반영 여부만 선택 */

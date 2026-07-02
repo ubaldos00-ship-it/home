@@ -1,4 +1,4 @@
-<!-- map_v69_pinmovenav.html · 저장: 2026-07-02 15:13 KST · 조사표 연결 핀 위치변경 시 조사표 화면으로 자동 이동(반영/취소) -->
+<!-- map_v70_pinaddr.html · 저장: 2026-07-02 15:35 KST · 핀 위치변경 시 역지오코딩 새(풀)주소를 즐겨찾기에 확정해 조사표로 전달 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -2991,6 +2991,7 @@ function _pinMovedNotice(addr){
    연결 안 된 일반 핀이면 지도에 머물며 안내만 표시 */
 function _afterPinMoved(fav, newAddr){
   if(fav && fav.surveyKey){
+    if(newAddr){ fav.addr = newAddr; }   /* 새(풀)주소를 즐겨찾기에 확정 → 조사표로 그대로 전달 */
     window._curFav = fav;
     toast('📋 조사표로 이동합니다 — 새 위치를 반영/취소하세요');
     setTimeout(function(){ try{ fillSurvey(); }catch(e){ _pinMovedNotice(newAddr || fav.addr || ''); } }, 400);
