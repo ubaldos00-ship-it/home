@@ -6,13 +6,13 @@
 <meta name="theme-color" content="#27500A" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<title>텐아르 PDF 자료실</title>
+<title>텐아르 PDF 자료실 · R2 v4</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <script src="pdf_config.js"></script>
 <style>
 :root{--g:#27500A;--g2:#2e7a4e;--gold:#c9962b;--bg:#f6f4ec;--card:#fff;--txt:#1a1f1a;--soft:#5b6358;--bd:#e6e2d5;--danger:#c0392b;--shadow:0 6px 18px rgba(20,56,32,.10);--r:16px;}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent} html{background:var(--g)} body{margin:0;font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;padding-bottom:30px;background-image:radial-gradient(circle at 0 0,rgba(39,80,10,.08),transparent 38%),radial-gradient(circle at 100% 100%,rgba(201,150,43,.09),transparent 35%)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent} html{touch-action:manipulation} a,button,input,textarea{touch-action:manipulation} html{background:var(--g)} body{margin:0;font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;padding-bottom:30px;background-image:radial-gradient(circle at 0 0,rgba(39,80,10,.08),transparent 38%),radial-gradient(circle at 100% 100%,rgba(201,150,43,.09),transparent 35%)}
 .header{position:sticky;top:0;z-index:20;background:var(--g);color:#fff;padding:calc(12px + env(safe-area-inset-top)) 16px 13px;box-shadow:0 4px 14px rgba(0,0,0,.18)}
 .hrow{display:flex;align-items:center;gap:10px}.back{width:42px;height:42px;border-radius:13px;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.14);color:#fff;font-size:20px;text-decoration:none;display:flex;align-items:center;justify-content:center;flex-shrink:0}.htxt{min-width:0}.kicker{font-size:11px;color:rgba(255,255,255,.68);font-weight:700}.title{font-size:22px;font-weight:900;letter-spacing:-.03em;line-height:1.15}.sub{font-size:12px;color:#e6b955;margin-top:2px;font-weight:700}
 main{max-width:640px;margin:0 auto;padding:14px}.searchbox{background:#fff;border:1px solid var(--bd);border-radius:18px;padding:13px;box-shadow:var(--shadow);margin-bottom:13px}.searchrow{display:flex;gap:8px}.searchrow input{flex:1;border:1.5px solid #d7d2c4;border-radius:13px;padding:13px 14px;font-size:15px;font-family:inherit;outline:none}.searchrow input:focus{border-color:var(--g2);box-shadow:0 0 0 3px rgba(46,122,78,.12)}.pillrow{display:flex;gap:6px;overflow-x:auto;margin-top:10px;padding-bottom:2px}.pill{border:1px solid #d8d2c0;border-radius:99px;background:#faf8ef;color:#5b6358;padding:7px 12px;font-size:12px;font-weight:800;white-space:nowrap;cursor:pointer}.pill.on{background:var(--g);color:#fff;border-color:var(--g)}
@@ -20,7 +20,7 @@ main{max-width:640px;margin:0 auto;padding:14px}.searchbox{background:#fff;borde
 </style>
 </head>
 <body>
-<header class="header"><div class="hrow"><a class="back" href="home_v55_pdfviewer.html" aria-label="홈">‹</a><div class="htxt"><div class="kicker">농작물생산조사 통합시스템</div><div class="title">PDF 자료실</div><div class="sub">다운로드 없이 바로 열람 · 검색 · 즐겨찾기 · 메모</div></div></div></header>
+<header class="header"><div class="hrow"><a class="back" href="../index.html" aria-label="홈">‹</a><div class="htxt"><div class="kicker">농작물생산조사 통합시스템</div><div class="title">PDF 자료실</div><div class="sub">다운로드 없이 바로 열람 · 검색 · 즐겨찾기 · 메모</div></div></div></header>
 <main>
   <section class="searchbox">
     <div class="searchrow"><input id="q" type="search" placeholder="지침서, 조사표, 작물명으로 검색" autocomplete="off" /></div>
@@ -44,6 +44,18 @@ main{max-width:640px;margin:0 auto;padding:14px}.searchbox{background:#fff;borde
   function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
   q.addEventListener('input',render); renderCats(); render();
 })();
+</script>
+
+<script>
+  // v58: Mac/Safari 트랙패드·키보드로 홈 메뉴가 확대되는 현상 방지
+  document.addEventListener('wheel', function(e){
+    if (e.ctrlKey || e.metaKey) e.preventDefault();
+  }, { passive:false });
+  document.addEventListener('gesturestart', function(e){ e.preventDefault(); }, { passive:false });
+  document.addEventListener('gesturechange', function(e){ e.preventDefault(); }, { passive:false });
+  document.addEventListener('keydown', function(e){
+    if ((e.ctrlKey || e.metaKey) && ['+','=','-','0'].includes(e.key)) e.preventDefault();
+  }, { passive:false });
 </script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-<!-- home_v57_r2pdf.html · 저장: 2026-07-04 KST · PDF 자료실 Cloudflare R2 Worker 연동 -->
+<!-- home_v58_r2pdf_zoomfix.html · 저장: 2026-07-04 KST · PDF 자료실 Cloudflare R2 Worker 연동 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -59,6 +59,8 @@
     box-sizing: border-box;
     -webkit-tap-highlight-color: transparent;
   }
+  html { touch-action: manipulation; }
+  a, button, input, textarea { touch-action: manipulation; }
 
   html {
     background-color: #27500A;
@@ -2417,6 +2419,18 @@ wcs_add["wa"] = "19e5d0d688a0f70";
 if(window.wcs) {
   wcs_do();
 }
+</script>
+
+<script>
+  // v58: Mac/Safari 트랙패드·키보드로 홈 메뉴가 확대되는 현상 방지
+  document.addEventListener('wheel', function(e){
+    if (e.ctrlKey || e.metaKey) e.preventDefault();
+  }, { passive:false });
+  document.addEventListener('gesturestart', function(e){ e.preventDefault(); }, { passive:false });
+  document.addEventListener('gesturechange', function(e){ e.preventDefault(); }, { passive:false });
+  document.addEventListener('keydown', function(e){
+    if ((e.ctrlKey || e.metaKey) && ['+','=','-','0'].includes(e.key)) e.preventDefault();
+  }, { passive:false });
 </script>
 </body>
 </html>
