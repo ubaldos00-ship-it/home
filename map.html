@@ -1,4 +1,4 @@
-<!-- map_v72_pinnum.html · 저장: 2026-07-02 16:52 KST · 팝업닫기·측정 시 선택핀 제거, 거리모드 점에 순서번호(동그라미) 표시 -->
+<!-- map_v73_meassend.html · 저장: 2026-07-03 19:59 KST · ?measure=1 면적측정 모드 자동진입+측정면적 조사표 전송(📤) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -809,6 +809,7 @@ button{ touch-action:manipulation; }
     <button class="mp-btn mp-save" onclick="openMeasList()">📂 저장 목록</button>
     <button class="mp-btn mp-img" onclick="showShotGuide()">🖼 이미지</button>
   </div>
+  <button id="measSendBtn" onclick="sendMeasToSurvey()" style="display:none;width:100%;margin-top:8px;padding:12px;border:none;border-radius:11px;background:#1a7a3e;color:#fff;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer;">📤 측정 면적 조사표로 전송</button>
 </div>
 
 <!-- 측정 저장/불러오기 모달 -->
@@ -1072,6 +1073,8 @@ window.initNaverMap = function(){
   /* URL ?q=주소 가 있으면 GPS 대신 그 주소를 바로 검색 (통합계산기 연동) */
   var q = '', bulk = '';
   try { var sp = new URLSearchParams(location.search); q = (sp.get('q')||'').trim(); bulk = (sp.get('bulk')||'').trim(); } catch(e){}
+  /* 조사표 면적측정 연동(?measure=1): 지도 준비 후 면적측정 모드로 자동 진입 + 전송 버튼 노출 */
+  try{ if(sp && sp.get('measure')==='1'){ _measReturnMode = true; _measReturnApp = (sp.get('app')||'chungchi').trim(); } }catch(e){}
   if(bulk === '1'){
     log('일괄 지도반영 모드');
     renderMap(CFG.defaultLat, CFG.defaultLng, 0, true);  /* 지도만 생성 */
@@ -1093,6 +1096,17 @@ window.initNaverMap = function(){
   }
   /* 어느 경로로 들어오든, 좌표 없이 주소만 있는 즐겨찾기가 있으면 자동 지오코딩해 핀 표시 */
   setTimeout(function(){ try{ _healFavsNeedingGeocode(); }catch(_){} }, 2600);
+  /* 면적측정 연동 모드: 주소 이동 후 면적측정 자동 시작 + 전송 버튼 표시 */
+  if(_measReturnMode){
+    setTimeout(function(){
+      try{
+        if(!document.getElementById('measure-panel').classList.contains('show')){ openMeasure(); }
+        setMeasureMode('area');
+        var b=document.getElementById('measSendBtn'); if(b) b.style.display='';
+        toast('📐 면적을 측정한 뒤 [전송]을 누르세요');
+      }catch(e){}
+    }, q ? 1600 : 900);
+  }
 };
 
 /* ================================================================
@@ -1728,6 +1742,20 @@ function openAppOrWeb(appUrl, webUrl, provider){
 /* ================================================================
    거리·면적 측정
 ================================================================ */
+/* 조사표(청취) 면적측정 연동 상태 */
+var _measReturnMode = false, _measReturnApp = 'chungchi';
+/* 측정한 면적(㎡)을 조사표로 전송하고 계산기 화면으로 복귀 */
+window.sendMeasToSurvey = function(){
+  if(!S.mPoints || S.mPoints.length < 3){ toast('면적을 먼저 측정하세요 (점 3개 이상)'); return; }
+  var a = areaM2(S.mPoints);
+  if(!(a > 0)){ toast('측정된 면적이 없습니다'); return; }
+  try{ localStorage.setItem('tenar_meas_result', JSON.stringify({ area: a, ts: Date.now() })); }catch(e){}
+  var back = '';
+  try{ back = sessionStorage.getItem('tenar_last_calc_url') || ''; }catch(e){}
+  if(!back){ var app = (_measReturnApp === 'tonghab') ? 'tonghab' : 'chungchi'; back = 'https://ubaldos00-ship-it.github.io/home/' + app + '.html'; }
+  toast('📤 면적 ' + Math.round(a).toLocaleString() + '㎡ 전송 → 조사표로 이동');
+  setTimeout(function(){ location.href = back; }, 350);
+};
 window.openMeasure = function(){
   /* 측정 버튼 토글: 이미 열려 있으면 닫기(자료 있으면 삭제 확인) */
   if(document.getElementById('measure-panel').classList.contains('show')){ confirmExitMeasure(); return; }

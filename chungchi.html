@@ -1,4 +1,4 @@
-<!-- chungchi_v112_addrgrid.html · 저장: 2026-07-03 07:16 KST · 조사필지 입력란 grid(1fr auto)로 넓힘(실측식) -->
+<!-- chungchi_v113_areameas.html · 저장: 2026-07-03 19:59 KST · 재배면적 행에 지도 면적측정(📐) 연동+삭제 확인팝업 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -64,6 +64,8 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
 .au{font-size:13px;font-weight:700;color:#333;flex-shrink:0}
 .aa{color:#27ae60;font-weight:700;font-size:14px;flex-shrink:0;padding:0 2px}
 .rb{width:28px;height:28px;border-radius:50%;border:none;background:#fadbd8;color:#c0392b;font-size:15px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.mb{width:30px;height:30px;border-radius:8px;border:1px solid #bcd3e6;background:#eaf3fb;color:#1558D6;font-size:15px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0}
+.mb:active{background:#d6e8f7}
 .hr2{display:flex;gap:4px;align-items:center;margin-bottom:5px;flex-wrap:nowrap;width:100%;} /* v53 */
 .hl{font-size:11px;color:#555;white-space:nowrap;flex-shrink:0}
 .tb{background:#fff8dd;border:2px solid #f3d37a;border-radius:14px;padding:12px;margin-top:10px;display:flex;justify-content:space-around;flex-wrap:wrap;gap:8px;box-shadow:inset 0 1px 0 rgba(255,255,255,.8)}
@@ -325,7 +327,7 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
     <div class="hd-t">
       <h1>청취 10a당 생산량 계산기</h1>
       <span class="hd-status-row"><span class="hd-status" id="headStatus">경북 · 사과</span></span>
-      <span class="hd-ver">(v112 저장: 2026-07-03 07:16 · 맥류 조곡)</span>
+      <span class="hd-ver">(v113 저장: 2026-07-03 19:59 · 맥류 조곡)</span>
     </div>
   </div>
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
@@ -425,7 +427,8 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
       <span class="au">평</span><span class="aa">↔</span>
       <input type="number" inputmode="decimal" step="any" min="0" placeholder="0" class="si" autocomplete="off" enterkeyhint="done" oninput="cAR(this)" style="flex:1;min-width:0;text-align:right">
       <span class="au">㎡</span>
-      <button class="rb" onclick="rmAR(this)">−</button>
+      <button type="button" class="mb" onclick="measRow(this)" title="지도에서 면적측정">📐</button>
+      <button class="rb" onclick="delARow(this)">−</button>
     </div>
   </div>
   <div class="btn-row">
@@ -852,12 +855,71 @@ function addARow(){
   <span class="au">평</span><span class="aa">↔</span>
   <input type="number" inputmode="decimal" step="any" min="0" placeholder="0" class="si" autocomplete="off" enterkeyhint="done" oninput="cAR(this)" style="flex:1;min-width:0;text-align:right">
   <span class="au">㎡</span>
-  <button class="rb" onclick="this.closest('.ar').remove();uAT()">−</button>`;
+  <button type="button" class="mb" onclick="measRow(this)" title="지도에서 면적측정">📐</button>
+  <button class="rb" onclick="delARow(this)">−</button>`;
   document.getElementById('areaRows').appendChild(d);
   /* 추가된 첫 입력창에 포커스 → 키보드 즉시 표시 */
   setTimeout(function(){ var inp=d.querySelector('input.pi'); if(inp){ inp.focus(); try{inp.click();}catch(e){} } }, 30);
 }
 function rmAR(b){const rows=document.querySelectorAll('#areaRows .ar');if(rows.length>1){b.closest('.ar').remove();}else{const r=b.closest('.ar');r.querySelector('.pi').value='';r.querySelector('.si').value='';}uAT();}
+/* 삭제 확인 팝업 (해당 면적 삭제) */
+function _areaDelConfirm(onYes){
+  if(document.getElementById('areaDelOv')) return;
+  var ov=document.createElement('div'); ov.className='lc-overlay'; ov.id='areaDelOv';
+  ov.innerHTML='<div class="lc-box"><p><b>해당 면적이 삭제됩니다.</b><br>삭제하시겠습니까?</p><div class="lc-btns"><button class="lc-cancel" id="adCancel">취소</button><button class="lc-ok" id="adOk">확인</button></div></div>';
+  document.body.appendChild(ov);
+  document.getElementById('adCancel').onclick=function(){ ov.remove(); };
+  document.getElementById('adOk').onclick=function(){ ov.remove(); if(typeof onYes==='function') onYes(); };
+}
+function delARow(b){
+  var row=b.closest('.ar');
+  _areaDelConfirm(function(){
+    var rows=document.querySelectorAll('#areaRows .ar');
+    if(rows.length>1){ row.remove(); }
+    else { row.querySelector('.pi').value=''; row.querySelector('.si').value=''; }
+    uAT();
+  });
+}
+/* 📐 지도 면적측정 연동: 이 행의 인덱스를 저장하고 지도(면적측정 모드)로 이동 */
+function measRow(b){
+  var rows=Array.prototype.slice.call(document.querySelectorAll('#areaRows .ar'));
+  var idx=rows.indexOf(b.closest('.ar')); if(idx<0) idx=0;
+  var a=(document.getElementById('address')&&document.getElementById('address').value||'').trim();
+  try{ localStorage.setItem('tenar_meas_ctx', JSON.stringify({app:'chungchi', idx:idx, ts:Date.now()})); }catch(e){}
+  try{ localStorage.removeItem('tenar_meas_result'); }catch(e){}
+  try{ if(typeof ccAutoSave==='function') ccAutoSave(); }catch(e){}   /* 돌아왔을 때 같은 행이 복원되도록 */
+  var base='https://ubaldos00-ship-it.github.io/home/map.html';
+  var u=base+'?measure=1&app=chungchi';
+  if(a) u+='&q='+encodeURIComponent(a);
+  var linkedKey=_slSelectedKey||_slLastLoadedKey||null;
+  if(linkedKey) u+='&surveyKey='+encodeURIComponent(linkedKey);
+  _tenarOpenMapUrl(u);
+}
+/* 지도에서 전송된 측정 면적을 해당 행 ㎡칸에 반영 (복원 완료 후) */
+(function(){
+  function _applyMeas(){
+    var res=null, ctx=null;
+    try{ res=JSON.parse(localStorage.getItem('tenar_meas_result')||'null'); }catch(e){}
+    try{ ctx=JSON.parse(localStorage.getItem('tenar_meas_ctx')||'null'); }catch(e){}
+    if(!res||!(res.area>0)||!ctx||ctx.app!=='chungchi'){ return; }
+    try{ localStorage.removeItem('tenar_meas_result'); localStorage.removeItem('tenar_meas_ctx'); }catch(e){}
+    var rows=document.querySelectorAll('#areaRows .ar');
+    if(!rows.length) return;
+    var idx=Math.min(Math.max(ctx.idx||0,0), rows.length-1);
+    var si=rows[idx].querySelector('.si');
+    if(si){ si.value=r1(res.area); si.dispatchEvent(new Event('input',{bubbles:true})); cAR(si); }
+    _measDoneToast(r1(res.area));
+  }
+  function _measDoneToast(area){
+    var ov=document.createElement('div');
+    ov.style.cssText='position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:9600;background:#1a5c22;color:#fff;font-size:14px;font-weight:800;padding:11px 18px;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.3);font-family:inherit;';
+    ov.textContent='✅ 측정 면적 '+area+'㎡ 입력됨';
+    document.body.appendChild(ov);
+    setTimeout(function(){ ov.style.transition='opacity .4s'; ov.style.opacity='0'; setTimeout(function(){ ov.remove(); },420); }, 2200);
+  }
+  function _run(){ setTimeout(_applyMeas, 1500); }   /* ccAutoRestore 이후 적용 */
+  if(document.readyState==='complete') _run(); else window.addEventListener('load', _run);
+})();
 function cfmRA(){if(!confirm('재배면적이 초기화됩니다. 그래도 초기화하시겠습니까?'))return;rstA();}
 function rstA(){
   document.getElementById('areaRows').innerHTML=`<div class="ar">
@@ -865,7 +927,8 @@ function rstA(){
     <span class="au">평</span><span class="aa">↔</span>
     <input type="number" inputmode="decimal" step="any" min="0" placeholder="0" class="si" autocomplete="off" enterkeyhint="done" oninput="cAR(this)" style="flex:1;min-width:0;text-align:right">
     <span class="au">㎡</span>
-    <button class="rb" onclick="rmAR(this)">−</button></div>`;uAT();
+    <button type="button" class="mb" onclick="measRow(this)" title="지도에서 면적측정">📐</button>
+    <button class="rb" onclick="delARow(this)">−</button></div>`;uAT();
 }
 function uAT(){
   let tp=0,ts=0;
@@ -1537,7 +1600,8 @@ function _ccApply(d){
         +'<span class="au">평</span><span class="aa">↔</span>'
         +'<input type="number" inputmode="decimal" step="any" min="0" placeholder="0" class="si" autocomplete="off" enterkeyhint="done" oninput="cAR(this)" style="flex:1;min-width:0;text-align:right">'
         +'<span class="au">㎡</span>'
-        +'<button class="rb" onclick="this.closest(\'.ar\').remove();uAT()">−</button>';
+        +'<button type="button" class="mb" onclick="measRow(this)" title="지도에서 면적측정">📐</button>'
+        +'<button class="rb" onclick="delARow(this)">−</button>';
       ac.appendChild(div);
       var pi = div.querySelector('.pi');
       var si = div.querySelector('.si');
