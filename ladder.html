@@ -1,4 +1,4 @@
-<!-- ladder_v4.html · 저장: 2026-07-06 04:24 KST · 재미있는 이름 자동생성을 작물 테마로 변경 -->
+<!-- ladder_v5.html · 저장: 2026-07-06 04:24 KST · 작물 테마 이름 + 1등 맞추기 모드(참여자 예상→1등이면 +10점) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -238,6 +238,11 @@
     <div class="btn-row">
       <button class="btn btn-outline btn-sm" id="autoRankBtn">🏅 순위 자동 생성</button>
     </div>
+    <div class="btn-row">
+      <button class="btn btn-outline btn-sm" id="guessModeBtn">🎯 1등 맞추기: OFF</button>
+      <span id="guessScoreBadge" style="flex:0 0 auto;display:flex;align-items:center;padding:0 12px;font-size:13.5px;font-weight:800;color:var(--color-accent);white-space:nowrap;">🏆 0점</span>
+    </div>
+    <p class="hint" id="guessHint" style="display:none;color:var(--color-primary);font-weight:700;margin-top:8px;">🎯 1등이 될 참여자를 예상해 이름을 누르세요! (맞히면 +10점)</p>
   </section>
 
   <!-- ④ 사다리 생성 -->
@@ -376,7 +381,7 @@ function setCount(n) {
   save();
 }
 function hideLadder() {
-  ladder = null; geom = null; revealed = {};
+  ladder = null; geom = null; revealed = {}; guessDone = false;
   $('ladderCard').style.display = 'none';
   $('resultTableCard').style.display = 'none';
 }
@@ -462,7 +467,7 @@ function generateLadder() {
   ensureAllColumnsTouched(rungs, numLevels, n);
 
   ladder = { numLevels, rungs };
-  revealed = {};
+  revealed = {}; guessDone = false;
 }
 function ensureAllColumnsTouched(rungs, numLevels, n) {
   const touched = new Array(n).fill(false);
@@ -781,8 +786,8 @@ function finishOne(startCol, endCol, color) {
   drawBase({ pts: computePath(startCol).pts, upto: 9999, dot: { x: geom.xs[endCol], y: geom.yBottom }, color, startCol, endCol });
   animating = false;
   $('canvasTip').textContent = '👆 위쪽 참여자 이름을 누르면 시작합니다';
-  showPopup(names[startCol], results[endCol]);
-  vibrate(); confetti();
+  if (guessMode && !guessDone) { guessDone = true; showGuessResult(startCol, endCol); }
+  else { showPopup(names[startCol], results[endCol]); vibrate(); confetti(); }
   buildResultTable();
 }
 
@@ -831,11 +836,40 @@ function runOneThen(startCol, cb) {
 
 /* ===================== 결과 팝업/효과 ===================== */
 function showPopup(name, result) {
+  document.querySelector('#popup .pop-emoji').textContent = '🎉';
+  document.querySelector('#popup .pop-title').textContent = '결과';
+  $('popResult').style.color = '';
   $('popName').textContent = name;
   $('popResult').textContent = result;
   const pop = $('popup');
   pop.style.animation = 'none'; void pop.offsetWidth; pop.style.animation = '';
   $('overlay').classList.add('show');
+}
+
+/* ===================== 1등 맞추기 모드 ===================== */
+let guessMode = false, guessDone = false;
+let guessScore = parseInt(localStorage.getItem('ladderGuessScore') || '0', 10) || 0;
+function updateGuessUI() {
+  const b = $('guessModeBtn'); if (b) { b.textContent = '🎯 1등 맞추기: ' + (guessMode ? 'ON' : 'OFF'); b.classList.toggle('btn-accent', guessMode); b.classList.toggle('btn-outline', !guessMode); }
+  const badge = $('guessScoreBadge'); if (badge) badge.textContent = '🏆 ' + guessScore + '점';
+  const hint = $('guessHint'); if (hint) hint.style.display = guessMode ? '' : 'none';
+}
+function toggleGuess() {
+  guessMode = !guessMode; guessDone = false; updateGuessUI();
+}
+function showGuessResult(startCol, endCol) {
+  const resultText = (results[endCol] || '').trim();
+  const win = resultText.includes('1등');
+  if (win) { guessScore += 10; try { localStorage.setItem('ladderGuessScore', String(guessScore)); } catch(e){} }
+  updateGuessUI();
+  document.querySelector('#popup .pop-emoji').textContent = win ? '🏆' : '😅';
+  document.querySelector('#popup .pop-title').textContent = win ? '1등 맞추기 성공!' : '1등 맞추기 실패';
+  $('popName').textContent = names[startCol] + ' → ' + (resultText || '-');
+  $('popResult').textContent = win ? ('🎯 정답! +10점 (누적 ' + guessScore + '점)') : '아쉽! 1등이 아니에요';
+  $('popResult').style.color = win ? 'var(--color-primary)' : 'var(--color-danger)';
+  const pop = $('popup'); pop.style.animation = 'none'; void pop.offsetWidth; pop.style.animation = '';
+  $('overlay').classList.add('show');
+  if (win) { vibrate(); confetti(); }
 }
 function vibrate() { try { if (navigator.vibrate) navigator.vibrate([40, 30, 70]); } catch(e){} }
 
@@ -1015,6 +1049,8 @@ $('minusBtn').addEventListener('click', () => setCount(count - 1));
 $('plusBtn').addEventListener('click', () => setCount(count + 1));
 $('autoRankBtn').addEventListener('click', autoRank);
 $('funNameBtn').addEventListener('click', funName);
+$('guessModeBtn').addEventListener('click', toggleGuess);
+updateGuessUI();
 
 $('genBtn').addEventListener('click', () => {
   if (!validateNames()) return;

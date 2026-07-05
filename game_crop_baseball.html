@@ -1,310 +1,160 @@
-<!-- game_crop_baseball.html · 저장: 2026-06-25 22:45 KST · v2: 야구장 베이스·투수·스트라이크존 개선 -->
+<!-- game_crop_baseball.html · v3 아케이드 · 저장: 2026-07-06 04:24 KST · 단순 아케이드(난이도삭제·20구·홈런중심·콤보보너스·배트/공 애니메이션·홈런존) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-<meta name="theme-color" content="#27500A" />
+<meta name="theme-color" content="#1f5132" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-B8ELP4S5PR"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-B8ELP4S5PR');
-</script>
 <title>작물 홈런왕 · 텐아르 게임센터</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <style>
-  :root {
-    --green:#1f5132; --green2:#2e7a4e; --greenDark:#143820;
-    --gold:#c9962b; --gold2:#e6b955; --bg:#f6f4ec; --card:#fff;
-    --soft:#5b6358; --line:#e6e2d5; --danger:#d84242; --sky:#dff4ff;
-  }
-  * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; user-select:none; }
-  html, body {
-    width:100%; height:100%; overflow:hidden; background:#27500A;
-    font-family:'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
-    color:#1a1f1a; touch-action:manipulation; overscroll-behavior:none;
-  }
-  body { display:flex; justify-content:center; align-items:center; }
-  #app {
-    width:100%; max-width:430px; height:100%; background:var(--bg);
-    position:relative; overflow:hidden; box-shadow:0 0 24px rgba(0,0,0,.18);
-  }
-  .screen {
-    position:absolute; inset:0; display:flex; flex-direction:column;
-    padding:calc(16px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));
-    overflow:auto; -webkit-overflow-scrolling:touch;
-  }
-  .hidden { display:none !important; }
-  .topbar {
-    display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px;
-  }
-  .pill {
-    border:none; border-radius:999px; padding:9px 12px; background:rgba(255,255,255,.72);
-    color:var(--greenDark); font-weight:800; font-size:13px; box-shadow:0 2px 8px rgba(20,56,32,.08);
-    text-decoration:none; cursor:pointer;
-  }
-  .hero-card {
-    margin:auto; width:100%; max-width:380px; background:#fff; border:1px solid var(--line);
-    border-radius:24px; padding:26px 20px; text-align:center; box-shadow:0 10px 28px rgba(20,56,32,.12);
-  }
-  .logo { font-size:50px; line-height:1; margin-bottom:8px; animation:bob 1.8s ease-in-out infinite; }
-  @keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
-  h1 { font-size:28px; color:var(--greenDark); letter-spacing:-.04em; margin-bottom:8px; }
-  .sub { color:var(--soft); font-size:14px; line-height:1.65; margin-bottom:16px; }
-  .nickname-box {
-    background:#f7faf6; border:1px solid #dfe8dc; border-radius:15px; padding:11px 12px;
-    font-size:13px; color:var(--green); font-weight:800; margin:12px 0;
-  }
-  .select-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin:14px 0 2px; }
-  .difficulty {
-    border:1px solid #cfe0c8; background:#eef7ef; color:var(--green); border-radius:13px;
-    padding:12px 6px; font-weight:900; cursor:pointer; font-size:13px;
-  }
-  .difficulty.active { background:linear-gradient(135deg,var(--green),var(--green2)); color:#fff; border-color:var(--green2); }
-  .btn {
-    border:none; border-radius:18px; padding:15px 16px; min-height:52px; font-weight:900;
-    font-size:16px; cursor:pointer; font-family:inherit;
-  }
-  .btn-primary { background:linear-gradient(135deg,var(--green),var(--green2)); color:#fff; box-shadow:0 8px 18px rgba(31,81,50,.28); }
-  .btn-ghost { background:#eef3ec; color:var(--green); border:1px solid #cfe0c8; }
-  .btn-gold { background:linear-gradient(135deg,var(--gold),var(--gold2)); color:#392600; }
-  .btn:active { transform:scale(.97); }
-  .btn-row { display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-top:10px; }
-  .btn-row.three { grid-template-columns:1fr 1fr 1fr; }
-
+  :root{ --green:#1f5132; --green2:#2e7a4e; --greenDark:#143820; --gold:#c9962b; --gold2:#e6b955; --bg:#eaf1e6; }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;}
+  html,body{height:100%;}
+  body{ background:var(--green); color:var(--greenDark);
+    font-family:'Pretendard Variable',Pretendard,-apple-system,system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased; overflow:hidden; }
+  .wrap{ max-width:520px; margin:0 auto; height:100%; display:flex; flex-direction:column;
+    background:var(--bg); position:relative; }
+  .hidden{ display:none !important; }
+  .screen{ flex:1; display:flex; flex-direction:column; padding:16px 15px calc(16px + env(safe-area-inset-bottom)); overflow-y:auto; }
+  /* 시작/결과 카드 */
+  .card{ background:#fff; border-radius:22px; padding:22px 18px; text-align:center;
+    box-shadow:0 10px 28px rgba(20,56,32,.14); }
+  h1{ font-size:26px; font-weight:900; color:var(--green); letter-spacing:-.02em; }
+  .sub{ font-size:13.5px; color:#5b6358; line-height:1.6; margin-top:8px; }
+  .nick{ margin-top:14px; font-size:13px; font-weight:700; color:var(--greenDark);
+    background:#eef6ea; border-radius:999px; padding:8px 14px; display:inline-block; }
+  .myrec{ margin-top:10px; font-size:12.5px; color:#7a8172; }
+  .btn{ display:flex; align-items:center; justify-content:center; gap:7px; width:100%;
+    min-height:54px; border:none; border-radius:15px; font-size:16px; font-weight:800;
+    font-family:inherit; cursor:pointer; }
+  .btn:active{ transform:scale(.97); }
+  .btn-main{ background:linear-gradient(135deg,var(--green),var(--green2)); color:#fff; box-shadow:0 6px 16px rgba(31,81,50,.28); }
+  .btn-gold{ background:linear-gradient(135deg,var(--gold),var(--gold2)); color:#3a2900; }
+  .btn-ghost{ background:#eef1e9; color:#4a5245; }
+  .btn-sm{ min-height:46px; font-size:14.5px; border-radius:13px; }
+  .btn-row{ display:flex; gap:9px; margin-top:10px; }
+  .mt{ margin-top:11px; }
   /* 게임 화면 */
-  #game-screen { padding:0; overflow:hidden; background:linear-gradient(#bfeeff 0%, #f6f4ec 52%, #f6f4ec 100%); }
-  .game-header {
-    padding:calc(12px + env(safe-area-inset-top)) 12px 9px;
-    background:linear-gradient(135deg,var(--greenDark),var(--green2)); color:#fff;
-    box-shadow:0 3px 12px rgba(0,0,0,.13); z-index:5;
-  }
-  .score-main { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:8px; }
-  .score-title { font-weight:900; font-size:17px; }
-  .score-val { font-weight:900; color:var(--gold2); font-size:20px; font-variant-numeric:tabular-nums; }
-  .count-row { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
-  .count-card {
-    background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.16);
-    border-radius:10px; padding:6px 4px; text-align:center; min-width:0;
-  }
-  .count-card .v { font-size:17px; font-weight:900; line-height:1; font-variant-numeric:tabular-nums; }
-  .count-card .l { font-size:10px; opacity:.78; margin-top:2px; }
-
-  .field-wrap { position:relative; flex:1; min-height:0; padding:10px 10px 8px; display:flex; flex-direction:column; }
-  #gameCanvas {
-    width:100%; flex:1; min-height:300px; border-radius:22px; background:#9bdd78;
-    box-shadow:inset 0 0 0 2px rgba(31,81,50,.18), 0 8px 20px rgba(31,81,50,.14);
-    touch-action:none;
-  }
-  .message {
-    position:absolute; left:50%; top:46%; transform:translate(-50%,-50%);
-    background:rgba(20,56,32,.88); color:#fff; padding:14px 20px; border-radius:999px;
-    font-size:20px; font-weight:950; box-shadow:0 8px 22px rgba(0,0,0,.24);
-    text-align:center; white-space:nowrap; pointer-events:none; opacity:0; transition:.12s ease;
-    z-index:6;
-  }
-  .message.show { opacity:1; transform:translate(-50%,-50%) scale(1.03); }
-  .message.home { background:linear-gradient(135deg,#c0392b,#ff7043); font-size:24px; }
-  .message.hit { background:linear-gradient(135deg,var(--green),var(--green2)); }
-  .message.ball { background:linear-gradient(135deg,#2979ff,#40c4ff); }
-  .pitch-label {
-    position:absolute; left:50%; top:114px; transform:translateX(-50%);
-    background:rgba(255,255,255,.88); color:var(--greenDark); padding:7px 13px;
-    border-radius:999px; font-size:12.5px; font-weight:900; box-shadow:0 3px 10px rgba(0,0,0,.08);
-    z-index:4;
-  }
-
-  .controls {
-    padding:0 10px calc(11px + env(safe-area-inset-bottom)); display:grid; grid-template-columns:1fr 88px; gap:9px;
-  }
-  #swingBtn {
-    min-height:68px; font-size:24px; border-radius:22px;
-    background:linear-gradient(135deg,#c0392b,#ff7043); color:#fff;
-    box-shadow:0 9px 22px rgba(192,57,43,.28);
-  }
-  .side-controls { display:grid; grid-template-rows:1fr 1fr; gap:8px; }
-  .mini-btn { min-height:30px; border-radius:16px; border:1px solid #cfe0c8; background:#eef3ec; color:var(--green); font-weight:900; font-size:12px; }
-  .mini-btn:active, #swingBtn:active { transform:scale(.97); }
-
-  .help-card {
-    width:100%; max-width:390px; margin:auto; background:#fff; border:1px solid var(--line);
-    border-radius:22px; padding:22px 18px; box-shadow:0 10px 28px rgba(20,56,32,.12);
-  }
-  .help-card h2 { color:var(--greenDark); margin-bottom:12px; }
-  .help-card p, .help-card li { color:var(--soft); line-height:1.6; font-size:14px; }
-  .help-card ul { padding-left:18px; margin:10px 0 16px; }
-  .result-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:16px 0 8px; }
-  .stat-box { background:#f8faf7; border:1px solid #e0e8dd; border-radius:13px; padding:10px 4px; text-align:center; }
-  .stat-box .v { color:var(--green); font-size:18px; font-weight:950; }
-  .stat-box .l { color:#6b7268; font-size:10.5px; margin-top:2px; }
-  .final-score { font-size:44px; font-weight:950; color:var(--green2); line-height:1.05; margin:8px 0 4px; }
-  .grade { font-size:15px; color:#555; font-weight:900; margin-bottom:8px; }
-  .new-best { display:inline-block; background:var(--gold); color:#fff; font-size:12px; font-weight:900; padding:5px 12px; border-radius:999px; margin:4px 0 10px; }
-  .copy-msg { min-height:18px; font-size:12px; color:var(--green2); font-weight:800; margin-top:8px; }
-
+  #gameScreen{ padding:0; }
+  .hud{ display:flex; gap:7px; padding:10px 10px 8px; }
+  .hud .cell{ flex:1; background:#fff; border-radius:13px; padding:7px 4px; text-align:center; box-shadow:0 2px 8px rgba(20,56,32,.08); }
+  .hud .v{ font-size:20px; font-weight:900; color:var(--green); font-variant-numeric:tabular-nums; line-height:1; }
+  .hud .v.gold{ color:var(--gold); }
+  .hud .l{ font-size:10.5px; color:#7a8172; margin-top:3px; font-weight:700; }
+  .canvas-wrap{ flex:1; position:relative; margin:0 10px; }
+  #gameCanvas{ width:100%; height:100%; display:block; border-radius:16px;
+    background:linear-gradient(#bfe3ff 0%, #9fd88f 34%, #5fae54 100%);
+    box-shadow:inset 0 0 0 2px rgba(31,81,50,.18), 0 6px 18px rgba(31,81,50,.14); touch-action:manipulation; }
+  .msg{ position:absolute; left:50%; top:26%; transform:translateX(-50%) scale(1);
+    background:rgba(20,56,32,.9); color:#fff; padding:10px 22px; border-radius:999px;
+    font-size:22px; font-weight:900; box-shadow:0 8px 22px rgba(0,0,0,.28); display:none; white-space:nowrap; }
+  .msg.hr{ background:linear-gradient(135deg,#ff8f00,#ffca28); color:#3a2500; }
+  .msg.hit{ background:linear-gradient(135deg,#2e7a4e,#66bb6a); }
+  .msg.show{ display:block; animation:pop .28s ease; }
+  @keyframes pop{ 0%{transform:translateX(-50%) scale(.6);opacity:0;} 100%{transform:translateX(-50%) scale(1);opacity:1;} }
+  .swing-row{ padding:9px 10px calc(12px + env(safe-area-inset-bottom)); }
+  #swingBtn{ width:100%; min-height:64px; border:none; border-radius:17px;
+    background:linear-gradient(135deg,var(--gold),var(--gold2)); color:#3a2500;
+    font-size:24px; font-weight:900; font-family:inherit; cursor:pointer; box-shadow:0 6px 18px rgba(201,150,43,.4); }
+  #swingBtn:active{ transform:scale(.97); }
+  .top-btns{ display:flex; justify-content:space-between; align-items:center; padding:8px 12px 0; }
+  .mini{ background:rgba(255,255,255,.85); border:1px solid #cfe0c6; border-radius:10px; padding:6px 12px; font-size:12.5px; font-weight:700; color:var(--green); cursor:pointer; font-family:inherit; }
+  /* 결과 통계 */
+  .big-hr{ font-size:46px; font-weight:900; color:var(--gold); line-height:1; }
+  .stats{ display:flex; gap:8px; margin-top:14px; }
+  .stat{ flex:1; background:#f2f6ef; border-radius:13px; padding:10px 4px; }
+  .stat .v{ font-size:20px; font-weight:900; color:var(--green); }
+  .stat .l{ font-size:11px; color:#7a8172; margin-top:2px; font-weight:700; }
+  .grade{ margin-top:13px; font-size:16px; font-weight:900; color:var(--greenDark); }
+  .rankline{ margin-top:6px; font-size:13px; color:var(--gold); font-weight:800; }
+  .savemsg{ margin-top:8px; font-size:12px; color:#7a8172; min-height:16px; }
   /* 랭킹 모달 */
-  .rank-modal {
-    display:none; position:absolute; inset:0; z-index:20; background:rgba(0,0,0,.48);
-    align-items:flex-end; justify-content:center;
-  }
-  .rank-modal.show { display:flex; }
-  .rank-panel {
-    width:100%; max-height:82%; background:#fff; border-radius:24px 24px 0 0; overflow:hidden;
-    padding-bottom:env(safe-area-inset-bottom);
-  }
-  .rank-head {
-    background:linear-gradient(135deg,var(--greenDark),var(--green2)); color:#fff;
-    padding:15px 16px; display:flex; align-items:center; justify-content:space-between;
-  }
-  .rank-head h3 { font-size:16px; }
-  .rank-close { width:34px; height:34px; border:none; border-radius:50%; background:rgba(255,255,255,.16); color:#fff; font-size:18px; }
-  .rank-note { text-align:center; color:var(--gold); font-size:11px; font-weight:800; padding:8px 14px 0; }
-  .rank-list { max-height:55vh; overflow:auto; padding:8px 12px 16px; }
-  .rank-row { display:flex; align-items:center; gap:9px; padding:11px 5px; border-bottom:1px solid #eee; }
-  .rank-row.me { background:#eef7ef; border-radius:10px; border-bottom:1px solid transparent; }
-  .rank-pos { width:30px; text-align:center; font-weight:950; color:#596358; }
-  .rank-pos.top { font-size:20px; }
-  .rank-nick { flex:1; min-width:0; font-weight:850; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .rank-nick small { color:var(--green2); font-weight:900; margin-left:4px; }
-  .rank-sc { color:var(--gold); font-weight:950; font-variant-numeric:tabular-nums; white-space:nowrap; }
-  .empty { text-align:center; padding:26px 8px; color:var(--soft); font-size:14px; line-height:1.55; }
-
-  #fxCanvas { display:none; position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:30; }
-  .pause-cover {
-    display:none; position:absolute; inset:0; z-index:10; background:rgba(20,56,32,.34);
-    align-items:center; justify-content:center; color:#fff; font-size:28px; font-weight:950; text-shadow:0 3px 10px rgba(0,0,0,.35);
-  }
-  .pause-cover.show { display:flex; }
-  @media (max-width:360px) {
-    h1 { font-size:25px; }
-    .count-card .v { font-size:15px; }
-    #swingBtn { font-size:21px; min-height:64px; }
-    .controls { grid-template-columns:1fr 82px; }
-  }
+  .modal{ display:none; position:absolute; inset:0; z-index:20; background:rgba(0,0,0,.5); align-items:center; justify-content:center; padding:22px; }
+  .modal.show{ display:flex; }
+  .modal-box{ background:#fff; border-radius:20px; width:100%; max-width:400px; overflow:hidden; }
+  .modal-head{ background:var(--green); color:#fff; padding:14px 16px; font-size:16px; font-weight:900; display:flex; justify-content:space-between; align-items:center; }
+  .modal-head button{ background:rgba(255,255,255,.2); border:none; color:#fff; width:30px; height:30px; border-radius:8px; font-size:16px; cursor:pointer; }
+  .modal-body{ padding:12px 14px 16px; max-height:60vh; overflow-y:auto; }
+  .rank-row{ display:flex; align-items:center; gap:10px; padding:9px 6px; border-bottom:1px solid #eee; }
+  .rank-row.me{ background:#eef6ea; border-radius:10px; }
+  .rank-pos{ width:30px; text-align:center; font-weight:900; color:#7a8172; }
+  .rank-pos.top{ font-size:20px; }
+  .rank-nick{ flex:1; font-weight:800; color:var(--greenDark); }
+  .rank-nick small{ font-size:11px; color:var(--gold); margin-left:5px; }
+  .rank-sc{ font-weight:900; color:var(--green); }
+  .empty{ text-align:center; color:#9aa08f; font-size:13px; padding:22px 0; }
+  #fxCanvas{ display:none; position:absolute; inset:0; z-index:30; pointer-events:none; }
 </style>
 </head>
 <body>
-<div id="app">
-  <section id="start-screen" class="screen">
-    <div class="topbar">
-      <span class="pill">⚾ 텐아르 게임센터</span>
-      <button class="pill" id="homeTopBtn">🏠 홈</button>
-    </div>
-    <div class="hero-card">
-      <div class="logo">⚾🌾</div>
-      <h1>작물 홈런왕</h1>
-      <p class="sub">
-        투수가 던지는 <b>작물 공</b>을 보고<br>
-        스트라이크존에 들어오는 박자에 맞춰 <b>스윙!</b><br>
-        1루타부터 홈런까지 수확 타격에 도전하세요.
-      </p>
-      <div class="nickname-box" id="nickBox">닉네임 확인 중…</div>
-      <div class="select-row" id="difficultyBox">
-        <button class="difficulty active" data-diff="easy">쉬움<br><small>1.0배</small></button>
-        <button class="difficulty" data-diff="normal">보통<br><small>1.2배</small></button>
-        <button class="difficulty" data-diff="hard">어려움<br><small>1.5배</small></button>
-      </div>
-      <div style="display:grid;gap:9px;margin-top:14px;">
-        <button class="btn btn-primary" id="startBtn">게임 시작</button>
+<div class="wrap">
+  <!-- 시작 -->
+  <div id="startScreen" class="screen">
+    <div class="top-btns"><button class="mini" id="homeBtn">← 게임센터</button><span></span></div>
+    <div style="flex:1;display:flex;align-items:center;">
+      <div class="card" style="width:100%;">
+        <div style="font-size:44px;">⚾</div>
+        <h1>작물 홈런왕</h1>
+        <div class="sub">공 <b>20개</b>를 던집니다.<br>타이밍 맞춰 <b>스윙!</b> — <b>홈런존</b>에 넣으면 홈런!<br>연속으로 치면 <b>콤보 보너스</b> 점수.</div>
+        <div class="nick" id="nickBox">준비 완료</div>
+        <div class="myrec" id="myRecord">내 최고점 –</div>
+        <button class="btn btn-main mt" id="startBtn">🏏 게임 시작</button>
         <div class="btn-row">
-          <button class="btn btn-ghost" id="helpBtn">조작 방법</button>
-          <button class="btn btn-ghost" id="rankBtn">주간랭킹</button>
+          <button class="btn btn-gold btn-sm" id="rankBtn">🏆 주간랭킹</button>
         </div>
       </div>
-      <div style="margin-top:12px;color:#888;font-size:12px;line-height:1.5;" id="myRecord">내 최고점 불러오는 중…</div>
     </div>
-  </section>
+  </div>
 
-  <section id="help-screen" class="screen hidden">
-    <div class="topbar">
-      <button class="pill" id="helpBackBtn">‹ 돌아가기</button>
-      <button class="pill" id="helpHomeBtn">🏠 게임센터</button>
+  <!-- 게임 -->
+  <div id="gameScreen" class="screen hidden">
+    <div class="hud">
+      <div class="cell"><div class="v" id="hudLeft">20</div><div class="l">남은 공</div></div>
+      <div class="cell"><div class="v gold" id="hudHr">0</div><div class="l">홈런</div></div>
+      <div class="cell"><div class="v" id="hudCombo">0</div><div class="l">콤보</div></div>
+      <div class="cell"><div class="v" id="hudScore">0</div><div class="l">점수</div></div>
     </div>
-    <div class="help-card">
-      <h2>⚾ 조작 방법</h2>
-      <p>공이 스트라이크존에 들어오는 순간 <b>스윙</b>하세요. 볼이라고 판단되면 기다리면 됩니다.</p>
-      <ul>
-        <li><b>모바일</b>: 하단의 “스윙!” 버튼 터치</li>
-        <li><b>PC</b>: Space 또는 Enter로 스윙, P로 일시정지</li>
-        <li>타이밍이 완벽할수록 1루타 → 2루타 → 3루타 → 홈런</li>
-        <li>볼 4개는 볼넷 출루, 스트라이크 3개는 아웃</li>
-        <li>3아웃이 되면 게임 종료입니다.</li>
-      </ul>
-      <p>✨ 황금 작물 공, 벌마늘 공, 대풍 공은 보너스 점수가 있습니다.</p>
-      <button class="btn btn-primary" id="helpStartBtn" style="width:100%;margin-top:16px;">바로 시작</button>
-    </div>
-  </section>
-
-  <section id="game-screen" class="screen hidden">
-    <div class="game-header">
-      <div class="score-main">
-        <div class="score-title">⚾ 작물 홈런왕</div>
-        <div class="score-val"><span id="scoreEl">0</span>점</div>
-      </div>
-      <div class="count-row">
-        <div class="count-card"><div class="v" id="outEl">0</div><div class="l">아웃</div></div>
-        <div class="count-card"><div class="v" id="ballEl">0</div><div class="l">볼</div></div>
-        <div class="count-card"><div class="v" id="strikeEl">0</div><div class="l">스트라이크</div></div>
-        <div class="count-card"><div class="v" id="comboEl">0</div><div class="l">콤보</div></div>
-      </div>
-    </div>
-    <div class="field-wrap">
-      <div class="pitch-label" id="pitchLabel">투수 준비 중…</div>
+    <div class="canvas-wrap">
       <canvas id="gameCanvas"></canvas>
-      <div class="message" id="messageEl"></div>
-      <div class="pause-cover" id="pauseCover">일시정지 중</div>
+      <div class="msg" id="msgEl"></div>
     </div>
-    <div class="controls">
-      <button class="btn" id="swingBtn">스윙!</button>
-      <div class="side-controls">
-        <button class="mini-btn" id="pauseBtn">일시정지</button>
-        <button class="mini-btn" id="gameHomeBtn">게임센터</button>
-      </div>
-    </div>
-  </section>
+    <div class="swing-row"><button id="swingBtn">스윙!</button></div>
+  </div>
 
-  <section id="result-screen" class="screen hidden">
-    <div class="topbar">
-      <span class="pill">게임 완료</span>
-      <button class="pill" id="resultHomeBtn">🏠 게임센터</button>
-    </div>
-    <div class="hero-card">
-      <div style="font-size:42px;">🏟️</div>
-      <h1>경기 종료!</h1>
-      <div class="final-score"><span id="finalScore">0</span><span style="font-size:18px;">점</span></div>
-      <div class="grade" id="gradeEl">등급</div>
-      <div class="new-best hidden" id="newBest">🎉 최고기록 갱신!</div>
-      <div class="result-grid">
-        <div class="stat-box"><div class="v" id="resHits">0</div><div class="l">안타</div></div>
-        <div class="stat-box"><div class="v" id="resHr">0</div><div class="l">홈런</div></div>
-        <div class="stat-box"><div class="v" id="resCombo">0</div><div class="l">최대콤보</div></div>
-        <div class="stat-box"><div class="v" id="resPitches">0</div><div class="l">투구수</div></div>
-        <div class="stat-box"><div class="v" id="resWalks">0</div><div class="l">볼넷</div></div>
-        <div class="stat-box"><div class="v" id="resRank">-</div><div class="l">주간순위</div></div>
-      </div>
-      <div class="copy-msg" id="saveMsg">기록 저장 중…</div>
-      <div class="btn-row">
-        <button class="btn btn-primary" id="retryBtn">다시하기</button>
-        <button class="btn btn-ghost" id="resultRankBtn">랭킹</button>
-      </div>
-      <div class="btn-row">
-        <button class="btn btn-gold" id="copyBtn">결과 복사</button>
-        <button class="btn btn-ghost" id="resultCenterBtn">게임센터</button>
+  <!-- 결과 -->
+  <div id="resultScreen" class="screen hidden">
+    <div style="flex:1;display:flex;align-items:center;">
+      <div class="card" style="width:100%;">
+        <div style="font-size:13px;font-weight:800;color:#7a8172;">⚾ 경기 종료</div>
+        <div class="big-hr" id="resHr">0</div>
+        <div style="font-size:13px;font-weight:800;color:var(--gold);">홈런</div>
+        <div class="stats">
+          <div class="stat"><div class="v" id="resScore">0</div><div class="l">점수</div></div>
+          <div class="stat"><div class="v" id="resHit">0</div><div class="l">안타</div></div>
+          <div class="stat"><div class="v" id="resCombo">0</div><div class="l">최대콤보</div></div>
+        </div>
+        <div class="grade" id="resGrade">–</div>
+        <div class="rankline" id="resRank"></div>
+        <div class="savemsg" id="saveMsg"></div>
+        <button class="btn btn-main mt" id="retryBtn">🔁 다시 하기</button>
+        <div class="btn-row">
+          <button class="btn btn-gold btn-sm" id="resultRankBtn">🏆 랭킹</button>
+          <button class="btn btn-ghost btn-sm" id="copyBtn">📋 결과복사</button>
+        </div>
+        <div class="btn-row"><button class="btn btn-ghost btn-sm" id="resultCenterBtn">🎮 게임센터</button></div>
       </div>
     </div>
-  </section>
+  </div>
 
-  <div class="rank-modal" id="rankModal">
-    <div class="rank-panel">
-      <div class="rank-head">
-        <h3>🏆 작물 홈런왕 주간랭킹</h3>
-        <button class="rank-close" id="rankCloseBtn">✕</button>
-      </div>
-      <div class="rank-note">매주 월요일 오전 9시 초기화 · 이번 주 TOP 10</div>
-      <div class="rank-list" id="rankList"><div class="empty">불러오는 중…</div></div>
+  <!-- 랭킹 모달 -->
+  <div class="modal" id="rankModal">
+    <div class="modal-box">
+      <div class="modal-head"><span>🏆 이번 주 홈런왕</span><button id="rankCloseBtn">✕</button></div>
+      <div class="modal-body" id="rankList"></div>
     </div>
   </div>
   <canvas id="fxCanvas"></canvas>
@@ -326,661 +176,345 @@
     messagingSenderId: "662688468209",
     appId: "1:662688468209:web:0f37484e26943d79946d50"
   };
-
   const fbApp = initializeApp(firebaseConfig);
   const db = getFirestore(fbApp);
   const GAME_ID = 'crop_baseball';
   const GAME_NAME = '작물 홈런왕';
+  const TOTAL = 20;
 
-  function withTimeout(promise, ms = 4500) {
-    return Promise.race([promise, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
-  }
-
-  function currentWeekKey(now = new Date()) {
-    const kst = new Date(now.getTime() + 9 * 3600 * 1000);
-    const day = kst.getUTCDay();
-    const daysSinceMon = (day + 6) % 7;
-    const kstMid = Date.UTC(kst.getUTCFullYear(), kst.getUTCMonth(), kst.getUTCDate());
-    let boundary = kstMid - daysSinceMon * 86400000 + 9 * 3600 * 1000;
-    if (kst.getTime() < boundary) boundary -= 7 * 86400000;
-    const b = new Date(boundary);
-    return `${b.getUTCFullYear()}-${String(b.getUTCMonth()+1).padStart(2,'0')}-${String(b.getUTCDate()).padStart(2,'0')}`;
+  function withTimeout(p, ms=4500){ return Promise.race([p, new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),ms))]); }
+  function currentWeekKey(now=new Date()){
+    const kst=new Date(now.getTime()+9*3600*1000);
+    const day=kst.getUTCDay(); const dsm=(day+6)%7;
+    const kstMid=Date.UTC(kst.getUTCFullYear(),kst.getUTCMonth(),kst.getUTCDate());
+    let b=kstMid-dsm*86400000+9*3600*1000;
+    if(kst.getTime()<b) b-=7*86400000;
+    const d=new Date(b);
+    return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;
   }
   const WEEK = currentWeekKey();
   const weeklyCol = () => collection(db, 'rankings', GAME_ID, 'wk_' + WEEK);
   const weeklyDoc = (uid) => doc(db, 'rankings', GAME_ID, 'wk_' + WEEK, uid);
 
-  const USER = {
-    userId: localStorage.getItem('tenarGameUserId'),
-    nickname: localStorage.getItem('tenarGameNick')
-  };
+  const USER = { userId: localStorage.getItem('tenarGameUserId'), nickname: localStorage.getItem('tenarGameNick') };
   if (!USER.userId || !USER.nickname) location.replace('game_center.html');
 
-  const DIFFS = {
-    easy:   { label:'쉬움', mult:1.0, speed:0.88, strike:0.76, window:1.14, zone:1.12 },
-    normal: { label:'보통', mult:1.2, speed:1.00, strike:0.70, window:1.00, zone:1.00 },
-    hard:   { label:'어려움', mult:1.5, speed:1.18, strike:0.65, window:0.82, zone:0.86 }
-  };
-  let selectedDiff = localStorage.getItem('cropBaseballLastDifficulty') || 'easy';
-  if (!DIFFS[selectedDiff]) selectedDiff = 'easy';
+  const $ = id => document.getElementById(id);
+  const fmt = n => (n||0).toLocaleString('ko-KR');
+  const escapeHtml = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const safeGet=(k,f='')=>{try{return localStorage.getItem(k)??f;}catch(e){return f;}};
+  const safeSet=(k,v)=>{try{localStorage.setItem(k,String(v));}catch(e){}};
 
-  const PITCHES = [
-    { name:'마늘 직구', crop:'마늘', emoji:'🧄', color:'#f7f1df', speed:1.00, curve:0, type:'직구', msg:'마늘 직구가 날아옵니다!' },
-    { name:'양파 변화구', crop:'양파', emoji:'🧅', color:'#e9d0ff', speed:0.92, curve:28, type:'변화구', msg:'양파 변화구! 살짝 휘어집니다.' },
-    { name:'감자 묵직볼', crop:'감자', emoji:'🥔', color:'#b98552', speed:0.84, curve:4, type:'묵직볼', msg:'감자 공은 느리지만 묵직해요.' },
-    { name:'배추 큰공', crop:'배추', emoji:'🥬', color:'#71c56d', speed:0.92, curve:10, type:'큰공', msg:'배추 공! 타이밍을 크게 보세요.' },
-    { name:'무 강속구', crop:'무', emoji:'⚪', color:'#f4f7f5', speed:1.18, curve:0, type:'강속구', msg:'무 강속구가 꽂힙니다!' },
-    { name:'콩 작은공', crop:'콩', emoji:'🫘', color:'#7b4b32', speed:1.08, curve:14, type:'작은공', msg:'콩 공은 작아서 집중해야 해요.' },
-    { name:'논벼 흔들볼', crop:'논벼', emoji:'🌾', color:'#e6c64d', speed:0.98, curve:34, type:'흔들볼', msg:'논벼 공이 흔들립니다!' },
-    { name:'사과 보너스볼', crop:'사과', emoji:'🍎', color:'#ff5252', speed:1.00, curve:8, type:'보너스', msg:'사과 공! 장타 감각을 살려보세요.' },
-    { name:'배 장타볼', crop:'배', emoji:'🍐', color:'#d7e36c', speed:0.94, curve:12, type:'장타', msg:'배 공은 장타 찬스입니다.' },
-    { name:'밀 슬라이더', crop:'밀', emoji:'🌾', color:'#d7aa3a', speed:1.05, curve:-32, type:'슬라이더', msg:'밀 슬라이더가 들어옵니다!' }
+  const CROPS = [
+    {e:'🧄',c:'#f3ead2'},{e:'🧅',c:'#e9d0ff'},{e:'🥔',c:'#c79a63'},{e:'🥬',c:'#8fd07f'},
+    {e:'🍎',c:'#ff6b6b'},{e:'🍅',c:'#ff7043'},{e:'🌽',c:'#ffd54f'},{e:'🍐',c:'#cddc39'}
   ];
 
-  const $ = (id) => document.getElementById(id);
-  const canvas = $('gameCanvas');
-  const ctx = canvas.getContext('2d');
-  let rafId = null, nextTimer = null;
-  let game = null;
-  let currentPitch = null;
-  let lastTs = 0;
-  let lastResult = null;
-  let messageTimer = null;
-  let savedOnce = false;
+  const canvas=$('gameCanvas'), ctx=canvas.getContext('2d');
+  let W=0,H=0, ratio=1;
+  let rafId=null, lastTs=0;
+  let game=null, ball=null, state='idle';   // idle|ready|pitch|result
+  let batSwing=0;                            // 0~1 스윙 애니메이션 진행
+  let msgTimer=null, gapTimer=null, pitchStartMs=0, pitchDur=0, curCrop=null, swungThisPitch=false;
+  let savedOnce=false;
 
-  const defaultState = () => ({
-    score:0, balls:0, strikes:0, outs:0, combo:0, maxCombo:0,
-    pitchCount:0, swingCount:0, hitCount:0, singleCount:0, doubleCount:0,
-    tripleCount:0, homeRunCount:0, walkCount:0, strikeoutCount:0, perfectCount:0,
-    foulCount:0, startTime:Date.now(), playTime:0, isPlaying:false, paused:false,
-    difficulty:selectedDiff, bestScore:0
-  });
-
-  function safeGet(key, fallback='') { try { return localStorage.getItem(key) ?? fallback; } catch(e) { return fallback; } }
-  function safeSet(key, val) { try { localStorage.setItem(key, String(val)); } catch(e) {} }
-  function fmt(n) { return (n || 0).toLocaleString('ko-KR'); }
-  function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-
-  function resizeCanvas() {
-    const rect = canvas.getBoundingClientRect();
-    const ratio = Math.max(1, window.devicePixelRatio || 1);
-    canvas.width = Math.floor(rect.width * ratio);
-    canvas.height = Math.floor(rect.height * ratio);
+  function resize(){
+    const r=canvas.getBoundingClientRect();
+    ratio=Math.max(1, window.devicePixelRatio||1);
+    W=r.width; H=r.height;
+    canvas.width=Math.floor(W*ratio); canvas.height=Math.floor(H*ratio);
     ctx.setTransform(ratio,0,0,ratio,0,0);
-    draw();
+  }
+  // 좌표(비율)
+  const pitcher = () => ({x:W*0.5, y:H*0.10});
+  const batter  = () => ({x:W*0.70, y:H*0.84});
+  const hitLineY = () => H*0.80;
+  const HR_WIN = () => H*0.05;
+  const HIT_WIN= () => H*0.115;
+  const hrZoneY = () => H*0.20;
+
+  function newGame(){
+    game={ score:0, homeRunCount:0, hitCount:0, missCount:0, combo:0, maxCombo:0,
+           pitchNo:0, pitchCount:0, playTime:0, startTime:Date.now(), difficulty:'arcade' };
+    savedOnce=false;
   }
 
-  function showScreen(name) {
-    ['start','help','game','result'].forEach(s => $(s+'-screen').classList.toggle('hidden', s !== name));
-  }
-  function goCenter() { location.href = 'game_center.html'; }
+  function showScreen(name){ ['start','game','result'].forEach(s=>$(s+'Screen').classList.toggle('hidden', s!==name)); }
+  function goCenter(){ location.href='game_center.html'; }
 
-  function init() {
-    $('nickBox').textContent = `${USER.nickname}님, 타석에 들어설 준비 완료!`;
-    document.querySelectorAll('.difficulty').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.diff === selectedDiff);
-      btn.addEventListener('click', () => {
-        selectedDiff = btn.dataset.diff;
-        safeSet('cropBaseballLastDifficulty', selectedDiff);
-        document.querySelectorAll('.difficulty').forEach(b => b.classList.toggle('active', b.dataset.diff === selectedDiff));
-      });
-    });
+  function init(){
+    $('nickBox').textContent = `${USER.nickname}님, 타석에 서보세요!`;
     loadMyRecord();
-
     $('startBtn').addEventListener('click', startGame);
-    $('helpBtn').addEventListener('click', () => showScreen('help'));
-    $('helpBackBtn').addEventListener('click', () => showScreen('start'));
-    $('helpStartBtn').addEventListener('click', startGame);
+    $('retryBtn').addEventListener('click', startGame);
     $('rankBtn').addEventListener('click', openRanking);
     $('resultRankBtn').addEventListener('click', openRanking);
-    $('rankCloseBtn').addEventListener('click', closeRanking);
-    $('retryBtn').addEventListener('click', startGame);
+    $('rankCloseBtn').addEventListener('click', ()=>$('rankModal').classList.remove('show'));
+    $('rankModal').addEventListener('click', e=>{ if(e.target===$('rankModal')) $('rankModal').classList.remove('show'); });
     $('copyBtn').addEventListener('click', copyResult);
-    ['homeTopBtn','helpHomeBtn','gameHomeBtn','resultHomeBtn','resultCenterBtn'].forEach(id => $(id).addEventListener('click', goCenter));
+    $('homeBtn').addEventListener('click', goCenter);
+    $('resultCenterBtn').addEventListener('click', goCenter);
     $('swingBtn').addEventListener('click', swing);
-    $('pauseBtn').addEventListener('click', togglePause);
-    $('rankModal').addEventListener('click', e => { if (e.target === $('rankModal')) closeRanking(); });
-    window.addEventListener('resize', resizeCanvas);
-    window.addEventListener('keydown', handleKey, { passive:false });
-    canvas.addEventListener('touchmove', e => e.preventDefault(), { passive:false });
-    game = defaultState();
-    resizeCanvas();
+    window.addEventListener('keydown', e=>{ if((e.code==='Space'||e.code==='Enter') && state==='pitch'){ e.preventDefault(); swing(); } });
+    window.addEventListener('resize', resize);
+    canvas.addEventListener('touchmove', e=>e.preventDefault(), {passive:false});
+    resize(); drawIdle();
   }
 
-  async function loadMyRecord() {
-    const localBest = parseInt(safeGet('cropBaseballBestScore','0'), 10) || 0;
-    const playCount = parseInt(safeGet('cropBaseballPlayCount','0'), 10) || 0;
-    $('myRecord').textContent = `내 최고점 ${fmt(localBest)}점 · 플레이 ${fmt(playCount)}회`;
-    try {
-      const snap = await withTimeout(getDoc(doc(db, 'rankings', GAME_ID, 'scores', USER.userId)));
-      if (snap.exists()) {
-        const best = Math.max(localBest, snap.data().score || 0);
-        safeSet('cropBaseballBestScore', best);
-        $('myRecord').textContent = `내 최고점 ${fmt(best)}점 · 플레이 ${fmt(playCount)}회`;
-      }
-    } catch(e) {}
+  async function loadMyRecord(){
+    const localBest=parseInt(safeGet('cropBaseballBestScore','0'),10)||0;
+    const plays=parseInt(safeGet('cropBaseballPlayCount','0'),10)||0;
+    $('myRecord').textContent=`내 최고점 ${fmt(localBest)}점 · 플레이 ${fmt(plays)}회`;
+    try{
+      const snap=await withTimeout(getDoc(doc(db,'rankings',GAME_ID,'scores',USER.userId)));
+      if(snap.exists()){ const best=Math.max(localBest, snap.data().score||0); safeSet('cropBaseballBestScore',best);
+        $('myRecord').textContent=`내 최고점 ${fmt(best)}점 · 플레이 ${fmt(plays)}회`; }
+    }catch(e){}
   }
 
-  function startGame() {
-    cleanupLoop();
-    savedOnce = false;
-    game = defaultState();
-    game.isPlaying = true;
-    game.bestScore = parseInt(safeGet('cropBaseballBestScore','0'),10) || 0;
-    game.difficulty = selectedDiff;
-    safeSet('cropBaseballLastDifficulty', selectedDiff);
-    lastResult = null;
-    showScreen('game');
-    $('pauseCover').classList.remove('show');
-    $('pauseBtn').textContent = '일시정지';
-    updateHUD();
-    setTimeout(() => { resizeCanvas(); startPitch(); startLoop(); }, 80);
+  function startGame(){
+    clearTimeout(gapTimer); clearTimeout(msgTimer); cancelAnimationFrame(rafId);
+    newGame(); showScreen('game'); resize(); updateHud();
+    state='ready'; ball=null; batSwing=0;
+    loop(performance.now());
+    gapTimer=setTimeout(nextPitch, 650);
   }
 
-  function cleanupLoop() {
-    if (rafId) cancelAnimationFrame(rafId);
-    rafId = null;
-    if (nextTimer) clearTimeout(nextTimer);
-    nextTimer = null;
-    if (messageTimer) clearTimeout(messageTimer);
-    messageTimer = null;
+  function nextPitch(){
+    if(game.pitchNo>=TOTAL){ endGame(); return; }
+    game.pitchNo++; game.pitchCount++;
+    curCrop=CROPS[(Math.random()*CROPS.length)|0];
+    swungThisPitch=false;
+    pitchDur = 620 + Math.random()*220;           // 빠른 공 (0.62~0.84s)
+    const curve = (Math.random()-0.5) * W*0.18;    // 좌우 살짝 휨
+    const p=pitcher();
+    ball={ x:p.x, y:p.y, x0:p.x, curve, state:'pitch', vx:0, vy:0, rot:0 };
+    pitchStartMs=performance.now();
+    state='pitch';
+    updateHud();
   }
 
-  function createPitch() {
-    const diff = DIFFS[game.difficulty];
-    let base = { ...PITCHES[Math.floor(Math.random()*PITCHES.length)] };
-    const r = Math.random();
-    let special = null;
-    if (r < 0.01) special = { key:'mega', label:'대풍 공', emoji:'🚜', mult:2.0, bonus:500 };
-    else if (r < 0.04) special = { key:'garlic', label:'벌마늘 공', emoji:'⚠️🧄', mult:1.25, bonus:200 };
-    else if (r < 0.09) special = { key:'gold', label:'황금 작물 공', emoji:'✨', mult:2.0, bonus:0 };
-    if (special) {
-      base.name = special.label;
-      base.emoji = special.emoji;
-      base.special = special;
-      base.msg = `${special.emoji} ${special.label} 등장! 보너스 찬스!`;
-      base.speed *= 1.03;
-      base.curve *= 1.1;
+  function swing(){
+    if(state!=='pitch' || swungThisPitch || !ball || ball.state!=='pitch') return;
+    swungThisPitch=true;
+    batSwing=1;   // 애니메이션 시작(감소)
+    const err=Math.abs(ball.y - hitLineY());
+    if(err<=HR_WIN()){        // 홈런
+      game.combo++; game.maxCombo=Math.max(game.maxCombo,game.combo);
+      game.homeRunCount++; game.hitCount++;
+      const bonus=(game.combo-1)*15;
+      game.score += 100 + bonus;
+      ball.state='fly'; ball.vx=-(4.5+Math.random()*1.5); ball.vy=-(13+Math.random()*2);
+      flash('🚀 홈런!'+(game.combo>1?` ${game.combo}연속!`:''), 'hr');
+      miniBurst();
+    } else if(err<=HIT_WIN()){ // 안타
+      game.combo++; game.maxCombo=Math.max(game.maxCombo,game.combo);
+      game.hitCount++;
+      const bonus=(game.combo-1)*8;
+      game.score += 25 + bonus;
+      ball.state='fly'; ball.vx=-(2+Math.random()*2); ball.vy=-(7+Math.random()*2);
+      flash('안타! +'+(25+bonus), 'hit');
+    } else {                   // 헛스윙
+      game.combo=0; game.missCount++;
+      flash('헛스윙…', '');
     }
-    const isStrike = Math.random() < diff.strike;
-    const duration = Math.max(780, 1520 / (base.speed * diff.speed));
-    const side = isStrike ? (Math.random()-.5)*34*diff.zone : (Math.random()<.5 ? -92 - Math.random()*30 : 92 + Math.random()*30);
-    return {
-      ...base, isStrike, duration, elapsed:0, progress:0, judged:false, swung:false,
-      target:0.82, side, verticalBall: !isStrike && Math.random()<0.32 ? (Math.random()<0.5 ? -54 : 54) : 0
-    };
+    updateHud();
+    endPitchSoon();
   }
 
-  function startPitch() {
-    if (!game || !game.isPlaying || game.outs >= 3) return;
-    currentPitch = createPitch();
-    game.pitchCount++;
-    lastResult = null;
-    $('pitchLabel').textContent = currentPitch.msg;
-    updateHUD();
+  function endPitchSoon(){ clearTimeout(gapTimer); gapTimer=setTimeout(()=>{ if(state==='pitch'){ nextPitch(); } }, 760); }
+
+  function flash(text, cls){
+    const el=$('msgEl'); el.className='msg show'+(cls?(' '+cls):''); el.textContent=text;
+    clearTimeout(msgTimer); msgTimer=setTimeout(()=>{ el.classList.remove('show'); }, 750);
   }
 
-  function startLoop() {
-    lastTs = performance.now();
-    if (rafId) cancelAnimationFrame(rafId);
-    rafId = requestAnimationFrame(gameLoop);
+  function updateHud(){
+    $('hudLeft').textContent=Math.max(0, TOTAL-game.pitchNo);
+    $('hudHr').textContent=game.homeRunCount;
+    $('hudCombo').textContent=game.combo;
+    $('hudScore').textContent=fmt(game.score);
   }
 
-  function gameLoop(ts) {
-    if (!game || !game.isPlaying) return;
-    const dt = Math.min(50, ts - lastTs);
-    lastTs = ts;
-    if (!game.paused && currentPitch && !currentPitch.judged) {
-      currentPitch.elapsed += dt;
-      currentPitch.progress = Math.min(1, currentPitch.elapsed / currentPitch.duration);
-      if (currentPitch.progress >= 1) noSwingResult();
+  function loop(ts){
+    const dt=Math.min(50, ts-(lastTs||ts)); lastTs=ts;
+    if(batSwing>0) batSwing=Math.max(0, batSwing - dt/180);
+    if(state==='pitch' && ball){
+      if(ball.state==='pitch'){
+        const prog=(ts-pitchStartMs)/pitchDur;      // 0~1+
+        ball.y = pitcher().y + (H*1.08 - pitcher().y)*prog;
+        ball.x = ball.x0 + ball.curve*Math.sin(prog*Math.PI);
+        ball.rot += dt*0.02;
+        if(prog>=1.12 && !swungThisPitch){           // 놓침
+          swungThisPitch=true; game.combo=0; game.missCount++; flash('놓침!', ''); updateHud(); endPitchSoon();
+        }
+      } else if(ball.state==='fly'){
+        ball.x+=ball.vx; ball.y+=ball.vy; ball.vy+=0.34; ball.rot+=dt*0.05;
+      }
     }
     draw();
-    rafId = requestAnimationFrame(gameLoop);
+    rafId=requestAnimationFrame(loop);
   }
 
-  function handleKey(e) {
-    if ([' ', 'Enter', 'Spacebar', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) e.preventDefault();
-    if (e.key === ' ' || e.key === 'Enter' || e.code === 'Space') swing();
-    if (e.key.toLowerCase() === 'p') togglePause();
-  }
+  function drawIdle(){ resize(); draw(); }
 
-  function swing() {
-    if (!game || !game.isPlaying || game.paused || !currentPitch || currentPitch.judged) return;
-    currentPitch.swung = true;
-    currentPitch.judged = true;
-    game.swingCount++;
-    const result = judgeSwing(currentPitch);
-    applyResult(result);
-  }
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    // 홈런존 배너(상단)
+    const hz=hrZoneY();
+    const g=ctx.createLinearGradient(0,0,0,hz);
+    g.addColorStop(0,'rgba(255,193,7,.92)'); g.addColorStop(1,'rgba(255,193,7,.55)');
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,hz);
+    ctx.strokeStyle='#fff'; ctx.setLineDash([9,7]); ctx.lineWidth=3;
+    ctx.beginPath(); ctx.moveTo(0,hz); ctx.lineTo(W,hz); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle='#7a4b00'; ctx.font='900 15px Pretendard,sans-serif'; ctx.textAlign='center';
+    ctx.fillText('🏟  HOME RUN ZONE  🏟', W/2, hz*0.6);
 
-  function judgeSwing(p) {
-    const diffCfg = DIFFS[game.difficulty];
-    const d = Math.abs(p.progress - p.target) / diffCfg.window;
-    if (!p.isStrike && d > 0.20) return { type:'miss', text:'헛스윙!', cls:'', score:0 };
-    if (d <= 0.04) return { type:'homerun', text:'홈런!', cls:'home', score:500, bases:4, perfect:true };
-    if (d <= 0.08) return { type:'triple', text:'3루타!', cls:'hit', score:300, bases:3 };
-    if (d <= 0.13) return { type:'double', text:'2루타!', cls:'hit', score:200, bases:2 };
-    if (d <= 0.20) return { type:'single', text:'1루타!', cls:'hit', score:100, bases:1 };
-    if (d <= 0.27) return { type:'foul', text:'파울!', cls:'', score:0 };
-    return { type:'miss', text:'헛스윙!', cls:'', score:0 };
-  }
+    // 타격 라인(스윗스팟)
+    const hl=hitLineY();
+    ctx.strokeStyle='rgba(255,255,255,.65)'; ctx.setLineDash([6,6]); ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(W*0.12,hl); ctx.lineTo(W*0.88,hl); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle='rgba(20,56,32,.5)'; ctx.font='700 11px Pretendard,sans-serif';
+    ctx.fillText('여기서 스윙!', W*0.28, hl-6);
 
-  function noSwingResult() {
-    if (!currentPitch || currentPitch.judged) return;
-    currentPitch.judged = true;
-    if (currentPitch.isStrike) applyResult({ type:'calledStrike', text:'스트라이크!', cls:'', score:0 });
-    else applyResult({ type:'ball', text:'볼!', cls:'ball', score:0 });
-  }
+    // 홈플레이트
+    const b=batter();
+    ctx.fillStyle='#f2f2ee'; ctx.beginPath();
+    ctx.moveTo(b.x-26,b.y+22); ctx.lineTo(b.x+26,b.y+22); ctx.lineTo(b.x+26,b.y+30);
+    ctx.lineTo(b.x,b.y+40); ctx.lineTo(b.x-26,b.y+30); ctx.closePath(); ctx.fill();
 
-  function addScore(base, result) {
-    let s = base;
-    const diff = DIFFS[game.difficulty];
-    s *= diff.mult;
-    if (currentPitch.special) {
-      s *= currentPitch.special.mult;
-      s += currentPitch.special.bonus;
-      if (currentPitch.special.key === 'mega' && result.type === 'homerun') s += 1000;
-    }
-    if (game.combo >= 3 && result.bases) s += game.combo >= 10 ? 300 : (game.combo >= 5 ? 100 : 50);
-    return Math.round(s);
-  }
+    drawBatter(b);
+    // 투수 마운드
+    const p=pitcher();
+    ctx.fillStyle='rgba(120,80,40,.35)'; ctx.beginPath(); ctx.ellipse(p.x,p.y+8,26,10,0,0,7); ctx.fill();
+    ctx.font='22px serif'; ctx.textAlign='center'; ctx.fillStyle='#333'; ctx.fillText('🧢', p.x, p.y+4);
 
-  function applyResult(result) {
-    if (!game.isPlaying) return;
-    lastResult = result;
-    let msg = result.text;
-    if (currentPitch && currentPitch.special && ['single','double','triple','homerun'].includes(result.type)) msg = currentPitch.special.label + ' ' + msg;
-    if (result.type === 'single' || result.type === 'double' || result.type === 'triple' || result.type === 'homerun') {
-      const points = addScore(result.score, result);
-      game.score += points;
-      game.hitCount++;
-      if (result.type === 'single') game.singleCount++;
-      if (result.type === 'double') game.doubleCount++;
-      if (result.type === 'triple') game.tripleCount++;
-      if (result.type === 'homerun') game.homeRunCount++;
-      if (result.perfect) game.perfectCount++;
-      game.combo++;
-      game.maxCombo = Math.max(game.maxCombo, game.combo);
-      game.balls = 0; game.strikes = 0;
-      msg += ` +${fmt(points)}`;
-      if (game.combo >= 3) msg += ` · ${game.combo}콤보🔥`;
-      if (result.type === 'homerun') celebrate();
-    } else if (result.type === 'ball') {
-      game.balls++;
-      if (game.balls >= 4) {
-        const pts = Math.round(50 * DIFFS[game.difficulty].mult);
-        game.score += pts;
-        game.walkCount++;
-        game.combo = Math.max(game.combo, 1);
-        game.maxCombo = Math.max(game.maxCombo, game.combo);
-        game.balls = 0; game.strikes = 0;
-        msg = '볼넷 출루! +' + pts;
-      }
-    } else if (result.type === 'foul') {
-      game.foulCount++;
-      if (game.strikes < 2) game.strikes++;
-    } else {
-      game.combo = 0;
-      game.strikes++;
-      if (game.strikes >= 3) {
-        game.outs++;
-        game.strikeoutCount++;
-        game.balls = 0; game.strikes = 0;
-        msg = '삼진 아웃!';
-      }
-    }
-    showMessage(msg, result.cls);
-    updateHUD();
-    if (game.outs >= 3) {
-      nextTimer = setTimeout(endGame, 950);
-    } else {
-      nextTimer = setTimeout(startPitch, 900);
+    // 공
+    if(ball && (state==='pitch')){
+      ctx.save(); ctx.translate(ball.x,ball.y); ctx.rotate(ball.rot);
+      ctx.font='26px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(curCrop?curCrop.e:'⚾', 0, 0);
+      ctx.restore();
     }
   }
 
-  function updateHUD() {
-    $('scoreEl').textContent = fmt(game.score);
-    $('outEl').textContent = game.outs;
-    $('ballEl').textContent = game.balls;
-    $('strikeEl').textContent = game.strikes;
-    $('comboEl').textContent = game.combo;
+  function drawBatter(b){
+    ctx.save();
+    // 몸
+    ctx.strokeStyle='#2b3a24'; ctx.lineWidth=7; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(b.x, b.y+16); ctx.lineTo(b.x, b.y-14); ctx.stroke();
+    // 머리 + 헬멧
+    ctx.fillStyle='#f0c9a0'; ctx.beginPath(); ctx.arc(b.x, b.y-26, 11, 0, 7); ctx.fill();
+    ctx.fillStyle='#1f5132'; ctx.beginPath(); ctx.arc(b.x, b.y-28, 12, Math.PI, 2*Math.PI); ctx.fill();
+    // 다리
+    ctx.strokeStyle='#2b3a24'; ctx.lineWidth=6;
+    ctx.beginPath(); ctx.moveTo(b.x, b.y+16); ctx.lineTo(b.x-11, b.y+34); ctx.moveTo(b.x, b.y+16); ctx.lineTo(b.x+11, b.y+34); ctx.stroke();
+    // 배트 (스윙 애니메이션: 대기 -50° → 스윙 +75°)
+    const rest=-2.35, swing=-2.35 + (1-batSwing)*2.6;   // batSwing 1→0 진행
+    const ang = batSwing>0 ? swing : rest;
+    const hx=b.x-2, hy=b.y-10;
+    ctx.strokeStyle='#a9712f'; ctx.lineWidth=6; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(hx,hy);
+    ctx.lineTo(hx+Math.cos(ang)*46, hy+Math.sin(ang)*46); ctx.stroke();
+    // 손
+    ctx.fillStyle='#f0c9a0'; ctx.beginPath(); ctx.arc(hx,hy,5,0,7); ctx.fill();
+    ctx.restore();
   }
 
-  function showMessage(text, cls='') {
-    const el = $('messageEl');
-    el.className = 'message show ' + (cls || '');
-    el.textContent = text;
-    if (messageTimer) clearTimeout(messageTimer);
-    messageTimer = setTimeout(() => el.classList.remove('show'), 820);
-  }
-
-  function togglePause() {
-    if (!game || !game.isPlaying) return;
-    game.paused = !game.paused;
-    $('pauseCover').classList.toggle('show', game.paused);
-    $('pauseBtn').textContent = game.paused ? '재개' : '일시정지';
-    if (!game.paused) lastTs = performance.now();
-  }
-
-  function endGame() {
-    if (!game || !game.isPlaying) return;
-    game.isPlaying = false;
-    cleanupLoop();
-    game.playTime = Math.max(1, Math.round((Date.now() - game.startTime) / 1000));
-    showResult();
-  }
-
-  function grade(score) {
-    if (score >= 5000) return '작물 홈런왕 ⚾🚜';
-    if (score >= 3500) return '수확 타격왕 🌾';
-    if (score >= 2000) return '텐아르 강타자 🔥';
-    if (score >= 1000) return '작물 야구 유망주 🌱';
-    return '다시 타석에 서볼까요? 💪';
-  }
-
-  function showResult() {
+  function endGame(){
+    state='result'; cancelAnimationFrame(rafId); ball=null;
+    game.playTime=Math.round((Date.now()-game.startTime)/1000);
+    $('resHr').textContent=game.homeRunCount;
+    $('resScore').textContent=fmt(game.score);
+    $('resHit').textContent=game.hitCount;
+    $('resCombo').textContent=game.maxCombo;
+    $('resGrade').textContent=grade(game.score);
+    $('resRank').textContent=''; $('saveMsg').textContent='기록 저장 중…';
+    const localBest=parseInt(safeGet('cropBaseballBestScore','0'),10)||0;
+    if(game.score>localBest) safeSet('cropBaseballBestScore', game.score);
+    safeSet('cropBaseballPlayCount', (parseInt(safeGet('cropBaseballPlayCount','0'),10)||0)+1);
     showScreen('result');
-    $('finalScore').textContent = fmt(game.score);
-    let g = grade(game.score);
-    if (game.homeRunCount >= 3) g += ' · 홈런 감각 최고!';
-    else if (game.strikeoutCount >= 3) g += ' · 공을 조금 더 끝까지 보세요.';
-    $('gradeEl').textContent = g;
-    $('resHits').textContent = game.hitCount;
-    $('resHr').textContent = game.homeRunCount;
-    $('resCombo').textContent = game.maxCombo;
-    $('resPitches').textContent = game.pitchCount;
-    $('resWalks').textContent = game.walkCount;
-    $('resRank').textContent = '…';
-    $('saveMsg').textContent = '기록 저장 중…';
-    $('newBest').classList.add('hidden');
-    saveLocalRecord();
     submitScore();
   }
 
-  function saveLocalRecord() {
-    const prev = parseInt(safeGet('cropBaseballBestScore','0'),10) || 0;
-    const best = Math.max(prev, game.score);
-    safeSet('cropBaseballBestScore', best);
-    const plays = (parseInt(safeGet('cropBaseballPlayCount','0'),10) || 0) + 1;
-    safeSet('cropBaseballPlayCount', plays);
-    if (game.score > prev) $('newBest').classList.remove('hidden');
+  function grade(s){
+    if(s>=2400) return '작물 홈런왕 ⚾🚜';
+    if(s>=1600) return '수확 타격왕 🌾';
+    if(s>=900)  return '텐아르 강타자 🔥';
+    if(s>=400)  return '작물 야구 유망주 🌱';
+    return '다시 타석에! 💪';
+  }
+  const xpForScore = s => 10 + Math.floor(s/100) + game.homeRunCount*3;
+
+  async function submitScore(){
+    if(savedOnce) return; savedOnce=true;
+    const score=game.score, xpGain=xpForScore(score);
+    try{
+      const allRef=doc(db,'rankings',GAME_ID,'scores',USER.userId);
+      let prevBest=0; try{ const p=await withTimeout(getDoc(allRef)); prevBest=p.exists()?(p.data().score||0):0; }catch(e){}
+      if(score>prevBest){
+        await withTimeout(setDoc(allRef,{ userId:USER.userId, nickname:USER.nickname, score, difficulty:'arcade',
+          hitCount:game.hitCount, homeRunCount:game.homeRunCount, maxCombo:game.maxCombo, playedAt:serverTimestamp() }));
+      }
+      const wkRef=weeklyDoc(USER.userId);
+      let wkPrev=0; try{ const w=await withTimeout(getDoc(wkRef)); wkPrev=w.exists()?(w.data().score||0):0; }catch(e){}
+      if(score>wkPrev){
+        await withTimeout(setDoc(wkRef,{ userId:USER.userId, nickname:USER.nickname, score, difficulty:'arcade',
+          pitchCount:game.pitchCount, hitCount:game.hitCount, homeRunCount:game.homeRunCount,
+          maxCombo:game.maxCombo, playTime:game.playTime, weekKey:WEEK, playedAt:serverTimestamp() }));
+      }
+      withTimeout(setDoc(doc(collection(db,'playLogs')),{ gameId:GAME_ID, userId:USER.userId, nickname:USER.nickname,
+        score, homeRunCount:game.homeRunCount, hitCount:game.hitCount, playedAt:serverTimestamp() })).catch(()=>{});
+      withTimeout(updateDoc(doc(db,'users',USER.userId),{ totalPlayCount:increment(1), totalScore:increment(score),
+        xp:increment(xpGain), lastLogin:serverTimestamp() })).catch(()=>{});
+      const wkBest=Math.max(wkPrev,score);
+      try{
+        const higher=await withTimeout(getDocs(query(weeklyCol(), where('score','>',wkBest))));
+        $('resRank').textContent='이번 주 '+(higher.size+1)+'위';
+        if(higher.size===0 && wkBest>0) celebrate();
+      }catch(e){ $('resRank').textContent=''; }
+      $('saveMsg').textContent=`+${xpGain} XP · 기록 저장 완료`;
+    }catch(e){ $('saveMsg').textContent='랭킹 저장 실패(결과는 정상). 잠시 후 다시 시도하세요.'; }
   }
 
-  function xpForScore(score) { return 10 + Math.floor(score / 100) + game.homeRunCount * 3; }
-
-  async function submitScore() {
-    if (savedOnce) return;
-    savedOnce = true;
-    const score = game.score;
-    const xpGain = xpForScore(score);
-    try {
-      const allRef = doc(db, 'rankings', GAME_ID, 'scores', USER.userId);
-      let prevBest = 0;
-      try {
-        const prev = await withTimeout(getDoc(allRef));
-        prevBest = prev.exists() ? (prev.data().score || 0) : 0;
-      } catch(e) {}
-      if (score > prevBest) {
-        await withTimeout(setDoc(allRef, {
-          userId: USER.userId, nickname: USER.nickname, score, difficulty: game.difficulty,
-          hitCount: game.hitCount, homeRunCount: game.homeRunCount, maxCombo: game.maxCombo,
-          playedAt: serverTimestamp()
-        }));
-      }
-
-      const wkRef = weeklyDoc(USER.userId);
-      let wkPrev = 0;
-      try {
-        const wp = await withTimeout(getDoc(wkRef));
-        wkPrev = wp.exists() ? (wp.data().score || 0) : 0;
-      } catch(e) {}
-      if (score > wkPrev) {
-        await withTimeout(setDoc(wkRef, {
-          userId: USER.userId, nickname: USER.nickname, score, difficulty: game.difficulty,
-          pitchCount: game.pitchCount, hitCount: game.hitCount, homeRunCount: game.homeRunCount,
-          maxCombo: game.maxCombo, playTime: game.playTime, weekKey: WEEK, playedAt: serverTimestamp()
-        }));
-      }
-
-      withTimeout(setDoc(doc(collection(db, 'playLogs')), {
-        gameId: GAME_ID, userId: USER.userId, nickname: USER.nickname, score,
-        homeRunCount: game.homeRunCount, hitCount: game.hitCount, playedAt: serverTimestamp()
-      })).catch(()=>{});
-      withTimeout(updateDoc(doc(db, 'users', USER.userId), {
-        totalPlayCount: increment(1), totalScore: increment(score), xp: increment(xpGain), lastLogin: serverTimestamp()
-      })).catch(()=>{});
-
-      const wkBest = Math.max(wkPrev, score);
-      try {
-        const higher = await withTimeout(getDocs(query(weeklyCol(), where('score', '>', wkBest))));
-        $('resRank').textContent = (higher.size + 1) + '위';
-        if (higher.size === 0 && wkBest > 0) celebrate();
-      } catch(e) { $('resRank').textContent = '-'; }
-      $('saveMsg').textContent = `+${xpGain} XP 획득 · 기록 저장 완료`;
-    } catch(e) {
-      $('saveMsg').textContent = '랭킹 저장에 실패했지만 결과는 정상 확인할 수 있습니다.';
-      $('resRank').textContent = '-';
-    }
-  }
-
-  async function openRanking() {
+  async function openRanking(){
     $('rankModal').classList.add('show');
-    const list = $('rankList');
-    list.innerHTML = '<div class="empty">불러오는 중…</div>';
-    try {
-      const qs = await withTimeout(getDocs(query(weeklyCol(), orderBy('score', 'desc'), limit(10))));
-      if (qs.empty) {
-        list.innerHTML = '<div class="empty">이번 주 기록이 아직 없어요.<br>첫 홈런왕에 도전해보세요!</div>';
-        return;
-      }
-      const medals = ['🥇','🥈','🥉'];
-      let html = '', pos = 0;
-      qs.forEach(d => {
-        pos++;
-        const r = d.data();
-        const mine = r.userId === USER.userId;
-        const posCell = pos <= 3 ? `<div class="rank-pos top">${medals[pos-1]}</div>` : `<div class="rank-pos">${pos}</div>`;
-        html += `<div class="rank-row ${mine ? 'me' : ''}">${posCell}
-          <div class="rank-nick">${escapeHtml(r.nickname || '익명')}${mine ? '<small>나</small>' : ''}</div>
-          <div class="rank-sc">${fmt(r.score)}점</div></div>`;
-      });
-      list.innerHTML = html;
-    } catch(e) {
-      list.innerHTML = '<div class="empty">랭킹을 불러오지 못했습니다.</div>';
-    }
-  }
-  function closeRanking() { $('rankModal').classList.remove('show'); }
-
-  async function copyResult() {
-    const text = `[텐아르 작물 홈런왕 결과]\n닉네임: ${USER.nickname}\n점수: ${fmt(game.score)}점\n홈런: ${game.homeRunCount}개\n안타: ${game.hitCount}개\n최대 콤보: ${game.maxCombo}연속\n등급: ${grade(game.score)}\n\n나도 도전하기!`;
-    try {
-      if (navigator.clipboard && window.isSecureContext) await navigator.clipboard.writeText(text);
-      else {
-        const ta = document.createElement('textarea');
-        ta.value = text; ta.style.position='fixed'; ta.style.left='-9999px';
-        document.body.appendChild(ta); ta.focus(); ta.select(); document.execCommand('copy'); ta.remove();
-      }
-      $('saveMsg').textContent = '결과가 복사되었습니다.';
-    } catch(e) {
-      $('saveMsg').textContent = '복사에 실패했습니다. 직접 선택해서 복사해주세요.';
-    }
+    const list=$('rankList'); list.innerHTML='<div class="empty">불러오는 중…</div>';
+    try{
+      const qs=await withTimeout(getDocs(query(weeklyCol(), orderBy('score','desc'), limit(10))));
+      if(qs.empty){ list.innerHTML='<div class="empty">이번 주 기록이 없어요.<br>첫 홈런왕에 도전!</div>'; return; }
+      const medals=['🥇','🥈','🥉']; let html='',pos=0;
+      qs.forEach(d=>{ pos++; const r=d.data(); const mine=r.userId===USER.userId;
+        const pc=pos<=3?`<div class="rank-pos top">${medals[pos-1]}</div>`:`<div class="rank-pos">${pos}</div>`;
+        html+=`<div class="rank-row ${mine?'me':''}">${pc}<div class="rank-nick">${escapeHtml(r.nickname||'익명')}${mine?'<small>나</small>':''}</div><div class="rank-sc">${fmt(r.score)}점</div></div>`; });
+      list.innerHTML=html;
+    }catch(e){ list.innerHTML='<div class="empty">랭킹을 불러오지 못했습니다.</div>'; }
   }
 
-  function getFieldPoints() {
-    const w = canvas.clientWidth, h = canvas.clientHeight;
-    return {
-      home: { x: w * 0.50, y: h * 0.88, label: '홈' },
-      first:{ x: w * 0.78, y: h * 0.64, label: '1루' },
-      second:{ x: w * 0.50, y: h * 0.43, label: '2루' },
-      third:{ x: w * 0.22, y: h * 0.64, label: '3루' },
-      pitcher:{ x: w * 0.50, y: h * 0.55 },
-      zone:{ x: w * 0.50, y: h * 0.78 }
-    };
+  async function copyResult(){
+    const text=`[텐아르 작물 홈런왕]\n닉네임: ${USER.nickname}\n홈런: ${game.homeRunCount}개\n점수: ${fmt(game.score)}점\n최대콤보: ${game.maxCombo}연속\n등급: ${grade(game.score)}\n\n나도 도전!`;
+    try{ if(navigator.clipboard && window.isSecureContext) await navigator.clipboard.writeText(text);
+      else { const ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.left='-9999px';
+        document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); }
+      $('saveMsg').textContent='결과가 복사되었습니다.';
+    }catch(e){ $('saveMsg').textContent='복사 실패 — 직접 선택해 복사하세요.'; }
   }
 
-  function getStrikeZoneRect() {
-    const w = canvas.clientWidth, h = canvas.clientHeight;
-    const pts = getFieldPoints();
-    const diff = DIFFS[(game && game.difficulty) || selectedDiff];
-    const zw = 104 * diff.zone;
-    const zh = 92 * diff.zone;
-    return { x: pts.zone.x - zw / 2, y: pts.zone.y - zh / 2, w: zw, h: zh, cx: pts.zone.x, cy: pts.zone.y };
-  }
-
-  function getBallPos(p) {
-    const w = canvas.clientWidth;
-    const pts = getFieldPoints();
-    const zone = getStrikeZoneRect();
-    const startX = pts.pitcher.x;
-    const startY = pts.pitcher.y - 8;
-    const endX = zone.cx + p.side;
-    const endY = zone.cy + p.verticalBall;
-    const t = p.progress;
-    const curve = Math.sin(t * Math.PI) * p.curve;
-    return { x: startX + (endX-startX)*t + curve, y: startY + (endY-startY)*t, size: 17 + t*40 };
-  }
-
-  function drawBase(x, y, label, size = 25) {
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.rotate(Math.PI / 4);
-    ctx.fillStyle = '#fffdf5';
-    ctx.strokeStyle = 'rgba(78,44,17,.55)';
-    ctx.lineWidth = 2;
-    ctx.fillRect(-size / 2, -size / 2, size, size);
-    ctx.strokeRect(-size / 2, -size / 2, size, size);
-    ctx.restore();
-    ctx.fillStyle = '#143820';
-    ctx.font = '900 13px Pretendard, system-ui';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(label, x, y);
-  }
-
-  function draw() {
-    if (!ctx) return;
-    const w = canvas.clientWidth, h = canvas.clientHeight;
-    const pts = getFieldPoints();
-    const zone = getStrikeZoneRect();
-    ctx.clearRect(0,0,w,h);
-
-    // outfield / infield background
-    const grd = ctx.createLinearGradient(0,0,0,h);
-    grd.addColorStop(0,'#8fdb70');
-    grd.addColorStop(.48,'#5dbe58');
-    grd.addColorStop(.74,'#8bcf63');
-    grd.addColorStop(1,'#b8844d');
-    ctx.fillStyle = grd;
-    roundRect(ctx,0,0,w,h,22,true);
-
-    // clear infield diamond, not dotted
-    ctx.beginPath();
-    ctx.moveTo(pts.home.x, pts.home.y);
-    ctx.lineTo(pts.first.x, pts.first.y);
-    ctx.lineTo(pts.second.x, pts.second.y);
-    ctx.lineTo(pts.third.x, pts.third.y);
-    ctx.closePath();
-    ctx.fillStyle = 'rgba(184,121,67,.92)';
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,.65)';
-    ctx.lineWidth = 3;
-    ctx.stroke();
-
-    // pitcher mound in the middle
-    ctx.beginPath();
-    ctx.ellipse(pts.pitcher.x, pts.pitcher.y, 46, 24, 0, 0, Math.PI*2);
-    ctx.fillStyle = '#a76534';
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,.45)';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-    ctx.font='34px system-ui';
-    ctx.textAlign='center';
-    ctx.textBaseline='middle';
-    ctx.fillText('👨‍🌾', pts.pitcher.x, pts.pitcher.y - 7);
-    ctx.fillStyle='rgba(20,56,32,.8)';
-    ctx.font='900 12px Pretendard, system-ui';
-    ctx.fillText('투수', pts.pitcher.x, pts.pitcher.y + 22);
-
-    // large bases with labels
-    drawBase(pts.home.x, pts.home.y, '홈', 34);
-    drawBase(pts.first.x, pts.first.y, '1루', 31);
-    drawBase(pts.second.x, pts.second.y, '2루', 31);
-    drawBase(pts.third.x, pts.third.y, '3루', 31);
-
-    // batter near home plate
-    ctx.font='34px system-ui';
-    ctx.textAlign='center';
-    ctx.textBaseline='middle';
-    ctx.fillText('🧑‍🌾', w*.30, h*.86);
-    ctx.font='27px system-ui';
-    ctx.fillText('🏏', w*.39, h*.84);
-
-    // exact strike zone: solid highlighted rectangle, placed lower near the batter
-    ctx.save();
-    ctx.fillStyle='rgba(255,255,255,.28)';
-    ctx.strokeStyle='rgba(255,215,64,.98)';
-    ctx.lineWidth=4;
-    roundRect(ctx, zone.x, zone.y, zone.w, zone.h, 8, true);
-    roundRect(ctx, zone.x, zone.y, zone.w, zone.h, 8, false);
-    ctx.strokeStyle='rgba(20,56,32,.55)';
-    ctx.lineWidth=1;
-    ctx.beginPath();
-    ctx.moveTo(zone.cx, zone.y); ctx.lineTo(zone.cx, zone.y + zone.h);
-    ctx.moveTo(zone.x, zone.cy); ctx.lineTo(zone.x + zone.w, zone.cy);
-    ctx.stroke();
-    ctx.restore();
-    ctx.fillStyle='rgba(20,56,32,.92)';
-    ctx.font='900 12px Pretendard, system-ui';
-    ctx.textAlign='center';
-    ctx.textBaseline='alphabetic';
-    ctx.fillText('정확한 스트라이크존', zone.cx, zone.y - 8);
-
-    if (currentPitch && !currentPitch.judged) {
-      const bp = getBallPos(currentPitch);
-      ctx.beginPath();
-      ctx.arc(bp.x,bp.y,bp.size/2,0,Math.PI*2);
-      ctx.fillStyle=currentPitch.color || '#fff'; ctx.fill();
-      ctx.lineWidth=2; ctx.strokeStyle='rgba(20,56,32,.45)'; ctx.stroke();
-      ctx.font=`${Math.max(18,bp.size*.68)}px system-ui`;
-      ctx.textAlign='center';
-      ctx.textBaseline='middle';
-      ctx.fillText(currentPitch.emoji,bp.x,bp.y+bp.size*.03);
-      // timing ring near perfect area
-      if (currentPitch.progress > .70 && currentPitch.progress < .92) {
-        ctx.beginPath(); ctx.arc(bp.x,bp.y,bp.size*.72,0,Math.PI*2);
-        ctx.strokeStyle='rgba(255,215,64,.95)'; ctx.lineWidth=3; ctx.stroke();
-      }
-    }
-  }
-  function roundRect(ctx,x,y,w,h,r,fill) {
-    ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); if(fill) ctx.fill(); else ctx.stroke();
-  }
-
-  function celebrate() {
-    const cv = $('fxCanvas');
-    cv.style.display = 'block';
-    cv.width = cv.clientWidth; cv.height = cv.clientHeight;
-    const c = cv.getContext('2d');
-    const parts = [], colors=['#ff5252','#ffd740','#69f0ae','#40c4ff','#ffab40','#e040fb'];
-    function burst(x,y) {
-      for (let i=0;i<28;i++) {
-        const a=Math.PI*2*i/28, s=2+Math.random()*4;
-        parts.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:1,color:colors[(Math.random()*colors.length)|0]});
-      }
-    }
+  function miniBurst(){ /* 홈런 시 작은 반짝임 */ celebrate(true); }
+  function celebrate(mini){
+    const cv=$('fxCanvas'); cv.style.display='block'; cv.width=cv.clientWidth; cv.height=cv.clientHeight;
+    const c=cv.getContext('2d'); const parts=[], colors=['#ff5252','#ffd740','#69f0ae','#40c4ff','#ffab40','#e040fb'];
+    const bursts = mini?1:5, maxT = mini?60:150;
+    function burst(x,y){ const n=mini?18:26; for(let i=0;i<n;i++){ const a=Math.PI*2*i/n, s=2+Math.random()*4;
+      parts.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:1,color:colors[(Math.random()*colors.length)|0]}); } }
+    if(mini) burst(cv.width*0.72, cv.height*0.5);
     let t=0;
-    (function frame() {
-      c.clearRect(0,0,cv.width,cv.height);
-      if (t%14===0 && t<70) burst(40+Math.random()*(cv.width-80), 60+Math.random()*cv.height*.45);
-      for (let i=parts.length-1;i>=0;i--) {
-        const p=parts[i]; p.x+=p.vx; p.y+=p.vy; p.vy+=.06; p.life-=.015;
-        if (p.life<=0) { parts.splice(i,1); continue; }
-        c.globalAlpha=p.life; c.fillStyle=p.color; c.beginPath(); c.arc(p.x,p.y,3,0,7); c.fill();
-      }
+    (function frame(){ c.clearRect(0,0,cv.width,cv.height);
+      if(!mini && t%14===0 && t<70) burst(40+Math.random()*(cv.width-80), 60+Math.random()*cv.height*.45);
+      for(let i=parts.length-1;i>=0;i--){ const p=parts[i]; p.x+=p.vx; p.y+=p.vy; p.vy+=.06; p.life-=.02;
+        if(p.life<=0){ parts.splice(i,1); continue; } c.globalAlpha=p.life; c.fillStyle=p.color; c.beginPath(); c.arc(p.x,p.y,3,0,7); c.fill(); }
       c.globalAlpha=1; t++;
-      if (t<150 || parts.length) requestAnimationFrame(frame); else cv.style.display='none';
+      if(t<maxT || parts.length) requestAnimationFrame(frame); else cv.style.display='none';
     })();
   }
 
