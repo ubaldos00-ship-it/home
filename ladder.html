@@ -1,4 +1,4 @@
-<!-- ladder_v6.html · 저장: 2026-07-06 16:46 KST · 선택 참여자 강조 표시 + 1등 맞추기 점수 게임센터 주간랭킹 기록 -->
+<!-- ladder_v7.html · 저장: 2026-07-07 06:44 KST · 시작 모드선택(배정/1등맞추기)·승률 소수점·결과 도착시공개·게임센터버튼·더블탭줌 제거 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -65,7 +65,24 @@
     min-height: 100vh;
     padding-top: calc(var(--header-h) + env(safe-area-inset-top));
     padding-bottom: calc(28px + env(safe-area-inset-bottom));
+    touch-action: manipulation;   /* 두 번 터치 확대(더블탭 줌) 방지 */
   }
+  html, * { touch-action: manipulation; }
+  /* 시작 모드 선택 모달 */
+  .mode-modal { position: fixed; inset: 0; z-index: 500; background: rgba(20,32,20,0.72);
+    display: none; align-items: center; justify-content: center; padding: 24px; }
+  .mode-modal.show { display: flex; }
+  .mode-box { background: #fff; border-radius: 22px; padding: 24px 20px; max-width: 360px; width: 100%; text-align: center; box-shadow: 0 16px 44px rgba(0,0,0,0.35); }
+  .mode-box h3 { margin: 0 0 6px; font-size: 21px; font-weight: 900; color: var(--color-primary-dark); }
+  .mode-box p { margin: 0 0 18px; font-size: 13px; color: var(--color-text-soft); }
+  .mode-opt { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+    padding: 14px 16px; border-radius: 15px; border: 2px solid var(--color-border); background: #fafaf5;
+    cursor: pointer; margin-bottom: 11px; font-family: inherit; }
+  .mode-opt:active { transform: scale(0.98); }
+  .mode-opt .em { font-size: 30px; flex-shrink: 0; }
+  .mode-opt .tt { font-size: 16px; font-weight: 800; color: var(--color-text); }
+  .mode-opt .ds { font-size: 12px; color: var(--color-text-soft); margin-top: 2px; }
+  .mode-opt.guess { border-color: var(--color-accent); background: #fdf7ea; }
 
   /* ===== HEADER ===== */
   header.app-header {
@@ -202,7 +219,10 @@
     <span class="brand-name">작물 사다리게임</span>
     <span class="brand-sub">텐아르(10a) 게임센터 · 현장 배정 도구</span>
   </div>
-  <a class="home-btn" href="https://ubaldos00-ship-it.github.io/home/" id="homeBtn">🏠 홈</a>
+  <div style="display:flex;gap:7px;flex-shrink:0;">
+    <a class="home-btn" href="game_center.html">🎮 게임센터</a>
+    <a class="home-btn" href="https://ubaldos00-ship-it.github.io/home/" id="homeBtn">🏠 홈</a>
+  </div>
 </header>
 
 <main>
@@ -305,6 +325,22 @@
   </div>
 </div>
 <canvas id="confettiCanvas"></canvas>
+
+<!-- 시작 모드 선택 모달 -->
+<div class="mode-modal" id="modeModal">
+  <div class="mode-box">
+    <h3>🪜 작물 사다리게임</h3>
+    <p>어떻게 즐길까요?</p>
+    <button class="mode-opt" id="modeAssign">
+      <span class="em">👥</span>
+      <span><span class="tt">그냥 배정하기</span><span class="ds">여러 명 자리/역할 배정 (점수 없음)</span></span>
+    </button>
+    <button class="mode-opt guess" id="modeGuess">
+      <span class="em">🎯</span>
+      <span><span class="tt">1등 맞추기 게임</span><span class="ds">1등 될 참여자 예상 · 승률 기록·랭킹</span></span>
+    </button>
+  </div>
+</div>
 
 <script>
 "use strict";
@@ -613,7 +649,8 @@ function drawChips(activeStart, activeEnd) {
     }
     for (let i = 0; i < n; i++) {
       const showDone = revealed && Object.values(revealed).includes(i);
-      drawChipV(xs[i], results[i] || `${i+1}`, null, false, fs, true, i === activeEnd, showDone);
+      const rtxt = (guessMode && !showDone) ? '?' : (results[i] || `${i+1}`);
+      drawChipV(xs[i], rtxt, null, false, fs, true, i === activeEnd, showDone);
     }
     // 도착한 참여자 이름 (결과 아래)
     for (let i = 0; i < n; i++) {
@@ -630,7 +667,8 @@ function drawChips(activeStart, activeEnd) {
   }
   for (let i = 0; i < n; i++) {
     const showDone = revealed && Object.values(revealed).includes(i);
-    drawChip(xs[i], yBottom + 26, results[i] || `${i+1}`, 'var', false, fs, true, i === activeEnd, showDone);
+    const rtxt = (guessMode && !showDone) ? '?' : (results[i] || `${i+1}`);
+    drawChip(xs[i], yBottom + 26, rtxt, 'var', false, fs, true, i === activeEnd, showDone);
   }
   // 도착한 참여자 이름 (결과 아래)
   for (let i = 0; i < n; i++) {
@@ -851,17 +889,33 @@ function showPopup(name, result) {
 /* ===================== 1등 맞추기 모드 ===================== */
 let guessMode = false, guessDone = false;
 let guessScore = parseInt(localStorage.getItem('ladderGuessScore') || '0', 10) || 0;
+let guessWins  = parseInt(localStorage.getItem('ladderGuessWins')  || '0', 10) || 0;
+let guessPlays = parseInt(localStorage.getItem('ladderGuessPlays') || '0', 10) || 0;
+function winRate() { return guessPlays > 0 ? (guessWins / guessPlays) : 0; }
 function updateGuessUI() {
   const b = $('guessModeBtn'); if (b) { b.textContent = '🎯 1등 맞추기: ' + (guessMode ? 'ON' : 'OFF'); b.classList.toggle('btn-accent', guessMode); b.classList.toggle('btn-outline', !guessMode); }
-  const badge = $('guessScoreBadge'); if (badge) badge.textContent = '🏆 ' + guessScore + '점';
+  const badge = $('guessScoreBadge');
+  if (badge) badge.textContent = guessPlays > 0
+    ? ('🎯 승률 ' + winRate().toFixed(3) + ' (' + guessWins + '/' + guessPlays + ')')
+    : '🎯 승률 –';
   const hint = $('guessHint'); if (hint) hint.style.display = guessMode ? '' : 'none';
 }
 function toggleGuess() {
-  guessMode = !guessMode; guessDone = false; updateGuessUI();
+  guessMode = !guessMode; guessDone = false; updateGuessUI(); if (ladder && geom) drawBase(null);
 }
+/* 시작 모드 선택 */
+function chooseMode(isGuess) {
+  guessMode = !!isGuess; guessDone = false;
+  try { localStorage.setItem('ladderModeGuess', isGuess ? '1' : '0'); } catch(e){}
+  $('modeModal').classList.remove('show');
+  updateGuessUI(); if (ladder && geom) drawBase(null);
+}
+function showModeModal() { $('modeModal').classList.add('show'); }
 function showGuessResult(startCol, endCol) {
   const resultText = (results[endCol] || '').trim();
   const win = resultText.includes('1등');
+  guessPlays++; if (win) guessWins++;
+  try { localStorage.setItem('ladderGuessPlays', String(guessPlays)); localStorage.setItem('ladderGuessWins', String(guessWins)); } catch(e){}
   if (win) {
     guessScore += 10; try { localStorage.setItem('ladderGuessScore', String(guessScore)); } catch(e){}
     if (window.recordLadderWin) { try { window.recordLadderWin(); } catch(e){} }   /* 게임센터 주간랭킹 점수 기록 */
@@ -870,7 +924,9 @@ function showGuessResult(startCol, endCol) {
   document.querySelector('#popup .pop-emoji').textContent = win ? '🏆' : '😅';
   document.querySelector('#popup .pop-title').textContent = win ? '1등 맞추기 성공!' : '1등 맞추기 실패';
   $('popName').textContent = names[startCol] + ' → ' + (resultText || '-');
-  $('popResult').textContent = win ? ('🎯 정답! +10점 (누적 ' + guessScore + '점)') : '아쉽! 1등이 아니에요';
+  $('popResult').textContent = win
+    ? ('🎯 정답! · 승률 ' + winRate().toFixed(3) + ' (' + guessWins + '/' + guessPlays + ')')
+    : ('아쉽! 1등 아님 · 승률 ' + winRate().toFixed(3) + ' (' + guessWins + '/' + guessPlays + ')');
   $('popResult').style.color = win ? 'var(--color-primary)' : 'var(--color-danger)';
   const pop = $('popup'); pop.style.animation = 'none'; void pop.offsetWidth; pop.style.animation = '';
   $('overlay').classList.add('show');
@@ -1055,7 +1111,14 @@ $('plusBtn').addEventListener('click', () => setCount(count + 1));
 $('autoRankBtn').addEventListener('click', autoRank);
 $('funNameBtn').addEventListener('click', funName);
 $('guessModeBtn').addEventListener('click', toggleGuess);
+$('modeAssign').addEventListener('click', () => chooseMode(false));
+$('modeGuess').addEventListener('click', () => chooseMode(true));
 updateGuessUI();
+/* 시작 시 모드 선택 모달 표시 */
+showModeModal();
+/* 두 번 터치 확대(더블탭 줌) 제거 */
+document.addEventListener('gesturestart', (e) => e.preventDefault(), { passive:false });
+(function(){ let last=0; document.addEventListener('touchend', (e) => { const now=Date.now(); if(now-last<=320) e.preventDefault(); last=now; }, { passive:false }); })();
 
 $('genBtn').addEventListener('click', () => {
   if (!validateNames()) return;

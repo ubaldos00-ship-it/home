@@ -15,7 +15,8 @@
   html,body{height:100%;}
   body{ background:var(--green); color:var(--greenDark);
     font-family:'Pretendard Variable',Pretendard,-apple-system,system-ui,sans-serif;
-    -webkit-font-smoothing:antialiased; overflow:hidden; }
+    -webkit-font-smoothing:antialiased; overflow:hidden; touch-action:manipulation; }
+  html,*{ touch-action:manipulation; }
   .wrap{ max-width:520px; margin:0 auto; height:100%; display:flex; flex-direction:column;
     background:var(--bg); position:relative; }
   .hidden{ display:none !important; }
@@ -520,6 +521,11 @@
   }
 
   init();
+</script>
+<script>
+  /* 두 번 터치 확대(더블탭 줌) 제거 */
+  document.addEventListener('gesturestart', function(e){ e.preventDefault(); }, { passive:false });
+  (function(){ var last=0; document.addEventListener('touchend', function(e){ var now=Date.now(); if(now-last<=320){ e.preventDefault(); } last=now; }, { passive:false }); })();
 </script>
 <script type="text/javascript" src="//wcs.pstatic.net/wcslog.js"></script>
 <script type="text/javascript">
