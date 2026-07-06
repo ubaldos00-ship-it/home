@@ -1,4 +1,4 @@
-<!-- game_crop_baseball.html · v3 아케이드 · 저장: 2026-07-06 04:24 KST · 단순 아케이드(난이도삭제·20구·홈런중심·콤보보너스·배트/공 애니메이션·홈런존) -->
+<!-- game_crop_baseball.html · v3.1 아케이드 · 저장: 2026-07-06 16:46 KST · 타자를 홈플레이트 옆에 서도록(플레이트 왼쪽 이동) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -377,11 +377,12 @@
     ctx.fillStyle='rgba(20,56,32,.5)'; ctx.font='700 11px Pretendard,sans-serif';
     ctx.fillText('여기서 스윙!', W*0.28, hl-6);
 
-    // 홈플레이트
+    // 홈플레이트 — 타자 왼쪽(투수 쪽)에 두어 타자가 옆에 서도록
     const b=batter();
+    const px=b.x-48, py=b.y+30;
     ctx.fillStyle='#f2f2ee'; ctx.beginPath();
-    ctx.moveTo(b.x-26,b.y+22); ctx.lineTo(b.x+26,b.y+22); ctx.lineTo(b.x+26,b.y+30);
-    ctx.lineTo(b.x,b.y+40); ctx.lineTo(b.x-26,b.y+30); ctx.closePath(); ctx.fill();
+    ctx.moveTo(px-24,py-6); ctx.lineTo(px+24,py-6); ctx.lineTo(px+24,py+2);
+    ctx.lineTo(px,py+12); ctx.lineTo(px-24,py+2); ctx.closePath(); ctx.fill();
 
     drawBatter(b);
     // 투수 마운드

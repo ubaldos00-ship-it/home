@@ -1,4 +1,4 @@
-<!-- ladder_v5.html · 저장: 2026-07-06 04:24 KST · 작물 테마 이름 + 1등 맞추기 모드(참여자 예상→1등이면 +10점) -->
+<!-- ladder_v6.html · 저장: 2026-07-06 16:46 KST · 선택 참여자 강조 표시 + 1등 맞추기 점수 게임센터 주간랭킹 기록 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -318,6 +318,7 @@ let ladder = null;          // { numLevels, rungs:[Set,...] }
 let geom = null;            // 캔버스 좌표 계산값
 let animating = false;
 let revealed = {};          // 시작column -> end index (확정된 결과)
+let pickedStart = -1;       // 선택(누른) 참여자 강조용
 
 const MIN_P = 2, MAX_P = 20;
 
@@ -381,7 +382,7 @@ function setCount(n) {
   save();
 }
 function hideLadder() {
-  ladder = null; geom = null; revealed = {}; guessDone = false;
+  ladder = null; geom = null; revealed = {}; guessDone = false; pickedStart = -1;
   $('ladderCard').style.display = 'none';
   $('resultTableCard').style.display = 'none';
 }
@@ -467,7 +468,7 @@ function generateLadder() {
   ensureAllColumnsTouched(rungs, numLevels, n);
 
   ladder = { numLevels, rungs };
-  revealed = {}; guessDone = false;
+  revealed = {}; guessDone = false; pickedStart = -1;
 }
 function ensureAllColumnsTouched(rungs, numLevels, n) {
   const touched = new Array(n).fill(false);
@@ -608,7 +609,7 @@ function drawChips(activeStart, activeEnd) {
     const fs = n >= 16 ? 11 : 12;
     for (let i = 0; i < n; i++) {
       drawOrderNum(xs[i], i + 1, colorFor(i));
-      drawChipV(xs[i], names[i] || `${i+1}`, colorFor(i), i === activeStart, fs, false, false, false);
+      drawChipV(xs[i], names[i] || `${i+1}`, colorFor(i), (i === activeStart || i === pickedStart), fs, false, false, false);
     }
     for (let i = 0; i < n; i++) {
       const showDone = revealed && Object.values(revealed).includes(i);
@@ -625,7 +626,7 @@ function drawChips(activeStart, activeEnd) {
   for (let i = 0; i < n; i++) {
     // 순번 + 이름 (상단)
     drawOrderNum(xs[i], i + 1, colorFor(i));
-    drawChip(xs[i], yTop - 24, names[i] || `${i+1}`, colorFor(i), i === activeStart, fs, false);
+    drawChip(xs[i], yTop - 24, names[i] || `${i+1}`, colorFor(i), (i === activeStart || i === pickedStart), fs, false);
   }
   for (let i = 0; i < n; i++) {
     const showDone = revealed && Object.values(revealed).includes(i);
@@ -746,7 +747,8 @@ function renderLadder() {
 function runOne(startCol) {
   if (animating || !ladder) return;
   animating = true;
-  $('canvasTip').textContent = '🚶 경로를 따라가는 중...';
+  pickedStart = startCol;   /* 선택 표시 */
+  $('canvasTip').textContent = `✅ ${names[startCol] || (startCol+1)} 선택 · 경로를 따라가는 중...`;
   const path = computePath(startCol);
   const pts = path.pts;
   const color = colorFor(startCol);
@@ -860,7 +862,10 @@ function toggleGuess() {
 function showGuessResult(startCol, endCol) {
   const resultText = (results[endCol] || '').trim();
   const win = resultText.includes('1등');
-  if (win) { guessScore += 10; try { localStorage.setItem('ladderGuessScore', String(guessScore)); } catch(e){} }
+  if (win) {
+    guessScore += 10; try { localStorage.setItem('ladderGuessScore', String(guessScore)); } catch(e){}
+    if (window.recordLadderWin) { try { window.recordLadderWin(); } catch(e){} }   /* 게임센터 주간랭킹 점수 기록 */
+  }
   updateGuessUI();
   document.querySelector('#popup .pop-emoji').textContent = win ? '🏆' : '😅';
   document.querySelector('#popup .pop-title').textContent = win ? '1등 맞추기 성공!' : '1등 맞추기 실패';
@@ -1103,6 +1108,49 @@ wcs_add["wa"] = "19e5d0d688a0f70";
 if(window.wcs) {
   wcs_do();
 }
+</script>
+
+<!-- 1등 맞추기 점수 기록(게임센터 주간랭킹) — Firestore -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+  import { getFirestore, doc, getDoc, setDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+  const firebaseConfig = {
+    apiKey: "AIzaSyAcU8iZR-B5HdvX1FOh4APCm0hXsz1u_X8",
+    authDomain: "tenar-chat-1674c.firebaseapp.com",
+    databaseURL: "https://tenar-chat-1674c-default-rtdb.firebaseio.com",
+    projectId: "tenar-chat-1674c",
+    storageBucket: "tenar-chat-1674c.firebasestorage.app",
+    messagingSenderId: "662688468209",
+    appId: "1:662688468209:web:0f37484e26943d79946d50"
+  };
+  const db = getFirestore(initializeApp(firebaseConfig));
+  const GAME_ID = 'ladder';
+  function withTimeout(p, ms=4500){ return Promise.race([p, new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),ms))]); }
+  function weekKey(now=new Date()){
+    const kst=new Date(now.getTime()+9*3600*1000); const dsm=(kst.getUTCDay()+6)%7;
+    const mid=Date.UTC(kst.getUTCFullYear(),kst.getUTCMonth(),kst.getUTCDate());
+    let b=mid-dsm*86400000+9*3600*1000; if(kst.getTime()<b) b-=7*86400000;
+    const d=new Date(b); return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;
+  }
+  const USER = { userId: localStorage.getItem('tenarGameUserId'), nickname: localStorage.getItem('tenarGameNick') };
+
+  /* 정답 1회 = +10점. 주(週) 경계에서 자동 리셋. 게임센터에서 들어온 사용자만 랭킹 기록 */
+  window.recordLadderWin = async function(){
+    const wk = weekKey();
+    let s; try{ s = JSON.parse(localStorage.getItem('ladderGuessWk')||'null'); }catch(e){ s=null; }
+    if(!s || s.week !== wk) s = { week:wk, score:0 };
+    s.score += 10;
+    try{ localStorage.setItem('ladderGuessWk', JSON.stringify(s)); }catch(e){}
+    if(!USER.userId || !USER.nickname) return;   /* 게임센터 로그인 사용자만 랭킹 반영 */
+    try{
+      await withTimeout(setDoc(doc(db,'rankings',GAME_ID,'wk_'+wk,USER.userId),
+        { userId:USER.userId, nickname:USER.nickname, score:s.score, weekKey:wk, playedAt:serverTimestamp() }));
+      const allRef=doc(db,'rankings',GAME_ID,'scores',USER.userId);
+      let prev=0; try{ const p=await withTimeout(getDoc(allRef)); prev=p.exists()?(p.data().score||0):0; }catch(e){}
+      if(s.score>prev) await withTimeout(setDoc(allRef, { userId:USER.userId, nickname:USER.nickname, score:s.score, playedAt:serverTimestamp() }));
+      withTimeout(setDoc(doc(collection(db,'playLogs')), { gameId:GAME_ID, userId:USER.userId, nickname:USER.nickname, score:s.score, playedAt:serverTimestamp() })).catch(()=>{});
+    }catch(e){}
+  };
 </script>
 </body>
 </html>
