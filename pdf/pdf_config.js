@@ -1,4 +1,4 @@
-// pdf_config.js · 텐아르 PDF CENTER 설정 v5 (Cloudflare R2 Worker 연동) · 저장: 2026-07-08 KST
+// pdf_config.js · 텐아르 PDF CENTER 설정 v5 (Cloudflare R2 Worker 연동) · 저장: 2026-07-08 00:52 KST · 가축동향조사 3종 추가
 // ─────────────────────────────────────────────────────────────
 // 구조: 조사별(category) + 연도별(year/tags). 검색은 title·subtitle·category·year·tags 대상.
 // 새 PDF 추가 방법
@@ -8,8 +8,7 @@
 //        nongpan = 농가판매및구입가격조사
 //        saengsan= 농작물생산조사
 //        ssalgab = 산지쌀값조사
-//        gachuk = 가축동향조사
-//      예) gachuk/2026/2026_livestock_trend_guide.pdf
+//      예) chukbi/2021/2021_livestock_cost_guide.pdf
 //   2) 아래 목록에 항목 추가 (file = WORKER + "/" + R2경로)
 //   ※ Worker는 R2 경로를 그대로 서빙해야 함(worker_passthrough.js 참고). 기존 별칭(guide_2025 등)도 유지됨.
 // ─────────────────────────────────────────────────────────────
@@ -83,38 +82,6 @@ window.TENAR_PDF_LIBRARY = [
     note: "R2: chukbi/2021/2021_livestock_cost_guide.pdf"
   },
 
-  // ── 가축동향조사 ─────────────────────────────
-  {
-    id: "gachuk_2026_guide",
-    title: "2026년 가축동향조사 지침서",
-    subtitle: "지침서",
-    category: "가축동향조사",
-    year: "2026",
-    file: TENAR_PDF_WORKER_URL + "/gachuk/2026/2026_livestock_trend_guide.pdf",
-    tags: ["가축동향조사", "가축", "축산", "지침서", "돼지", "닭", "오리", "소", "2026"],
-    note: "R2: gachuk/2026/2026_livestock_trend_guide.pdf"
-  },
-  {
-    id: "gachuk_2026_form",
-    title: "2026년 가축동향조사 조사표",
-    subtitle: "조사표",
-    category: "가축동향조사",
-    year: "2026",
-    file: TENAR_PDF_WORKER_URL + "/gachuk/2026/2026_livestock_trend_form.pdf",
-    tags: ["가축동향조사", "가축", "축산", "조사표", "돼지", "닭", "오리", "서식", "2026"],
-    note: "R2: gachuk/2026/2026_livestock_trend_form.pdf"
-  },
-  {
-    id: "gachuk_2023_guide",
-    title: "2023년 가축동향조사 지침서",
-    subtitle: "지침서",
-    category: "가축동향조사",
-    year: "2023",
-    file: TENAR_PDF_WORKER_URL + "/gachuk/2023/2023_livestock_trend_guide.pdf",
-    tags: ["가축동향조사", "가축", "축산", "지침서", "돼지", "닭", "오리", "소", "2023"],
-    note: "R2: gachuk/2023/2023_livestock_trend_guide.pdf"
-  },
-
   // ── 산지쌀값조사 ───────────────────────────────
   {
     id: "ssalgab_2019_guide",
@@ -137,5 +104,37 @@ window.TENAR_PDF_LIBRARY = [
     file: TENAR_PDF_WORKER_URL + "/nongpan/2020/2020_farm_price_guide.pdf",
     tags: ["농가판매및구입가격조사", "농가판매", "구입가격", "판매가격", "농가", "가격", "지침서", "2020"],
     note: "R2: nongpan/2020/2020_farm_price_guide.pdf"
+  },
+
+  // ── 가축동향조사 ───────────────────────────────
+  {
+    id: "gachuk_2026_form",
+    title: "2026년 가축동향조사표 (3종)",
+    subtitle: "조사표",
+    category: "가축동향조사",
+    year: "2026",
+    file: TENAR_PDF_WORKER_URL + "/gachuk/2026/2026_livestock_trend_form.pdf",
+    tags: ["가축동향조사", "가축동향", "가축", "조사표", "3종", "축산", "2026"],
+    note: "R2: gachuk/2026/2026_livestock_trend_form.pdf"
+  },
+  {
+    id: "gachuk_2026_guide",
+    title: "2026년 가축동향조사 지침서",
+    subtitle: "지침서",
+    category: "가축동향조사",
+    year: "2026",
+    file: TENAR_PDF_WORKER_URL + "/gachuk/2026/2026_livestock_trend_guide.pdf",
+    tags: ["가축동향조사", "가축동향", "가축", "지침서", "축산", "사육", "2026"],
+    note: "R2: gachuk/2026/2026_livestock_trend_guide.pdf"
+  },
+  {
+    id: "gachuk_2023_guide",
+    title: "2023년 가축동향조사 지침서",
+    subtitle: "지침서",
+    category: "가축동향조사",
+    year: "2023",
+    file: TENAR_PDF_WORKER_URL + "/gachuk/2023/2023_livestock_trend_guide.pdf",
+    tags: ["가축동향조사", "가축동향", "가축", "지침서", "축산", "사육", "2023"],
+    note: "R2: gachuk/2023/2023_livestock_trend_guide.pdf"
   }
 ];
