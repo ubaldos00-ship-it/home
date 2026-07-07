@@ -1,4 +1,4 @@
-<!-- home_v55_led.html · 저장: 2026-07-07 07:02 KST · 헤더 아래 LED 전광판(우→좌·링크5개·닫기X) 추가 -->
+<!-- home_v62_pdfcenter.html · 저장: 2026-07-04 10:49 KST · PDF CENTER 개편(도움말 섹션 제거, 하단 네비 사다리→PDF) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -59,6 +59,8 @@
     box-sizing: border-box;
     -webkit-tap-highlight-color: transparent;
   }
+  html { touch-action: manipulation; }
+  a, button, input, textarea { touch-action: manipulation; }
 
   html {
     background-color: #27500A;
@@ -975,30 +977,10 @@
     header.app-header .clock { font-size: 11.5px; padding: 4px 8px; }
     .menu-item .menu-label { font-size: 13.5px; }
   }
-  /* ===== LED 전광판 (헤더 아래 팝업 · 우→좌 흐름) ===== */
-  #ledBoard{
-    position:fixed; top:calc(var(--header-h) + env(safe-area-inset-top)); left:0; right:0;
-    z-index:95; height:36px; display:flex; align-items:stretch; overflow:hidden;
-    background:linear-gradient(180deg,#0d0d0d,#1d1d1d);
-    border-top:1px solid #333; border-bottom:2px solid var(--color-accent);
-    box-shadow:0 5px 14px rgba(0,0,0,.32);
-  }
-  #ledBoard.led-hidden{ display:none; }
-  .led-tag{ flex-shrink:0; display:flex; align-items:center; gap:3px; padding:0 9px;
-    background:var(--color-accent); color:#241800; font-size:11px; font-weight:900; letter-spacing:.02em; }
-  .led-vp{ flex:1; overflow:hidden; position:relative; }
-  .led-track{ position:absolute; left:0; top:0; height:100%; display:flex; align-items:center;
-    white-space:nowrap; animation:ledScroll 34s linear infinite; will-change:transform; }
-  .led-track a{ display:inline-flex; align-items:center; height:100%; padding:0 30px;
-    color:#ffd24a; font-size:13.5px; font-weight:800; text-decoration:none; letter-spacing:.2px;
-    text-shadow:0 0 7px rgba(255,190,60,.6); font-family:inherit; }
-  .led-track a:active{ color:#fff; }
-  .led-track .sep{ color:#7a5a12; }
-  @keyframes ledScroll{ from{ transform:translateX(0);} to{ transform:translateX(-50%);} }
-  #ledClose{ flex-shrink:0; width:32px; border:none; background:rgba(255,255,255,.08);
-    color:#fff; font-size:15px; font-weight:700; cursor:pointer; border-left:1px solid #333; font-family:inherit; }
-  #ledClose:active{ background:rgba(255,255,255,.2); }
 </style>
+
+<link rel="prefetch" href="pdf/pdf_config.js" />
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
 </head>
 <body>
 
@@ -1015,26 +997,6 @@
     <div class="clock" id="clock">--.--.(--) --:--:--</div>
   </div>
 </header>
-
-<!-- ============ LED 전광판 (헤더 아래 팝업) ============ -->
-<div id="ledBoard">
-  <span class="led-tag">📢 LED</span>
-  <div class="led-vp">
-    <div class="led-track" id="ledTrack">
-      <a href="https://ubaldos00-ship-it.github.io/home/chungchi.html">📣 맥류(겉보리·쌀보리·밀)은 「청취조사 빠른실행」에서 계산해 보세요</a><span class="sep">◆</span>
-      <a href="https://ubaldos00-ship-it.github.io/home/graph.html">📊 10a당 생산량이 궁금하면 「작물별 10a당 생산량 조회」를 이용하세요</a><span class="sep">◆</span>
-      <a href="https://ubaldos00-ship-it.github.io/home/game_center.html">⚾ NEW! 「작물 홈런왕」이 추가되었습니다</a><span class="sep">◆</span>
-      <a href="https://ubaldos00-ship-it.github.io/home/map.html">🗺 지도와 실측·청취 조사표를 연동해 보세요</a><span class="sep">◆</span>
-      <a href="javascript:void(0)" onclick="var f=document.getElementById('chatFab'); if(f) f.click();">💬 궁금한 점은 「말풍선(채팅)」에서 물어보세요</a><span class="sep">◆</span>
-      <a href="https://ubaldos00-ship-it.github.io/home/chungchi.html">📣 맥류(겉보리·쌀보리·밀)은 「청취조사 빠른실행」에서 계산해 보세요</a><span class="sep">◆</span>
-      <a href="https://ubaldos00-ship-it.github.io/home/graph.html">📊 10a당 생산량이 궁금하면 「작물별 10a당 생산량 조회」를 이용하세요</a><span class="sep">◆</span>
-      <a href="https://ubaldos00-ship-it.github.io/home/game_center.html">⚾ NEW! 「작물 홈런왕」이 추가되었습니다</a><span class="sep">◆</span>
-      <a href="https://ubaldos00-ship-it.github.io/home/map.html">🗺 지도와 실측·청취 조사표를 연동해 보세요</a><span class="sep">◆</span>
-      <a href="javascript:void(0)" onclick="var f=document.getElementById('chatFab'); if(f) f.click();">💬 궁금한 점은 「말풍선(채팅)」에서 물어보세요</a><span class="sep">◆</span>
-    </div>
-  </div>
-  <button id="ledClose" type="button" aria-label="전광판 닫기">✕</button>
-</div>
 
 <!-- ============ 본문 ============ -->
 <main>
@@ -1245,43 +1207,7 @@
     </div>
   </section>
 
-  <!-- ③ 도움말 (접기/펼치기, 기본: 접힘) -->
-  <section class="section help-section">
-    <h2 class="section-title"
-        style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;margin-bottom:0;"
-        onclick="toggleHelp()">
-      <span style="display:flex;align-items:center;gap:10px;">
-        <span class="icon">📚</span>
-        도움이 필요하신가요?
-      </span>
-      <span id="helpToggleBtn"
-            style="font-size:13px;font-weight:600;color:#27500A;background:#eaf3e6;border-radius:8px;padding:4px 10px;user-select:none;flex-shrink:0;">
-        ▼ 펼치기
-      </span>
-    </h2>
-    <div class="menu-grid" id="helpMenuGrid" style="display:none;margin-top:13px;">
-      <a class="menu-item"
-         href="https://www.k-stat.go.kr/comb100/file-download?fileDnKey=dtMdbNk3l%2F14PXM6opKXpbmdSv3amqHth1tAmWy%2FU3I%3D"
-         target="_blank" rel="noopener">
-        <span class="menu-emoji">📖</span>
-        <span class="menu-text">
-          <span class="menu-label">농작물생산조사 지침서</span>
-          <span class="menu-desc">조사 지침 PDF 다운로드</span>
-        </span>
-        <span class="menu-arrow">›</span>
-      </a>
-      <a class="menu-item"
-         href="https://www.k-stat.go.kr/comb100/file-download?fileDnKey=dtMdbNk3l%2F14PXM6opKXpQbV1nKEHvfsDgvR1gN73pU%3D"
-         target="_blank" rel="noopener">
-        <span class="menu-emoji">📋</span>
-        <span class="menu-text">
-          <span class="menu-label">농작물생산조사 조사표</span>
-          <span class="menu-desc">조사표 PDF 다운로드</span>
-        </span>
-        <span class="menu-arrow">›</span>
-      </a>
-    </div>
-  </section>
+  <!-- ③ 도움말 섹션은 하단 네비 'PDF센터'로 이동(pdf/pdf_library.html) -->
 
   <!-- ④ 테스트 링크 (통합탭 iframe 버전) -->
   <section class="section" style="border-color:#d0b8f0;background:linear-gradient(135deg,#fdf8ff 0%,#f5eeff 100%);">
@@ -1353,7 +1279,7 @@
   <!-- 푸터 -->
   <footer class="info">
     <div class="source">출처 / 참고자료: 국가데이터처 통계설명자료, KOSIS 등</div>
-    <div class="brand-line">농작물생산조사 통합시스템 · 텐아르 v1.5-firebase</div>
+    <div class="brand-line">농작물생산조사 통합시스템 · 텐아르 v1.8-r2pdf</div>
     <div class="meta" style="display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px;">
       실시간 <strong id="realtimeCount">…</strong>명
       &nbsp;·&nbsp;
@@ -1374,16 +1300,16 @@
     <span class="nav-icon">🎮</span>
     <span>게임</span>
   </a>
-  <!-- 사다리타기 -->
-  <a class="nav-btn" href="https://ubaldos00-ship-it.github.io/home/ladder.html" target="_blank" rel="noopener">
+  <!-- PDF센터 (기존 사다리 자리 · 사다리는 게임센터로 이동) -->
+  <a class="nav-btn" href="pdf/pdf_library.html" rel="noopener">
+    <span class="nav-new">NEW</span>
     <span class="nav-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-      <line x1="7" y1="3" x2="7" y2="21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-      <line x1="17" y1="3" x2="17" y2="21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-      <line x1="7" y1="7" x2="17" y2="7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-      <line x1="7" y1="13" x2="17" y2="13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-      <line x1="7" y1="17.5" x2="17" y2="17.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M6 2.5h8l4 4V21a.5.5 0 0 1-.5.5h-11A.5.5 0 0 1 6 21V3a.5.5 0 0 1 .5-.5Z" fill="#e8f2e4" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+      <path d="M14 2.5V6a.5.5 0 0 0 .5.5H18" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+      <rect x="8.3" y="12.5" width="7.4" height="6.2" rx="1" fill="#c0392b"/>
+      <text x="12" y="17.1" font-size="3.6" fill="#fff" font-family="Arial, sans-serif" text-anchor="middle" font-weight="900">PDF</text>
     </svg></span>
-    <span>사다리</span>
+    <span>PDF센터</span>
   </a>
   <!-- 지도 -->
   <a class="nav-btn" href="https://ubaldos00-ship-it.github.io/home/map.html" target="_blank" rel="noopener">
@@ -2448,17 +2374,17 @@ if(window.wcs) {
   wcs_do();
 }
 </script>
+
 <script>
-  /* LED 전광판 닫기 (세션 동안 유지) */
-  (function(){
-    var board = document.getElementById('ledBoard'), btn = document.getElementById('ledClose');
-    if(!board) return;
-    try{ if(sessionStorage.getItem('tenarLedClosed')==='1') board.classList.add('led-hidden'); }catch(e){}
-    if(btn) btn.addEventListener('click', function(){
-      board.classList.add('led-hidden');
-      try{ sessionStorage.setItem('tenarLedClosed','1'); }catch(e){}
-    });
-  })();
+  // v58: Mac/Safari 트랙패드·키보드로 홈 메뉴가 확대되는 현상 방지
+  document.addEventListener('wheel', function(e){
+    if (e.ctrlKey || e.metaKey) e.preventDefault();
+  }, { passive:false });
+  document.addEventListener('gesturestart', function(e){ e.preventDefault(); }, { passive:false });
+  document.addEventListener('gesturechange', function(e){ e.preventDefault(); }, { passive:false });
+  document.addEventListener('keydown', function(e){
+    if ((e.ctrlKey || e.metaKey) && ['+','=','-','0'].includes(e.key)) e.preventDefault();
+  }, { passive:false });
 </script>
 </body>
 </html>
