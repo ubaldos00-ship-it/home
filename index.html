@@ -1,4 +1,4 @@
-<!-- home_v62_pdfcenter.html · 저장: 2026-07-04 10:49 KST · PDF CENTER 개편(도움말 섹션 제거, 하단 네비 사다리→PDF) -->
+<!-- home_v63_led.html · 저장: 2026-07-07 21:26 KST · (v62 PDF센터 기반) 헤더 아래 LED 전광판 추가·태그 📢만(LED 글자 제거) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -977,6 +977,29 @@
     header.app-header .clock { font-size: 11.5px; padding: 4px 8px; }
     .menu-item .menu-label { font-size: 13.5px; }
   }
+  /* ===== LED 전광판 (헤더 아래 팝업 · 우→좌 흐름) ===== */
+  #ledBoard{
+    position:fixed; top:calc(var(--header-h) + env(safe-area-inset-top)); left:0; right:0;
+    z-index:95; height:36px; display:flex; align-items:stretch; overflow:hidden;
+    background:linear-gradient(180deg,#0d0d0d,#1d1d1d);
+    border-top:1px solid #333; border-bottom:2px solid var(--color-accent);
+    box-shadow:0 5px 14px rgba(0,0,0,.32);
+  }
+  #ledBoard.led-hidden{ display:none; }
+  .led-tag{ flex-shrink:0; display:flex; align-items:center; justify-content:center; padding:0 10px;
+    background:var(--color-accent); color:#241800; font-size:16px; }
+  .led-vp{ flex:1; overflow:hidden; position:relative; }
+  .led-track{ position:absolute; left:0; top:0; height:100%; display:flex; align-items:center;
+    white-space:nowrap; animation:ledScroll 34s linear infinite; will-change:transform; }
+  .led-track a{ display:inline-flex; align-items:center; height:100%; padding:0 30px;
+    color:#ffd24a; font-size:13.5px; font-weight:800; text-decoration:none; letter-spacing:.2px;
+    text-shadow:0 0 7px rgba(255,190,60,.6); font-family:inherit; }
+  .led-track a:active{ color:#fff; }
+  .led-track .sep{ color:#7a5a12; }
+  @keyframes ledScroll{ from{ transform:translateX(0);} to{ transform:translateX(-50%);} }
+  #ledClose{ flex-shrink:0; width:32px; border:none; background:rgba(255,255,255,.08);
+    color:#fff; font-size:15px; font-weight:700; cursor:pointer; border-left:1px solid #333; font-family:inherit; }
+  #ledClose:active{ background:rgba(255,255,255,.2); }
 </style>
 
 <link rel="prefetch" href="pdf/pdf_config.js" />
@@ -997,6 +1020,26 @@
     <div class="clock" id="clock">--.--.(--) --:--:--</div>
   </div>
 </header>
+
+<!-- ============ LED 전광판 (헤더 아래 팝업) ============ -->
+<div id="ledBoard">
+  <span class="led-tag">📢</span>
+  <div class="led-vp">
+    <div class="led-track" id="ledTrack">
+      <a href="https://ubaldos00-ship-it.github.io/home/chungchi.html">📣 맥류(겉보리·쌀보리·밀)은 「청취조사 빠른실행」에서 계산해 보세요</a><span class="sep">◆</span>
+      <a href="https://ubaldos00-ship-it.github.io/home/graph.html">📊 10a당 생산량이 궁금하면 「작물별 10a당 생산량 조회」를 이용하세요</a><span class="sep">◆</span>
+      <a href="https://ubaldos00-ship-it.github.io/home/game_center.html">⚾ NEW! 「작물 홈런왕」이 추가되었습니다</a><span class="sep">◆</span>
+      <a href="https://ubaldos00-ship-it.github.io/home/map.html">🗺 지도와 실측·청취 조사표를 연동해 보세요</a><span class="sep">◆</span>
+      <a href="javascript:void(0)" onclick="var f=document.getElementById('chatFab'); if(f) f.click();">💬 궁금한 점은 「말풍선(채팅)」에서 물어보세요</a><span class="sep">◆</span>
+      <a href="https://ubaldos00-ship-it.github.io/home/chungchi.html">📣 맥류(겉보리·쌀보리·밀)은 「청취조사 빠른실행」에서 계산해 보세요</a><span class="sep">◆</span>
+      <a href="https://ubaldos00-ship-it.github.io/home/graph.html">📊 10a당 생산량이 궁금하면 「작물별 10a당 생산량 조회」를 이용하세요</a><span class="sep">◆</span>
+      <a href="https://ubaldos00-ship-it.github.io/home/game_center.html">⚾ NEW! 「작물 홈런왕」이 추가되었습니다</a><span class="sep">◆</span>
+      <a href="https://ubaldos00-ship-it.github.io/home/map.html">🗺 지도와 실측·청취 조사표를 연동해 보세요</a><span class="sep">◆</span>
+      <a href="javascript:void(0)" onclick="var f=document.getElementById('chatFab'); if(f) f.click();">💬 궁금한 점은 「말풍선(채팅)」에서 물어보세요</a><span class="sep">◆</span>
+    </div>
+  </div>
+  <button id="ledClose" type="button" aria-label="전광판 닫기">✕</button>
+</div>
 
 <!-- ============ 본문 ============ -->
 <main>
@@ -2385,6 +2428,16 @@ if(window.wcs) {
   document.addEventListener('keydown', function(e){
     if ((e.ctrlKey || e.metaKey) && ['+','=','-','0'].includes(e.key)) e.preventDefault();
   }, { passive:false });
+  /* LED 전광판 닫기 (세션 동안 유지) */
+  (function(){
+    var board = document.getElementById('ledBoard'), btn = document.getElementById('ledClose');
+    if(!board) return;
+    try{ if(sessionStorage.getItem('tenarLedClosed')==='1') board.classList.add('led-hidden'); }catch(e){}
+    if(btn) btn.addEventListener('click', function(){
+      board.classList.add('led-hidden');
+      try{ sessionStorage.setItem('tenarLedClosed','1'); }catch(e){}
+    });
+  })();
 </script>
 </body>
 </html>
