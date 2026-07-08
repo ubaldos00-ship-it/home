@@ -142,11 +142,11 @@
          설치 직후 프로브로 검증하고, 실패 시 네이티브로 완전 복구하여 앱을 평문으로 100% 정상 동작시킴. */
       var _installOk=false;
       try{
-        SP.getItem=function(k){ if(this===LS && isManaged(k)) return (k in _plain)? _plain[k] : null; return _origGet.call(this,k); };
-        SP.setItem=function(k,v){ if(this===LS && isManaged(k)){ _plain[k]=String(v); scheduleFlush(k); return; } return _origSet.call(this,k,v); };
-        SP.removeItem=function(k){ if(this===LS && isManaged(k)){ delete _plain[k]; try{ _origRemove.call(this,k); }catch(e){} return; } return _origRemove.call(this,k); };
+        SP.getItem=function(k){ if(this===window.localStorage && isManaged(k)) return (k in _plain)? _plain[k] : null; return _origGet.call(this,k); };
+        SP.setItem=function(k,v){ if(this===window.localStorage && isManaged(k)){ _plain[k]=String(v); scheduleFlush(k); return; } return _origSet.call(this,k,v); };
+        SP.removeItem=function(k){ if(this===window.localStorage && isManaged(k)){ delete _plain[k]; try{ _origRemove.call(this,k); }catch(e){} return; } return _origRemove.call(this,k); };
         var _pk='__tenar_probe__'; exact[_pk]=true;
-        LS.setItem(_pk,'PROBE'); _installOk=(LS.getItem(_pk)==='PROBE'); LS.removeItem(_pk); delete exact[_pk];
+        window.localStorage.setItem(_pk,'PROBE'); _installOk=(window.localStorage.getItem(_pk)==='PROBE'); window.localStorage.removeItem(_pk); delete exact[_pk];
       }catch(e){ _installOk=false; }
       if(!_installOk){
         try{ SP.getItem=_origGet; SP.setItem=_origSet; SP.removeItem=_origRemove; }catch(_e){}
