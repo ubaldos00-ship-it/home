@@ -91,7 +91,13 @@
     init:function(appName, exactKeys, prefixes){
       if(!CRYPTO_OK){ return; }
       var LS=window.localStorage;
-      var _get=LS.getItem.bind(LS), _set=LS.setItem.bind(LS), _remove=LS.removeItem.bind(LS);
+      /* WebKit(iOS 사파리)는 인스턴스 메서드 오버라이드(localStorage.getItem=fn)를 저장쓰기로 처리해
+         제대로 동작하지 않음 → Storage.prototype 메서드를 교체하고 this===localStorage 가드로 분기(모든 브라우저 안전) */
+      var SP=Object.getPrototypeOf(LS)||window.Storage.prototype;
+      var _origGet=SP.getItem, _origSet=SP.setItem, _origRemove=SP.removeItem;
+      var _get=function(k){ return _origGet.call(LS,k); };
+      var _set=function(k,v){ return _origSet.call(LS,k,v); };
+      var _remove=function(k){ return _origRemove.call(LS,k); };
       var exact={}; (exactKeys||[]).forEach(function(k){ exact[k]=true; });
       var pfx=prefixes||[];
       function isManaged(k){
@@ -121,7 +127,13 @@
         for(var i=0;i<keys.length;i++){
           var k=keys[i];
           if(!(k in _plain)) continue;
-          try{ var secure=await encryptForDeviceCache(_plain[k], appName); _set(k, JSON.stringify(secure)); }catch(e){}
+          try{
+            var secure=await encryptForDeviceCache(_plain[k], appName);
+            _set(k, JSON.stringify(secure));
+          }catch(e){
+            /* 암호화 실패(구형/특수 브라우저)해도 데이터는 반드시 보존 — 평문으로라도 저장(유실 방지) */
+            try{ _set(k, _plain[k]); }catch(_e){}
+          }
         }
       }
 
@@ -130,16 +142,14 @@
          설치 직후 프로브로 검증하고, 실패 시 네이티브로 완전 복구하여 앱을 평문으로 100% 정상 동작시킴. */
       var _installOk=false;
       try{
-        LS.getItem=function(k){ if(isManaged(k)) return (k in _plain)? _plain[k] : null; return _get(k); };
-        LS.setItem=function(k,v){ if(isManaged(k)){ _plain[k]=String(v); scheduleFlush(k); return; } return _set(k,v); };
-        LS.removeItem=function(k){ if(isManaged(k)){ delete _plain[k]; try{ _remove(k); }catch(e){} return; } return _remove(k); };
+        SP.getItem=function(k){ if(this===LS && isManaged(k)) return (k in _plain)? _plain[k] : null; return _origGet.call(this,k); };
+        SP.setItem=function(k,v){ if(this===LS && isManaged(k)){ _plain[k]=String(v); scheduleFlush(k); return; } return _origSet.call(this,k,v); };
+        SP.removeItem=function(k){ if(this===LS && isManaged(k)){ delete _plain[k]; try{ _origRemove.call(this,k); }catch(e){} return; } return _origRemove.call(this,k); };
         var _pk='__tenar_probe__'; exact[_pk]=true;
         LS.setItem(_pk,'PROBE'); _installOk=(LS.getItem(_pk)==='PROBE'); LS.removeItem(_pk); delete exact[_pk];
       }catch(e){ _installOk=false; }
       if(!_installOk){
-        try{ delete LS.getItem; }catch(_e){}
-        try{ delete LS.setItem; }catch(_e){}
-        try{ delete LS.removeItem; }catch(_e){}
+        try{ SP.getItem=_origGet; SP.setItem=_origSet; SP.removeItem=_origRemove; }catch(_e){}
         window.__tenarSecureReady=true;
         return;   /* 보안 저장 비활성 — 앱은 기존 평문 방식으로 정상 동작 */
       }
