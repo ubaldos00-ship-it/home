@@ -125,9 +125,24 @@
         }
       }
 
-      LS.getItem=function(k){ if(isManaged(k)) return (k in _plain)? _plain[k] : null; return _get(k); };
-      LS.setItem=function(k,v){ if(isManaged(k)){ _plain[k]=String(v); scheduleFlush(k); return; } return _set(k,v); };
-      LS.removeItem=function(k){ if(isManaged(k)){ delete _plain[k]; try{ _remove(k); }catch(e){} return; } return _remove(k); };
+      /* 오버라이드 설치 + 자기검증: 일부 브라우저(iOS Safari·인앱 웹뷰 등)는 localStorage
+         메서드 오버라이드를 막거나 일부만 적용해 읽기/쓰기가 어긋날 수 있음 → 저장이 안 되는 것처럼 보임.
+         설치 직후 프로브로 검증하고, 실패 시 네이티브로 완전 복구하여 앱을 평문으로 100% 정상 동작시킴. */
+      var _installOk=false;
+      try{
+        LS.getItem=function(k){ if(isManaged(k)) return (k in _plain)? _plain[k] : null; return _get(k); };
+        LS.setItem=function(k,v){ if(isManaged(k)){ _plain[k]=String(v); scheduleFlush(k); return; } return _set(k,v); };
+        LS.removeItem=function(k){ if(isManaged(k)){ delete _plain[k]; try{ _remove(k); }catch(e){} return; } return _remove(k); };
+        var _pk='__tenar_probe__'; exact[_pk]=true;
+        LS.setItem(_pk,'PROBE'); _installOk=(LS.getItem(_pk)==='PROBE'); LS.removeItem(_pk); delete exact[_pk];
+      }catch(e){ _installOk=false; }
+      if(!_installOk){
+        try{ delete LS.getItem; }catch(_e){}
+        try{ delete LS.setItem; }catch(_e){}
+        try{ delete LS.removeItem; }catch(_e){}
+        window.__tenarSecureReady=true;
+        return;   /* 보안 저장 비활성 — 앱은 기존 평문 방식으로 정상 동작 */
+      }
 
       getDeviceKey().then(function(){
         return Promise.all(_pendingDecrypt.map(function(k){
@@ -154,11 +169,35 @@
     var head=(mode==='import')
       ? 'JSON 파일 가져오기\n\n저장할 때 사용한 암호를 입력하세요.\n기본 암호는 2026입니다.'
       : 'JSON 파일 내보내기\n\n이 파일은 외부로 공유될 수 있어 암호가 필요합니다.\n기본 암호는 2026입니다. 원하시면 다른 암호로 변경할 수 있습니다.\n암호를 잊으면 파일을 복구할 수 없습니다.';
-    var pw=window.prompt(head,'2026');
-    if(pw===null) return null;
+    var pw;
+    try{ pw=window.prompt(head,'2026'); }
+    catch(e){ pw='2026'; }   /* 일부 인앱 브라우저(카카오톡 등)는 prompt 미지원 → 기본 암호 사용 */
+    if(pw===null) return null;              /* 사용자 취소 */
+    if(pw===undefined) pw='2026';
     pw=String(pw); if(pw.trim()==='') pw='2026';
     return pw;
   };
+
+  window._tenarBuildExport=function(dataObj, appName){
+    if(window.TenarCrypto && TenarCrypto.ok){
+      var pw=window._tenarAskPassword('export');
+      if(pw===null) return Promise.resolve(null);
+      return TenarCrypto.encryptForPasswordFile(dataObj, pw, appName)
+        .then(function(secure){ return {text:JSON.stringify(secure,null,2), encrypted:true}; });
+    }
+    return Promise.resolve({text:JSON.stringify(dataObj,null,2), encrypted:false});
+  };
+  window._tenarParseImport=function(obj, appName){
+    if(window.TenarCrypto && TenarCrypto.isSecureObject(obj) && obj.secureType==='password-file'){
+      if(obj.app && obj.app!==appName) return Promise.reject({code:'APP_MISMATCH', app:obj.app});
+      if(!(window.TenarCrypto && TenarCrypto.ok)) return Promise.reject({code:'NO_CRYPTO'});
+      var pw=window._tenarAskPassword('import');
+      if(pw===null) return Promise.reject({code:'CANCELLED'});
+      return TenarCrypto.decryptFromPasswordFile(obj, pw).catch(function(){ return Promise.reject({code:'BAD_PW'}); });
+    }
+    return Promise.resolve(obj);
+  };
+  window._tenarAppKo=function(app){ return app==='tonghab'?'통합계산기':(app==='chungchi'?'청취계산기':(app==='map'?'지도':app)); };
 })();
 TenarSecureStore.init('map',
   ['tenar_map_favs_v1','tenar_map_bulk','tenar_pending_survey_coord','tenar_meas_ctx','tenar_meas_result','tenar_measure_saves_v1'],
@@ -2240,23 +2279,21 @@ function _initMeasSwipe(){
 }
 function _mapNowStamp(){ var d=new Date(Date.now()+9*3600000); var p=function(n){return String(n).padStart(2,'0');}; return d.getUTCFullYear()+p(d.getUTCMonth()+1)+p(d.getUTCDate())+'_'+p(d.getUTCHours())+p(d.getUTCMinutes()); }
 window.shareMeas = function(){
-  if(!(window.TenarCrypto && TenarCrypto.ok)){ toast('이 환경에서는 암호화를 사용할 수 없습니다'); return; }
-  var pw=window._tenarAskPassword('export'); if(pw===null) return;
-  TenarCrypto.encryptForPasswordFile(getMeas(), pw, 'map').then(function(secure){
-    var data=JSON.stringify(secure);
-    if(navigator.share){ navigator.share({title:'측정 저장(암호화)', text:data}).catch(function(){}); }
+  window._tenarBuildExport(getMeas(),'map').then(function(rr){
+    if(!rr) return;   /* 사용자 취소 */
+    var data=rr.text;
+    if(navigator.share){ navigator.share({title:'측정 저장'+(rr.encrypted?'(암호화)':''), text:data}).catch(function(){}); }
     else { try{ navigator.clipboard.writeText(data); toast('클립보드에 복사됨'); }catch(e){ toast('공유 미지원'); } }
-  }).catch(function(){ toast('암호화 오류'); });
+  }).catch(function(){ toast('내보내기 오류'); });
 };
 window.exportMeas = function(){
-  if(!(window.TenarCrypto && TenarCrypto.ok)){ toast('이 환경에서는 암호화를 사용할 수 없습니다'); return; }
-  var pw=window._tenarAskPassword('export'); if(pw===null) return;
-  TenarCrypto.encryptForPasswordFile(getMeas(), pw, 'map').then(function(secure){
-    var blob=new Blob([JSON.stringify(secure,null,2)],{type:'application/json'});
-    var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='tenar_map_meas_secure_'+_mapNowStamp()+'.json'; a.click();
+  window._tenarBuildExport(getMeas(),'map').then(function(rr){
+    if(!rr) return;   /* 사용자 취소 */
+    var blob=new Blob([rr.text],{type:'application/json'});
+    var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='tenar_map_meas_'+(rr.encrypted?'secure_':'')+_mapNowStamp()+'.json'; a.click();
     setTimeout(function(){ URL.revokeObjectURL(a.href); },1000);
-    toast('🔒 암호화 저장 완료');
-  }).catch(function(){ toast('암호화 오류'); });
+    toast(rr.encrypted?'🔒 암호화 저장 완료':'⚠ 평문 저장(암호화 미지원 환경)');
+  }).catch(function(){ toast('내보내기 오류'); });
 };
 window.importMeas = function(ev){
   var f=ev.target.files&&ev.target.files[0]; if(!f) return;
@@ -2265,14 +2302,13 @@ window.importMeas = function(ev){
     var obj;
     try{ obj=JSON.parse(r.result); }catch(e){ toast('파일 형식 오류'); ev.target.value=''; return; }
     function _applyMeas(arr){ if(Array.isArray(arr)){ setMeas(arr); renderMeasList(); toast('📥 불러왔습니다'); } else { toast('파일 형식 오류'); } }
-    if(window.TenarCrypto && TenarCrypto.isSecureObject(obj) && obj.secureType==='password-file'){
-      if(obj.app && obj.app!=='map'){ toast('이 파일은 지도 저장파일이 아닙니다'); ev.target.value=''; return; }
-      var pw=window._tenarAskPassword('import'); if(pw===null){ ev.target.value=''; return; }
-      TenarCrypto.decryptFromPasswordFile(obj, pw).then(function(arr){ _applyMeas(arr); })
-        .catch(function(){ toast('암호가 맞지 않거나 파일이 손상되었습니다'); });
-      ev.target.value=''; return;
-    }
-    _applyMeas(obj);   // 구 평문 배열 호환
+    window._tenarParseImport(obj,'map').then(function(arr){ _applyMeas(arr); })
+      .catch(function(er){
+        if(!er||!er.code||er.code==='CANCELLED'){}
+        else if(er.code==='APP_MISMATCH') toast('이 파일은 지도 저장파일이 아닙니다');
+        else if(er.code==='NO_CRYPTO') toast('이 환경에서는 복호화를 사용할 수 없습니다');
+        else if(er.code==='BAD_PW') toast('암호가 맞지 않거나 파일이 손상되었습니다');
+      });
     ev.target.value='';
   };
   r.readAsText(f);
@@ -3468,21 +3504,20 @@ window.clearAllFavs = function(){
 window.exportFavs = function(){
   var favs = getFavs();
   if(!favs.length){ toast('저장된 즐겨찾기가 없습니다'); return; }
-  if(!(window.TenarCrypto && TenarCrypto.ok)){ toast('이 환경에서는 암호화를 사용할 수 없습니다'); return; }
   var payload = { app:'tenar-map', type:'favorites', version:1, exportedAt:new Date().toISOString(), favorites:favs };
-  var pw=window._tenarAskPassword('export'); if(pw===null) return;
-  TenarCrypto.encryptForPasswordFile(payload, pw, 'map').then(function(secure){
-    var data = JSON.stringify(secure, null, 2);
+  window._tenarBuildExport(payload,'map').then(function(rr){
+    if(!rr) return;   /* 사용자 취소 */
+    var data = rr.text;
     var blob = new Blob([data], { type:'application/json' });
     var url  = URL.createObjectURL(blob);
     var d = new Date(), pad = function(n){ return String(n).padStart(2,'0'); };
     var a = document.createElement('a');
     a.href = url;
-    a.download = 'tenar_map_secure_' + d.getFullYear() + pad(d.getMonth()+1) + pad(d.getDate()) + '_' + pad(d.getHours()) + pad(d.getMinutes()) + '.json';
+    a.download = 'tenar_map_'+(rr.encrypted?'secure_':'') + d.getFullYear() + pad(d.getMonth()+1) + pad(d.getDate()) + '_' + pad(d.getHours()) + pad(d.getMinutes()) + '.json';
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
-    toast('🔒 즐겨찾기를 암호화 저장했습니다');
-  }).catch(function(){ toast('암호화 오류'); });
+    toast(rr.encrypted?'🔒 즐겨찾기를 암호화 저장했습니다':'⚠ 평문 저장(암호화 미지원 환경)');
+  }).catch(function(){ toast('내보내기 오류'); });
 };
 
 /* ── 즐겨찾기 파일 불러오기 — 암호화 파일은 비밀번호 복호화 (구 평문 파일 호환) ── */
@@ -3506,14 +3541,13 @@ window.importFavs = function(ev){
       renderFavs();
       toast('📂 ' + valid.length + '개 불러오기 완료');
     }
-    if(window.TenarCrypto && TenarCrypto.isSecureObject(obj) && obj.secureType==='password-file'){
-      if(obj.app && obj.app!=='map'){ toast('이 파일은 지도 저장파일이 아닙니다'); ev.target.value=''; return; }
-      var pw=window._tenarAskPassword('import'); if(pw===null){ ev.target.value=''; return; }
-      TenarCrypto.decryptFromPasswordFile(obj, pw).then(function(parsed){ _applyFavs(parsed); })
-        .catch(function(){ toast('암호가 맞지 않거나 파일이 손상되었습니다'); });
-      ev.target.value=''; return;
-    }
-    _applyFavs(obj);   // 구 평문 파일 호환
+    window._tenarParseImport(obj,'map').then(function(parsed){ _applyFavs(parsed); })
+      .catch(function(er){
+        if(!er||!er.code||er.code==='CANCELLED'){}
+        else if(er.code==='APP_MISMATCH') toast('이 파일은 지도 저장파일이 아닙니다');
+        else if(er.code==='NO_CRYPTO') toast('이 환경에서는 복호화를 사용할 수 없습니다');
+        else if(er.code==='BAD_PW') toast('암호가 맞지 않거나 파일이 손상되었습니다');
+      });
     ev.target.value = '';
   };
   reader.readAsText(file);
@@ -3523,27 +3557,26 @@ window.importFavs = function(ev){
 window.shareFavs = function(){
   var favs = getFavs();
   if(!favs.length){ toast('공유할 즐겨찾기가 없습니다'); return; }
-  if(!(window.TenarCrypto && TenarCrypto.ok)){ toast('이 환경에서는 암호화를 사용할 수 없습니다'); return; }
   var payload = { app:'tenar-map', type:'favorites', version:1, favorites:favs };
-  var pw=window._tenarAskPassword('export'); if(pw===null) return;
-  TenarCrypto.encryptForPasswordFile(payload, pw, 'map').then(function(secure){
-    var data = JSON.stringify(secure, null, 2);
-    var fname = 'tenar_map_secure.json';
+  window._tenarBuildExport(payload,'map').then(function(rr){
+    if(!rr) return;   /* 사용자 취소 */
+    var data = rr.text;
+    var fname = 'tenar_map_'+(rr.encrypted?'secure':'plain')+'.json';
     try{
       if(navigator.canShare){
         var f = new File([data], fname, { type:'application/json' });
         if(navigator.canShare({ files:[f] })){
-          navigator.share({ files:[f], title:'텐아르 즐겨찾기(암호화)' }).catch(function(){});
+          navigator.share({ files:[f], title:'텐아르 즐겨찾기'+(rr.encrypted?'(암호화)':'') }).catch(function(){});
           return;
         }
       }
     }catch(e){}
     try{
-      if(navigator.share){ navigator.share({ title:'텐아르 즐겨찾기(암호화)', text:data }).catch(function(){}); return; }
+      if(navigator.share){ navigator.share({ title:'텐아르 즐겨찾기'+(rr.encrypted?'(암호화)':''), text:data }).catch(function(){}); return; }
     }catch(e){}
     copyText(data);
-    toast('🔗 암호화된 즐겨찾기 데이터를 클립보드에 복사했습니다');
-  }).catch(function(){ toast('암호화 오류'); });
+    toast('🔗 즐겨찾기 데이터를 클립보드에 복사했습니다');
+  }).catch(function(){ toast('내보내기 오류'); });
 };
 function escapeHtml(s){
   return String(s).replace(/[&<>'"]/g, function(ch){
