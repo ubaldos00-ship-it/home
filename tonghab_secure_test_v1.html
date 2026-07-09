@@ -91,8 +91,9 @@
     init:function(appName, exactKeys, prefixes){
       if(!CRYPTO_OK){ return; }   /* 비보안 컨텍스트 등 → 기존 평문 동작 유지 */
       var LS=window.localStorage;
-      /* WebKit(iOS 사파리)는 인스턴스 메서드 오버라이드(localStorage.getItem=fn)를 저장쓰기로 처리해
-         제대로 동작하지 않음 → Storage.prototype 메서드를 교체하고 this===localStorage 가드로 분기(모든 브라우저 안전) */
+      /* window.localStorage 인스턴스가 접근 시점마다 달라지는 브라우저(iOS 사파리 등)가 있어,
+         인스턴스 오버라이드는 앱의 실제 호출을 놓칠 수 있음 → Storage.prototype 을 교체(모든 인스턴스 공유).
+         관리 대상 키는 sessionStorage 키와 겹치지 않으므로 isManaged(k)만으로 안전하게 분기. */
       var SP=Object.getPrototypeOf(LS)||window.Storage.prototype;
       var _origGet=SP.getItem, _origSet=SP.setItem, _origRemove=SP.removeItem;
       var _get=function(k){ return _origGet.call(LS,k); };
@@ -142,14 +143,20 @@
          설치 직후 프로브로 검증하고, 실패 시 네이티브로 완전 복구하여 앱을 평문으로 100% 정상 동작시킴. */
       var _installOk=false;
       try{
-        SP.getItem=function(k){ if(this===window.localStorage && isManaged(k)) return (k in _plain)? _plain[k] : null; return _origGet.call(this,k); };
-        SP.setItem=function(k,v){ if(this===window.localStorage && isManaged(k)){ _plain[k]=String(v); scheduleFlush(k); return; } return _origSet.call(this,k,v); };
-        SP.removeItem=function(k){ if(this===window.localStorage && isManaged(k)){ delete _plain[k]; try{ _origRemove.call(this,k); }catch(e){} return; } return _origRemove.call(this,k); };
+        SP.getItem=function(k){ if(isManaged(k)) return (k in _plain)? _plain[k] : null; return _origGet.call(this,k); };
+        SP.setItem=function(k,v){ if(isManaged(k)){ _plain[k]=String(v); scheduleFlush(k); return; } return _origSet.call(this,k,v); };
+        SP.removeItem=function(k){ if(isManaged(k)){ delete _plain[k]; try{ _origRemove.call(this,k); }catch(e){} return; } return _origRemove.call(this,k); };
+        /* 의미있는 프로브: 실제 '가로채기'가 되는지 검증 — 파사드는 값을 돌려주지만 네이티브 저장소엔 평문이 없어야 함.
+           통과 못 하면(오버라이드 미적용/부분적용) 네이티브로 완전 복구하여 앱을 평문으로 100% 정상 동작시킴. */
         var _pk='__tenar_probe__'; exact[_pk]=true;
-        window.localStorage.setItem(_pk,'PROBE'); _installOk=(window.localStorage.getItem(_pk)==='PROBE'); window.localStorage.removeItem(_pk); delete exact[_pk];
+        window.localStorage.setItem(_pk,'PROBE');
+        _installOk=(window.localStorage.getItem(_pk)==='PROBE' && _origGet.call(LS,_pk)!=='PROBE');
+        window.localStorage.removeItem(_pk); delete exact[_pk];
+        try{ _origRemove.call(LS,_pk); }catch(_e){}
       }catch(e){ _installOk=false; }
       if(!_installOk){
         try{ SP.getItem=_origGet; SP.setItem=_origSet; SP.removeItem=_origRemove; }catch(_e){}
+        try{ _origRemove.call(LS,'__tenar_probe__'); }catch(_e){}
         window.__tenarSecureReady=true;
         return;   /* 보안 저장 비활성 — 앱은 기존 평문 방식으로 정상 동작 */
       }
