@@ -1,8 +1,249 @@
-<!-- tonghab_v172_hdrscroll.html · 저장: 2026-07-03 03:59 KST · 헤더 스크롤 표시 조건 완화(위로 충분히 올려야 표시) -->
+<!-- tonghab_secure_test_v2.html · 저장: 2026-07-09 12:50 KST · [보안테스트 v2] Storage.prototype 기반 캐시 자동암호화(iOS 사파리 대응)+저장화면 암호화상태 배지(🔒/🔓)+비활성 토스트+가져오기 기본암호 미리채움 제거 · 원본 보존 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
+<!-- ═══════════ TenarCrypto 보안 저장 계층 (보안 테스트) ═══════════
+     · 브라우저 캐시(localStorage): 기기키로 자동 암호화/복호화 (비밀번호 불필요)
+     · JSON 파일: PBKDF2 비밀번호 기반 암호화 (기본 2026)
+     · 계산/UI 로직은 건드리지 않고 저장 전후에만 암복호화가 투명하게 동작 -->
+<script>
+(function(){
+  'use strict';
+  if(window.TenarCrypto) return;
+  var CRYPTO_OK = !!(window.crypto && window.crypto.subtle && window.TextEncoder);
+
+  function bufToB64(buf){ var b=new Uint8Array(buf),s=''; for(var i=0;i<b.length;i++) s+=String.fromCharCode(b[i]); return btoa(s); }
+  function b64ToBuf(b64){ var bin=atob(b64),b=new Uint8Array(bin.length); for(var i=0;i<bin.length;i++) b[i]=bin.charCodeAt(i); return b.buffer; }
+  var enc = CRYPTO_OK ? new TextEncoder() : null;
+  var dec = CRYPTO_OK ? new TextDecoder() : null;
+  function kstNow(){ return new Date(Date.now()+9*3600000).toISOString().replace('Z','+09:00'); }
+
+  var DEVICE_KEY_NAME='__tenar_secure_device_key_v1';
+  var _rawGet=localStorage.getItem.bind(localStorage);
+  var _rawSet=localStorage.setItem.bind(localStorage);
+
+  function generateDeviceKey(){ return bufToB64(crypto.getRandomValues(new Uint8Array(32)).buffer); }
+  var _deviceKeyPromise=null;
+  function getDeviceKey(){
+    if(_deviceKeyPromise) return _deviceKeyPromise;
+    _deviceKeyPromise=(async function(){
+      var b64=null; try{ b64=_rawGet(DEVICE_KEY_NAME); }catch(e){}
+      if(!b64){ b64=generateDeviceKey(); try{ _rawSet(DEVICE_KEY_NAME,b64); }catch(e){} }
+      return crypto.subtle.importKey('raw', b64ToBuf(b64), {name:'AES-GCM'}, false, ['encrypt','decrypt']);
+    })();
+    return _deviceKeyPromise;
+  }
+
+  async function encryptForDeviceCache(plainStr, appName){
+    var key=await getDeviceKey();
+    var iv=crypto.getRandomValues(new Uint8Array(12));
+    var ct=await crypto.subtle.encrypt({name:'AES-GCM',iv:iv}, key, enc.encode(String(plainStr)));
+    return { tenarSecure:true, secureType:'device-cache', version:1, app:appName,
+             encryptedAt:kstNow(), algorithm:'AES-GCM', iv:bufToB64(iv.buffer), ciphertext:bufToB64(ct) };
+  }
+  async function decryptFromDeviceCache(obj){
+    var key=await getDeviceKey();
+    var pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:new Uint8Array(b64ToBuf(obj.iv))}, key, b64ToBuf(obj.ciphertext));
+    return dec.decode(pt);
+  }
+  async function _deriveKey(password, saltBuf, iterations){
+    var baseKey=await crypto.subtle.importKey('raw', enc.encode(String(password)), {name:'PBKDF2'}, false, ['deriveKey']);
+    return crypto.subtle.deriveKey({name:'PBKDF2', salt:new Uint8Array(saltBuf), iterations:iterations, hash:'SHA-256'},
+                                   baseKey, {name:'AES-GCM', length:256}, false, ['encrypt','decrypt']);
+  }
+  async function encryptForPasswordFile(dataObj, password, appName){
+    var salt=crypto.getRandomValues(new Uint8Array(16));
+    var iv=crypto.getRandomValues(new Uint8Array(12));
+    var iterations=210000;
+    var key=await _deriveKey(password, salt.buffer, iterations);
+    var ct=await crypto.subtle.encrypt({name:'AES-GCM',iv:iv}, key, enc.encode(JSON.stringify(dataObj)));
+    return { tenarSecure:true, secureType:'password-file', version:1, app:appName, encryptedAt:kstNow(),
+             algorithm:'AES-GCM', kdf:'PBKDF2', iterations:iterations,
+             salt:bufToB64(salt.buffer), iv:bufToB64(iv.buffer), ciphertext:bufToB64(ct) };
+  }
+  async function decryptFromPasswordFile(obj, password){
+    var key=await _deriveKey(password, b64ToBuf(obj.salt), obj.iterations||210000);
+    var pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:new Uint8Array(b64ToBuf(obj.iv))}, key, b64ToBuf(obj.ciphertext));
+    return JSON.parse(dec.decode(pt));
+  }
+  function isSecureObject(v){ return !!(v && typeof v==='object' && v.tenarSecure===true); }
+
+  window.TenarCrypto={
+    ok:CRYPTO_OK,
+    encryptForDeviceCache:encryptForDeviceCache, decryptFromDeviceCache:decryptFromDeviceCache,
+    encryptForPasswordFile:encryptForPasswordFile, decryptFromPasswordFile:decryptFromPasswordFile,
+    isSecureObject:isSecureObject, generateDeviceKey:generateDeviceKey, getDeviceKey:getDeviceKey,
+    arrayBufferToBase64:bufToB64, base64ToArrayBuffer:b64ToBuf
+  };
+
+  function _toast(msg, ms){
+    try{
+      var t=document.createElement('div'); t.textContent=msg;
+      t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1f5132;color:#fff;padding:10px 16px;border-radius:12px;font-size:13px;font-weight:700;z-index:2147483647;box-shadow:0 4px 16px rgba(0,0,0,.35);max-width:90vw;text-align:center;line-height:1.5;';
+      (document.body||document.documentElement).appendChild(t);
+      setTimeout(function(){ try{ t.remove(); }catch(e){} }, ms||2600);
+    }catch(e){}
+  }
+  window._tenarToast=_toast;
+
+  /* 보안 저장 활성/비활성 상태 — 조사표 저장/불러오기 화면 배지 및 안내에 사용 */
+  window.__tenarSecureActive=null;   // null=미확정, true=암호화 켜짐, false=평문(비활성)
+  var _inactiveNotified=false;
+  function _notifyInactive(){
+    window.__tenarSecureActive=false;
+    if(_inactiveNotified) return; _inactiveNotified=true;
+    function show(){ _toast('🔓 보안 저장 비활성 — 이 브라우저에서는 자동 암호화가 지원되지 않아 평문으로 저장됩니다.', 5000); }
+    if(document.body){ setTimeout(show,900); } else { document.addEventListener('DOMContentLoaded', function(){ setTimeout(show,900); }); }
+    if(typeof window._tenarRenderSecBadge==='function'){ try{ window._tenarRenderSecBadge(); }catch(e){} }
+  }
+  window._tenarSecureActive=function(){ return window.__tenarSecureActive===true; };
+
+  window.TenarSecureStore={
+    init:function(appName, exactKeys, prefixes){
+      if(!CRYPTO_OK){ _notifyInactive(); return; }   /* 비보안 컨텍스트 등 → 기존 평문 동작 유지 */
+      var LS=window.localStorage;
+      /* window.localStorage 인스턴스가 접근 시점마다 달라지는 브라우저(iOS 사파리 등)가 있어,
+         인스턴스 오버라이드는 앱의 실제 호출을 놓칠 수 있음 → Storage.prototype 을 교체(모든 인스턴스 공유).
+         관리 대상 키는 sessionStorage 키와 겹치지 않으므로 isManaged(k)만으로 안전하게 분기. */
+      var SP=Object.getPrototypeOf(LS)||window.Storage.prototype;
+      var _origGet=SP.getItem, _origSet=SP.setItem, _origRemove=SP.removeItem;
+      var _get=function(k){ return _origGet.call(LS,k); };
+      var _set=function(k,v){ return _origSet.call(LS,k,v); };
+      var _remove=function(k){ return _origRemove.call(LS,k); };
+      var exact={}; (exactKeys||[]).forEach(function(k){ exact[k]=true; });
+      var pfx=prefixes||[];
+      function isManaged(k){
+        if(k===DEVICE_KEY_NAME) return false;
+        if(exact[k]) return true;
+        for(var i=0;i<pfx.length;i++){ if(String(k).indexOf(pfx[i])===0) return true; }
+        return false;
+      }
+      var _plain={}, _dirty={}, _flushScheduled=false, _ready=false;
+      var _pendingDecrypt=[], _legacy=[], _decryptFailed=[];
+
+      try{
+        for(var i=0;i<LS.length;i++){
+          var k=LS.key(i);
+          if(!isManaged(k)) continue;
+          var raw=_get(k), obj=null;
+          try{ obj=JSON.parse(raw); }catch(e){}
+          if(obj && obj.tenarSecure===true && obj.secureType==='device-cache'){ _pendingDecrypt.push(k); }
+          else { _plain[k]=raw; _legacy.push(k); }
+        }
+      }catch(e){}
+
+      function scheduleFlush(k){ _dirty[k]=true; if(_flushScheduled) return; _flushScheduled=true; Promise.resolve().then(flushNow); }
+      async function flushNow(){
+        _flushScheduled=false;
+        var keys=Object.keys(_dirty); _dirty={};
+        for(var i=0;i<keys.length;i++){
+          var k=keys[i];
+          if(!(k in _plain)) continue;
+          try{
+            var secure=await encryptForDeviceCache(_plain[k], appName);
+            _set(k, JSON.stringify(secure));
+          }catch(e){
+            /* 암호화 실패(구형/특수 브라우저)해도 데이터는 반드시 보존 — 평문으로라도 저장(유실 방지) */
+            try{ _set(k, _plain[k]); }catch(_e){}
+          }
+        }
+      }
+
+      /* 오버라이드 설치 + 자기검증: 일부 브라우저(iOS Safari·인앱 웹뷰 등)는 localStorage
+         메서드 오버라이드를 막거나 일부만 적용해 읽기/쓰기가 어긋날 수 있음 → 저장이 안 되는 것처럼 보임.
+         설치 직후 프로브로 검증하고, 실패 시 네이티브로 완전 복구하여 앱을 평문으로 100% 정상 동작시킴. */
+      var _installOk=false;
+      try{
+        SP.getItem=function(k){ if(isManaged(k)) return (k in _plain)? _plain[k] : null; return _origGet.call(this,k); };
+        SP.setItem=function(k,v){ if(isManaged(k)){ _plain[k]=String(v); scheduleFlush(k); return; } return _origSet.call(this,k,v); };
+        SP.removeItem=function(k){ if(isManaged(k)){ delete _plain[k]; try{ _origRemove.call(this,k); }catch(e){} return; } return _origRemove.call(this,k); };
+        /* 의미있는 프로브: 실제 '가로채기'가 되는지 검증 — 파사드는 값을 돌려주지만 네이티브 저장소엔 평문이 없어야 함.
+           통과 못 하면(오버라이드 미적용/부분적용) 네이티브로 완전 복구하여 앱을 평문으로 100% 정상 동작시킴. */
+        var _pk='__tenar_probe__'; exact[_pk]=true;
+        window.localStorage.setItem(_pk,'PROBE');
+        _installOk=(window.localStorage.getItem(_pk)==='PROBE' && _origGet.call(LS,_pk)!=='PROBE');
+        window.localStorage.removeItem(_pk); delete exact[_pk];
+        try{ _origRemove.call(LS,_pk); }catch(_e){}
+      }catch(e){ _installOk=false; }
+      if(!_installOk){
+        try{ SP.getItem=_origGet; SP.setItem=_origSet; SP.removeItem=_origRemove; }catch(_e){}
+        try{ _origRemove.call(LS,'__tenar_probe__'); }catch(_e){}
+        window.__tenarSecureReady=true;
+        _notifyInactive();
+        return;   /* 보안 저장 비활성 — 앱은 기존 평문 방식으로 정상 동작 */
+      }
+
+      getDeviceKey().then(function(){
+        return Promise.all(_pendingDecrypt.map(function(k){
+          var obj=null; try{ obj=JSON.parse(_get(k)); }catch(e){}
+          if(!obj){ _decryptFailed.push(k); return; }
+          return decryptFromDeviceCache(obj).then(function(plain){ _plain[k]=plain; }).catch(function(){ _decryptFailed.push(k); });
+        }));
+      }).then(function(){
+        _ready=true;
+        _legacy.forEach(function(k){ scheduleFlush(k); });
+        if(_legacy.length){
+          try{ if(!_rawGet('__tenar_secure_migrated_'+appName)){ _rawSet('__tenar_secure_migrated_'+appName,'1');
+            setTimeout(function(){ _toast('기존 저장자료를 보안 저장 방식으로 전환했습니다.'); }, 1200); } }catch(e){}
+        }
+        if(_decryptFailed.length){
+          setTimeout(function(){ _toast('이 기기의 보안키가 없어 일부 저장자료를 복호화할 수 없습니다.\n브라우저 데이터가 삭제되었거나 다른 기기의 캐시일 수 있습니다.\nJSON 백업파일이 있다면 가져오기를 이용해 주세요.', 5500); }, 1400);
+        }
+        window.__tenarSecureReady=true;
+        window.__tenarSecureActive=true;
+        if(typeof window._tenarRenderSecBadge==='function'){ try{ window._tenarRenderSecBadge(); }catch(e){} }
+      }).catch(function(){ _ready=true; window.__tenarSecureReady=true; window.__tenarSecureActive=true; });
+    }
+  };
+
+  /* JSON 비밀번호 입력 — 내보내기(암호화): 기본값 2026 미리채움 / 가져오기(복호화): 기본값 미리채움 없음 */
+  window._tenarAskPassword=function(mode){
+    var isImport=(mode==='import');
+    var head=isImport
+      ? 'JSON 파일 가져오기\n\n저장할 때 사용한 암호를 입력하세요.'
+      : 'JSON 파일 내보내기\n\n이 파일은 외부로 공유될 수 있어 암호가 필요합니다.\n기본 암호는 2026입니다. 원하시면 다른 암호로 변경할 수 있습니다.\n암호를 잊으면 파일을 복구할 수 없습니다.';
+    var def = isImport ? '' : '2026';   /* 복호화(가져오기)는 기본 암호를 미리 넣지 않음 */
+    var pw;
+    try{ pw=window.prompt(head, def); }
+    catch(e){ pw=def; }                  /* 일부 인앱 브라우저는 prompt 미지원 */
+    if(pw===null) return null;           /* 사용자 취소 */
+    if(pw===undefined) pw=def;
+    pw=String(pw);
+    if(!isImport && pw.trim()==='') pw='2026';   /* 내보내기만 빈칸→기본 2026 */
+    return pw;
+  };
+
+  /* 내보내기 텍스트 생성 — 보안 가능하면 암호화, 불가 환경이면 평문(경고).
+     반환: Promise<{text, encrypted}> · 사용자가 취소하면 Promise<null> */
+  window._tenarBuildExport=function(dataObj, appName){
+    if(window.TenarCrypto && TenarCrypto.ok){
+      var pw=window._tenarAskPassword('export');
+      if(pw===null) return Promise.resolve(null);
+      return TenarCrypto.encryptForPasswordFile(dataObj, pw, appName)
+        .then(function(secure){ return {text:JSON.stringify(secure,null,2), encrypted:true}; });
+    }
+    return Promise.resolve({text:JSON.stringify(dataObj,null,2), encrypted:false});
+  };
+  /* 가져오기 파싱 — 암호화 파일이면 복호화, 평문이면 그대로. 반환: Promise<data>
+     실패 시 reject({code:'APP_MISMATCH'|'NO_CRYPTO'|'CANCELLED'|'BAD_PW', app}) */
+  window._tenarParseImport=function(obj, appName){
+    if(window.TenarCrypto && TenarCrypto.isSecureObject(obj) && obj.secureType==='password-file'){
+      if(obj.app && obj.app!==appName) return Promise.reject({code:'APP_MISMATCH', app:obj.app});
+      if(!(window.TenarCrypto && TenarCrypto.ok)) return Promise.reject({code:'NO_CRYPTO'});
+      var pw=window._tenarAskPassword('import');
+      if(pw===null) return Promise.reject({code:'CANCELLED'});
+      return TenarCrypto.decryptFromPasswordFile(obj, pw).catch(function(){ return Promise.reject({code:'BAD_PW'}); });
+    }
+    return Promise.resolve(obj);
+  };
+  window._tenarAppKo=function(app){ return app==='tonghab'?'통합계산기':(app==='chungchi'?'청취계산기':(app==='map'?'지도':app)); };
+})();
+TenarSecureStore.init('tonghab',
+  ['tonghabAutoSave_v1','tonghabSaveList','tenar_map_favs_v1','tenar_map_bulk','tenar_pending_survey_coord','tenar_meas_ctx','tenar_meas_result','tenar_measure_saves_v1'],
+  ['tonghabSave_']);
+</script>
+<!-- ═══════════ /TenarCrypto 보안 저장 계층 ═══════════ -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#27500A">
 <!-- v136: Google Analytics (gtag.js) -->
@@ -7224,6 +7465,7 @@ document.addEventListener('DOMContentLoaded', function(){
       <button class="sl-close" onclick="closeSaveLoadModal()">✕</button>
     </div>
     <div class="sl-body">
+      <div id="sl-sec-badge" style="margin-bottom:10px;font-size:12px;font-weight:700;border-radius:8px;padding:7px 10px;line-height:1.4;"></div>
       <button class="sl-save-now" id="slSmartSaveBtn" onclick="slSmartSave()">💾 새로 저장</button>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;gap:8px;">
         <span class="sl-section" style="margin-bottom:0;flex:1;min-width:0;">저장된 자료 목록 <span style="color:#c0392b;font-size:10px;font-weight:700;letter-spacing:-.01em;">(버튼이 안 눌리면 새로고침)</span></span>
@@ -8058,7 +8300,23 @@ function _slModalTouchMove(e){
 }
 
 /* 모달 열기/닫기 */
+/* 저장/불러오기 화면 상단 — 캐시 암호화 상태 배지 (🔒 켜짐 / 🔓 비활성) */
+window._tenarRenderSecBadge=function(){
+  var el=document.getElementById('sl-sec-badge'); if(!el) return;
+  var st=window.__tenarSecureActive;
+  if(st===true){
+    el.style.background='#e7f4ea'; el.style.color='#1f5132'; el.style.border='1px solid #b6dcc1';
+    el.textContent='🔒 이 기기에 암호화 저장 켜짐 (브라우저 저장자료 자동 암호화)';
+  }else if(st===false){
+    el.style.background='#fdecec'; el.style.color='#b3261e'; el.style.border='1px solid #f3c2c2';
+    el.textContent='🔓 보안 저장 비활성 — 이 브라우저에서는 평문으로 저장됩니다';
+  }else{
+    el.style.background='#f4f4f4'; el.style.color='#666'; el.style.border='1px solid #ddd';
+    el.textContent='⏳ 보안 저장 상태 확인 중…';
+  }
+};
 function openSaveLoadModal(){
+  if(typeof window._tenarRenderSecBadge==='function') window._tenarRenderSecBadge();
   /* v133: 마지막으로 불러오기/저장한 항목이 목록에 있으면 자동 선택(덮어쓰기 준비), 없으면 선택 해제 */
   _slSelectedKey = (_slLastLoadedKey && _slGetList().some(function(i){return i.key===_slLastLoadedKey;}))
     ? _slLastLoadedKey : null;
@@ -8318,31 +8576,28 @@ function overwriteSavedData(key){
   setTimeout(function(){try{document.body.removeChild(t);}catch(e){}},1800);
 }
 
-/* JSON 공유 — Web Share API 사용 (iOS·Android 네이티브 공유 시트) */
+/* JSON 공유 — 비밀번호 암호화 후 Web Share API 사용 (iOS·Android 네이티브 공유 시트) */
 function shareJSON(){
   var d=_slCollect();
-  var crop=d['__crop']||'data';
-  var cropKo=(typeof PROD_CROP_KO!=='undefined'&&PROD_CROP_KO[crop])?PROD_CROP_KO[crop]:crop;
-  var addr=(d['address']||'').trim().replace(/[\/\\:*?"<>|\s]+/g,'_').slice(0,15);
   var now=new Date();var kst=new Date(now.getTime()+9*3600000);
-  var ymd=kst.toISOString().slice(0,10);
+  var ymd=kst.toISOString().slice(0,10).replace(/-/g,'');
   var hh=String(kst.getUTCHours()).padStart(2,'0');
   var mm=String(kst.getUTCMinutes()).padStart(2,'0');
-  var fname='tonghab_'+cropKo+(addr?'_'+addr:'')+'_'+ymd+'_'+hh+mm+'.json';
-  var jsonText=JSON.stringify(d,null,2);
-  var blob=new Blob([jsonText],{type:'application/json'});
-  var file=new File([blob],fname,{type:'application/json'});
-
-  // (1) navigator.share + files 지원 (iOS 16+ Safari, 최신 Android Chrome) → 카카오톡 등에 파일 직접 공유
-  if(navigator.canShare && navigator.canShare({files:[file]})){
-    navigator.share({files:[file], title:fname, text:'통합계산기 데이터 공유'})
-      .catch(function(err){
-        if(err && err.name!=='AbortError') _shareJSONFallback(blob,jsonText,fname);
-      });
-    return;
-  }
-  // (2) v130: 파일 공유 미지원(일부 안드로이드) → 실제 .json 파일 다운로드 후 카카오톡 첨부 안내
-  _shareJSONFallback(blob,jsonText,fname);
+  var fname='tenar_tonghab_'+((window.TenarCrypto&&TenarCrypto.ok)?'secure_':'')+ymd+'_'+hh+mm+'.json';
+  window._tenarBuildExport(d,'tonghab').then(function(r){
+    if(!r) return;   /* 사용자 취소 */
+    var jsonText=r.text;
+    var blob=new Blob([jsonText],{type:'application/json'});
+    var file=new File([blob],fname,{type:'application/json'});
+    // (1) navigator.share + files 지원 → 카카오톡 등에 파일 직접 공유
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      navigator.share({files:[file], title:fname, text:'통합계산기 데이터 공유'+(r.encrypted?'(암호화)':'')})
+        .catch(function(err){ if(err && err.name!=='AbortError') _shareJSONFallback(blob,jsonText,fname); });
+      return;
+    }
+    // (2) 파일 공유 미지원 → 실제 .json 파일 다운로드 후 첨부 안내
+    _shareJSONFallback(blob,jsonText,fname);
+  }).catch(function(){ alert('내보내기 중 오류가 발생했습니다.'); });
 }
 /* v130: 안드로이드 등 파일공유 미지원 시 — JSON 파일을 실제로 다운로드시켜 카카오톡에 파일 첨부 가능하게 함 */
 function _shareJSONFallback(blob,jsonText,fname){
@@ -8686,44 +8941,51 @@ function toggleFav(key){
   _slRenderList();
 }
 
-/* JSON 파일로 내보내기 */
+/* JSON 파일로 내보내기 — 비밀번호(PBKDF2/AES-GCM) 암호화 */
 function exportJSON(){
   var d=_slCollect();
-  var crop=d['__crop']||'data';
-  var cropKo=(typeof PROD_CROP_KO!=='undefined'&&PROD_CROP_KO[crop])?PROD_CROP_KO[crop]:crop;
-  var addr=(d['address']||'').trim().replace(/[\/\\:*?"<>|\s]+/g,'_').slice(0,15);
   var now=new Date();var kst=new Date(now.getTime()+9*3600000);
-  var ymd=kst.toISOString().slice(0,10);
+  var ymd=kst.toISOString().slice(0,10).replace(/-/g,'');
   var hh=String(kst.getUTCHours()).padStart(2,'0');
   var mm=String(kst.getUTCMinutes()).padStart(2,'0');
-  var fname='tonghab_'+cropKo+(addr?'_'+addr:'')+'_'+ymd+'_'+hh+mm+'.json';
-  var blob=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});
-  var url=URL.createObjectURL(blob);
-  var a=document.createElement('a');a.href=url;a.download=fname;
-  document.body.appendChild(a);a.click();
-  setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},1000);
-  setTimeout(function(){
-    var msg=document.getElementById('_exportMsg');
-    if(!msg){msg=document.createElement('div');msg.id='_exportMsg';
-      msg.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#27500A;color:#fff;padding:10px 18px;border-radius:12px;font-size:13px;font-weight:700;z-index:9999;text-align:center;line-height:1.5;max-width:90vw;box-shadow:0 4px 16px rgba(0,0,0,.35);';
-      document.body.appendChild(msg);}
-    msg.innerHTML='✅ 저장 완료: <b>'+fname+'</b><br><span style="font-weight:400;font-size:11px;">📂 기기 다운로드 폴더에 저장되었습니다</span>';
-    msg.style.display='block';
-    clearTimeout(msg._t);msg._t=setTimeout(function(){msg.style.display='none';},4000);
-  },400);
+  var fname='tenar_tonghab_'+((window.TenarCrypto&&TenarCrypto.ok)?'secure_':'')+ymd+'_'+hh+mm+'.json';
+  window._tenarBuildExport(d,'tonghab').then(function(r){
+    if(!r) return;   /* 사용자 취소 */
+    var blob=new Blob([r.text],{type:'application/json'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');a.href=url;a.download=fname;
+    document.body.appendChild(a);a.click();
+    setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},1000);
+    setTimeout(function(){
+      var msg=document.getElementById('_exportMsg');
+      if(!msg){msg=document.createElement('div');msg.id='_exportMsg';
+        msg.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#27500A;color:#fff;padding:10px 18px;border-radius:12px;font-size:13px;font-weight:700;z-index:9999;text-align:center;line-height:1.5;max-width:90vw;box-shadow:0 4px 16px rgba(0,0,0,.35);';
+        document.body.appendChild(msg);}
+      msg.innerHTML=(r.encrypted?'🔒 암호화 저장 완료: ':'⚠ (암호화 미지원 환경·평문) 저장 완료: ')+'<b>'+fname+'</b><br><span style="font-weight:400;font-size:11px;">📂 기기 다운로드 폴더'+(r.encrypted?' · 가져올 때 같은 암호 필요':'')+'</span>';
+      msg.style.display='block';
+      clearTimeout(msg._t);msg._t=setTimeout(function(){msg.style.display='none';},4000);
+    },400);
+  }).catch(function(){ alert('내보내기 중 오류가 발생했습니다.'); });
 }
 
-/* JSON 파일 불러오기 */
+/* JSON 파일 불러오기 — 암호화 파일이면 비밀번호로 복호화 (구 평문 파일도 호환) */
 function importJSON(input){
   var file=input.files[0];if(!file)return;
   var reader=new FileReader();
   reader.onload=function(e){
-    try{
-      var d=JSON.parse(e.target.result);
-      if(!confirm('JSON 파일을 불러옵니다.\n현재 입력 내용이 덮어씌워집니다. 계속할까요?'))return;
+    var obj;
+    try{ obj=JSON.parse(e.target.result); }
+    catch(err){ alert('파일 읽기 실패: JSON 형식이 아닙니다.'); return; }
+    window._tenarParseImport(obj,'tonghab').then(function(d){
+      if(!confirm('JSON 파일을 불러옵니다.\n현재 입력 내용이 덮어씌워집니다. 계속할까요?')) return;
       closeSaveLoadModal();
-      _slApply(d); // 내부에서 복원 완료 후 자동 스크롤
-    }catch(err){alert('파일 읽기 실패: JSON 형식이 아닙니다.');}
+      _slApply(d);
+    }).catch(function(er){
+      if(!er||!er.code||er.code==='CANCELLED') return;
+      if(er.code==='APP_MISMATCH'){ alert('이 파일은 '+window._tenarAppKo(er.app)+' 저장파일입니다.\n통합계산기에서는 불러올 수 없습니다.'); return; }
+      if(er.code==='NO_CRYPTO'){ alert('이 환경에서는 복호화를 사용할 수 없습니다. (보안 컨텍스트 필요)'); return; }
+      if(er.code==='BAD_PW'){ alert('암호가 맞지 않거나 파일이 손상되었습니다.\n저장할 때 사용한 암호를 다시 확인해 주세요.'); return; }
+    });
   };
   reader.readAsText(file);
   input.value='';
