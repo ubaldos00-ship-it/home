@@ -1,4 +1,4 @@
-<!-- chungchi_secure_test_v2.html · 저장: 2026-07-09 12:50 KST · [보안테스트 v2] Storage.prototype 기반 캐시 자동암호화(iOS 사파리 대응)+저장화면 암호화상태 배지(🔒/🔓)+비활성 토스트+가져오기 기본암호 미리채움 제거 · 원본 보존 -->
+<!-- chungchi_secure_test_v3.html · 저장: 2026-07-09 13:45 KST · [보안테스트 v3] JSON 내보내기/불러오기=저장목록 전체 백업·복원으로 수정 + v2 보안기능 유지 · 원본 보존 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -2098,21 +2098,22 @@ function overwriteSavedData(key){
   setTimeout(function(){try{document.body.removeChild(t);}catch(e){}},1800);
 }
 
-/* JSON 공유 — Web Share API */
+/* JSON 공유 — 저장/불러오기 목록 전체를 Web Share API로 공유 */
 function shareJSON(){
-  var d = _ccCollect();
+  var d = _ccBuildBackupBundle();
+  if(!d.list.length){ alert('내보낼 저장목록이 없습니다.'); return; }
   var now = new Date(); var kst = new Date(now.getTime() + 9*3600000);
   var dateStr = kst.toISOString().slice(0,10).replace(/-/g,'');
   var hh = String(kst.getUTCHours()).padStart(2,'0');
   var mm2 = String(kst.getUTCMinutes()).padStart(2,'0');
-  var fileName = 'tenar_chungchi_'+((window.TenarCrypto&&TenarCrypto.ok)?'secure_':'')+dateStr+'_'+hh+mm2+'.json';
+  var fileName = 'tenar_chungchi_list_'+((window.TenarCrypto&&TenarCrypto.ok)?'secure_':'')+dateStr+'_'+hh+mm2+'.json';
   window._tenarBuildExport(d,'chungchi').then(function(r){
-    if(!r) return;   /* 사용자 취소 */
+    if(!r) return;
     var jsonText = r.text;
     var blob = new Blob([jsonText], {type:'application/json'});
     var file = new File([blob], fileName, {type:'application/json'});
     if(navigator.canShare && navigator.canShare({files:[file]})){
-      navigator.share({files:[file], title:fileName, text:'청취계산기 데이터 공유'+(r.encrypted?'(암호화)':'')})
+      navigator.share({files:[file], title:fileName, text:'청취계산기 저장목록 전체 공유 '+d.list.length+'건'+(r.encrypted?'(암호화)':'')})
         .catch(function(err){ if(err && err.name!=='AbortError') _ccShareFallback(jsonText,fileName); });
       return;
     }
@@ -2351,18 +2352,60 @@ function slBulkToMap(){
   catch(e){ alert('지도반영 준비 실패: '+e.message); return; }
   _tenarOpenMapUrl('https://ubaldos00-ship-it.github.io/home/map.html?bulk=1');
 }
-
-/* ── JSON 내보내기/가져오기 ── */
+/* ── JSON 내보내기/가져오기: v3 저장목록 전체 백업/복원 ── */
+function _ccBuildBackupBundle(){
+  var list=_ccGetList();
+  var records={};
+  list.forEach(function(it){
+    if(!it || !it.key) return;
+    try{
+      var raw=localStorage.getItem(CC_DATA_PFX+it.key);
+      if(raw) records[it.key]=JSON.parse(raw);
+    }catch(e){}
+  });
+  return {tenarBackup:true, backupType:'save-list', app:'chungchi', version:3,
+          exportedAt:(new Date(Date.now()+9*3600000)).toISOString().replace('Z','+09:00'),
+          count:list.length, list:list, records:records};
+}
+function _ccIsBackupBundle(d){ return !!(d && d.tenarBackup===true && d.backupType==='save-list'); }
+function _ccRestoreBackupBundle(pkg){
+  if(!pkg || pkg.app!=='chungchi'){ alert('청취계산기 저장목록 파일이 아닙니다.'); return; }
+  var list=Array.isArray(pkg.list)?pkg.list:[];
+  var records=pkg.records||{};
+  if(!list.length){ alert('불러올 저장목록이 없습니다.'); return; }
+  if(!confirm('저장/불러오기 목록 전체 '+list.length+'건을 불러옵니다.\n현재 이 기기의 청취계산기 저장목록은 교체됩니다. 계속할까요?')) return;
+  try{
+    _ccGetList().forEach(function(old){
+      if(old && old.key){ try{localStorage.removeItem(CC_DATA_PFX+old.key);}catch(e){} _removeMapFavBySurveyKey('chungchi', old.key); }
+    });
+    var clean=[];
+    list.forEach(function(it){
+      if(!it || !it.key) return;
+      var rec=records[it.key];
+      if(!rec) return;
+      if(typeof rec==='string'){ try{rec=JSON.parse(rec);}catch(e){return;} }
+      clean.push(it);
+      localStorage.setItem(CC_DATA_PFX+it.key, JSON.stringify(rec));
+    });
+    _ccSetList(clean);
+    clean.forEach(function(it){ _queueMapSync(it.key); });
+    _slSelectedKey=null; _slLastLoadedKey=null;
+    closeSaveLoadModal();
+    _slRenderList(); _slUpdateSaveBtn();
+    alert('✅ 저장목록 전체 불러오기 완료\n총 '+clean.length+'건이 복원되었습니다.');
+  }catch(e){ alert('저장목록 불러오기 실패: '+e.message); }
+}
 function exportJSON(){
-  var d = _ccCollect();
+  var d = _ccBuildBackupBundle();
+  if(!d.list.length){ alert('내보낼 저장목록이 없습니다.'); return; }
   var now = new Date();
   var kst = new Date(now.getTime() + 9*3600000);
   var dateStr = kst.toISOString().slice(0,10).replace(/-/g,'');
   var hh = String(kst.getUTCHours()).padStart(2,'0');
   var mm2 = String(kst.getUTCMinutes()).padStart(2,'0');
-  var fileName = 'tenar_chungchi_'+((window.TenarCrypto&&TenarCrypto.ok)?'secure_':'')+dateStr+'_'+hh+mm2+'.json';
+  var fileName = 'tenar_chungchi_list_'+((window.TenarCrypto&&TenarCrypto.ok)?'secure_':'')+dateStr+'_'+hh+mm2+'.json';
   window._tenarBuildExport(d,'chungchi').then(function(r){
-    if(!r) return;   /* 사용자 취소 */
+    if(!r) return;
     var blob = new Blob([r.text], {type:'application/json'});
     var url = URL.createObjectURL(blob);
     var a = document.createElement('a');
@@ -2377,10 +2420,10 @@ function exportJSON(){
         msg.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#27500A;color:#fff;padding:10px 18px;border-radius:12px;font-size:13px;font-weight:700;z-index:9999;text-align:center;line-height:1.6;max-width:90vw;box-shadow:0 4px 16px rgba(0,0,0,.35);';
         document.body.appendChild(msg);
       }
-      msg.innerHTML = (r.encrypted?'🔒 암호화 저장 완료: ':'⚠ (암호화 미지원 환경·평문) 저장 완료: ')+'<b>'+fileName+'</b><br><span style="font-weight:400;font-size:11px;">📂 기기 다운로드 폴더'+(r.encrypted?' · 가져올 때 같은 암호 필요':'')+'</span>';
+      msg.innerHTML = (r.encrypted?'🔒 저장목록 전체 암호화 저장 완료: ':'⚠ (암호화 미지원 환경·평문) 저장목록 저장 완료: ')+'<b>'+fileName+'</b><br><span style="font-weight:400;font-size:11px;">총 '+d.list.length+'건 · 📂 기기 다운로드 폴더'+(r.encrypted?' · 가져올 때 같은 암호 필요':'')+'</span>';
       msg.style.display = 'block';
       clearTimeout(msg._t);
-      msg._t = setTimeout(function(){ msg.style.display='none'; }, 4000);
+      msg._t = setTimeout(function(){ msg.style.display='none'; }, 4500);
     }, 400);
   }).catch(function(){ alert('내보내기 중 오류가 발생했습니다.'); });
 }
@@ -2397,14 +2440,17 @@ function importJSON(){
       try{ obj = JSON.parse(ev.target.result); }
       catch(ex){ alert('JSON 파일 오류: 형식이 올바르지 않습니다.'); return; }
       function _applyCC(d){
-        if(!confirm('JSON 파일을 불러옵니다.\n현재 입력 내용이 덮어씌워집니다. 계속할까요?')) return;
+        if(!confirm('구버전 JSON 파일입니다.\n저장목록 전체가 아니라 현재 조사표 화면에만 불러옵니다. 계속할까요?')) return;
         closeSaveLoadModal();
         _ccApply(d);
         ccAutoSave();
         setTimeout(function(){ window.scrollTo(0,0); document.documentElement.scrollTop=0; }, 300);
         setTimeout(function(){ window.scrollTo(0,0); }, 600);
       }
-      window._tenarParseImport(obj,'chungchi').then(function(d){ _applyCC(d); })
+      window._tenarParseImport(obj,'chungchi').then(function(d){
+          if(_ccIsBackupBundle(d)){ _ccRestoreBackupBundle(d); return; }
+          _applyCC(d);
+        })
         .catch(function(er){
           if(!er||!er.code||er.code==='CANCELLED') return;
           if(er.code==='APP_MISMATCH'){ alert('이 파일은 '+window._tenarAppKo(er.app)+' 저장파일입니다.\n청취계산기에서는 불러올 수 없습니다.'); return; }
