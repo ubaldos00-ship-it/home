@@ -1,0 +1,2427 @@
+<!-- index_secure_test_v2.html · 저장: 2026-07-09 12:50 KST · [보안테스트 v2] 테스트 링크 3종을 v2 파일로 연결 · 정식 메뉴는 원본 유지 · 원본 index.html 보존 -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-B8ELP4S5PR"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-B8ELP4S5PR');
+</script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="theme-color" content="#27500A" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title>농작물생산조사 통합시스템 · 텐아르v1.5</title>
+<!-- OG 메타 (카카오톡/링크 공유용) -->
+<meta property="og:type"        content="website" />
+<meta property="og:title"       content="농작물생산조사 통합시스템 · 텐아르v1.5" />
+<meta property="og:description" content="실측조사·청취조사·10a당 생산량 조회까지 농작물생산조사 통합 모바일 도구" />
+<meta property="og:url"         content="https://ubaldos00-ship-it.github.io/home/" />
+<meta name="twitter:card"       content="summary" />
+<meta name="twitter:title"      content="농작물생산조사 통합시스템 · 텐아르v1.5" />
+<meta name="twitter:description" content="실측조사·청취조사·10a당 생산량 조회까지 농작물생산조사 통합 모바일 도구" />
+
+<!-- Pretendard 한국어 웹폰트 -->
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+
+<style>
+  :root {
+    --color-primary: #1f5132;
+    --color-primary-light: #2e7a4e;
+    --color-primary-dark: #143820;
+    --color-accent: #c9962b;
+    --color-accent-light: #e6b955;
+    --color-bg: #f6f4ec;
+    --color-card: #ffffff;
+    --color-text: #1a1f1a;
+    --color-text-soft: #5b6358;
+    --color-border: #e6e2d5;
+    --color-danger: #c0392b;
+
+    --shadow-sm: 0 1px 2px rgba(20, 56, 32, 0.05);
+    --shadow-md: 0 4px 12px rgba(20, 56, 32, 0.08);
+    --shadow-lg: 0 8px 24px rgba(20, 56, 32, 0.12);
+
+    --radius-sm: 10px;
+    --radius-md: 14px;
+    --radius-lg: 20px;
+
+    --header-h: 88px;
+    --footer-nav-h: 64px;
+  }
+
+  * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+  html { touch-action: manipulation; }
+  a, button, input, textarea { touch-action: manipulation; }
+
+  html {
+    background-color: #27500A;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont,
+      system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    min-height: 100vh;
+    padding-top: var(--header-h);
+    padding-bottom: calc(var(--footer-nav-h) + env(safe-area-inset-bottom));
+    background-image:
+      radial-gradient(circle at 10% 0%, rgba(31, 81, 50, 0.04) 0%, transparent 40%),
+      radial-gradient(circle at 90% 100%, rgba(201, 150, 43, 0.05) 0%, transparent 40%);
+  }
+
+  /* ===== HEADER ===== */
+  header.app-header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    height: var(--header-h);
+    padding: 12px 18px 10px;
+    background: #27500A;
+    color: #fff;
+    box-shadow: var(--shadow-md);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-top: calc(12px + env(safe-area-inset-top));
+    height: calc(var(--header-h) + env(safe-area-inset-top));
+  }
+
+  header.app-header .top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  header.app-header .system-title {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: rgba(255, 255, 255, 0.78);
+    margin: 0;
+  }
+
+  header.app-header .brand {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-top: 2px;
+  }
+
+  header.app-header .brand-name {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #fff;
+    background: linear-gradient(180deg, #ffffff 0%, var(--color-accent-light) 130%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1.1;
+  }
+
+  header.app-header .brand-eng {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-accent-light);
+    letter-spacing: 0.04em;
+  }
+
+  header.app-header .clock {
+    font-variant-numeric: tabular-nums;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.92);
+    background: rgba(0, 0, 0, 0.18);
+    padding: 5px 10px;
+    border-radius: 999px;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    white-space: nowrap;
+  }
+
+  /* ===== 메인 컨테이너 ===== */
+  main {
+    padding: 16px 16px 20px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* ===== 공지 섹션 ===== */
+  .notice-wrap {
+    background: linear-gradient(90deg, #fff8e6 0%, #fff3d4 100%);
+    border: 1px solid #f0d68a;
+    border-left: 4px solid var(--color-accent);
+    border-radius: var(--radius-sm);
+    padding: 11px 14px;
+    margin-bottom: 18px;
+    font-size: 13px;
+    color: #6b4f0a;
+    line-height: 1.5;
+  }
+  .notice-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .notice-head strong { color: var(--color-accent); font-weight: 700; }
+  .notice-admin-btn {
+    background: none; border: none; cursor: pointer;
+    font-size: 16px; padding: 2px 4px; line-height: 1;
+    opacity: 0.5; transition: opacity 0.15s;
+  }
+  .notice-admin-btn:hover { opacity: 1; }
+  .notice-item-row {
+    display: flex; align-items: flex-start; gap: 7px;
+    padding: 3px 0; border-bottom: 1px solid rgba(240,214,138,0.5);
+    cursor: pointer;
+  }
+  .notice-item-row:last-of-type { border-bottom: none; }
+  .notice-item-row:active { opacity: 0.7; }
+  .notice-dot { color: var(--color-accent); font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+  .notice-item-title {
+    flex: 1; font-weight: 600; color: #6b4f0a; font-size: 13px; line-height: 1.35;
+    text-decoration: underline; text-underline-offset: 2px; text-decoration-color: rgba(201,150,43,0.4);
+  }
+  /* 고정(공지) 뱃지 + 관리자 핀/수정 버튼 + 전체보기 */
+  .notice-pin-badge { color: #c9962b; font-size: 11px; flex-shrink: 0; margin-top: 2px; }
+  .notice-pin-btn, .notice-edit-btn {
+    background: none; border: none; cursor: pointer; font-size: 12px; flex-shrink: 0;
+    padding: 0 2px; opacity: .75; font-family: inherit;
+  }
+  .notice-pin-btn.on { opacity: 1; }
+  .notice-more-btn {
+    background: none; border: none; color: #a07020; font-size: 12px; font-weight: 700;
+    cursor: pointer; font-family: inherit; padding: 6px 0 0; text-decoration: underline;
+  }
+  .notice-head-left { display: flex; align-items: center; gap: 8px; }
+  .notice-item-date { font-size: 11px; color: #a07020; flex-shrink: 0; white-space: nowrap; margin-top: 2px; }
+  .notice-admin-bar {
+    display: none; margin-top: 10px; padding-top: 10px;
+    border-top: 1px dashed #f0d68a; gap: 8px; align-items: center;
+    flex-wrap: wrap;
+  }
+  .notice-admin-bar.show { display: flex; }
+  .notice-add-btn {
+    background: var(--color-primary); color: #fff; border: none;
+    border-radius: 8px; padding: 7px 14px; font-size: 12px; font-weight: 700;
+    cursor: pointer; font-family: inherit;
+  }
+  .notice-logout-btn {
+    background: none; color: #a07020; border: 1px solid #f0d68a;
+    border-radius: 8px; padding: 6px 12px; font-size: 11px; font-weight: 600;
+    cursor: pointer; font-family: inherit;
+  }
+  .notice-del-btn {
+    background: none; border: none; color: var(--color-danger);
+    font-size: 11px; font-weight: 700; cursor: pointer; padding: 0 4px;
+    flex-shrink: 0;
+  }
+  /* 공지 상세 팝업 */
+  .notice-modal {
+    display: none; position: fixed; inset: 0; z-index: 250;
+    background: rgba(0,0,0,0.5); align-items: center; justify-content: center; padding: 20px;
+  }
+  .notice-modal.show { display: flex; }
+  .notice-modal-box {
+    background: #fff; border-radius: var(--radius-lg); padding: 24px;
+    width: 100%; max-width: 420px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    position: relative; max-height: 80vh; overflow-y: auto;
+  }
+  .notice-modal-close {
+    position: absolute; top: 12px; right: 12px;
+    background: rgba(0,0,0,0.07); border: none; border-radius: 50%;
+    width: 32px; height: 32px; font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--color-text-soft);
+  }
+  .notice-modal-title {
+    font-size: 17px; font-weight: 800; color: var(--color-primary-dark);
+    margin: 0 32px 10px 0; line-height: 1.4;
+  }
+  .notice-modal-date {
+    font-size: 11px; color: var(--color-text-soft); margin-bottom: 14px;
+  }
+  .notice-modal-content {
+    font-size: 14px; color: var(--color-text); line-height: 1.7;
+    white-space: pre-wrap; word-break: keep-all;
+  }
+  /* 공지 작성 팝업 */
+  .notice-write-modal {
+    display: none; position: fixed; inset: 0; z-index: 260;
+    background: rgba(0,0,0,0.5); align-items: center; justify-content: center; padding: 20px;
+  }
+  .notice-write-modal.show { display: flex; }
+  .notice-write-box {
+    background: #fff; border-radius: var(--radius-lg); padding: 24px;
+    width: 100%; max-width: 420px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    position: relative;
+  }
+  .notice-write-close {
+    position: absolute; top: 12px; right: 12px;
+    background: rgba(0,0,0,0.07); border: none; border-radius: 50%;
+    width: 32px; height: 32px; font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--color-text-soft);
+  }
+  .notice-write-h {
+    font-size: 17px; font-weight: 800; color: var(--color-primary-dark);
+    margin: 0 0 16px; padding-right: 28px;
+  }
+  .notice-write-box input, .notice-write-box textarea {
+    width: 100%; border: 1px solid var(--color-border); border-radius: var(--radius-sm);
+    padding: 10px 12px; font-family: inherit; font-size: 14px; outline: none;
+    margin-bottom: 12px; box-sizing: border-box;
+  }
+  .notice-write-box textarea { resize: vertical; min-height: 100px; }
+  .notice-save-btn {
+    background: var(--color-primary); color: #fff; border: none;
+    border-radius: var(--radius-sm); padding: 12px; width: 100%;
+    font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit;
+  }
+
+  /* 섹션 카드 */
+  .section {
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 14px 14px 12px;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--color-primary-dark);
+    margin: 0 0 13px;
+    padding: 10px 12px 10px 10px;
+    border-radius: 9px;
+    background: linear-gradient(90deg, rgba(31,81,50,0.08) 0%, rgba(31,81,50,0.02) 100%);
+    border-left: 4px solid var(--color-primary);
+    letter-spacing: -0.01em;
+  }
+
+  .section-title .icon {
+    width: 32px; height: 32px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 9px;
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+    color: #fff; font-size: 17px; flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(31,81,50,0.25);
+  }
+
+  /* 메뉴 아이템 */
+  .menu-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 12px;
+    background: #fafaf5;
+    border: 1px solid #ece8d8;
+    border-radius: var(--radius-sm);
+    color: var(--color-text);
+    text-decoration: none;
+    transition: all 0.15s ease;
+    position: relative;
+  }
+
+  .menu-item:active {
+    transform: scale(0.98);
+    background: #f0ecdc;
+    border-color: var(--color-primary-light);
+  }
+
+  .menu-item .menu-emoji {
+    width: 38px; height: 38px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: #fff;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    font-size: 19px; flex-shrink: 0;
+  }
+
+  .menu-item .menu-text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* ★ label·desc 줄바꿈: block으로 각각 한 줄씩 */
+  .menu-item .menu-label {
+    display: block;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--color-text);
+    line-height: 1.3;
+  }
+
+  .menu-item .menu-desc {
+    display: block;
+    font-size: 12px;
+    color: var(--color-text-soft);
+    margin-top: 3px;
+    line-height: 1.5;
+    word-break: keep-all;
+    word-wrap: break-word;
+  }
+
+  .menu-item .menu-arrow {
+    color: var(--color-primary);
+    font-size: 16px;
+    opacity: 0.7;
+    flex-shrink: 0;
+  }
+
+  /* 즐겨찾기(별표) 버튼 */
+  .fav-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    flex-shrink: 0;
+    padding: 2px;
+    line-height: 1;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .fav-btn svg { display: block; }
+  .fav-btn:active { opacity: 0.45; transform: scale(0.9); }
+
+  /* 강조 메뉴 (빠른조사) */
+  .section.highlight {
+    background: linear-gradient(135deg, #ffffff 0%, #f4f9f1 100%);
+    border-color: #cfdfc7;
+    border-width: 1.5px;
+  }
+  .section.highlight .menu-item {
+    background: #fff;
+    border-color: #b8d4ae;
+    border-width: 1.5px;
+    padding: 17px 14px;
+    box-shadow: 0 2px 8px rgba(31,81,50,0.07);
+  }
+  .section.highlight .menu-item .menu-emoji {
+    width: 46px; height: 46px;
+    font-size: 23px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #f0f8f0 0%, #e4f2e4 100%);
+    border-color: #c0dab8;
+    box-shadow: 0 1px 4px rgba(31,81,50,0.10);
+  }
+  .section.highlight .menu-item .menu-label {
+    font-size: 18px;
+    font-weight: 800;
+    color: #143820;
+  }
+  .section.highlight .menu-item .menu-desc {
+    font-size: 13px;
+    margin-top: 4px;
+    color: #4a6050;
+  }
+  .section.highlight .menu-item .menu-arrow {
+    font-size: 20px;
+    opacity: 0.8;
+    color: var(--color-primary);
+  }
+  .section.highlight .menu-item:active {
+    background: #eaf5e8;
+    border-color: var(--color-primary-light);
+  }
+
+  /* 도움말 섹션 */
+  .help-section {
+    background: linear-gradient(135deg, #fffaf0 0%, #fff4dc 100%);
+    border-color: #f0d68a;
+  }
+
+  /* 푸터 */
+  footer.info {
+    margin-top: 8px;
+    padding: 14px 16px;
+    text-align: center;
+    font-size: 11.5px;
+    color: var(--color-text-soft);
+    line-height: 1.7;
+  }
+  footer.info .source { font-size: 11px; color: #8a8f86; margin-bottom: 8px; }
+  footer.info .brand-line { font-size: 13px; font-weight: 700; color: var(--color-primary); margin: 6px 0 4px; }
+  footer.info .meta { font-variant-numeric: tabular-nums; color: #7a8079; }
+  footer.info .contact a { color: var(--color-primary); text-decoration: none; font-weight: 600; }
+
+  /* ===== 하단 고정 네비 ===== */
+  nav.bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 100;
+    height: var(--footer-nav-h);
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    justify-content: space-around;
+    align-items: stretch;
+    padding-bottom: env(safe-area-inset-bottom);
+    box-shadow: 0 -2px 12px rgba(20, 56, 32, 0.06);
+  }
+
+  nav.bottom-nav .nav-btn {
+    flex: 1;
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    color: var(--color-text-soft);
+    text-decoration: none;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 6px 4px;
+    transition: color 0.15s ease;
+  }
+
+  nav.bottom-nav .nav-btn:active {
+    color: var(--color-primary);
+    background: rgba(31, 81, 50, 0.05);
+  }
+
+  nav.bottom-nav .nav-btn .nav-icon {
+    font-size: 22px;
+    line-height: 1;
+  }
+
+  /* 준비중 버튼 스타일 */
+  nav.bottom-nav .nav-btn.disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+
+  /* new 배지 */
+  nav.bottom-nav .nav-btn {
+    position: relative;
+  }
+  nav.bottom-nav .nav-new {
+    position: absolute;
+    top: 2px;
+    right: calc(50% - 18px);
+    background: #e53e3e;
+    color: #fff;
+    font-size: 8px;
+    font-weight: 800;
+    line-height: 1;
+    padding: 2px 4px;
+    border-radius: 4px;
+    letter-spacing: 0.02em;
+    pointer-events: none;
+  }
+
+  /* 카메라 input 숨김 */
+  #cameraInput {
+    position: absolute;
+    width: 1px; height: 1px;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* 계산기 모달 (iOS용 팝업 계산기) */
+  .calc-modal {
+    display: none;
+    position: fixed;
+    inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.75);
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .calc-modal.show { display: flex; }
+  .calc-box {
+    background: #1c1c1e;
+    border-radius: 20px 20px 0 0;
+    width: 100%;
+    max-width: 420px;
+    padding: 0 0 calc(16px + env(safe-area-inset-bottom));
+    box-shadow: 0 -4px 24px rgba(0,0,0,0.4);
+  }
+  .calc-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 18px 6px;
+  }
+  .calc-topbar span {
+    font-size: 13px; font-weight: 600;
+    color: rgba(255,255,255,0.5);
+  }
+  .calc-topbar button {
+    background: rgba(255,255,255,0.12);
+    border: none; border-radius: 999px;
+    color: #fff; font-size: 13px; font-weight: 600;
+    padding: 4px 14px; cursor: pointer;
+    font-family: inherit;
+  }
+  .calc-display {
+    text-align: right;
+    padding: 4px 20px 16px;
+    min-height: 70px;
+    display: flex; flex-direction: column;
+    align-items: flex-end; justify-content: flex-end;
+  }
+  .calc-expr {
+    font-size: 15px; color: rgba(255,255,255,0.45);
+    font-variant-numeric: tabular-nums;
+    min-height: 20px; word-break: break-all;
+    max-width: 100%;
+  }
+  .calc-val {
+    font-size: 46px; font-weight: 300;
+    color: #fff; font-variant-numeric: tabular-nums;
+    line-height: 1.1; word-break: break-all;
+    max-width: 100%;
+  }
+  .calc-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    padding: 0 14px;
+  }
+  .calc-grid button {
+    border: none; border-radius: 50%;
+    font-size: 22px; font-weight: 400;
+    font-family: inherit;
+    aspect-ratio: 1;
+    cursor: pointer;
+    transition: opacity 0.1s;
+  }
+  .calc-grid button:active { opacity: 0.6; }
+  .cbtn-gray  { background: #a5a5a5; color: #000; font-size: 18px !important; font-weight: 600 !important; }
+  .cbtn-dark  { background: #333335; color: #fff; }
+  .cbtn-org   { background: #ff9f0a; color: #fff; }
+  .cbtn-zero  { border-radius: 999px !important; grid-column: span 2; aspect-ratio: auto !important;
+                 text-align: left; padding-left: 28px; }
+
+  /* 카메라 모달 */
+  .camera-modal {
+    display: none;
+    position: fixed;
+    inset: 0; z-index: 200;
+    background: rgba(0, 0, 0, 0.85);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .camera-modal.show { display: flex; }
+  .camera-modal .modal-inner {
+    background: #fff;
+    border-radius: var(--radius-md);
+    max-width: 90%; max-height: 90vh;
+    overflow: auto; padding: 16px; text-align: center;
+  }
+  .camera-modal img {
+    max-width: 100%; max-height: 60vh;
+    border-radius: var(--radius-sm); margin-bottom: 12px;
+  }
+  .camera-modal button {
+    background: var(--color-primary); color: #fff;
+    border: none; border-radius: var(--radius-sm);
+    padding: 10px 20px; font-size: 14px; font-weight: 600;
+    cursor: pointer; font-family: inherit;
+  }
+
+  /* 페이드인 */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .section, .beta-notice, footer.info { animation: fadeUp 0.4s ease backwards; }
+  .section:nth-child(2) { animation-delay: 0.05s; }
+  .section:nth-child(3) { animation-delay: 0.10s; }
+  .section:nth-child(4) { animation-delay: 0.15s; }
+  .section:nth-child(5) { animation-delay: 0.20s; }
+
+  /* SVG 아이콘 */
+  .menu-emoji svg { width: 22px; height: 22px; display: block; }
+  .nav-icon svg { width: 24px; height: 24px; display: block; margin: 0 auto; }
+
+
+
+  /* ===== 실시간 문의/공유 채팅 UI (Firebase 연결형) ===== */
+  .chat-fab {
+    position: fixed;
+    right: 16px;
+    bottom: calc(var(--footer-nav-h) + 18px + env(safe-area-inset-bottom));
+    z-index: 180;
+    width: 56px;
+    height: 56px;
+    border: none;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #27500A 0%, #2e7a4e 100%);
+    color: #fff;
+    box-shadow: 0 8px 24px rgba(20, 56, 32, 0.26);
+    font-size: 25px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .chat-fab:active { transform: scale(0.96); }
+  .chat-badge {
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: #c0392b;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #fff;
+  }
+  .chat-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 260;
+    background: rgba(0, 0, 0, 0.45);
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .chat-modal.show { display: flex; }
+  /* 채팅창이 열렸을 때 뒤쪽 텐아르 홈화면 스크롤 잠금 */
+  body.chat-scroll-lock {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    left: 0;
+    right: 0;
+    overscroll-behavior: none;
+  }
+  body.chat-scroll-lock .chat-modal,
+  body.chat-scroll-lock .chat-panel,
+  body.chat-scroll-lock .chat-messages,
+  body.chat-scroll-lock .chat-send-row textarea {
+    touch-action: auto;
+  }
+  .chat-panel {
+    width: 100%;
+    max-width: 540px;
+    height: min(90vh, 760px);
+    background: #fff;
+    border-radius: 22px 22px 0 0;
+    box-shadow: 0 -8px 28px rgba(0,0,0,0.22);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding-bottom: env(safe-area-inset-bottom);
+    position: relative;
+  }
+  /* 채팅 맨 아래로 이동 버튼 (#4) */
+  .chat-jump-btn {
+    position: absolute; right: 14px; bottom: 84px; z-index: 6;
+    background: #d96f00; color: #fff; border: none; border-radius: 999px;
+    padding: 8px 13px; font-size: 12px; font-weight: 700; font-family: inherit;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.28); cursor: pointer; display: none;
+  }
+  .chat-jump-btn.show { display: block; }
+  .chat-head {
+    background: linear-gradient(135deg, #f28c28 0%, #d96f00 100%);
+    color: #fff;
+    padding: 12px 14px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .chat-title-wrap { min-width: 0; }
+  .chat-title {
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+  .chat-subtitle {
+    margin-top: 1px;
+    font-size: 11px;
+    color: rgba(255,255,255,0.76);
+    line-height: 1.25;
+  }
+  .chat-close {
+    border: none;
+    background: rgba(255,255,255,0.14);
+    color: #fff;
+    border-radius: 999px;
+    width: 34px;
+    height: 34px;
+    font-size: 18px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .chat-notice {
+    padding: 6px 10px;
+    background: #fdecec; /* v35: 적색 강조 */
+    border-bottom: 1px solid #f0b5b5;
+    color: #c0392b;
+    font-size: 11.5px;
+    font-weight: 800;
+    line-height: 1.35;
+  }
+  .chat-user-row {
+    display: flex;
+    gap: 9px;
+    align-items: center;
+    padding: 7px 10px;
+    background: #f8f7f1;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .chat-name-label {
+    flex-shrink: 0;
+    font-size: 13px;
+    font-weight: 800;
+    color: #5f3b0b;
+    padding-left: 2px;
+  }
+  .chat-count-note { display: none; }
+  .chat-user-row input {
+    flex: 1;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    padding: 10px 11px;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    min-width: 0;
+    height: 42px;
+  }
+  .chat-user-row button,
+  .chat-send-row button,
+  .chat-clear-btn {
+    border: none;
+    border-radius: 10px;
+    background: #27500A;
+    color: #fff;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 0 13px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  /* 닉네임 저장 버튼: 모바일에서도 누르기 쉽도록 별도 확대 */
+  .chat-user-row button#chatNameSave {
+    min-width: 76px;
+    height: 42px;
+    padding: 0 18px;
+    font-size: 14px;
+    font-weight: 800;
+    border-radius: 12px;
+    box-shadow: 0 2px 7px rgba(39,80,10,0.18);
+  }
+  .chat-messages {
+    flex: 1;
+    min-height: 0; /* v34: 키보드로 패널이 줄어도 메시지 영역이 축소되어 입력창이 항상 보이도록 */
+    overflow-y: auto;
+    overscroll-behavior: contain; /* v35: 목록 끝에서 배경(홈화면)으로 스크롤 전파 차단 */
+    -webkit-overflow-scrolling: touch;
+    padding: 8px 10px;
+    background: #f6f4ec;
+  }
+  .chat-empty {
+    text-align: center;
+    color: var(--color-text-soft);
+    font-size: 13px;
+    margin-top: 12px;
+    line-height: 1.6;
+  }
+  .chat-msg {
+    margin-bottom: 7px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .chat-msg.mine { align-items: flex-end; }
+  .chat-meta {
+    font-size: 10.5px;
+    color: #7a8079;
+    margin: 0 6px 3px;
+  }
+  .chat-bubble {
+    max-width: 82%;
+    padding: 8px 10px;
+    border-radius: 14px;
+    background: #fff;
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
+    font-size: 13.5px;
+    line-height: 1.45;
+    word-break: break-word;
+    white-space: pre-wrap;
+    box-shadow: var(--shadow-sm);
+  }
+  .chat-msg.mine .chat-bubble {
+    background: #e4f2e4;
+    border-color: #c2d8bf;
+  }
+  .chat-send-row {
+    display: flex;
+    gap: 8px;
+    padding: 7px 10px 8px;
+    border-top: 1px solid var(--color-border);
+    background: #fff;
+  }
+  .chat-send-row textarea {
+    flex: 1;
+    height: 42px;
+    max-height: 88px;
+    resize: none;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 10px 11px;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.45;
+    outline: none;
+  }
+  .chat-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 10px;
+    border-top: 1px solid var(--color-border);
+    background: #fafaf5;
+    color: var(--color-text-soft);
+    font-size: 11.5px;
+  }
+  .chat-clear-btn {
+    background: #8a8f86;
+    padding: 7px 10px;
+    font-size: 11.5px;
+  }
+  .chat-admin-btn {
+    background: #d96f00;
+    padding: 7px 10px;
+    font-size: 11.5px;
+  }
+  .chat-delete-btn {
+    margin: 4px 6px 0;
+    border: none;
+    background: transparent;
+    color: #c0392b;
+    font-size: 11px;
+    font-weight: 800;
+    cursor: pointer;
+    padding: 2px 4px;
+    align-self: inherit;
+  }
+  .chat-admin-panel {
+    display: none;
+    gap: 8px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px 10px;
+    background: #fff1e0;
+    border-top: 1px solid #f2c27b;
+    color: #7a3f00;
+    font-size: 11.5px;
+    font-weight: 800;
+  }
+  .chat-admin-panel.show { display: flex; }
+  .chat-admin-reset {
+    border: none;
+    border-radius: 10px;
+    background: #c0392b;
+    color: #fff;
+    padding: 7px 10px;
+    font-family: inherit;
+    font-size: 11.5px;
+    font-weight: 800;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 360px) {
+    header.app-header .brand-name { font-size: 22px; }
+    header.app-header .clock { font-size: 11.5px; padding: 4px 8px; }
+    .menu-item .menu-label { font-size: 13.5px; }
+  }
+  /* ===== LED 전광판 (헤더 아래 팝업 · 우→좌 흐름) ===== */
+  #ledBoard{
+    position:fixed; top:calc(var(--header-h) + env(safe-area-inset-top)); left:0; right:0;
+    z-index:95; height:36px; display:flex; align-items:stretch; overflow:hidden;
+    background:linear-gradient(180deg,#0d0d0d,#1d1d1d);
+    border-top:1px solid #333; border-bottom:2px solid var(--color-accent);
+    box-shadow:0 5px 14px rgba(0,0,0,.32);
+  }
+  #ledBoard.led-hidden{ display:none; }
+  .led-tag{ flex-shrink:0; display:flex; align-items:center; justify-content:center; padding:0 10px;
+    background:var(--color-accent); color:#241800; font-size:16px; }
+  .led-vp{ flex:1; overflow:hidden; position:relative; }
+  .led-track{ position:absolute; left:0; top:0; height:100%; display:flex; align-items:center;
+    white-space:nowrap; animation:ledScroll 34s linear infinite; will-change:transform; }
+  .led-track a{ display:inline-flex; align-items:center; height:100%; padding:0 30px;
+    color:#ffd24a; font-size:13.5px; font-weight:800; text-decoration:none; letter-spacing:.2px;
+    text-shadow:0 0 7px rgba(255,190,60,.6); font-family:inherit; }
+  .led-track a:active{ color:#fff; }
+  .led-track .sep{ color:#7a5a12; }
+  @keyframes ledScroll{ from{ transform:translateX(0);} to{ transform:translateX(-50%);} }
+  #ledClose{ flex-shrink:0; width:32px; border:none; background:rgba(255,255,255,.08);
+    color:#fff; font-size:15px; font-weight:700; cursor:pointer; border-left:1px solid #333; font-family:inherit; }
+  #ledClose:active{ background:rgba(255,255,255,.2); }
+</style>
+
+<link rel="prefetch" href="pdf/pdf_config.js" />
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+</head>
+<body>
+
+<!-- ============ 고정 헤더 ============ -->
+<header class="app-header">
+  <div class="top-row">
+    <div>
+      <p class="system-title">농작물생산조사 통합시스템</p>
+      <div class="brand">
+        <span class="brand-name">텐아르(10a)</span>
+        <span class="brand-eng">TEN-AR</span>
+      </div>
+    </div>
+    <div class="clock" id="clock">--.--.(--) --:--:--</div>
+  </div>
+</header>
+
+<!-- ============ LED 전광판 (헤더 아래 팝업) ============ -->
+<div id="ledBoard">
+  <span class="led-tag">📢</span>
+  <div class="led-vp">
+    <div class="led-track" id="ledTrack">
+      <a href="https://ubaldos00-ship-it.github.io/home/chungchi.html">📣 맥류(겉보리·쌀보리·밀)은 「청취조사 빠른실행」에서 계산해 보세요</a><span class="sep">◆</span>
+      <a href="https://ubaldos00-ship-it.github.io/home/graph.html">📊 10a당 생산량이 궁금하면 「작물별 10a당 생산량 조회」를 이용하세요</a><span class="sep">◆</span>
+      <a href="https://ubaldos00-ship-it.github.io/home/game_center.html">⚾ NEW! 「작물 홈런왕」이 추가되었습니다</a><span class="sep">◆</span>
+      <a href="https://ubaldos00-ship-it.github.io/home/map.html">🗺 지도와 실측·청취 조사표를 연동해 보세요</a><span class="sep">◆</span>
+      <a href="javascript:void(0)" onclick="var f=document.getElementById('chatFab'); if(f) f.click();">💬 궁금한 점은 「말풍선(채팅)」에서 물어보세요</a><span class="sep">◆</span>
+      <a href="https://ubaldos00-ship-it.github.io/home/chungchi.html">📣 맥류(겉보리·쌀보리·밀)은 「청취조사 빠른실행」에서 계산해 보세요</a><span class="sep">◆</span>
+      <a href="https://ubaldos00-ship-it.github.io/home/graph.html">📊 10a당 생산량이 궁금하면 「작물별 10a당 생산량 조회」를 이용하세요</a><span class="sep">◆</span>
+      <a href="https://ubaldos00-ship-it.github.io/home/game_center.html">⚾ NEW! 「작물 홈런왕」이 추가되었습니다</a><span class="sep">◆</span>
+      <a href="https://ubaldos00-ship-it.github.io/home/map.html">🗺 지도와 실측·청취 조사표를 연동해 보세요</a><span class="sep">◆</span>
+      <a href="javascript:void(0)" onclick="var f=document.getElementById('chatFab'); if(f) f.click();">💬 궁금한 점은 「말풍선(채팅)」에서 물어보세요</a><span class="sep">◆</span>
+    </div>
+  </div>
+  <button id="ledClose" type="button" aria-label="전광판 닫기">✕</button>
+</div>
+
+<!-- ============ 본문 ============ -->
+<main>
+
+  <!-- 알림 (Firestore 공지) -->
+  <div class="notice-wrap">
+    <div class="notice-head">
+      <div class="notice-head-left">
+        <strong id="noticeHeadStrong" style="cursor:pointer;">● 알림</strong>
+        <button class="notice-more-btn" id="noticeMoreBtn" style="padding:0;">전체보기 ›</button>
+      </div>
+      <button class="notice-admin-btn" id="noticeAdminBtn" title="관리자">🔐</button>
+    </div>
+    <div id="noticeListHome">
+      <div style="color:#a07020;font-size:12px;">공지를 불러오는 중...</div>
+    </div>
+    <div class="notice-admin-bar" id="noticeAdminBar">
+      <button class="notice-add-btn" id="noticeAddBtn">+ 공지 추가</button>
+      <button class="notice-logout-btn" id="noticeLogoutBtn">🚪 로그아웃</button>
+    </div>
+  </div>
+
+  <!-- ① 빠른조사 메뉴 -->
+  <section class="section highlight">
+    <h2 class="section-title">
+      <span class="icon">⚡</span>
+      빠른조사 메뉴
+    </h2>
+    <div class="menu-grid">
+      <!-- 실측조사 빠른실행 -->
+      <a class="menu-item" href="https://ubaldos00-ship-it.github.io/home/tonghab.html" target="_blank" rel="noopener">
+        <span class="menu-emoji"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+          <circle cx="11" cy="12" r="7.5" fill="#2e7a4e" stroke="#1f5132" stroke-width="0.8"/>
+          <path d="M6.5 6.5 Q11 4 15.5 6.5" stroke="rgba(255,255,255,0.25)" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+          <circle cx="11" cy="12" r="4.2" fill="#f6f4ec" stroke="#1f5132" stroke-width="0.7"/>
+          <circle cx="11" cy="12" r="1.6" fill="#c9962b" stroke="#a07020" stroke-width="0.6"/>
+          <circle cx="11" cy="12" r="0.7" fill="#fff"/>
+          <rect x="18" y="10.8" width="4.5" height="2.4" rx="0.7" fill="#e6b955" stroke="#c9962b" stroke-width="0.7"/>
+          <line x1="19.3" y1="10.8" x2="19.3" y2="13.2" stroke="#a07020" stroke-width="0.7"/>
+          <line x1="20.6" y1="10.8" x2="20.6" y2="13.2" stroke="#a07020" stroke-width="0.7"/>
+          <line x1="21.8" y1="10.8" x2="21.8" y2="13.2" stroke="#a07020" stroke-width="0.7"/>
+          <line x1="18.5" y1="12" x2="19" y2="12" stroke="#c9962b" stroke-width="0.6"/>
+          <path d="M18.5 10.8 Q17.5 10 18.5 9 Q19 8 19 7" stroke="#c9962b" stroke-width="0.7" fill="none" stroke-linecap="round" opacity="0.5"/>
+        </svg></span>
+        <span class="menu-text">
+          <span class="menu-label">실측조사 빠른실행</span>
+          <span class="menu-desc">현장 실측조사 계산</span>
+        </span>
+        <span class="menu-arrow">›</span>
+      </a>
+      <!-- 청취조사 빠른실행 -->
+      <a class="menu-item" href="https://ubaldos00-ship-it.github.io/home/chungchi.html" target="_blank" rel="noopener">
+        <span class="menu-emoji">🎙️</span>
+        <span class="menu-text">
+          <span class="menu-label">청취조사 빠른실행</span>
+          <span class="menu-desc">농가 청취조사 계산</span>
+        </span>
+        <span class="menu-arrow">›</span>
+      </a>
+      <!-- 작물별 10a당 생산량 조회 (생산량조사 도구에서 이동) -->
+      <a class="menu-item" href="https://ubaldos00-ship-it.github.io/home/graph.html" target="_blank" rel="noopener">
+        <span class="menu-emoji"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+          <line x1="3" y1="5" x2="3" y2="19" stroke="#ddd" stroke-width="1"/>
+          <line x1="3" y1="19" x2="21" y2="19" stroke="#ddd" stroke-width="1"/>
+          <rect x="5"  y="9"  width="3" height="10" rx="1" fill="#2e7a4e"/>
+          <rect x="9.5" y="6" width="3" height="13" rx="1" fill="#c9962b"/>
+          <rect x="14" y="11" width="3" height="8"  rx="1" fill="#2e7a4e" opacity="0.7"/>
+          <rect x="18.5" y="7" width="2.5" height="12" rx="1" fill="#c9962b" opacity="0.7"/>
+          <circle cx="6.5"  cy="8.5"  r="1" fill="#1f5132"/>
+          <circle cx="11"   cy="5.5"  r="1" fill="#a07020"/>
+          <circle cx="15.5" cy="10.5" r="1" fill="#1f5132"/>
+          <circle cx="19.7" cy="6.5"  r="1" fill="#a07020"/>
+        </svg></span>
+        <span class="menu-text">
+          <span class="menu-label">작물별 10a당 생산량 조회</span>
+          <span class="menu-desc">시도 생산량 비교</span>
+        </span>
+        <span class="menu-arrow">›</span>
+      </a>
+      <!-- 즐겨찾기로 추가된 도구가 여기에 표시됩니다 -->
+      <div id="favMenuContainer"></div>
+    </div>
+  </section>
+
+  <!-- ② 개별 조사도구 바로가기 (접기/펼치기, 기본: 접힘) -->
+  <section class="section">
+    <h2 class="section-title"
+        style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;margin-bottom:0;"
+        onclick="toggleTools()">
+      <span style="display:flex;align-items:center;gap:10px;">
+        <span class="icon">🔗</span>
+        개별 조사도구 바로가기
+      </span>
+      <span id="toolsToggleBtn"
+            style="font-size:13px;font-weight:600;color:#27500A;background:#eaf3e6;border-radius:8px;padding:4px 10px;user-select:none;flex-shrink:0;">
+        ▼ 펼치기
+      </span>
+    </h2>
+    <div class="menu-grid" id="toolsMenuGrid" style="display:none;margin-top:13px;">
+      <!-- AB포구 선정 계산기 -->
+      <a class="menu-item" data-tool-key="flag" href="https://ubaldos00-ship-it.github.io/home/flag.html" target="_blank" rel="noopener">
+        <span class="menu-emoji"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+          <line x1="6" y1="3" x2="6" y2="21" stroke="#6b6b6b" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M6 4.5 L19.5 8.5 L6 13 Z" fill="#f0c400" stroke="#c9a000" stroke-width="0.9" stroke-linejoin="round"/>
+          <text x="12.5" y="10" font-size="5" font-weight="900" fill="#7a5800" font-family="sans-serif" text-anchor="middle" letter-spacing="-0.5">AB</text>
+          <ellipse cx="6" cy="21.2" rx="2" ry="0.8" fill="#aaa" opacity="0.6"/>
+          <circle cx="6" cy="21" r="1.1" fill="#888"/>
+        </svg></span>
+        <span class="menu-text">
+          <span class="menu-label">AB포구 선정 계산기</span>
+          <span class="menu-desc">실측 포구 선정 도구</span>
+        </span>
+        <button type="button" class="fav-btn" title="빠른조사 메뉴에 추가"><svg width="21" height="21" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 2l2.75 5.57 6.14.89-4.44 4.33 1.05 6.1L11 15.9l-5.5 2.89 1.05-6.1L2.11 8.46l6.14-.89L11 2z" stroke="#c9962b" stroke-width="1.8" stroke-linejoin="round"/></svg></button>
+        <span class="menu-arrow">›</span>
+      </a>
+      <!-- 계통 추출 계산기 -->
+      <a class="menu-item" data-tool-key="sampling" href="https://ubaldos00-ship-it.github.io/home/sampling.html" target="_blank" rel="noopener">
+        <span class="menu-emoji">🎯</span>
+        <span class="menu-text">
+          <span class="menu-label">계통 추출 계산기</span>
+          <span class="menu-desc">계통 추출 표본 계산</span>
+        </span>
+        <button type="button" class="fav-btn" title="빠른조사 메뉴에 추가"><svg width="21" height="21" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 2l2.75 5.57 6.14.89-4.44 4.33 1.05 6.1L11 15.9l-5.5 2.89 1.05-6.1L2.11 8.46l6.14-.89L11 2z" stroke="#c9962b" stroke-width="1.8" stroke-linejoin="round"/></svg></button>
+        <span class="menu-arrow">›</span>
+      </a>
+      <!-- 실측 10a당 생산량 계산기 (생산량조사 도구에서 이동) -->
+      <a class="menu-item" data-tool-key="silchuk" href="https://ubaldos00-ship-it.github.io/home/silchuk.html" target="_blank" rel="noopener">
+        <span class="menu-emoji"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+          <line x1="12" y1="3" x2="12" y2="20" stroke="#2e7a4e" stroke-width="1.6" stroke-linecap="round"/>
+          <rect x="8" y="19" width="8" height="2" rx="1" fill="#2e7a4e"/>
+          <line x1="5" y1="7" x2="19" y2="7" stroke="#1f5132" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="6" y1="7" x2="5" y2="12" stroke="#1f5132" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="8" y1="7" x2="7" y2="12" stroke="#1f5132" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="16" y1="7" x2="17" y2="12" stroke="#1f5132" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="18" y1="7" x2="19" y2="12" stroke="#1f5132" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M3.5 12 Q6 14 8.5 12" stroke="#2e7a4e" stroke-width="1.4" fill="#c6e8d5" stroke-linecap="round"/>
+          <path d="M15.5 12 Q18 14 20.5 12" stroke="#2e7a4e" stroke-width="1.4" fill="#c6e8d5" stroke-linecap="round"/>
+          <circle cx="12" cy="7" r="1.2" fill="#c9962b"/>
+          <circle cx="12" cy="3.5" r="1" fill="#1f5132"/>
+        </svg></span>
+        <span class="menu-text">
+          <span class="menu-label">실측 10a당 생산량 계산기</span>
+          <span class="menu-desc">실측 데이터 기반 계산</span>
+        </span>
+        <button type="button" class="fav-btn" title="빠른조사 메뉴에 추가"><svg width="21" height="21" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 2l2.75 5.57 6.14.89-4.44 4.33 1.05 6.1L11 15.9l-5.5 2.89 1.05-6.1L2.11 8.46l6.14-.89L11 2z" stroke="#c9962b" stroke-width="1.8" stroke-linejoin="round"/></svg></button>
+        <span class="menu-arrow">›</span>
+      </a>
+      <!-- 논벼 이삭 수 계산기 -->
+      <a class="menu-item" data-tool-key="jusu" href="https://ubaldos00-ship-it.github.io/home/jusu.html" target="_blank" rel="noopener">
+        <span class="menu-emoji"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+          <path d="M12 21 Q11.5 17 12 12 Q12.5 8 12 3.5" stroke="#5a8a30" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+          <ellipse cx="10.0" cy="5.5"  rx="2.1" ry="1.0" fill="#d4a800" transform="rotate(-38 10.0 5.5)"/>
+          <ellipse cx="9.6"  cy="8.0"  rx="2.1" ry="1.0" fill="#c9962b" transform="rotate(-32 9.6 8.0)"/>
+          <ellipse cx="9.5"  cy="10.5" rx="2.0" ry="1.0" fill="#d4a800" transform="rotate(-26 9.5 10.5)"/>
+          <ellipse cx="9.8"  cy="13.0" rx="1.9" ry="0.9" fill="#c9962b" transform="rotate(-20 9.8 13.0)"/>
+          <ellipse cx="10.3" cy="15.5" rx="1.7" ry="0.8" fill="#d4a800" transform="rotate(-14 10.3 15.5)"/>
+          <ellipse cx="14.0" cy="5.5"  rx="2.1" ry="1.0" fill="#c9962b" transform="rotate(38 14.0 5.5)"/>
+          <ellipse cx="14.4" cy="8.0"  rx="2.1" ry="1.0" fill="#d4a800" transform="rotate(32 14.4 8.0)"/>
+          <ellipse cx="14.5" cy="10.5" rx="2.0" ry="1.0" fill="#c9962b" transform="rotate(26 14.5 10.5)"/>
+          <ellipse cx="14.2" cy="13.0" rx="1.9" ry="0.9" fill="#d4a800" transform="rotate(20 14.2 13.0)"/>
+          <ellipse cx="13.7" cy="15.5" rx="1.7" ry="0.8" fill="#c9962b" transform="rotate(14 13.7 15.5)"/>
+          <ellipse cx="10.0" cy="5.5"  rx="2.1" ry="1.0" stroke="#a07020" stroke-width="0.4" fill="none" transform="rotate(-38 10.0 5.5)"/>
+          <ellipse cx="14.0" cy="5.5"  rx="2.1" ry="1.0" stroke="#a07020" stroke-width="0.4" fill="none" transform="rotate(38 14.0 5.5)"/>
+          <line x1="12"   y1="3.5" x2="11.3" y2="1.8" stroke="#5a8a30" stroke-width="1.1" stroke-linecap="round"/>
+          <line x1="12"   y1="3.5" x2="12.7" y2="1.8" stroke="#5a8a30" stroke-width="1.1" stroke-linecap="round"/>
+          <path d="M11.5 17.5 Q8.5 16 7 18.5" stroke="#5a8a30" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+          <path d="M12.5 19 Q15 17.5 16.5 19.5" stroke="#5a8a30" stroke-width="1.1" fill="none" stroke-linecap="round" opacity="0.75"/>
+        </svg></span>
+        <span class="menu-text">
+          <span class="menu-label">논벼 이삭 수 계산기</span>
+          <span class="menu-desc">포기 평균 이삭 수 계산</span>
+        </span>
+        <button type="button" class="fav-btn" title="빠른조사 메뉴에 추가"><svg width="21" height="21" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 2l2.75 5.57 6.14.89-4.44 4.33 1.05 6.1L11 15.9l-5.5 2.89 1.05-6.1L2.11 8.46l6.14-.89L11 2z" stroke="#c9962b" stroke-width="1.8" stroke-linejoin="round"/></svg></button>
+        <span class="menu-arrow">›</span>
+      </a>
+      <!-- 난수표 조회기 -->
+      <a class="menu-item" data-tool-key="nansu" href="https://ubaldos00-ship-it.github.io/home/nansu.html" target="_blank" rel="noopener">
+        <span class="menu-emoji">🔢</span>
+        <span class="menu-text">
+          <span class="menu-label">난수표 조회기</span>
+          <span class="menu-desc">조사용 난수표 조회</span>
+        </span>
+        <button type="button" class="fav-btn" title="빠른조사 메뉴에 추가"><svg width="21" height="21" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 2l2.75 5.57 6.14.89-4.44 4.33 1.05 6.1L11 15.9l-5.5 2.89 1.05-6.1L2.11 8.46l6.14-.89L11 2z" stroke="#c9962b" stroke-width="1.8" stroke-linejoin="round"/></svg></button>
+        <span class="menu-arrow">›</span>
+      </a>
+      <!-- 면적단위 환산 계산기 -->
+      <a class="menu-item" data-tool-key="area" href="https://ubaldos00-ship-it.github.io/home/area.html" target="_blank" rel="noopener">
+        <span class="menu-emoji"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+          <!-- 사각형 면적 표시 -->
+          <rect x="3" y="4" width="12" height="9" rx="1.2" fill="#e4f2e4" stroke="#2e7a4e" stroke-width="1.5"/>
+          <!-- 면적 기호 a -->
+          <text x="8.5" y="11" font-size="5.5" font-weight="900" fill="#1f5132" font-family="sans-serif" text-anchor="middle">a</text>
+          <!-- 화살표 (환산) -->
+          <path d="M16.5 9 L20 9" stroke="#c9962b" stroke-width="1.6" stroke-linecap="round"/>
+          <path d="M18.5 7 L20.5 9 L18.5 11" stroke="#c9962b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <!-- 단위 라벨들 -->
+          <text x="5" y="19.5" font-size="3.8" font-weight="700" fill="#2e7a4e" font-family="sans-serif" text-anchor="middle">㎡</text>
+          <text x="10" y="19.5" font-size="3.8" font-weight="700" fill="#1f5132" font-family="sans-serif" text-anchor="middle">10a</text>
+          <text x="15.5" y="19.5" font-size="3.8" font-weight="700" fill="#c9962b" font-family="sans-serif" text-anchor="middle">평</text>
+        </svg></span>
+        <span class="menu-text">
+          <span class="menu-label">면적단위 환산 계산기</span>
+          <span class="menu-desc">㎡ · 10a · 평 단위 환산</span>
+        </span>
+        <button type="button" class="fav-btn" title="빠른조사 메뉴에 추가"><svg width="21" height="21" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 2l2.75 5.57 6.14.89-4.44 4.33 1.05 6.1L11 15.9l-5.5 2.89 1.05-6.1L2.11 8.46l6.14-.89L11 2z" stroke="#c9962b" stroke-width="1.8" stroke-linejoin="round"/></svg></button>
+        <span class="menu-arrow">›</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ③ 도움말 섹션은 하단 네비 'PDF센터'로 이동(pdf/pdf_library.html) -->
+
+  <!-- ④ 테스트 링크 (통합탭 iframe 버전) -->
+  <section class="section" style="border-color:#d0b8f0;background:linear-gradient(135deg,#fdf8ff 0%,#f5eeff 100%);">
+    <h2 class="section-title"
+        style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;margin-bottom:0;border-left-color:#7c3aed;"
+        onclick="toggleTest()">
+      <span style="display:flex;align-items:center;gap:10px;">
+        <span class="icon" style="background:linear-gradient(135deg,#7c3aed 0%,#a855f7 100%);">🔒</span>
+        보안 테스트 페이지
+      </span>
+      <span id="testToggleBtn"
+            style="font-size:13px;font-weight:600;color:#7c3aed;background:#ede9fe;border-radius:8px;padding:4px 10px;user-select:none;flex-shrink:0;">
+        ▼ 펼치기
+      </span>
+    </h2>
+    <div class="menu-grid" id="testMenuGrid" style="display:none;margin-top:13px;">
+      <!-- 통합계산기 보안 테스트 -->
+      <a class="menu-item" href="https://ubaldos00-ship-it.github.io/home/tonghab_secure_test_v2.html" target="_blank" rel="noopener" style="border-color:#c4b5fd;">
+        <span class="menu-emoji"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+          <circle cx="11" cy="12" r="7.5" fill="#2e7a4e" stroke="#1f5132" stroke-width="0.8"/>
+          <path d="M6.5 6.5 Q11 4 15.5 6.5" stroke="rgba(255,255,255,0.25)" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+          <circle cx="11" cy="12" r="4.2" fill="#f6f4ec" stroke="#1f5132" stroke-width="0.7"/>
+          <circle cx="11" cy="12" r="1.6" fill="#c9962b" stroke="#a07020" stroke-width="0.6"/>
+          <circle cx="11" cy="12" r="0.7" fill="#fff"/>
+        </svg></span>
+        <span class="menu-text">
+          <span class="menu-label">통합계산기 보안 테스트 <span style="font-size:11px;color:#7c3aed;font-weight:600;">[🔒]</span></span>
+          <span class="menu-desc">브라우저 저장 자동 암호화 / JSON 암호화 내보내기</span>
+        </span>
+        <span class="menu-arrow" style="color:#7c3aed;">›</span>
+      </a>
+      <!-- 청취계산기 보안 테스트 -->
+      <a class="menu-item" href="https://ubaldos00-ship-it.github.io/home/chungchi_secure_test_v2.html" target="_blank" rel="noopener" style="border-color:#c4b5fd;">
+        <span class="menu-emoji">🎙️</span>
+        <span class="menu-text">
+          <span class="menu-label">청취계산기 보안 테스트 <span style="font-size:11px;color:#7c3aed;font-weight:600;">[🔒]</span></span>
+          <span class="menu-desc">브라우저 저장 자동 암호화 / JSON 암호화 내보내기</span>
+        </span>
+        <span class="menu-arrow" style="color:#7c3aed;">›</span>
+      </a>
+      <!-- 지도 보안 테스트 -->
+      <a class="menu-item" href="https://ubaldos00-ship-it.github.io/home/map_secure_test_v2.html" target="_blank" rel="noopener" style="border-color:#c4b5fd;">
+        <span class="menu-emoji">🗺️</span>
+        <span class="menu-text">
+          <span class="menu-label">지도 보안 테스트 <span style="font-size:11px;color:#7c3aed;font-weight:600;">[🔒]</span></span>
+          <span class="menu-desc">위치·핀·즐겨찾기 자동 암호화 / JSON 암호화 내보내기</span>
+        </span>
+        <span class="menu-arrow" style="color:#7c3aed;">›</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- 푸터 -->
+  <footer class="info">
+    <div class="source">출처 / 참고자료: 국가데이터처 통계설명자료, KOSIS 등</div>
+    <div class="brand-line">농작물생산조사 통합시스템 · 텐아르 v1.8-r2pdf</div>
+    <div class="meta" style="display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px;">
+      실시간 <strong id="realtimeCount">…</strong>명
+      &nbsp;·&nbsp;
+      오늘 <strong id="todayCount">…</strong>명
+      &nbsp;·&nbsp;
+      누적 <strong id="totalCount">…</strong>명
+      &nbsp;·&nbsp;
+      조회수 <strong id="pageviewCount">…</strong>회
+    </div>
+    <div class="meta" style="margin-top:4px;">최초 빌드 2026.4.27 · by <strong>Mr. Hyun</strong></div>
+  </footer>
+
+</main>
+
+<!-- ============ 하단 고정 네비 ============ -->
+<nav class="bottom-nav">
+  <a class="nav-btn" href="https://ubaldos00-ship-it.github.io/home/game_center.html" target="_blank" rel="noopener">
+    <span class="nav-icon">🎮</span>
+    <span>게임</span>
+  </a>
+  <!-- PDF센터 (기존 사다리 자리 · 사다리는 게임센터로 이동) -->
+  <a class="nav-btn" href="pdf/pdf_library.html" rel="noopener">
+    <span class="nav-new">NEW</span>
+    <span class="nav-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+      <path d="M6 2.5h8l4 4V21a.5.5 0 0 1-.5.5h-11A.5.5 0 0 1 6 21V3a.5.5 0 0 1 .5-.5Z" fill="#e8f2e4" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+      <path d="M14 2.5V6a.5.5 0 0 0 .5.5H18" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+      <rect x="8.3" y="12.5" width="7.4" height="6.2" rx="1" fill="#c0392b"/>
+      <text x="12" y="17.1" font-size="3.6" fill="#fff" font-family="Arial, sans-serif" text-anchor="middle" font-weight="900">PDF</text>
+    </svg></span>
+    <span>PDF센터</span>
+  </a>
+  <!-- 지도 -->
+  <a class="nav-btn" href="https://ubaldos00-ship-it.github.io/home/map.html" target="_blank" rel="noopener">
+    <span class="nav-new">NEW</span>
+    <span class="nav-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+      <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.8"/>
+      <line x1="12" y1="2"  x2="12" y2="7"  stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      <line x1="12" y1="17" x2="12" y2="22" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      <line x1="2"  y1="12" x2="7"  y2="12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      <line x1="17" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      <circle cx="12" cy="12" r="2.5" fill="currentColor"/>
+    </svg></span>
+    <span>지도</span>
+  </a>
+  <button class="nav-btn" type="button" id="cameraBtn" aria-label="카메라 열기">
+    <span class="nav-icon">📷</span>
+    <span>카메라</span>
+  </button>
+  <button class="nav-btn" type="button" onclick="openNativeCalc()" aria-label="계산기 열기">
+    <span class="nav-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+      <rect x="4" y="2" width="16" height="20" rx="2.5" fill="#4a7c59" stroke="#2e5e3e" stroke-width="0.8"/>
+      <rect x="6" y="4" width="12" height="5" rx="1.2" fill="#d4f0e0" stroke="#a0c8b0" stroke-width="0.5"/>
+      <text x="16.5" y="8.4" font-size="3.6" fill="#143820" font-family="monospace" text-anchor="end" font-weight="700">0</text>
+      <rect x="6.5" y="11"   width="3" height="2.2" rx="0.7" fill="#c9e8d5"/>
+      <rect x="10.5" y="11"  width="3" height="2.2" rx="0.7" fill="#c9e8d5"/>
+      <rect x="14.5" y="11"  width="3" height="2.2" rx="0.7" fill="#e6b955"/>
+      <rect x="6.5" y="14"   width="3" height="2.2" rx="0.7" fill="#c9e8d5"/>
+      <rect x="10.5" y="14"  width="3" height="2.2" rx="0.7" fill="#c9e8d5"/>
+      <rect x="14.5" y="14"  width="3" height="2.2" rx="0.7" fill="#c9e8d5"/>
+      <rect x="6.5" y="17"   width="7" height="2.2" rx="0.7" fill="#c9e8d5"/>
+      <rect x="14.5" y="17"  width="3" height="2.2" rx="0.7" fill="#c9962b"/>
+    </svg></span>
+    <span>계산기</span>
+  </button>
+</nav>
+
+
+
+<!-- ============ 문의/공유 채팅 버튼 ============ -->
+<button class="chat-fab" type="button" id="chatFab" aria-label="텐아르 문의 채팅 열기">
+  💬
+  <span class="chat-badge" id="chatBadge">0</span>
+</button>
+
+<!-- 문의/공유 채팅 모달: 현재 버전은 기기별 로컬 저장형, Firebase 연결 시 실시간 공유형으로 확장 가능 -->
+<div class="chat-modal" id="chatModal">
+  <div class="chat-panel" role="dialog" aria-modal="true" aria-labelledby="chatTitle">
+    <div class="chat-head">
+      <div class="chat-title-wrap">
+        <div class="chat-title" id="chatTitle">텐아르 문의 · 공유</div>
+        <div class="chat-subtitle">오류 신고, 사용 문의, 개선 의견을 남겨주세요.</div>
+      </div>
+      <button class="chat-close" type="button" id="chatClose" aria-label="채팅 닫기">×</button>
+    </div>
+    <div class="chat-notice">
+      ※ 개인정보, 농가명, 주소, 전화번호 등 민감정보는 입력하지 마세요.
+    </div>
+    <div class="chat-user-row">
+      <label class="chat-name-label" for="chatName">닉네임</label>
+      <input id="chatName" type="text" maxlength="18" placeholder="예: 상주1, 조사원A" autocomplete="nickname" />
+      <button type="button" id="chatNameSave">저장</button>
+    </div>
+    <div class="chat-messages" id="chatMessages" aria-live="polite"></div>
+    <button type="button" class="chat-jump-btn" id="chatJumpBtn">▼ 맨 아래로</button>
+    <div class="chat-send-row">
+      <textarea id="chatInput" maxlength="300"></textarea>
+      <button type="button" id="chatSend">전송</button>
+    </div>
+    <div class="chat-actions">
+      <span id="chatStatus">Firebase 연결 준비 중입니다.</span>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <button type="button" class="chat-admin-btn" id="chatAdminBtn">관리자</button>
+        <button type="button" class="chat-clear-btn" id="chatClear">새로고침</button>
+      </div>
+    </div>
+    <div class="chat-admin-panel" id="chatAdminPanel">
+      <span>관리자 모드 켜짐 · 모든 메시지 삭제 가능</span>
+      <button type="button" class="chat-admin-reset" id="chatResetAll">전체 초기화</button>
+    </div>
+  </div>
+</div>
+
+<!-- 공지 상세 팝업 -->
+<div class="notice-modal" id="noticeDetailModal">
+  <div class="notice-modal-box">
+    <button class="notice-modal-close" id="noticeDetailClose">✕</button>
+    <div class="notice-modal-title" id="noticeDetailTitle"></div>
+    <div class="notice-modal-date" id="noticeDetailDate"></div>
+    <div class="notice-modal-content" id="noticeDetailContent"></div>
+  </div>
+</div>
+
+<!-- 전체 게시물 목록 팝업 (#2) -->
+<div class="notice-modal" id="noticeListModal" style="z-index:240;">
+  <div class="notice-modal-box">
+    <button class="notice-modal-close" id="noticeListClose">✕</button>
+    <div class="notice-modal-title" style="margin-bottom:12px;">📋 전체 게시물</div>
+    <div id="noticeListFull"></div>
+  </div>
+</div>
+
+<!-- 공지 작성 팝업 -->
+<div class="notice-write-modal" id="noticeWriteModal">
+  <div class="notice-write-box">
+    <button class="notice-write-close" id="noticeWriteClose">✕</button>
+    <div class="notice-write-h" id="noticeWriteH">공지사항 작성</div>
+    <input type="text" id="noticeInputTitle" placeholder="제목" />
+    <textarea id="noticeInputContent" placeholder="내용"></textarea>
+    <button class="notice-save-btn" id="noticeSaveBtn">저장</button>
+  </div>
+</div>
+
+<!-- 카메라 input -->
+<input type="file" id="cameraInput" accept="image/*" capture="environment" />
+
+<!-- 계산기 모달 (iOS용) -->
+<div class="calc-modal" id="calcModal">
+  <div class="calc-box">
+    <div class="calc-topbar">
+      <span>계산기</span>
+      <button type="button" onclick="closeCalc()">닫기</button>
+    </div>
+    <div class="calc-display">
+      <div class="calc-expr" id="calcExpr"></div>
+      <div class="calc-val"  id="calcVal">0</div>
+    </div>
+    <div class="calc-grid">
+      <!-- row 1 -->
+      <button class="cbtn-gray" onclick="cAC()">AC</button>
+      <button class="cbtn-gray" onclick="cSign()">+/−</button>
+      <button class="cbtn-gray" onclick="cPct()">%</button>
+      <button class="cbtn-org"  onclick="cOp('÷')">÷</button>
+      <!-- row 2 -->
+      <button class="cbtn-dark" onclick="cNum('7')">7</button>
+      <button class="cbtn-dark" onclick="cNum('8')">8</button>
+      <button class="cbtn-dark" onclick="cNum('9')">9</button>
+      <button class="cbtn-org"  onclick="cOp('×')">×</button>
+      <!-- row 3 -->
+      <button class="cbtn-dark" onclick="cNum('4')">4</button>
+      <button class="cbtn-dark" onclick="cNum('5')">5</button>
+      <button class="cbtn-dark" onclick="cNum('6')">6</button>
+      <button class="cbtn-org"  onclick="cOp('−')">−</button>
+      <!-- row 4 -->
+      <button class="cbtn-dark" onclick="cNum('1')">1</button>
+      <button class="cbtn-dark" onclick="cNum('2')">2</button>
+      <button class="cbtn-dark" onclick="cNum('3')">3</button>
+      <button class="cbtn-org"  onclick="cOp('+')">+</button>
+      <!-- row 5 -->
+      <button class="cbtn-dark cbtn-zero" onclick="cNum('0')">0</button>
+      <button class="cbtn-dark" onclick="cDot()">.</button>
+      <button class="cbtn-org"  onclick="cEq()">=</button>
+    </div>
+  </div>
+</div>
+
+<!-- 카메라 모달 -->
+<div class="camera-modal" id="cameraModal">
+  <div class="modal-inner">
+    <img id="capturedImg" alt="촬영 이미지" />
+    <button type="button" id="closeModal">닫기</button>
+  </div>
+</div>
+
+<script>
+  /* ====== 실시간 접속 + 오늘 방문자 + 누적 방문자 (GA4 Apps Script 서버값) ====== */
+  (function () {
+    var GAS_URL = 'https://script.google.com/macros/s/AKfycbxQt1S2hdgI9oORFXbOCzmUEoF95UlBA1P1frfIRKGMdwp7E2y0_lKQdDBbN9FmcvLfMg/exec';
+
+    var rtEl  = document.getElementById('realtimeCount');
+    var tdEl  = document.getElementById('todayCount');
+    var totEl = document.getElementById('totalCount');
+    var pvEl  = document.getElementById('pageviewCount');
+
+    /* 오늘 방문자: 로컬 근사치 먼저 표시 */
+    try {
+      var today = new Date().toISOString().slice(0, 10);
+      var raw = localStorage.getItem('tenar_day') || '{}';
+      var d = JSON.parse(raw);
+      if (d.date !== today) d = { date: today, n: 0 };
+      d.n += 1;
+      localStorage.setItem('tenar_day', JSON.stringify(d));
+      if (tdEl) tdEl.textContent = d.n.toLocaleString();
+    } catch (e) {}
+
+    /* GA4 서버값으로 교체 (실시간 + 오늘 + 누적) */
+    if (!GAS_URL) return;
+    fetch(GAS_URL)
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (!data.ok) return;
+        if (rtEl  && typeof data.realtime  === 'number') rtEl.textContent  = data.realtime.toLocaleString();
+        if (tdEl  && typeof data.today     === 'number') tdEl.textContent  = data.today.toLocaleString();
+        if (totEl && typeof data.total     === 'number') totEl.textContent = data.total.toLocaleString();
+        if (pvEl  && typeof data.pageviews === 'number') pvEl.textContent  = data.pageviews.toLocaleString();
+      })
+      .catch(function () { /* 실패 시 로컬값 유지 */ });
+  })();
+
+  /* ====== 시계 ====== */
+  (function () {
+    const days = ['일', '월', '화', '수', '목', '금', '토'];
+    const pad = (n) => String(n).padStart(2, '0');
+    function tick() {
+      const d = new Date();
+      const txt = `${d.getMonth()+1}.${d.getDate()}.(${days[d.getDay()]}) ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+      const el = document.getElementById('clock');
+      if (el) el.textContent = txt;
+    }
+    tick();
+    setInterval(tick, 1000);
+  })();
+
+  /* ====== 카메라 ====== */
+  (function () {
+    const btn = document.getElementById('cameraBtn');
+    const input = document.getElementById('cameraInput');
+    const modal = document.getElementById('cameraModal');
+    const img = document.getElementById('capturedImg');
+    const closeBtn = document.getElementById('closeModal');
+
+    btn.addEventListener('click', function () { input.click(); });
+    input.addEventListener('change', function (e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (ev) { img.src = ev.target.result; modal.classList.add('show'); };
+      reader.readAsDataURL(file);
+      input.value = '';
+    });
+    closeBtn.addEventListener('click', function () { modal.classList.remove('show'); img.src = ''; });
+    modal.addEventListener('click', function (e) { if (e.target === modal) { modal.classList.remove('show'); img.src = ''; } });
+  })();
+
+  /* ====== 계산기 ====== */
+  function openNativeCalc() {
+    var ua = navigator.userAgent;
+    var isAndroid = /Android/i.test(ua);
+    if (isAndroid) {
+      /* 안드로이드: 기본 계산기 앱 Intent로 실행 */
+      var intentUrl = 'intent://#Intent;action=android.intent.action.MAIN;category=android.intent.category.APP_CALCULATOR;end';
+      var fallback = setTimeout(function() {
+        /* 앱이 없거나 막힌 경우 팝업 계산기 */
+        document.getElementById('calcModal').classList.add('show');
+      }, 800);
+      window.location.href = intentUrl;
+      document.addEventListener('visibilitychange', function onV() {
+        if (document.hidden) { clearTimeout(fallback); document.removeEventListener('visibilitychange', onV); }
+      });
+    } else {
+      /* iOS: 기본 계산기 앱 URL 스킴 없음 → 팝업 계산기 표시 */
+      document.getElementById('calcModal').classList.add('show');
+    }
+  }
+  function closeCalc() {
+    document.getElementById('calcModal').classList.remove('show');
+  }
+  document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('calcModal').addEventListener('click', function(e) {
+      if (e.target === this) closeCalc();
+    });
+  });
+
+  /* -- 계산기 로직 -- */
+  var _cv = '0', _op = '', _prev = '', _newNum = true, _expr = '';
+  function _updDisp() {
+    document.getElementById('calcVal').textContent  = _cv;
+    document.getElementById('calcExpr').textContent = _expr;
+    document.querySelector('.calc-grid button').textContent = (_cv === '0' && _newNum && !_op) ? 'AC' : 'C';
+  }
+  function cNum(n) {
+    if (_newNum) { _cv = n === '0' ? '0' : n; _newNum = false; }
+    else { _cv = _cv === '0' ? n : (_cv.length < 12 ? _cv + n : _cv); }
+    _updDisp();
+  }
+  function cDot() {
+    if (_newNum) { _cv = '0.'; _newNum = false; }
+    else if (_cv.indexOf('.') < 0) { _cv += '.'; }
+    _updDisp();
+  }
+  function cAC() {
+    _cv = '0'; _op = ''; _prev = ''; _newNum = true; _expr = '';
+    _updDisp();
+  }
+  function cSign() { _cv = String(-parseFloat(_cv)); _updDisp(); }
+  function cPct()  { _cv = String(parseFloat(_cv) / 100); _updDisp(); }
+  function cOp(o) {
+    if (_op && !_newNum) _calcResult(false);
+    _prev = _cv; _op = o; _newNum = true;
+    _expr = _prev + ' ' + o;
+    _updDisp();
+  }
+  function _calcResult(final) {
+    if (!_op || !_prev) return;
+    var a = parseFloat(_prev), b = parseFloat(_cv), r;
+    if      (_op === '+') r = a + b;
+    else if (_op === '−') r = a - b;
+    else if (_op === '×') r = a * b;
+    else if (_op === '÷') r = b !== 0 ? a / b : 0;
+    r = Math.round(r * 1e10) / 1e10;
+    if (final) { _expr = _prev + ' ' + _op + ' ' + _cv + ' ='; _op = ''; _prev = ''; }
+    _cv = String(r); _newNum = true;
+    _updDisp();
+  }
+  function cEq() { _calcResult(true); }
+
+  /* ====== 개별 조사도구 바로가기 접기/펼치기 ====== */
+  function toggleTools() {
+    const grid = document.getElementById('toolsMenuGrid');
+    const btn  = document.getElementById('toolsToggleBtn');
+    const isHidden = grid.style.display === 'none';
+    grid.style.display = isHidden ? '' : 'none';
+    btn.textContent = isHidden ? '▲ 접기' : '▼ 펼치기';
+  }
+
+  /* ====== 도움말 접기/펼치기 ====== */
+  function toggleHelp() {
+    const grid = document.getElementById('helpMenuGrid');
+    const btn  = document.getElementById('helpToggleBtn');
+    const isHidden = grid.style.display === 'none';
+    grid.style.display = isHidden ? '' : 'none';
+    btn.textContent = isHidden ? '▲ 접기' : '▼ 펼치기';
+  }
+
+  /* ====== 테스트 링크 접기/펼치기 ====== */
+  function toggleTest() {
+    const grid = document.getElementById('testMenuGrid');
+    const btn  = document.getElementById('testToggleBtn');
+    const isHidden = grid.style.display === 'none';
+    grid.style.display = isHidden ? '' : 'none';
+    btn.textContent = isHidden ? '▲ 접기' : '▼ 펼치기';
+  }
+
+  /* ====== 즐겨찾기(빠른조사 메뉴 추가) · 오프라인 다운로드 ====== */
+  (function () {
+    var FAV_KEY = 'tenar_fav_tools_v1';
+
+    function getFavs() {
+      try { return JSON.parse(localStorage.getItem(FAV_KEY) || '[]'); }
+      catch (e) { return []; }
+    }
+    function setFavs(arr) {
+      localStorage.setItem(FAV_KEY, JSON.stringify(arr));
+    }
+    function toolData(el) {
+      return {
+        key:   el.getAttribute('data-tool-key'),
+        href:  el.getAttribute('href'),
+        emoji: el.querySelector('.menu-emoji').innerHTML,
+        label: el.querySelector('.menu-label').textContent.trim(),
+        desc:  el.querySelector('.menu-desc').textContent.trim()
+      };
+    }
+
+    function toggleFav(key) {
+      var favs = getFavs();
+      if (favs.indexOf(key) >= 0) favs = favs.filter(function (k) { return k !== key; });
+      else favs.push(key);
+      setFavs(favs);
+      renderFavs();
+    }
+
+    function renderFavs() {
+      var favs = getFavs();
+      var container = document.getElementById('favMenuContainer');
+      if (!container) return;
+      container.innerHTML = '';
+
+      favs.forEach(function (key) {
+        var src = document.querySelector('[data-tool-key="' + key + '"]');
+        if (!src) return;
+        var d = toolData(src);
+        var a = document.createElement('a');
+        a.className = 'menu-item';
+        a.href = d.href;
+        a.target = '_blank';
+        a.rel = 'noopener';
+        a.innerHTML =
+          '<span class="menu-emoji">' + d.emoji + '</span>' +
+          '<span class="menu-text"><span class="menu-label">' + d.label + '</span>' +
+          '<span class="menu-desc">' + d.desc + '</span></span>' +
+          '<button type="button" class="fav-btn active" title="빠른조사 메뉴에서 제거"><svg width="21" height="21" viewBox="0 0 22 22" fill="none"><path d="M11 2l2.75 5.57 6.14.89-4.44 4.33 1.05 6.1L11 15.9l-5.5 2.89 1.05-6.1L2.11 8.46l6.14-.89L11 2z" fill="#f5b400" stroke="#e6a800" stroke-width="0.8" stroke-linejoin="round"/></svg></button>' +
+          '<span class="menu-arrow">›</span>';
+        a.querySelector('.fav-btn').addEventListener('click', function (e) {
+          e.preventDefault(); e.stopPropagation(); toggleFav(key);
+        });
+        container.appendChild(a);
+      });
+
+      /* 개별 조사도구 목록의 별표 상태 갱신 */
+      document.querySelectorAll('[data-tool-key]').forEach(function (el) {
+        var k = el.getAttribute('data-tool-key');
+        var star = el.querySelector('.fav-btn');
+        if (!star) return;
+        var svgFull  = '<svg width="21" height="21" viewBox="0 0 22 22" fill="none"><path d="M11 2l2.75 5.57 6.14.89-4.44 4.33 1.05 6.1L11 15.9l-5.5 2.89 1.05-6.1L2.11 8.46l6.14-.89L11 2z" fill="#f5b400" stroke="#e6a800" stroke-width="0.8" stroke-linejoin="round"/></svg>';
+        var svgEmpty = '<svg width="21" height="21" viewBox="0 0 22 22" fill="none"><path d="M11 2l2.75 5.57 6.14.89-4.44 4.33 1.05 6.1L11 15.9l-5.5 2.89 1.05-6.1L2.11 8.46l6.14-.89L11 2z" stroke="#c9962b" stroke-width="1.8" stroke-linejoin="round"/></svg>';
+        if (favs.indexOf(k) >= 0) { star.innerHTML = svgFull;  star.classList.add('active');    star.title = '빠른조사 메뉴에서 제거'; }
+        else                       { star.innerHTML = svgEmpty; star.classList.remove('active'); star.title = '빠른조사 메뉴에 추가'; }
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      /* 개별 조사도구: 별표 버튼 연결 */
+      document.querySelectorAll('[data-tool-key]').forEach(function (el) {
+        var d = toolData(el);
+        var star = el.querySelector('.fav-btn');
+        if (star) star.addEventListener('click', function (e) {
+          e.preventDefault(); e.stopPropagation(); toggleFav(d.key);
+        });
+      });
+
+      renderFavs();
+    });
+  })();
+</script>
+
+<script type="module">
+  /* ====== 문의/공유 채팅: Firebase 실시간 DB 연결형 ====== */
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+  import {
+    getDatabase,
+    ref,
+    push,
+    query,
+    orderByChild,
+    limitToLast,
+    onChildAdded,
+    onChildRemoved,
+    remove,
+    set,
+    get
+  } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAcU8iZR-B5HdvX1FOh4APCm0hXsz1u_X8",
+    authDomain: "tenar-chat-1674c.firebaseapp.com",
+    databaseURL: "https://tenar-chat-1674c-default-rtdb.firebaseio.com",
+    projectId: "tenar-chat-1674c",
+    storageBucket: "tenar-chat-1674c.firebasestorage.app",
+    messagingSenderId: "662688468209",
+    appId: "1:662688468209:web:0f37484e26943d79946d50"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const messagesRef = ref(db, "tenarChat/messages");
+  const recentMessagesQuery = query(messagesRef, orderByChild("createdAt"), limitToLast(80));
+
+  const NAME_KEY = 'tenar_chat_name_v1';
+  const CLIENT_ID_KEY = 'tenar_chat_client_id_v1';
+  const LAST_READ_KEY = 'tenar_chat_last_read_v2';
+  // ⚠️ 정적 HTML 관리자 비밀번호입니다. GitHub Pages에 올리면 코드 보기로 확인될 수 있습니다.
+  // 더 강한 보안은 Firebase Authentication 적용이 필요합니다.
+  const ADMIN_PASSWORD = 'tenar2026';
+
+  const fab = document.getElementById('chatFab');
+  const badge = document.getElementById('chatBadge');
+  const modal = document.getElementById('chatModal');
+  const closeBtn = document.getElementById('chatClose');
+  const nameInput = document.getElementById('chatName');
+  const nameSave = document.getElementById('chatNameSave');
+  const messagesEl = document.getElementById('chatMessages');
+  const input = document.getElementById('chatInput');
+  const sendBtn = document.getElementById('chatSend');
+  const refreshBtn = document.getElementById('chatClear');
+  const adminBtn = document.getElementById('chatAdminBtn');
+  const adminPanel = document.getElementById('chatAdminPanel');
+  const resetAllBtn = document.getElementById('chatResetAll');
+  const status = document.getElementById('chatStatus');
+
+  const messages = [];
+  const seenKeys = new Set();
+  let isAdminMode = false;
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+  function timeText(ts) {
+    const d = new Date(Number(ts) || Date.now());
+    return `${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+  }
+  function currentName() {
+    const saved = (localStorage.getItem(NAME_KEY) || '').trim();
+    return saved || '나';
+  }
+  function updateNameSaveButton() {
+    const saved = (localStorage.getItem(NAME_KEY) || '').trim();
+    if (!nameSave) return;
+    if (saved) {
+      nameSave.textContent = '재설정';
+      nameSave.classList.add('saved');
+      nameSave.setAttribute('aria-label', '닉네임 재설정');
+    } else {
+      nameSave.textContent = '저장';
+      nameSave.classList.remove('saved');
+      nameSave.setAttribute('aria-label', '닉네임 저장');
+    }
+  }
+  function getClientId() {
+    let id = localStorage.getItem(CLIENT_ID_KEY);
+    if (!id) {
+      const rnd = Math.random().toString(36).slice(2);
+      id = 'tenar-' + Date.now().toString(36) + '-' + rnd;
+      localStorage.setItem(CLIENT_ID_KEY, id);
+    }
+    return id;
+  }
+  function sortedMessages() {
+    return messages.slice().sort((a, b) => Number(a.createdAt || 0) - Number(b.createdAt || 0)).slice(-80);
+  }
+  function render() {
+    const shouldStickToBottom = !messagesEl || (messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight < 80);
+    const list = sortedMessages();
+    const me = currentName();
+    if (!list.length) {
+      messagesEl.innerHTML = '<div class="chat-empty">아직 남긴 메시지가 없습니다.<br>오류나 개선 의견을 편하게 적어주세요.</div>';
+    } else {
+      messagesEl.innerHTML = list.map(m => {
+        const mineByClient = m.clientId && m.clientId === getClientId();
+        const mine = (mineByClient || m.name === me) ? ' mine' : '';
+        const canDelete = !!m.key && (mineByClient || isAdminMode);
+        const deleteLabel = isAdminMode && !mineByClient ? '관리자 삭제' : '내 글 삭제';
+        const deleteBtn = canDelete ? `<button type="button" class="chat-delete-btn" data-chat-delete="${escapeHtml(m.key)}">${deleteLabel}</button>` : '';
+        return `<div class="chat-msg${mine}">
+          <div class="chat-meta">${escapeHtml(m.name || '익명')} · ${escapeHtml(timeText(m.createdAt))}</div>
+          <div class="chat-bubble">${escapeHtml(m.text || '')}</div>
+          ${deleteBtn}
+        </div>`;
+      }).join('');
+    }
+    if (shouldStickToBottom) messagesEl.scrollTop = messagesEl.scrollHeight;
+    updateBadge();
+    if (typeof updateChatJumpBtn === 'function') updateChatJumpBtn();
+  }
+  function latestMessageTime() {
+    return messages.reduce((max, m) => Math.max(max, Number(m.createdAt || 0)), 0);
+  }
+  function updateBadge() {
+    const lastRead = Number(localStorage.getItem(LAST_READ_KEY) || 0);
+    const unread = messages.filter(m => Number(m.createdAt || 0) > lastRead).length;
+    if (unread > 0 && !modal.classList.contains('show')) {
+      badge.style.display = 'flex';
+      badge.textContent = unread > 9 ? '9+' : String(unread);
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+  function markRead() {
+    localStorage.setItem(LAST_READ_KEY, String(latestMessageTime() || Date.now()));
+    updateBadge();
+  }
+  let chatSavedScrollY = 0;
+  function lockPageScroll() {
+    chatSavedScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+    document.body.classList.add('chat-scroll-lock');
+    document.body.style.top = `-${chatSavedScrollY}px`;
+  }
+  function unlockPageScroll() {
+    document.body.classList.remove('chat-scroll-lock');
+    document.body.style.top = '';
+    window.scrollTo(0, chatSavedScrollY);
+  }
+  /* v34: 모바일 키보드가 올라와도 채팅 헤더와 입력창이 모두 보이도록
+     visualViewport(보이는 화면 영역)에 맞춰 모달을 고정한다. */
+  const chatPanelEl = modal.querySelector('.chat-panel');
+  function adjustChatViewport() {
+    if (!modal.classList.contains('show')) return;
+    const vv = window.visualViewport;
+    if (!vv) return;
+    // 모달을 '보이는 영역'(키보드 위)에만 위치시킨다 → 헤더는 위, 입력창은 키보드 바로 위에 유지
+    modal.style.top = vv.offsetTop + 'px';
+    modal.style.bottom = 'auto';
+    modal.style.height = vv.height + 'px';
+    if (chatPanelEl) chatPanelEl.style.maxHeight = vv.height + 'px';
+  }
+  function resetChatViewport() {
+    modal.style.top = '';
+    modal.style.bottom = '';
+    modal.style.height = '';
+    if (chatPanelEl) chatPanelEl.style.maxHeight = '';
+  }
+  function openChat() {
+    lockPageScroll();
+    modal.classList.add('show');
+    nameInput.value = currentName() === '나' ? '' : currentName();
+    updateNameSaveButton();
+    const savedName = (localStorage.getItem(NAME_KEY) || '').trim();
+    if (savedName) status.textContent = `${savedName} 닉네임이 저장되어 있습니다.`;
+    render();
+    markRead();
+    /* #4: 처음 열 때 맨 아래(최신 글)로 이동 */
+    scrollChatToBottom();
+    setTimeout(scrollChatToBottom, 60);
+    setTimeout(scrollChatToBottom, 250);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', adjustChatViewport);
+      window.visualViewport.addEventListener('scroll', adjustChatViewport);
+    }
+    adjustChatViewport();
+    setTimeout(() => { input.focus(); adjustChatViewport(); }, 120);
+  }
+  /* #4: 채팅 맨 아래로 이동 + 버튼 표시 제어 */
+  function scrollChatToBottom() {
+    if (messagesEl) messagesEl.scrollTop = messagesEl.scrollHeight;
+    updateChatJumpBtn();
+  }
+  function updateChatJumpBtn() {
+    const btn = document.getElementById('chatJumpBtn');
+    if (!btn || !messagesEl) return;
+    const nearBottom = messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight < 120;
+    btn.classList.toggle('show', !nearBottom);
+  }
+  (function initChatJump() {
+    const btn = document.getElementById('chatJumpBtn');
+    if (btn) btn.addEventListener('click', scrollChatToBottom);
+    if (messagesEl) messagesEl.addEventListener('scroll', updateChatJumpBtn, { passive: true });
+  })();
+  function closeChat() {
+    modal.classList.remove('show');
+    if (window.visualViewport) {
+      window.visualViewport.removeEventListener('resize', adjustChatViewport);
+      window.visualViewport.removeEventListener('scroll', adjustChatViewport);
+    }
+    resetChatViewport();
+    unlockPageScroll();
+    markRead();
+  }
+  function saveName() {
+    const name = nameInput.value.trim().slice(0, 18);
+    if (!name) {
+      alert('이름이나 지역명을 입력해주세요. 예: 상주1, 조사원A');
+      input.focus();
+      return;
+    }
+    localStorage.setItem(NAME_KEY, name);
+    status.textContent = `${name} 닉네임이 저장되었습니다.`;
+    updateNameSaveButton();
+    render();
+  }
+  async function sendMessage() {
+    if (sendBtn.disabled) return;
+    const text = input.value.trim().slice(0, 300);
+    if (!text) { input.focus(); return; }
+    const name = (nameInput.value.trim() || currentName()).slice(0, 18);
+    if (!name || name === '나') {
+      alert('먼저 이름이나 지역명을 입력하고 저장해주세요. 예: 상주1, 조사원A');
+      return;
+    }
+    localStorage.setItem(NAME_KEY, name);
+    updateNameSaveButton();
+    sendBtn.disabled = true;
+    status.textContent = '전송 중...';
+    try {
+      await push(messagesRef, { name, text, createdAt: Date.now(), clientId: getClientId() });
+      input.value = '';
+      status.textContent = '전송 완료';
+      markRead();
+      setTimeout(() => { messagesEl.scrollTop = messagesEl.scrollHeight; }, 30);
+    } catch (err) {
+      console.error(err);
+      status.textContent = '전송 실패: Firebase 규칙을 v29/v30 삭제 기능용 규칙으로 바꿔주세요.';
+      alert('메시지 전송에 실패했습니다. Realtime Database 규칙에서 clientId 저장과 삭제가 허용되어야 합니다. 채팅 삭제 기능용 규칙으로 교체 후 다시 전송해주세요.');
+    } finally {
+      sendBtn.disabled = false;
+      requestAnimationFrame(() => {
+        input.focus();
+        input.setSelectionRange(input.value.length, input.value.length);
+      });
+    }
+  }
+  function refreshMessages() {
+    render();
+    status.textContent = '최근 메시지를 다시 표시했습니다.';
+  }
+  async function deleteMessage(key) {
+    if (!key) return;
+    const msg = messages.find(m => m.key === key);
+    const mineByClient = msg && msg.clientId && msg.clientId === getClientId();
+    if (!isAdminMode && !mineByClient) {
+      alert('본인이 보낸 메시지만 삭제할 수 있습니다.');
+      return;
+    }
+    const askText = isAdminMode && !mineByClient ? '관리자 권한으로 이 메시지를 삭제할까요?' : '내가 보낸 이 메시지를 삭제할까요?';
+    if (!confirm(askText)) return;
+    try {
+      await remove(ref(db, 'tenarChat/messages/' + key));
+      status.textContent = mineByClient ? '내 메시지를 삭제했습니다.' : '관리자 권한으로 메시지를 삭제했습니다.';
+    } catch (err) {
+      console.error(err);
+      status.textContent = '삭제 실패: Firebase 규칙을 확인해주세요.';
+      alert('삭제에 실패했습니다. Realtime Database 규칙에서 tenarChat/messages 경로 삭제가 허용되어야 합니다.');
+    }
+  }
+  function openAdminMode() {
+    if (isAdminMode) {
+      isAdminMode = false;
+      adminPanel.classList.remove('show');
+      status.textContent = '관리자 모드를 종료했습니다.';
+      render();
+      return;
+    }
+    const pw = prompt('관리자 비밀번호를 입력하세요.');
+    if (pw === null) return;
+    if (pw !== ADMIN_PASSWORD) {
+      alert('관리자 비밀번호가 맞지 않습니다.');
+      return;
+    }
+    isAdminMode = true;
+    adminPanel.classList.add('show');
+    status.textContent = '관리자 모드가 켜졌습니다.';
+    render();
+  }
+  async function resetAllMessages() {
+    if (!isAdminMode) return;
+    const ok1 = confirm('전체 채팅을 초기화할까요? 모든 메시지가 삭제됩니다.');
+    if (!ok1) return;
+    const ok2 = confirm('정말 삭제할까요? 되돌릴 수 없습니다.');
+    if (!ok2) return;
+    try {
+      await remove(messagesRef);
+      messages.length = 0;
+      seenKeys.clear();
+      render();
+      status.textContent = '전체 채팅을 초기화했습니다.';
+    } catch (err) {
+      console.error(err);
+      status.textContent = '전체 초기화 실패: Firebase 규칙의 messages 경로 쓰기 권한을 확인해주세요.';
+      alert('전체 초기화에 실패했습니다. Realtime Database 규칙에서 tenarChat/messages 경로 삭제가 허용되어야 합니다.');
+    }
+  }
+
+  if (fab && modal) {
+    fab.addEventListener('click', openChat);
+    closeBtn.addEventListener('click', closeChat);
+    modal.addEventListener('click', e => { if (e.target === modal) closeChat(); });
+    modal.addEventListener('touchmove', e => {
+      /* v35: 스크롤 가능한 영역(메시지 목록·입력창) 안에서만 스크롤 허용,
+         그 외(배경·헤더·닉네임/입력 바 등)는 뒤쪽 홈화면이 움직이지 않도록 차단 */
+      var t = e.target;
+      if (t && (t.closest('.chat-messages') || t.closest('textarea'))) return;
+      if (e.cancelable) e.preventDefault();
+    }, { passive: false });
+    nameSave.addEventListener('click', saveName);
+    /* v34: 전송 버튼을 눌러도 입력창 포커스(커서·키보드)가 유지되도록 mousedown 기본동작 차단
+       → 엔터키처럼 전송 후에도 커서가 입력창에 그대로 남음 */
+    sendBtn.addEventListener('mousedown', e => e.preventDefault());
+    sendBtn.addEventListener('click', sendMessage);
+    refreshBtn.addEventListener('click', refreshMessages);
+    adminBtn.addEventListener('click', openAdminMode);
+    resetAllBtn.addEventListener('click', resetAllMessages);
+    messagesEl.addEventListener('click', function (e) {
+      const btn = e.target.closest('[data-chat-delete]');
+      if (btn) deleteMessage(btn.getAttribute('data-chat-delete'));
+    });
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+    /* v34: 입력창에 커서가 놓여 키보드가 뜰 때도 헤더·입력창이 보이도록 보정 */
+    input.addEventListener('focus', function () { setTimeout(adjustChatViewport, 60); });
+    nameInput.addEventListener('focus', function () { setTimeout(adjustChatViewport, 60); });
+
+    status.textContent = '연결 중...';
+    get(messagesRef).then(() => {
+      status.textContent = '연결 완료';
+    }).catch(err => {
+      console.error(err);
+      status.textContent = 'Firebase 읽기 실패: Realtime Database 규칙을 확인해주세요.';
+    });
+
+    onChildAdded(recentMessagesQuery, snapshot => {
+      if (seenKeys.has(snapshot.key)) return;
+      seenKeys.add(snapshot.key);
+      const msg = snapshot.val() || {};
+      messages.push({ key: snapshot.key, ...msg });
+      while (messages.length > 80) messages.shift();
+      render();
+      if (modal.classList.contains('show')) markRead();
+    }, err => {
+      console.error(err);
+      status.textContent = 'Firebase 수신 실패: 규칙 또는 DB 주소를 확인해주세요.';
+    });
+
+    onChildRemoved(messagesRef, snapshot => {
+      const idx = messages.findIndex(m => m.key === snapshot.key);
+      if (idx >= 0) messages.splice(idx, 1);
+      seenKeys.delete(snapshot.key);
+      render();
+    });
+
+    updateNameSaveButton();
+    render();
+    updateBadge();
+  }
+</script>
+
+<script type="module">
+  /* ====== 홈 공지사항: Firestore + Google Auth (관리자만 작성/삭제) ====== */
+  import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+  import {
+    getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+  import {
+    getFirestore, collection, getDocs, addDoc, deleteDoc, updateDoc, doc,
+    query, orderBy, limit, serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAcU8iZR-B5HdvX1FOh4APCm0hXsz1u_X8",
+    authDomain: "tenar-chat-1674c.firebaseapp.com",
+    databaseURL: "https://tenar-chat-1674c-default-rtdb.firebaseio.com",
+    projectId: "tenar-chat-1674c",
+    storageBucket: "tenar-chat-1674c.firebasestorage.app",
+    messagingSenderId: "662688468209",
+    appId: "1:662688468209:web:0f37484e26943d79946d50"
+  };
+
+  const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const ADMIN_EMAIL = 'ubaldos00@gmail.com';
+
+  let isAdmin = false;
+  let noticesCache = [];
+
+  function withTimeout(p, ms = 5000) {
+    return Promise.race([p, new Promise((_, r) => setTimeout(() => r(new Error('timeout')), ms))]);
+  }
+  function escHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function fmtDate(ts) {
+    const d = ts?.toDate?.() || new Date();
+    return `${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()}`;
+  }
+
+  /* ── 공지 목록 렌더 ── */
+  let editingId = null;
+
+  /* 타임스탬프 → ms */
+  function tsMs(x) { return x?.toMillis?.() ?? (x?.seconds ? x.seconds * 1000 : 0); }
+  /* 고정(pinned) 먼저, 그다음 최신순 정렬 (#2) */
+  function sortNotices(arr) {
+    return arr.slice().sort((a, b) => {
+      const pa = a.data.pinned ? 1 : 0, pb = b.data.pinned ? 1 : 0;
+      if (pa !== pb) return pb - pa;
+      if (pa && pb) return tsMs(b.data.pinnedAt) - tsMs(a.data.pinnedAt);
+      return tsMs(b.data.createdAt) - tsMs(a.data.createdAt);
+    });
+  }
+
+  /* 한 줄 렌더 (홈/전체목록 공용) — 관리자면 고정·수정·삭제 버튼 */
+  function rowHtml(d) {
+    const n = d.data;
+    const pinned = !!n.pinned;
+    const lead = pinned ? '<span class="notice-pin-badge">📌</span>' : '<span class="notice-dot">•</span>';
+    let adminBtns = '';
+    if (isAdmin) {
+      adminBtns =
+        `<button class="notice-pin-btn ${pinned ? 'on' : ''}" data-pin-id="${escHtml(d.id)}" title="${pinned ? '고정 해제' : '맨 위 고정'}">${pinned ? '📌' : '📍'}</button>` +
+        `<button class="notice-edit-btn" data-edit-id="${escHtml(d.id)}" title="수정">✎</button>` +
+        `<button class="notice-del-btn" data-del-id="${escHtml(d.id)}" title="삭제">✕</button>`;
+    }
+    return `<div class="notice-item-row" data-open-id="${escHtml(d.id)}">
+      ${lead}
+      <span class="notice-item-title">${escHtml(n.title || '(제목 없음)')}</span>
+      <span class="notice-item-date">${fmtDate(n.createdAt)}</span>
+      ${adminBtns}
+    </div>`;
+  }
+  function bindRows(container) {
+    container.querySelectorAll('.notice-item-row').forEach(row => {
+      row.addEventListener('click', e => {
+        const pin = e.target.closest('[data-pin-id]');
+        if (pin) { e.stopPropagation(); togglePin(pin.dataset.pinId); return; }
+        const ed = e.target.closest('[data-edit-id]');
+        if (ed) { e.stopPropagation(); openEdit(ed.dataset.editId); return; }
+        const del = e.target.closest('[data-del-id]');
+        if (del) { e.stopPropagation(); deleteNotice(del.dataset.delId); return; }
+        openDetailById(row.dataset.openId);
+      });
+    });
+  }
+
+  /* ── 홈 목록: 상위 3개만 (#1) ── */
+  function renderNotices() {
+    const el = document.getElementById('noticeListHome');
+    if (!el) return;
+    const sorted = sortNotices(noticesCache);
+    if (!sorted.length) {
+      el.innerHTML = '<div style="color:#a07020;font-size:12px;">• 등록된 공지가 없습니다.</div>';
+    } else {
+      el.innerHTML = sorted.slice(0, 3).map(rowHtml).join('');
+      bindRows(el);
+    }
+    const more = document.getElementById('noticeMoreBtn');
+    if (more) more.style.display = sorted.length > 3 ? '' : 'none';
+  }
+  /* ── 전체 목록 모달 (#2) ── */
+  function renderFullList() {
+    const el = document.getElementById('noticeListFull');
+    if (!el) return;
+    const sorted = sortNotices(noticesCache);
+    el.innerHTML = sorted.length ? sorted.map(rowHtml).join('')
+      : '<div style="color:#a07020;font-size:12px;">• 등록된 공지가 없습니다.</div>';
+    bindRows(el);
+  }
+  function refreshNoticeViews() {
+    renderNotices();
+    if (document.getElementById('noticeListModal').classList.contains('show')) renderFullList();
+  }
+
+  /* ── 공지 로드 ── */
+  async function loadNotices() {
+    try {
+      const q = query(collection(db, 'notices'), orderBy('createdAt', 'desc'), limit(50));
+      const qs = await withTimeout(getDocs(q));
+      noticesCache = qs.docs.map(d => ({ id: d.id, data: d.data() }));
+      refreshNoticeViews();
+    } catch (e) {
+      const el = document.getElementById('noticeListHome');
+      if (el) el.innerHTML = '<div style="color:#a07020;font-size:12px;">• 베타 시험서비스 중입니다. 오류 발견 시 채팅으로 문의해주세요.</div>';
+    }
+  }
+
+  /* ── 전체보기 열기/닫기 ── */
+  function openFullList() { renderFullList(); document.getElementById('noticeListModal').classList.add('show'); }
+  document.getElementById('noticeMoreBtn').addEventListener('click', openFullList);
+  document.getElementById('noticeHeadStrong').addEventListener('click', openFullList);
+  document.getElementById('noticeListClose').addEventListener('click', () => {
+    document.getElementById('noticeListModal').classList.remove('show');
+  });
+  document.getElementById('noticeListModal').addEventListener('click', e => {
+    if (e.target === document.getElementById('noticeListModal'))
+      document.getElementById('noticeListModal').classList.remove('show');
+  });
+
+  /* ── 상세 팝업 ── */
+  function openDetailById(id) { const it = noticesCache.find(n => n.id === id); if (it) showDetail(it); }
+  function showDetail(d) {
+    const n = d.data;
+    document.getElementById('noticeDetailTitle').textContent = n.title || '';
+    document.getElementById('noticeDetailDate').textContent = fmtDate(n.createdAt);
+    document.getElementById('noticeDetailContent').textContent = n.content || '';
+    document.getElementById('noticeDetailModal').classList.add('show');
+  }
+  document.getElementById('noticeDetailClose').addEventListener('click', () => {
+    document.getElementById('noticeDetailModal').classList.remove('show');
+  });
+  document.getElementById('noticeDetailModal').addEventListener('click', e => {
+    if (e.target === document.getElementById('noticeDetailModal'))
+      document.getElementById('noticeDetailModal').classList.remove('show');
+  });
+
+  /* ── 고정 토글 (#2) ── */
+  async function togglePin(id) {
+    const it = noticesCache.find(n => n.id === id);
+    if (!it) return;
+    const next = !it.data.pinned;
+    try {
+      await withTimeout(updateDoc(doc(db, 'notices', id), { pinned: next, pinnedAt: next ? serverTimestamp() : null }));
+      await loadNotices();
+    } catch (e) { alert('고정 변경 실패: ' + e.message); }
+  }
+
+  /* ── 공지 삭제 ── */
+  async function deleteNotice(id) {
+    if (!confirm('이 게시물을 삭제할까요?')) return;
+    try {
+      await withTimeout(deleteDoc(doc(db, 'notices', id)));
+      await loadNotices();
+    } catch (e) { alert('삭제 실패: ' + e.message); }
+  }
+
+  /* ── 수정 열기 (#3) ── */
+  function openEdit(id) {
+    const it = noticesCache.find(n => n.id === id);
+    if (!it) return;
+    editingId = id;
+    document.getElementById('noticeWriteH').textContent = '게시물 수정';
+    document.getElementById('noticeSaveBtn').textContent = '수정 저장';
+    document.getElementById('noticeInputTitle').value = it.data.title || '';
+    document.getElementById('noticeInputContent').value = it.data.content || '';
+    document.getElementById('noticeWriteModal').classList.add('show');
+  }
+
+  /* ── 공지 작성/수정 팝업 ── */
+  document.getElementById('noticeAddBtn').addEventListener('click', () => {
+    editingId = null;
+    document.getElementById('noticeWriteH').textContent = '공지사항 작성';
+    document.getElementById('noticeSaveBtn').textContent = '저장';
+    document.getElementById('noticeInputTitle').value = '';
+    document.getElementById('noticeInputContent').value = '';
+    document.getElementById('noticeWriteModal').classList.add('show');
+  });
+  document.getElementById('noticeWriteClose').addEventListener('click', () => {
+    document.getElementById('noticeWriteModal').classList.remove('show');
+  });
+  document.getElementById('noticeWriteModal').addEventListener('click', e => {
+    if (e.target === document.getElementById('noticeWriteModal'))
+      document.getElementById('noticeWriteModal').classList.remove('show');
+  });
+  document.getElementById('noticeSaveBtn').addEventListener('click', async () => {
+    const title = document.getElementById('noticeInputTitle').value.trim();
+    const content = document.getElementById('noticeInputContent').value.trim();
+    if (!title || !content) { alert('제목과 내용을 입력하세요.'); return; }
+    try {
+      if (editingId) {
+        await withTimeout(updateDoc(doc(db, 'notices', editingId), { title, content }));
+      } else {
+        await withTimeout(addDoc(collection(db, 'notices'), { title, content, pinned: false, createdAt: serverTimestamp() }));
+      }
+      document.getElementById('noticeWriteModal').classList.remove('show');
+      editingId = null;
+      await loadNotices();
+    } catch (e) { alert('저장 실패: ' + e.message); }
+  });
+
+  /* ── 관리자 인증 ── */
+  onAuthStateChanged(auth, user => {
+    isAdmin = !!(user && user.email === ADMIN_EMAIL);
+    const adminBar = document.getElementById('noticeAdminBar');
+    const adminBtn = document.getElementById('noticeAdminBtn');
+    if (adminBar) adminBar.classList.toggle('show', isAdmin);
+    if (adminBtn) adminBtn.style.opacity = isAdmin ? '1' : '0.5';
+    refreshNoticeViews();
+  });
+
+  document.getElementById('noticeAdminBtn').addEventListener('click', async () => {
+    if (isAdmin) return;
+    try {
+      const result = await signInWithPopup(auth, new GoogleAuthProvider());
+      if (result.user.email !== ADMIN_EMAIL) {
+        await signOut(auth);
+        alert('관리자 계정으로만 로그인할 수 있습니다.');
+      }
+    } catch (e) {
+      if (e.code === 'auth/popup-blocked') alert('팝업이 차단됐습니다. 브라우저에서 팝업을 허용해 주세요.');
+      else if (e.code !== 'auth/popup-closed-by-user') alert('로그인 실패: ' + e.message);
+    }
+  });
+
+  document.getElementById('noticeLogoutBtn').addEventListener('click', () => {
+    signOut(auth);
+  });
+
+  /* ── 초기 로드 ── */
+  loadNotices();
+</script>
+
+<!-- GoatCounter 방문자 추적 -->
+<script data-goatcounter="https://ubaldos.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+<!-- v36: 네이버 애널리틱스(Wcslog) -->
+<script type="text/javascript" src="//wcs.pstatic.net/wcslog.js"></script>
+<script type="text/javascript">
+if(!wcs_add) var wcs_add = {};
+wcs_add["wa"] = "19e5d0d688a0f70";
+if(window.wcs) {
+  wcs_do();
+}
+</script>
+
+<script>
+  // v58: Mac/Safari 트랙패드·키보드로 홈 메뉴가 확대되는 현상 방지
+  document.addEventListener('wheel', function(e){
+    if (e.ctrlKey || e.metaKey) e.preventDefault();
+  }, { passive:false });
+  document.addEventListener('gesturestart', function(e){ e.preventDefault(); }, { passive:false });
+  document.addEventListener('gesturechange', function(e){ e.preventDefault(); }, { passive:false });
+  document.addEventListener('keydown', function(e){
+    if ((e.ctrlKey || e.metaKey) && ['+','=','-','0'].includes(e.key)) e.preventDefault();
+  }, { passive:false });
+  /* LED 전광판 닫기 (세션 동안 유지) */
+  (function(){
+    var board = document.getElementById('ledBoard'), btn = document.getElementById('ledClose');
+    if(!board) return;
+    try{ if(sessionStorage.getItem('tenarLedClosed')==='1') board.classList.add('led-hidden'); }catch(e){}
+    if(btn) btn.addEventListener('click', function(){
+      board.classList.add('led-hidden');
+      try{ sessionStorage.setItem('tenarLedClosed','1'); }catch(e){}
+    });
+  })();
+</script>
+</body>
+</html>
