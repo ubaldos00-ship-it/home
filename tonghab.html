@@ -1,4 +1,4 @@
-<!-- tonghab_secure_test_v3.html · 저장: 2026-07-09 13:45 KST · [보안테스트 v3] JSON 내보내기/불러오기=저장목록 전체 백업·복원으로 수정 + v2 보안기능 유지 · 원본 보존 -->
+<!-- tonghab.html (업로드 정식·v4) · 저장: 2026-07-10 06:25 KST · 농작물생산 통합계산기(보안) — v3 기반 + 불러오기[추가/교체/취소] 3버튼 · 불러오기 후 저장화면 유지 · 암호 여러번 재시도 · 🟢/🔴 상태 및 항목별 표시 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -197,12 +197,14 @@
     }
   };
 
-  /* JSON 비밀번호 입력 — 내보내기(암호화): 기본값 2026 미리채움 / 가져오기(복호화): 기본값 미리채움 없음 */
-  window._tenarAskPassword=function(mode){
+  /* JSON 비밀번호 입력 — 내보내기(암호화): 기본값 2026 미리채움 / 가져오기(복호화): 기본값 미리채움 없음
+     retryNote=true 이면 "암호 틀림, 다시 입력" 안내를 앞에 붙임(여러 번 재시도 지원) */
+  window._tenarAskPassword=function(mode, retryNote){
     var isImport=(mode==='import');
-    var head=isImport
+    var base=isImport
       ? 'JSON 파일 가져오기\n\n저장할 때 사용한 암호를 입력하세요.'
       : 'JSON 파일 내보내기\n\n이 파일은 외부로 공유될 수 있어 암호가 필요합니다.\n기본 암호는 2026입니다. 원하시면 다른 암호로 변경할 수 있습니다.\n암호를 잊으면 파일을 복구할 수 없습니다.';
+    var head=(retryNote? '❌ 암호가 맞지 않습니다. 다시 입력해 주세요.\n(취소하면 불러오기를 중단합니다)\n\n' : '') + base;
     var def = isImport ? '' : '2026';   /* 복호화(가져오기)는 기본 암호를 미리 넣지 않음 */
     var pw;
     try{ pw=window.prompt(head, def); }
@@ -231,11 +233,42 @@
     if(window.TenarCrypto && TenarCrypto.isSecureObject(obj) && obj.secureType==='password-file'){
       if(obj.app && obj.app!==appName) return Promise.reject({code:'APP_MISMATCH', app:obj.app});
       if(!(window.TenarCrypto && TenarCrypto.ok)) return Promise.reject({code:'NO_CRYPTO'});
-      var pw=window._tenarAskPassword('import');
-      if(pw===null) return Promise.reject({code:'CANCELLED'});
-      return TenarCrypto.decryptFromPasswordFile(obj, pw).catch(function(){ return Promise.reject({code:'BAD_PW'}); });
+      /* 암호 틀리면 입력창을 다시 띄워 여러 번 재시도 가능 (취소하면 중단) */
+      return new Promise(function(resolve, reject){
+        var attempt=0;
+        function ask(){
+          var pw=window._tenarAskPassword('import', attempt>0);
+          if(pw===null){ reject({code:'CANCELLED'}); return; }
+          TenarCrypto.decryptFromPasswordFile(obj, pw).then(resolve).catch(function(){ attempt++; ask(); });
+        }
+        ask();
+      });
     }
     return Promise.resolve(obj);
+  };
+  /* 네이티브 원본 저장값 읽기 — 저장목록 항목별 '실제 암호화 여부(🟢/🔴)' 표시에 사용 */
+  window._tenarRawGet=function(k){ try{ return _rawGet(k); }catch(e){ return null; } };
+  /* 3버튼 선택창 → Promise<'add'|'replace'|'cancel'> */
+  window._tenarChoice3=function(opts){
+    opts=opts||{};
+    return new Promise(function(resolve){
+      try{
+        var ov=document.createElement('div');
+        ov.style.cssText='position:fixed;inset:0;z-index:2147483646;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:22px;';
+        var box=document.createElement('div');
+        box.style.cssText='background:#fff;border-radius:16px;max-width:340px;width:100%;padding:20px 18px;box-shadow:0 8px 30px rgba(0,0,0,.35);font-family:inherit;text-align:center;';
+        var t=document.createElement('div'); t.style.cssText='font-size:16px;font-weight:800;color:#222;margin-bottom:8px;'; t.textContent=opts.title||'불러오기';
+        var m=document.createElement('div'); m.style.cssText='font-size:13px;color:#555;line-height:1.55;margin-bottom:16px;white-space:pre-line;'; m.textContent=opts.message||'';
+        var row=document.createElement('div'); row.style.cssText='display:flex;gap:8px;';
+        function mk(label,bg,val){ var b=document.createElement('button'); b.textContent=label; b.style.cssText='flex:1;border:none;border-radius:11px;padding:12px 4px;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer;color:#fff;background:'+bg+';-webkit-tap-highlight-color:transparent;'; b.onclick=function(){ try{ov.remove();}catch(e){} resolve(val); }; return b; }
+        row.appendChild(mk(opts.addLabel||'추가','#2e7a4e','add'));
+        row.appendChild(mk(opts.replaceLabel||'교체','#d97706','replace'));
+        row.appendChild(mk(opts.cancelLabel||'취소','#8a8a8a','cancel'));
+        box.appendChild(t); box.appendChild(m); box.appendChild(row); ov.appendChild(box);
+        ov.addEventListener('click', function(e){ if(e.target===ov){ try{ov.remove();}catch(_){} resolve('cancel'); } });
+        (document.body||document.documentElement).appendChild(ov);
+      }catch(e){ resolve('cancel'); }
+    });
   };
   window._tenarAppKo=function(app){ return app==='tonghab'?'통합계산기':(app==='chungchi'?'청취계산기':(app==='map'?'지도':app)); };
 })();
@@ -8306,10 +8339,10 @@ window._tenarRenderSecBadge=function(){
   var st=window.__tenarSecureActive;
   if(st===true){
     el.style.background='#e7f4ea'; el.style.color='#1f5132'; el.style.border='1px solid #b6dcc1';
-    el.textContent='🔒 이 기기에 암호화 저장 켜짐 (브라우저 저장자료 자동 암호화)';
+    el.textContent='🟢 암호화 저장 켜짐 — 이 기기의 저장자료가 자동 암호화됩니다';
   }else if(st===false){
     el.style.background='#fdecec'; el.style.color='#b3261e'; el.style.border='1px solid #f3c2c2';
-    el.textContent='🔓 보안 저장 비활성 — 이 브라우저에서는 평문으로 저장됩니다';
+    el.textContent='🔴 보안 저장 비활성 — 이 브라우저에서는 평문으로 저장됩니다';
   }else{
     el.style.background='#f4f4f4'; el.style.color='#666'; el.style.border='1px solid #ddd';
     el.textContent='⏳ 보안 저장 상태 확인 중…';
@@ -8814,6 +8847,19 @@ function slAggToggleCrop(ci){
   if(a) a.textContent=show?'▲':'▼';
 }
 
+/* 저장목록 항목별 실제 캐시 암호화 여부 아이콘 (🟢 암호화 / 🔴 평문) */
+function _slItemSecIcon(key){
+  try{
+    if(!window._tenarRawGet) return '';
+    var raw=window._tenarRawGet(SL_DATA_PFX+key);
+    if(!raw) return '';
+    var o=null; try{ o=JSON.parse(raw); }catch(e){}
+    var enc=!!(o && o.tenarSecure===true && o.secureType==='device-cache');
+    return enc
+      ? '<span title="이 자료는 암호화되어 저장됨" style="font-size:11px;margin-right:3px;">🟢</span>'
+      : '<span title="이 자료는 평문(비암호화)으로 저장됨" style="font-size:11px;margin-right:3px;">🔴</span>';
+  }catch(e){ return ''; }
+}
 function _slRenderList(){
   var list=_slGetList();
   var el=document.getElementById('sl-list');
@@ -8835,7 +8881,7 @@ function _slRenderList(){
     return '<div class="sl-item'+selCls+'">'
       +'<div class="sl-item-num" style="'+numBg+'">'+num+'</div>'
       +'<div class="sl-item-info" onclick="slSelectItem(\''+it.key+'\')" style="cursor:pointer;">'
-        +'<div class="sl-item-label">'+it.label+'</div>'
+        +'<div class="sl-item-label">'+_slItemSecIcon(it.key)+it.label+'</div>'
         +addrLine
         +'<div class="sl-item-date">'+it.ymd+' '+it.hm+'</div>'
       +'</div>'
@@ -8959,30 +9005,48 @@ function _slBuildBackupBundle(){
 function _slIsBackupBundle(d){ return !!(d && d.tenarBackup===true && d.backupType==='save-list'); }
 function _slRestoreBackupBundle(pkg){
   if(!pkg || pkg.app!=='tonghab'){ alert('통합계산기 저장목록 파일이 아닙니다.'); return; }
-  var list=Array.isArray(pkg.list)?pkg.list:[];
+  var incoming=Array.isArray(pkg.list)?pkg.list:[];
   var records=pkg.records||{};
-  if(!list.length){ alert('불러올 저장목록이 없습니다.'); return; }
-  if(!confirm('저장/불러오기 목록 전체 '+list.length+'건을 불러옵니다.\n현재 이 기기의 통합계산기 저장목록은 교체됩니다. 계속할까요?')) return;
-  try{
-    _slGetList().forEach(function(old){
-      if(old && old.key){ try{localStorage.removeItem(SL_DATA_PFX+old.key);}catch(e){} _removeMapFavBySurveyKey('tonghab', old.key); }
-    });
-    var clean=[];
-    list.forEach(function(it){
-      if(!it || !it.key) return;
-      var rec=records[it.key];
-      if(!rec) return;
-      if(typeof rec==='string'){ try{rec=JSON.parse(rec);}catch(e){return;} }
-      clean.push(it);
-      localStorage.setItem(SL_DATA_PFX+it.key, JSON.stringify(rec));
-    });
-    _slSetList(clean);
-    clean.forEach(function(it){ _queueMapSync(it.key); });
-    _slSelectedKey=null; _slLastLoadedKey=null;
-    closeSaveLoadModal();
-    _slRenderList(); _slUpdateSaveBtn();
-    alert('✅ 저장목록 전체 불러오기 완료\n총 '+clean.length+'건이 복원되었습니다.');
-  }catch(e){ alert('저장목록 불러오기 실패: '+e.message); }
+  if(!incoming.length){ alert('불러올 저장목록이 없습니다.'); return; }
+  window._tenarChoice3({
+    title:'저장목록 불러오기',
+    message:'파일에 저장목록 '+incoming.length+'건이 있습니다.\n어떻게 불러올까요?\n\n[추가] 기존 목록은 그대로 두고 더하기\n[교체] 기존 목록 전체 삭제 후 불러오기\n[취소] 불러오지 않고 닫기'
+  }).then(function(choice){
+    if(choice==='cancel') return;
+    try{
+      if(choice==='replace'){
+        _slGetList().forEach(function(old){
+          if(old && old.key){ try{localStorage.removeItem(SL_DATA_PFX+old.key);}catch(e){} _removeMapFavBySurveyKey('tonghab', old.key); }
+        });
+        _slSetList([]);
+      }
+      var cur=_slGetList();
+      var exist={}; cur.forEach(function(i){ if(i&&i.key) exist[i.key]=true; });
+      var added=0;
+      incoming.forEach(function(it){
+        if(!it || !it.key) return;
+        var rec=records[it.key];
+        if(!rec) return;
+        if(typeof rec==='string'){ try{rec=JSON.parse(rec);}catch(e){return;} }
+        var item=it, key=it.key;
+        if(exist[key]){ key=String(Date.now())+String(Math.floor(Math.random()*1000)); item=Object.assign({}, it, {key:key}); }
+        exist[key]=true;
+        localStorage.setItem(SL_DATA_PFX+key, JSON.stringify(rec));
+        cur.unshift(item);
+        _queueMapSync(key);
+        added++;
+      });
+      _slSetList(cur);
+      _slSelectedKey=null; _slLastLoadedKey=null;
+      _slRenderList(); _slUpdateSaveBtn();
+      openSaveLoadModal();   /* 불러오기 후 저장/불러오기 화면을 열어 결과 확인 */
+      var t=document.createElement('div');
+      t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1f5132;color:#fff;padding:10px 16px;border-radius:12px;font-size:13px;font-weight:700;z-index:2147483647;box-shadow:0 4px 16px rgba(0,0,0,.35);';
+      t.textContent='✅ '+added+'건 '+(choice==='replace'?'교체':'추가')+' 완료';
+      document.body.appendChild(t);
+      setTimeout(function(){ try{document.body.removeChild(t);}catch(e){} }, 2200);
+    }catch(e){ alert('저장목록 불러오기 실패: '+e.message); }
+  });
 }
 
 /* JSON 파일로 내보내기 — 저장/불러오기 목록 전체를 비밀번호(PBKDF2/AES-GCM) 암호화 */
