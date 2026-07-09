@@ -1,4 +1,4 @@
-<!-- index.html (업로드 정식·v4) · 저장: 2026-07-10 06:26 KST · 보안 정식 배포: 테스트 링크 3종을 정식 파일(tonghab/chungchi/map.html)로 연결 -->
+<!-- index.html (업로드 정식·v5) · 저장: 2026-07-10 07:01 KST · [v5] 말풍선 채팅 개편: 글자확대+오른쪽 A＋/맞춤/A－ 툴바 · 닉네임 진하게 · 카카오톡 말풍선 · 엔터=줄바꿈(전송은 버튼) · 날짜 구분선(년월일) · 프로필 이모지(아바타) 선택 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -855,45 +855,89 @@
     overflow-y: auto;
     overscroll-behavior: contain; /* v35: 목록 끝에서 배경(홈화면)으로 스크롤 전파 차단 */
     -webkit-overflow-scrolling: touch;
-    padding: 8px 10px;
-    background: #f6f4ec;
+    padding: 10px 54px 14px 10px; /* 오른쪽은 글자크기 툴바 공간 확보 */
+    background: #b2c7d9; /* 카카오톡 느낌의 청회색 배경 */
+    font-size: var(--chat-fs, 15.5px); /* v51: 글자 크기 조절 기준 */
   }
   .chat-empty {
     text-align: center;
-    color: var(--color-text-soft);
-    font-size: 13px;
-    margin-top: 12px;
+    color: #3f4c57;
+    font-size: 0.92em;
+    margin-top: 14px;
     line-height: 1.6;
   }
+  /* 날짜 구분선 (년월일) */
+  .chat-date-sep { display:flex; align-items:center; gap:8px; margin:14px 6px 12px; }
+  .chat-date-sep::before, .chat-date-sep::after { content:''; flex:1; height:1px; background:rgba(40,52,62,.22); }
+  .chat-date-sep span {
+    background:rgba(255,255,255,.6); color:#33414c; font-size:0.72em; font-weight:800;
+    padding:3px 13px; border-radius:999px; white-space:nowrap;
+  }
   .chat-msg {
-    margin-bottom: 7px;
+    margin-bottom: 11px;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
   }
   .chat-msg.mine { align-items: flex-end; }
-  .chat-meta {
-    font-size: 10.5px;
-    color: #7a8079;
-    margin: 0 6px 3px;
+  .chat-line { display:flex; gap:7px; align-items:flex-start; max-width:90%; }
+  /* 닉네임 아바타(프로필 이모지) */
+  .chat-avatar {
+    flex-shrink:0; width:36px; height:36px; border-radius:14px; background:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:20px;
+    box-shadow:0 1px 3px rgba(0,0,0,.18); margin-top:2px;
   }
+  /* 보낸사람 닉네임 — 진하게 */
+  .chat-sender { font-size:0.8em; font-weight:800; color:#213018; margin:1px 3px 3px; }
+  .chat-row { display:flex; align-items:flex-end; gap:5px; }
+  .chat-msg.mine .chat-row { justify-content:flex-end; max-width:88%; margin-left:auto; }
   .chat-bubble {
-    max-width: 82%;
-    padding: 8px 10px;
-    border-radius: 14px;
-    background: #fff;
-    border: 1px solid var(--color-border);
-    color: var(--color-text);
-    font-size: 13.5px;
-    line-height: 1.45;
+    padding: 9px 12px;
+    border-radius: 3px 16px 16px 16px;
+    background: #ffffff;
+    color: #181818;
+    font-size: 1em;
+    line-height: 1.5;
     word-break: break-word;
-    white-space: pre-wrap;
-    box-shadow: var(--shadow-sm);
+    white-space: pre-wrap; /* 줄바꿈 그대로 표시 */
+    box-shadow: 0 1px 2px rgba(0,0,0,.13);
   }
   .chat-msg.mine .chat-bubble {
-    background: #e4f2e4;
-    border-color: #c2d8bf;
+    background: #fee500; /* 카카오톡 노랑 */
+    border-radius: 16px 3px 16px 16px;
+    color: #181818;
   }
+  .chat-time { font-size:0.62em; color:#33414c; white-space:nowrap; margin-bottom:2px; opacity:.9; }
+  .chat-delete-btn { margin-top:3px; }
+  /* 오른쪽 세로 글자크기 조절 툴바 (A＋ / 맞춤 / A－) */
+  .chat-fs-toolbar {
+    position:absolute; right:8px; top:50%; transform:translateY(-50%); z-index:6;
+    display:flex; flex-direction:column; gap:6px;
+    background:rgba(255,255,255,.92); border-radius:13px; padding:6px 5px;
+    box-shadow:0 2px 9px rgba(0,0,0,.22);
+  }
+  .chat-fs-toolbar button {
+    width:36px; height:32px; border:none; border-radius:9px;
+    background:#27500A; color:#fff; font-weight:800; font-size:14px; line-height:1;
+    cursor:pointer; font-family:inherit; -webkit-tap-highlight-color:transparent;
+  }
+  .chat-fs-toolbar button.fit { background:#8a6d3b; font-size:11px; }
+  .chat-fs-toolbar button:active { opacity:.78; }
+  /* 아바타(프로필 이모지) 선택기 */
+  .chat-avatar-btn {
+    flex-shrink:0; width:42px; height:42px; border-radius:12px; border:1px solid var(--color-border);
+    background:#fff; font-size:22px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .chat-avatar-palette {
+    display:flex; flex-wrap:wrap; gap:4px; padding:8px 10px;
+    background:#fbf9f2; border-bottom:1px solid var(--color-border);
+  }
+  .chat-avatar-palette button {
+    width:38px; height:38px; border:1px solid transparent; border-radius:10px; background:#fff;
+    font-size:21px; cursor:pointer; -webkit-tap-highlight-color:transparent;
+  }
+  .chat-avatar-palette button.sel { border-color:#27500A; background:#e7f4ea; }
   .chat-send-row {
     display: flex;
     gap: 8px;
@@ -903,15 +947,15 @@
   }
   .chat-send-row textarea {
     flex: 1;
-    height: 42px;
-    max-height: 88px;
+    height: 46px;
+    max-height: 120px;
     resize: none;
     border: 1px solid var(--color-border);
     border-radius: 12px;
-    padding: 10px 11px;
+    padding: 11px 12px;
     font-family: inherit;
-    font-size: 14px;
-    line-height: 1.45;
+    font-size: 15.5px;
+    line-height: 1.5;
     outline: none;
   }
   .chat-actions {
@@ -1395,11 +1439,17 @@
       ※ 개인정보, 농가명, 주소, 전화번호 등 민감정보는 입력하지 마세요.
     </div>
     <div class="chat-user-row">
-      <label class="chat-name-label" for="chatName">닉네임</label>
-      <input id="chatName" type="text" maxlength="18" placeholder="예: 상주1, 조사원A" autocomplete="nickname" />
+      <button type="button" id="chatAvatarBtn" class="chat-avatar-btn" aria-label="프로필 이모지 선택" title="프로필 이모지 선택">🌱</button>
+      <input id="chatName" type="text" maxlength="18" placeholder="닉네임 (예: 상주1, 조사원A)" autocomplete="nickname" />
       <button type="button" id="chatNameSave">저장</button>
     </div>
+    <div class="chat-avatar-palette" id="chatAvatarPalette" style="display:none;"></div>
     <div class="chat-messages" id="chatMessages" aria-live="polite"></div>
+    <div class="chat-fs-toolbar" aria-label="채팅 글자 크기 조절">
+      <button type="button" id="chatFsUp" aria-label="글자 크게">A＋</button>
+      <button type="button" id="chatFsFit" class="fit" aria-label="기본 글자 크기">맞춤</button>
+      <button type="button" id="chatFsDown" aria-label="글자 작게">A－</button>
+    </div>
     <button type="button" class="chat-jump-btn" id="chatJumpBtn">▼ 맨 아래로</button>
     <div class="chat-send-row">
       <textarea id="chatInput" maxlength="300"></textarea>
@@ -1787,6 +1837,11 @@
   const NAME_KEY = 'tenar_chat_name_v1';
   const CLIENT_ID_KEY = 'tenar_chat_client_id_v1';
   const LAST_READ_KEY = 'tenar_chat_last_read_v2';
+  const AVATAR_KEY = 'tenar_chat_avatar_v1';
+  const FS_KEY = 'tenar_chat_fontsize_v1';
+  const AVATARS = ['🙂','🌱','🌾','🚜','🧑‍🌾','👩‍🌾','🧑','👵','🐮','🐷','🐔','🐶','🐱','🐰','🐝','🍅','🥔','🧅','🌽','🍆','🍎','🍊','⭐','🌸','☀️','🌈','💧','🔥'];
+  const FS_STEPS = [13, 14.5, 15.5, 17, 19, 21.5];
+  function currentAvatar(){ return localStorage.getItem(AVATAR_KEY) || '🙂'; }
   // ⚠️ 정적 HTML 관리자 비밀번호입니다. GitHub Pages에 올리면 코드 보기로 확인될 수 있습니다.
   // 더 강한 보안은 Firebase Authentication 적용이 필요합니다.
   const ADMIN_PASSWORD = 'tenar2026';
@@ -1813,7 +1868,39 @@
   function pad(n) { return String(n).padStart(2, '0'); }
   function timeText(ts) {
     const d = new Date(Number(ts) || Date.now());
-    return `${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    let h = d.getHours(); const ap = h < 12 ? '오전' : '오후';
+    let h12 = h % 12; if (h12 === 0) h12 = 12;
+    return `${ap} ${h12}:${pad(d.getMinutes())}`;
+  }
+  function dateKey(ts){ const d=new Date(Number(ts)||Date.now()); return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+  function dateLabel(ts){ const d=new Date(Number(ts)||Date.now()); const wd=['일','월','화','수','목','금','토'][d.getDay()]; return `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 (${wd})`; }
+  /* ── 채팅 글자 크기 조절 + 아바타(프로필 이모지) 선택 ── */
+  function _chatFsIdx(){ let i=parseInt(localStorage.getItem(FS_KEY),10); return (isNaN(i)||i<0||i>=FS_STEPS.length)?2:i; }
+  function applyChatFontSize(){ const m=document.getElementById('chatMessages'); if(m) m.style.setProperty('--chat-fs', FS_STEPS[_chatFsIdx()]+'px'); }
+  function setChatFontIdx(idx){ idx=Math.max(0,Math.min(FS_STEPS.length-1,idx)); localStorage.setItem(FS_KEY,String(idx)); applyChatFontSize(); }
+  function setupChatUx(){
+    applyChatFontSize();
+    const up=document.getElementById('chatFsUp'), fit=document.getElementById('chatFsFit'), down=document.getElementById('chatFsDown');
+    if(up)   up.addEventListener('click', ()=>setChatFontIdx(_chatFsIdx()+1));
+    if(down) down.addEventListener('click', ()=>setChatFontIdx(_chatFsIdx()-1));
+    if(fit)  fit.addEventListener('click', ()=>setChatFontIdx(2));
+    const avaBtn=document.getElementById('chatAvatarBtn'), palette=document.getElementById('chatAvatarPalette');
+    if(avaBtn) avaBtn.textContent=currentAvatar();
+    if(palette){
+      palette.innerHTML=AVATARS.map(e=>`<button type="button" data-ava="${e}"${e===currentAvatar()?' class="sel"':''}>${e}</button>`).join('');
+      palette.addEventListener('click', (ev)=>{
+        const b=ev.target.closest('[data-ava]'); if(!b) return;
+        const e=b.getAttribute('data-ava');
+        localStorage.setItem(AVATAR_KEY, e);
+        if(avaBtn) avaBtn.textContent=e;
+        palette.querySelectorAll('button').forEach(x=>x.classList.toggle('sel', x.getAttribute('data-ava')===e));
+        palette.style.display='none';
+        if(typeof render==='function') render();
+      });
+    }
+    if(avaBtn && palette){
+      avaBtn.addEventListener('click', ()=>{ palette.style.display=(palette.style.display==='none'||!palette.style.display)?'flex':'none'; });
+    }
   }
   function escapeHtml(s) {
     return String(s).replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
@@ -1854,18 +1941,31 @@
     if (!list.length) {
       messagesEl.innerHTML = '<div class="chat-empty">아직 남긴 메시지가 없습니다.<br>오류나 개선 의견을 편하게 적어주세요.</div>';
     } else {
-      messagesEl.innerHTML = list.map(m => {
+      let html = '';
+      let lastDate = '';
+      list.forEach(m => {
+        const dk = dateKey(m.createdAt);
+        if (dk !== lastDate) {
+          html += `<div class="chat-date-sep"><span>${escapeHtml(dateLabel(m.createdAt))}</span></div>`;
+          lastDate = dk;
+        }
         const mineByClient = m.clientId && m.clientId === getClientId();
-        const mine = (mineByClient || m.name === me) ? ' mine' : '';
+        const isMine = (mineByClient || m.name === me);
         const canDelete = !!m.key && (mineByClient || isAdminMode);
         const deleteLabel = isAdminMode && !mineByClient ? '관리자 삭제' : '내 글 삭제';
         const deleteBtn = canDelete ? `<button type="button" class="chat-delete-btn" data-chat-delete="${escapeHtml(m.key)}">${deleteLabel}</button>` : '';
-        return `<div class="chat-msg${mine}">
-          <div class="chat-meta">${escapeHtml(m.name || '익명')} · ${escapeHtml(timeText(m.createdAt))}</div>
-          <div class="chat-bubble">${escapeHtml(m.text || '')}</div>
-          ${deleteBtn}
-        </div>`;
-      }).join('');
+        const avatar = escapeHtml(m.avatar || '🙂');
+        const timeH = `<span class="chat-time">${escapeHtml(timeText(m.createdAt))}</span>`;
+        const bubble = `<div class="chat-bubble">${escapeHtml(m.text || '')}</div>`;
+        if (isMine) {
+          html += `<div class="chat-msg mine"><div class="chat-row">${timeH}${bubble}</div>${deleteBtn}</div>`;
+        } else {
+          html += `<div class="chat-msg"><div class="chat-line"><div class="chat-avatar">${avatar}</div>`
+                + `<div><div class="chat-sender">${escapeHtml(m.name || '익명')}</div>`
+                + `<div class="chat-row">${bubble}${timeH}</div></div></div>${deleteBtn}</div>`;
+        }
+      });
+      messagesEl.innerHTML = html;
     }
     if (shouldStickToBottom) messagesEl.scrollTop = messagesEl.scrollHeight;
     updateBadge();
@@ -1990,7 +2090,7 @@
     sendBtn.disabled = true;
     status.textContent = '전송 중...';
     try {
-      await push(messagesRef, { name, text, createdAt: Date.now(), clientId: getClientId() });
+      await push(messagesRef, { name, text, avatar: currentAvatar(), createdAt: Date.now(), clientId: getClientId() });
       input.value = '';
       status.textContent = '전송 완료';
       markRead();
@@ -2091,12 +2191,8 @@
       const btn = e.target.closest('[data-chat-delete]');
       if (btn) deleteMessage(btn.getAttribute('data-chat-delete'));
     });
-    input.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        sendMessage();
-      }
-    });
+    /* v51: Enter = 줄바꿈(기본 동작 유지) · 전송은 [전송] 버튼으로만 → 핸들러 제거 */
+    setupChatUx();
     /* v34: 입력창에 커서가 놓여 키보드가 뜰 때도 헤더·입력창이 보이도록 보정 */
     input.addEventListener('focus', function () { setTimeout(adjustChatViewport, 60); });
     nameInput.addEventListener('focus', function () { setTimeout(adjustChatViewport, 60); });
