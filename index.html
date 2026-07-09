@@ -1,4 +1,4 @@
-<!-- index.html (업로드 정식·v5) · 저장: 2026-07-10 07:01 KST · [v5] 말풍선 채팅 개편: 글자확대+오른쪽 A＋/맞춤/A－ 툴바 · 닉네임 진하게 · 카카오톡 말풍선 · 엔터=줄바꿈(전송은 버튼) · 날짜 구분선(년월일) · 프로필 이모지(아바타) 선택 -->
+<!-- index_chat_v6.html · 저장: 2026-07-10 KST · [v6] 말풍선 채팅 추가: 답장(인용), 이모지 반응/좋아요 카운트, 읽음 N명, 금칙어·개인정보 경고 · 기존 index.html 보존 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -908,6 +908,61 @@
     color: #181818;
   }
   .chat-time { font-size:0.62em; color:#33414c; white-space:nowrap; margin-bottom:2px; opacity:.9; }
+
+  /* v6: 답장(인용)·반응·읽음·개인정보 경고 */
+  .chat-bubble{ position:relative; }
+  .chat-bubble.long-pressing{ outline:2px solid rgba(217,111,0,.55); }
+  .chat-quote{
+    margin:-1px 0 7px; padding:6px 8px; border-left:3px solid #d96f00;
+    background:rgba(255,255,255,.62); border-radius:8px; color:#4b5563;
+    font-size:.82em; line-height:1.45; max-width:100%;
+  }
+  .chat-msg.mine .chat-quote{ background:rgba(255,255,255,.45); border-left-color:#8a6d3b; }
+  .chat-quote-name{ font-weight:900; color:#27500A; margin-bottom:2px; }
+  .chat-quote-text{ display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .chat-meta-row{ display:flex; align-items:center; gap:5px; margin:3px 4px 0; flex-wrap:wrap; }
+  .chat-msg.mine .chat-meta-row{ justify-content:flex-end; }
+  .chat-reactions{ display:flex; align-items:center; gap:4px; flex-wrap:wrap; }
+  .chat-react-chip{
+    border:1px solid rgba(39,80,10,.16); background:rgba(255,255,255,.78); color:#263238;
+    border-radius:999px; padding:2px 7px; font-size:.76em; font-weight:900; line-height:1.3;
+    cursor:pointer; font-family:inherit; box-shadow:0 1px 2px rgba(0,0,0,.08);
+  }
+  .chat-react-chip.mine{ background:#e7f4ea; border-color:#27500A; color:#143820; }
+  .chat-read{
+    color:#33414c; font-size:.68em; font-weight:900; opacity:.8;
+    background:rgba(255,255,255,.42); border-radius:999px; padding:1px 6px;
+  }
+  .chat-action-pop{
+    position:absolute; z-index:20; display:none; gap:5px; align-items:center;
+    background:#1f2937; color:#fff; border-radius:16px; padding:7px;
+    box-shadow:0 8px 26px rgba(0,0,0,.32); max-width:calc(100% - 26px);
+  }
+  .chat-action-pop.show{ display:flex; }
+  .chat-action-pop::after{
+    content:''; position:absolute; bottom:-7px; left:28px; border-left:7px solid transparent;
+    border-right:7px solid transparent; border-top:7px solid #1f2937;
+  }
+  .chat-action-pop button{
+    border:none; border-radius:12px; background:rgba(255,255,255,.12); color:#fff;
+    font-size:15px; font-weight:900; padding:8px 9px; cursor:pointer; font-family:inherit;
+  }
+  .chat-action-pop button.reply{ font-size:12px; padding:8px 10px; background:#27500A; white-space:nowrap; }
+  .chat-reply-preview{
+    display:none; align-items:center; gap:8px; padding:8px 10px;
+    background:#fff8e6; border-top:1px solid #f0d68a; color:#5f3b0b;
+  }
+  .chat-reply-preview.show{ display:flex; }
+  .chat-reply-preview .rp-body{ flex:1; min-width:0; border-left:3px solid #d96f00; padding-left:8px; }
+  .chat-reply-preview .rp-title{ font-size:12px; font-weight:900; margin-bottom:1px; }
+  .chat-reply-preview .rp-text{ font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .chat-reply-preview button{ border:none; border-radius:999px; background:#d96f00; color:#fff; width:28px; height:28px; font-weight:900; cursor:pointer; }
+  .chat-privacy-warning{
+    display:none; padding:7px 10px; background:#fff1f1; border-top:1px solid #f0b5b5;
+    color:#b91c1c; font-size:11.5px; font-weight:900; line-height:1.45;
+  }
+  .chat-privacy-warning.show{ display:block; }
+
   .chat-delete-btn { margin-top:3px; }
   /* 오른쪽 세로 글자크기 조절 툴바 (A＋ / 맞춤 / A－) */
   .chat-fs-toolbar {
@@ -1350,7 +1405,7 @@
   <!-- 푸터 -->
   <footer class="info">
     <div class="source">출처 / 참고자료: 국가데이터처 통계설명자료, KOSIS 등</div>
-    <div class="brand-line">농작물생산조사 통합시스템 · 텐아르 v1.8-r2pdf</div>
+    <div class="brand-line">농작물생산조사 통합시스템 · 텐아르 v1.8-r2pdf-chat-v6</div>
     <div class="meta" style="display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px;">
       실시간 <strong id="realtimeCount">…</strong>명
       &nbsp;·&nbsp;
@@ -1451,6 +1506,20 @@
       <button type="button" id="chatFsDown" aria-label="글자 작게">A－</button>
     </div>
     <button type="button" class="chat-jump-btn" id="chatJumpBtn">▼ 맨 아래로</button>
+    <div class="chat-action-pop" id="chatActionPop" aria-label="말풍선 작업 메뉴">
+      <button type="button" class="reply" data-chat-action="reply">↩ 답장</button>
+      <button type="button" data-chat-action="react" data-emoji="👍">👍</button>
+      <button type="button" data-chat-action="react" data-emoji="❤️">❤️</button>
+      <button type="button" data-chat-action="react" data-emoji="✅">✅</button>
+    </div>
+    <div class="chat-reply-preview" id="chatReplyPreview">
+      <div class="rp-body">
+        <div class="rp-title" id="chatReplyTitle">답장</div>
+        <div class="rp-text" id="chatReplyText"></div>
+      </div>
+      <button type="button" id="chatReplyCancel" aria-label="답장 취소">×</button>
+    </div>
+    <div class="chat-privacy-warning" id="chatPrivacyWarning"></div>
     <div class="chat-send-row">
       <textarea id="chatInput" maxlength="300"></textarea>
       <button type="button" id="chatSend">전송</button>
@@ -1814,6 +1883,7 @@
     limitToLast,
     onChildAdded,
     onChildRemoved,
+    onValue,
     remove,
     set,
     get
@@ -1832,6 +1902,8 @@
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
   const messagesRef = ref(db, "tenarChat/messages");
+  const reactionsRef = ref(db, "tenarChat/reactions");
+  const readsRef = ref(db, "tenarChat/reads");
   const recentMessagesQuery = query(messagesRef, orderByChild("createdAt"), limitToLast(80));
 
   const NAME_KEY = 'tenar_chat_name_v1';
@@ -1839,6 +1911,7 @@
   const LAST_READ_KEY = 'tenar_chat_last_read_v2';
   const AVATAR_KEY = 'tenar_chat_avatar_v1';
   const FS_KEY = 'tenar_chat_fontsize_v1';
+  const REACTION_EMOJIS = ['👍','❤️','✅'];
   const AVATARS = ['🙂','🌱','🌾','🚜','🧑‍🌾','👩‍🌾','🧑','👵','🐮','🐷','🐔','🐶','🐱','🐰','🐝','🍅','🥔','🧅','🌽','🍆','🍎','🍊','⭐','🌸','☀️','🌈','💧','🔥'];
   const FS_STEPS = [13, 14.5, 15.5, 17, 19, 21.5];
   function currentAvatar(){ return localStorage.getItem(AVATAR_KEY) || '🙂'; }
@@ -1860,10 +1933,21 @@
   const adminPanel = document.getElementById('chatAdminPanel');
   const resetAllBtn = document.getElementById('chatResetAll');
   const status = document.getElementById('chatStatus');
+  const actionPop = document.getElementById('chatActionPop');
+  const replyPreview = document.getElementById('chatReplyPreview');
+  const replyTitle = document.getElementById('chatReplyTitle');
+  const replyText = document.getElementById('chatReplyText');
+  const replyCancel = document.getElementById('chatReplyCancel');
+  const privacyWarning = document.getElementById('chatPrivacyWarning');
 
   const messages = [];
   const seenKeys = new Set();
+  const reactionsByMsg = {};
+  const readsByClient = {};
   let isAdminMode = false;
+  let replyTarget = null;
+  let actionTargetKey = null;
+  let pressTimer = null;
 
   function pad(n) { return String(n).padStart(2, '0'); }
   function timeText(ts) {
@@ -1905,6 +1989,102 @@
   function escapeHtml(s) {
     return String(s).replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
   }
+
+  function clipText(s, n=80){
+    s = String(s || '').replace(/\s+/g, ' ').trim();
+    return s.length > n ? s.slice(0, n - 1) + '…' : s;
+  }
+  function getMsgByKey(key){ return messages.find(m => m.key === key); }
+  function myReactionPath(key, emoji){ return 'tenarChat/reactions/' + key + '/' + encodeURIComponent(emoji) + '/' + getClientId(); }
+  function reactionUsers(key, emoji){ return ((reactionsByMsg[key] || {})[emoji]) || {}; }
+  function reactionCount(key, emoji){ return Object.keys(reactionUsers(key, emoji)).length; }
+  function reactedByMe(key, emoji){ return !!reactionUsers(key, emoji)[getClientId()]; }
+  function readCountFor(ts){
+    const t = Number(ts || 0);
+    return Object.values(readsByClient).filter(r => Number((r && r.lastRead) || 0) >= t).length;
+  }
+  function renderReactionChips(m){
+    if(!m.key) return '';
+    const chips = REACTION_EMOJIS.map(em => {
+      const n = reactionCount(m.key, em);
+      if(!n) return '';
+      const mine = reactedByMe(m.key, em) ? ' mine' : '';
+      return `<button type="button" class="chat-react-chip${mine}" data-chat-react="${escapeHtml(m.key)}" data-emoji="${escapeHtml(em)}">${escapeHtml(em)} <b>${n}</b></button>`;
+    }).join('');
+    return chips ? `<div class="chat-reactions">${chips}</div>` : '';
+  }
+  function renderReplyBlock(m){
+    const r = m && m.reply;
+    if(!r || !r.text) return '';
+    return `<div class="chat-quote"><div class="chat-quote-name">↩ ${escapeHtml(r.name || '메시지')}</div><div class="chat-quote-text">${escapeHtml(r.text || '')}</div></div>`;
+  }
+  function updateReplyPreview(){
+    if(!replyPreview) return;
+    if(!replyTarget){ replyPreview.classList.remove('show'); return; }
+    replyTitle.textContent = (replyTarget.name || '메시지') + '님에게 답장';
+    replyText.textContent = clipText(replyTarget.text || '', 90);
+    replyPreview.classList.add('show');
+  }
+  function setReplyTarget(msg){
+    replyTarget = msg ? { key: msg.key || '', name: msg.name || '익명', text: clipText(msg.text || '', 140), createdAt: msg.createdAt || 0 } : null;
+    updateReplyPreview();
+    hideActionPop();
+    if(input) input.focus();
+  }
+  function hideActionPop(){
+    if(actionPop) actionPop.classList.remove('show');
+    actionTargetKey = null;
+    document.querySelectorAll('.chat-bubble.long-pressing').forEach(el => el.classList.remove('long-pressing'));
+  }
+  function showActionPop(key, anchor){
+    const msg = getMsgByKey(key);
+    if(!msg || !actionPop || !messagesEl) return;
+    actionTargetKey = key;
+    document.querySelectorAll('.chat-bubble.long-pressing').forEach(el => el.classList.remove('long-pressing'));
+    if(anchor) anchor.classList.add('long-pressing');
+    const panelRect = messagesEl.getBoundingClientRect();
+    const rect = anchor.getBoundingClientRect();
+    const top = Math.max(8, rect.top - panelRect.top - 48 + messagesEl.scrollTop);
+    const left = Math.min(Math.max(10, rect.left - panelRect.left + 8), Math.max(10, messagesEl.clientWidth - 230));
+    actionPop.style.top = top + 'px';
+    actionPop.style.left = left + 'px';
+    actionPop.classList.add('show');
+  }
+  async function toggleReaction(key, emoji){
+    if(!key || !emoji) return;
+    const path = ref(db, myReactionPath(key, emoji));
+    try{
+      if(reactedByMe(key, emoji)) await remove(path);
+      else await set(path, { name: currentName(), createdAt: Date.now() });
+      hideActionPop();
+    }catch(err){
+      console.error(err);
+      alert('반응 저장에 실패했습니다. Firebase 규칙에서 tenarChat/reactions 쓰기를 허용해 주세요.');
+    }
+  }
+  function checkPrivacyText(text){
+    const t = String(text || '');
+    const hits = [];
+    if(/01[016789][-\.\s]?\d{3,4}[-\.\s]?\d{4}/.test(t)) hits.push('전화번호');
+    if(/\d{6}[-\s]?[1-4]\d{6}/.test(t)) hits.push('주민번호 형태');
+    if(/\d{2,3}[-\s]?\d{2,4}[-\s]?\d{4}/.test(t)) hits.push('연락처 형태');
+    if(/(농가명|주민번호|계좌|계좌번호|전화번호|휴대폰|핸드폰|주소|상세주소|차량번호)/.test(t)) hits.push('민감정보 단어');
+    if(/(\S+(시|군|구)\s+\S+(읍|면|동|리)\s+\S+)|(번지|아파트|동\s*\d+호|호수)/.test(t)) hits.push('상세주소 가능성');
+    return [...new Set(hits)];
+  }
+  function updatePrivacyWarning(){
+    if(!privacyWarning || !input) return [];
+    const hits = checkPrivacyText(input.value);
+    if(hits.length){
+      privacyWarning.textContent = '⚠️ 개인정보가 포함되어 있을 수 있습니다: ' + hits.join(', ') + ' · 농가명, 전화번호, 상세주소 등은 빼고 전송해 주세요.';
+      privacyWarning.classList.add('show');
+    }else{
+      privacyWarning.textContent = '';
+      privacyWarning.classList.remove('show');
+    }
+    return hits;
+  }
+
   function currentName() {
     const saved = (localStorage.getItem(NAME_KEY) || '').trim();
     return saved || '나';
@@ -1956,13 +2136,17 @@
         const deleteBtn = canDelete ? `<button type="button" class="chat-delete-btn" data-chat-delete="${escapeHtml(m.key)}">${deleteLabel}</button>` : '';
         const avatar = escapeHtml(m.avatar || '🙂');
         const timeH = `<span class="chat-time">${escapeHtml(timeText(m.createdAt))}</span>`;
-        const bubble = `<div class="chat-bubble">${escapeHtml(m.text || '')}</div>`;
+        const replyBlock = renderReplyBlock(m);
+        const bubble = `<div class="chat-bubble" data-chat-key="${escapeHtml(m.key || '')}">${replyBlock}<div class="chat-text">${escapeHtml(m.text || '')}</div></div>`;
+        const reactions = renderReactionChips(m);
+        const reads = `<span class="chat-read" title="읽음 수">👁 ${readCountFor(m.createdAt)}</span>`;
+        const meta = `<div class="chat-meta-row">${reactions}${reads}</div>`;
         if (isMine) {
-          html += `<div class="chat-msg mine"><div class="chat-row">${timeH}${bubble}</div>${deleteBtn}</div>`;
+          html += `<div class="chat-msg mine" data-chat-key="${escapeHtml(m.key || '')}"><div class="chat-row">${timeH}${bubble}</div>${meta}${deleteBtn}</div>`;
         } else {
-          html += `<div class="chat-msg"><div class="chat-line"><div class="chat-avatar">${avatar}</div>`
+          html += `<div class="chat-msg" data-chat-key="${escapeHtml(m.key || '')}"><div class="chat-line"><div class="chat-avatar">${avatar}</div>`
                 + `<div><div class="chat-sender">${escapeHtml(m.name || '익명')}</div>`
-                + `<div class="chat-row">${bubble}${timeH}</div></div></div>${deleteBtn}</div>`;
+                + `<div class="chat-row">${bubble}${timeH}</div>${meta}</div></div>${deleteBtn}</div>`;
         }
       });
       messagesEl.innerHTML = html;
@@ -1985,8 +2169,12 @@
     }
   }
   function markRead() {
-    localStorage.setItem(LAST_READ_KEY, String(latestMessageTime() || Date.now()));
+    const last = latestMessageTime() || Date.now();
+    localStorage.setItem(LAST_READ_KEY, String(last));
     updateBadge();
+    try {
+      set(ref(db, 'tenarChat/reads/' + getClientId()), { name: currentName(), lastRead: last, updatedAt: Date.now() });
+    } catch(e) {}
   }
   let chatSavedScrollY = 0;
   function lockPageScroll() {
@@ -2073,6 +2261,27 @@
     }
     localStorage.setItem(NAME_KEY, name);
     status.textContent = `${name} 닉네임이 저장되었습니다.`;
+
+    onValue(reactionsRef, snapshot => {
+      Object.keys(reactionsByMsg).forEach(k => delete reactionsByMsg[k]);
+      const data = snapshot.val() || {};
+      Object.keys(data).forEach(k => { reactionsByMsg[k] = data[k] || {}; });
+      render();
+    }, err => {
+      console.error(err);
+      status.textContent = '반응 수신 실패: Firebase reactions 규칙을 확인해주세요.';
+    });
+
+    onValue(readsRef, snapshot => {
+      Object.keys(readsByClient).forEach(k => delete readsByClient[k]);
+      const data = snapshot.val() || {};
+      Object.keys(data).forEach(k => { readsByClient[k] = data[k] || {}; });
+      render();
+    }, err => {
+      console.error(err);
+      status.textContent = '읽음 수신 실패: Firebase reads 규칙을 확인해주세요.';
+    });
+
     updateNameSaveButton();
     render();
   }
@@ -2085,20 +2294,29 @@
       alert('먼저 이름이나 지역명을 입력하고 저장해주세요. 예: 상주1, 조사원A');
       return;
     }
+    const hits = updatePrivacyWarning();
+    if (hits.length) {
+      const ok = confirm('개인정보가 포함되어 있을 수 있습니다.\n감지 항목: ' + hits.join(', ') + '\n\n농가명, 전화번호, 상세주소 등을 지우고 보내는 것을 권장합니다. 그래도 전송할까요?');
+      if (!ok) { input.focus(); return; }
+    }
     localStorage.setItem(NAME_KEY, name);
     updateNameSaveButton();
     sendBtn.disabled = true;
     status.textContent = '전송 중...';
     try {
-      await push(messagesRef, { name, text, avatar: currentAvatar(), createdAt: Date.now(), clientId: getClientId() });
+      const payload = { name, text, avatar: currentAvatar(), createdAt: Date.now(), clientId: getClientId() };
+      if (replyTarget) payload.reply = replyTarget;
+      await push(messagesRef, payload);
       input.value = '';
+      setReplyTarget(null);
+      updatePrivacyWarning();
       status.textContent = '전송 완료';
       markRead();
       setTimeout(() => { messagesEl.scrollTop = messagesEl.scrollHeight; }, 30);
     } catch (err) {
       console.error(err);
-      status.textContent = '전송 실패: Firebase 규칙을 v29/v30 삭제 기능용 규칙으로 바꿔주세요.';
-      alert('메시지 전송에 실패했습니다. Realtime Database 규칙에서 clientId 저장과 삭제가 허용되어야 합니다. 채팅 삭제 기능용 규칙으로 교체 후 다시 전송해주세요.');
+      status.textContent = '전송 실패: Firebase 규칙을 v6 채팅 기능용 규칙으로 바꿔주세요.';
+      alert('메시지 전송에 실패했습니다. Realtime Database 규칙에서 reply, reactions, reads 경로 쓰기가 허용되어야 합니다.');
     } finally {
       sendBtn.disabled = false;
       requestAnimationFrame(() => {
@@ -2157,6 +2375,8 @@
     if (!ok2) return;
     try {
       await remove(messagesRef);
+      await remove(reactionsRef).catch(()=>{});
+      await remove(readsRef).catch(()=>{});
       messages.length = 0;
       seenKeys.clear();
       render();
@@ -2188,9 +2408,43 @@
     adminBtn.addEventListener('click', openAdminMode);
     resetAllBtn.addEventListener('click', resetAllMessages);
     messagesEl.addEventListener('click', function (e) {
+      const react = e.target.closest('[data-chat-react]');
+      if (react) { toggleReaction(react.getAttribute('data-chat-react'), react.getAttribute('data-emoji')); return; }
       const btn = e.target.closest('[data-chat-delete]');
-      if (btn) deleteMessage(btn.getAttribute('data-chat-delete'));
+      if (btn) { deleteMessage(btn.getAttribute('data-chat-delete')); return; }
+      if (!e.target.closest('#chatActionPop')) hideActionPop();
     });
+    function startPress(ev){
+      const b = ev.target.closest('.chat-bubble[data-chat-key]');
+      if(!b) return;
+      const key = b.getAttribute('data-chat-key');
+      clearTimeout(pressTimer);
+      pressTimer = setTimeout(()=>showActionPop(key, b), 520);
+    }
+    function cancelPress(){ clearTimeout(pressTimer); }
+    messagesEl.addEventListener('touchstart', startPress, {passive:true});
+    messagesEl.addEventListener('touchend', cancelPress, {passive:true});
+    messagesEl.addEventListener('touchmove', cancelPress, {passive:true});
+    messagesEl.addEventListener('mousedown', startPress);
+    messagesEl.addEventListener('mouseup', cancelPress);
+    messagesEl.addEventListener('mouseleave', cancelPress);
+    messagesEl.addEventListener('contextmenu', function(e){
+      const b = e.target.closest('.chat-bubble[data-chat-key]');
+      if(!b) return;
+      e.preventDefault();
+      showActionPop(b.getAttribute('data-chat-key'), b);
+    });
+    if(actionPop){
+      actionPop.addEventListener('click', function(e){
+        const btn = e.target.closest('[data-chat-action]');
+        if(!btn || !actionTargetKey) return;
+        const act = btn.getAttribute('data-chat-action');
+        if(act === 'reply') setReplyTarget(getMsgByKey(actionTargetKey));
+        if(act === 'react') toggleReaction(actionTargetKey, btn.getAttribute('data-emoji'));
+      });
+    }
+    if(replyCancel) replyCancel.addEventListener('click', ()=>setReplyTarget(null));
+    if(input) input.addEventListener('input', updatePrivacyWarning);
     /* v51: Enter = 줄바꿈(기본 동작 유지) · 전송은 [전송] 버튼으로만 → 핸들러 제거 */
     setupChatUx();
     /* v34: 입력창에 커서가 놓여 키보드가 뜰 때도 헤더·입력창이 보이도록 보정 */
