@@ -1,4 +1,4 @@
-<!-- index.html (업로드 정식·v6) · 저장: 2026-07-10 19:04 KST · [v6·1단계] 채팅 회원제: Google 로그인 게이트 + 승인(pending/approved/rejected/blocked) + Firestore 메시지 이관 + 로그인 사용자 바 · 미승인은 열람불가 · 계산기/지도/기존UI 유지 -->
+<!-- index.html (업로드 정식·v7) · 저장: 2026-07-11 03:13 KST · [v7·2단계] 사진 전송 추가: 📷첨부·클라이언트 압축(1600px/JPEG)·업로드 진행률·이미지 말풍선·전체화면 뷰어(핀치확대·저장/공유)·사진 삭제 시 Storage 파일 함께 삭제 · v6 로그인/승인제 유지 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1891,6 +1891,13 @@
   const sendBtn = document.getElementById('chatSend');
   const status = document.getElementById('chatStatus');
   const jumpBtn = document.getElementById('chatJumpBtn');
+  const photoBtn = document.getElementById('chatPhotoBtn');
+  const photoInput = document.getElementById('chatPhotoInput');
+  const imgPrev = document.getElementById('chatImgPrev');
+  const imgPrevThumb = document.getElementById('chatImgPrevThumb');
+  const imgPrevSize = document.getElementById('chatImgPrevSize');
+  const imgPrevState = document.getElementById('chatImgPrevState');
+  const imgCancel = document.getElementById('chatImgCancel');
 
   // ── 상태 ──
   let me = null;          // Firebase Auth 사용자
@@ -1990,7 +1997,7 @@
     if(unsubUser){ unsubUser(); unsubUser=null; }
     stopMessages();
     me = user;
-    if(!user){ myDoc=null; renderLogin(); updateBadge(); return; }
+    if(!user){ myDoc=null; try{clearPending();}catch(_){} renderLogin(); updateBadge(); return; }
     showAuth('<div class="a-emoji">⏳</div><p>확인 중…</p>');
     try{ await ensureMemberDoc(user); }
     catch(e){
@@ -2045,8 +2052,13 @@
       const delLabel = (admin && !isMine) ? '관리자 삭제' : '삭제';
       const delBtn = canDel ? `<button type="button" class="chat-delete-btn" data-chat-delete="${escapeHtml(m.key)}">${delLabel}</button>` : '';
       const timeH = `<span class="chat-time">${escapeHtml(timeText(m.createdAt))}</span>`;
-      const body = m.deleted ? '<span style="color:#999;">삭제된 메시지입니다.</span>' : escapeHtml(m.text||'');
-      const bubble = `<div class="chat-bubble">${body}</div>`;
+      let bubble;
+      if(m.deleted){ bubble = '<div class="chat-bubble"><span style="color:#999;">삭제된 메시지입니다.</span></div>'; }
+      else if(m.messageType==='image' && m.imageURL){
+        const cap = m.text ? `<div class="chat-imgcap">${escapeHtml(m.text)}</div>` : '';
+        const ratio = (m.imageWidth&&m.imageHeight) ? ` style="aspect-ratio:${m.imageWidth}/${m.imageHeight}"` : '';
+        bubble = `<div class="chat-bubble img"><img class="chat-img" src="${escapeHtml(m.imageURL)}" data-full="${escapeHtml(m.imageURL)}" loading="lazy" referrerpolicy="no-referrer"${ratio} alt="사진">${cap}</div>`;
+      } else { bubble = `<div class="chat-bubble">${escapeHtml(m.text||'')}</div>`; }
       const av = m.senderPhotoURL ? `<img class="chat-avatar" style="object-fit:cover" src="${escapeHtml(m.senderPhotoURL)}" referrerpolicy="no-referrer" alt="">` : `<div class="chat-avatar">🙂</div>`;
       if(isMine){ html+=`<div class="chat-msg mine"><div class="chat-row">${timeH}${bubble}</div>${delBtn}</div>`; }
       else { html+=`<div class="chat-msg"><div class="chat-line">${av}<div><div class="chat-sender">${escapeHtml(m.senderName||'사용자')}</div><div class="chat-row">${bubble}${timeH}</div></div></div>${delBtn}</div>`; }
@@ -2056,10 +2068,119 @@
     updateBadge(); updateJump();
   }
 
+  // ── v7: 사진 첨부 / 압축 / 업로드 ──
+  const MAX_BYTES = 10*1024*1024;
+  const ACCEPT_TYPES = ['image/jpeg','image/png','image/webp','image/heic','image/heif'];
+  let pendingPhoto = null;   // 선택된 원본 파일
+  let uploading = false;
+  function fmtBytes(b){ if(b<1024) return b+'B'; if(b<1024*1024) return Math.round(b/1024)+'KB'; return (b/1024/1024).toFixed(1)+'MB'; }
+  function setSendUi(busy){ sendBtn.disabled=busy; if(photoBtn) photoBtn.disabled=busy; }
+  function clearPending(){ pendingPhoto=null; if(photoInput) photoInput.value=''; if(imgPrev) imgPrev.style.display='none'; if(imgPrevThumb) imgPrevThumb.removeAttribute('src'); if(imgPrevState) imgPrevState.textContent=''; }
+  function onPhotoSelected(){
+    const f = photoInput.files && photoInput.files[0];
+    if(!f) return;
+    if(ACCEPT_TYPES.indexOf(f.type)===-1 && !/\.(jpe?g|png|webp|heic|heif)$/i.test(f.name)){ alert('이미지 파일(JPG·PNG·WebP·HEIC)만 첨부할 수 있습니다.'); photoInput.value=''; return; }
+    if(f.size > MAX_BYTES){ alert('사진은 10MB 이하만 전송할 수 있습니다.'); photoInput.value=''; return; }
+    pendingPhoto = f;
+    if(imgPrevSize) imgPrevSize.textContent = fmtBytes(f.size);
+    if(imgPrevState) imgPrevState.textContent = '전송 대기 · [전송]을 누르세요';
+    if(imgPrev) imgPrev.style.display='flex';
+    try{ imgPrevThumb.src = URL.createObjectURL(f); }catch(e){}
+  }
+  // 긴 변 1600px · JPEG 0.8 · EXIF 방향 보정 (원본 비율 유지)
+  async function compressImage(file){
+    let src;
+    try{ src = await createImageBitmap(file, { imageOrientation:'from-image' }); }
+    catch(e){ src = await new Promise((res,rej)=>{ const u=URL.createObjectURL(file); const im=new Image(); im.onload=()=>{URL.revokeObjectURL(u);res(im);}; im.onerror=()=>{URL.revokeObjectURL(u);rej(new Error('decode'));}; im.src=u; }); }
+    let w=src.width, h=src.height; const MAX=1600;
+    if(Math.max(w,h)>MAX){ const s=MAX/Math.max(w,h); w=Math.round(w*s); h=Math.round(h*s); }
+    const cv=document.createElement('canvas'); cv.width=w; cv.height=h;
+    cv.getContext('2d').drawImage(src,0,0,w,h);
+    const blob = await new Promise((res)=> cv.toBlob(res, 'image/jpeg', 0.82));
+    if(!blob) throw new Error('compress');
+    return { blob, width:w, height:h };
+  }
+  async function sendPhoto(){
+    if(uploading) return;
+    if(!myDoc || myDoc.status!=='approved'){ alert('승인된 사용자만 사진을 보낼 수 있습니다.'); return; }
+    const file = pendingPhoto; if(!file) return;
+    const caption = (input.value||'').trim().slice(0,300);
+    if(caption && PHONE_RE.test(caption) && !confirm('전화번호 등 개인정보가 포함된 것 같습니다.\n그래도 보낼까요?')) return;
+    uploading=true; setSendUi(true);
+    if(imgPrevState) imgPrevState.textContent='사진 준비 중…';
+    let comp;
+    try{ comp = await compressImage(file); }
+    catch(e){ uploading=false; setSendUi(false); if(imgPrevState) imgPrevState.textContent=''; alert('이 사진 형식을 표시·변환할 수 없습니다.\n다른 사진(JPG/PNG)으로 시도해 주세요.'); return; }
+    if(comp.blob.size > MAX_BYTES){ uploading=false; setSendUi(false); alert('압축 후에도 용량이 큽니다. 더 작은 사진을 선택해 주세요.'); return; }
+    const msgId = doc(msgsCol).id;   // 메시지 ID 미리 생성 → Storage 경로에 사용
+    const now = new Date();
+    const path = 'tenarChat/images/'+me.uid+'/'+now.getFullYear()+'/'+pad(now.getMonth()+1)+'/'+msgId+'_'+Date.now()+'.jpg';
+    const sref = storageRef(storage, path);
+    const task = uploadBytesResumable(sref, comp.blob, { contentType:'image/jpeg' });
+    task.on('state_changed',
+      (s)=>{ const pct=Math.round(s.bytesTransferred/s.totalBytes*100); const t='사진 업로드 중 '+pct+'%'; if(imgPrevState) imgPrevState.textContent=t; status.textContent=t; },
+      (err)=>{ uploading=false; setSendUi(false); if(imgPrevState) imgPrevState.textContent=''; status.textContent='업로드 실패'; console.error(err);
+        alert('사진 업로드에 실패했습니다.\n· Storage(Blaze 요금제) 활성화와 storage.rules 게시를 확인해 주세요.\n'+((err&&err.message)||'')); },
+      async ()=>{
+        try{
+          const url = await getDownloadURL(sref);
+          await setDoc(doc(db,'tenarChatMessages',msgId), {
+            senderUid: me.uid, senderName: me.displayName||'사용자', senderPhotoURL: me.photoURL||'',
+            messageType:'image', text: caption, imageURL:url, imagePath:path,
+            imageWidth:comp.width, imageHeight:comp.height, imageSize:comp.blob.size, imageContentType:'image/jpeg',
+            createdAt:serverTimestamp(), editedAt:null, deleted:false });
+          input.value=''; input.style.height=''; clearPending(); status.textContent='전송 완료'; markRead();
+          setTimeout(()=>{ messagesEl.scrollTop=messagesEl.scrollHeight; }, 60);
+        }catch(e){
+          try{ await deleteObject(sref); }catch(_){}   // Firestore 저장 실패 → 업로드 파일 정리
+          status.textContent='전송 실패'; alert('사진 메시지 저장에 실패했습니다.\n'+((e&&e.message)||''));
+        }finally{ uploading=false; setSendUi(false); }
+      }
+    );
+  }
+
+  // ── v7: 전체화면 이미지 뷰어 (핀치 확대 · 이동 · 저장/공유) ──
+  let viewer=null, vScale=1, vX=0, vY=0, startDist=0, startScale=1, panSX=0, panSY=0, lastTap=0;
+  function vApply(){ const el=viewer&&viewer.querySelector('img'); if(el) el.style.transform='translate('+vX+'px,'+vY+'px) scale('+vScale+')'; }
+  function vReset(){ vScale=1; vX=0; vY=0; vApply(); }
+  function vDist(t){ return Math.hypot(t[0].clientX-t[1].clientX, t[0].clientY-t[1].clientY); }
+  function openViewer(url){
+    if(!viewer){
+      viewer=document.createElement('div'); viewer.className='chat-viewer';
+      viewer.innerHTML='<button class="cv-close" aria-label="닫기">✕</button><button class="cv-save">저장/공유</button><img alt=""><div class="cv-hint">두 손가락으로 확대 · 두 번 탭 확대 · 배경 탭 닫기</div>';
+      document.body.appendChild(viewer);
+      const imgEl=viewer.querySelector('img');
+      viewer.querySelector('.cv-close').addEventListener('click', closeViewer);
+      viewer.addEventListener('click', e=>{ if(e.target===viewer) closeViewer(); });
+      viewer.querySelector('.cv-save').addEventListener('click', ()=> shareImage(imgEl.src));
+      imgEl.addEventListener('touchstart', e=>{
+        if(e.touches.length===2){ startDist=vDist(e.touches); startScale=vScale; e.preventDefault(); }
+        else if(e.touches.length===1){ panSX=e.touches[0].clientX - vX; panSY=e.touches[0].clientY - vY;
+          const now=Date.now(); if(now-lastTap<300){ vScale = vScale>1?1:2.2; if(vScale===1){vX=0;vY=0;} vApply(); } lastTap=now; }
+      }, {passive:false});
+      imgEl.addEventListener('touchmove', e=>{
+        if(e.touches.length===2){ vScale=Math.min(5, Math.max(1, startScale * vDist(e.touches)/startDist)); vApply(); e.preventDefault(); }
+        else if(e.touches.length===1 && vScale>1){ vX=e.touches[0].clientX - panSX; vY=e.touches[0].clientY - panSY; vApply(); e.preventDefault(); }
+      }, {passive:false});
+      imgEl.addEventListener('touchend', ()=>{ if(vScale<=1){ vX=0; vY=0; vApply(); } });
+      imgEl.addEventListener('dblclick', ()=>{ vScale=vScale>1?1:2.2; if(vScale===1){vX=0;vY=0;} vApply(); });
+    }
+    viewer.querySelector('img').src=url; vReset(); viewer.classList.add('show');
+    document.addEventListener('keydown', vEsc);
+  }
+  function closeViewer(){ if(viewer){ viewer.classList.remove('show'); const i=viewer.querySelector('img'); if(i) i.removeAttribute('src'); } document.removeEventListener('keydown', vEsc); }
+  function vEsc(e){ if(e.key==='Escape') closeViewer(); }
+  async function shareImage(url){
+    try{ const res=await fetch(url); const blob=await res.blob(); const file=new File([blob],'tenar_chat.jpg',{type:blob.type||'image/jpeg'});
+      if(navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file]}); return; } }catch(e){}
+    try{ const a=document.createElement('a'); a.href=url; a.download='tenar_chat.jpg'; a.target='_blank'; a.rel='noopener'; a.click(); }catch(e){ window.open(url,'_blank'); }
+  }
+
   // ── 전송 ──
   const PHONE_RE = /(01[016789][-\s.]?\d{3,4}[-\s.]?\d{4})/;
   async function sendMessage(){
     if(sendBtn.disabled) return;
+    if(pendingPhoto){ sendPhoto(); return; }   // 사진이 첨부돼 있으면 사진 전송
     if(!myDoc || myDoc.status!=='approved'){ alert('승인된 사용자만 메시지를 보낼 수 있습니다.'); return; }
     const text=(input.value||'').trim().slice(0,300);
     if(!text){ input.focus(); return; }
@@ -2078,8 +2199,13 @@
     const isMine = me && m.senderUid===me.uid; const admin = myDoc&&myDoc.role==='admin';
     if(!isMine && !admin){ alert('본인 메시지만 삭제할 수 있습니다.'); return; }
     if(!confirm(admin&&!isMine?'관리자 권한으로 이 메시지를 삭제할까요?':'이 메시지를 삭제할까요?')) return;
-    try{ await updateDoc(doc(db,'tenarChatMessages',key), { deleted:true, text:'', editedAt:serverTimestamp() }); }
-    catch(e){ alert('삭제 실패: 권한/규칙을 확인해 주세요.'); }
+    try{
+      if(m.messageType==='image' && m.imagePath){
+        try{ await deleteObject(storageRef(storage, m.imagePath)); }
+        catch(err){ if(err && err.code!=='storage/object-not-found'){ alert('사진 파일 삭제에 실패했습니다. 잠시 후 다시 시도해 주세요.'); return; } }
+      }
+      await updateDoc(doc(db,'tenarChatMessages',key), { deleted:true, text:'', imageURL:'', editedAt:serverTimestamp() });
+    }catch(e){ alert('삭제 실패: 권한/규칙을 확인해 주세요.'); }
   }
 
   // ── 읽음/뱃지 ──
@@ -2104,7 +2230,10 @@
   closeBtn.addEventListener('click', closeChat);
   modal.addEventListener('click', e=>{ if(e.target===modal) closeChat(); });
   sendBtn.addEventListener('click', sendMessage);
-  messagesEl.addEventListener('click', e=>{ const b=e.target.closest('[data-chat-delete]'); if(b) deleteMessage(b.getAttribute('data-chat-delete')); });
+  messagesEl.addEventListener('click', e=>{
+    const d=e.target.closest('[data-chat-delete]'); if(d){ deleteMessage(d.getAttribute('data-chat-delete')); return; }
+    const im=e.target.closest('.chat-img'); if(im){ openViewer(im.getAttribute('data-full')||im.src); }
+  });
   messagesEl.addEventListener('scroll', updateJump);
   if(jumpBtn) jumpBtn.addEventListener('click', ()=>{ messagesEl.scrollTop=messagesEl.scrollHeight; });
 
@@ -2114,6 +2243,10 @@
   if(_up) _up.addEventListener('click', ()=>setFs(_fsIdx()+1));
   if(_down) _down.addEventListener('click', ()=>setFs(_fsIdx()-1));
   if(_fit) _fit.addEventListener('click', ()=>setFs(2));
+  // 사진 첨부 버튼/입력/취소
+  if(photoBtn) photoBtn.addEventListener('click', ()=>{ if(!uploading && photoInput) photoInput.click(); });
+  if(photoInput) photoInput.addEventListener('change', onPhotoSelected);
+  if(imgCancel) imgCancel.addEventListener('click', clearPending);
   // 입력창 자동 높이 · Enter=줄바꿈(전송은 버튼)
   input.addEventListener('input', ()=>{ input.style.height='auto'; input.style.height=Math.min(120, input.scrollHeight)+'px'; });
 
