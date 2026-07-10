@@ -1449,7 +1449,7 @@
   <span class="chat-badge" id="chatBadge">0</span>
 </button>
 
-<!-- 문의/공유 채팅 모달: 현재 버전은 기기별 로컬 저장형, Firebase 연결 시 실시간 공유형으로 확장 가능 -->
+<!-- 문의/공유 채팅 모달: 기존 코드 보존. 실제 말풍선 버튼은 tenar_chat.html로 이동 -->
 <div class="chat-modal" id="chatModal">
   <div class="chat-panel" role="dialog" aria-modal="true" aria-labelledby="chatTitle">
     <div class="chat-head">
@@ -1843,7 +1843,7 @@
   const provider = new GoogleAuthProvider();
   const usersCol = collection(db, 'tenarChatUsers');
   const msgsCol  = collection(db, 'tenarChatMessages');
-  const ADMIN_PAGE = 'tenar_chat_admin_v1.html';
+  const ADMIN_PAGE = 'tenar_chat_admin_v2.html';
   const FS_KEY = 'tenar_chat_fontsize_v1';
   const FS_STEPS = [13, 14.5, 15.5, 17, 19, 21.5];
   const LAST_READ_KEY = 'tenar_chat_last_read_v3';
@@ -2070,7 +2070,9 @@
   function openChat(){ modal.classList.add('show'); lockScroll(); markRead(); setTimeout(()=>{ if(mainEl.classList.contains('show')) messagesEl.scrollTop=messagesEl.scrollHeight; }, 60); }
   function closeChat(){ modal.classList.remove('show'); unlockScroll(); }
 
-  fab.addEventListener('click', openChat);
+  fab.addEventListener('click', function () {
+    window.location.href = 'tenar_chat.html';
+  });
   closeBtn.addEventListener('click', closeChat);
   modal.addEventListener('click', e=>{ if(e.target===modal) closeChat(); });
   sendBtn.addEventListener('click', sendMessage);
