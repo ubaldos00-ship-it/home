@@ -1,4 +1,4 @@
-<!-- index.html (업로드 정식·v7) · 저장: 2026-07-11 03:13 KST · [v7·2단계] 사진 전송 추가: 📷첨부·클라이언트 압축(1600px/JPEG)·업로드 진행률·이미지 말풍선·전체화면 뷰어(핀치확대·저장/공유)·사진 삭제 시 Storage 파일 함께 삭제 · v6 로그인/승인제 유지 -->
+<!-- index.html (업로드 정식·v8) · 저장: 2026-07-11 05:52 KST · [v8] 비용제한(billing) UI연동(normal/warning/no_upload/read_only·관리자예외) + 전송후 자동 맨아래(이미지 로딩대응) + 맨아래로버튼 입력영역 위 재배치(단일버튼·새메시지↓) + placeholder 제거 + Enter=줄바꿈 유지 + 이미지뷰어 저장/공유/닫기 분리(다운로드·Web Share·중복방지·접근성) + 오류문구 정리 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -749,14 +749,25 @@
     padding-bottom: env(safe-area-inset-bottom);
     position: relative;
   }
-  /* 채팅 맨 아래로 이동 버튼 (#4) */
-  .chat-jump-btn {
-    position: absolute; right: 14px; bottom: 84px; z-index: 6;
+  /* v8: 맨 아래로/새 메시지 버튼 — 입력영역(컴포저) 바로 위, 전송/사진 버튼을 가리지 않음 */
+  .chat-scroll-btn {
+    position: absolute; right: 16px;
+    bottom: calc(var(--composer-height, 72px) + 14px + env(safe-area-inset-bottom, 0px));
+    z-index: 8;
+    min-width: 44px; min-height: 40px;
     background: #d96f00; color: #fff; border: none; border-radius: 999px;
-    padding: 8px 13px; font-size: 12px; font-weight: 700; font-family: inherit;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.28); cursor: pointer; display: none;
+    padding: 9px 15px; font-size: 12.5px; font-weight: 800; font-family: inherit;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.3); cursor: pointer; display: none;
   }
-  .chat-jump-btn.show { display: block; }
+  .chat-scroll-btn.show { display: block; }
+  /* v8: 비용 제한 안내문 (no_upload=노랑 / read_only=빨강) */
+  .chat-billing-note {
+    padding: 9px 12px; font-size: 12.5px; font-weight: 700; line-height: 1.45;
+    background: #fff3cd; color: #8a5a00; border-top: 1px solid #f0d98a;
+  }
+  .chat-billing-note.readonly { background: #fdecec; color: #b3261e; border-top-color: #f3c2c2; }
+  /* v8: 사진 버튼 제한 표시 */
+  .chat-photo-btn.blocked { opacity: .45; cursor: not-allowed; }
   .chat-head {
     background: linear-gradient(135deg, #f28c28 0%, #d96f00 100%);
     color: #fff;
@@ -978,9 +989,12 @@
   .chat-viewer{ position:fixed; inset:0; z-index:2147483647; background:rgba(0,0,0,.93); display:none; align-items:center; justify-content:center; touch-action:none; overflow:hidden; }
   .chat-viewer.show{ display:flex; }
   .chat-viewer img{ max-width:100%; max-height:100%; transform-origin:center center; will-change:transform; -webkit-user-drag:none; user-select:none; }
-  .chat-viewer .cv-close{ position:absolute; top:14px; right:14px; width:42px; height:42px; border-radius:50%; border:none; background:rgba(255,255,255,.18); color:#fff; font-size:22px; cursor:pointer; z-index:2; }
-  .chat-viewer .cv-save{ position:absolute; top:14px; left:14px; height:42px; padding:0 14px; border-radius:21px; border:none; background:rgba(255,255,255,.18); color:#fff; font-size:14px; font-weight:700; cursor:pointer; z-index:2; }
-  .chat-viewer .cv-hint{ position:absolute; bottom:18px; left:0; right:0; text-align:center; color:rgba(255,255,255,.65); font-size:12px; z-index:2; pointer-events:none; }
+  .chat-viewer .cv-close{ position:absolute; top:14px; right:14px; width:44px; height:44px; border-radius:50%; border:none; background:rgba(255,255,255,.18); color:#fff; font-size:22px; cursor:pointer; z-index:3; }
+  /* v8: 저장/공유 버튼 바 (하단 중앙) */
+  .chat-viewer .cv-bar{ position:absolute; left:0; right:0; bottom:calc(20px + env(safe-area-inset-bottom,0px)); display:flex; gap:10px; justify-content:center; z-index:3; }
+  .chat-viewer .cv-bar button{ min-width:96px; height:46px; border:none; border-radius:23px; background:rgba(255,255,255,.94); color:#222; font-size:15px; font-weight:800; cursor:pointer; font-family:inherit; }
+  .chat-viewer .cv-bar button:disabled{ opacity:.6; }
+  .chat-viewer .cv-hint{ position:absolute; bottom:calc(74px + env(safe-area-inset-bottom,0px)); left:0; right:0; text-align:center; color:rgba(255,255,255,.6); font-size:12px; z-index:2; pointer-events:none; }
   .chat-send-row {
     display: flex;
     gap: 8px;
@@ -1491,17 +1505,20 @@
         <button type="button" id="chatFsFit" class="fit" aria-label="기본 글자 크기">맞춤</button>
         <button type="button" id="chatFsDown" aria-label="글자 작게">A－</button>
       </div>
-      <button type="button" class="chat-jump-btn" id="chatJumpBtn">▼ 맨 아래로</button>
+      <!-- v8: 맨 아래로/새 메시지 버튼 (입력영역 바로 위 · 전송/사진 버튼을 가리지 않음, 하나의 버튼 재사용) -->
+      <button type="button" class="chat-scroll-btn" id="chatJumpBtn" aria-label="맨 아래로 이동">▼ 맨 아래로</button>
+      <!-- v8: 비용 제한 안내문 -->
+      <div class="chat-billing-note" id="chatBillingNote" style="display:none;"></div>
       <!-- 사진 미리보기 (전송 전) -->
       <div class="chat-imgprev" id="chatImgPrev" style="display:none;">
         <img id="chatImgPrevThumb" alt="미리보기">
         <div class="chat-imgprev-info"><span id="chatImgPrevSize"></span><span id="chatImgPrevState"></span></div>
         <button type="button" id="chatImgCancel" aria-label="사진 취소">✕</button>
       </div>
-      <div class="chat-send-row">
+      <div class="chat-send-row" id="chatComposer">
         <input type="file" id="chatPhotoInput" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" style="display:none;">
         <button type="button" id="chatPhotoBtn" class="chat-photo-btn" aria-label="사진 첨부" title="사진 첨부">📷</button>
-        <textarea id="chatInput" maxlength="300" placeholder="메시지 입력 (Enter=줄바꿈 · 전송은 버튼)"></textarea>
+        <textarea id="chatInput" maxlength="300" placeholder=""></textarea>
         <button type="button" id="chatSend">전송</button>
       </div>
       <div class="chat-actions"><span id="chatStatus"></span></div>
@@ -1856,6 +1873,9 @@
     from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
   import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL, deleteObject }
     from "https://www.gstatic.com/firebasejs/12.14.0/firebase-storage.js";
+  // v8: 비용 제한(billing) 상태는 Realtime Database /system/billingControl 에서 실시간 감시
+  import { getDatabase, ref as rtdbRef, onValue }
+    from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyAcU8iZR-B5HdvX1FOh4APCm0hXsz1u_X8",
@@ -1870,6 +1890,7 @@
   const auth = getAuth(app);
   const db = getFirestore(app);
   const storage = getStorage(app);
+  const rtdb = getDatabase(app);
   const provider = new GoogleAuthProvider();
   const usersCol = collection(db, 'tenarChatUsers');
   const msgsCol  = collection(db, 'tenarChatMessages');
@@ -1898,6 +1919,8 @@
   const imgPrevSize = document.getElementById('chatImgPrevSize');
   const imgPrevState = document.getElementById('chatImgPrevState');
   const imgCancel = document.getElementById('chatImgCancel');
+  const billingNote = document.getElementById('chatBillingNote');
+  const composer = document.getElementById('chatComposer');
 
   // ── 상태 ──
   let me = null;          // Firebase Auth 사용자
@@ -1905,6 +1928,12 @@
   let unsubUser = null;   // 회원문서 구독 해제
   let unsubMsgs = null;   // 메시지 구독 해제
   const messages = [];
+  // ── v8: 비용 제한(billing) 상태 ──
+  let currentBillingMode = 'normal';   // normal | warning | no_upload | read_only
+  let billingStateLoaded = false;      // 최초 상태를 한 번이라도 읽었는지
+  let isCurrentUserAdmin = false;       // Firestore 회원문서 role==='admin' && status==='approved'
+  let unsubBilling = null;             // billing 리스너 해제
+  let unreadWhileScrolledUp = false;   // 위쪽을 보는 중 새 메시지 도착 여부(버튼 문구용)
 
   function pad(n){ return String(n).padStart(2,'0'); }
   function escapeHtml(s){ return String(s==null?'':s).replace(/[&<>'"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch])); }
@@ -1989,7 +2018,7 @@
     myDoc = d;
     const st = d ? d.status : 'pending';
     if(st==='approved'){ enterChat(); }
-    else { stopMessages(); if(st==='rejected') renderRejected(); else if(st==='blocked') renderBlocked(); else renderPending(); }
+    else { stopMessages(); stopBilling(); if(st==='rejected') renderRejected(); else if(st==='blocked') renderBlocked(); else renderPending(); }
   }
 
   // ── 인증 상태 감지 ──
@@ -1997,7 +2026,7 @@
     if(unsubUser){ unsubUser(); unsubUser=null; }
     stopMessages();
     me = user;
-    if(!user){ myDoc=null; try{clearPending();}catch(_){} renderLogin(); updateBadge(); return; }
+    if(!user){ myDoc=null; try{clearPending();}catch(_){} stopBilling(); renderLogin(); updateBadge(); return; }
     showAuth('<div class="a-emoji">⏳</div><p>확인 중…</p>');
     try{ await ensureMemberDoc(user); }
     catch(e){
@@ -2010,7 +2039,7 @@
   getRedirectResult(auth).catch(()=>{});
 
   // ── 승인 사용자: 채팅 입장 ──
-  function enterChat(){ showMain(); renderUserBar(); startMessages(); }
+  function enterChat(){ showMain(); renderUserBar(); startMessages(); startBilling(); applyBillingUi(); updateComposerHeight(); }
   function renderUserBar(){
     const admin = myDoc && myDoc.role==='admin';
     userBar.innerHTML = (me&&me.photoURL?`<img src="${escapeHtml(me.photoURL)}" referrerpolicy="no-referrer">`:'')
@@ -2040,7 +2069,8 @@
 
   // ── 렌더 (카카오톡 말풍선 + 날짜 구분 + 프로필 사진) ──
   function render(){
-    const stick = !messagesEl || (messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight < 90);
+    const wasNear = !messagesEl || isNearChatBottom(150);   // 렌더 전 하단 근처였는지
+    const prevTop = messagesEl ? messagesEl.scrollTop : 0;
     if(!messages.length){ messagesEl.innerHTML='<div class="chat-empty">아직 남긴 메시지가 없습니다.<br>승인된 사용자끼리 자유롭게 이야기해 보세요.</div>'; updateBadge(); return; }
     let html=''; let lastDate='';
     messages.forEach(m=>{
@@ -2064,8 +2094,9 @@
       else { html+=`<div class="chat-msg"><div class="chat-line">${av}<div><div class="chat-sender">${escapeHtml(m.senderName||'사용자')}</div><div class="chat-row">${bubble}${timeH}</div></div></div>${delBtn}</div>`; }
     });
     messagesEl.innerHTML=html;
-    if(stick) messagesEl.scrollTop=messagesEl.scrollHeight;
-    updateBadge(); updateJump();
+    if(wasNear){ messagesEl.scrollTop=messagesEl.scrollHeight; }       // 하단 근처였으면 자동 하단 이동
+    else { messagesEl.scrollTop = prevTop; unreadWhileScrolledUp=true; } // 과거 보는 중이면 위치 유지 + '새 메시지 ↓'
+    updateBadge(); updateComposerHeight(); updateJump();
   }
 
   // ── v7: 사진 첨부 / 압축 / 업로드 ──
@@ -2077,6 +2108,7 @@
   function setSendUi(busy){ sendBtn.disabled=busy; if(photoBtn) photoBtn.disabled=busy; }
   function clearPending(){ pendingPhoto=null; if(photoInput) photoInput.value=''; if(imgPrev) imgPrev.style.display='none'; if(imgPrevThumb) imgPrevThumb.removeAttribute('src'); if(imgPrevState) imgPrevState.textContent=''; }
   function onPhotoSelected(){
+    if(isPhotoBlocked()){ notifyPhotoBlocked(); photoInput.value=''; clearPending(); return; }   // v8: file input change 직전 재확인
     const f = photoInput.files && photoInput.files[0];
     if(!f) return;
     if(ACCEPT_TYPES.indexOf(f.type)===-1 && !/\.(jpe?g|png|webp|heic|heif)$/i.test(f.name)){ alert('이미지 파일(JPG·PNG·WebP·HEIC)만 첨부할 수 있습니다.'); photoInput.value=''; return; }
@@ -2103,6 +2135,7 @@
   async function sendPhoto(){
     if(uploading) return;
     if(!myDoc || myDoc.status!=='approved'){ alert('승인된 사용자만 사진을 보낼 수 있습니다.'); return; }
+    if(isPhotoBlocked()){ notifyPhotoBlocked(); clearPending(); return; }   // v8: 업로드 시작 직전 재확인
     const file = pendingPhoto; if(!file) return;
     const caption = (input.value||'').trim().slice(0,300);
     if(caption && PHONE_RE.test(caption) && !confirm('전화번호 등 개인정보가 포함된 것 같습니다.\n그래도 보낼까요?')) return;
@@ -2119,8 +2152,11 @@
     const task = uploadBytesResumable(sref, comp.blob, { contentType:'image/jpeg' });
     task.on('state_changed',
       (s)=>{ const pct=Math.round(s.bytesTransferred/s.totalBytes*100); const t='사진 업로드 중 '+pct+'%'; if(imgPrevState) imgPrevState.textContent=t; status.textContent=t; },
-      (err)=>{ uploading=false; setSendUi(false); if(imgPrevState) imgPrevState.textContent=''; status.textContent='업로드 실패'; console.error(err);
-        alert('사진 업로드에 실패했습니다.\n· Storage(Blaze 요금제) 활성화와 storage.rules 게시를 확인해 주세요.\n'+((err&&err.message)||'')); },
+      (err)=>{ uploading=false; setSendUi(false); if(imgPrevState) imgPrevState.textContent=''; status.textContent='업로드 실패'; console.error('[photo upload]', err);
+        const code=(err&&err.code)||'';
+        alert(code==='storage/unauthorized'
+          ? '현재 사진 업로드 권한이 없거나 월 사용 한도에 의해 업로드가 제한되었습니다.'
+          : '사진 업로드 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.'); },
       async ()=>{
         try{
           const url = await getDownloadURL(sref);
@@ -2130,10 +2166,10 @@
             imageWidth:comp.width, imageHeight:comp.height, imageSize:comp.blob.size, imageContentType:'image/jpeg',
             createdAt:serverTimestamp(), editedAt:null, deleted:false });
           input.value=''; input.style.height=''; clearPending(); status.textContent='전송 완료'; markRead();
-          setTimeout(()=>{ messagesEl.scrollTop=messagesEl.scrollHeight; }, 60);
-        }catch(e){
+          scrollToBottomAfterRender();   // v8: 이미지 로딩까지 기다렸다가 맨 아래
+        }catch(e){ console.error('[photo save]', e);
           try{ await deleteObject(sref); }catch(_){}   // Firestore 저장 실패 → 업로드 파일 정리
-          status.textContent='전송 실패'; alert('사진 메시지 저장에 실패했습니다.\n'+((e&&e.message)||''));
+          status.textContent='전송 실패'; alert('사진 업로드 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
         }finally{ uploading=false; setSendUi(false); }
       }
     );
@@ -2144,15 +2180,22 @@
   function vApply(){ const el=viewer&&viewer.querySelector('img'); if(el) el.style.transform='translate('+vX+'px,'+vY+'px) scale('+vScale+')'; }
   function vReset(){ vScale=1; vX=0; vY=0; vApply(); }
   function vDist(t){ return Math.hypot(t[0].clientX-t[1].clientX, t[0].clientY-t[1].clientY); }
-  function openViewer(url){
+  // v8: 확대 중인 이미지 정보 + 저장/공유 중복 방지 플래그
+  let currentViewerImageUrl='', currentViewerFileName='', cvBusy=false;
+  function genFileName(){ const d=new Date(); const p=n=>String(n).padStart(2,'0'); return 'tenar-chat-'+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+'-'+p(d.getHours())+p(d.getMinutes())+p(d.getSeconds())+'.jpg'; }
+  function openViewer(url, fileName){
+    currentViewerImageUrl=url; currentViewerFileName=fileName||genFileName();
     if(!viewer){
-      viewer=document.createElement('div'); viewer.className='chat-viewer';
-      viewer.innerHTML='<button class="cv-close" aria-label="닫기">✕</button><button class="cv-save">저장/공유</button><img alt=""><div class="cv-hint">두 손가락으로 확대 · 두 번 탭 확대 · 배경 탭 닫기</div>';
+      viewer=document.createElement('div'); viewer.className='chat-viewer'; viewer.setAttribute('role','dialog'); viewer.setAttribute('aria-modal','true');
+      viewer.innerHTML='<button class="cv-close" type="button" aria-label="닫기">✕</button><img alt="확대 이미지"><div class="cv-hint">두 손가락/두 번 탭 확대 · 배경 탭 닫기</div>'
+        +'<div class="cv-bar"><button class="cv-save" type="button" aria-label="이미지 저장">저장</button><button class="cv-share" type="button" aria-label="이미지 공유">공유</button></div>';
       document.body.appendChild(viewer);
       const imgEl=viewer.querySelector('img');
-      viewer.querySelector('.cv-close').addEventListener('click', closeViewer);
-      viewer.addEventListener('click', e=>{ if(e.target===viewer) closeViewer(); });
-      viewer.querySelector('.cv-save').addEventListener('click', ()=> shareImage(imgEl.src));
+      viewer.querySelector('.cv-close').addEventListener('click', e=>{ e.stopPropagation(); closeViewer(); });
+      viewer.addEventListener('click', e=>{ if(e.target===viewer) closeViewer(); });          // 배경 탭 닫기
+      imgEl.addEventListener('click', e=>e.stopPropagation());                                  // 이미지 탭은 닫기로 이어지지 않음
+      viewer.querySelector('.cv-save').addEventListener('click', e=>{ e.stopPropagation(); saveImage(); });
+      viewer.querySelector('.cv-share').addEventListener('click', e=>{ e.stopPropagation(); shareImage(); });
       imgEl.addEventListener('touchstart', e=>{
         if(e.touches.length===2){ startDist=vDist(e.touches); startScale=vScale; e.preventDefault(); }
         else if(e.touches.length===1){ panSX=e.touches[0].clientX - vX; panSY=e.touches[0].clientY - vY;
@@ -2167,13 +2210,47 @@
     }
     viewer.querySelector('img').src=url; vReset(); viewer.classList.add('show');
     document.addEventListener('keydown', vEsc);
+    setTimeout(()=>{ const c=viewer.querySelector('.cv-close'); if(c) c.focus(); }, 30);   // 접근성: 열리면 닫기 버튼 포커스
   }
   function closeViewer(){ if(viewer){ viewer.classList.remove('show'); const i=viewer.querySelector('img'); if(i) i.removeAttribute('src'); } document.removeEventListener('keydown', vEsc); }
   function vEsc(e){ if(e.key==='Escape') closeViewer(); }
-  async function shareImage(url){
-    try{ const res=await fetch(url); const blob=await res.blob(); const file=new File([blob],'tenar_chat.jpg',{type:blob.type||'image/jpeg'});
-      if(navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file]}); return; } }catch(e){}
-    try{ const a=document.createElement('a'); a.href=url; a.download='tenar_chat.jpg'; a.target='_blank'; a.rel='noopener'; a.click(); }catch(e){ window.open(url,'_blank'); }
+  // Blob 파일 공유 시도(성공/사용자취소=true)
+  async function tryShareBlob(url, name){
+    try{ const res=await fetch(url); const blob=await res.blob(); const file=new File([blob], name, {type:blob.type||'image/jpeg'});
+      if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], title:'텐아르 채팅 이미지'}); return true; }
+    }catch(e){ if(e&&e.name==='AbortError') return true; console.error('[share blob]', e); }
+    return false;
+  }
+  // 9. 저장: fetch→blob→download (iOS 등 제한 시 공유/새 탭 안내)
+  async function saveImage(){
+    if(cvBusy || !viewer) return; const btn=viewer.querySelector('.cv-save'), other=viewer.querySelector('.cv-share');
+    cvBusy=true; const orig=btn.textContent; btn.textContent='저장 중…'; btn.disabled=true; if(other) other.disabled=true;
+    const url=currentViewerImageUrl, name=currentViewerFileName;
+    try{
+      const res=await fetch(url); const blob=await res.blob(); const obj=URL.createObjectURL(blob);
+      const a=document.createElement('a'); a.href=obj; a.download=name; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(obj), 4000);
+      status.textContent='이미지 저장을 시작했습니다.';
+    }catch(e){ console.error('[image save]', e);
+      const shared = await tryShareBlob(url, name).catch(()=>false);
+      if(!shared){ try{ window.open(url,'_blank','noopener'); }catch(_){} alert('이 기기에서는 이미지를 새 화면으로 연 뒤 길게 눌러 저장해 주세요.'); }
+    }finally{ cvBusy=false; btn.textContent=orig; btn.disabled=false; if(other) other.disabled=false; }
+  }
+  // 10. 공유: Web Share(files) → url 공유 → 클립보드 → 새 탭
+  async function shareImage(){
+    if(cvBusy || !viewer) return; const btn=viewer.querySelector('.cv-share'), other=viewer.querySelector('.cv-save');
+    cvBusy=true; const orig=btn.textContent; btn.textContent='공유 준비 중…'; btn.disabled=true; if(other) other.disabled=true;
+    const url=currentViewerImageUrl, name=currentViewerFileName;
+    try{
+      if(await tryShareBlob(url, name)) { /* 파일 공유 성공/취소 */ }
+      else if(navigator.share){ try{ await navigator.share({title:'텐아르 채팅 이미지', text:'텐아르 채팅에서 공유한 이미지입니다.', url}); }catch(e){ if(!(e&&e.name==='AbortError')) throw e; } }
+      else { try{ await navigator.clipboard.writeText(url); status.textContent='이미지 주소를 복사했습니다.'; alert('이미지 주소를 복사했습니다.'); }
+             catch(e){ window.open(url,'_blank','noopener'); } }
+    }catch(e){ if(!(e&&e.name==='AbortError')){ console.error('[image share]', e);
+      try{ if(navigator.share){ await navigator.share({title:'텐아르 채팅 이미지', url}); } else { await navigator.clipboard.writeText(url); alert('이미지 주소를 복사했습니다.'); } }
+      catch(e2){ if(!(e2&&e2.name==='AbortError')){ try{ window.open(url,'_blank','noopener'); }catch(_){} alert('이미지를 공유하지 못했습니다. 잠시 후 다시 시도해 주세요.'); } }
+    } }
+    finally{ cvBusy=false; btn.textContent=orig; btn.disabled=false; if(other) other.disabled=false; }
   }
 
   // ── 전송 ──
@@ -2182,6 +2259,8 @@
     if(sendBtn.disabled) return;
     if(pendingPhoto){ sendPhoto(); return; }   // 사진이 첨부돼 있으면 사진 전송
     if(!myDoc || myDoc.status!=='approved'){ alert('승인된 사용자만 메시지를 보낼 수 있습니다.'); return; }
+    // v8: read_only(또는 상태 확인 전) 일반 사용자 문자 전송 차단 (관리자 예외)
+    if(isChatBlocked()){ alert(!billingStateLoaded ? '사용 상태를 확인하는 중입니다. 잠시 후 다시 시도해 주세요.' : '현재 월 사용 한도에 도달하여 채팅방이 읽기 전용으로 운영되고 있습니다.'); return; }
     const text=(input.value||'').trim().slice(0,300);
     if(!text){ input.focus(); return; }
     if(PHONE_RE.test(text) && !confirm('전화번호 등 개인정보가 포함된 것 같습니다.\n그래도 보낼까요?')) return;
@@ -2190,14 +2269,15 @@
       await addDoc(msgsCol, { senderUid:me.uid, senderName:me.displayName||'사용자', senderPhotoURL:me.photoURL||'',
         messageType:'text', text, createdAt:serverTimestamp(), editedAt:null, deleted:false });
       input.value=''; input.style.height=''; status.textContent='전송 완료'; markRead();
-      setTimeout(()=>{ messagesEl.scrollTop=messagesEl.scrollHeight; }, 40);
-    }catch(e){ status.textContent='전송 실패: 권한/규칙을 확인해 주세요.'; alert('메시지 전송에 실패했습니다.\n'+((e&&e.message)||'')); }
+      scrollToBottomAfterRender();   // v8: 내가 보낸 문자 → 항상 맨 아래
+    }catch(e){ console.error('[send text]', e); status.textContent='전송 실패'; alert('메시지 전송에 실패했습니다. 잠시 후 다시 시도해 주세요.'); }
     finally{ sendBtn.disabled=false; requestAnimationFrame(()=>{ input.focus(); }); }
   }
   async function deleteMessage(key){
     const m=messages.find(x=>x.key===key); if(!m) return;
     const isMine = me && m.senderUid===me.uid; const admin = myDoc&&myDoc.role==='admin';
     if(!isMine && !admin){ alert('본인 메시지만 삭제할 수 있습니다.'); return; }
+    if(isChatBlocked()){ alert('현재 월 사용 한도에 도달하여 채팅방이 읽기 전용으로 운영되고 있습니다.'); return; }   // v8: read_only 일반사용자 쓰기 차단
     if(!confirm(admin&&!isMine?'관리자 권한으로 이 메시지를 삭제할까요?':'이 메시지를 삭제할까요?')) return;
     try{
       if(m.messageType==='image' && m.imagePath){
@@ -2217,7 +2297,85 @@
     else badge.style.display='none';
   }
   function markRead(){ localStorage.setItem(LAST_READ_KEY, String(latestTime()||Date.now())); updateBadge(); }
-  function updateJump(){ if(!jumpBtn) return; const far=(messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight) > 140; jumpBtn.style.display=far?'block':'none'; }
+  // ── v8: 스크롤 유틸 ──
+  function isNearChatBottom(threshold){ threshold=(threshold==null?150:threshold); return (messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight) <= threshold; }
+  function scrollChatToBottom(opt){ opt=opt||{}; if(!messagesEl) return;
+    try{ messagesEl.scrollTo({ top: messagesEl.scrollHeight, behavior: (opt.smooth!==false)?'smooth':'auto' }); }
+    catch(e){ messagesEl.scrollTop=messagesEl.scrollHeight; }
+    unreadWhileScrolledUp=false; updateJump();
+  }
+  // 내가 보낸 메시지: 렌더 후(이미지 로딩까지) 확실히 맨 아래로
+  function scrollToBottomAfterRender(){
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      scrollChatToBottom({smooth:false});
+      const imgs=messagesEl.querySelectorAll('.chat-img'); const last=imgs[imgs.length-1];
+      if(last && !last.complete){ last.addEventListener('load', ()=>scrollChatToBottom({smooth:false}), {once:true}); }
+      setTimeout(()=>scrollChatToBottom({smooth:false}), 250);   // 보조 1회
+    }));
+  }
+  // 하단 이동/새 메시지 버튼 (하나의 버튼 재사용, 문구만 변경)
+  function updateJump(){ if(!jumpBtn) return;
+    const far = !isNearChatBottom(150);
+    jumpBtn.classList.toggle('show', far);
+    jumpBtn.textContent = (far && unreadWhileScrolledUp) ? '새 메시지 ↓' : '▼ 맨 아래로';
+    if(!far) unreadWhileScrolledUp=false;
+  }
+  // 입력영역(컴포저) 실제 높이 → CSS 변수 (스크롤 버튼이 전송/사진 버튼을 안 가리게)
+  function updateComposerHeight(){
+    let h=72; try{ if(composer) h=Math.round(composer.getBoundingClientRect().height)||72; }catch(e){}
+    try{ if(imgPrev && imgPrev.style.display!=='none') h += Math.round(imgPrev.getBoundingClientRect().height); }catch(e){}
+    try{ if(billingNote && billingNote.style.display!=='none') h += Math.round(billingNote.getBoundingClientRect().height); }catch(e){}
+    document.documentElement.style.setProperty('--composer-height', h+'px');
+  }
+
+  // ── v8: 비용 제한 상태 ──
+  function isPhotoBlocked(){ if(isCurrentUserAdmin) return false; if(!billingStateLoaded) return true; return currentBillingMode==='no_upload' || currentBillingMode==='read_only'; }
+  function isChatBlocked(){ if(isCurrentUserAdmin) return false; if(!billingStateLoaded) return true; return currentBillingMode==='read_only'; }
+  function notifyPhotoBlocked(){ if(!billingStateLoaded){ alert('사용 상태를 확인하는 중입니다. 잠시 후 다시 시도해 주세요.'); return; }
+    alert(currentBillingMode==='read_only'
+      ? '현재 월 사용 한도에 도달하여 채팅방이 읽기 전용으로 운영되고 있습니다.'
+      : '현재 월 사용 한도 보호를 위해 사진 업로드가 일시적으로 제한되어 있습니다. 텍스트 메시지는 정상적으로 이용할 수 있습니다.'); }
+  function applyBillingUi(){
+    isCurrentUserAdmin = !!(myDoc && myDoc.status==='approved' && myDoc.role==='admin');
+    const loading = !billingStateLoaded;
+    const mode = currentBillingMode;
+    const chatBlocked  = !isCurrentUserAdmin && !loading && mode==='read_only';
+    const photoBlocked = !isCurrentUserAdmin && !loading && (mode==='no_upload' || mode==='read_only');
+    const writesLocked = loading && !isCurrentUserAdmin;   // 최초 확인 전에는 일반사용자 쓰기 잠금(무조건 허용 금지)
+    // 입력창/전송 버튼
+    if(input) input.disabled = chatBlocked || writesLocked;
+    if(sendBtn) sendBtn.disabled = chatBlocked || writesLocked || uploading;
+    // 사진 버튼/입력
+    const disablePhoto = photoBlocked || writesLocked || uploading;
+    if(photoBtn){ photoBtn.disabled = disablePhoto; photoBtn.classList.toggle('blocked', photoBlocked); photoBtn.setAttribute('aria-disabled', disablePhoto?'true':'false');
+      photoBtn.title = photoBlocked ? (mode==='read_only'?'읽기 전용 상태입니다':'사진 업로드가 제한되어 있습니다') : '사진 첨부'; }
+    if(photoInput) photoInput.disabled = disablePhoto;
+    if(photoBlocked && pendingPhoto){ clearPending(); }   // 차단 시 선택 사진 초기화
+    // placeholder (7번: normal/warning=빈문자 · read_only만 안내)
+    if(input) input.placeholder = chatBlocked ? '현재 읽기 전용입니다.' : '';
+    // 안내문
+    let note='', cls='';
+    if(loading && !isCurrentUserAdmin){ note='사용 상태를 확인하는 중입니다. 잠시만 기다려 주세요.'; }
+    else if(!isCurrentUserAdmin && mode==='read_only'){ note='월 사용 한도에 도달하여 현재 채팅방은 읽기 전용입니다.'; cls='readonly'; }
+    else if(!isCurrentUserAdmin && mode==='no_upload'){ note='월 사용 한도 보호를 위해 사진 업로드가 일시적으로 제한되었습니다. 텍스트 메시지는 정상 이용할 수 있습니다.'; }
+    else if(isCurrentUserAdmin && mode==='no_upload'){ note='현재 일반 사용자의 사진 업로드가 제한된 상태입니다. 관리자는 계속 전송할 수 있습니다.'; }
+    else if(isCurrentUserAdmin && mode==='read_only'){ note='현재 일반 사용자는 읽기 전용 상태입니다. 관리자는 계속 전송할 수 있습니다.'; }
+    if(billingNote){ if(note){ billingNote.textContent=note; billingNote.className='chat-billing-note'+(cls?' '+cls:''); billingNote.style.display='block'; } else { billingNote.style.display='none'; } }
+    updateComposerHeight();
+  }
+  function startBilling(){
+    if(unsubBilling) return;
+    applyBillingUi();   // 최초엔 '확인 중' 상태로 표시
+    try{
+      unsubBilling = onValue(rtdbRef(rtdb, 'system/billingControl/mode'), (snap)=>{
+        const m = snap.val();
+        currentBillingMode = (m==='normal'||m==='warning'||m==='no_upload'||m==='read_only') ? m : 'normal';
+        billingStateLoaded = true;   // 정상 읽음
+        applyBillingUi();
+      }, (err)=>{ console.error('[billing] read error', err); applyBillingUi(); });  // 오류 시 마지막 값 유지
+    }catch(e){ console.error('[billing] listen fail', e); }
+  }
+  function stopBilling(){ if(unsubBilling){ try{unsubBilling();}catch(e){} unsubBilling=null; } billingStateLoaded=false; currentBillingMode='normal'; }
 
   // ── 모달 열고 닫기 + 페이지 스크롤 잠금 ──
   let savedY=0;
@@ -2235,7 +2393,7 @@
     const im=e.target.closest('.chat-img'); if(im){ openViewer(im.getAttribute('data-full')||im.src); }
   });
   messagesEl.addEventListener('scroll', updateJump);
-  if(jumpBtn) jumpBtn.addEventListener('click', ()=>{ messagesEl.scrollTop=messagesEl.scrollHeight; });
+  if(jumpBtn) jumpBtn.addEventListener('click', ()=>{ scrollChatToBottom({smooth:true}); });   // 하나의 버튼 재사용
 
   // 글자 크기 버튼
   applyFs();
@@ -2243,12 +2401,20 @@
   if(_up) _up.addEventListener('click', ()=>setFs(_fsIdx()+1));
   if(_down) _down.addEventListener('click', ()=>setFs(_fsIdx()-1));
   if(_fit) _fit.addEventListener('click', ()=>setFs(2));
-  // 사진 첨부 버튼/입력/취소
-  if(photoBtn) photoBtn.addEventListener('click', ()=>{ if(!uploading && photoInput) photoInput.click(); });
+  // 사진 첨부 버튼/입력/취소 (v8: 버튼 클릭 직전 사진 제한 재확인)
+  if(photoBtn) photoBtn.addEventListener('click', ()=>{ if(uploading) return; if(isPhotoBlocked()){ notifyPhotoBlocked(); return; } if(photoInput) photoInput.click(); });
   if(photoInput) photoInput.addEventListener('change', onPhotoSelected);
-  if(imgCancel) imgCancel.addEventListener('click', clearPending);
-  // 입력창 자동 높이 · Enter=줄바꿈(전송은 버튼)
-  input.addEventListener('input', ()=>{ input.style.height='auto'; input.style.height=Math.min(120, input.scrollHeight)+'px'; });
+  if(imgCancel) imgCancel.addEventListener('click', ()=>{ clearPending(); updateComposerHeight(); updateJump(); });
+  // 입력창 자동 높이(1~약6줄) · Enter=줄바꿈(전송은 버튼)
+  input.addEventListener('input', ()=>{ input.style.height='auto'; input.style.height=Math.min(140, input.scrollHeight)+'px'; updateComposerHeight(); updateJump(); });
+
+  // v8: 입력영역 높이/키보드/회전 변화에 맞춰 스크롤버튼 위치 재계산
+  function recalcUi(){ updateComposerHeight(); updateJump(); }
+  window.addEventListener('resize', recalcUi);
+  window.addEventListener('orientationchange', ()=>setTimeout(recalcUi, 200));
+  if(window.visualViewport){ window.visualViewport.addEventListener('resize', ()=>{ recalcUi(); if(document.activeElement===input && isNearChatBottom(220)) scrollChatToBottom({smooth:false}); }); }
+  try{ if(window.ResizeObserver && composer){ new ResizeObserver(recalcUi).observe(composer); } }catch(e){}
+  updateComposerHeight();
 
   renderLogin();
 </script>

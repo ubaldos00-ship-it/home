@@ -1,4 +1,4 @@
-<!-- tenar_chat_admin_v1.html · 텐아르 채팅 관리자 페이지 (회원 승인/거절/정지) · role=admin & status=approved 만 접근 -->
+<!-- tenar_chat_admin_v1.html (v8) · 저장: 2026-07-11 05:52 KST · 회원 승인/거절/정지 + 비용제한 상태 안내 배너 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -63,6 +63,8 @@
 
   <!-- 관리자 화면 -->
   <div id="adminView" style="display:none;">
+    <!-- v8: 비용 제한 상태 안내 (관리자는 기능 제한 없이 안내만) -->
+    <div id="billingBanner" style="display:none;margin-bottom:12px;padding:11px 14px;border-radius:12px;font-size:13px;font-weight:700;line-height:1.5;"></div>
     <div class="card">
       <input class="search" id="search" placeholder="이름 또는 이메일 검색" />
       <div class="tabs" id="tabs">
@@ -89,6 +91,9 @@
     from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
   import { getFirestore, collection, doc, getDoc, updateDoc, onSnapshot, serverTimestamp }
     from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+  // v8: 비용 제한 상태(RTDB) 안내용
+  import { getDatabase, ref as rtdbRef, onValue }
+    from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyAcU8iZR-B5HdvX1FOh4APCm0hXsz1u_X8",
@@ -102,6 +107,7 @@
   const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
+  const rtdb = getDatabase(app);
   const provider = new GoogleAuthProvider();
 
   const $ = id => document.getElementById(id);
@@ -147,11 +153,31 @@
 
   function startAdmin(){
     show('admin');
+    watchBilling();   // v8: 비용 제한 상태 안내 배너
     unsub = onSnapshot(collection(db,'tenarChatUsers'), (qs)=>{
       allUsers = [];
       qs.forEach(s=> allUsers.push({ id:s.id, ...s.data() }));
       renderCounts(); renderList();
     }, (e)=>{ alert('회원 목록을 불러오지 못했습니다: '+(e.message||e.code)); });
+  }
+
+  // v8: 비용 제한 상태(RTDB /system/billingControl/mode) 안내 배너 (관리자는 기능 제한 없음)
+  let unsubBilling = null;
+  function watchBilling(){
+    if(unsubBilling) return;
+    const el = document.getElementById('billingBanner');
+    try{
+      unsubBilling = onValue(rtdbRef(rtdb, 'system/billingControl/mode'), (snap)=>{
+        const mode = snap.val();
+        if(mode==='no_upload'){
+          el.style.display='block'; el.style.background='#fff3cd'; el.style.color='#8a5a00'; el.style.border='1px solid #f0d98a';
+          el.textContent='⚠ 현재 일반 사용자의 사진 업로드가 제한된 상태입니다. 관리자는 계속 전송할 수 있습니다.';
+        } else if(mode==='read_only'){
+          el.style.display='block'; el.style.background='#fdecec'; el.style.color='#b3261e'; el.style.border='1px solid #f3c2c2';
+          el.textContent='⛔ 현재 일반 사용자는 읽기 전용 상태입니다. 관리자는 계속 전송할 수 있습니다.';
+        } else { el.style.display='none'; }   // normal / warning
+      }, (err)=>{ console.error('[admin billing]', err); });
+    }catch(e){ console.error('[admin billing listen]', e); }
   }
 
   function renderCounts(){
