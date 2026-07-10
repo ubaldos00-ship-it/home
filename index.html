@@ -991,10 +991,12 @@
   .chat-viewer img{ max-width:100%; max-height:100%; transform-origin:center center; will-change:transform; -webkit-user-drag:none; user-select:none; }
   .chat-viewer .cv-close{ position:absolute; top:14px; right:14px; width:44px; height:44px; border-radius:50%; border:none; background:rgba(255,255,255,.18); color:#fff; font-size:22px; cursor:pointer; z-index:3; }
   /* v8: 저장/공유 버튼 바 (하단 중앙) */
-  .chat-viewer .cv-bar{ position:absolute; left:0; right:0; bottom:calc(20px + env(safe-area-inset-bottom,0px)); display:flex; gap:10px; justify-content:center; z-index:3; }
-  .chat-viewer .cv-bar button{ min-width:96px; height:46px; border:none; border-radius:23px; background:rgba(255,255,255,.94); color:#222; font-size:15px; font-weight:800; cursor:pointer; font-family:inherit; }
+  .chat-viewer .cv-bar{ position:absolute; left:16px; right:16px; bottom:calc(18px + env(safe-area-inset-bottom,0px)); display:flex; gap:10px; justify-content:center; z-index:3; }
+  .chat-viewer .cv-bar button{ flex:1; max-width:210px; height:52px; border:none; border-radius:14px; color:#fff; font-size:16px; font-weight:800; cursor:pointer; font-family:inherit; box-shadow:0 3px 12px rgba(0,0,0,.32); }
+  .chat-viewer .cv-bar .cv-save{ background:#2e7a4e; }   /* 녹색 저장 */
+  .chat-viewer .cv-bar .cv-share{ background:#1558D6; }  /* 파랑 공유 */
   .chat-viewer .cv-bar button:disabled{ opacity:.6; }
-  .chat-viewer .cv-hint{ position:absolute; bottom:calc(74px + env(safe-area-inset-bottom,0px)); left:0; right:0; text-align:center; color:rgba(255,255,255,.6); font-size:12px; z-index:2; pointer-events:none; }
+  .chat-viewer .cv-hint{ position:absolute; bottom:calc(84px + env(safe-area-inset-bottom,0px)); left:14px; right:14px; text-align:center; color:rgba(255,255,255,.82); font-size:12.5px; line-height:1.5; z-index:2; pointer-events:none; }
   .chat-send-row {
     display: flex;
     gap: 8px;
@@ -1518,7 +1520,7 @@
       <div class="chat-send-row" id="chatComposer">
         <input type="file" id="chatPhotoInput" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" style="display:none;">
         <button type="button" id="chatPhotoBtn" class="chat-photo-btn" aria-label="사진 첨부" title="사진 첨부">📷</button>
-        <textarea id="chatInput" maxlength="300" placeholder=""></textarea>
+        <textarea id="chatInput" maxlength="300" placeholder="메시지를 입력하세요 (Enter=줄바꿈 · 전송은 버튼)"></textarea>
         <button type="button" id="chatSend">전송</button>
       </div>
       <div class="chat-actions"><span id="chatStatus"></span></div>
@@ -2351,8 +2353,8 @@
       photoBtn.title = photoBlocked ? (mode==='read_only'?'읽기 전용 상태입니다':'사진 업로드가 제한되어 있습니다') : '사진 첨부'; }
     if(photoInput) photoInput.disabled = disablePhoto;
     if(photoBlocked && pendingPhoto){ clearPending(); }   // 차단 시 선택 사진 초기화
-    // placeholder (7번: normal/warning=빈문자 · read_only만 안내)
-    if(input) input.placeholder = chatBlocked ? '현재 읽기 전용입니다.' : '';
+    // placeholder: 평상시 예시 안내 · read_only만 임시 안내 (v9: 예시 문구 복구)
+    if(input) input.placeholder = chatBlocked ? '현재 읽기 전용입니다.' : '메시지를 입력하세요 (Enter=줄바꿈 · 전송은 버튼)';
     // 안내문
     let note='', cls='';
     if(loading && !isCurrentUserAdmin){ note='사용 상태를 확인하는 중입니다. 잠시만 기다려 주세요.'; }
