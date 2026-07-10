@@ -962,6 +962,25 @@
   .chat-userbar .u-badge.admin{ background:#fde68a; color:#7c5a00; }
   .chat-userbar .u-spacer{ flex:1; }
   .chat-userbar button{ border:1px solid var(--color-border); background:#fff; border-radius:8px; padding:5px 10px; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit; flex-shrink:0; }
+  /* ── v7: 사진 첨부 / 미리보기 / 이미지 말풍선 / 전체화면 뷰어 ── */
+  .chat-photo-btn{ flex-shrink:0; width:44px; height:46px; border:1px solid var(--color-border); background:#fff; border-radius:12px; font-size:20px; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+  .chat-photo-btn:disabled{ opacity:.5; }
+  .chat-imgprev{ display:flex; align-items:center; gap:10px; padding:8px 12px; background:#eef3e9; border-top:1px solid var(--color-border); }
+  .chat-imgprev img{ width:52px; height:52px; object-fit:cover; border-radius:9px; background:#dfe4dd; }
+  .chat-imgprev-info{ flex:1; min-width:0; font-size:12px; color:#555; display:flex; flex-direction:column; gap:2px; }
+  .chat-imgprev-info #chatImgPrevState{ color:#27500A; font-weight:700; }
+  .chat-imgprev button{ border:none; background:#d93030; color:#fff; border-radius:50%; width:26px; height:26px; font-size:14px; cursor:pointer; flex-shrink:0; }
+  .chat-bubble.img{ padding:4px; max-width:76%; }
+  .chat-msg.mine .chat-bubble.img{ background:#fee500; }
+  .chat-img{ display:block; max-width:100%; max-height:44vh; width:auto; border-radius:11px; cursor:pointer; background:#dfe4dd; }
+  .chat-imgcap{ font-size:.9em; padding:5px 5px 2px; line-height:1.4; }
+  /* 전체화면 이미지 뷰어 */
+  .chat-viewer{ position:fixed; inset:0; z-index:2147483647; background:rgba(0,0,0,.93); display:none; align-items:center; justify-content:center; touch-action:none; overflow:hidden; }
+  .chat-viewer.show{ display:flex; }
+  .chat-viewer img{ max-width:100%; max-height:100%; transform-origin:center center; will-change:transform; -webkit-user-drag:none; user-select:none; }
+  .chat-viewer .cv-close{ position:absolute; top:14px; right:14px; width:42px; height:42px; border-radius:50%; border:none; background:rgba(255,255,255,.18); color:#fff; font-size:22px; cursor:pointer; z-index:2; }
+  .chat-viewer .cv-save{ position:absolute; top:14px; left:14px; height:42px; padding:0 14px; border-radius:21px; border:none; background:rgba(255,255,255,.18); color:#fff; font-size:14px; font-weight:700; cursor:pointer; z-index:2; }
+  .chat-viewer .cv-hint{ position:absolute; bottom:18px; left:0; right:0; text-align:center; color:rgba(255,255,255,.65); font-size:12px; z-index:2; pointer-events:none; }
   .chat-send-row {
     display: flex;
     gap: 8px;
@@ -1449,7 +1468,7 @@
   <span class="chat-badge" id="chatBadge">0</span>
 </button>
 
-<!-- 문의/공유 채팅 모달: 기존 코드 보존. 실제 말풍선 버튼은 tenar_chat.html로 이동 -->
+<!-- 문의/공유 채팅 모달: 현재 버전은 기기별 로컬 저장형, Firebase 연결 시 실시간 공유형으로 확장 가능 -->
 <div class="chat-modal" id="chatModal">
   <div class="chat-panel" role="dialog" aria-modal="true" aria-labelledby="chatTitle">
     <div class="chat-head">
@@ -1473,7 +1492,15 @@
         <button type="button" id="chatFsDown" aria-label="글자 작게">A－</button>
       </div>
       <button type="button" class="chat-jump-btn" id="chatJumpBtn">▼ 맨 아래로</button>
+      <!-- 사진 미리보기 (전송 전) -->
+      <div class="chat-imgprev" id="chatImgPrev" style="display:none;">
+        <img id="chatImgPrevThumb" alt="미리보기">
+        <div class="chat-imgprev-info"><span id="chatImgPrevSize"></span><span id="chatImgPrevState"></span></div>
+        <button type="button" id="chatImgCancel" aria-label="사진 취소">✕</button>
+      </div>
       <div class="chat-send-row">
+        <input type="file" id="chatPhotoInput" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" style="display:none;">
+        <button type="button" id="chatPhotoBtn" class="chat-photo-btn" aria-label="사진 첨부" title="사진 첨부">📷</button>
         <textarea id="chatInput" maxlength="300" placeholder="메시지 입력 (Enter=줄바꿈 · 전송은 버튼)"></textarea>
         <button type="button" id="chatSend">전송</button>
       </div>
@@ -1827,6 +1854,8 @@
     from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
   import { getFirestore, collection, doc, getDoc, setDoc, updateDoc, onSnapshot, addDoc, query, orderBy, limit, serverTimestamp }
     from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+  import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL, deleteObject }
+    from "https://www.gstatic.com/firebasejs/12.14.0/firebase-storage.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyAcU8iZR-B5HdvX1FOh4APCm0hXsz1u_X8",
@@ -1840,10 +1869,11 @@
   const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
+  const storage = getStorage(app);
   const provider = new GoogleAuthProvider();
   const usersCol = collection(db, 'tenarChatUsers');
   const msgsCol  = collection(db, 'tenarChatMessages');
-  const ADMIN_PAGE = 'tenar_chat_admin_v2.html';
+  const ADMIN_PAGE = 'tenar_chat_admin_v1.html';
   const FS_KEY = 'tenar_chat_fontsize_v1';
   const FS_STEPS = [13, 14.5, 15.5, 17, 19, 21.5];
   const LAST_READ_KEY = 'tenar_chat_last_read_v3';
@@ -2070,9 +2100,7 @@
   function openChat(){ modal.classList.add('show'); lockScroll(); markRead(); setTimeout(()=>{ if(mainEl.classList.contains('show')) messagesEl.scrollTop=messagesEl.scrollHeight; }, 60); }
   function closeChat(){ modal.classList.remove('show'); unlockScroll(); }
 
-  fab.addEventListener('click', function () {
-    window.location.href = 'tenar_chat.html';
-  });
+  fab.addEventListener('click', openChat);
   closeBtn.addEventListener('click', closeChat);
   modal.addEventListener('click', e=>{ if(e.target===modal) closeChat(); });
   sendBtn.addEventListener('click', sendMessage);
