@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#f28c28">
+<title>텐아르 채팅</title>
+<style>
+:root{
+  --orange:#f28c28; --orange2:#d96f00; --green:#27500a; --bg:#f4f2ea;
+  --card:#fff; --line:#ded9ca; --text:#222; --muted:#777; --mine:#fff0dc; --other:#fff;
+  --danger:#c0392b; --shadow:0 4px 18px rgba(0,0,0,.08);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;background:var(--bg);color:var(--text)}
+button,input,textarea{font:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
+.app{height:100dvh;display:flex;flex-direction:column;overflow:hidden}
+.topbar{flex:0 0 auto;background:linear-gradient(135deg,var(--orange),var(--orange2));color:#fff;padding:10px 12px calc(10px + env(safe-area-inset-top));display:flex;align-items:center;gap:10px;box-shadow:0 2px 8px rgba(0,0,0,.15);z-index:20}
+.brand{font-weight:900;font-size:17px;flex:1}
+.userbox{display:flex;align-items:center;gap:7px;font-size:12px;min-width:0}
+.userbox img{width:30px;height:30px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.65)}
+.userbox .name{max-width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:800}
+.badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:999px;font-size:10px;font-weight:900;background:rgba(255,255,255,.2)}
+.iconbtn,.plainbtn{border:0;border-radius:10px;background:rgba(255,255,255,.16);color:#fff;padding:7px 9px;font-weight:800}
+.screen{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:18px}
+.panel{width:min(470px,100%);background:#fff;border:1px solid var(--line);border-radius:18px;padding:26px 20px;text-align:center;box-shadow:var(--shadow)}
+.panel .emoji{font-size:42px}.panel h2{margin:12px 0 8px}.panel p{font-size:14px;line-height:1.7;color:var(--muted);margin:0 0 16px}
+.googlebtn{border:1px solid #ddd;background:#fff;color:#333;border-radius:12px;padding:11px 16px;font-weight:900;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.subbtn{border:0;background:#777;color:#fff;border-radius:10px;padding:9px 14px;font-weight:800;margin-left:5px}
+.chat{flex:1;min-height:0;display:flex;flex-direction:column}
+.messages{flex:1;min-height:0;overflow-y:auto;padding:14px 10px 18px;overscroll-behavior:contain}
+.day{display:flex;justify-content:center;margin:12px 0}
+.day span{font-size:11px;color:#777;background:#e9e5da;border-radius:999px;padding:4px 9px}
+.msgrow{display:flex;gap:8px;align-items:flex-end;margin:8px 0}
+.msgrow.mine{justify-content:flex-end}
+.avatar{width:34px;height:34px;border-radius:50%;object-fit:cover;background:#ddd;flex:0 0 auto}
+.msggroup{max-width:min(76%,560px)}
+.sender{font-size:11px;color:#666;margin:0 0 4px 4px;font-weight:700}
+.bubble{background:var(--other);border:1px solid var(--line);border-radius:16px 16px 16px 4px;padding:9px 11px;box-shadow:0 2px 5px rgba(0,0,0,.04);position:relative;word-break:break-word;white-space:pre-wrap}
+.mine .bubble{background:var(--mine);border-radius:16px 16px 4px 16px}
+.quote{border-left:3px solid var(--orange);background:rgba(0,0,0,.045);border-radius:8px;padding:6px 8px;margin-bottom:7px;font-size:12px;color:#666}
+.quote b{display:block;color:#444;margin-bottom:2px}
+.photo{display:block;max-width:100%;max-height:420px;border-radius:12px;object-fit:contain;background:#eee;cursor:zoom-in}
+.caption{margin-top:7px}
+.meta{display:flex;align-items:center;gap:6px;margin-top:4px;font-size:10px;color:#888}
+.mine .meta{justify-content:flex-end}
+.reactions{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px}
+.reactchip{border:1px solid #ddd;background:#fff;border-radius:999px;padding:2px 7px;font-size:12px}
+.reactchip.on{border-color:var(--orange);background:#fff4e6}
+.composer{flex:0 0 auto;background:#fff;border-top:1px solid var(--line);padding:8px 10px calc(8px + env(safe-area-inset-bottom))}
+.replypreview,.imagepreview,.warning{border-radius:10px;padding:8px 10px;margin-bottom:7px;font-size:12px}
+.replypreview{background:#fff3e2;border-left:4px solid var(--orange);display:flex;gap:8px;align-items:center}
+.imagepreview{background:#f5f5f5;display:flex;gap:8px;align-items:center}
+.imagepreview img{width:54px;height:54px;border-radius:9px;object-fit:cover}
+.warning{background:#fff1f0;color:#9a2d24;border:1px solid #f2c6c2}
+.closex{margin-left:auto;border:0;background:transparent;font-weight:900;color:#777}
+.inputrow{display:flex;align-items:flex-end;gap:7px}
+.attach{width:40px;height:40px;border:0;border-radius:12px;background:#eee;font-size:19px}
+textarea{flex:1;resize:none;min-height:40px;max-height:130px;border:1px solid #d9d4c8;border-radius:14px;padding:10px 12px;outline:none;line-height:1.4}
+textarea:focus{border-color:var(--orange)}
+.send{height:40px;border:0;border-radius:12px;background:var(--orange);color:#fff;padding:0 15px;font-weight:900}
+.progress{height:4px;background:#eee;border-radius:999px;margin-top:7px;overflow:hidden}
+.progress i{display:block;height:100%;background:var(--orange);width:0}
+.menu{position:fixed;z-index:60;background:#fff;border:1px solid #ddd;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.18);padding:7px;display:flex;gap:5px;flex-wrap:wrap;max-width:290px}
+.menu button{border:0;border-radius:9px;background:#f1f1f1;padding:8px 10px}
+.viewer{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:100;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.viewer img{max-width:95vw;max-height:90vh;object-fit:contain;touch-action:pinch-zoom}
+.viewer button{position:absolute;top:calc(12px + env(safe-area-inset-top));right:12px;border:0;background:rgba(255,255,255,.18);color:#fff;border-radius:999px;width:42px;height:42px;font-size:22px}
+.toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%);background:#222;color:#fff;padding:9px 13px;border-radius:10px;font-size:13px;z-index:120;max-width:85%;text-align:center}
+@media(min-width:800px){.messages,.composer{padding-left:max(18px,calc((100vw - 820px)/2));padding-right:max(18px,calc((100vw - 820px)/2))}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">🌾 텐아르 채팅</div>
+    <div id="userBox" class="userbox"></div>
+  </header>
+
+  <main id="loginScreen" class="screen">
+    <section class="panel">
+      <div class="emoji">🔐</div>
+      <h2>승인 사용자 전용 채팅방</h2>
+      <p>Google 계정으로 로그인한 뒤 관리자 승인을 받은 사용자만 채팅 내용을 열람하고 작성할 수 있습니다.</p>
+      <button id="loginBtn" class="googlebtn">🅶 Google 계정으로 로그인</button>
+    </section>
+  </main>
+
+  <main id="pendingScreen" class="screen hidden">
+    <section class="panel">
+      <div class="emoji">⏳</div>
+      <h2>가입 승인 대기 중입니다</h2>
+      <p id="pendingText">관리자 승인 후 채팅방을 이용할 수 있습니다.</p>
+      <button id="refreshBtn" class="googlebtn">승인 상태 다시 확인</button>
+      <button id="logoutPendingBtn" class="subbtn">로그아웃</button>
+    </section>
+  </main>
+
+  <main id="denyScreen" class="screen hidden">
+    <section class="panel">
+      <div class="emoji">🚫</div>
+      <h2>채팅방을 이용할 수 없습니다</h2>
+      <p id="denyText"></p>
+      <button id="logoutDenyBtn" class="subbtn">로그아웃</button>
+    </section>
+  </main>
+
+  <main id="chatScreen" class="chat hidden">
+    <section id="messages" class="messages"></section>
+    <section class="composer">
+      <div id="replyPreview" class="replypreview hidden">
+        <div><b id="replyName"></b><span id="replyText"></span></div>
+        <button id="cancelReply" class="closex">✕</button>
+      </div>
+      <div id="imagePreview" class="imagepreview hidden">
+        <img id="previewImg" alt="선택한 사진">
+        <div><b>사진 선택됨</b><div id="previewInfo"></div></div>
+        <button id="cancelImage" class="closex">✕</button>
+      </div>
+      <div id="warning" class="warning hidden"></div>
+      <div class="inputrow">
+        <button id="attachBtn" class="attach" aria-label="사진 첨부">📷</button>
+        <input id="fileInput" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" hidden>
+        <textarea id="textInput" rows="1" placeholder="메시지를 입력하세요"></textarea>
+        <button id="sendBtn" class="send">전송</button>
+      </div>
+      <div id="progress" class="progress hidden"><i id="progressBar"></i></div>
+    </section>
+  </main>
+</div>
+
+<div id="actionMenu" class="menu hidden"></div>
+<div id="viewer" class="viewer hidden"><img id="viewerImg" alt="확대 사진"><button id="viewerClose">✕</button></div>
+<div id="toast" class="toast hidden"></div>
+
+<script type="module">
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+import {
+  getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect,
+  getRedirectResult, onAuthStateChanged, signOut
+} from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+import {
+  getFirestore, collection, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc,
+  onSnapshot, query, orderBy, limit, serverTimestamp, runTransaction
+} from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+import {
+  getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject
+} from "https://www.gstatic.com/firebasejs/12.14.0/firebase-storage.js";
+
+/* Firebase 프로젝트 설정 */
+const firebaseConfig = {
+  apiKey: "AIzaSyAcU8iZR-B5HdvX1FOh4APCm0hXsz1u_X8",
+  authDomain: "tenar-chat-1674c.firebaseapp.com",
+  databaseURL: "https://tenar-chat-1674c-default-rtdb.firebaseio.com",
+  projectId: "tenar-chat-1674c",
+  storageBucket: "tenar-chat-1674c.firebasestorage.app",
+  messagingSenderId: "662688468209",
+  appId: "1:662688468209:web:0f37484e26943d79946d50"
+};
+
+/*
+  Firestore 경로
+  - 회원: tenarChatUsers/{uid}
+  - 메시지: tenarChatRooms/main/messages/{messageId}
+  - 읽음: tenarChatRooms/main/reads/{uid}
+  - 반응: tenarChatRooms/main/messages/{messageId}/reactions/{uid}
+*/
+const ROOM_DOC = "main";
+const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
+const provider = new GoogleAuthProvider();
+
+const $ = id => document.getElementById(id);
+const loginScreen=$('loginScreen'), pendingScreen=$('pendingScreen'), denyScreen=$('denyScreen'), chatScreen=$('chatScreen');
+const messagesEl=$('messages'), textInput=$('textInput'), fileInput=$('fileInput');
+let currentUser=null, currentProfile=null, selectedFile=null, selectedPreviewUrl=null, replyTarget=null;
+let unsubProfile=null, unsubMessages=null, unsubReads=null;
+let messageCache=[], readCache={};
+
+function showScreen(name){
+  [loginScreen,pendingScreen,denyScreen,chatScreen].forEach(x=>x.classList.add('hidden'));
+  ({login:loginScreen,pending:pendingScreen,deny:denyScreen,chat:chatScreen}[name]).classList.remove('hidden');
+}
+function toast(msg){
+  $('toast').textContent=msg; $('toast').classList.remove('hidden');
+  clearTimeout(toast.t); toast.t=setTimeout(()=>$('toast').classList.add('hidden'),2600);
+}
+function esc(s){return String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+function fmtTime(ts){try{return (ts?.toDate?ts.toDate():new Date(ts)).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})}catch{return ''}}
+function dayKey(ts){try{return (ts?.toDate?ts.toDate():new Date(ts)).toLocaleDateString('ko-KR')}catch{return ''}}
+function autoSize(){textInput.style.height='auto';textInput.style.height=Math.min(textInput.scrollHeight,130)+'px'}
+function stopSubs(){[unsubProfile,unsubMessages,unsubReads].forEach(fn=>{try{fn&&fn()}catch{}});unsubProfile=unsubMessages=unsubReads=null}
+
+$('loginBtn').onclick=async()=>{
+  try{await signInWithPopup(auth,provider)}
+  catch(e){
+    if(['auth/popup-blocked','auth/cancelled-popup-request'].includes(e.code)) return signInWithRedirect(auth,provider);
+    if(e.code!=='auth/popup-closed-by-user') toast('로그인 실패: '+(e.code||e.message));
+  }
+};
+$('refreshBtn').onclick=()=>location.reload();
+$('logoutPendingBtn').onclick=$('logoutDenyBtn').onclick=()=>signOut(auth);
+getRedirectResult(auth).catch(()=>{});
+
+onAuthStateChanged(auth,async user=>{
+  stopSubs(); currentUser=user; currentProfile=null; resetComposer();
+  if(!user){$('userBox').innerHTML='';showScreen('login');return}
+  renderUserBox(user,'확인 중');
+  const uref=doc(db,'tenarChatUsers',user.uid);
+  try{
+    const s=await getDoc(uref);
+    if(!s.exists()){
+      await setDoc(uref,{
+        uid:user.uid,email:user.email||'',displayName:user.displayName||'사용자',
+        photoURL:user.photoURL||'',status:'pending',role:'member',
+        requestedAt:serverTimestamp(),lastLoginAt:serverTimestamp(),
+        approvedAt:null,approvedBy:null,blockedAt:null,blockedReason:'',version:1
+      });
+    }else{
+      await updateDoc(uref,{displayName:user.displayName||s.data().displayName||'사용자',photoURL:user.photoURL||'',lastLoginAt:serverTimestamp()});
+    }
+  }catch(e){showDenied('회원 정보를 준비하지 못했습니다. '+(e.code||''));return}
+
+  unsubProfile=onSnapshot(uref,snap=>{
+    if(!snap.exists()){showDenied('회원 문서가 없습니다.');return}
+    currentProfile=snap.data(); applyProfileState();
+  },e=>showDenied('승인 상태를 확인하지 못했습니다. '+(e.code||'')));
+});
+
+function renderUserBox(user,label){
+  $('userBox').innerHTML=`${user.photoURL?`<img src="${esc(user.photoURL)}" referrerpolicy="no-referrer">`:''}
+    <span class="name">${esc(user.displayName||'사용자')}</span><span class="badge">${esc(label)}</span>
+    <button id="logoutTop" class="plainbtn">로그아웃</button>`;
+  $('logoutTop').onclick=()=>signOut(auth);
+}
+function applyProfileState(){
+  const p=currentProfile;
+  renderUserBox(currentUser,p.role==='admin'?'관리자':p.status==='approved'?'승인 사용자':statusKo(p.status));
+  if(p.status==='approved'){showScreen('chat');startChat()}
+  else if(p.status==='pending'){
+    $('pendingText').textContent=`${currentUser.displayName||'사용자'}님, 가입 신청이 완료되었습니다. 관리자 승인 후 자동으로 입장됩니다.`;
+    showScreen('pending'); stopChatOnly();
+  }else showDenied(p.status==='blocked'?'현재 이용이 정지된 계정입니다. 관리자에게 문의해 주세요.':'가입 신청이 승인되지 않았습니다.');
+}
+function showDenied(msg){$('denyText').textContent=msg;showScreen('deny');stopChatOnly()}
+function statusKo(s){return {pending:'승인 대기',approved:'승인',rejected:'거절',blocked:'정지'}[s]||s}
+function stopChatOnly(){try{unsubMessages&&unsubMessages()}catch{};try{unsubReads&&unsubReads()}catch{};unsubMessages=unsubReads=null}
+
+function startChat(){
+  if(unsubMessages) return;
+  const mcol=collection(db,'tenarChatRooms',ROOM_DOC,'messages');
+  unsubMessages=onSnapshot(query(mcol,orderBy('createdAt','asc'),limit(150)),qs=>{
+    messageCache=qs.docs.map(d=>({id:d.id,...d.data()}));renderMessages();markRead();
+  },e=>toast('메시지를 불러오지 못했습니다: '+(e.code||'')));
+  const rcol=collection(db,'tenarChatRooms',ROOM_DOC,'reads');
+  unsubReads=onSnapshot(rcol,qs=>{
+    readCache={};qs.forEach(d=>readCache[d.id]=d.data());renderMessages(false);
+  });
+}
+async function markRead(){
+  if(!currentUser||!currentProfile||currentProfile.status!=='approved')return;
+  try{await setDoc(doc(db,'tenarChatRooms',ROOM_DOC,'reads',currentUser.uid),{
+    uid:currentUser.uid,displayName:currentUser.displayName||'사용자',lastReadAt:serverTimestamp()
+  },{merge:true})}catch{}
+}
+function readCount(msg){
+  if(!msg.createdAt)return 0;
+  let n=0;Object.values(readCache).forEach(r=>{
+    try{if(r.lastReadAt?.toMillis()>=msg.createdAt?.toMillis())n++}catch{}
+  });return n;
+}
+function renderMessages(scroll=true){
+  let html='',lastDay='';
+  for(const m of messageCache){
+    const mine=m.senderUid===currentUser?.uid,day=dayKey(m.createdAt);
+    if(day&&day!==lastDay){html+=`<div class="day"><span>${esc(day)}</span></div>`;lastDay=day}
+    const quote=m.replyTo?`<div class="quote"><b>${esc(m.replyTo.senderName||'사용자')}</b>${esc(m.replyTo.text||'[사진]')}</div>`:'';
+    const photo=m.imageURL?`<img class="photo" data-img="${esc(m.imageURL)}" src="${esc(m.imageURL)}" loading="lazy" alt="채팅 사진">`:'';
+    const caption=m.text?`<div class="caption">${esc(m.text)}</div>`:'';
+    const chips=renderReactionChips(m);
+    html+=`<div class="msgrow ${mine?'mine':''}" data-id="${m.id}">
+      ${mine?'':`<img class="avatar" src="${esc(m.senderPhotoURL||'')}" referrerpolicy="no-referrer" onerror="this.style.visibility='hidden'">`}
+      <div class="msggroup">
+        ${mine?'':`<div class="sender">${esc(m.senderName||'사용자')}</div>`}
+        <div class="bubble" data-bubble="${m.id}">${quote}${photo}${caption}</div>
+        <div class="reactions">${chips}</div>
+        <div class="meta"><span>${fmtTime(m.createdAt)}</span><span>👁 ${readCount(m)}</span></div>
+      </div></div>`;
+  }
+  messagesEl.innerHTML=html||'<div class="day"><span>아직 메시지가 없습니다.</span></div>';
+  messagesEl.querySelectorAll('.photo').forEach(img=>img.onclick=()=>openViewer(img.dataset.img));
+  messagesEl.querySelectorAll('[data-bubble]').forEach(el=>{
+    let timer;const open=e=>{e.preventDefault();openMenu(el.dataset.bubble,e)};
+    el.addEventListener('contextmenu',open);
+    el.addEventListener('touchstart',e=>timer=setTimeout(()=>open(e),550),{passive:false});
+    ['touchend','touchmove','touchcancel'].forEach(ev=>el.addEventListener(ev,()=>clearTimeout(timer),{passive:true}));
+  });
+  messagesEl.querySelectorAll('[data-react]').forEach(b=>b.onclick=()=>toggleReaction(b.dataset.id,b.dataset.react));
+  if(scroll)requestAnimationFrame(()=>messagesEl.scrollTop=messagesEl.scrollHeight);
+}
+function renderReactionChips(m){
+  const r=m.reactionCounts||{};return ['👍','❤️','✅'].filter(x=>r[x]>0).map(x=>
+    `<button class="reactchip ${(m.myReactions||{})[currentUser?.uid]===x?'on':''}" data-react="${x}" data-id="${m.id}">${x} ${r[x]}</button>`
+  ).join('');
+}
+function openMenu(id,e){
+  const m=messageCache.find(x=>x.id===id);if(!m)return;
+  const menu=$('actionMenu');menu.innerHTML=`
+    <button data-a="reply">↩️ 답장</button><button data-r="👍">👍</button><button data-r="❤️">❤️</button><button data-r="✅">✅</button>
+    ${m.senderUid===currentUser.uid?'<button data-a="delete">🗑️ 삭제</button>':''}`;
+  const x=Math.min(e.clientX||innerWidth/2,innerWidth-300),y=Math.min(e.clientY||innerHeight/2,innerHeight-120);
+  menu.style.left=x+'px';menu.style.top=y+'px';menu.classList.remove('hidden');
+  menu.querySelector('[data-a="reply"]').onclick=()=>{setReply(m);menu.classList.add('hidden')};
+  menu.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{toggleReaction(id,b.dataset.r);menu.classList.add('hidden')});
+  const del=menu.querySelector('[data-a="delete"]');if(del)del.onclick=()=>{deleteMessage(m);menu.classList.add('hidden')};
+}
+document.addEventListener('click',e=>{if(!e.target.closest('#actionMenu')&&!e.target.closest('[data-bubble]'))$('actionMenu').classList.add('hidden')});
+
+function setReply(m){
+  replyTarget=m;$('replyName').textContent=(m.senderName||'사용자')+'에게 답장';
+  $('replyText').textContent=m.text||'[사진]';$('replyPreview').classList.remove('hidden');textInput.focus();
+}
+$('cancelReply').onclick=()=>{replyTarget=null;$('replyPreview').classList.add('hidden')};
+
+async function toggleReaction(messageId,emoji){
+  try{
+    const mref=doc(db,'tenarChatRooms',ROOM_DOC,'messages',messageId);
+    const rref=doc(db,'tenarChatRooms',ROOM_DOC,'messages',messageId,'reactions',currentUser.uid);
+    await runTransaction(db,async tx=>{
+      const [ms,rs]=await Promise.all([tx.get(mref),tx.get(rref)]);
+      if(!ms.exists())throw new Error('메시지 없음');
+      const data=ms.data(),counts={...(data.reactionCounts||{})},mine={...(data.myReactions||{})};
+      const old=rs.exists()?rs.data().emoji:null;
+      if(old){counts[old]=Math.max(0,(counts[old]||1)-1);delete mine[currentUser.uid]}
+      if(old!==emoji){counts[emoji]=(counts[emoji]||0)+1;mine[currentUser.uid]=emoji;tx.set(rref,{uid:currentUser.uid,emoji,updatedAt:serverTimestamp()})}
+      else tx.delete(rref);
+      tx.update(mref,{reactionCounts:counts,myReactions:mine});
+    });
+  }catch(e){toast('반응 처리 실패: '+(e.code||e.message))}
+}
+
+$('attachBtn').onclick=()=>fileInput.click();
+fileInput.onchange=async()=>{
+  const f=fileInput.files?.[0];if(!f)return;
+  if(f.size>10*1024*1024){toast('사진은 10MB 이하만 전송할 수 있습니다.');fileInput.value='';return}
+  const ok=['image/jpeg','image/png','image/webp','image/heic','image/heif'].includes(f.type);
+  if(!ok){toast('JPG, PNG, WebP, HEIC, HEIF 사진만 가능합니다.');fileInput.value='';return}
+  selectedFile=f;if(selectedPreviewUrl)URL.revokeObjectURL(selectedPreviewUrl);
+  selectedPreviewUrl=URL.createObjectURL(f);$('previewImg').src=selectedPreviewUrl;
+  $('previewInfo').textContent=(f.size/1024/1024).toFixed(2)+'MB';
+  $('imagePreview').classList.remove('hidden');
+};
+$('cancelImage').onclick=clearImage;
+function clearImage(){selectedFile=null;fileInput.value='';$('imagePreview').classList.add('hidden');if(selectedPreviewUrl)URL.revokeObjectURL(selectedPreviewUrl);selectedPreviewUrl=null}
+
+textInput.addEventListener('input',()=>{autoSize();checkWarning()});
+function checkWarning(){
+  const t=textInput.value;
+  const forbidden=['욕설1','욕설2']; // 필요 시 실제 금칙어로 교체
+  const hasForbidden=forbidden.some(w=>t.includes(w));
+  const hasPrivacy=/\b01[016789][-\s]?\d{3,4}[-\s]?\d{4}\b|\b\d{6}[-\s]?[1-4]\d{6}\b/.test(t);
+  if(hasForbidden||hasPrivacy){
+    $('warning').textContent=hasForbidden?'금칙어가 포함되어 있습니다. 내용을 수정해 주세요.':'전화번호 또는 주민등록번호로 보이는 개인정보가 포함되어 있습니다.';
+    $('warning').classList.remove('hidden');
+  }else $('warning').classList.add('hidden');
+}
+textInput.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage()}})
+$('sendBtn').onclick=sendMessage;
+
+async function sendMessage(){
+  const text=textInput.value.trim();
+  if(!text&&!selectedFile)return;
+  if(!currentProfile||currentProfile.status!=='approved'){toast('승인된 사용자만 전송할 수 있습니다.');return}
+  if(!$('warning').classList.contains('hidden')&&/욕설1|욕설2/.test(text)){toast('금칙어를 수정해 주세요.');return}
+  setSending(true);
+  let imageURL='',imagePath='',imageSize=0,imageContentType='';
+  try{
+    const mref=doc(collection(db,'tenarChatRooms',ROOM_DOC,'messages'));
+    if(selectedFile){
+      const now=new Date(),year=now.getFullYear(),month=String(now.getMonth()+1).padStart(2,'0');
+      const ext=selectedFile.type==='image/png'?'png':selectedFile.type==='image/webp'?'webp':'jpg';
+      imagePath=`tenarChat/images/${currentUser.uid}/${year}/${month}/${mref.id}_${Date.now()}.${ext}`;
+      const sref=ref(storage,imagePath);
+      const task=uploadBytesResumable(sref,selectedFile,{contentType:selectedFile.type});
+      $('progress').classList.remove('hidden');
+      await new Promise((resolve,reject)=>task.on('state_changed',s=>{
+        $('progressBar').style.width=((s.bytesTransferred/s.totalBytes)*100).toFixed(0)+'%';
+      },reject,resolve));
+      imageURL=await getDownloadURL(task.snapshot.ref);
+      imageSize=selectedFile.size;imageContentType=selectedFile.type;
+    }
+    await setDoc(mref,{
+      senderUid:currentUser.uid,senderName:currentUser.displayName||'사용자',senderPhotoURL:currentUser.photoURL||'',
+      messageType:selectedFile?'image':'text',text,imageURL,imagePath,imageSize,imageContentType,
+      replyTo:replyTarget?{id:replyTarget.id,senderUid:replyTarget.senderUid,senderName:replyTarget.senderName||'사용자',text:replyTarget.text||''}:null,
+      reactionCounts:{},myReactions:{},createdAt:serverTimestamp(),editedAt:null,deleted:false
+    });
+    textInput.value='';autoSize();clearImage();replyTarget=null;$('replyPreview').classList.add('hidden');$('warning').classList.add('hidden');
+  }catch(e){
+    if(imagePath){try{await deleteObject(ref(storage,imagePath))}catch{}}
+    toast('전송 실패: '+(e.code||e.message));
+  }finally{setSending(false);$('progress').classList.add('hidden');$('progressBar').style.width='0'}
+}
+function setSending(on){$('sendBtn').disabled=on;$('attachBtn').disabled=on;textInput.disabled=on;$('sendBtn').textContent=on?'전송 중…':'전송'}
+function resetComposer(){textInput.value='';replyTarget=null;clearImage();$('replyPreview').classList.add('hidden');$('warning').classList.add('hidden')}
+
+async function deleteMessage(m){
+  if(!confirm('이 메시지를 삭제할까요?'))return;
+  try{
+    if(m.imagePath)await deleteObject(ref(storage,m.imagePath));
+    await deleteDoc(doc(db,'tenarChatRooms',ROOM_DOC,'messages',m.id));
+  }catch(e){toast('삭제 실패: '+(e.code||e.message))}
+}
+function openViewer(url){$('viewerImg').src=url;$('viewer').classList.remove('hidden')}
+$('viewerClose').onclick=()=>$('viewer').classList.add('hidden');
+$('viewer').onclick=e=>{if(e.target===$('viewer'))$('viewer').classList.add('hidden')};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')$('viewer').classList.add('hidden')});
+</script>
+</body>
+</html>
