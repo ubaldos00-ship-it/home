@@ -1,4 +1,4 @@
-<!-- index_secure_test_v9.html · 저장: 2026-07-11 12:09 KST · [v9 버전보관본] -->
+<!-- index_secure_test_v10.html · 저장: 2026-07-11 18:52 KST · [v10] 채팅 UI 개선: 아바타 숨김·글자크기 토글 오버레이·맨아래로 하단중앙·사진버튼 흰색·placeholder 정리·상태바 숨김·최초 진입 맨아래·이미지 사이드 저장/공유·저장 안내 가독성 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -739,7 +739,7 @@
   .chat-panel {
     width: 100%;
     max-width: 540px;
-    height: min(90vh, 760px);
+    height: min(94vh, 820px); /* v10: 화면 확대 */
     background: #fff;
     border-radius: 22px 22px 0 0;
     box-shadow: 0 -8px 28px rgba(0,0,0,0.22);
@@ -751,8 +751,8 @@
   }
   /* v8: 맨 아래로/새 메시지 버튼 — 입력영역(컴포저) 바로 위, 전송/사진 버튼을 가리지 않음 */
   .chat-scroll-btn {
-    position: absolute; right: 16px;
-    bottom: calc(var(--composer-height, 72px) + 14px + env(safe-area-inset-bottom, 0px));
+    position: absolute; left: 50%; transform: translateX(-50%);
+    bottom: calc(var(--composer-height, 72px) + 8px + env(safe-area-inset-bottom, 0px));
     z-index: 8;
     min-width: 44px; min-height: 40px;
     background: #d96f00; color: #fff; border: none; border-radius: 999px;
@@ -866,7 +866,7 @@
     overflow-y: auto;
     overscroll-behavior: contain; /* v35: 목록 끝에서 배경(홈화면)으로 스크롤 전파 차단 */
     -webkit-overflow-scrolling: touch;
-    padding: 10px 54px 14px 10px; /* 오른쪽은 글자크기 툴바 공간 확보 */
+    padding: 10px 12px 14px 10px; /* v10: 글자크기 툴바를 오버레이(감춤/토글)로 바꿔 오른쪽 여백 제거 → 내 말풍선 완전 우측정렬 */
     background: #b2c7d9; /* 카카오톡 느낌의 청회색 배경 */
     font-size: var(--chat-fs, 15.5px); /* v51: 글자 크기 조절 기준 */
   }
@@ -920,13 +920,23 @@
   }
   .chat-time { font-size:0.62em; color:#33414c; white-space:nowrap; margin-bottom:2px; opacity:.9; }
   .chat-delete-btn { margin-top:3px; }
-  /* 오른쪽 세로 글자크기 조절 툴바 (A＋ / 맞춤 / A－) */
-  .chat-fs-toolbar {
-    position:absolute; right:8px; top:50%; transform:translateY(-50%); z-index:6;
-    display:flex; flex-direction:column; gap:6px;
-    background:rgba(255,255,255,.92); border-radius:13px; padding:6px 5px;
-    box-shadow:0 2px 9px rgba(0,0,0,.22);
+  /* v10: 글자크기 조절 트리거(오른쪽에 감춤) — 터치하면 툴바가 오버레이로 나타남 */
+  .chat-fs-toggle {
+    position:absolute; right:8px; top:50%; transform:translateY(-50%); z-index:9;
+    width:40px; height:40px; border:none; border-radius:12px;
+    background:rgba(39,80,10,.88); color:#fff; font-weight:800; font-size:14px; line-height:1;
+    box-shadow:0 2px 8px rgba(0,0,0,.28); cursor:pointer; font-family:inherit; -webkit-tap-highlight-color:transparent;
+    display:flex; align-items:center; justify-content:center;
   }
+  .chat-fs-toggle:active { opacity:.8; }
+  /* 오른쪽 세로 글자크기 조절 툴바 (A＋ / 맞춤 / A－) — 기본 감춤, 트리거 왼쪽에 오버레이로 표시 */
+  .chat-fs-toolbar {
+    position:absolute; right:54px; top:50%; transform:translateY(-50%); z-index:9;
+    display:none; flex-direction:column; gap:6px;
+    background:rgba(255,255,255,.97); border-radius:13px; padding:6px 5px;
+    box-shadow:0 2px 12px rgba(0,0,0,.32);
+  }
+  .chat-fs-toolbar.show { display:flex; }
   .chat-fs-toolbar button {
     width:36px; height:32px; border:none; border-radius:9px;
     background:#27500A; color:#fff; font-weight:800; font-size:14px; line-height:1;
@@ -974,16 +984,20 @@
   .chat-userbar .u-spacer{ flex:1; }
   .chat-userbar button{ border:1px solid var(--color-border); background:#fff; border-radius:8px; padding:5px 10px; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit; flex-shrink:0; }
   /* ── v7: 사진 첨부 / 미리보기 / 이미지 말풍선 / 전체화면 뷰어 ── */
-  .chat-photo-btn{ flex-shrink:0; width:44px; height:46px; border:1px solid var(--color-border); background:#fff; border-radius:12px; font-size:20px; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+  .chat-send-row .chat-photo-btn{ flex-shrink:0; width:44px; height:46px; border:1px solid var(--color-border); background:#fff; color:#333; border-radius:12px; font-size:20px; cursor:pointer; -webkit-tap-highlight-color:transparent; }
   .chat-photo-btn:disabled{ opacity:.5; }
   .chat-imgprev{ display:flex; align-items:center; gap:10px; padding:8px 12px; background:#eef3e9; border-top:1px solid var(--color-border); }
   .chat-imgprev img{ width:52px; height:52px; object-fit:cover; border-radius:9px; background:#dfe4dd; }
   .chat-imgprev-info{ flex:1; min-width:0; font-size:12px; color:#555; display:flex; flex-direction:column; gap:2px; }
   .chat-imgprev-info #chatImgPrevState{ color:#27500A; font-weight:700; }
   .chat-imgprev button{ border:none; background:#d93030; color:#fff; border-radius:50%; width:26px; height:26px; font-size:14px; cursor:pointer; flex-shrink:0; }
-  .chat-bubble.img{ padding:4px; max-width:76%; }
+  .chat-bubble.img{ padding:4px; max-width:76%; position:relative; }
   .chat-msg.mine .chat-bubble.img{ background:#fee500; }
   .chat-img{ display:block; max-width:100%; max-height:44vh; width:auto; border-radius:11px; cursor:pointer; background:#dfe4dd; }
+  /* v10: 이미지 클릭 없이 바로 저장/공유 — 사진 우측 중앙 오버레이 버튼 */
+  .chat-img-actions{ position:absolute; top:50%; right:8px; transform:translateY(-50%); display:flex; flex-direction:column; gap:7px; z-index:2; }
+  .chat-img-actions button{ width:36px; height:36px; border:none; border-radius:50%; background:rgba(0,0,0,.55); color:#fff; font-size:16px; line-height:1; cursor:pointer; box-shadow:0 1px 5px rgba(0,0,0,.4); display:flex; align-items:center; justify-content:center; -webkit-tap-highlight-color:transparent; }
+  .chat-img-actions button:active{ background:rgba(0,0,0,.78); }
   .chat-imgcap{ font-size:.9em; padding:5px 5px 2px; line-height:1.4; }
   /* 전체화면 이미지 뷰어 */
   .chat-viewer{ position:fixed; inset:0; z-index:2147483647; background:rgba(0,0,0,.93); display:none; align-items:center; justify-content:center; touch-action:none; overflow:hidden; }
@@ -996,7 +1010,8 @@
   .chat-viewer .cv-bar .cv-save{ background:#2e7a4e; }   /* 녹색 저장 */
   .chat-viewer .cv-bar .cv-share{ background:#1558D6; }  /* 파랑 공유 */
   .chat-viewer .cv-bar button:disabled{ opacity:.6; }
-  .chat-viewer .cv-hint{ position:absolute; bottom:calc(84px + env(safe-area-inset-bottom,0px)); left:14px; right:14px; text-align:center; color:rgba(255,255,255,.82); font-size:12.5px; line-height:1.5; z-index:2; pointer-events:none; }
+  /* v10: 흰 배경 이미지에서도 안내가 보이도록 어두운 알약 배경 부여 */
+  .chat-viewer .cv-hint{ position:absolute; bottom:calc(84px + env(safe-area-inset-bottom,0px)); left:50%; transform:translateX(-50%); width:max-content; max-width:92%; text-align:center; color:#fff; font-size:12.5px; line-height:1.5; z-index:2; pointer-events:none; background:rgba(0,0,0,.6); padding:8px 12px; border-radius:12px; }
   .chat-send-row {
     display: flex;
     gap: 8px;
@@ -1018,7 +1033,7 @@
     outline: none;
   }
   .chat-actions {
-    display: flex;
+    display: none; /* v10: 하단 '연결 완료' 상태바 숨김 → 채팅 영역 확대 */
     justify-content: space-between;
     align-items: center;
     gap: 8px;
@@ -1502,7 +1517,9 @@
       <div class="chat-userbar" id="chatUserBar"></div>
       <div class="chat-notice">※ 개인정보, 농가명, 주소, 전화번호 등 민감정보는 입력하지 마세요.</div>
       <div class="chat-messages" id="chatMessages" aria-live="polite"></div>
-      <div class="chat-fs-toolbar" aria-label="채팅 글자 크기 조절">
+      <!-- v10: 글자크기 트리거(감춤) → 터치 시 아래 툴바가 오버레이로 표시 -->
+      <button type="button" class="chat-fs-toggle" id="chatFsToggle" aria-label="글자 크기 조절 열기/닫기">가</button>
+      <div class="chat-fs-toolbar" id="chatFsToolbar" aria-label="채팅 글자 크기 조절">
         <button type="button" id="chatFsUp" aria-label="글자 크게">A＋</button>
         <button type="button" id="chatFsFit" class="fit" aria-label="기본 글자 크기">맞춤</button>
         <button type="button" id="chatFsDown" aria-label="글자 작게">A－</button>
@@ -1520,7 +1537,7 @@
       <div class="chat-send-row" id="chatComposer">
         <input type="file" id="chatPhotoInput" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" style="display:none;">
         <button type="button" id="chatPhotoBtn" class="chat-photo-btn" aria-label="사진 첨부" title="사진 첨부">📷</button>
-        <textarea id="chatInput" maxlength="300" placeholder="메시지를 입력하세요 (Enter=줄바꿈 · 전송은 버튼)"></textarea>
+        <textarea id="chatInput" maxlength="300" placeholder="(Enter=줄바꿈 · 전송은 버튼)"></textarea>
         <button type="button" id="chatSend">전송</button>
       </div>
       <div class="chat-actions"><span id="chatStatus"></span></div>
@@ -1936,6 +1953,19 @@
   let isCurrentUserAdmin = false;       // Firestore 회원문서 role==='admin' && status==='approved'
   let unsubBilling = null;             // billing 리스너 해제
   let unreadWhileScrolledUp = false;   // 위쪽을 보는 중 새 메시지 도착 여부(버튼 문구용)
+  let initialScrollPending = false;    // v10: 채팅 진입 직후 '맨 아래(최근글)'로 강제 이동 대기
+
+  // v10: 하단 상태바를 숨겼으므로, 저장/공유 안내는 어두운 배경 토스트로 표시(흰 배경에서도 잘 보임)
+  let _toastTimer = null;
+  function toast(msg){
+    let t=document.getElementById('chatToast');
+    if(!t){ t=document.createElement('div'); t.id='chatToast';
+      t.style.cssText='position:fixed;left:50%;bottom:calc(26px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:rgba(20,20,20,.93);color:#fff;padding:11px 16px;border-radius:12px;font-size:13.5px;font-weight:700;z-index:2147483647;max-width:86%;text-align:center;line-height:1.45;box-shadow:0 3px 14px rgba(0,0,0,.45);pointer-events:none;opacity:0;transition:opacity .2s;';
+      document.body.appendChild(t); }
+    t.textContent=msg; t.style.opacity='1';
+    if(_toastTimer) clearTimeout(_toastTimer);
+    _toastTimer=setTimeout(()=>{ t.style.opacity='0'; }, 2800);
+  }
 
   function pad(n){ return String(n).padStart(2,'0'); }
   function escapeHtml(s){ return String(s==null?'':s).replace(/[&<>'"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch])); }
@@ -2041,7 +2071,7 @@
   getRedirectResult(auth).catch(()=>{});
 
   // ── 승인 사용자: 채팅 입장 ──
-  function enterChat(){ showMain(); renderUserBar(); startMessages(); startBilling(); applyBillingUi(); updateComposerHeight(); }
+  function enterChat(){ initialScrollPending=true; showMain(); renderUserBar(); startMessages(); startBilling(); applyBillingUi(); updateComposerHeight(); }
   function renderUserBar(){
     const admin = myDoc && myDoc.role==='admin';
     userBar.innerHTML = (me&&me.photoURL?`<img src="${escapeHtml(me.photoURL)}" referrerpolicy="no-referrer">`:'')
@@ -2089,14 +2119,21 @@
       else if(m.messageType==='image' && m.imageURL){
         const cap = m.text ? `<div class="chat-imgcap">${escapeHtml(m.text)}</div>` : '';
         const ratio = (m.imageWidth&&m.imageHeight) ? ` style="aspect-ratio:${m.imageWidth}/${m.imageHeight}"` : '';
-        bubble = `<div class="chat-bubble img"><img class="chat-img" src="${escapeHtml(m.imageURL)}" data-full="${escapeHtml(m.imageURL)}" loading="lazy" referrerpolicy="no-referrer"${ratio} alt="사진">${cap}</div>`;
+        const iu = escapeHtml(m.imageURL);
+        // v10: 이미지 클릭 없이 바로 저장/공유 (사진 우측 중앙 오버레이 버튼)
+        const acts = `<div class="chat-img-actions"><button type="button" data-img-save="${iu}" aria-label="사진 저장" title="사진 저장">⬇️</button><button type="button" data-img-share="${iu}" aria-label="사진 공유" title="사진 공유">↗️</button></div>`;
+        bubble = `<div class="chat-bubble img"><img class="chat-img" src="${iu}" data-full="${iu}" loading="lazy" referrerpolicy="no-referrer"${ratio} alt="사진">${acts}${cap}</div>`;
       } else { bubble = `<div class="chat-bubble">${escapeHtml(m.text||'')}</div>`; }
-      const av = m.senderPhotoURL ? `<img class="chat-avatar" style="object-fit:cover" src="${escapeHtml(m.senderPhotoURL)}" referrerpolicy="no-referrer" alt="">` : `<div class="chat-avatar">🙂</div>`;
+      // v10: 프로필 사진 아바타 숨김 — 보낸사람 이름(닉네임)은 유지
       if(isMine){ html+=`<div class="chat-msg mine"><div class="chat-row">${timeH}${bubble}</div>${delBtn}</div>`; }
-      else { html+=`<div class="chat-msg"><div class="chat-line">${av}<div><div class="chat-sender">${escapeHtml(m.senderName||'사용자')}</div><div class="chat-row">${bubble}${timeH}</div></div></div>${delBtn}</div>`; }
+      else { html+=`<div class="chat-msg"><div class="chat-line"><div><div class="chat-sender">${escapeHtml(m.senderName||'사용자')}</div><div class="chat-row">${bubble}${timeH}</div></div></div>${delBtn}</div>`; }
     });
     messagesEl.innerHTML=html;
-    if(wasNear){ messagesEl.scrollTop=messagesEl.scrollHeight; }       // 하단 근처였으면 자동 하단 이동
+    if(initialScrollPending && messages.length){                       // v10: 진입 직후엔 무조건 최근글(맨 아래)로
+      initialScrollPending=false; unreadWhileScrolledUp=false;
+      scrollToBottomAfterRender();
+    }
+    else if(wasNear){ messagesEl.scrollTop=messagesEl.scrollHeight; }  // 하단 근처였으면 자동 하단 이동
     else { messagesEl.scrollTop = prevTop; unreadWhileScrolledUp=true; } // 과거 보는 중이면 위치 유지 + '새 메시지 ↓'
     updateBadge(); updateComposerHeight(); updateJump();
   }
@@ -2189,7 +2226,7 @@
     currentViewerImageUrl=url; currentViewerFileName=fileName||genFileName();
     if(!viewer){
       viewer=document.createElement('div'); viewer.className='chat-viewer'; viewer.setAttribute('role','dialog'); viewer.setAttribute('aria-modal','true');
-      viewer.innerHTML='<button class="cv-close" type="button" aria-label="닫기">✕</button><img alt="확대 이미지"><div class="cv-hint">두 손가락/두 번 탭 확대 · 배경 탭 닫기<br>📱 iOS는 저장/공유를 누른 뒤 공유 시트에서 <b>이미지 저장</b>을 선택하세요</div>'
+      viewer.innerHTML='<button class="cv-close" type="button" aria-label="닫기">✕</button><img alt="확대 이미지"><div class="cv-hint">두 손가락/두 번 탭 확대 · 배경 탭 닫기<br>📱 iOS는 저장/공유를 누른 뒤 공유 시트에서 <b>사진 앱에 저장</b>을 선택하세요</div>'
         +'<div class="cv-bar"><button class="cv-save" type="button" aria-label="이미지 저장">🖼 저장</button><button class="cv-share" type="button" aria-label="이미지 공유">📱 공유</button></div>';
       document.body.appendChild(viewer);
       const imgEl=viewer.querySelector('img');
@@ -2225,40 +2262,55 @@
     const blob = await res.blob();
     return new File([blob], name, { type: blob.type || 'image/jpeg' });
   }
-  // 9. 저장 — 모바일: 공유 시트("이미지 저장" 선택) / 데스크톱: 직접 다운로드
+  // v10 공용 저장 코어 — 모바일: 공유 시트(→ "사진 앱에 저장" 한 번에) / 데스크톱: 바로 다운로드
+  async function saveImageCore(url, name){
+    name = name || genFileName();
+    const file = await fetchImageFile(url, name);
+    if(_isMobile && navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({ files:[file], title:name });   // iOS: 공유 시트 → "사진 앱에 저장" 선택(길게 누를 필요 없음)
+      toast('공유 시트에서 "사진 앱에 저장"을 선택하세요.');
+    } else {
+      const obj=URL.createObjectURL(file); const a=document.createElement('a'); a.href=obj; a.download=name; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(obj), 4000);
+      toast('이미지 저장을 시작했습니다.');
+    }
+  }
+  // v10 공용 공유 코어 — Web Share(files) → url 공유 → 클립보드 → 새 탭
+  async function shareImageCore(url, name){
+    name = name || genFileName();
+    let done=false;
+    try{ const file=await fetchImageFile(url,name); if(navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], title:'텐아르 채팅 이미지'}); done=true; } }
+    catch(e){ if(e&&e.name==='AbortError') done=true; else console.error('[share files]', e); }   // 파일공유 실패(CORS 등)는 아래로 폴백
+    if(!done && navigator.share){ try{ await navigator.share({title:'텐아르 채팅 이미지', text:'텐아르 채팅에서 공유한 이미지입니다.', url}); done=true; }catch(e){ if(e&&e.name==='AbortError') done=true; } }
+    if(!done){ try{ await navigator.clipboard.writeText(url); toast('이미지 주소를 복사했습니다.'); done=true; }catch(e){} }
+    if(!done){ try{ window.open(url,'_blank','noopener'); }catch(_){} }
+  }
+  // 9. 뷰어 저장 버튼
   async function saveImage(){
     if(cvBusy || !viewer) return; const btn=viewer.querySelector('.cv-save'), other=viewer.querySelector('.cv-share');
     cvBusy=true; const orig=btn.textContent; btn.textContent='저장 중…'; btn.disabled=true; if(other) other.disabled=true;
-    const url=currentViewerImageUrl, name=currentViewerFileName;
-    try{
-      const file = await fetchImageFile(url, name);
-      if(_isMobile && navigator.canShare && navigator.canShare({files:[file]})){
-        await navigator.share({ files:[file], title:name });   // iOS 공유 시트 → "이미지 저장" 선택
-        status.textContent='공유 시트에서 "이미지 저장"을 선택하세요.';
-      } else {
-        const obj=URL.createObjectURL(file); const a=document.createElement('a'); a.href=obj; a.download=name; document.body.appendChild(a); a.click(); a.remove();
-        setTimeout(()=>URL.revokeObjectURL(obj), 4000);
-        status.textContent='이미지 저장을 시작했습니다.';
-      }
-    }catch(e){ if(e&&e.name==='AbortError'){ /* 사용자 취소 */ }
-      else { console.error('[image save]', e); try{ window.open(url,'_blank','noopener'); }catch(_){} alert('이 기기에서는 이미지를 새 화면으로 연 뒤 길게 눌러 저장해 주세요.'); } }
+    try{ await saveImageCore(currentViewerImageUrl, currentViewerFileName); }
+    catch(e){ if(!(e&&e.name==='AbortError')){ console.error('[image save]', e); try{ window.open(currentViewerImageUrl,'_blank','noopener'); }catch(_){} alert('이 기기에서는 이미지를 새 화면으로 연 뒤 길게 눌러 저장해 주세요.'); } }
     finally{ cvBusy=false; btn.textContent=orig; btn.disabled=false; if(other) other.disabled=false; }
   }
-  // 10. 공유 — Web Share(files) → url 공유 → 클립보드 → 새 탭
+  // 10. 뷰어 공유 버튼
   async function shareImage(){
     if(cvBusy || !viewer) return; const btn=viewer.querySelector('.cv-share'), other=viewer.querySelector('.cv-save');
     cvBusy=true; const orig=btn.textContent; btn.textContent='공유 준비 중…'; btn.disabled=true; if(other) other.disabled=true;
-    const url=currentViewerImageUrl, name=currentViewerFileName;
-    try{
-      let done=false;
-      try{ const file=await fetchImageFile(url,name); if(navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], title:'텐아르 채팅 이미지'}); done=true; } }
-      catch(e){ if(e&&e.name==='AbortError') done=true; else console.error('[share files]', e); }   // 파일공유 실패(CORS 등)는 아래로 폴백
-      if(!done && navigator.share){ try{ await navigator.share({title:'텐아르 채팅 이미지', text:'텐아르 채팅에서 공유한 이미지입니다.', url}); done=true; }catch(e){ if(e&&e.name==='AbortError') done=true; } }
-      if(!done){ try{ await navigator.clipboard.writeText(url); status.textContent='이미지 주소를 복사했습니다.'; alert('이미지 주소를 복사했습니다.'); done=true; }catch(e){} }
-      if(!done){ try{ window.open(url,'_blank','noopener'); }catch(_){} }
-    }catch(e){ if(!(e&&e.name==='AbortError')){ console.error('[image share]', e); alert('이미지를 공유하지 못했습니다. 잠시 후 다시 시도해 주세요.'); } }
+    try{ await shareImageCore(currentViewerImageUrl, currentViewerFileName); }
+    catch(e){ if(!(e&&e.name==='AbortError')){ console.error('[image share]', e); alert('이미지를 공유하지 못했습니다. 잠시 후 다시 시도해 주세요.'); } }
     finally{ cvBusy=false; btn.textContent=orig; btn.disabled=false; if(other) other.disabled=false; }
   }
+  // v10: 목록의 사진을 클릭(뷰어 열기) 없이 바로 저장/공유
+  let _directBusy=false;
+  async function saveImageDirect(url){ if(_directBusy||!url) return; _directBusy=true; toast('저장 준비 중…');
+    try{ await saveImageCore(url, genFileName()); }
+    catch(e){ if(!(e&&e.name==='AbortError')){ console.error('[image save direct]', e); try{ window.open(url,'_blank','noopener'); }catch(_){} alert('이 기기에서는 이미지를 새 화면으로 연 뒤 길게 눌러 저장해 주세요.'); } }
+    finally{ _directBusy=false; } }
+  async function shareImageDirect(url){ if(_directBusy||!url) return; _directBusy=true; toast('공유 준비 중…');
+    try{ await shareImageCore(url, genFileName()); }
+    catch(e){ if(!(e&&e.name==='AbortError')){ console.error('[image share direct]', e); alert('이미지를 공유하지 못했습니다. 잠시 후 다시 시도해 주세요.'); } }
+    finally{ _directBusy=false; } }
 
   // ── 전송 ──
   const PHONE_RE = /(01[016789][-\s.]?\d{3,4}[-\s.]?\d{4})/;
@@ -2359,7 +2411,7 @@
     if(photoInput) photoInput.disabled = disablePhoto;
     if(photoBlocked && pendingPhoto){ clearPending(); }   // 차단 시 선택 사진 초기화
     // placeholder: 평상시 예시 안내 · read_only만 임시 안내 (v9: 예시 문구 복구)
-    if(input) input.placeholder = chatBlocked ? '현재 읽기 전용입니다.' : '메시지를 입력하세요 (Enter=줄바꿈 · 전송은 버튼)';
+    if(input) input.placeholder = chatBlocked ? '현재 읽기 전용입니다.' : '(Enter=줄바꿈 · 전송은 버튼)';
     // 안내문
     let note='', cls='';
     if(loading && !isCurrentUserAdmin){ note='사용 상태를 확인하는 중입니다. 잠시만 기다려 주세요.'; }
@@ -2388,7 +2440,10 @@
   let savedY=0;
   function lockScroll(){ savedY=window.scrollY||0; document.body.classList.add('chat-scroll-lock'); document.body.style.top=`-${savedY}px`; }
   function unlockScroll(){ document.body.classList.remove('chat-scroll-lock'); document.body.style.top=''; window.scrollTo(0,savedY); }
-  function openChat(){ modal.classList.add('show'); lockScroll(); markRead(); setTimeout(()=>{ if(mainEl.classList.contains('show')) messagesEl.scrollTop=messagesEl.scrollHeight; }, 60); }
+  function openChat(){ modal.classList.add('show'); lockScroll(); markRead();
+    // v10: 채팅방을 열면 항상 최근글(맨 아래)부터 보이도록 강제
+    initialScrollPending=true;
+    requestAnimationFrame(()=>{ if(mainEl.classList.contains('show') && messages.length){ initialScrollPending=false; scrollToBottomAfterRender(); } }); }
   function closeChat(){ modal.classList.remove('show'); unlockScroll(); }
 
   fab.addEventListener('click', openChat);
@@ -2397,6 +2452,9 @@
   sendBtn.addEventListener('click', sendMessage);
   messagesEl.addEventListener('click', e=>{
     const d=e.target.closest('[data-chat-delete]'); if(d){ deleteMessage(d.getAttribute('data-chat-delete')); return; }
+    // v10: 사진 우측 오버레이 저장/공유 버튼 (뷰어 열지 않고 바로)
+    const sv=e.target.closest('[data-img-save]'); if(sv){ e.stopPropagation(); saveImageDirect(sv.getAttribute('data-img-save')); return; }
+    const sh=e.target.closest('[data-img-share]'); if(sh){ e.stopPropagation(); shareImageDirect(sh.getAttribute('data-img-share')); return; }
     const im=e.target.closest('.chat-img'); if(im){ openViewer(im.getAttribute('data-full')||im.src); }
   });
   messagesEl.addEventListener('scroll', updateJump);
@@ -2408,6 +2466,13 @@
   if(_up) _up.addEventListener('click', ()=>setFs(_fsIdx()+1));
   if(_down) _down.addEventListener('click', ()=>setFs(_fsIdx()-1));
   if(_fit) _fit.addEventListener('click', ()=>setFs(2));
+  // v10: 글자크기 툴바 감춤/펼침 토글 (오버레이)
+  const _fsToggle=document.getElementById('chatFsToggle'), _fsToolbar=document.getElementById('chatFsToolbar');
+  if(_fsToggle && _fsToolbar){
+    _fsToggle.addEventListener('click', (e)=>{ e.stopPropagation(); _fsToolbar.classList.toggle('show'); });
+    // 툴바 밖(메시지 영역 등)을 터치하면 자동으로 닫힘
+    document.addEventListener('click', (e)=>{ if(_fsToolbar.classList.contains('show') && !_fsToolbar.contains(e.target) && e.target!==_fsToggle){ _fsToolbar.classList.remove('show'); } });
+  }
   // 사진 첨부 버튼/입력/취소 (v8: 버튼 클릭 직전 사진 제한 재확인)
   if(photoBtn) photoBtn.addEventListener('click', ()=>{ if(uploading) return; if(isPhotoBlocked()){ notifyPhotoBlocked(); return; } if(photoInput) photoInput.click(); });
   if(photoInput) photoInput.addEventListener('change', onPhotoSelected);
