@@ -1,4 +1,4 @@
-<!-- index.html (업로드 정식·v8) · 저장: 2026-07-11 05:52 KST · [v8] 비용제한(billing) UI연동(normal/warning/no_upload/read_only·관리자예외) + 전송후 자동 맨아래(이미지 로딩대응) + 맨아래로버튼 입력영역 위 재배치(단일버튼·새메시지↓) + placeholder 제거 + Enter=줄바꿈 유지 + 이미지뷰어 저장/공유/닫기 분리(다운로드·Web Share·중복방지·접근성) + 오류문구 정리 -->
+<!-- index.html (업로드 정식·v9) · 저장: 2026-07-11 12:09 KST · [v9] 이미지 뷰어 저장/공유 아이폰 방식으로 개선(모바일=공유시트→"이미지 저장", PC=다운로드, 🖼저장/📱공유 버튼·안내) + 문자 입력창 예시 placeholder 복구(Enter=줄바꿈·전송은 버튼) · v8 비용제한/스크롤 유지 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -2189,8 +2189,8 @@
     currentViewerImageUrl=url; currentViewerFileName=fileName||genFileName();
     if(!viewer){
       viewer=document.createElement('div'); viewer.className='chat-viewer'; viewer.setAttribute('role','dialog'); viewer.setAttribute('aria-modal','true');
-      viewer.innerHTML='<button class="cv-close" type="button" aria-label="닫기">✕</button><img alt="확대 이미지"><div class="cv-hint">두 손가락/두 번 탭 확대 · 배경 탭 닫기</div>'
-        +'<div class="cv-bar"><button class="cv-save" type="button" aria-label="이미지 저장">저장</button><button class="cv-share" type="button" aria-label="이미지 공유">공유</button></div>';
+      viewer.innerHTML='<button class="cv-close" type="button" aria-label="닫기">✕</button><img alt="확대 이미지"><div class="cv-hint">두 손가락/두 번 탭 확대 · 배경 탭 닫기<br>📱 iOS는 저장/공유를 누른 뒤 공유 시트에서 <b>이미지 저장</b>을 선택하세요</div>'
+        +'<div class="cv-bar"><button class="cv-save" type="button" aria-label="이미지 저장">🖼 저장</button><button class="cv-share" type="button" aria-label="이미지 공유">📱 공유</button></div>';
       document.body.appendChild(viewer);
       const imgEl=viewer.querySelector('img');
       viewer.querySelector('.cv-close').addEventListener('click', e=>{ e.stopPropagation(); closeViewer(); });
@@ -2216,42 +2216,47 @@
   }
   function closeViewer(){ if(viewer){ viewer.classList.remove('show'); const i=viewer.querySelector('img'); if(i) i.removeAttribute('src'); } document.removeEventListener('keydown', vEsc); }
   function vEsc(e){ if(e.key==='Escape') closeViewer(); }
-  // Blob 파일 공유 시도(성공/사용자취소=true)
-  async function tryShareBlob(url, name){
-    try{ const res=await fetch(url); const blob=await res.blob(); const file=new File([blob], name, {type:blob.type||'image/jpeg'});
-      if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], title:'텐아르 채팅 이미지'}); return true; }
-    }catch(e){ if(e&&e.name==='AbortError') return true; console.error('[share blob]', e); }
-    return false;
+  // v9: 모바일 여부 (iOS는 download 속성이 사진앱 저장이 안 되므로 공유 시트를 사용)
+  const _isMobile = /iP(hone|ad|od)|Android/i.test(navigator.userAgent) || (navigator.maxTouchPoints||0) > 0;
+  // 이미지 URL → File (CORS GET). 실패하면 throw
+  async function fetchImageFile(url, name){
+    const res = await fetch(url, { mode:'cors' });
+    if(!res.ok) throw new Error('http '+res.status);
+    const blob = await res.blob();
+    return new File([blob], name, { type: blob.type || 'image/jpeg' });
   }
-  // 9. 저장: fetch→blob→download (iOS 등 제한 시 공유/새 탭 안내)
+  // 9. 저장 — 모바일: 공유 시트("이미지 저장" 선택) / 데스크톱: 직접 다운로드
   async function saveImage(){
     if(cvBusy || !viewer) return; const btn=viewer.querySelector('.cv-save'), other=viewer.querySelector('.cv-share');
     cvBusy=true; const orig=btn.textContent; btn.textContent='저장 중…'; btn.disabled=true; if(other) other.disabled=true;
     const url=currentViewerImageUrl, name=currentViewerFileName;
     try{
-      const res=await fetch(url); const blob=await res.blob(); const obj=URL.createObjectURL(blob);
-      const a=document.createElement('a'); a.href=obj; a.download=name; document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(()=>URL.revokeObjectURL(obj), 4000);
-      status.textContent='이미지 저장을 시작했습니다.';
-    }catch(e){ console.error('[image save]', e);
-      const shared = await tryShareBlob(url, name).catch(()=>false);
-      if(!shared){ try{ window.open(url,'_blank','noopener'); }catch(_){} alert('이 기기에서는 이미지를 새 화면으로 연 뒤 길게 눌러 저장해 주세요.'); }
-    }finally{ cvBusy=false; btn.textContent=orig; btn.disabled=false; if(other) other.disabled=false; }
+      const file = await fetchImageFile(url, name);
+      if(_isMobile && navigator.canShare && navigator.canShare({files:[file]})){
+        await navigator.share({ files:[file], title:name });   // iOS 공유 시트 → "이미지 저장" 선택
+        status.textContent='공유 시트에서 "이미지 저장"을 선택하세요.';
+      } else {
+        const obj=URL.createObjectURL(file); const a=document.createElement('a'); a.href=obj; a.download=name; document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(()=>URL.revokeObjectURL(obj), 4000);
+        status.textContent='이미지 저장을 시작했습니다.';
+      }
+    }catch(e){ if(e&&e.name==='AbortError'){ /* 사용자 취소 */ }
+      else { console.error('[image save]', e); try{ window.open(url,'_blank','noopener'); }catch(_){} alert('이 기기에서는 이미지를 새 화면으로 연 뒤 길게 눌러 저장해 주세요.'); } }
+    finally{ cvBusy=false; btn.textContent=orig; btn.disabled=false; if(other) other.disabled=false; }
   }
-  // 10. 공유: Web Share(files) → url 공유 → 클립보드 → 새 탭
+  // 10. 공유 — Web Share(files) → url 공유 → 클립보드 → 새 탭
   async function shareImage(){
     if(cvBusy || !viewer) return; const btn=viewer.querySelector('.cv-share'), other=viewer.querySelector('.cv-save');
     cvBusy=true; const orig=btn.textContent; btn.textContent='공유 준비 중…'; btn.disabled=true; if(other) other.disabled=true;
     const url=currentViewerImageUrl, name=currentViewerFileName;
     try{
-      if(await tryShareBlob(url, name)) { /* 파일 공유 성공/취소 */ }
-      else if(navigator.share){ try{ await navigator.share({title:'텐아르 채팅 이미지', text:'텐아르 채팅에서 공유한 이미지입니다.', url}); }catch(e){ if(!(e&&e.name==='AbortError')) throw e; } }
-      else { try{ await navigator.clipboard.writeText(url); status.textContent='이미지 주소를 복사했습니다.'; alert('이미지 주소를 복사했습니다.'); }
-             catch(e){ window.open(url,'_blank','noopener'); } }
-    }catch(e){ if(!(e&&e.name==='AbortError')){ console.error('[image share]', e);
-      try{ if(navigator.share){ await navigator.share({title:'텐아르 채팅 이미지', url}); } else { await navigator.clipboard.writeText(url); alert('이미지 주소를 복사했습니다.'); } }
-      catch(e2){ if(!(e2&&e2.name==='AbortError')){ try{ window.open(url,'_blank','noopener'); }catch(_){} alert('이미지를 공유하지 못했습니다. 잠시 후 다시 시도해 주세요.'); } }
-    } }
+      let done=false;
+      try{ const file=await fetchImageFile(url,name); if(navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], title:'텐아르 채팅 이미지'}); done=true; } }
+      catch(e){ if(e&&e.name==='AbortError') done=true; else console.error('[share files]', e); }   // 파일공유 실패(CORS 등)는 아래로 폴백
+      if(!done && navigator.share){ try{ await navigator.share({title:'텐아르 채팅 이미지', text:'텐아르 채팅에서 공유한 이미지입니다.', url}); done=true; }catch(e){ if(e&&e.name==='AbortError') done=true; } }
+      if(!done){ try{ await navigator.clipboard.writeText(url); status.textContent='이미지 주소를 복사했습니다.'; alert('이미지 주소를 복사했습니다.'); done=true; }catch(e){} }
+      if(!done){ try{ window.open(url,'_blank','noopener'); }catch(_){} }
+    }catch(e){ if(!(e&&e.name==='AbortError')){ console.error('[image share]', e); alert('이미지를 공유하지 못했습니다. 잠시 후 다시 시도해 주세요.'); } }
     finally{ cvBusy=false; btn.textContent=orig; btn.disabled=false; if(other) other.disabled=false; }
   }
 
