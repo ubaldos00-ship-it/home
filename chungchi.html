@@ -1,4 +1,4 @@
-<!-- chungchi.html (업로드 정식·v13) · 저장: 2026-07-12 02:50 KST · [v13] 면적측정 값 삭제 버그 수정(자동복원 후 재적용+영속화)·④ 수확량 입력값 천단위 콤마 -->
+<!-- chungchi.html (업로드 정식·v14) · 저장: 2026-07-12 08:15 KST · [v14] 면적 환산중/입력완료 진행 안내 토스트 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1209,14 +1209,25 @@ function measRow(b){
     /* v12: 복원/뒤로가기 등으로 발생하는 '맨 위로' 스크롤을 이겨내도록 약 3.2초 동안 여러 번 재적용 */
     [0,300,600,1000,1500,2200,3200].forEach(function(t){ setTimeout(doScroll, t); });
   }
-  function _measDoneToast(area){
-    var ov=document.createElement('div');
-    ov.style.cssText='position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:9600;background:#1a5c22;color:#fff;font-size:14px;font-weight:800;padding:11px 18px;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.3);font-family:inherit;';
-    ov.textContent='✅ 측정 면적 '+area+'㎡ 입력됨';
-    document.body.appendChild(ov);
-    setTimeout(function(){ ov.style.transition='opacity .4s'; ov.style.opacity='0'; setTimeout(function(){ ov.remove(); },420); }, 2200);
+  /* v14: 갱신 가능한 진행 토스트 — '면적 환산중…' → '면적 입력완료' */
+  var _measOv=null, _measOvHide=null;
+  function _measToast(msg, sticky){
+    if(!_measOv){
+      _measOv=document.createElement('div');
+      _measOv.style.cssText='position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:9600;background:#1a5c22;color:#fff;font-size:14px;font-weight:800;padding:11px 18px;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.3);font-family:inherit;transition:opacity .3s;';
+      document.body.appendChild(_measOv);
+    }
+    _measOv.style.opacity='1'; _measOv.innerHTML=msg;
+    if(_measOvHide){ clearTimeout(_measOvHide); _measOvHide=null; }
+    if(!sticky){ _measOvHide=setTimeout(function(){ if(_measOv){ _measOv.style.opacity='0'; setTimeout(function(){ if(_measOv){_measOv.remove(); _measOv=null;} },350); } }, 2400); }
   }
+  function _measDoneToast(area){ _measToast('✅ 면적 입력완료 · '+area+'㎡', false); }
   function _run(){
+    /* 지도에서 넘어온 측정값이 있으면 완료 전까지 '환산중…' 유지 (item 1) */
+    var hasRes=false, hasCtx=false;
+    try{ var r=JSON.parse(localStorage.getItem('tenar_meas_result')||'null'); hasRes=!!(r&&r.area>0); }catch(e){}
+    try{ var c=JSON.parse(localStorage.getItem('tenar_meas_ctx')||'null'); hasCtx=!!(c&&c.app==='chungchi'); }catch(e){}
+    if(hasRes&&hasCtx){ _measToast('⏳ 면적 환산중…', true); }
     setTimeout(_applyMeas, 1500);                        /* 1차 (350ms 복원 이후) */
     setTimeout(function(){ _putMeas(false); }, 3300);    /* 2차 — 주소 없을 때 도는 3000ms 재복원 이후 다시 채움 */
     setTimeout(function(){ _putMeas(false); }, 3900);    /* 3차 안전망 */

@@ -1,4 +1,4 @@
-<!-- tonghab.html (업로드 정식·v11) · 저장: 2026-07-12 01:14 KST · [v11] 작물 순서 재배치(마늘 양파 감자 논벼 콩 배추 무 총각무)·논벼 선택 시 이삭수1 커서이동 제거 -->
+<!-- tonghab.html (업로드 정식·v14) · 저장: 2026-07-12 08:15 KST · [v14] ③가-나(길이모드)·⑤⑥세로 총길이 지도 길이측정 버튼 및 전송 반영 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1841,6 +1841,7 @@ textarea {
       <label id="lenLabel">가-나 총이랑수 (이랑)</label>
       <div style="display:flex;align-items:center;gap:8px;">
         <input type="number" inputmode="numeric" pattern="[0-9]*" id="lenGaNa" oninput="updateHalf()" onblur="applyOneRidgeRatioIfNeeded()" onchange="applyOneRidgeRatioIfNeeded()" placeholder="전체 이랑수 입력해주세요" data-need="always" style="flex:1;min-width:0;font-size:13px;">
+        <button type="button" id="lenGaNaMeasBtn" onclick="tonghabMeasLen('lenGaNa')" title="지도에서 길이 측정" style="flex-shrink:0;width:40px;height:38px;border:1px solid #c9b3ee;border-radius:8px;background:#efe4fc;color:#7c3aed;font-size:18px;cursor:pointer;line-height:1;">📏</button>
         <div class="mode-toggle" style="flex-shrink:0;margin-bottom:0;">
           <button class="mtog" id="mRidge" onclick="setMode('이랑')">이랑 (수)</button>
           <button class="mtog active" id="mLength" onclick="setMode('길이')">길이 (cm)</button>
@@ -1960,7 +1961,10 @@ textarea {
       <div class="meas-grid">
         <div class="fg">
           <label>세로 총길이 (cm)</label>
-          <input type="number" inputmode="numeric" step="any" id="heightA" placeholder="A 세로" oninput="updateABDerived()" data-need="always">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <input type="number" inputmode="numeric" step="any" id="heightA" placeholder="A 세로" oninput="updateABDerived()" data-need="always" style="flex:1;min-width:0;">
+            <button type="button" onclick="tonghabMeasLen('heightA')" title="지도에서 길이 측정" style="flex-shrink:0;width:40px;height:40px;border:1px solid #c9b3ee;border-radius:8px;background:#efe4fc;color:#7c3aed;font-size:18px;cursor:pointer;line-height:1;">📏</button>
+          </div>
         </div>
         <div class="fg">
           <label>세로 기점 계산값</label>
@@ -2177,7 +2181,10 @@ textarea {
       <div class="meas-grid">
         <div class="fg">
           <label>세로 총길이 (cm)</label>
-          <input type="number" inputmode="numeric" step="any" id="heightB" placeholder="B 세로" oninput="updateABDerived()" data-need="bport">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <input type="number" inputmode="numeric" step="any" id="heightB" placeholder="B 세로" oninput="updateABDerived()" data-need="bport" style="flex:1;min-width:0;">
+            <button type="button" onclick="tonghabMeasLen('heightB')" title="지도에서 길이 측정" style="flex-shrink:0;width:40px;height:40px;border:1px solid #c9b3ee;border-radius:8px;background:#efe4fc;color:#7c3aed;font-size:18px;cursor:pointer;line-height:1;">📏</button>
+          </div>
         </div>
         <div class="fg">
           <label>세로 기점 계산값</label>
@@ -4059,6 +4066,9 @@ function setMode(mode){
   /* v108: 모드별 placeholder 안내문구 */
   var lenInp=document.getElementById('lenGaNa');
   if(lenInp) lenInp.placeholder=mode==='이랑'?'전체 이랑수 입력해주세요':'전체 가-나 길이를 입력하세요';
+  /* v14: 길이(cm) 모드일 때만 가-나 총길이 옆 지도 길이측정 버튼 노출 */
+  var lenMeasBtn=document.getElementById('lenGaNaMeasBtn');
+  if(lenMeasBtn) lenMeasBtn.style.display = (mode==='길이') ? '' : 'none';
   updateHalf();
 }
 
@@ -8900,6 +8910,75 @@ function _tenarOpenMapUrl(u){
   /* 현장 사용 기준: 새 창이 아니라 현재 화면을 지도 화면으로 확실히 이동 */
   location.href = u;
 }
+
+/* ── v14: 지도에서 길이(cm) 측정 → 해당 입력칸(field)으로 전송 ── */
+function tonghabMeasLen(field){
+  try{ localStorage.setItem('tenar_meas_ctx', JSON.stringify({app:'tonghab', mtype:'length', field:field, ts:Date.now()})); }catch(e){}
+  try{ localStorage.removeItem('tenar_meas_result'); }catch(e){}
+  var base='https://ubaldos00-ship-it.github.io/home/map.html';
+  var u=base+'?measure=1&app=tonghab&mtype=length&field='+encodeURIComponent(field);
+  var a=(document.getElementById('address') && document.getElementById('address').value || '').trim();
+  if(a) u+='&q='+encodeURIComponent(a);   /* 주소 있으면 지도 중심 이동(선택) */
+  _tenarOpenMapUrl(u);
+}
+
+/* ── v14: 지도에서 전송된 측정 길이(cm)를 해당 입력칸에 반영 (복원·이전자료팝업 이후에도 유지) ── */
+(function(){
+  var _mlPending=null, _mlShown=false, _mlOv=null, _mlOvHide=null;
+  function _mlToast(msg, sticky){
+    if(!_mlOv){ _mlOv=document.createElement('div');
+      _mlOv.style.cssText='position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:99990;background:#5b21b6;color:#fff;font-size:14px;font-weight:800;padding:11px 18px;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.3);font-family:inherit;transition:opacity .3s;';
+      document.body.appendChild(_mlOv); }
+    _mlOv.style.opacity='1'; _mlOv.innerHTML=msg;
+    if(_mlOvHide){ clearTimeout(_mlOvHide); _mlOvHide=null; }
+    if(!sticky){ _mlOvHide=setTimeout(function(){ if(_mlOv){ _mlOv.style.opacity='0'; setTimeout(function(){ if(_mlOv){_mlOv.remove(); _mlOv=null;} },350); } }, 2400); }
+  }
+  function _capture(){
+    if(_mlPending!==null) return true;
+    var res=null,ctx=null;
+    try{ res=JSON.parse(localStorage.getItem('tenar_meas_result')||'null'); }catch(e){}
+    try{ ctx=JSON.parse(localStorage.getItem('tenar_meas_ctx')||'null'); }catch(e){}
+    if(!res||res.mtype!=='length'||!(res.length>0)||!ctx||ctx.app!=='tonghab'){ return false; }
+    var field=((res.field||ctx.field||'')+'').trim();
+    if(!field){ return false; }
+    _mlPending={ len:Math.round(res.length), field:field };
+    try{ localStorage.removeItem('tenar_meas_result'); localStorage.removeItem('tenar_meas_ctx'); }catch(e){}
+    return true;
+  }
+  function _put(showUi){
+    if(!_mlPending) return;
+    var inp=document.getElementById(_mlPending.field);
+    if(!inp) return;
+    var want=String(_mlPending.len);
+    if(String(inp.value).trim()!==want){
+      if(_mlPending.field==='lenGaNa' && typeof setMode==='function' && typeof measureMode!=='undefined' && measureMode!=='길이'){ try{ setMode('길이'); }catch(e){} }
+      inp.value=want;
+      inp.dispatchEvent(new Event('input',{bubbles:true}));   /* → updateHalf/updateABDerived + document input→autoSave */
+      inp.dispatchEvent(new Event('change',{bubbles:true}));
+    }
+    if(showUi && !_mlShown){ _mlShown=true;
+      _mlToast('✅ 길이 입력완료 · '+Number(_mlPending.len).toLocaleString('ko-KR')+'cm', false);
+      setTimeout(function(){ try{ inp.scrollIntoView({behavior:'smooth', block:'center'}); }catch(e){} }, 250);
+      setTimeout(function(){ try{ inp.scrollIntoView({behavior:'smooth', block:'center'}); }catch(e){} }, 1400);
+    }
+  }
+  function _run(){
+    if(!_capture()) return;
+    _mlToast('⏳ 길이 입력 대기중…', true);
+    var tries=0, stable=0;
+    (function loop(){
+      tries++;
+      var inp=document.getElementById(_mlPending.field);
+      if(inp){
+        if(String(inp.value).trim()===String(_mlPending.len)){ if(!_mlShown) _put(true); stable++; }
+        else { _put(true); stable=0; }
+      }
+      if(stable<4 && tries<70) setTimeout(loop, 400);   /* 복원/이전자료팝업 이후에도 값이 안정될 때까지 ~28초 재적용 */
+    })();
+  }
+  if(document.readyState==='complete') setTimeout(_run, 300);
+  else window.addEventListener('load', function(){ setTimeout(_run, 300); });
+})();
 function _tenarOpenMapFromAddress(){
   var a = (document.getElementById('address') && document.getElementById('address').value || '').trim();
   /* 저장/불러오기 목록의 위치 버튼과 같은 흐름으로 동작:
