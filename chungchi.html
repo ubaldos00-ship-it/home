@@ -1,4 +1,4 @@
-<!-- chungchi.html (업로드 정식·v7) · 저장: 2026-07-11 03:13 KST · 계산기 변경 없음 -->
+<!-- chungchi.html (업로드 정식·v12) · 저장: 2026-07-12 02:30 KST · [v12] 면적측정 복귀 스크롤 강화·재배면적 정수+천단위콤마·고추/참깨 수확량 입력란 꽉채움·배경색 통합계산기와 통일 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -291,7 +291,7 @@ TenarSecureStore.init('chungchi',
 *{box-sizing:border-box;margin:0;padding:0}
 html{background:#27500A;overflow-y:scroll;overscroll-behavior:none;}
 html,body{overscroll-behavior:none;touch-action:pan-x pan-y;font-family:'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',sans-serif;color:#1a1a2e;font-size:16px;line-height:1.55}
-body{padding:0 0 80px;background:#f4f7f4;max-width:430px;margin:0 auto;min-height:100vh;box-shadow:0 0 28px rgba(0,0,0,.08)}
+body{padding:0 0 80px;background:#E8E5DE;max-width:430px;margin:0 auto;min-height:100vh;box-shadow:0 0 28px rgba(0,0,0,.08)} /* v12: 통합계산기와 동일한 배경(페이퍼 베이지)으로 변경 → 카드 제목(연녹색)과 구분되어 시인성 향상 */
 .header{position:sticky;top:0;z-index:100;background:#27500A;color:#fff;padding:11px 14px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 10px rgba(0,0,0,.18);transition:transform .28s ease}
 .hd-left{display:flex;align-items:center;gap:8px;min-width:0;flex:1;}
 .hd-icon{width:32px;height:32px;background:rgba(255,255,255,.16);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:24px;line-height:1;box-shadow:0 1px 4px rgba(0,0,0,.12)}
@@ -690,9 +690,9 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
   <p class="desc">응답자의 재배면적 평을 입력하고 ㎡로 환산하세요.</p>
   <div id="areaRows">
     <div class="ar">
-      <input type="number" inputmode="decimal" step="any" min="0" placeholder="0" class="pi needs-input" autocomplete="off" enterkeyhint="done" oninput="cA(this)" style="flex:1;min-width:0;text-align:right">
+      <input type="text" inputmode="numeric" placeholder="0" class="pi needs-input" autocomplete="off" enterkeyhint="done" oninput="cA(this)" style="flex:1;min-width:0;text-align:right">
       <span class="au">평</span><span class="aa">↔</span>
-      <input type="number" inputmode="decimal" step="any" min="0" placeholder="0" class="si" autocomplete="off" enterkeyhint="done" oninput="cAR(this)" style="flex:1;min-width:0;text-align:right">
+      <input type="text" inputmode="numeric" placeholder="0" class="si" autocomplete="off" enterkeyhint="done" oninput="cAR(this)" style="flex:1;min-width:0;text-align:right">
       <span class="au">㎡</span>
       <button type="button" class="mb" onclick="measRow(this)" title="지도에서 면적측정">📐</button>
       <button class="rb" onclick="delARow(this)">−</button>
@@ -997,6 +997,13 @@ function formatDecimalInput(inp){
   const dec=parts.length>1?'.'+parts.slice(1).join('').slice(0,3):'';
   inp.value=Number(int).toLocaleString('ko-KR')+dec;
 }
+/* v12: 재배면적 평·㎡ 입력란 정수+천단위 콤마 포맷 (소수 제거 → 반올림 정수 → 콤마) */
+function _fmtIntInput(inp){
+  if(!inp) return;
+  var digits=String(inp.value).replace(/[^0-9]/g,'');
+  digits=digits.replace(/^0+(?=\d)/,'');
+  inp.value = (digits==='') ? '' : Number(digits).toLocaleString('ko-KR');
+}
 function setInputVal(inp,val){inp.value=(val||val===0)?f(r1(val)):'';}
 let _ly=0;
 document.addEventListener('touchstart',e=>{_ly=e.touches[0].clientY;},{passive:true});
@@ -1115,13 +1122,13 @@ function selCrop(b){
   if(hadDrum!==needDrum){document.getElementById('hRows').innerHTML='';bldHR();}
 }
 
-function cA(inp){const row=inp.closest('.ar');const p=parseFloat(inp.value)||0;const si=row.querySelector('.si');si.value=p?r1(p*3.3058):'';uAT();}
-function cAR(inp){const row=inp.closest('.ar');const sm=parseFloat(inp.value)||0;const pi=row.querySelector('.pi');pi.value=sm?r1(sm/3.3058):'';uAT();}
+function cA(inp){_fmtIntInput(inp);const row=inp.closest('.ar');const p=numVal(inp.value);const si=row.querySelector('.si');si.value=p>0?Number(Math.round(p*3.3058)).toLocaleString('ko-KR'):'';uAT();}
+function cAR(inp){_fmtIntInput(inp);const row=inp.closest('.ar');const sm=numVal(inp.value);const pi=row.querySelector('.pi');pi.value=sm>0?Number(Math.round(sm/3.3058)).toLocaleString('ko-KR'):'';uAT();}
 function addARow(){
   const d=document.createElement('div');d.className='ar';
-  d.innerHTML=`<input type="number" inputmode="decimal" step="any" min="0" placeholder="0" class="pi needs-input" autocomplete="off" enterkeyhint="done" oninput="cA(this)" style="flex:1;min-width:0;text-align:right">
+  d.innerHTML=`<input type="text" inputmode="numeric" placeholder="0" class="pi needs-input" autocomplete="off" enterkeyhint="done" oninput="cA(this)" style="flex:1;min-width:0;text-align:right">
   <span class="au">평</span><span class="aa">↔</span>
-  <input type="number" inputmode="decimal" step="any" min="0" placeholder="0" class="si" autocomplete="off" enterkeyhint="done" oninput="cAR(this)" style="flex:1;min-width:0;text-align:right">
+  <input type="text" inputmode="numeric" placeholder="0" class="si" autocomplete="off" enterkeyhint="done" oninput="cAR(this)" style="flex:1;min-width:0;text-align:right">
   <span class="au">㎡</span>
   <button type="button" class="mb" onclick="measRow(this)" title="지도에서 면적측정">📐</button>
   <button class="rb" onclick="delARow(this)">−</button>`;
@@ -1175,9 +1182,10 @@ function measRow(b){
     if(!rows.length) return;
     var idx=Math.min(Math.max(ctx.idx||0,0), rows.length-1);
     var si=rows[idx].querySelector('.si');
-    if(si){ si.value=r1(res.area); si.dispatchEvent(new Event('input',{bubbles:true})); cAR(si); }
+    var aInt=Math.round(res.area>0?res.area:0);   /* v12: 소수 반올림 → 정수 */
+    if(si){ si.value=String(aInt); cAR(si); }      /* cAR가 콤마 포맷 + 평 환산 + 합계 갱신 */
     _scrollToArea();   /* ③ 재배면적 환산 화면으로 이동 */
-    _measDoneToast(r1(res.area));
+    _measDoneToast(Number(aInt).toLocaleString('ko-KR'));
   }
   /* ③ 재배면적 카드로 스크롤 (복원의 맨위 스크롤 이후에도 유지되도록 반복) */
   function _scrollToArea(){
@@ -1186,9 +1194,8 @@ function measRow(b){
       var card=ar?ar.closest('.card'):null;
       if(card) card.scrollIntoView({behavior:'smooth', block:'start'});
     };
-    doScroll();
-    setTimeout(doScroll, 350);
-    setTimeout(doScroll, 800);
+    /* v12: 복원/뒤로가기 등으로 발생하는 '맨 위로' 스크롤을 이겨내도록 약 3.2초 동안 여러 번 재적용 */
+    [0,300,600,1000,1500,2200,3200].forEach(function(t){ setTimeout(doScroll, t); });
   }
   function _measDoneToast(area){
     var ov=document.createElement('div');
@@ -1203,17 +1210,17 @@ function measRow(b){
 function cfmRA(){if(!confirm('재배면적이 초기화됩니다. 그래도 초기화하시겠습니까?'))return;rstA();}
 function rstA(){
   document.getElementById('areaRows').innerHTML=`<div class="ar">
-    <input type="number" inputmode="decimal" step="any" min="0" placeholder="0" class="pi needs-input" autocomplete="off" enterkeyhint="done" oninput="cA(this)" style="flex:1;min-width:0;text-align:right">
+    <input type="text" inputmode="numeric" placeholder="0" class="pi needs-input" autocomplete="off" enterkeyhint="done" oninput="cA(this)" style="flex:1;min-width:0;text-align:right">
     <span class="au">평</span><span class="aa">↔</span>
-    <input type="number" inputmode="decimal" step="any" min="0" placeholder="0" class="si" autocomplete="off" enterkeyhint="done" oninput="cAR(this)" style="flex:1;min-width:0;text-align:right">
+    <input type="text" inputmode="numeric" placeholder="0" class="si" autocomplete="off" enterkeyhint="done" oninput="cAR(this)" style="flex:1;min-width:0;text-align:right">
     <span class="au">㎡</span>
     <button type="button" class="mb" onclick="measRow(this)" title="지도에서 면적측정">📐</button>
     <button class="rb" onclick="delARow(this)">−</button></div>`;uAT();
 }
 function uAT(){
   let tp=0,ts=0;
-  document.querySelectorAll('.pi').forEach(i=>{const v=parseFloat(i.value)||0;tp+=v;i.classList.toggle('needs-input',v<=0);});
-  document.querySelectorAll('.si').forEach(i=>ts+=parseFloat(i.value)||0);
+  document.querySelectorAll('.pi').forEach(i=>{const v=numVal(i.value);tp+=v;i.classList.toggle('needs-input',v<=0);});
+  document.querySelectorAll('.si').forEach(i=>ts+=numVal(i.value));
   document.getElementById('tPy').textContent=f(r1(tp));
   document.getElementById('tSm').textContent=f(r1(ts));
   uRes();
@@ -1306,6 +1313,12 @@ function bldHR(){
   const hasDrum=opts.length>1;
   const defIdx=Math.max(0,opts.indexOf(w));
   const d=document.createElement('div');d.className='hr2';
+  /* v12: 고추·참깨처럼 드럼(다중중량)이 없는 작물은 수량·중량·결과 입력란이 한 줄을 꽉 채우도록 확장 */
+  const hqStyle  = hasDrum ? 'flex:1;min-width:40px;max-width:58px;text-align:right;font-size:16px;padding:10px 4px;'
+                           : 'flex:1 1 0;min-width:52px;text-align:right;font-size:16px;padding:10px 4px;';
+  const hwStyle  = 'flex:1 1 0;min-width:58px;width:auto;text-align:center;font-size:16px;font-weight:700;padding:8px 3px';
+  const hresStyle= hasDrum ? 'flex:0 1 60px;min-width:46px;max-width:68px;text-align:right;background:#eafaf1;font-size:16px;font-weight:700;padding:10px 3px;'
+                           : 'flex:1 1 0;min-width:52px;text-align:right;background:#eafaf1;font-size:16px;font-weight:700;padding:10px 3px;';
   const drumHtml=hasDrum?
     `<div class="drum-wrap">
       <div class="drum-box" data-val="${w}">
@@ -1315,12 +1328,12 @@ function bldHR(){
       </div>
       <input type="number" inputmode="numeric" min="1" class="drum-inp" value="${w}">
     </div>`:
-    `<input type="number" inputmode="decimal" step="any" min="0" class="hw" autocomplete="off" value="${w}" oninput="this.dataset.m=1;rRow(this.closest('.hr2'));uHT()" style="width:66px;text-align:center;font-size:16px;font-weight:700;padding:8px 3px">`;
-  d.innerHTML=`<input type="number" inputmode="decimal" step="any" min="0" placeholder="수량" class="hq needs-input" autocomplete="off" enterkeyhint="done" oninput="rRow(this.closest('.hr2'));uHT()" style="flex:1;min-width:40px;max-width:58px;text-align:right;font-size:16px;padding:10px 4px;">
+    `<input type="number" inputmode="decimal" step="any" min="0" class="hw" autocomplete="off" value="${w}" oninput="this.dataset.m=1;rRow(this.closest('.hr2'));uHT()" style="${hwStyle}">`;
+  d.innerHTML=`<input type="number" inputmode="decimal" step="any" min="0" placeholder="수량" class="hq needs-input" autocomplete="off" enterkeyhint="done" oninput="rRow(this.closest('.hr2'));uHT()" style="${hqStyle}">
   <span class="hl hul" style="padding:0 1px;font-size:11px">${u}</span><span class="hl">×</span>
   ${drumHtml}
   <span class="hl">kg =</span>
-  <input type="number" inputmode="decimal" step="any" min="0" class="hres" autocomplete="off" placeholder="0" oninput="uHT()" style="flex:0 1 60px;min-width:46px;max-width:68px;text-align:right;background:#eafaf1;font-size:16px;font-weight:700;padding:10px 3px;">
+  <input type="number" inputmode="decimal" step="any" min="0" class="hres" autocomplete="off" placeholder="0" oninput="uHT()" style="${hresStyle}">
   <span class="hl">kg</span>
   <button class="rb" onclick="rmHR(this)">−</button>`; /* v53: 행에 맞게 배분 */
   document.getElementById('hRows').appendChild(d);
@@ -1876,9 +1889,9 @@ function _ccApply(d){
       var div = document.createElement('div');
       div.className = 'ar';
       div.innerHTML =
-        '<input type="number" inputmode="decimal" step="any" min="0" placeholder="0" class="pi needs-input" autocomplete="off" enterkeyhint="done" oninput="cA(this)" style="flex:1;min-width:0;text-align:right">'
+        '<input type="text" inputmode="numeric" placeholder="0" class="pi needs-input" autocomplete="off" enterkeyhint="done" oninput="cA(this)" style="flex:1;min-width:0;text-align:right">'
         +'<span class="au">평</span><span class="aa">↔</span>'
-        +'<input type="number" inputmode="decimal" step="any" min="0" placeholder="0" class="si" autocomplete="off" enterkeyhint="done" oninput="cAR(this)" style="flex:1;min-width:0;text-align:right">'
+        +'<input type="text" inputmode="numeric" placeholder="0" class="si" autocomplete="off" enterkeyhint="done" oninput="cAR(this)" style="flex:1;min-width:0;text-align:right">'
         +'<span class="au">㎡</span>'
         +'<button type="button" class="mb" onclick="measRow(this)" title="지도에서 면적측정">📐</button>'
         +'<button class="rb" onclick="delARow(this)">−</button>';

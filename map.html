@@ -1,4 +1,4 @@
-<!-- map.html (업로드 정식·v7) · 저장: 2026-07-11 03:13 KST · 지도 변경 없음 -->
+<!-- map.html (업로드 정식·v12) · 저장: 2026-07-12 02:30 KST · [v12] 청취 면적측정: 주소 없이 진입 시 '현재위치 팝업' 없이 조용히 측정모드 진입(재시도) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1363,22 +1363,36 @@ window.initNaverMap = function(){
        좌표가 없는 저장자료는 map.html에서 주소 지오코딩 후 핀으로 저장된다. */
     setTimeout(function(){ try{ _processBulkQueue(false); }catch(_){} }, 1800);
   } else {
-    startGPS();
+    if(_measReturnMode){
+      /* v12: 면적측정 연동인데 주소가 없으면 'GPS 조회 중' 오버레이(현재위치 팝업) 없이
+         조용히 현재위치로 중심만 잡고 바로 측정모드로 진입 (실패/거부 시 기본위치) */
+      _silentGpsThenMeasure();
+    } else {
+      startGPS();
+    }
     /* 지도가 닫혀 있는 동안 계산기에서 저장된 항목이 대기열에 있으면 지도 열 때 자동 반영 */
     setTimeout(function(){ try{ _processBulkQueue(false); }catch(_){} }, 1600);
   }
   /* 어느 경로로 들어오든, 좌표 없이 주소만 있는 즐겨찾기가 있으면 자동 지오코딩해 핀 표시 */
   setTimeout(function(){ try{ _healFavsNeedingGeocode(); }catch(_){} }, 2600);
-  /* 면적측정 연동 모드: 주소 이동 후 면적측정 자동 시작 + 전송 버튼 표시 */
+  /* 면적측정 연동 모드: 지도(주소/GPS 중심)가 준비되면 면적측정 자동 시작 + 전송 버튼 표시
+     (v12: 고정 지연 대신 지도 준비까지 재시도 → 주소 없는 경우에도 안정적으로 측정 패널 표시) */
   if(_measReturnMode){
-    setTimeout(function(){
-      try{
-        if(!document.getElementById('measure-panel').classList.contains('show')){ openMeasure(); }
-        setMeasureMode('area');
-        var b=document.getElementById('measSendBtn'); if(b) b.style.display='';
-        toast('📐 면적을 측정한 뒤 [전송]을 누르세요');
-      }catch(e){}
-    }, q ? 1600 : 900);
+    var _measTry=0;
+    (function _enterMeasureWhenReady(){
+      _measTry++;
+      var mp=document.getElementById('measure-panel');
+      if(S.map && mp){
+        try{
+          if(!mp.classList.contains('show')){ openMeasure(); }
+          setMeasureMode('area');
+          var b=document.getElementById('measSendBtn'); if(b) b.style.display='';
+          toast('📐 면적을 측정한 뒤 [전송]을 누르세요');
+        }catch(e){}
+        return;
+      }
+      if(_measTry < 50) setTimeout(_enterMeasureWhenReady, 250);   /* 최대 ~12초 대기 */
+    })();
   }
 };
 
@@ -1652,6 +1666,23 @@ window.startGPS = function(){
     { enableHighAccuracy:true, timeout:CFG.gpsTimeout, maximumAge:0 }
   );
 };
+
+/* v12: 측정 연동(주소 없음)용 — 'GPS 조회 중' 오버레이(현재위치 팝업) 없이 조용히 현재위치로 중심만 잡음.
+   현재위치 마커/주소조회는 생략(skipMe:true)하여 '현재 위치' 팝업/정보시트가 뜨지 않게 한다.
+   실패/거부/시간초과 시 기본 위치로 지도만 표시(측정은 그대로 가능). */
+function _silentGpsThenMeasure(){
+  var done=false;
+  function fallback(){ if(done) return; done=true; try{ renderMap(CFG.defaultLat, CFG.defaultLng, 0, true); }catch(e){} }
+  if(!navigator.geolocation){ fallback(); return; }
+  try{
+    navigator.geolocation.getCurrentPosition(function(pos){
+      if(done) return; done=true;
+      S.lat=pos.coords.latitude; S.lng=pos.coords.longitude; S.acc=pos.coords.accuracy; S.gpsOk=true;
+      try{ renderMap(S.lat, S.lng, S.acc, true); }catch(e){ fallback(); }
+    }, function(){ fallback(); }, { enableHighAccuracy:true, timeout:(CFG.gpsTimeout||8000), maximumAge:0 });
+    setTimeout(fallback, (CFG.gpsTimeout||8000)+600);   /* 타임아웃 보호 */
+  }catch(e){ fallback(); }
+}
 
 function onGPSOk(pos){
   S.lat = pos.coords.latitude;
