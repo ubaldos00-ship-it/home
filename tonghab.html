@@ -1,4 +1,4 @@
-<!-- tonghab.html (업로드 정식·v14) · 저장: 2026-07-12 08:15 KST · [v14] ③가-나(길이모드)·⑤⑥세로 총길이 지도 길이측정 버튼 및 전송 반영 -->
+<!-- tonghab.html (업로드 정식·v15) · 저장: 2026-07-12 11:34 KST · [v15] 길이측정값이 이전자료 복원에 덮어써지던 문제 수정(복원 후 재적용)·복귀 위치를 측정칸으로·③⑤⑥ 입력란 폭 조정 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -412,7 +412,7 @@ input[type=date]{font-size:16px;font-weight:500;color:#1558D6;padding:11px 10px;
 
 /* ── Mode toggle ── */
 .mode-toggle{display:inline-flex;border:1.5px solid var(--gr100);border-radius:var(--rad);overflow:hidden;margin-bottom:12px;}
-.mtog{padding:9px 16px;font-size:13px;font-weight:700;font-family:inherit;border:none;background:#F8F6F1;color:#3D3C39;cursor:pointer;transition:all .15s;}
+.mtog{padding:9px 9px;font-size:12px;font-weight:700;font-family:inherit;border:none;background:#F8F6F1;color:#3D3C39;cursor:pointer;transition:all .15s;} /* v15: 버튼 폭 축소 → 가-나 총길이 입력란 확장 */
 .mtog.active{background:var(--t600);color:#fff;}
 
 /* ── Cultivation toggle ── */
@@ -486,6 +486,7 @@ input[type=date]{font-size:16px;font-weight:500;color:#1558D6;padding:11px 10px;
 
 /* Measurement grid */
 .meas-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.meas-grid-se{grid-template-columns:1.28fr 0.72fr;} /* v15: 세로총길이 칸 넓히고 계산값 칸 축소 */
 .meas-grid .fg{margin-bottom:0;}
 .meas-grid label{font-size:12px;}
 .meas-grid input{font-size:16px;padding:10px 12px;}
@@ -938,6 +939,7 @@ body.nonbye-mode .hide-nonbye { display:none !important; }
 @media (max-width:380px){
   .crop-btn{font-size:11px;}
   .meas-grid{grid-template-columns:1fr;}
+  .meas-grid-se{grid-template-columns:1fr;} /* v15: 초소형 화면은 기존처럼 1열 */
   .samp-trio input{font-size:16px;}
   .res-main{font-size:22px;}
   .card-ttl{font-size:13px;}
@@ -1958,7 +1960,7 @@ textarea {
       <!-- A 측정값 (포구선정 - 세로기점, 3㎡ 조사길이) -->
       <div class="sub-ttl">📐 A포구 측정값 (세로기점·조사길이)</div>
       <div style="font-size:12px;color:#C0392B;font-weight:600;margin:-2px 0 8px;">세로총길이와 평균너비를 입력하세요.</div>
-      <div class="meas-grid">
+      <div class="meas-grid meas-grid-se">
         <div class="fg">
           <label>세로 총길이 (cm)</label>
           <div style="display:flex;align-items:center;gap:6px;">
@@ -2178,7 +2180,7 @@ textarea {
 
       <!-- B 측정값 -->
       <div class="sub-ttl">📐 B포구 측정값 (세로기점·조사길이)</div>
-      <div class="meas-grid">
+      <div class="meas-grid meas-grid-se">
         <div class="fg">
           <label>세로 총길이 (cm)</label>
           <div style="display:flex;align-items:center;gap:6px;">
@@ -8942,38 +8944,52 @@ function tonghabMeasLen(field){
     var field=((res.field||ctx.field||'')+'').trim();
     if(!field){ return false; }
     _mlPending={ len:Math.round(res.length), field:field };
+    try{ window._tonghabReapplyPending=true; }catch(e){}   /* v15: 복원 후 '맨 위로' 스크롤 대신 측정칸 복귀 */
     try{ localStorage.removeItem('tenar_meas_result'); localStorage.removeItem('tenar_meas_ctx'); }catch(e){}
     return true;
   }
-  function _put(showUi){
-    if(!_mlPending) return;
-    var inp=document.getElementById(_mlPending.field);
-    if(!inp) return;
+  function _getInp(){ return _mlPending ? document.getElementById(_mlPending.field) : null; }
+  function _apply(){   /* 값이 다를 때만 다시 채움 (idempotent) */
+    if(!_mlPending) return false;
+    var inp=_getInp(); if(!inp) return false;
     var want=String(_mlPending.len);
     if(String(inp.value).trim()!==want){
       if(_mlPending.field==='lenGaNa' && typeof setMode==='function' && typeof measureMode!=='undefined' && measureMode!=='길이'){ try{ setMode('길이'); }catch(e){} }
       inp.value=want;
       inp.dispatchEvent(new Event('input',{bubbles:true}));   /* → updateHalf/updateABDerived + document input→autoSave */
       inp.dispatchEvent(new Event('change',{bubbles:true}));
+      return true;
     }
-    if(showUi && !_mlShown){ _mlShown=true;
-      _mlToast('✅ 길이 입력완료 · '+Number(_mlPending.len).toLocaleString('ko-KR')+'cm', false);
-      setTimeout(function(){ try{ inp.scrollIntoView({behavior:'smooth', block:'center'}); }catch(e){} }, 250);
-      setTimeout(function(){ try{ inp.scrollIntoView({behavior:'smooth', block:'center'}); }catch(e){} }, 1400);
-    }
+    return false;
   }
+  function _toastDone(){ if(_mlShown) return; _mlShown=true; _mlToast('✅ 길이 입력완료 · '+Number(_mlPending.len).toLocaleString('ko-KR')+'cm', false); }
+  function _scrollField(){ var inp=_getInp(); if(!inp) return; try{ inp.scrollIntoView({behavior:'smooth', block:'center'}); }catch(e){} }
+  /* v15: 자동복원([이어서 입력]) 완료 후 호출되는 훅 —
+     복원이 측정값을 이전자료로 덮어써도 그 '위에' 측정값을 다시 적용하고(측정값이 최신값),
+     측정 버튼을 눌렀던 위치(입력칸)로 화면을 복귀시킨다. */
+  window._tonghabReapplyMeas = function(){
+    if(!_mlPending) return;
+    [40,180,420].forEach(function(t){ setTimeout(_apply, t); });          /* 복원 덮어쓰기 위에 재적용 */
+    setTimeout(_toastDone, 220);
+    [260,650,1200].forEach(function(t){ setTimeout(_scrollField, t); });  /* 복원의 '맨 위로' 스크롤 이후 입력칸으로 복귀 */
+  };
   function _run(){
     if(!_capture()) return;
     _mlToast('⏳ 길이 입력 대기중…', true);
+    _apply();   /* 초기 적용 (복원이 없거나 팝업 뜨기 전) */
+    /* 백업 폴링: 복원/이전자료팝업 등으로 값이 지워지면 다시 채움.
+       팝업이 열려 있는 동안엔 종료하지 않음(안정 카운트 리셋) → 사용자가 [이어서 입력]을 누른 뒤에도 재적용 보장. */
     var tries=0, stable=0;
     (function loop(){
       tries++;
-      var inp=document.getElementById(_mlPending.field);
+      var popupOpen=!!document.getElementById('prevDataOverlay');
+      var inp=_getInp();
       if(inp){
-        if(String(inp.value).trim()===String(_mlPending.len)){ if(!_mlShown) _put(true); stable++; }
-        else { _put(true); stable=0; }
+        if(String(inp.value).trim()!==String(_mlPending.len)){ _apply(); stable=0; }
+        else { stable = popupOpen ? 0 : (stable+1); }
       }
-      if(stable<4 && tries<70) setTimeout(loop, 400);   /* 복원/이전자료팝업 이후에도 값이 안정될 때까지 ~28초 재적용 */
+      if((popupOpen || stable<5) && tries<160) setTimeout(loop, 350);
+      else { _toastDone(); _scrollField(); setTimeout(function(){ try{ window._tonghabReapplyPending=false; }catch(e){} }, 2000); }   /* 최종: 완료 안내 + 입력칸 복귀 */
     })();
   }
   if(document.readyState==='complete') setTimeout(_run, 300);
@@ -9359,8 +9375,10 @@ function importJSON(input){
             _restoring = false;       // 복원 완료 — autoSave/doSave 재개
             _initialLoadDone = true;  // 초기 로드 완료 — pagehide 등에서 정상 저장 허용
             doSave();                 // 최종 상태를 즉시 한 번 더 저장 (안전망)
-            // 복원 완료 후 ①공통사항 맨위로 스크롤 (v84/1)
-            setTimeout(function(){ window.scrollTo(0,0); }, 200);
+            /* v15: 복원이 지도 측정값을 이전자료로 덮어썼다면, 그 위에 측정값을 다시 적용 + 측정칸으로 복귀 */
+            try{ if(typeof window._tonghabReapplyMeas==='function') window._tonghabReapplyMeas(); }catch(e){}
+            // 복원 완료 후 ①공통사항 맨위로 스크롤 (v84/1) — 단, 측정값 대기 중이면 측정칸으로 복귀하므로 생략
+            setTimeout(function(){ if(!window._tonghabReapplyPending) window.scrollTo(0,0); }, 200);
           }, 300);
         }, 400);
       }, 500);
