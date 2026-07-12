@@ -1,4 +1,4 @@
-<!-- tonghab.html (업로드 정식·v15) · 저장: 2026-07-12 11:34 KST · [v15] 길이측정값이 이전자료 복원에 덮어써지던 문제 수정(복원 후 재적용)·복귀 위치를 측정칸으로·③⑤⑥ 입력란 폭 조정 -->
+<!-- tonghab.html (업로드 정식·v18) · 저장: 2026-07-13 02:21 KST · [v18] 측정위치 기억(surveyKey) 연동 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -8921,6 +8921,15 @@ function tonghabMeasLen(field){
   var u=base+'?measure=1&app=tonghab&mtype=length&field='+encodeURIComponent(field);
   var a=(document.getElementById('address') && document.getElementById('address').value || '').trim();
   if(a) u+='&q='+encodeURIComponent(a);   /* 주소 있으면 지도 중심 이동(선택) */
+  /* v18: 조사표(surveyKey) 단위로 측정 위치 기억 — surveyKey 전달 + 저장된 이전 측정위치로 지도 열기 */
+  var linkedKey=null;
+  try{ linkedKey=(typeof _slSelectedKey!=='undefined'&&_slSelectedKey)||(typeof _slLastLoadedKey!=='undefined'&&_slLastLoadedKey)||null; }catch(e){}
+  if(linkedKey) u+='&surveyKey='+encodeURIComponent(linkedKey);
+  try{
+    var _k='tenar_meas_loc_tonghab_'+(linkedKey||'_cur');
+    var _loc=JSON.parse(localStorage.getItem(_k)||'null');
+    if(_loc && isFinite(_loc.lat) && isFinite(_loc.lng)) u+='&lat='+_loc.lat+'&lng='+_loc.lng;
+  }catch(e){}
   _tenarOpenMapUrl(u);
 }
 

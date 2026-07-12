@@ -1,4 +1,4 @@
-<!-- chungchi.html (업로드 정식·v14) · 저장: 2026-07-12 08:15 KST · [v14] 면적 환산중/입력완료 진행 안내 토스트 -->
+<!-- chungchi.html (업로드 정식·v18) · 저장: 2026-07-13 02:21 KST · [v18] 배추/무 하위버튼 정리(다른작물 선택시 사라짐)·측정위치 기억 연동 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1098,6 +1098,11 @@ function selSubCrop(btn, crop) {
 }
 function selCrop(b){
   document.querySelectorAll('.bc').forEach(x=>x.classList.remove('on'));b.classList.add('on');sC=b.dataset.crop;
+  /* v18: 하위작물(노지봄/시설봄)이 아니면 무/배추 하위 선택행을 숨기고 선택 해제 → 다른 작물 고르면 하위버튼이 사라짐 */
+  if(!({'노지봄무':1,'시설봄무':1,'노지봄배추':1,'시설봄배추':1})[sC]){
+    var _sr=document.getElementById('subcropRow'); if(_sr) _sr.style.display='none';
+    var _sb=document.getElementById('subcropBtns'); if(_sb) _sb.innerHTML='';
+  }
   const c=CU[sC];
   document.getElementById('dUnit').textContent=c.u;
   document.getElementById('dWeight').textContent=f(c.w)+' kg';
@@ -1168,6 +1173,12 @@ function measRow(b){
   if(a) u+='&q='+encodeURIComponent(a);
   var linkedKey=_slSelectedKey||_slLastLoadedKey||null;
   if(linkedKey) u+='&surveyKey='+encodeURIComponent(linkedKey);
+  /* v18: 이 조사표(surveyKey)로 이전에 측정한 위치가 있으면 그 좌표로 지도를 열어 준다 */
+  try{
+    var _k='tenar_meas_loc_chungchi_'+(linkedKey||'_cur');
+    var _loc=JSON.parse(localStorage.getItem(_k)||'null');
+    if(_loc && isFinite(_loc.lat) && isFinite(_loc.lng)) u+='&lat='+_loc.lat+'&lng='+_loc.lng;
+  }catch(e){}
   _tenarOpenMapUrl(u);
 }
 /* 지도에서 전송된 측정 면적을 해당 행 ㎡칸에 반영 (복원 완료 후) */
@@ -1896,8 +1907,8 @@ function _ccApply(d){
     var cropBtn = document.querySelector('.bc[data-crop="'+d.__sC+'"]');
     if(cropBtn){ selCrop(cropBtn); }
   }
-  // v54: 서브 선택 복원
-  if(d.__subCrop) {
+  // v54: 서브 선택 복원 — v18: 저장된 실제 작물(__sC)이 하위작물일 때만 복원(구버전 stale __subCrop이 다른 작물 덮어쓰는 버그 방지)
+  if(d.__subCrop && ({'노지봄무':1,'시설봄무':1,'노지봄배추':1,'시설봄배추':1})[d.__sC]) {
     var parentKey = KD['무'] && d.__subCrop.includes('무') ? '무' : (d.__subCrop.includes('배추') ? '배추' : null);
     if(parentKey) {
       var parentBtn = document.querySelector('.bc[data-crop="'+parentKey+'"]');
