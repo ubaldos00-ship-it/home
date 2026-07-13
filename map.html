@@ -1,4 +1,4 @@
-<!-- map.html (업로드 정식·v19) · 저장: 2026-07-13 17:07 KST · [v19] 측정연동 지도=주소/현재위치 이동·이모지↔저장측정 카테고리 연결 자동불러오기·즐겨찾기 점 초록화 -->
+<!-- map.html (업로드 정식·v20) · 저장: 2026-07-13 17:30 KST · [v20] 조사표 불러오기 후 측정이모지→저장된 핀 자동표시 연결 강화(주소기반 키 + 최근측정 대체) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1441,8 +1441,9 @@ window.initNaverMap = function(){
           var b=document.getElementById('measSendBtn');
           if(b){ b.style.display=''; b.textContent = _isLen ? '📏 측정 길이 조사표로 전송' : '📤 측정 면적 조사표로 전송'; }
           toast(_isLen ? '📏 길이를 측정한 뒤 [전송]을 누르세요' : '📐 면적을 측정한 뒤 [전송]을 누르세요');
-          /* v19: 이 조사표·칸으로 이전에 저장된 측정이 있으면 즉시 불러와 결과를 보여줌 */
-          setTimeout(function(){ if(typeof _measAutoLoadForSurvey==='function') _measAutoLoadForSurvey(); }, 500);
+          /* v19/20: 이 조사표·칸으로 이전에 저장된 측정이 있으면 즉시 불러와 점·결과를 보여줌
+             (주소 검색으로 지도가 이동한 뒤에 실행되어야 핀이 화면에 맞게 잡힘 → 넉넉히 지연) */
+          setTimeout(function(){ if(typeof _measAutoLoadForSurvey==='function') _measAutoLoadForSurvey(); }, 1200);
         }catch(e){}
         return;
       }
@@ -2142,31 +2143,42 @@ function _saveMeasToList(note){
 }
 /* v18: 조사표(surveyKey) 단위 '측정 위치' 기억 */
 function _measSurveyKey(){ try{ var sp=new URLSearchParams(location.search); return (sp.get('surveyKey')||'').trim() || '_cur'; }catch(e){ return '_cur'; } }
-/* v19: 저장목록 ↔ 조사표 이모지 연결 카테고리 키 (앱::조사표::칸/면적) */
-function _measLinkKey(){
-  var slot = (_measReturnMtype==='length') ? (_measReturnField||'len') : 'area';
-  return (_measReturnApp||'chungchi')+'::'+_measSurveyKey()+'::'+slot;
+/* v20: 저장목록 ↔ 조사표 이모지 연결 키 — 앱::칸::식별(주소 우선, 없으면 surveyKey).
+   주소는 저장/불러오기에도 그대로 유지되므로, 측정을 먼저 하고 나중에 저장·불러와도 연결이 끊기지 않는다. */
+function _measSlot(){ return (_measReturnMtype==='length') ? (_measReturnField||'len') : 'area'; }
+function _measSurveyIdent(){
+  try{ var sp=new URLSearchParams(location.search);
+    var addr=(sp.get('q')||'').trim();
+    if(addr) return 'a:'+addr.replace(/\s+/g,'');
+    var k=(sp.get('surveyKey')||'').trim();
+    return 'k:'+(k||'_cur');
+  }catch(e){ return 'k:_cur'; }
 }
-/* v19: 조사표 이모지로 들어왔을 때, 연결된(같은 카테고리) 최근 저장 측정을 바로 불러와 결과를 보여준다 */
+function _measLinkPrefix(){ return (_measReturnApp||'chungchi')+'::'+_measSlot()+'::'; }
+function _measLinkKey(){ return _measLinkPrefix()+_measSurveyIdent(); }
+/* v19/20: 조사표 이모지로 들어왔을 때, 연결된 저장 측정을 바로 불러와 점·결과를 보여준다.
+   1) 정확 일치(같은 주소/조사표) 우선 → 2) 없으면 같은 '앱·칸'의 가장 최근 측정으로 대체(측정→저장→불러오기로 키가 바뀐 경우 대비) */
 var _measAutoLoaded=false;
 function _measAutoLoadForSurvey(){
   try{
     if(_measAutoLoaded) return false;
     if(!S.map) return false;
-    var sp=new URLSearchParams(location.search);
-    var app=(sp.get('app')||'').trim();
-    var key=(sp.get('surveyKey')||'').trim()||'_cur';
-    var mtype=(sp.get('mtype')==='length')?'length':'area';
-    var field=(sp.get('field')||'').trim();
-    var lk=(app||'chungchi')+'::'+key+'::'+(mtype==='length'?(field||'len'):'area');
-    var list=getMeas(), found=null;
-    for(var i=0;i<list.length;i++){ if(list[i] && list[i].linkKey===lk && list[i].pts && list[i].pts.length){ found=list[i]; break; } }
-    if(!found) return false;
+    var mtype=(_measReturnMtype==='length')?'length':'area';
+    var exact=_measLinkKey(), prefix=_measLinkPrefix();
+    var list=getMeas(), found=null, fallback=null;
+    for(var i=0;i<list.length;i++){
+      var it=list[i]; if(!it || !it.pts || !it.pts.length) continue;
+      var lk=it.linkKey||'';
+      if(lk===exact){ found=it; break; }
+      if(!fallback && lk.indexOf(prefix)===0){ fallback=it; }   /* 같은 앱·칸의 가장 최근 측정 */
+    }
+    var use=found||fallback;
+    if(!use) return false;
     _measAutoLoaded=true;
     clearMeasure();
-    S.measureMode = found.mode || (mtype==='length'?'dist':'area');
+    S.measureMode = use.mode || (mtype==='length'?'dist':'area');
     setMeasureMode(S.measureMode);
-    var lls=found.pts.map(function(p){ return new naver.maps.LatLng(p[0],p[1]); });
+    var lls=use.pts.map(function(p){ return new naver.maps.LatLng(p[0],p[1]); });
     lls.forEach(function(c){ addMeasurePoint(c); });
     try{ var b=new naver.maps.LatLngBounds(); lls.forEach(function(c){ b.extend(c); }); if(lls.length) S.map.fitBounds(b); }catch(e){}
     var b2=document.getElementById('measSendBtn'); if(b2){ b2.style.display=''; b2.textContent = (mtype==='length') ? '📏 측정 길이 조사표로 전송' : '📤 측정 면적 조사표로 전송'; }
