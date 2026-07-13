@@ -1,4 +1,4 @@
-<!-- tonghab.html (업로드 정식·v18) · 저장: 2026-07-13 02:21 KST · [v18] 측정위치 기억(surveyKey) 연동 -->
+<!-- tonghab.html (업로드 정식·v19) · 저장: 2026-07-13 17:07 KST · [v19] 측정 지도=주소/현재위치·저장목록 암호화 초록/회색 점 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -8868,8 +8868,8 @@ function _slItemSecIcon(key){
     var o=null; try{ o=JSON.parse(raw); }catch(e){}
     var enc=!!(o && o.tenarSecure===true && o.secureType==='device-cache');
     return enc
-      ? '<span title="이 자료는 암호화되어 저장됨" style="font-size:11px;margin-right:3px;">🟢</span>'
-      : '<span title="이 자료는 평문(비암호화)으로 저장됨" style="font-size:11px;margin-right:3px;">🔴</span>';
+      ? '<span title="이 자료는 암호화되어 저장됨" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#22a447;box-shadow:0 0 0 2px rgba(34,164,71,.2);margin-right:5px;vertical-align:middle;"></span>'
+      : '<span title="이 자료는 평문(비암호화)으로 저장됨" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#c0c4cc;margin-right:5px;vertical-align:middle;"></span>';
   }catch(e){ return ''; }
 }
 function _slRenderList(){
@@ -8925,11 +8925,7 @@ function tonghabMeasLen(field){
   var linkedKey=null;
   try{ linkedKey=(typeof _slSelectedKey!=='undefined'&&_slSelectedKey)||(typeof _slLastLoadedKey!=='undefined'&&_slLastLoadedKey)||null; }catch(e){}
   if(linkedKey) u+='&surveyKey='+encodeURIComponent(linkedKey);
-  try{
-    var _k='tenar_meas_loc_tonghab_'+(linkedKey||'_cur');
-    var _loc=JSON.parse(localStorage.getItem(_k)||'null');
-    if(_loc && isFinite(_loc.lat) && isFinite(_loc.lng)) u+='&lat='+_loc.lat+'&lng='+_loc.lng;
-  }catch(e){}
+  /* v19: 지도는 주소(있으면)·현재위치(없으면)로 이동하고, 이전 측정이 있으면 지도가 자동으로 불러옴 */
   _tenarOpenMapUrl(u);
 }
 
