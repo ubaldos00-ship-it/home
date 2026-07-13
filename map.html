@@ -1,4 +1,4 @@
-<!-- map.html (업로드 정식·v20) · 저장: 2026-07-13 17:30 KST · [v20] 조사표 불러오기 후 측정이모지→저장된 핀 자동표시 연결 강화(주소기반 키 + 최근측정 대체) -->
+<!-- map.html (업로드 정식·v21) · 저장: 2026-07-13 17:49 KST · [v21] 측정 점을 조사표 데이터에 보관(핸드오프 preload)으로 연결 → 초기화/처음엔 이전측정 안뜨고 주소/현재위치, 저장 불러오면 핀 그대로 표시 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -2156,29 +2156,22 @@ function _measSurveyIdent(){
 }
 function _measLinkPrefix(){ return (_measReturnApp||'chungchi')+'::'+_measSlot()+'::'; }
 function _measLinkKey(){ return _measLinkPrefix()+_measSurveyIdent(); }
-/* v19/20: 조사표 이모지로 들어왔을 때, 연결된 저장 측정을 바로 불러와 점·결과를 보여준다.
-   1) 정확 일치(같은 주소/조사표) 우선 → 2) 없으면 같은 '앱·칸'의 가장 최근 측정으로 대체(측정→저장→불러오기로 키가 바뀐 경우 대비) */
+/* v21: 조사표가 '자기 저장데이터에 들고 있던 측정 점'을 넘겨준 경우에만(=tenar_meas_preload) 자동 불러온다.
+   → 초기화/처음(측정 점 없음)일 땐 preload가 없으므로 이전 측정이 절대 뜨지 않고, 주소/현재위치만 표시된다. */
 var _measAutoLoaded=false;
 function _measAutoLoadForSurvey(){
   try{
     if(_measAutoLoaded) return false;
     if(!S.map) return false;
-    var mtype=(_measReturnMtype==='length')?'length':'area';
-    var exact=_measLinkKey(), prefix=_measLinkPrefix();
-    var list=getMeas(), found=null, fallback=null;
-    for(var i=0;i<list.length;i++){
-      var it=list[i]; if(!it || !it.pts || !it.pts.length) continue;
-      var lk=it.linkKey||'';
-      if(lk===exact){ found=it; break; }
-      if(!fallback && lk.indexOf(prefix)===0){ fallback=it; }   /* 같은 앱·칸의 가장 최근 측정 */
-    }
-    var use=found||fallback;
-    if(!use) return false;
+    var pre=null; try{ pre=JSON.parse(localStorage.getItem('tenar_meas_preload')||'null'); }catch(e){}
+    try{ localStorage.removeItem('tenar_meas_preload'); }catch(e){}   /* 1회용 핸드오프 */
+    if(!pre || !pre.pts || !pre.pts.length) return false;
     _measAutoLoaded=true;
+    var mtype=(_measReturnMtype==='length')?'length':'area';
     clearMeasure();
-    S.measureMode = use.mode || (mtype==='length'?'dist':'area');
+    S.measureMode = pre.mode || (mtype==='length'?'dist':'area');
     setMeasureMode(S.measureMode);
-    var lls=use.pts.map(function(p){ return new naver.maps.LatLng(p[0],p[1]); });
+    var lls=pre.pts.map(function(p){ return new naver.maps.LatLng(p[0],p[1]); });
     lls.forEach(function(c){ addMeasurePoint(c); });
     try{ var b=new naver.maps.LatLngBounds(); lls.forEach(function(c){ b.extend(c); }); if(lls.length) S.map.fitBounds(b); }catch(e){}
     var b2=document.getElementById('measSendBtn'); if(b2){ b2.style.display=''; b2.textContent = (mtype==='length') ? '📏 측정 길이 조사표로 전송' : '📤 측정 면적 조사표로 전송'; }
@@ -2223,7 +2216,8 @@ window.sendMeasToSurvey = function(){
     var dM = 0; for(var i=1;i<S.mPoints.length;i++) dM += distM(S.mPoints[i-1], S.mPoints[i]);
     if(!(dM > 0)){ toast('측정된 길이가 없습니다'); return; }
     var cm = Math.round(dM * 100);
-    try{ localStorage.setItem('tenar_meas_result', JSON.stringify({ length: cm, field: _measReturnField, mtype:'length', ts: Date.now() })); }catch(e){}
+    var _ptsL = S.mPoints.map(function(p){ return [p.lat(), p.lng()]; });   /* v21: 점을 조사표로 함께 전달 → 조사표가 자기 데이터로 보관 */
+    try{ localStorage.setItem('tenar_meas_result', JSON.stringify({ length: cm, field: _measReturnField, mtype:'length', pts:_ptsL, mode:S.measureMode, ts: Date.now() })); }catch(e){}
     _saveMeasToList(_measSurveyNote());   /* v16: 저장목록에도 기록 */
     _measSaveSurveyLoc();                 /* v18: 조사표별 측정 위치 기억 */
     if(!back){ var appL = (_measReturnApp === 'chungchi') ? 'chungchi' : 'tonghab'; back = 'https://ubaldos00-ship-it.github.io/home/' + appL + '.html'; }
@@ -2235,7 +2229,8 @@ window.sendMeasToSurvey = function(){
   if(!S.mPoints || S.mPoints.length < 3){ toast('면적을 먼저 측정하세요 (점 3개 이상)'); return; }
   var a = areaM2(S.mPoints);
   if(!(a > 0)){ toast('측정된 면적이 없습니다'); return; }
-  try{ localStorage.setItem('tenar_meas_result', JSON.stringify({ area: a, mtype:'area', ts: Date.now() })); }catch(e){}
+  var _ptsA = S.mPoints.map(function(p){ return [p.lat(), p.lng()]; });   /* v21: 점을 조사표로 함께 전달 */
+  try{ localStorage.setItem('tenar_meas_result', JSON.stringify({ area: a, mtype:'area', pts:_ptsA, mode:S.measureMode, ts: Date.now() })); }catch(e){}
   _saveMeasToList(_measSurveyNote());   /* v16: 저장목록에도 기록 */
   _measSaveSurveyLoc();                 /* v18: 조사표별 측정 위치 기억 */
   if(!back){ var app = (_measReturnApp === 'tonghab') ? 'tonghab' : 'chungchi'; back = 'https://ubaldos00-ship-it.github.io/home/' + app + '.html'; }

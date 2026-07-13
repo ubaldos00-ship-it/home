@@ -1,4 +1,4 @@
-<!-- chungchi.html (업로드 정식·v19) · 저장: 2026-07-13 17:07 KST · [v19] 측정 지도=주소/현재위치·저장목록 암호화 초록/회색 점 -->
+<!-- chungchi.html (업로드 정식·v21) · 저장: 2026-07-13 17:49 KST · [v21] 면적측정 점을 조사표 데이터로 보관/복원(초기화 시 제거) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1173,7 +1173,12 @@ function measRow(b){
   if(a) u+='&q='+encodeURIComponent(a);
   var linkedKey=_slSelectedKey||_slLastLoadedKey||null;
   if(linkedKey) u+='&surveyKey='+encodeURIComponent(linkedKey);
-  /* v19: 지도는 주소(있으면)·현재위치(없으면)로 이동하고, 이전 측정이 있으면 지도가 그것을 자동으로 불러옴 */
+  /* v21: 이 조사표 데이터에 저장된 측정 점이 있을 때만 지도로 넘겨 자동 표시(초기화/처음엔 없음 → 주소/현재위치만) */
+  try{
+    if(window.__ccMeasAreaPts && window.__ccMeasAreaPts.pts && window.__ccMeasAreaPts.pts.length){
+      localStorage.setItem('tenar_meas_preload', JSON.stringify(window.__ccMeasAreaPts));
+    } else { localStorage.removeItem('tenar_meas_preload'); }
+  }catch(e){}
   _tenarOpenMapUrl(u);
 }
 /* 지도에서 전송된 측정 면적을 해당 행 ㎡칸에 반영 (복원 완료 후) */
@@ -1188,6 +1193,8 @@ function measRow(b){
       try{ ctx=JSON.parse(localStorage.getItem('tenar_meas_ctx')||'null'); }catch(e){}
       if(!res||!(res.area>0)||!ctx||ctx.app!=='chungchi'){ return; }
       _measPending={ area:Math.round(res.area>0?res.area:0), idx:Math.max(ctx.idx||0,0) };   /* v12: 정수 */
+      /* v21: 측정 점(핀)을 이 조사표 데이터로 보관 → 저장/불러오기에 함께 유지, 이모지 재클릭 시 그대로 표시 */
+      if(res.pts && res.pts.length){ window.__ccMeasAreaPts = { pts:res.pts, mode:res.mode||'area' }; }
       try{ localStorage.removeItem('tenar_meas_result'); localStorage.removeItem('tenar_meas_ctx'); }catch(e){}
     }
     _putMeas(true);
@@ -1243,6 +1250,7 @@ function measRow(b){
 })();
 function cfmRA(){if(!confirm('재배면적이 초기화됩니다. 그래도 초기화하시겠습니까?'))return;rstA();}
 function rstA(){
+  window.__ccMeasAreaPts=null;   /* v21: 재배면적 초기화 시 저장된 측정 점도 제거 */
   document.getElementById('areaRows').innerHTML=`<div class="ar">
     <input type="text" inputmode="numeric" placeholder="0" class="pi needs-input" autocomplete="off" enterkeyhint="done" oninput="cA(this)" style="flex:1;min-width:0;text-align:right">
     <span class="au">평</span><span class="aa">↔</span>
@@ -1863,6 +1871,7 @@ function _ccCollect(){
     d.__mapLng = _tenarMapLng;
   }
   if(_tenarMapColor){ d.__mapColor = _tenarMapColor; }
+  d.__measAreaPts = window.__ccMeasAreaPts || null;   /* v21: 면적측정 점(핀)을 조사표 데이터와 함께 보관 */
   return d;
 }
 /* v60: 현재 화면 10a당 생산량 (숫자) */
@@ -1876,6 +1885,7 @@ function _ccPer10a(){
 /* ── 데이터 복원 ── */
 function _ccApply(d){
   if(!d) return;
+  window.__ccMeasAreaPts = (d.__measAreaPts && d.__measAreaPts.pts && d.__measAreaPts.pts.length) ? d.__measAreaPts : null;   /* v21: 이 조사표에 저장된 측정 점 복원(없으면 null) */
   if(d.__mapLat !== undefined && d.__mapLng !== undefined) _tenarSetMapCoord(d.__mapLat, d.__mapLng, d.__mapColor||'');
   else if(d.__mapColor) _tenarMapColor = String(d.__mapColor).trim();
 
