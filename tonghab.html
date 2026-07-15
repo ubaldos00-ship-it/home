@@ -1,4 +1,4 @@
-<!-- tonghab.html (업로드 정식·v21) · 저장: 2026-07-13 17:49 KST · [v21] 길이측정 점을 조사표 데이터(hidden)로 보관/복원 -->
+<!-- tonghab_v23_simple.html (업로드 정식·v23 심플 UI) · 저장: 2026-07-15 15:47 KST · [v23] 심플 UI 유지 + 입력란 숫자 글씨 파랑색으로 변경(기능·JS 미변경) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1639,6 +1639,138 @@ textarea {
 .lc-cancel{min-height:38px;padding:7px 18px;border:1.5px solid #1a8a78;border-radius:8px;background:transparent;color:#1a8a78;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;}
 .lc-ok{min-height:38px;padding:7px 18px;border:none;background:transparent;color:#1a8a78;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;}
 .lc-cancel:active,.lc-ok:active{opacity:.7;}
+
+/* ==================================================
+   v22 : 통합계산기 심플 업무용 UI 리디자인
+   - 필수 입력 노랑 유지  · A포구 파랑 유지  · B포구 빨강 유지
+   - 그 외 초록/보라/주황 최소화 → 흰색·회색·녹회색 통일
+   - 계산/저장/지도/암호화 등 기능·JS·id·이벤트는 일절 변경 없음(CSS만)
+================================================== */
+
+/* ── ① 전역 색 팔레트 재정의(변수 기반이라 대부분 자동 반영) ── */
+:root{
+  --paper:#F5F6F8;                 /* 전체 배경: 밝은 회색 */
+  --gr800:#1F2937;                 /* 기본 글자 */
+  --gr600:#4B5563;                 /* 보조 글자 */
+  --gr200:#9AA0A8;
+  --gr100:#E2E5E9;                 /* 기본 카드 테두리 */
+  /* A포구 파랑 → 차분하게 */
+  --ac:#315F91; --ac2:#315F91; --ac-bg:#F2F6FA; --ac-bd:#8EAAC5;
+  --blue:#315F91; --blight:#EAF1F8;
+  /* B포구 빨강 → 차분하게 */
+  --bc:#A34747; --bc2:#A34747; --bc-bg:#FAF3F3; --bc-bd:#D5A0A0;
+  --red:#A34747; --rlight:#F6EAEA;
+  /* 초록 계열 → 차분한 녹회색(선택/강조 통일). 단, 헤더용 --g800(#27500A)은 유지 */
+  --t400:#5A7A6C; --t600:#4F6F62;
+  --g50:#F1F4F0; --g100:#E2E5E9; --g200:#B9C4BC; --g400:#4F6F62; --g600:#3F5148;
+  --glight:#EEF2EF;
+}
+
+/* ── ② 카드 제목 / 번호배지: 초록 → 중립 회색 ── */
+.card-ttl{color:#1F2937; border-bottom-color:#E5E7EB;}
+.sn{background:#4B5563; box-shadow:none;}          /* 일반 배지만 회색(포구헤더 배지는 inline 흰색 유지) */
+
+/* ── ③ 그림자 완화 / 강조 애니메이션 제거 ── */
+.card,.res-card,.formula-card,.summary-card,.nbres-card,.nonbye-calc-card,.ryield-card,.prod-zone .pab-col{
+  box-shadow:0 2px 8px rgba(0,0,0,.05);
+}
+.rtog-btn.active,.mtog.active,.cult-btn.active,.ratio-row.active{box-shadow:none;}
+.needs-input,.needs-input-wrap,input.needs-input,input.needs-input:focus{animation:none !important;}
+
+/* ── ④ 필수 입력란: 노랑 유지 + 깜빡임 제거 + 톤 다운 ── */
+input.needs-input,
+input.needs-input:focus{
+  background:#FFF8CC !important;
+  border-color:#E5B93F !important;
+  box-shadow:0 0 0 2px rgba(229,185,63,.18) !important;
+}
+.ryield-iwrap.needs-input-wrap{
+  background:#FFF8CC !important;
+  border-color:#E5B93F !important;
+  box-shadow:0 0 0 2px rgba(229,185,63,.18) !important;
+  animation:none !important;
+}
+.ryield-iwrap.needs-input-wrap input{background:#FFF8CC !important;}
+
+/* ── ⑤ 일반 입력창: 흰색/회색 통일, 포커스 차분한 파랑 (v23: 입력 숫자 글씨는 파랑) ── */
+input[type=text],input[type=number],input[type=date]{color:#1558D6; border-color:#D1D5DB;}
+input[type=date]{color:#1558D6;}
+.rc input{color:#1558D6;}
+input:focus{border-color:#4F78A8; box-shadow:0 0 0 3px rgba(79,120,168,.14);}
+input[readonly]{background:#F7F8FA; color:#374151; border-color:#D9DDE2;}
+
+/* ── ⑥ 자동 계산값 박스: 연회색 배경, 일반값 진회색(핵심값은 A/B 색 유지) ── */
+.calc-display{background:#F7F8FA; border-color:#D9DDE2;}
+.calc-display .calc-main{color:#374151;}
+
+/* ── ⑦ 작물 선택 버튼 ── */
+.crop-btn{background:#FFFFFF; border-color:#D9DDE2; color:#4B5563;}
+.crop-btn:hover{background:#F4F5F6; border-color:#C7CDD4;}
+.crop-btn.active{background:#3F5148; border-color:#3F5148; color:#fff;}
+
+/* ── ⑧ 비율/모드/재배형태/자동계산 배경 톤 정리(선택 활성은 녹회색 --t600으로 자동 통일) ── */
+.rtog-btn,.ratio-row{background:#F4F5F6;}
+.summary-card{background:#F7F8FA; border-color:#E2E5E9;}
+.fac-calc{border-color:#CBD3CD;}
+
+/* ── ⑨ 계산 버튼: 노랑 유지 + 그림자 완화 ── */
+.btn-calc,.btn-calc-a,.prod-zone .pcalc-btn,.goto-b-btn{
+  background:#F3C94A !important; color:#1F2937 !important; box-shadow:0 2px 6px rgba(0,0,0,.10) !important;
+}
+.btn-calc:hover,.btn-calc-a:hover,.prod-zone .pcalc-btn:hover,.goto-b-btn:hover{background:#E8BB32 !important;}
+
+/* ── ⑩ 초기화 버튼: 빨강 → 회색 테두리 ── */
+.btn-reset,.btn-reset-mini,.prod-zone .preset-btn{
+  background:#FFFFFF !important; border-color:#AEB4BC !important; color:#4B5563 !important;
+}
+.btn-reset:hover,.btn-reset-mini:hover,.prod-zone .preset-btn:hover{background:#F3F4F6 !important;}
+
+/* ── ⑪ 지도 길이측정(📏, 보라) / 이동 버튼 → 회색·차분한 파랑 ── */
+button[onclick^="tonghabMeasLen"]{
+  background:#F3F4F6 !important; border:1px solid #C9CED6 !important; color:#4F6F7F !important;
+}
+.goto-prod-btn{background:#4F6F62 !important;}
+
+/* ── ⑫ 헤더 버튼(홈/계산기/저장) 반투명 회색 통일 ── */
+.home-btn,.calc-hdr-btn,.sl-hdr-btn{background:rgba(255,255,255,.14); border-color:rgba(255,255,255,.30);}
+
+/* ── ⑬ 계통추출 선택칸: 초록 → 녹회색 ── */
+.ncc.selected{background:#4F6F62 !important; border-color:#4F6F62 !important;}
+
+/* ── ⑭ 논벼 화면: 화려한 금색/초록 그라데이션 → 단색 차분 ── */
+.nonbye-calc-hdr{background:#4F6F62;}
+.nonbye-calc-card{border-color:#D9DDE2;}
+.ryield-res-main{background:#7A5C2E;}
+.pmw-add-btn{background:#4F6F62;}
+.pmw-sum{color:#3F5148;}
+
+/* ── ⑮ 10a 생산량: 지역/품종 활성 녹회색 통일 + A/B 카드 테두리 완화 ── */
+.prod-zone .ptog-btn.p-active-region,
+.prod-zone .ptog-btn.p-active-var{
+  background:#4F6F62 !important; border-color:#4F6F62 !important; box-shadow:none !important;
+}
+.prod-zone .pab-col.pab-a{border-color:#8EAAC5;}
+.prod-zone .pab-col.pab-b{border-color:#D5A0A0;}
+.prod-cap-share-btn{background:#456F9A !important; box-shadow:none !important;}
+
+/* ── ⑯ 저장/불러오기 모달: 헤더·버튼 색 단순화(삭제=빨강만 유지) ── */
+.sl-head,.ftbl-toggle-bar{background:#3F5148;}
+.sl-save-now{background:#4F6F62;}
+.sl-item{background:#F7F8FA; border-color:#E2E5E9;}
+.sl-item-save{background:#6B7280;}
+.sl-item-fav.fav-on{border-color:#E5B93F; background:#FFF8DD;}
+.sl-item-map-linked{background:#EEF5EA !important; border-color:#9CC596 !important; color:#3F6E3A !important; box-shadow:none !important;}
+.sl-item.sl-selected{background:#EEF2EF; border-color:#4F6F62;}
+.sl-item.sl-selected .sl-item-label{color:#3F5148;}
+.sl-agg-toggle{background:#EEF2F6; border-color:#C4D2E0; color:#31527A;}
+/* JSON 행: 공유=차분한 파랑, 나머지=녹회색(보라/초록 원색 제거) */
+.sl-file-row .sl-share-btn{background:#456F9A !important; border-color:#456F9A !important; color:#fff !important;}
+.sl-file-row .sl-file-btn:nth-child(2){background:#4F6F62 !important; border-color:#4F6F62 !important; color:#fff !important;}
+.sl-file-row .sl-file-btn:last-child{background:#4F6F62 !important; border-color:#4F6F62 !important; color:#fff !important;}
+/* 전체삭제 확인 버튼 청록 → 녹회색 */
+.lc-cancel{color:#4F6F62; border-color:#4F6F62;}
+.lc-ok{color:#B83A3A;}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
@@ -1667,7 +1799,7 @@ textarea {
         </button>
       </div>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v172 저장: 2026-07-03 03:59)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v23 심플 UI · 저장: 2026-07-15 15:47)</span></div>
   </div>
 </div>
 
