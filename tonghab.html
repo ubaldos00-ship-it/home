@@ -1,4 +1,4 @@
-<!-- tonghab_v23_simple.html (업로드 정식·v23 심플 UI) · 저장: 2026-07-15 15:47 KST · [v23] 심플 UI 유지 + 입력란 숫자 글씨 파랑색으로 변경(기능·JS 미변경) -->
+<!-- tonghab_v24_simple.html (업로드 정식·v24 심플 UI) · 저장: 2026-07-16 07:07 KST · [v24] ⑦필수입력란 배경노랑(입력시 흰색)·피해부호 글자축소·③천단위힌트·0이랑 멘트에 계산값 표시 (계산/저장/지도 로직 미변경) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1771,6 +1771,22 @@ button[onclick^="tonghabMeasLen"]{
 .lc-cancel{color:#4F6F62; border-color:#4F6F62;}
 .lc-ok{color:#B83A3A;}
 
+/* ==================================================
+   v24 : 추가 수정 (색상/표시만, 계산·저장·지도 로직 미변경)
+================================================== */
+/* ── ①~⑤ ⑦조사데이터 필수 입력란: 테두리만 노랑 → 배경도 연노랑, 입력되면(=pfilled)/포커스 시 흰색 ── */
+.prod-zone .pab-input-wrap.preq-border{background:#FFF8CC !important;}
+.prod-zone .pmw-wrap.preq-border{background:#FFF8CC !important;}
+.prod-zone .preq-border:focus-within,
+.prod-zone .preq-border.pfilled{background:#fff !important;}
+
+/* ── ⑥ 논벼 외 작물 피해부호/피해율 select 글자 축소(입력란보다 커서 잘리는 문제) ── */
+.prod-zone .dmg-select,
+.prod-zone .dmg-rate{font-size:10.5px !important; padding:6px 4px !important; padding-right:18px !important;}
+
+/* ── ⑦ 천단위 콤마 힌트(type=number 입력란은 값 내부에 콤마 표기 불가 → 아래 별도 표기) ── */
+.thsep-hint{font-size:12px; font-weight:700; color:#315F91; margin-top:4px; line-height:1.3; display:none;}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
@@ -1799,7 +1815,7 @@ button[onclick^="tonghabMeasLen"]{
         </button>
       </div>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v23 심플 UI · 저장: 2026-07-15 15:47)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v24 심플 UI · 저장: 2026-07-16 07:07)</span></div>
   </div>
 </div>
 
@@ -4242,7 +4258,7 @@ function updateRatioWarning(aGa){
 
   if(isZero){
     // 0이랑: 경고 표시 + 2번 자동 전환 (최초 1회)
-    box.innerHTML = '⚠ 1번 비율의 A포구가 0이랑입니다. 그대로 <strong>2번 비율을 사용</strong>하고 <strong>1번 이랑</strong>으로 선정하세요.';
+    box.innerHTML = '⚠ 1번 비율의 A포구가 0이랑(' + ((typeof aGa==='number'&&isFinite(aGa)) ? aGa.toFixed(2) : '-') + ')입니다. 그대로 <strong>2번 비율을 사용</strong>하고 <strong>1번 첫번째 이랑</strong>으로 선정하세요.';
     box.classList.add('show');
     if(!_autoSwitchedTo2 && selectedRatio !== 2){
       _autoSwitchedTo2 = true;
@@ -8138,6 +8154,12 @@ function _pmwUpdate(id, ab, type){
     deduct = deductEl ? (parseFloat(deductEl.value)||0) : 0;
   }
   var finalSum = deduct > 0 ? Math.max(0, sum - deduct) : sum;
+  // v24: 다중중량(pmw) 필수 입력란도 값이 채워지면 노란 배경/강조 해제(pfilled 토글)
+  var _pwrap = document.getElementById('pwrap-' + id.replace(/^p/, ''));
+  if(_pwrap){
+    if(finalSum > 0) _pwrap.classList.add('pfilled');
+    else _pwrap.classList.remove('pfilled');
+  }
   // 합계 표시 ("제외" 없이 표시)
   var sumEl = document.getElementById('pmw-sum-'+id);
   if(sumEl){
@@ -9907,6 +9929,58 @@ if(window.wcs) {
   }
   if(document.readyState==='complete') run();
   else window.addEventListener('load', run);
+})();
+</script>
+<!-- v24: 천단위 콤마 힌트 (③ 가-나 총이랑수/길이 등 주요 숫자 입력란 아래에 콤마 표기)
+     · type=number 입력란은 값 안에 콤마를 넣을 수 없어(브라우저 제한) 계산에 영향 없이 표시만 추가
+     · prod-zone(⑦)은 기존 자체 콤마표시(pfmt) 사용하므로 제외 -->
+<script>
+(function(){
+  'use strict';
+  function fmtHint(inp){
+    var host = inp.closest('.fg'); if(!host) return;
+    var hint = inp._thsepHint;
+    if(!hint){
+      hint = document.createElement('div');
+      hint.className = 'thsep-hint';
+      host.appendChild(hint);
+      inp._thsepHint = hint;
+    }
+    var raw = (inp.value || '').toString().replace(/,/g,'').trim();
+    var n = parseFloat(raw);
+    if(!isNaN(n) && Math.abs(n) >= 1000){
+      hint.textContent = '천단위: ' + n.toLocaleString('ko-KR');
+      hint.style.display = 'block';
+    } else {
+      hint.style.display = 'none';
+    }
+  }
+  var _hinted = [];
+  function refreshAll(){ _hinted.forEach(fmtHint); }
+  function init(){
+    var scope = document.querySelector('.wrap') || document;
+    var inps = scope.querySelectorAll('input[type=number]');
+    inps.forEach(function(inp){
+      if(inp.type === 'hidden') return;
+      if(inp.closest('.prod-zone')) return;                 // ⑦은 기존 콤마표시 사용
+      if(inp.closest('.rc')) return;                        // 비율 소수 입력 제외
+      if(inp.classList.contains('pmw-input') ||
+         inp.classList.contains('pmw-deduct-inp') ||
+         inp.classList.contains('pdry-rate-input') ||
+         inp.classList.contains('n-split-inp')) return;
+      if(!inp.closest('.fg')) return;                       // 주요 폼그룹(.fg) 내부만
+      inp.addEventListener('input', function(){ fmtHint(inp); });
+      inp.addEventListener('change', function(){ fmtHint(inp); });
+      _hinted.push(inp);
+      fmtHint(inp);
+    });
+    // 초기화/불러오기/지도 등 버튼 클릭(값이 이벤트 없이 바뀌는 경우) 후 힌트 재동기화 안전망
+    document.addEventListener('click', function(e){
+      if(e.target && e.target.closest && e.target.closest('button')) setTimeout(refreshAll, 80);
+    }, true);
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
 })();
 </script>
 </body>
