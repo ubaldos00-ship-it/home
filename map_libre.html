@@ -1,12 +1,13 @@
-<!-- map_libre_v2.html · 저장: 2026-07-16 22:34 KST · [v2] 브이월드 일반/영상(하이브리드) 지도 + 주소·지번 검색 추가 · 운영키 적용 · 1단계 기능(회전·확대·현재위치·회전각·iOS대응·오류토스트) 전부 유지 -->
-<!-- (이전) map_libre.html · 저장: 2026-07-16 21:34 KST · [v1] MapLibre 기본 동작 테스트 -->
+<!-- map_libre_v3.html · 저장: 2026-07-16 23:16 KST · [v3] 필지경계 그리기 · 거리측정 · 면적/둘레 계산 · 꼭짓점 수정 · 한단계취소/전체초기화 추가 (Turf.js) · 2단계 기능(브이월드 일반/영상·주소지번검색·회전·현재위치·회전각·iOS대응) 전부 유지 -->
+<!-- (이전) map_libre_v2.html · 저장: 2026-07-16 22:34 KST · [v2] 브이월드 일반/영상(하이브리드) 지도 + 주소·지번 검색 추가 · 운영키 적용 -->
+<!-- (이전) map_libre.html   · 저장: 2026-07-16 21:34 KST · [v1] MapLibre 기본 동작 테스트 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <title>MapLibre 2단계 · 브이월드 지도 + 주소검색</title>
+  <title>MapLibre 3단계 · 필지 경계 · 거리/면적 측정</title>
 
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.css">
 
@@ -135,7 +136,7 @@
       color: #fff;
     }
 
-    /* 상단 안내문 (1단계 문구 축소 배치) */
+    /* 상단 안내문 */
     #hint {
       align-self: flex-start;
       background: rgba(255, 255, 255, 0.8);
@@ -150,6 +151,136 @@
       white-space: nowrap;
       pointer-events: none;
     }
+
+    /* ===== 실측 도구 패널 ===== */
+    #toolPanel {
+      position: absolute;
+      left: calc(env(safe-area-inset-left, 0px) + 10px);
+      top: calc(env(safe-area-inset-top, 0px) + 138px);
+      z-index: 14;
+      width: 186px;
+      max-height: calc(100% - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 210px);
+      display: flex;
+      flex-direction: column;
+      background: rgba(255, 255, 255, 0.95);
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.28);
+      overflow: hidden;
+      touch-action: auto;
+    }
+
+    #toolHeader {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 42px;
+      padding: 0 10px;
+      background: #27500A;
+      color: #fff;
+      font-size: 13.5px;
+      font-weight: 800;
+      cursor: pointer;
+      user-select: none;
+      flex-shrink: 0;
+    }
+
+    #toolBody {
+      padding: 8px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    #toolBody.collapsed { display: none; }
+
+    #toolBtns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+
+    .tool-btn {
+      min-height: 42px;
+      padding: 4px 2px;
+      border: 1.5px solid #d8d8e0;
+      border-radius: 8px;
+      background: #fff;
+      color: #333;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.3;
+      cursor: pointer;
+      -webkit-appearance: none;
+    }
+
+    .tool-btn:active { background: #f0f0f4; }
+
+    .tool-btn.active {
+      background: #27500A;
+      border-color: #27500A;
+      color: #fff;
+    }
+
+    .tool-btn.wide { grid-column: 1 / -1; }
+
+    .tool-btn.danger { border-color: #e8b4b4; color: #b32020; }
+
+    /* 측정 결과 */
+    #resultBox {
+      margin-top: 8px;
+      padding: 8px;
+      border-radius: 8px;
+      background: #f5f6f4;
+      font-size: 12px;
+      line-height: 1.55;
+      color: #333;
+    }
+
+    #resultBox .res-title {
+      font-size: 11px;
+      font-weight: 800;
+      color: #27500A;
+      letter-spacing: 0.02em;
+    }
+
+    #resultBox .res-main {
+      font-size: 15px;
+      font-weight: 800;
+      color: #1b1b1b;
+      margin: 1px 0 3px;
+    }
+
+    #resultBox .res-sub { color: #555; }
+
+    #resultBox .res-empty { color: #888; }
+
+    #resultBox hr {
+      border: 0;
+      border-top: 1px solid #e0e0e0;
+      margin: 7px 0;
+    }
+
+    /* 중앙 십자선 (필지/거리 입력 모드에서만 표시) */
+    #crosshair {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 9;
+      display: none;
+      pointer-events: none;
+    }
+
+    #crosshair::before, #crosshair::after {
+      content: '';
+      position: absolute;
+      background: rgba(20, 20, 20, 0.75);
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.85);
+    }
+
+    #crosshair::before { left: -14px; top: -0.5px; width: 28px; height: 1.5px; }
+    #crosshair::after  { top: -14px; left: -0.5px; height: 28px; width: 1.5px; }
 
     /* 하단 회전각 표시 */
     #bearingBox {
@@ -204,6 +335,19 @@
       cursor: pointer;
     }
 
+    /* 구간거리 라벨 (Marker 방식 → 회전·확대에도 좌표 고정) */
+    .seg-label {
+      padding: 2px 6px;
+      border-radius: 6px;
+      background: rgba(20, 70, 160, 0.92);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+      pointer-events: none;
+    }
+
     .maplibregl-popup-content {
       font-size: 12.5px;
       line-height: 1.6;
@@ -241,11 +385,33 @@
     <div id="hint">두 손가락 회전 · 확대 가능</div>
   </div>
 
+  <!-- 실측 도구 -->
+  <div id="toolPanel">
+    <div id="toolHeader">
+      <span>실측 도구</span>
+      <span id="toolToggle">▼</span>
+    </div>
+    <div id="toolBody">
+      <div id="toolBtns">
+        <button class="tool-btn" type="button" id="btnField">▱ 필지 그리기</button>
+        <button class="tool-btn" type="button" id="btnDistance">↔ 거리 측정</button>
+        <button class="tool-btn" type="button" id="btnEdit">✥ 수정</button>
+        <button class="tool-btn" type="button" id="btnUndo">↶ 한 단계 취소</button>
+        <button class="tool-btn wide" type="button" id="btnCenterAdd">＋ 중심점 추가</button>
+        <button class="tool-btn" type="button" id="btnFinish">✓ 측정 완료</button>
+        <button class="tool-btn danger" type="button" id="btnReset">🗑 전체 초기화</button>
+      </div>
+      <div id="resultBox"><span class="res-empty">측정 결과가 없습니다.</span></div>
+    </div>
+  </div>
+
   <div id="map"></div>
+  <div id="crosshair"></div>
   <div id="bearingBox">회전각: <span id="bearingValue">0.0</span>°</div>
   <div id="toast"></div>
 
   <script src="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7/turf.min.js"></script>
   <script>
     (function () {
       'use strict';
@@ -316,6 +482,12 @@
         console.error('MapLibre GL JS 로딩 실패: CDN을 불러오지 못했습니다.');
         showToast('지도 라이브러리를 불러오지 못했습니다.\n네트워크 상태를 확인해주세요.', 0);
         return;
+      }
+
+      var hasTurf = (typeof turf !== 'undefined');
+      if (!hasTurf) {
+        console.error('Turf.js 로딩 실패: CDN을 불러오지 못했습니다.');
+        showToast('측정 라이브러리를 불러오지 못했습니다.\n인터넷 연결을 확인해주세요.', 0);
       }
 
       window.addEventListener('error', function (e) {
@@ -412,8 +584,8 @@
 
       /* ================= 브이월드 레이어 ================= */
       // 레이어 추가 순서 = 아래에서 위로 쌓이는 순서
-      //   일반지도 → 영상지도 → 하이브리드(지명·도로)
-      // 검색 마커·현재 위치는 DOM 요소라 항상 지도 위에 표시됩니다.
+      //   일반지도 → 영상지도 → 하이브리드(지명·도로) → 측정 레이어
+      // 검색 마커·현재 위치·거리 라벨은 DOM 요소라 항상 지도 위에 표시됩니다.
       function addVWorldLayers() {
         if (map.getSource('vworld-base-source')) return;
 
@@ -678,13 +850,545 @@
           });
       }
 
-      /* ================= UI 이벤트 ================= */
-      // 검색창·버튼 조작이 지도 이동/회전/확대로 번지지 않도록 차단
-      var topUI = document.getElementById('topUI');
-      ['touchstart', 'touchmove', 'touchend', 'mousedown', 'mousemove', 'wheel',
-       'dblclick', 'click', 'contextmenu'].forEach(function (evt) {
-        topUI.addEventListener(evt, function (e) { e.stopPropagation(); }, { passive: true });
+      /* ===================================================================
+         [v3] 실측 측정 모듈 (필지 경계 · 거리 · 면적/둘레)
+         -------------------------------------------------------------------
+         · 모든 도형은 GeoJSON source/layer로 그립니다. 지도를 회전해도
+           경도·위도 좌표 자체는 바뀌지 않으므로 면적·거리값이 유지됩니다.
+         · 회전각은 화면 표시용일 뿐 계산에 사용하지 않습니다.
+         =================================================================== */
+      var surveyMeasureState = {
+        mode: 'none',            // none | polygon | distance | edit
+
+        fieldPoints: [],         // [[lng, lat], ...]
+        fieldPolygon: null,      // GeoJSON Feature<Polygon>
+
+        fieldAreaM2: 0,
+        fieldPerimeterM: 0,
+
+        distancePoints: [],      // [[lng, lat], ...]
+        segmentDistances: [],    // [m, m, ...]
+        totalDistanceM: 0,
+
+        isFieldComplete: false,
+        isEditing: false,
+
+        dragging: null           // { kind: 'field'|'distance', index: n }
+      };
+
+      var segmentLabelMarkers = [];   // 구간거리 라벨(Marker)
+      var crosshairEl = document.getElementById('crosshair');
+
+      function emptyFC() {
+        return { type: 'FeatureCollection', features: [] };
+      }
+
+      function initializeSurveyMeasurement() {
+        // ── 필지: 채움 → 외곽선 → (거리선) → 꼭짓점 순으로 쌓임
+        map.addSource('survey-field-source', { type: 'geojson', data: emptyFC() });
+        map.addSource('survey-distance-source', { type: 'geojson', data: emptyFC() });
+
+        map.addLayer({
+          id: 'survey-field-fill',
+          type: 'fill',
+          source: 'survey-field-source',
+          filter: ['==', ['get', 'type'], 'field'],
+          paint: {
+            'fill-color': '#1f8a4c',
+            'fill-opacity': 0.2      // 항공사진이 가려지지 않도록 낮게
+          }
+        });
+
+        map.addLayer({
+          id: 'survey-field-outline',
+          type: 'line',
+          source: 'survey-field-source',
+          filter: ['in', ['get', 'type'], ['literal', ['field', 'field-line']]],
+          layout: { 'line-cap': 'round', 'line-join': 'round' },
+          paint: {
+            'line-color': '#14612f',
+            'line-width': 3
+          }
+        });
+
+        map.addLayer({
+          id: 'survey-distance-line',
+          type: 'line',
+          source: 'survey-distance-source',
+          filter: ['==', ['get', 'type'], 'distance-line'],
+          layout: { 'line-cap': 'round', 'line-join': 'round' },
+          paint: {
+            'line-color': '#1a5fd0',
+            'line-width': 4
+          }
+        });
+
+        map.addLayer({
+          id: 'survey-field-vertices',
+          type: 'circle',
+          source: 'survey-field-source',
+          filter: ['==', ['get', 'type'], 'field-vertex'],
+          paint: {
+            'circle-radius': 6,
+            'circle-color': '#ffffff',
+            'circle-stroke-color': '#14612f',
+            'circle-stroke-width': 3
+          }
+        });
+
+        map.addLayer({
+          id: 'survey-distance-vertices',
+          type: 'circle',
+          source: 'survey-distance-source',
+          filter: ['==', ['get', 'type'], 'distance-vertex'],
+          paint: {
+            'circle-radius': 6,
+            'circle-color': '#ffffff',
+            'circle-stroke-color': '#1a5fd0',
+            'circle-stroke-width': 3
+          }
+        });
+      }
+
+      /* ---------- 숫자 표시 ---------- */
+      function formatNumber(value, digits) {
+        return Number(value).toLocaleString('ko-KR', {
+          minimumFractionDigits: digits,
+          maximumFractionDigits: digits
+        });
+      }
+
+      // 길이: 1,000m 미만은 m, 이상은 km
+      function formatMeasurementValue(meters) {
+        if (meters >= 1000) return formatNumber(meters / 1000, 3) + 'km';
+        return formatNumber(meters, 1) + 'm';
+      }
+
+      /* ---------- 계산 ---------- */
+      function closedRing(points) {
+        var ring = points.slice();
+        ring.push(points[0]); // 마지막에 첫 좌표를 다시 넣어 Polygon을 닫음
+        return ring;
+      }
+
+      function calculateFieldArea() {
+        var s = surveyMeasureState;
+        if (!hasTurf || !s.fieldPolygon) { s.fieldAreaM2 = 0; return 0; }
+        s.fieldAreaM2 = turf.area(s.fieldPolygon);
+        return s.fieldAreaM2;
+      }
+
+      function calculateFieldPerimeter() {
+        var s = surveyMeasureState;
+        if (!hasTurf || s.fieldPoints.length < 3) { s.fieldPerimeterM = 0; return 0; }
+        var line = turf.lineString(closedRing(s.fieldPoints));
+        s.fieldPerimeterM = turf.length(line, { units: 'kilometers' }) * 1000;
+        return s.fieldPerimeterM;
+      }
+
+      function calculateSegmentDistances() {
+        var s = surveyMeasureState;
+        s.segmentDistances = [];
+        s.totalDistanceM = 0;
+        if (!hasTurf) return;
+
+        for (var i = 0; i < s.distancePoints.length - 1; i++) {
+          var km = turf.distance(
+            turf.point(s.distancePoints[i]),
+            turf.point(s.distancePoints[i + 1]),
+            { units: 'kilometers' }
+          );
+          var m = km * 1000;
+          s.segmentDistances.push(m);
+          s.totalDistanceM += m;
+        }
+      }
+
+      /* ---------- 도형 갱신 ---------- */
+      function updateFieldGeometry() {
+        var s = surveyMeasureState;
+        var fc = emptyFC();
+        var i;
+
+        if (s.fieldPoints.length >= 3) {
+          s.fieldPolygon = {
+            type: 'Feature',
+            properties: { type: 'field' },
+            geometry: {
+              type: 'Polygon',
+              coordinates: [closedRing(s.fieldPoints)]
+            }
+          };
+          fc.features.push(s.fieldPolygon);
+        } else {
+          s.fieldPolygon = null;
+          if (s.fieldPoints.length === 2) {
+            // 아직 다각형이 아닐 때는 연결선만 표시
+            fc.features.push({
+              type: 'Feature',
+              properties: { type: 'field-line' },
+              geometry: { type: 'LineString', coordinates: s.fieldPoints.slice() }
+            });
+          }
+        }
+
+        for (i = 0; i < s.fieldPoints.length; i++) {
+          fc.features.push({
+            type: 'Feature',
+            properties: { type: 'field-vertex', index: i },
+            geometry: { type: 'Point', coordinates: s.fieldPoints[i] }
+          });
+        }
+
+        map.getSource('survey-field-source').setData(fc);
+
+        calculateFieldArea();
+        calculateFieldPerimeter();
+        updateMeasurementResultPanel();
+      }
+
+      function clearSegmentLabels() {
+        for (var i = 0; i < segmentLabelMarkers.length; i++) {
+          segmentLabelMarkers[i].remove();
+        }
+        segmentLabelMarkers = [];
+      }
+
+      function updateDistanceGeometry() {
+        var s = surveyMeasureState;
+        var fc = emptyFC();
+        var i;
+
+        if (s.distancePoints.length >= 2) {
+          fc.features.push({
+            type: 'Feature',
+            properties: { type: 'distance-line' },
+            geometry: { type: 'LineString', coordinates: s.distancePoints.slice() }
+          });
+        }
+
+        for (i = 0; i < s.distancePoints.length; i++) {
+          fc.features.push({
+            type: 'Feature',
+            properties: { type: 'distance-vertex', index: i },
+            geometry: { type: 'Point', coordinates: s.distancePoints[i] }
+          });
+        }
+
+        map.getSource('survey-distance-source').setData(fc);
+
+        calculateSegmentDistances();
+
+        // 구간거리 라벨: Marker로 붙여 회전·확대에도 좌표가 유지되도록 함
+        clearSegmentLabels();
+        for (i = 0; i < s.segmentDistances.length; i++) {
+          var a = s.distancePoints[i];
+          var b = s.distancePoints[i + 1];
+          var mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+
+          var el = document.createElement('div');
+          el.className = 'seg-label';
+          el.textContent = formatMeasurementValue(s.segmentDistances[i]);
+
+          segmentLabelMarkers.push(
+            new maplibregl.Marker({ element: el }).setLngLat(mid).addTo(map)
+          );
+        }
+
+        updateMeasurementResultPanel();
+      }
+
+      function updateMeasurementSources() {
+        updateFieldGeometry();
+        updateDistanceGeometry();
+      }
+
+      /* ---------- 결과 패널 ---------- */
+      var resultBox = document.getElementById('resultBox');
+
+      function updateMeasurementResultPanel() {
+        var s = surveyMeasureState;
+        var html = '';
+
+        if (s.fieldPolygon) {
+          var m2 = s.fieldAreaM2;
+          html += '<div class="res-title">필지 면적</div>';
+          html += '<div class="res-main">' + formatNumber(m2, 1) + '㎡</div>';
+          html += '<div class="res-sub">' + formatNumber(m2 / 3.305785, 1) + '평<br>' +
+                  formatNumber(m2 / 100, 2) + 'a<br>' +
+                  formatNumber(m2 / 10000, 3) + 'ha</div>';
+          html += '<div class="res-title" style="margin-top:6px;">필지 둘레</div>';
+          html += '<div class="res-sub">' + formatMeasurementValue(s.fieldPerimeterM) + '</div>';
+        }
+
+        if (s.segmentDistances.length > 0) {
+          if (html) html += '<hr>';
+          html += '<div class="res-title">거리 측정</div>';
+          html += '<div class="res-sub">구간 수: ' + s.segmentDistances.length + '</div>';
+          html += '<div class="res-title" style="margin-top:4px;">총 거리</div>';
+          html += '<div class="res-main">' + formatMeasurementValue(s.totalDistanceM) + '</div>';
+        }
+
+        if (!html) html = '<span class="res-empty">측정 결과가 없습니다.</span>';
+        resultBox.innerHTML = html;
+      }
+
+      /* ---------- 모드 관리 ---------- */
+      function setSurveyMode(mode) {
+        var s = surveyMeasureState;
+        s.mode = mode;
+        s.isEditing = (mode === 'edit');
+
+        // 활성 버튼 표시
+        document.getElementById('btnField').classList.toggle('active', mode === 'polygon');
+        document.getElementById('btnDistance').classList.toggle('active', mode === 'distance');
+        document.getElementById('btnEdit').classList.toggle('active', mode === 'edit');
+
+        // 점 입력 모드에서만 중앙 십자선 표시
+        crosshairEl.style.display = (mode === 'polygon' || mode === 'distance') ? 'block' : 'none';
+
+        // 수정 모드에서 지도 커서 구분
+        map.getCanvas().style.cursor = (mode === 'none') ? '' : 'crosshair';
+      }
+
+      function startFieldDrawing() {
+        if (!hasTurf) {
+          showToast('측정 라이브러리를 불러오지 못했습니다.\n인터넷 연결을 확인해주세요.', 0);
+          return;
+        }
+        setSurveyMode('polygon');
+        surveyMeasureState.isFieldComplete = false;
+        showToast('필지 모서리를 순서대로 터치하세요.\n3개 이상의 점을 찍은 후 측정 완료를 눌러주세요.', 5000, 'info');
+      }
+
+      function startDistanceMeasurement() {
+        if (!hasTurf) {
+          showToast('측정 라이브러리를 불러오지 못했습니다.\n인터넷 연결을 확인해주세요.', 0);
+          return;
+        }
+        setSurveyMode('distance');
+        showToast('측정할 지점을 순서대로 터치하세요.\n두 점 이상 선택하면 거리가 계산됩니다.', 5000, 'info');
+      }
+
+      function startMeasurementEdit() {
+        var s = surveyMeasureState;
+        if (s.fieldPoints.length === 0 && s.distancePoints.length === 0) {
+          showToast('수정할 측정 지점이 없습니다.', 3000, 'info');
+          return;
+        }
+        setSurveyMode('edit');
+        showToast('이동할 꼭짓점을 손가락으로 끌어 위치를 수정하세요.', 5000, 'info');
+      }
+
+      function finishMeasurementEdit() {
+        setSurveyMode('none');
+        showToast('수정을 완료했습니다.', 2500, 'success');
+      }
+
+      function addFieldPoint(lngLat) {
+        surveyMeasureState.fieldPoints.push([lngLat.lng, lngLat.lat]);
+        updateFieldGeometry();
+      }
+
+      function addDistancePoint(lngLat) {
+        surveyMeasureState.distancePoints.push([lngLat.lng, lngLat.lat]);
+        updateDistanceGeometry();
+      }
+
+      function finishFieldDrawing() {
+        var s = surveyMeasureState;
+        if (s.fieldPoints.length < 3) {
+          showToast('필지 경계를 만들려면 최소 3개의 지점이 필요합니다.', 4000);
+          return false;
+        }
+        s.isFieldComplete = true;
+        setSurveyMode('none'); // 실수로 점이 추가되지 않도록 종료
+        updateFieldGeometry();
+        showToast('필지 경계가 완성되었습니다.', 3000, 'success');
+        return true;
+      }
+
+      function finishDistanceMeasurement() {
+        var s = surveyMeasureState;
+        if (s.distancePoints.length < 2) {
+          showToast('거리를 측정하려면 최소 2개의 지점이 필요합니다.', 4000);
+          return false;
+        }
+        setSurveyMode('none');
+        updateDistanceGeometry();
+        showToast('거리 측정을 완료했습니다.\n총 거리 ' + formatMeasurementValue(s.totalDistanceM), 3500, 'success');
+        return true;
+      }
+
+      // 측정 완료: 현재 모드에 맞춰 마무리
+      function finishCurrentMeasurement() {
+        var s = surveyMeasureState;
+        if (s.mode === 'polygon') return finishFieldDrawing();
+        if (s.mode === 'distance') return finishDistanceMeasurement();
+        if (s.mode === 'edit') return finishMeasurementEdit();
+        showToast('진행 중인 측정이 없습니다.', 2500, 'info');
+        return false;
+      }
+
+      function undoLastMeasurementPoint() {
+        var s = surveyMeasureState;
+
+        if (s.mode === 'polygon' && s.fieldPoints.length > 0) {
+          s.fieldPoints.pop();
+          updateFieldGeometry();
+          showToast('마지막 필지 꼭짓점을 삭제했습니다.', 2000, 'info');
+          return;
+        }
+        if (s.mode === 'distance' && s.distancePoints.length > 0) {
+          s.distancePoints.pop();
+          updateDistanceGeometry();
+          showToast('마지막 거리 측정점을 삭제했습니다.', 2000, 'info');
+          return;
+        }
+
+        // 모드가 없을 때는 최근에 작업한 쪽에서 삭제
+        if (s.mode !== 'polygon' && s.mode !== 'distance') {
+          if (s.distancePoints.length > 0) {
+            s.distancePoints.pop();
+            updateDistanceGeometry();
+            showToast('마지막 거리 측정점을 삭제했습니다.', 2000, 'info');
+            return;
+          }
+          if (s.fieldPoints.length > 0) {
+            s.fieldPoints.pop();
+            s.isFieldComplete = false;
+            updateFieldGeometry();
+            showToast('마지막 필지 꼭짓점을 삭제했습니다.', 2000, 'info');
+            return;
+          }
+        }
+
+        showToast('취소할 측정 지점이 없습니다.', 2500, 'info');
+      }
+
+      // 측정 데이터만 초기화 (검색·지도중심·확대·회전각·지도종류·현재위치는 유지)
+      function resetAllMeasurements() {
+        var ok = window.confirm('필지 경계와 모든 측정값이 초기화됩니다.\n초기화하시겠습니까?');
+        if (!ok) return;
+
+        var s = surveyMeasureState;
+        s.fieldPoints = [];
+        s.fieldPolygon = null;
+        s.fieldAreaM2 = 0;
+        s.fieldPerimeterM = 0;
+        s.distancePoints = [];
+        s.segmentDistances = [];
+        s.totalDistanceM = 0;
+        s.isFieldComplete = false;
+        s.dragging = null;
+
+        setSurveyMode('none');
+        updateMeasurementSources();
+        showToast('모든 측정값이 초기화되었습니다.', 3000, 'success');
+      }
+
+      /* ---------- 지도 터치로 점 추가 ---------- */
+      map.on('click', function (e) {
+        var mode = surveyMeasureState.mode;
+        if (mode === 'polygon') addFieldPoint(e.lngLat);
+        else if (mode === 'distance') addDistancePoint(e.lngLat);
       });
+
+      // 중심점 추가: 아이폰에서 정확한 지점을 찍을 때 유용
+      function addCenterPoint() {
+        var s = surveyMeasureState;
+        if (s.mode === 'polygon') {
+          addFieldPoint(map.getCenter());
+        } else if (s.mode === 'distance') {
+          addDistancePoint(map.getCenter());
+        } else {
+          showToast('먼저 필지 그리기 또는 거리 측정을 선택해주세요.', 3000, 'info');
+        }
+      }
+
+      /* ---------- 꼭짓점 드래그 수정 ---------- */
+      // 아이폰에서 잡기 쉽도록 터치 지점 주변 ±22px(약 44px) 범위에서 꼭짓점을 찾습니다.
+      var HIT_PAD = 22;
+
+      function findVertexAt(point) {
+        var bbox = [
+          [point.x - HIT_PAD, point.y - HIT_PAD],
+          [point.x + HIT_PAD, point.y + HIT_PAD]
+        ];
+        var layers = [];
+        if (map.getLayer('survey-field-vertices')) layers.push('survey-field-vertices');
+        if (map.getLayer('survey-distance-vertices')) layers.push('survey-distance-vertices');
+        if (!layers.length) return null;
+
+        var hits = map.queryRenderedFeatures(bbox, { layers: layers });
+        if (!hits.length) return null;
+
+        var f = hits[0];
+        return {
+          kind: f.properties.type === 'field-vertex' ? 'field' : 'distance',
+          index: f.properties.index
+        };
+      }
+
+      function updateDraggedVertex(lngLat) {
+        var s = surveyMeasureState;
+        if (!s.dragging) return;
+
+        var coord = [lngLat.lng, lngLat.lat];
+        if (s.dragging.kind === 'field') {
+          s.fieldPoints[s.dragging.index] = coord;
+          updateFieldGeometry();          // 면적·평·a·ha·둘레 실시간 재계산
+        } else {
+          s.distancePoints[s.dragging.index] = coord;
+          updateDistanceGeometry();       // 구간거리·총거리·라벨 실시간 재계산
+        }
+      }
+
+      function onDragStart(e) {
+        if (surveyMeasureState.mode !== 'edit') return;
+
+        var hit = findVertexAt(e.point);
+        if (!hit) return;
+
+        surveyMeasureState.dragging = hit;
+        map.dragPan.disable();            // 드래그 중 지도가 같이 움직이지 않도록
+        if (e.preventDefault) e.preventDefault();
+      }
+
+      function onDragMove(e) {
+        if (!surveyMeasureState.dragging) return;
+        updateDraggedVertex(e.lngLat);
+        if (e.preventDefault) e.preventDefault();
+      }
+
+      function onDragEnd() {
+        if (!surveyMeasureState.dragging) return;
+        surveyMeasureState.dragging = null;
+        map.dragPan.enable();             // 드래그 종료 후 지도 이동 복구
+      }
+
+      map.on('mousedown', onDragStart);
+      map.on('touchstart', onDragStart);
+      map.on('mousemove', onDragMove);
+      map.on('touchmove', onDragMove);
+      map.on('mouseup', onDragEnd);
+      map.on('touchend', onDragEnd);
+      map.on('touchcancel', onDragEnd);
+
+      /* ================= UI 이벤트 ================= */
+      // 상단 UI·도구 패널 조작이 지도 터치(점 추가/이동/회전)로 번지지 않도록 차단
+      var uiEvents = ['touchstart', 'touchmove', 'touchend', 'mousedown', 'mousemove',
+                      'wheel', 'dblclick', 'click', 'contextmenu'];
+
+      function blockMapPropagation(el) {
+        uiEvents.forEach(function (evt) {
+          el.addEventListener(evt, function (e) { e.stopPropagation(); }, { passive: true });
+        });
+      }
+
+      blockMapPropagation(document.getElementById('topUI'));
+      blockMapPropagation(document.getElementById('toolPanel'));
+      blockMapPropagation(toastEl);
 
       searchBtn.addEventListener('click', searchAddress);
 
@@ -715,6 +1419,22 @@
         });
       }
 
+      // 측정 도구 패널 접기/펴기
+      var toolBody = document.getElementById('toolBody');
+      var toolToggle = document.getElementById('toolToggle');
+      document.getElementById('toolHeader').addEventListener('click', function () {
+        var collapsed = toolBody.classList.toggle('collapsed');
+        toolToggle.textContent = collapsed ? '▲' : '▼';
+      });
+
+      document.getElementById('btnField').addEventListener('click', startFieldDrawing);
+      document.getElementById('btnDistance').addEventListener('click', startDistanceMeasurement);
+      document.getElementById('btnEdit').addEventListener('click', startMeasurementEdit);
+      document.getElementById('btnUndo').addEventListener('click', undoLastMeasurementPoint);
+      document.getElementById('btnCenterAdd').addEventListener('click', addCenterPoint);
+      document.getElementById('btnFinish').addEventListener('click', finishCurrentMeasurement);
+      document.getElementById('btnReset').addEventListener('click', resetAllMeasurements);
+
       /* ================= 지도 로딩 ================= */
       map.on('load', function () {
         console.log('MapLibre 지도 로딩 완료');
@@ -724,12 +1444,15 @@
         if (!hasApiKey()) {
           console.warn('브이월드 API 키가 설정되지 않았습니다.');
           showToast('브이월드 API 키를 입력해주세요.', 0);
-          return;
+        } else {
+          addVWorldLayers();
+          setMapType('base');
+          console.log('브이월드 레이어 등록 완료');
         }
 
-        addVWorldLayers();
-        setMapType('base');
-        console.log('브이월드 레이어 등록 완료');
+        initializeSurveyMeasurement();
+        updateMeasurementResultPanel();
+        console.log('실측 측정 레이어 등록 완료');
       });
 
       // iOS 주소창 높이 변화·화면 회전 대응
@@ -746,6 +1469,7 @@
       setTimeout(resizeMap, 0);
 
       window._map = map;
+      window._survey = surveyMeasureState;
 
       map.on('error', function (event) {
         console.error('지도 오류:', event.error);
