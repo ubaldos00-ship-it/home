@@ -1,0 +1,251 @@
+<!-- map_test.html · 저장: 2026-07-16 21:34 KST -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>MapLibre 1단계 테스트</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.css">
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      overscroll-behavior: none;
+      -webkit-text-size-adjust: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
+    }
+
+    body {
+      position: fixed;
+      inset: 0;
+      touch-action: none;
+    }
+
+    #map {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* 상단 안내문 */
+    #hint {
+      position: absolute;
+      top: calc(env(safe-area-inset-top, 0px) + 12px);
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      background: rgba(255, 255, 255, 0.85);
+      -webkit-backdrop-filter: blur(6px);
+      backdrop-filter: blur(6px);
+      border-radius: 10px;
+      padding: 8px 14px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #222;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    /* 하단 회전각 표시 */
+    #bearingBox {
+      position: absolute;
+      left: calc(env(safe-area-inset-left, 0px) + 12px);
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+      z-index: 10;
+      background: rgba(255, 255, 255, 0.85);
+      -webkit-backdrop-filter: blur(6px);
+      backdrop-filter: blur(6px);
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #222;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      pointer-events: none;
+    }
+
+    /* 상태/오류 안내 토스트 */
+    #toast {
+      position: absolute;
+      left: 50%;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 60px);
+      transform: translateX(-50%);
+      z-index: 20;
+      max-width: 86vw;
+      background: rgba(200, 30, 30, 0.92);
+      color: #fff;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 13px;
+      line-height: 1.45;
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.3);
+      display: none;
+      white-space: pre-line;
+    }
+
+    /* 컨트롤이 노치와 겹치지 않도록 */
+    .maplibregl-ctrl-top-right {
+      top: calc(env(safe-area-inset-top, 0px) + 56px);
+      right: calc(env(safe-area-inset-right, 0px) + 8px);
+    }
+
+    .maplibregl-ctrl-group button {
+      width: 40px;
+      height: 40px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="hint">두 손가락으로 지도를 회전해보세요</div>
+  <div id="map"></div>
+  <div id="bearingBox">회전각: <span id="bearingValue">0.0</span>°</div>
+  <div id="toast"></div>
+
+  <script src="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.js"></script>
+  <script>
+    (function () {
+      'use strict';
+
+      var toastEl = document.getElementById('toast');
+      var toastTimer = null;
+
+      function showToast(msg, ms) {
+        toastEl.textContent = msg;
+        toastEl.style.display = 'block';
+        if (toastTimer) clearTimeout(toastTimer);
+        if (ms !== 0) {
+          toastTimer = setTimeout(function () {
+            toastEl.style.display = 'none';
+          }, ms || 5000);
+        }
+      }
+
+      if (typeof maplibregl === 'undefined') {
+        console.error('MapLibre GL JS 로딩 실패: CDN을 불러오지 못했습니다.');
+        showToast('지도 라이브러리를 불러오지 못했습니다.\n네트워크 상태를 확인해주세요.', 0);
+        return;
+      }
+
+      window.addEventListener('error', function (e) {
+        console.error('전역 오류:', e.message, e.filename, e.lineno);
+      });
+      window.addEventListener('unhandledrejection', function (e) {
+        console.error('처리되지 않은 Promise 오류:', e.reason);
+      });
+
+      var map;
+      try {
+        map = new maplibregl.Map({
+          container: 'map',
+          style: 'https://demotiles.maplibre.org/style.json',
+          center: [128.75, 35.84],
+          zoom: 12,
+          bearing: 0,
+          pitch: 0,
+          attributionControl: true
+        });
+      } catch (err) {
+        console.error('지도 생성 오류:', err);
+        showToast('지도를 초기화하지 못했습니다.', 0);
+        return;
+      }
+
+      // 두 손가락 회전 활성화 (iOS Safari 포함)
+      map.touchZoomRotate.enable({ around: 'center' });
+      map.touchZoomRotate.enableRotation();
+      map.dragRotate.enable();
+      map.touchPitch.enable();
+
+      // 확대·축소·나침반·회전 초기화
+      map.addControl(
+        new maplibregl.NavigationControl({
+          showCompass: true,
+          showZoom: true,
+          visualizePitch: true
+        }),
+        'top-right'
+      );
+
+      // 현재 위치
+      var geolocateControl = new maplibregl.GeolocateControl({
+        positionOptions: {
+          enableHighAccuracy: true,
+          timeout: 10000
+        },
+        trackUserLocation: true,
+        showUserHeading: true,
+        showAccuracyCircle: true
+      });
+      map.addControl(geolocateControl, 'top-right');
+
+      geolocateControl.on('error', function (e) {
+        console.error('위치 오류:', e);
+        var msg = '현재 위치를 확인할 수 없습니다.';
+        if (e && e.code === 1) {
+          msg = '위치 권한이 거부되었습니다.\n아이폰 설정에서 Safari 위치 권한을 허용해주세요.';
+        } else if (e && e.code === 2) {
+          msg = '위치 정보를 사용할 수 없습니다.\n실외에서 다시 시도해주세요.';
+        } else if (e && e.code === 3) {
+          msg = '위치 확인 시간이 초과되었습니다.\n다시 시도해주세요.';
+        }
+        showToast(msg, 6000);
+      });
+
+      geolocateControl.on('outofmaxbounds', function () {
+        console.warn('현재 위치가 지도 범위를 벗어났습니다.');
+      });
+
+      if (!('geolocation' in navigator)) {
+        console.warn('이 브라우저는 위치 기능을 지원하지 않습니다.');
+      } else if (window.isSecureContext === false) {
+        console.warn('보안 컨텍스트(HTTPS)가 아니어서 위치 기능이 차단될 수 있습니다.');
+        showToast('HTTPS가 아니면 현재 위치 기능이 동작하지 않습니다.', 6000);
+      }
+
+      // 회전각 실시간 표시
+      var bearingValue = document.getElementById('bearingValue');
+      function updateBearing() {
+        bearingValue.textContent = map.getBearing().toFixed(1);
+      }
+      map.on('rotate', updateBearing);
+      map.on('rotatestart', updateBearing);
+      map.on('rotateend', updateBearing);
+      map.on('move', updateBearing);
+
+      map.on('load', function () {
+        console.log('MapLibre 지도 로딩 완료');
+        updateBearing();
+        map.resize();
+      });
+
+      // iOS 주소창 높이 변화·화면 회전 대응
+      function resizeMap() {
+        map.resize();
+      }
+      window.addEventListener('resize', resizeMap);
+      window.addEventListener('orientationchange', function () {
+        setTimeout(resizeMap, 300);
+      });
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', resizeMap);
+      }
+      setTimeout(resizeMap, 0);
+
+      window._map = map;
+
+      map.on('error', function (event) {
+        console.error('지도 오류:', event.error);
+      });
+    })();
+  </script>
+</body>
+</html>
