@@ -1,4 +1,4 @@
-<!-- tonghab_v25_simple.html (업로드 정식·v25 심플 UI) · 저장: 2026-07-16 07:28 KST · [v25] 버튼 더블탭(연속 두번터치) 확대 방지 touch-action:manipulation (핀치 확대는 유지) · 기능/로직 미변경 -->
+<!-- tonghab_v26_simple.html (업로드 정식·v26 심플 UI) · 저장: 2026-07-16 10:52 KST · [v26] v24 천단위힌트 원복(제거) · ⑥B포구 카드에 B포구 가로기점(논벼=cm) 표시 · 0이랑 주의문구 변경 · 계산/저장/지도 로직 미변경 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1784,8 +1784,7 @@ button[onclick^="tonghabMeasLen"]{
 .prod-zone .dmg-select,
 .prod-zone .dmg-rate{font-size:10.5px !important; padding:6px 4px !important; padding-right:18px !important;}
 
-/* ── ⑦ 천단위 콤마 힌트(type=number 입력란은 값 내부에 콤마 표기 불가 → 아래 별도 표기) ── */
-.thsep-hint{font-size:12px; font-weight:700; color:#315F91; margin-top:4px; line-height:1.3; display:none;}
+/* ── (v26) v24 천단위 콤마 힌트는 원복(제거)됨 ── */
 
 /* ==================================================
    v25 : 버튼 더블탭(연속 두 번 터치) 확대 방지
@@ -1841,7 +1840,7 @@ select,
         </button>
       </div>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v25 심플 UI · 저장: 2026-07-16 07:28)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v26 심플 UI · 저장: 2026-07-16 10:52)</span></div>
   </div>
 </div>
 
@@ -2304,6 +2303,11 @@ select,
       <span id="ratioUsedBadge6" style="font-size:10px;font-weight:800;background:rgba(255,255,255,.22);color:#fff;border:1px solid rgba(255,255,255,.5);padding:2px 10px;border-radius:100px;margin-left:auto;flex-shrink:0;">1번 비율</span>
     </div>
     <div class="port-body">
+      <!-- v26: B포구 가로기점 실시간 표시(③에서 다시 위로 올라가지 않아도 확인) · 논벼(길이)는 cm 단위 자동 -->
+      <div id="bBaseRefBox" style="display:flex;align-items:center;justify-content:space-between;gap:8px;background:#FAF3F3;border:1.5px solid #D5A0A0;border-radius:8px;padding:9px 12px;margin-bottom:10px;">
+        <span style="font-size:12.5px;font-weight:800;color:#A34747;">📍 B포구 가로기점</span>
+        <span style="font-size:20px;font-weight:900;color:#A34747;line-height:1;" id="bBaseRefVal">—</span>
+      </div>
       <div class="b-skip-note">※ B포구는 옵션입니다. 입력하지 않으면 A포구만 계산되고, 가로기점만 표시됩니다.</div>
 
       <!-- B 시설 평균너비 -->
@@ -4284,7 +4288,7 @@ function updateRatioWarning(aGa){
 
   if(isZero){
     // 0이랑: 경고 표시 + 2번 자동 전환 (최초 1회)
-    box.innerHTML = '⚠ 1번 비율의 A포구가 0이랑(' + ((typeof aGa==='number'&&isFinite(aGa)) ? aGa.toFixed(2) : '-') + ')입니다. 그대로 <strong>2번 비율을 사용</strong>하고 <strong>1번 첫번째 이랑</strong>으로 선정하세요.';
+    box.innerHTML = '⚠ 1번 비율의 A포구가 0이랑(' + ((typeof aGa==='number'&&isFinite(aGa)) ? aGa.toFixed(2) : '-') + ')입니다. 그대로 <strong>2번 비율을 사용</strong>하고 그대로 0이면 <strong>첫번째 1이랑</strong>을 선택하세요.';
     box.classList.add('show');
     if(!_autoSwitchedTo2 && selectedRatio !== 2){
       _autoSwitchedTo2 = true;
@@ -4339,6 +4343,20 @@ function updateRatioNote(visible, a_ga_ratio1){
   noteB.className = cls; noteB.textContent = text;
 }
 
+/* v26: ⑥ B포구 카드에 B포구 가로기점 미러 표시(③ rtBVal/rtBUnit 그대로 반영, 논벼=cm) */
+function syncBBaseRef(){
+  var box = document.getElementById('bBaseRefVal');
+  if(!box) return;
+  var wrap = document.getElementById('rtWrap');
+  var v = document.getElementById('rtBVal');
+  var u = document.getElementById('rtBUnit');
+  if(wrap && !wrap.classList.contains('hidden') && v && v.textContent && v.textContent !== '—'){
+    box.textContent = v.textContent + (u ? u.textContent : '');
+  } else {
+    box.textContent = '—';
+  }
+}
+
 /* 실시간 가로기점 계산 */
 function updateRealtimeCalc(){
   const L = parseFloat(document.getElementById('lenGaNa').value);
@@ -4364,6 +4382,7 @@ function updateRealtimeCalc(){
       wrap.classList.remove('hidden');
       updateRatioWarning(1);
       updateRatioNote(true, 1);
+      syncBBaseRef();
       return;
     }
 
@@ -4401,6 +4420,7 @@ function updateRealtimeCalc(){
     updateRatioWarning(NaN);
     updateRatioNote(false);
   }
+  syncBBaseRef();
 }
 
 /* ═════════════════════════════════════════
@@ -9955,58 +9975,6 @@ if(window.wcs) {
   }
   if(document.readyState==='complete') run();
   else window.addEventListener('load', run);
-})();
-</script>
-<!-- v24: 천단위 콤마 힌트 (③ 가-나 총이랑수/길이 등 주요 숫자 입력란 아래에 콤마 표기)
-     · type=number 입력란은 값 안에 콤마를 넣을 수 없어(브라우저 제한) 계산에 영향 없이 표시만 추가
-     · prod-zone(⑦)은 기존 자체 콤마표시(pfmt) 사용하므로 제외 -->
-<script>
-(function(){
-  'use strict';
-  function fmtHint(inp){
-    var host = inp.closest('.fg'); if(!host) return;
-    var hint = inp._thsepHint;
-    if(!hint){
-      hint = document.createElement('div');
-      hint.className = 'thsep-hint';
-      host.appendChild(hint);
-      inp._thsepHint = hint;
-    }
-    var raw = (inp.value || '').toString().replace(/,/g,'').trim();
-    var n = parseFloat(raw);
-    if(!isNaN(n) && Math.abs(n) >= 1000){
-      hint.textContent = '천단위: ' + n.toLocaleString('ko-KR');
-      hint.style.display = 'block';
-    } else {
-      hint.style.display = 'none';
-    }
-  }
-  var _hinted = [];
-  function refreshAll(){ _hinted.forEach(fmtHint); }
-  function init(){
-    var scope = document.querySelector('.wrap') || document;
-    var inps = scope.querySelectorAll('input[type=number]');
-    inps.forEach(function(inp){
-      if(inp.type === 'hidden') return;
-      if(inp.closest('.prod-zone')) return;                 // ⑦은 기존 콤마표시 사용
-      if(inp.closest('.rc')) return;                        // 비율 소수 입력 제외
-      if(inp.classList.contains('pmw-input') ||
-         inp.classList.contains('pmw-deduct-inp') ||
-         inp.classList.contains('pdry-rate-input') ||
-         inp.classList.contains('n-split-inp')) return;
-      if(!inp.closest('.fg')) return;                       // 주요 폼그룹(.fg) 내부만
-      inp.addEventListener('input', function(){ fmtHint(inp); });
-      inp.addEventListener('change', function(){ fmtHint(inp); });
-      _hinted.push(inp);
-      fmtHint(inp);
-    });
-    // 초기화/불러오기/지도 등 버튼 클릭(값이 이벤트 없이 바뀌는 경우) 후 힌트 재동기화 안전망
-    document.addEventListener('click', function(e){
-      if(e.target && e.target.closest && e.target.closest('button')) setTimeout(refreshAll, 80);
-    }, true);
-  }
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
-  else init();
 })();
 </script>
 </body>
