@@ -1,11 +1,12 @@
-<!-- map_test.html · 저장: 2026-07-16 21:34 KST -->
+<!-- map_libre_v2.html · 저장: 2026-07-16 22:34 KST · [v2] 브이월드 일반/영상(하이브리드) 지도 + 주소·지번 검색 추가 · 운영키 적용 · 1단계 기능(회전·확대·현재위치·회전각·iOS대응·오류토스트) 전부 유지 -->
+<!-- (이전) map_libre.html · 저장: 2026-07-16 21:34 KST · [v1] MapLibre 기본 동작 테스트 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <title>MapLibre 1단계 테스트</title>
+  <title>MapLibre 2단계 · 브이월드 지도 + 주소검색</title>
 
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.css">
 
@@ -34,22 +35,118 @@
       height: 100%;
     }
 
-    /* 상단 안내문 */
-    #hint {
+    /* 상단 UI (검색창 + 지도전환 + 안내문) */
+    #topUI {
       position: absolute;
-      top: calc(env(safe-area-inset-top, 0px) + 12px);
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 10;
-      background: rgba(255, 255, 255, 0.85);
+      top: calc(env(safe-area-inset-top, 0px) + 10px);
+      left: calc(env(safe-area-inset-left, 0px) + 10px);
+      right: calc(env(safe-area-inset-right, 0px) + 60px); /* 오른쪽 지도 컨트롤과 겹치지 않도록 */
+      z-index: 15;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      touch-action: auto;
+    }
+
+    /* 검색창 */
+    #searchBar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.95);
       -webkit-backdrop-filter: blur(6px);
       backdrop-filter: blur(6px);
       border-radius: 10px;
-      padding: 8px 14px;
-      font-size: 14px;
-      font-weight: 600;
+      padding: 5px 6px 5px 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+    }
+
+    #searchInput {
+      flex: 1;
+      min-width: 0;
+      height: 34px;
+      border: 0;
+      outline: none;
+      background: transparent;
+      font-size: 16px; /* iOS 자동 확대 방지: 16px 이상 유지 */
       color: #222;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      -webkit-appearance: none;
+    }
+
+    #searchInput::placeholder { color: #999; }
+
+    #clearBtn, #searchBtn {
+      flex-shrink: 0;
+      min-height: 40px;
+      border: 0;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      -webkit-appearance: none;
+    }
+
+    #clearBtn {
+      width: 32px;
+      min-height: 32px;
+      background: #e9e9ee;
+      color: #666;
+      font-size: 16px;
+      line-height: 1;
+      display: none;
+    }
+
+    #searchBtn {
+      padding: 0 14px;
+      background: #27500A;
+      color: #fff;
+    }
+
+    #searchBtn:active { background: #1b3806; }
+
+    /* 일반 / 영상 전환 */
+    #typeSwitch {
+      display: inline-flex;
+      align-self: flex-start;
+      background: rgba(255, 255, 255, 0.92);
+      -webkit-backdrop-filter: blur(6px);
+      backdrop-filter: blur(6px);
+      border-radius: 10px;
+      padding: 3px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22);
+    }
+
+    .type-btn {
+      min-height: 40px;
+      min-width: 58px;
+      padding: 0 14px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: #555;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      -webkit-appearance: none;
+    }
+
+    .type-btn.active {
+      background: #27500A;
+      color: #fff;
+    }
+
+    /* 상단 안내문 (1단계 문구 축소 배치) */
+    #hint {
+      align-self: flex-start;
+      background: rgba(255, 255, 255, 0.8);
+      -webkit-backdrop-filter: blur(6px);
+      backdrop-filter: blur(6px);
+      border-radius: 8px;
+      padding: 4px 9px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #444;
+      box-shadow: 0 1px 5px rgba(0, 0, 0, 0.15);
       white-space: nowrap;
       pointer-events: none;
     }
@@ -91,7 +188,31 @@
       white-space: pre-line;
     }
 
-    /* 컨트롤이 노치와 겹치지 않도록 */
+    #toast.toast-error   { background: rgba(200, 30, 30, 0.92); }
+    #toast.toast-success { background: rgba(25, 130, 65, 0.93); }
+    #toast.toast-info    { background: rgba(45, 90, 175, 0.92); }
+
+    /* 검색 결과 마커 (현재위치 파란 점과 구분되는 빨간 핀) */
+    .search-marker {
+      width: 22px;
+      height: 22px;
+      border-radius: 50% 50% 50% 0;
+      background: #e5342a;
+      border: 2.5px solid #fff;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+      transform: rotate(-45deg);
+      cursor: pointer;
+    }
+
+    .maplibregl-popup-content {
+      font-size: 12.5px;
+      line-height: 1.6;
+      padding: 10px 12px;
+      border-radius: 8px;
+      max-width: 240px;
+    }
+
+    /* 컨트롤이 노치·상단 UI와 겹치지 않도록 */
     .maplibregl-ctrl-top-right {
       top: calc(env(safe-area-inset-top, 0px) + 56px);
       right: calc(env(safe-area-inset-right, 0px) + 8px);
@@ -105,7 +226,21 @@
 </head>
 
 <body>
-  <div id="hint">두 손가락으로 지도를 회전해보세요</div>
+  <div id="topUI">
+    <div id="searchBar">
+      <input id="searchInput" type="search" inputmode="text" autocomplete="off"
+             autocorrect="off" autocapitalize="off" spellcheck="false"
+             enterkeyhint="search" placeholder="주소 또는 지번을 입력하세요">
+      <button id="clearBtn" type="button" aria-label="입력 지우기">✕</button>
+      <button id="searchBtn" type="button">검색</button>
+    </div>
+    <div id="typeSwitch">
+      <button class="type-btn active" type="button" data-type="base">일반</button>
+      <button class="type-btn" type="button" data-type="satellite">영상</button>
+    </div>
+    <div id="hint">두 손가락 회전 · 확대 가능</div>
+  </div>
+
   <div id="map"></div>
   <div id="bearingBox">회전각: <span id="bearingValue">0.0</span>°</div>
   <div id="toast"></div>
@@ -115,10 +250,58 @@
     (function () {
       'use strict';
 
+      /* ===================================================================
+         브이월드 API 키
+         -------------------------------------------------------------------
+         · 아래 한 곳에만 입력하면 지도 타일·주소검색이 모두 이 값을 사용합니다.
+         · 브이월드 개발자센터(https://www.vworld.kr/dev/v4api.do)에서 키 발급 시
+           「WMTS/TMS API」와 「Geocoder API」를 반드시 체크해야 합니다.
+         · 키 발급 신청서의 「사용 도메인」에 실제 서비스 주소를 등록해야 하며,
+           등록하지 않은 도메인에서 호출하면 타일과 검색이 모두 실패합니다.
+             등록할 도메인: https://ubaldos00-ship-it.github.io
+           (브이월드는 Referer 기준으로 검사하므로 GitHub Pages 주소 그대로 등록)
+         · 이 키는 HTML에 그대로 노출됩니다. 보안을 위해 반드시 허용 도메인을
+           위 주소로 제한해 두세요. 제한해 두면 타인이 키를 복사해도
+           다른 사이트에서는 사용할 수 없습니다.
+         · 개발키는 3개월 유효(최대 3회 연장)이므로 만료 시 갱신이 필요합니다.
+         =================================================================== */
+      var VWORLD_API_KEY = '00EB5BC0-22B4-3B7E-89D1-341699F7CE05';
+
+      // 브이월드 WMTS 타일 (HTTPS 고정 · 혼합 콘텐츠 방지)
+      //  형식: https://api.vworld.kr/req/wmts/1.0.0/{키}/{레이어}/{z}/{y}/{x}.{확장자}
+      //  레이어: Base(일반,png,~19) · Satellite(영상,jpeg,~19) · Hybrid(지명/도로,png,~19)
+      var VWORLD_TILE_BASE = 'https://api.vworld.kr/req/wmts/1.0.0/';
+      var VWORLD_MAX_DATA_ZOOM = 19;
+
+      function tileUrl(layer, ext) {
+        return VWORLD_TILE_BASE + VWORLD_API_KEY + '/' + layer + '/{z}/{y}/{x}.' + ext;
+      }
+
+      function hasApiKey() {
+        return !!VWORLD_API_KEY &&
+               VWORLD_API_KEY !== '여기에_브이월드_API키' &&
+               VWORLD_API_KEY.indexOf('여기에') === -1;
+      }
+
+      /* ================= 토스트 (기존 호출 방식 호환) ================= */
       var toastEl = document.getElementById('toast');
       var toastTimer = null;
 
-      function showToast(msg, ms) {
+      function setToastType(type) {
+        toastEl.className = '';
+        if (type === 'success') {
+          toastEl.classList.add('toast-success');
+        } else if (type === 'info') {
+          toastEl.classList.add('toast-info');
+        } else {
+          toastEl.classList.add('toast-error'); // 기본값: 기존과 동일한 빨강
+        }
+      }
+
+      // showToast('메시지', 6000)            → 기존 방식 그대로 (빨강)
+      // showToast('메시지', 3000, 'success') → 확장 방식
+      function showToast(msg, ms, type) {
+        setToastType(type);
         toastEl.textContent = msg;
         toastEl.style.display = 'block';
         if (toastTimer) clearTimeout(toastTimer);
@@ -142,15 +325,21 @@
         console.error('처리되지 않은 Promise 오류:', e.reason);
       });
 
+      /* ================= 지도 생성 ================= */
       var map;
       try {
         map = new maplibregl.Map({
           container: 'map',
-          style: 'https://demotiles.maplibre.org/style.json',
+          style: {
+            version: 8,
+            sources: {},
+            layers: []
+          },
           center: [128.75, 35.84],
           zoom: 12,
           bearing: 0,
           pitch: 0,
+          maxZoom: 20,
           attributionControl: true
         });
       } catch (err) {
@@ -221,10 +410,326 @@
       map.on('rotateend', updateBearing);
       map.on('move', updateBearing);
 
+      /* ================= 브이월드 레이어 ================= */
+      // 레이어 추가 순서 = 아래에서 위로 쌓이는 순서
+      //   일반지도 → 영상지도 → 하이브리드(지명·도로)
+      // 검색 마커·현재 위치는 DOM 요소라 항상 지도 위에 표시됩니다.
+      function addVWorldLayers() {
+        if (map.getSource('vworld-base-source')) return;
+
+        map.addSource('vworld-base-source', {
+          type: 'raster',
+          tiles: [tileUrl('Base', 'png')],
+          tileSize: 256,
+          minzoom: 0,
+          maxzoom: VWORLD_MAX_DATA_ZOOM,
+          attribution: '© <a href="https://www.vworld.kr" target="_blank" rel="noopener">VWorld</a>'
+        });
+        map.addLayer({
+          id: 'vworld-base-layer',
+          type: 'raster',
+          source: 'vworld-base-source',
+          layout: { visibility: 'visible' }
+        });
+
+        map.addSource('vworld-satellite-source', {
+          type: 'raster',
+          tiles: [tileUrl('Satellite', 'jpeg')],
+          tileSize: 256,
+          minzoom: 0,
+          maxzoom: VWORLD_MAX_DATA_ZOOM,
+          attribution: '© <a href="https://www.vworld.kr" target="_blank" rel="noopener">VWorld</a>'
+        });
+        map.addLayer({
+          id: 'vworld-satellite-layer',
+          type: 'raster',
+          source: 'vworld-satellite-source',
+          layout: { visibility: 'none' } // 최초에는 숨김 (일반지도가 기본)
+        });
+
+        // 영상지도 위에 지명·도로를 겹쳐 보여주는 하이브리드 레이어
+        map.addSource('vworld-hybrid-source', {
+          type: 'raster',
+          tiles: [tileUrl('Hybrid', 'png')],
+          tileSize: 256,
+          minzoom: 0,
+          maxzoom: VWORLD_MAX_DATA_ZOOM,
+          attribution: '© <a href="https://www.vworld.kr" target="_blank" rel="noopener">VWorld</a>'
+        });
+        map.addLayer({
+          id: 'vworld-hybrid-layer',
+          type: 'raster',
+          source: 'vworld-hybrid-source',
+          layout: { visibility: 'none' }
+        });
+      }
+
+      // 지도 종류 전환: 중심·확대·회전각·기울기·위치추적 상태는 건드리지 않습니다.
+      var currentMapType = 'base';
+
+      function setMapType(type) {
+        if (!map.getLayer('vworld-base-layer')) return;
+        var isSat = (type === 'satellite');
+
+        map.setLayoutProperty('vworld-base-layer', 'visibility', isSat ? 'none' : 'visible');
+        map.setLayoutProperty('vworld-satellite-layer', 'visibility', isSat ? 'visible' : 'none');
+        map.setLayoutProperty('vworld-hybrid-layer', 'visibility', isSat ? 'visible' : 'none');
+
+        currentMapType = isSat ? 'satellite' : 'base';
+
+        var btns = document.querySelectorAll('.type-btn');
+        for (var i = 0; i < btns.length; i++) {
+          btns[i].classList.toggle('active', btns[i].getAttribute('data-type') === currentMapType);
+        }
+      }
+
+      /* ================= 검색 마커 ================= */
+      var searchMarker = null;
+
+      function clearSearchMarker() {
+        if (searchMarker) {
+          searchMarker.remove();
+          searchMarker = null;
+        }
+      }
+
+      function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, function (c) {
+          return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+      }
+
+      // result: { lng, lat, query, parcel, road }
+      function showSearchMarker(result) {
+        clearSearchMarker();
+
+        var el = document.createElement('div');
+        el.className = 'search-marker';
+
+        var rows = '';
+        rows += '<div><b>검색어</b><br>' + escapeHtml(result.query) + '</div>';
+        if (result.parcel) {
+          rows += '<div style="margin-top:5px;"><b>지번주소</b><br>' + escapeHtml(result.parcel) + '</div>';
+        }
+        if (result.road) {
+          rows += '<div style="margin-top:5px;"><b>도로명주소</b><br>' + escapeHtml(result.road) + '</div>';
+        }
+        rows += '<div style="margin-top:5px;color:#555;">경도 ' + result.lng.toFixed(6) +
+                '<br>위도 ' + result.lat.toFixed(6) + '</div>';
+
+        var popup = new maplibregl.Popup({ offset: 18, closeButton: true }).setHTML(rows);
+
+        searchMarker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
+          .setLngLat([result.lng, result.lat])
+          .setPopup(popup)
+          .addTo(map);
+      }
+
+      /* ================= 브이월드 지오코더 (JSONP) ================= */
+      // 브이월드 Geocoder 2.0은 브라우저 CORS를 허용하지 않으므로
+      // format=json + callback 파라미터(JSONP) 방식으로 호출합니다.
+      var jsonpSeq = 0;
+
+      function requestVWorldGeocode(query, type) {
+        return new Promise(function (resolve, reject) {
+          var cbName = '__vworldGeocodeCb' + (++jsonpSeq);
+          var script = document.createElement('script');
+          var timer = null;
+
+          function cleanup() {
+            if (timer) clearTimeout(timer);
+            try { delete window[cbName]; } catch (e) { window[cbName] = undefined; }
+            if (script.parentNode) script.parentNode.removeChild(script);
+          }
+
+          window[cbName] = function (data) {
+            cleanup();
+            resolve(data);
+          };
+
+          script.onerror = function () {
+            cleanup();
+            reject(new Error('network'));
+          };
+
+          timer = setTimeout(function () {
+            cleanup();
+            reject(new Error('timeout'));
+          }, 10000);
+
+          var url = 'https://api.vworld.kr/req/address' +
+            '?service=address' +
+            '&request=getCoord' +
+            '&version=2.0' +
+            '&crs=EPSG:4326' +
+            '&type=' + type +                       // PARCEL(지번) 또는 ROAD(도로명)
+            '&address=' + encodeURIComponent(query) +
+            '&format=json' +
+            '&errorformat=json' +
+            '&refine=true' +
+            '&simple=false' +
+            '&callback=' + cbName +
+            '&key=' + encodeURIComponent(VWORLD_API_KEY);
+
+          script.src = url;
+          document.head.appendChild(script);
+        });
+      }
+
+      // 지오코더 응답 → { lng, lat, parcel, road } (실패 시 null)
+      function parseGeocode(data, type) {
+        if (!data || !data.response || data.response.status !== 'OK') return null;
+
+        var res = data.response.result;
+        if (!res || !res.point) return null;
+
+        var lng = parseFloat(res.point.x);
+        var lat = parseFloat(res.point.y);
+        if (!isFinite(lng) || !isFinite(lat)) return null;
+
+        var refined = data.response.refined || {};
+        var text = refined.text || '';
+
+        return {
+          lng: lng,
+          lat: lat,
+          parcel: type === 'PARCEL' ? text : '',
+          road: type === 'ROAD' ? text : ''
+        };
+      }
+
+      function isKeyError(data) {
+        if (!data || !data.response) return false;
+        var st = data.response.status;
+        var err = data.response.error;
+        if (st !== 'ERROR' || !err) return false;
+        var text = (err.text || '') + ' ' + (err.code || '');
+        return /KEY|key|DOMAIN|domain|INVALID|권한|인증/.test(text);
+      }
+
+      /* ================= 주소·지번 검색 ================= */
+      var searchInput = document.getElementById('searchInput');
+      var searchBtn = document.getElementById('searchBtn');
+      var clearBtn = document.getElementById('clearBtn');
+      var searching = false;
+
+      function searchAddress() {
+        var query = searchInput.value.trim();
+        if (!query) {
+          showToast('주소 또는 지번을 입력해주세요.', 3000, 'info');
+          return;
+        }
+
+        if (!hasApiKey()) {
+          showToast('브이월드 API 키를 입력해주세요.', 0);
+          return;
+        }
+
+        if (searching) return;
+        searching = true;
+        showToast('주소를 검색하고 있습니다.', 0, 'info');
+
+        // 1차: 지번주소 → 2차: 도로명주소 → 모두 실패 시 안내
+        requestVWorldGeocode(query, 'PARCEL')
+          .then(function (data) {
+            var hit = parseGeocode(data, 'PARCEL');
+            if (hit) return { hit: hit, raw: data };
+
+            if (isKeyError(data)) {
+              throw new Error('apikey');
+            }
+
+            return requestVWorldGeocode(query, 'ROAD').then(function (data2) {
+              if (isKeyError(data2)) throw new Error('apikey');
+              return { hit: parseGeocode(data2, 'ROAD'), raw: data2 };
+            });
+          })
+          .then(function (out) {
+            searching = false;
+
+            if (!out.hit) {
+              showToast('검색 결과를 찾을 수 없습니다.\n주소 또는 지번을 다시 확인해주세요.', 5000);
+              return;
+            }
+
+            var hit = out.hit;
+            hit.query = query;
+
+            // 기존 회전각·기울기를 유지한 채 이동 (bearing 초기화하지 않음)
+            map.flyTo({
+              center: [hit.lng, hit.lat],
+              zoom: 18,
+              essential: true
+            });
+
+            showSearchMarker(hit);
+            showToast('검색 위치로 이동했습니다.', 3000, 'success');
+            console.log('검색 성공:', hit);
+          })
+          .catch(function (err) {
+            searching = false;
+            console.error('주소 검색 오류:', err);
+
+            if (err && err.message === 'apikey') {
+              showToast('브이월드 API 키 또는 등록 도메인을 확인해주세요.', 6000);
+            } else {
+              showToast('검색 서버에 연결할 수 없습니다.\n인터넷 연결을 확인해주세요.', 6000);
+            }
+          });
+      }
+
+      /* ================= UI 이벤트 ================= */
+      // 검색창·버튼 조작이 지도 이동/회전/확대로 번지지 않도록 차단
+      var topUI = document.getElementById('topUI');
+      ['touchstart', 'touchmove', 'touchend', 'mousedown', 'mousemove', 'wheel',
+       'dblclick', 'click', 'contextmenu'].forEach(function (evt) {
+        topUI.addEventListener(evt, function (e) { e.stopPropagation(); }, { passive: true });
+      });
+
+      searchBtn.addEventListener('click', searchAddress);
+
+      // 키보드의 Enter / 검색 버튼으로도 검색
+      searchInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.keyCode === 13) {
+          e.preventDefault();
+          searchInput.blur(); // iOS 키보드 닫기
+          searchAddress();
+        }
+      });
+
+      searchInput.addEventListener('input', function () {
+        clearBtn.style.display = searchInput.value ? 'block' : 'none';
+      });
+
+      clearBtn.addEventListener('click', function () {
+        searchInput.value = '';
+        clearBtn.style.display = 'none';
+        clearSearchMarker();
+        searchInput.focus();
+      });
+
+      var typeBtns = document.querySelectorAll('.type-btn');
+      for (var i = 0; i < typeBtns.length; i++) {
+        typeBtns[i].addEventListener('click', function () {
+          setMapType(this.getAttribute('data-type'));
+        });
+      }
+
+      /* ================= 지도 로딩 ================= */
       map.on('load', function () {
         console.log('MapLibre 지도 로딩 완료');
         updateBearing();
         map.resize();
+
+        if (!hasApiKey()) {
+          console.warn('브이월드 API 키가 설정되지 않았습니다.');
+          showToast('브이월드 API 키를 입력해주세요.', 0);
+          return;
+        }
+
+        addVWorldLayers();
+        setMapType('base');
+        console.log('브이월드 레이어 등록 완료');
       });
 
       // iOS 주소창 높이 변화·화면 회전 대응
