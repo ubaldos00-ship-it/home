@@ -1,8 +1,282 @@
-<!-- tonghab_v137.html · 저장: 2026-06-20 07:51 KST -->
+<!-- tonghab_v27.html · 저장: 2026-07-16 16:56 KST · [v27] 지도 기반 A/B포구 자동 선정 모듈(fieldPlot) 신규 추가 — 필지경계→가·나·다→가로기점→세로방향 조절→A/B포구 지도표시 · 논벼=길이기준 / 밭작물=이랑기준 / 1이랑 예외는 모두 기존 통합계산기 결과를 그대로 읽어 사용(새 계산식 없음) · 기존 계산/저장/암호화/지도연동 로직 미변경 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
+<!-- ═══════════ TenarCrypto 보안 저장 계층 (보안 테스트) ═══════════
+     · 브라우저 캐시(localStorage): 기기키로 자동 암호화/복호화 (비밀번호 불필요)
+     · JSON 파일: PBKDF2 비밀번호 기반 암호화 (기본 2026)
+     · 계산/UI 로직은 건드리지 않고 저장 전후에만 암복호화가 투명하게 동작 -->
+<script>
+(function(){
+  'use strict';
+  if(window.TenarCrypto) return;
+  var CRYPTO_OK = !!(window.crypto && window.crypto.subtle && window.TextEncoder);
+
+  function bufToB64(buf){ var b=new Uint8Array(buf),s=''; for(var i=0;i<b.length;i++) s+=String.fromCharCode(b[i]); return btoa(s); }
+  function b64ToBuf(b64){ var bin=atob(b64),b=new Uint8Array(bin.length); for(var i=0;i<bin.length;i++) b[i]=bin.charCodeAt(i); return b.buffer; }
+  var enc = CRYPTO_OK ? new TextEncoder() : null;
+  var dec = CRYPTO_OK ? new TextDecoder() : null;
+  function kstNow(){ return new Date(Date.now()+9*3600000).toISOString().replace('Z','+09:00'); }
+
+  var DEVICE_KEY_NAME='__tenar_secure_device_key_v1';
+  var _rawGet=localStorage.getItem.bind(localStorage);
+  var _rawSet=localStorage.setItem.bind(localStorage);
+
+  function generateDeviceKey(){ return bufToB64(crypto.getRandomValues(new Uint8Array(32)).buffer); }
+  var _deviceKeyPromise=null;
+  function getDeviceKey(){
+    if(_deviceKeyPromise) return _deviceKeyPromise;
+    _deviceKeyPromise=(async function(){
+      var b64=null; try{ b64=_rawGet(DEVICE_KEY_NAME); }catch(e){}
+      if(!b64){ b64=generateDeviceKey(); try{ _rawSet(DEVICE_KEY_NAME,b64); }catch(e){} }
+      return crypto.subtle.importKey('raw', b64ToBuf(b64), {name:'AES-GCM'}, false, ['encrypt','decrypt']);
+    })();
+    return _deviceKeyPromise;
+  }
+
+  async function encryptForDeviceCache(plainStr, appName){
+    var key=await getDeviceKey();
+    var iv=crypto.getRandomValues(new Uint8Array(12));
+    var ct=await crypto.subtle.encrypt({name:'AES-GCM',iv:iv}, key, enc.encode(String(plainStr)));
+    return { tenarSecure:true, secureType:'device-cache', version:1, app:appName,
+             encryptedAt:kstNow(), algorithm:'AES-GCM', iv:bufToB64(iv.buffer), ciphertext:bufToB64(ct) };
+  }
+  async function decryptFromDeviceCache(obj){
+    var key=await getDeviceKey();
+    var pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:new Uint8Array(b64ToBuf(obj.iv))}, key, b64ToBuf(obj.ciphertext));
+    return dec.decode(pt);
+  }
+  async function _deriveKey(password, saltBuf, iterations){
+    var baseKey=await crypto.subtle.importKey('raw', enc.encode(String(password)), {name:'PBKDF2'}, false, ['deriveKey']);
+    return crypto.subtle.deriveKey({name:'PBKDF2', salt:new Uint8Array(saltBuf), iterations:iterations, hash:'SHA-256'},
+                                   baseKey, {name:'AES-GCM', length:256}, false, ['encrypt','decrypt']);
+  }
+  async function encryptForPasswordFile(dataObj, password, appName){
+    var salt=crypto.getRandomValues(new Uint8Array(16));
+    var iv=crypto.getRandomValues(new Uint8Array(12));
+    var iterations=210000;
+    var key=await _deriveKey(password, salt.buffer, iterations);
+    var ct=await crypto.subtle.encrypt({name:'AES-GCM',iv:iv}, key, enc.encode(JSON.stringify(dataObj)));
+    return { tenarSecure:true, secureType:'password-file', version:1, app:appName, encryptedAt:kstNow(),
+             algorithm:'AES-GCM', kdf:'PBKDF2', iterations:iterations,
+             salt:bufToB64(salt.buffer), iv:bufToB64(iv.buffer), ciphertext:bufToB64(ct) };
+  }
+  async function decryptFromPasswordFile(obj, password){
+    var key=await _deriveKey(password, b64ToBuf(obj.salt), obj.iterations||210000);
+    var pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:new Uint8Array(b64ToBuf(obj.iv))}, key, b64ToBuf(obj.ciphertext));
+    return JSON.parse(dec.decode(pt));
+  }
+  function isSecureObject(v){ return !!(v && typeof v==='object' && v.tenarSecure===true); }
+
+  window.TenarCrypto={
+    ok:CRYPTO_OK,
+    encryptForDeviceCache:encryptForDeviceCache, decryptFromDeviceCache:decryptFromDeviceCache,
+    encryptForPasswordFile:encryptForPasswordFile, decryptFromPasswordFile:decryptFromPasswordFile,
+    isSecureObject:isSecureObject, generateDeviceKey:generateDeviceKey, getDeviceKey:getDeviceKey,
+    arrayBufferToBase64:bufToB64, base64ToArrayBuffer:b64ToBuf
+  };
+
+  function _toast(msg, ms){
+    try{
+      var t=document.createElement('div'); t.textContent=msg;
+      t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1f5132;color:#fff;padding:10px 16px;border-radius:12px;font-size:13px;font-weight:700;z-index:2147483647;box-shadow:0 4px 16px rgba(0,0,0,.35);max-width:90vw;text-align:center;line-height:1.5;';
+      (document.body||document.documentElement).appendChild(t);
+      setTimeout(function(){ try{ t.remove(); }catch(e){} }, ms||2600);
+    }catch(e){}
+  }
+  window._tenarToast=_toast;
+
+  /* 보안 저장 활성/비활성 상태 — 조사표 저장/불러오기 화면 배지 및 안내에 사용 */
+  window.__tenarSecureActive=null;   // null=미확정, true=암호화 켜짐, false=평문(비활성)
+  var _inactiveNotified=false;
+  function _notifyInactive(){
+    window.__tenarSecureActive=false;
+    if(_inactiveNotified) return; _inactiveNotified=true;
+    function show(){ _toast('🔓 보안 저장 비활성 — 이 브라우저에서는 자동 암호화가 지원되지 않아 평문으로 저장됩니다.', 5000); }
+    if(document.body){ setTimeout(show,900); } else { document.addEventListener('DOMContentLoaded', function(){ setTimeout(show,900); }); }
+    if(typeof window._tenarRenderSecBadge==='function'){ try{ window._tenarRenderSecBadge(); }catch(e){} }
+  }
+  window._tenarSecureActive=function(){ return window.__tenarSecureActive===true; };
+
+  window.TenarSecureStore={
+    init:function(appName, exactKeys, prefixes){
+      if(!CRYPTO_OK){ _notifyInactive(); return; }   /* 비보안 컨텍스트 등 → 기존 평문 동작 유지 */
+      var LS=window.localStorage;
+      /* window.localStorage 인스턴스가 접근 시점마다 달라지는 브라우저(iOS 사파리 등)가 있어,
+         인스턴스 오버라이드는 앱의 실제 호출을 놓칠 수 있음 → Storage.prototype 을 교체(모든 인스턴스 공유).
+         관리 대상 키는 sessionStorage 키와 겹치지 않으므로 isManaged(k)만으로 안전하게 분기. */
+      var SP=Object.getPrototypeOf(LS)||window.Storage.prototype;
+      var _origGet=SP.getItem, _origSet=SP.setItem, _origRemove=SP.removeItem;
+      var _get=function(k){ return _origGet.call(LS,k); };
+      var _set=function(k,v){ return _origSet.call(LS,k,v); };
+      var _remove=function(k){ return _origRemove.call(LS,k); };
+      var exact={}; (exactKeys||[]).forEach(function(k){ exact[k]=true; });
+      var pfx=prefixes||[];
+      function isManaged(k){
+        if(k===DEVICE_KEY_NAME) return false;
+        if(exact[k]) return true;
+        for(var i=0;i<pfx.length;i++){ if(String(k).indexOf(pfx[i])===0) return true; }
+        return false;
+      }
+      var _plain={}, _dirty={}, _flushScheduled=false, _ready=false;
+      var _pendingDecrypt=[], _legacy=[], _decryptFailed=[];
+
+      try{
+        for(var i=0;i<LS.length;i++){
+          var k=LS.key(i);
+          if(!isManaged(k)) continue;
+          var raw=_get(k), obj=null;
+          try{ obj=JSON.parse(raw); }catch(e){}
+          if(obj && obj.tenarSecure===true && obj.secureType==='device-cache'){ _pendingDecrypt.push(k); }
+          else { _plain[k]=raw; _legacy.push(k); }
+        }
+      }catch(e){}
+
+      function scheduleFlush(k){ _dirty[k]=true; if(_flushScheduled) return; _flushScheduled=true; Promise.resolve().then(flushNow); }
+      async function flushNow(){
+        _flushScheduled=false;
+        var keys=Object.keys(_dirty); _dirty={};
+        for(var i=0;i<keys.length;i++){
+          var k=keys[i];
+          if(!(k in _plain)) continue;
+          try{
+            var secure=await encryptForDeviceCache(_plain[k], appName);
+            _set(k, JSON.stringify(secure));
+          }catch(e){
+            /* 암호화 실패(구형/특수 브라우저)해도 데이터는 반드시 보존 — 평문으로라도 저장(유실 방지) */
+            try{ _set(k, _plain[k]); }catch(_e){}
+          }
+        }
+      }
+
+      /* 오버라이드 설치 + 자기검증: 일부 브라우저(iOS Safari·인앱 웹뷰 등)는 localStorage
+         메서드 오버라이드를 막거나 일부만 적용해 읽기/쓰기가 어긋날 수 있음 → 저장이 안 되는 것처럼 보임.
+         설치 직후 프로브로 검증하고, 실패 시 네이티브로 완전 복구하여 앱을 평문으로 100% 정상 동작시킴. */
+      var _installOk=false;
+      try{
+        SP.getItem=function(k){ if(isManaged(k)) return (k in _plain)? _plain[k] : null; return _origGet.call(this,k); };
+        SP.setItem=function(k,v){ if(isManaged(k)){ _plain[k]=String(v); scheduleFlush(k); return; } return _origSet.call(this,k,v); };
+        SP.removeItem=function(k){ if(isManaged(k)){ delete _plain[k]; try{ _origRemove.call(this,k); }catch(e){} return; } return _origRemove.call(this,k); };
+        /* 의미있는 프로브: 실제 '가로채기'가 되는지 검증 — 파사드는 값을 돌려주지만 네이티브 저장소엔 평문이 없어야 함.
+           통과 못 하면(오버라이드 미적용/부분적용) 네이티브로 완전 복구하여 앱을 평문으로 100% 정상 동작시킴. */
+        var _pk='__tenar_probe__'; exact[_pk]=true;
+        window.localStorage.setItem(_pk,'PROBE');
+        _installOk=(window.localStorage.getItem(_pk)==='PROBE' && _origGet.call(LS,_pk)!=='PROBE');
+        window.localStorage.removeItem(_pk); delete exact[_pk];
+        try{ _origRemove.call(LS,_pk); }catch(_e){}
+      }catch(e){ _installOk=false; }
+      if(!_installOk){
+        try{ SP.getItem=_origGet; SP.setItem=_origSet; SP.removeItem=_origRemove; }catch(_e){}
+        try{ _origRemove.call(LS,'__tenar_probe__'); }catch(_e){}
+        window.__tenarSecureReady=true;
+        _notifyInactive();
+        return;   /* 보안 저장 비활성 — 앱은 기존 평문 방식으로 정상 동작 */
+      }
+
+      getDeviceKey().then(function(){
+        return Promise.all(_pendingDecrypt.map(function(k){
+          var obj=null; try{ obj=JSON.parse(_get(k)); }catch(e){}
+          if(!obj){ _decryptFailed.push(k); return; }
+          return decryptFromDeviceCache(obj).then(function(plain){ _plain[k]=plain; }).catch(function(){ _decryptFailed.push(k); });
+        }));
+      }).then(function(){
+        _ready=true;
+        _legacy.forEach(function(k){ scheduleFlush(k); });
+        if(_legacy.length){
+          try{ if(!_rawGet('__tenar_secure_migrated_'+appName)){ _rawSet('__tenar_secure_migrated_'+appName,'1');
+            setTimeout(function(){ _toast('기존 저장자료를 보안 저장 방식으로 전환했습니다.'); }, 1200); } }catch(e){}
+        }
+        if(_decryptFailed.length){
+          setTimeout(function(){ _toast('이 기기의 보안키가 없어 일부 저장자료를 복호화할 수 없습니다.\n브라우저 데이터가 삭제되었거나 다른 기기의 캐시일 수 있습니다.\nJSON 백업파일이 있다면 가져오기를 이용해 주세요.', 5500); }, 1400);
+        }
+        window.__tenarSecureReady=true;
+        window.__tenarSecureActive=true;
+        if(typeof window._tenarRenderSecBadge==='function'){ try{ window._tenarRenderSecBadge(); }catch(e){} }
+      }).catch(function(){ _ready=true; window.__tenarSecureReady=true; window.__tenarSecureActive=true; });
+    }
+  };
+
+  /* JSON 비밀번호 입력 — 내보내기(암호화): 기본값 2026 미리채움 / 가져오기(복호화): 기본값 미리채움 없음
+     retryNote=true 이면 "암호 틀림, 다시 입력" 안내를 앞에 붙임(여러 번 재시도 지원) */
+  window._tenarAskPassword=function(mode, retryNote){
+    var isImport=(mode==='import');
+    var base=isImport
+      ? 'JSON 파일 가져오기\n\n저장할 때 사용한 암호를 입력하세요.'
+      : 'JSON 파일 내보내기\n\n이 파일은 외부로 공유될 수 있어 암호가 필요합니다.\n기본 암호는 2026입니다. 원하시면 다른 암호로 변경할 수 있습니다.\n암호를 잊으면 파일을 복구할 수 없습니다.';
+    var head=(retryNote? '❌ 암호가 맞지 않습니다. 다시 입력해 주세요.\n(취소하면 불러오기를 중단합니다)\n\n' : '') + base;
+    var def = isImport ? '' : '2026';   /* 복호화(가져오기)는 기본 암호를 미리 넣지 않음 */
+    var pw;
+    try{ pw=window.prompt(head, def); }
+    catch(e){ pw=def; }                  /* 일부 인앱 브라우저는 prompt 미지원 */
+    if(pw===null) return null;           /* 사용자 취소 */
+    if(pw===undefined) pw=def;
+    pw=String(pw);
+    if(!isImport && pw.trim()==='') pw='2026';   /* 내보내기만 빈칸→기본 2026 */
+    return pw;
+  };
+
+  /* 내보내기 텍스트 생성 — 보안 가능하면 암호화, 불가 환경이면 평문(경고).
+     반환: Promise<{text, encrypted}> · 사용자가 취소하면 Promise<null> */
+  window._tenarBuildExport=function(dataObj, appName){
+    if(window.TenarCrypto && TenarCrypto.ok){
+      var pw=window._tenarAskPassword('export');
+      if(pw===null) return Promise.resolve(null);
+      return TenarCrypto.encryptForPasswordFile(dataObj, pw, appName)
+        .then(function(secure){ return {text:JSON.stringify(secure,null,2), encrypted:true}; });
+    }
+    return Promise.resolve({text:JSON.stringify(dataObj,null,2), encrypted:false});
+  };
+  /* 가져오기 파싱 — 암호화 파일이면 복호화, 평문이면 그대로. 반환: Promise<data>
+     실패 시 reject({code:'APP_MISMATCH'|'NO_CRYPTO'|'CANCELLED'|'BAD_PW', app}) */
+  window._tenarParseImport=function(obj, appName){
+    if(window.TenarCrypto && TenarCrypto.isSecureObject(obj) && obj.secureType==='password-file'){
+      if(obj.app && obj.app!==appName) return Promise.reject({code:'APP_MISMATCH', app:obj.app});
+      if(!(window.TenarCrypto && TenarCrypto.ok)) return Promise.reject({code:'NO_CRYPTO'});
+      /* 암호 틀리면 입력창을 다시 띄워 여러 번 재시도 가능 (취소하면 중단) */
+      return new Promise(function(resolve, reject){
+        var attempt=0;
+        function ask(){
+          var pw=window._tenarAskPassword('import', attempt>0);
+          if(pw===null){ reject({code:'CANCELLED'}); return; }
+          TenarCrypto.decryptFromPasswordFile(obj, pw).then(resolve).catch(function(){ attempt++; ask(); });
+        }
+        ask();
+      });
+    }
+    return Promise.resolve(obj);
+  };
+  /* 네이티브 원본 저장값 읽기 — 저장목록 항목별 '실제 암호화 여부(🟢/🔴)' 표시에 사용 */
+  window._tenarRawGet=function(k){ try{ return _rawGet(k); }catch(e){ return null; } };
+  /* 3버튼 선택창 → Promise<'add'|'replace'|'cancel'> */
+  window._tenarChoice3=function(opts){
+    opts=opts||{};
+    return new Promise(function(resolve){
+      try{
+        var ov=document.createElement('div');
+        ov.style.cssText='position:fixed;inset:0;z-index:2147483646;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:22px;';
+        var box=document.createElement('div');
+        box.style.cssText='background:#fff;border-radius:16px;max-width:340px;width:100%;padding:20px 18px;box-shadow:0 8px 30px rgba(0,0,0,.35);font-family:inherit;text-align:center;';
+        var t=document.createElement('div'); t.style.cssText='font-size:16px;font-weight:800;color:#222;margin-bottom:8px;'; t.textContent=opts.title||'불러오기';
+        var m=document.createElement('div'); m.style.cssText='font-size:13px;color:#555;line-height:1.55;margin-bottom:16px;white-space:pre-line;'; m.textContent=opts.message||'';
+        var row=document.createElement('div'); row.style.cssText='display:flex;gap:8px;';
+        function mk(label,bg,val){ var b=document.createElement('button'); b.textContent=label; b.style.cssText='flex:1;border:none;border-radius:11px;padding:12px 4px;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer;color:#fff;background:'+bg+';-webkit-tap-highlight-color:transparent;'; b.onclick=function(){ try{ov.remove();}catch(e){} resolve(val); }; return b; }
+        row.appendChild(mk(opts.addLabel||'추가','#2e7a4e','add'));
+        row.appendChild(mk(opts.replaceLabel||'교체','#d97706','replace'));
+        row.appendChild(mk(opts.cancelLabel||'취소','#8a8a8a','cancel'));
+        box.appendChild(t); box.appendChild(m); box.appendChild(row); ov.appendChild(box);
+        ov.addEventListener('click', function(e){ if(e.target===ov){ try{ov.remove();}catch(_){} resolve('cancel'); } });
+        (document.body||document.documentElement).appendChild(ov);
+      }catch(e){ resolve('cancel'); }
+    });
+  };
+  window._tenarAppKo=function(app){ return app==='tonghab'?'통합계산기':(app==='chungchi'?'청취계산기':(app==='map'?'지도':app)); };
+})();
+TenarSecureStore.init('tonghab',
+  ['tonghabAutoSave_v1','tonghabSaveList','tenar_map_favs_v1','tenar_map_bulk','tenar_pending_survey_coord','tenar_meas_ctx','tenar_meas_result','tenar_measure_saves_v1'],
+  ['tonghabSave_']);
+</script>
+<!-- ═══════════ /TenarCrypto 보안 저장 계층 ═══════════ -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#27500A">
 <!-- v136: Google Analytics (gtag.js) -->
@@ -138,7 +412,7 @@ input[type=date]{font-size:16px;font-weight:500;color:#1558D6;padding:11px 10px;
 
 /* ── Mode toggle ── */
 .mode-toggle{display:inline-flex;border:1.5px solid var(--gr100);border-radius:var(--rad);overflow:hidden;margin-bottom:12px;}
-.mtog{padding:9px 16px;font-size:13px;font-weight:700;font-family:inherit;border:none;background:#F8F6F1;color:#3D3C39;cursor:pointer;transition:all .15s;}
+.mtog{padding:9px 9px;font-size:12px;font-weight:700;font-family:inherit;border:none;background:#F8F6F1;color:#3D3C39;cursor:pointer;transition:all .15s;} /* v15: 버튼 폭 축소 → 가-나 총길이 입력란 확장 */
 .mtog.active{background:var(--t600);color:#fff;}
 
 /* ── Cultivation toggle ── */
@@ -212,6 +486,7 @@ input[type=date]{font-size:16px;font-weight:500;color:#1558D6;padding:11px 10px;
 
 /* Measurement grid */
 .meas-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.meas-grid-se{grid-template-columns:1.28fr 0.72fr;} /* v15: 세로총길이 칸 넓히고 계산값 칸 축소 */
 .meas-grid .fg{margin-bottom:0;}
 .meas-grid label{font-size:12px;}
 .meas-grid input{font-size:16px;padding:10px 12px;}
@@ -664,6 +939,7 @@ body.nonbye-mode .hide-nonbye { display:none !important; }
 @media (max-width:380px){
   .crop-btn{font-size:11px;}
   .meas-grid{grid-template-columns:1fr;}
+  .meas-grid-se{grid-template-columns:1fr;} /* v15: 초소형 화면은 기존처럼 1열 */
   .samp-trio input{font-size:16px;}
   .res-main{font-size:22px;}
   .card-ttl{font-size:13px;}
@@ -1269,6 +1545,11 @@ body.nonbye-mode .hide-nonbye { display:none !important; }
 .sl-item-date{font-size:10px;color:#999;margin-top:2px;}
 .sl-item-load{padding:5px 6px;background:#EBF3FF;border:1.5px solid #b3c8f0;border-radius:7px;color:#0A3A8C;font-size:18px;cursor:pointer;white-space:nowrap;flex-shrink:0;display:flex;align-items:center;justify-content:center;min-width:32px;height:32px;transition:background .12s;}
 .sl-item-load:active{background:#d0e4ff;}
+/* 지도 핀 연결 상태: 회색=아직 지도 핀 없음 / 컬러=지도 핀 연결됨 */
+.sl-item-map-unlinked{background:#f1f3f5!important;border-color:#c7cbd1!important;color:#9aa0a6!important;filter:grayscale(1);}
+.sl-item-map-unlinked:active{background:#e5e7eb!important;}
+.sl-item-map-linked{background:#eaf7e6!important;border-color:#7fbf78!important;color:#1a5c22!important;box-shadow:0 0 0 2px rgba(46,158,79,.14);}
+.sl-item-map-linked:active{background:#d8f0d2!important;}
 .sl-item.sl-selected{background:#edfbe8;border:2px solid #3a7d44;}
 .sl-item.sl-selected .sl-item-label{color:#1a5c22;}
 .sl-empty{text-align:center;color:#bbb;font-size:13px;padding:22px 0;}
@@ -1358,6 +1639,179 @@ textarea {
 .lc-cancel{min-height:38px;padding:7px 18px;border:1.5px solid #1a8a78;border-radius:8px;background:transparent;color:#1a8a78;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;}
 .lc-ok{min-height:38px;padding:7px 18px;border:none;background:transparent;color:#1a8a78;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;}
 .lc-cancel:active,.lc-ok:active{opacity:.7;}
+
+/* ==================================================
+   v22 : 통합계산기 심플 업무용 UI 리디자인
+   - 필수 입력 노랑 유지  · A포구 파랑 유지  · B포구 빨강 유지
+   - 그 외 초록/보라/주황 최소화 → 흰색·회색·녹회색 통일
+   - 계산/저장/지도/암호화 등 기능·JS·id·이벤트는 일절 변경 없음(CSS만)
+================================================== */
+
+/* ── ① 전역 색 팔레트 재정의(변수 기반이라 대부분 자동 반영) ── */
+:root{
+  --paper:#F5F6F8;                 /* 전체 배경: 밝은 회색 */
+  --gr800:#1F2937;                 /* 기본 글자 */
+  --gr600:#4B5563;                 /* 보조 글자 */
+  --gr200:#9AA0A8;
+  --gr100:#E2E5E9;                 /* 기본 카드 테두리 */
+  /* A포구 파랑 → 차분하게 */
+  --ac:#315F91; --ac2:#315F91; --ac-bg:#F2F6FA; --ac-bd:#8EAAC5;
+  --blue:#315F91; --blight:#EAF1F8;
+  /* B포구 빨강 → 차분하게 */
+  --bc:#A34747; --bc2:#A34747; --bc-bg:#FAF3F3; --bc-bd:#D5A0A0;
+  --red:#A34747; --rlight:#F6EAEA;
+  /* 초록 계열 → 차분한 녹회색(선택/강조 통일). 단, 헤더용 --g800(#27500A)은 유지 */
+  --t400:#5A7A6C; --t600:#4F6F62;
+  --g50:#F1F4F0; --g100:#E2E5E9; --g200:#B9C4BC; --g400:#4F6F62; --g600:#3F5148;
+  --glight:#EEF2EF;
+}
+
+/* ── ② 카드 제목 / 번호배지: 초록 → 중립 회색 ── */
+.card-ttl{color:#1F2937; border-bottom-color:#E5E7EB;}
+.sn{background:#4B5563; box-shadow:none;}          /* 일반 배지만 회색(포구헤더 배지는 inline 흰색 유지) */
+
+/* ── ③ 그림자 완화 / 강조 애니메이션 제거 ── */
+.card,.res-card,.formula-card,.summary-card,.nbres-card,.nonbye-calc-card,.ryield-card,.prod-zone .pab-col{
+  box-shadow:0 2px 8px rgba(0,0,0,.05);
+}
+.rtog-btn.active,.mtog.active,.cult-btn.active,.ratio-row.active{box-shadow:none;}
+.needs-input,.needs-input-wrap,input.needs-input,input.needs-input:focus{animation:none !important;}
+
+/* ── ④ 필수 입력란: 노랑 유지 + 깜빡임 제거 + 톤 다운 ── */
+input.needs-input,
+input.needs-input:focus{
+  background:#FFF8CC !important;
+  border-color:#E5B93F !important;
+  box-shadow:0 0 0 2px rgba(229,185,63,.18) !important;
+}
+.ryield-iwrap.needs-input-wrap{
+  background:#FFF8CC !important;
+  border-color:#E5B93F !important;
+  box-shadow:0 0 0 2px rgba(229,185,63,.18) !important;
+  animation:none !important;
+}
+.ryield-iwrap.needs-input-wrap input{background:#FFF8CC !important;}
+
+/* ── ⑤ 일반 입력창: 흰색/회색 통일, 포커스 차분한 파랑 (v23: 입력 숫자 글씨는 파랑) ── */
+input[type=text],input[type=number],input[type=date]{color:#1558D6; border-color:#D1D5DB;}
+input[type=date]{color:#1558D6;}
+.rc input{color:#1558D6;}
+input:focus{border-color:#4F78A8; box-shadow:0 0 0 3px rgba(79,120,168,.14);}
+input[readonly]{background:#F7F8FA; color:#374151; border-color:#D9DDE2;}
+
+/* ── ⑥ 자동 계산값 박스: 연회색 배경, 일반값 진회색(핵심값은 A/B 색 유지) ── */
+.calc-display{background:#F7F8FA; border-color:#D9DDE2;}
+.calc-display .calc-main{color:#374151;}
+
+/* ── ⑦ 작물 선택 버튼 ── */
+.crop-btn{background:#FFFFFF; border-color:#D9DDE2; color:#4B5563;}
+.crop-btn:hover{background:#F4F5F6; border-color:#C7CDD4;}
+.crop-btn.active{background:#3F5148; border-color:#3F5148; color:#fff;}
+
+/* ── ⑧ 비율/모드/재배형태/자동계산 배경 톤 정리(선택 활성은 녹회색 --t600으로 자동 통일) ── */
+.rtog-btn,.ratio-row{background:#F4F5F6;}
+.summary-card{background:#F7F8FA; border-color:#E2E5E9;}
+.fac-calc{border-color:#CBD3CD;}
+
+/* ── ⑨ 계산 버튼: 노랑 유지 + 그림자 완화 ── */
+.btn-calc,.btn-calc-a,.prod-zone .pcalc-btn,.goto-b-btn{
+  background:#F3C94A !important; color:#1F2937 !important; box-shadow:0 2px 6px rgba(0,0,0,.10) !important;
+}
+.btn-calc:hover,.btn-calc-a:hover,.prod-zone .pcalc-btn:hover,.goto-b-btn:hover{background:#E8BB32 !important;}
+
+/* ── ⑩ 초기화 버튼: 빨강 → 회색 테두리 ── */
+.btn-reset,.btn-reset-mini,.prod-zone .preset-btn{
+  background:#FFFFFF !important; border-color:#AEB4BC !important; color:#4B5563 !important;
+}
+.btn-reset:hover,.btn-reset-mini:hover,.prod-zone .preset-btn:hover{background:#F3F4F6 !important;}
+
+/* ── ⑪ 지도 길이측정(📏, 보라) / 이동 버튼 → 회색·차분한 파랑 ── */
+button[onclick^="tonghabMeasLen"]{
+  background:#F3F4F6 !important; border:1px solid #C9CED6 !important; color:#4F6F7F !important;
+}
+.goto-prod-btn{background:#4F6F62 !important;}
+
+/* ── ⑫ 헤더 버튼(홈/계산기/저장) 반투명 회색 통일 ── */
+.home-btn,.calc-hdr-btn,.sl-hdr-btn{background:rgba(255,255,255,.14); border-color:rgba(255,255,255,.30);}
+
+/* ── ⑬ 계통추출 선택칸: 초록 → 녹회색 ── */
+.ncc.selected{background:#4F6F62 !important; border-color:#4F6F62 !important;}
+
+/* ── ⑭ 논벼 화면: 화려한 금색/초록 그라데이션 → 단색 차분 ── */
+.nonbye-calc-hdr{background:#4F6F62;}
+.nonbye-calc-card{border-color:#D9DDE2;}
+.ryield-res-main{background:#7A5C2E;}
+.pmw-add-btn{background:#4F6F62;}
+.pmw-sum{color:#3F5148;}
+
+/* ── ⑮ 10a 생산량: 지역/품종 활성 녹회색 통일 + A/B 카드 테두리 완화 ── */
+.prod-zone .ptog-btn.p-active-region,
+.prod-zone .ptog-btn.p-active-var{
+  background:#4F6F62 !important; border-color:#4F6F62 !important; box-shadow:none !important;
+}
+.prod-zone .pab-col.pab-a{border-color:#8EAAC5;}
+.prod-zone .pab-col.pab-b{border-color:#D5A0A0;}
+.prod-cap-share-btn{background:#456F9A !important; box-shadow:none !important;}
+
+/* ── ⑯ 저장/불러오기 모달: 헤더·버튼 색 단순화(삭제=빨강만 유지) ── */
+.sl-head,.ftbl-toggle-bar{background:#3F5148;}
+.sl-save-now{background:#4F6F62;}
+.sl-item{background:#F7F8FA; border-color:#E2E5E9;}
+.sl-item-save{background:#6B7280;}
+.sl-item-fav.fav-on{border-color:#E5B93F; background:#FFF8DD;}
+.sl-item-map-linked{background:#EEF5EA !important; border-color:#9CC596 !important; color:#3F6E3A !important; box-shadow:none !important;}
+.sl-item.sl-selected{background:#EEF2EF; border-color:#4F6F62;}
+.sl-item.sl-selected .sl-item-label{color:#3F5148;}
+.sl-agg-toggle{background:#EEF2F6; border-color:#C4D2E0; color:#31527A;}
+/* JSON 행: 공유=차분한 파랑, 나머지=녹회색(보라/초록 원색 제거) */
+.sl-file-row .sl-share-btn{background:#456F9A !important; border-color:#456F9A !important; color:#fff !important;}
+.sl-file-row .sl-file-btn:nth-child(2){background:#4F6F62 !important; border-color:#4F6F62 !important; color:#fff !important;}
+.sl-file-row .sl-file-btn:last-child{background:#4F6F62 !important; border-color:#4F6F62 !important; color:#fff !important;}
+/* 전체삭제 확인 버튼 청록 → 녹회색 */
+.lc-cancel{color:#4F6F62; border-color:#4F6F62;}
+.lc-ok{color:#B83A3A;}
+
+/* ==================================================
+   v24 : 추가 수정 (색상/표시만, 계산·저장·지도 로직 미변경)
+================================================== */
+/* ── ①~⑤ ⑦조사데이터 필수 입력란: 테두리만 노랑 → 배경도 연노랑, 입력되면(=pfilled)/포커스 시 흰색 ── */
+.prod-zone .pab-input-wrap.preq-border{background:#FFF8CC !important;}
+.prod-zone .pmw-wrap.preq-border{background:#FFF8CC !important;}
+.prod-zone .preq-border:focus-within,
+.prod-zone .preq-border.pfilled{background:#fff !important;}
+
+/* ── ⑥ 논벼 외 작물 피해부호/피해율 select 글자 축소(입력란보다 커서 잘리는 문제) ── */
+.prod-zone .dmg-select,
+.prod-zone .dmg-rate{font-size:10.5px !important; padding:6px 4px !important; padding-right:18px !important;}
+
+/* ── (v26) v24 천단위 콤마 힌트는 원복(제거)됨 ── */
+
+/* ==================================================
+   v25 : 버튼 더블탭(연속 두 번 터치) 확대 방지
+   - 계산·지역·품종·측정·작물·이랑길이·노지/시설 등 모든 버튼/선택 컨트롤
+   - touch-action:manipulation → 더블탭 확대만 차단, 손가락 핀치 확대는 그대로 허용
+================================================== */
+button,
+select,
+.crop-btn,
+.mtog,
+.cult-btn,
+.rtog-btn,
+.prod-zone .ptog-btn,
+.prod-zone .preset-btn,
+.prod-zone .pcalc-btn,
+.prod-zone .pcap-btn,
+.goto-btn,
+.btn-calc,
+.btn-calc-a,
+.btn-reset,
+.btn-reset-mini,
+.home-btn,
+.calc-hdr-btn,
+.sl-hdr-btn{
+  touch-action:manipulation;
+}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
@@ -1386,7 +1840,7 @@ textarea {
         </button>
       </div>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v137 저장: 2026-06-20 07:51)</span></div>
+    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v26 심플 UI · 저장: 2026-07-16 10:52)</span></div>
   </div>
 </div>
 
@@ -1402,7 +1856,7 @@ textarea {
       </button>
     </div>
     <div style="font-size:12px;color:#C0392B;font-weight:600;margin:0 0 8px;">작물선택 및 주소를 넣어주세요.</div>
-    <div class="crop-grid">
+        <div class="crop-grid">
 
       <!-- 마늘 -->
       <button class="crop-btn active" data-crop="마늘" data-mode="이랑" data-n="20" onclick="selectCrop(this)">
@@ -1431,6 +1885,55 @@ textarea {
         양파<span class="crop-cnt">n=20</span>
       </button>
 
+      <!-- 감자 -->
+      <button class="crop-btn" data-crop="감자" data-mode="이랑" data-n="10" onclick="selectCrop(this)">
+        <div class="crop-ico"><svg width="22" height="20" viewBox="0 0 22 20" fill="none">
+          <path d="M3 10 C3 5 6 2 11 2 C15.5 2 19 5 19 10 C19 15 16 18 11 18 C6.5 18 3 15 3 10Z" fill="#C8924A" stroke="#9A6830" stroke-width="0.9"/>
+          <circle cx="7" cy="7" r="1" fill="#8A5830" opacity="0.7"/><circle cx="7" cy="7" r="0.4" fill="#7A4820"/>
+          <circle cx="13" cy="6" r="1" fill="#8A5830" opacity="0.7"/><circle cx="13" cy="6" r="0.4" fill="#7A4820"/>
+          <circle cx="15" cy="13" r="0.9" fill="#8A5830" opacity="0.7"/><circle cx="15" cy="13" r="0.35" fill="#7A4820"/>
+        </svg></div>
+        감자
+      </button>
+
+      <!-- 논벼 -->
+      <button class="crop-btn" data-crop="논벼" data-mode="길이" data-n="22" onclick="selectCrop(this)">
+        <div class="crop-ico"><svg width="22" height="24" viewBox="0 0 22 24" fill="none">
+          <line x1="11" y1="23" x2="11" y2="11" stroke="#8B7320" stroke-width="1.4" stroke-linecap="round"/>
+          <path d="M11 11 C11 9 9.5 7 8 6" stroke="#9A8030" stroke-width="1" fill="none" stroke-linecap="round"/>
+          <path d="M11 11 C10.5 9 10 7 10 5" stroke="#9A8030" stroke-width="1" fill="none" stroke-linecap="round"/>
+          <path d="M11 11 C11.5 9 12 7 12 5" stroke="#9A8030" stroke-width="1" fill="none" stroke-linecap="round"/>
+          <path d="M11 11 C12 9 13.5 7 15 6" stroke="#9A8030" stroke-width="1" fill="none" stroke-linecap="round"/>
+          <ellipse cx="8.2" cy="6.3" rx="1.5" ry="0.85" fill="#D4AC3A" transform="rotate(-25 8.2 6.3)"/>
+          <ellipse cx="10.1" cy="4.7" rx="1.5" ry="0.85" fill="#D4AC3A" transform="rotate(-5 10.1 4.7)"/>
+          <ellipse cx="12" cy="4.7" rx="1.5" ry="0.85" fill="#D4AC3A" transform="rotate(5 12 4.7)"/>
+          <ellipse cx="14.5" cy="6.3" rx="1.5" ry="0.85" fill="#D4AC3A" transform="rotate(25 14.5 6.3)"/>
+        </svg></div>
+        논벼<span class="crop-cnt" style="color:#EF9F27;font-weight:800;">New</span>
+      </button>
+
+      <!-- 콩 -->
+      <button class="crop-btn" data-crop="콩" data-mode="이랑" data-n="20" onclick="selectCrop(this)">
+        <div class="crop-ico"><svg width="22" height="20" viewBox="0 0 22 20" fill="none">
+          <path d="M3 14 C1 11 1.5 6.5 4.5 4 C7.5 1.5 13 1.5 16.5 4 C19 5.8 19.5 10 17 14 C15 17 11 19 7.5 18 C4.5 17 3 14 3 14Z" fill="#8BC34A" stroke="#558B2F" stroke-width="0.9"/>
+          <ellipse cx="6" cy="14" rx="2.2" ry="2.5" fill="#7CB342" stroke="#5A8B28" stroke-width="0.5" opacity="0.8"/>
+          <ellipse cx="10.5" cy="9.5" rx="2.2" ry="2.5" fill="#7CB342" stroke="#5A8B28" stroke-width="0.5" opacity="0.8"/>
+          <ellipse cx="15" cy="6" rx="2" ry="2.3" fill="#7CB342" stroke="#5A8B28" stroke-width="0.5" opacity="0.8"/>
+        </svg></div>
+        콩
+      </button>
+
+      <!-- 배추 -->
+      <button class="crop-btn" data-crop="배추" data-mode="이랑" data-n="6" onclick="selectCrop(this)">
+        <div class="crop-ico"><svg width="22" height="24" viewBox="0 0 22 24" fill="none">
+          <path d="M3 14 C3 7 6 3 11 3 C16 3 19 7 19 14 C19 19 16 22 11 22 C6 22 3 19 3 14Z" fill="#B8D870" stroke="#6A9820" stroke-width="0.8"/>
+          <path d="M5 14 C5 9 7.5 6 11 6 C14.5 6 17 9 17 14 C17 18 14.5 20.5 11 20.5 C7.5 20.5 5 18 5 14Z" fill="#E8F8B0" stroke="#90C040" stroke-width="0.6"/>
+          <path d="M7 14 C7 10.5 8.8 8 11 8 C13.2 8 15 10.5 15 14 C15 17 13.2 19 11 19 C8.8 19 7 17 7 14Z" fill="#FAFCE8" stroke="#A8C858" stroke-width="0.5"/>
+          <line x1="11" y1="3" x2="11" y2="22" stroke="#90C040" stroke-width="0.8"/>
+        </svg></div>
+        배추<span class="crop-cnt">n=6</span>
+      </button>
+
       <!-- 무 -->
       <button class="crop-btn" data-crop="무" data-mode="이랑" data-n="10" onclick="selectCrop(this)">
         <div class="crop-ico"><svg width="18" height="26" viewBox="0 0 18 26" fill="none">
@@ -1455,66 +1958,33 @@ textarea {
         총각무<span class="crop-cnt">n=20</span>
       </button>
 
-      <!-- 배추 -->
-      <button class="crop-btn" data-crop="배추" data-mode="이랑" data-n="6" onclick="selectCrop(this)">
-        <div class="crop-ico"><svg width="22" height="24" viewBox="0 0 22 24" fill="none">
-          <path d="M3 14 C3 7 6 3 11 3 C16 3 19 7 19 14 C19 19 16 22 11 22 C6 22 3 19 3 14Z" fill="#B8D870" stroke="#6A9820" stroke-width="0.8"/>
-          <path d="M5 14 C5 9 7.5 6 11 6 C14.5 6 17 9 17 14 C17 18 14.5 20.5 11 20.5 C7.5 20.5 5 18 5 14Z" fill="#E8F8B0" stroke="#90C040" stroke-width="0.6"/>
-          <path d="M7 14 C7 10.5 8.8 8 11 8 C13.2 8 15 10.5 15 14 C15 17 13.2 19 11 19 C8.8 19 7 17 7 14Z" fill="#FAFCE8" stroke="#A8C858" stroke-width="0.5"/>
-          <line x1="11" y1="3" x2="11" y2="22" stroke="#90C040" stroke-width="0.8"/>
-        </svg></div>
-        배추<span class="crop-cnt">n=6</span>
-      </button>
-
-      <!-- 감자 -->
-      <button class="crop-btn" data-crop="감자" data-mode="이랑" data-n="10" onclick="selectCrop(this)">
-        <div class="crop-ico"><svg width="22" height="20" viewBox="0 0 22 20" fill="none">
-          <path d="M3 10 C3 5 6 2 11 2 C15.5 2 19 5 19 10 C19 15 16 18 11 18 C6.5 18 3 15 3 10Z" fill="#C8924A" stroke="#9A6830" stroke-width="0.9"/>
-          <circle cx="7" cy="7" r="1" fill="#8A5830" opacity="0.7"/><circle cx="7" cy="7" r="0.4" fill="#7A4820"/>
-          <circle cx="13" cy="6" r="1" fill="#8A5830" opacity="0.7"/><circle cx="13" cy="6" r="0.4" fill="#7A4820"/>
-          <circle cx="15" cy="13" r="0.9" fill="#8A5830" opacity="0.7"/><circle cx="15" cy="13" r="0.35" fill="#7A4820"/>
-        </svg></div>
-        감자
-      </button>
-
-      <!-- 콩 -->
-      <button class="crop-btn" data-crop="콩" data-mode="이랑" data-n="20" onclick="selectCrop(this)">
-        <div class="crop-ico"><svg width="22" height="20" viewBox="0 0 22 20" fill="none">
-          <path d="M3 14 C1 11 1.5 6.5 4.5 4 C7.5 1.5 13 1.5 16.5 4 C19 5.8 19.5 10 17 14 C15 17 11 19 7.5 18 C4.5 17 3 14 3 14Z" fill="#8BC34A" stroke="#558B2F" stroke-width="0.9"/>
-          <ellipse cx="6" cy="14" rx="2.2" ry="2.5" fill="#7CB342" stroke="#5A8B28" stroke-width="0.5" opacity="0.8"/>
-          <ellipse cx="10.5" cy="9.5" rx="2.2" ry="2.5" fill="#7CB342" stroke="#5A8B28" stroke-width="0.5" opacity="0.8"/>
-          <ellipse cx="15" cy="6" rx="2" ry="2.3" fill="#7CB342" stroke="#5A8B28" stroke-width="0.5" opacity="0.8"/>
-        </svg></div>
-        콩
-      </button>
-
-      <!-- 논벼 -->
-      <button class="crop-btn" data-crop="논벼" data-mode="길이" data-n="22" onclick="selectCrop(this)">
-        <div class="crop-ico"><svg width="22" height="24" viewBox="0 0 22 24" fill="none">
-          <line x1="11" y1="23" x2="11" y2="11" stroke="#8B7320" stroke-width="1.4" stroke-linecap="round"/>
-          <path d="M11 11 C11 9 9.5 7 8 6" stroke="#9A8030" stroke-width="1" fill="none" stroke-linecap="round"/>
-          <path d="M11 11 C10.5 9 10 7 10 5" stroke="#9A8030" stroke-width="1" fill="none" stroke-linecap="round"/>
-          <path d="M11 11 C11.5 9 12 7 12 5" stroke="#9A8030" stroke-width="1" fill="none" stroke-linecap="round"/>
-          <path d="M11 11 C12 9 13.5 7 15 6" stroke="#9A8030" stroke-width="1" fill="none" stroke-linecap="round"/>
-          <ellipse cx="8.2" cy="6.3" rx="1.5" ry="0.85" fill="#D4AC3A" transform="rotate(-25 8.2 6.3)"/>
-          <ellipse cx="10.1" cy="4.7" rx="1.5" ry="0.85" fill="#D4AC3A" transform="rotate(-5 10.1 4.7)"/>
-          <ellipse cx="12" cy="4.7" rx="1.5" ry="0.85" fill="#D4AC3A" transform="rotate(5 12 4.7)"/>
-          <ellipse cx="14.5" cy="6.3" rx="1.5" ry="0.85" fill="#D4AC3A" transform="rotate(25 14.5 6.3)"/>
-        </svg></div>
-        논벼<span class="crop-cnt" style="color:#EF9F27;font-weight:800;">New</span>
-      </button>
-
     </div>
     <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end;">
       <div class="fg" style="margin-bottom:0;">
         <label>필지 주소 <span class="opt-tag">선택</span></label>
-        <input type="text" id="address" placeholder="(선택) 필지 주소 입력">
+        <div style="display:flex;gap:6px;align-items:stretch;">
+          <input type="text" id="address" placeholder="(선택) 필지 주소 입력" style="flex:1;min-width:0;">
+          <button type="button" id="addrMapBtn" title="지도에서 위치 보기"
+            onclick="_tenarOpenMapFromAddress()"
+            style="flex-shrink:0;width:46px;border:1px solid #cdd9c0;border-radius:8px;background:#eef6e8;line-height:1;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;"><span style="font-size:18px">📍</span><span style="font-size:9px;font-weight:800;color:#3a6b1e">지도</span></button>
+        </div>
       </div>
       <div class="fg" style="margin-bottom:0;">
         <label>조사 날짜</label>
         <input type="date" id="surveyDate" style="width:auto;min-width:128px;">
       </div>
     </div>
+    <!-- v154: 입력란에서 잘리는 필지주소 전체를 작은 글씨로 표시 -->
+    <div id="addrFull" style="display:none;font-size:11px;color:#5a6b50;line-height:1.4;margin-top:5px;word-break:break-all;background:#f3f7ef;border:1px solid #e3ecdb;border-radius:7px;padding:5px 8px;"></div>
+    <script>
+    (function(){
+      var ai=document.getElementById('address'), af=document.getElementById('addrFull');
+      if(!ai||!af) return;
+      function sync(){ var v=(ai.value||'').trim(); af.textContent=v?('📍 '+v):''; af.style.display=v?'block':'none'; }
+      ai.addEventListener('input',sync); ai.addEventListener('change',sync);
+      setTimeout(sync,1200); setTimeout(sync,3200);
+    })();
+    </script>
     <!-- v106: 시군 선택을 논벼 시군별 비교 섹션으로 이동 -->
   </div>
 
@@ -1546,6 +2016,9 @@ textarea {
       <label id="lenLabel">가-나 총이랑수 (이랑)</label>
       <div style="display:flex;align-items:center;gap:8px;">
         <input type="number" inputmode="numeric" pattern="[0-9]*" id="lenGaNa" oninput="updateHalf()" onblur="applyOneRidgeRatioIfNeeded()" onchange="applyOneRidgeRatioIfNeeded()" placeholder="전체 이랑수 입력해주세요" data-need="always" style="flex:1;min-width:0;font-size:13px;">
+        <button type="button" id="lenGaNaMeasBtn" onclick="tonghabMeasLen('lenGaNa')" title="지도에서 길이 측정" style="flex-shrink:0;width:40px;height:38px;border:1px solid #c9b3ee;border-radius:8px;background:#efe4fc;color:#7c3aed;font-size:18px;cursor:pointer;line-height:1;">📏</button>
+        <input type="hidden" id="__thMeasPtsStore"><!-- v21: 지도 측정 점(핀)을 조사표 데이터로 보관(자동저장/복원) → 이모지 재클릭 시 그대로 표시 -->
+        <input type="hidden" id="__thFieldPlotStore"><!-- v27: 지도 A/B포구 선정 작업(필지경계·가나다·각도·A/B좌표)을 조사표 데이터로 보관 → 저장/복원/재편집 -->
         <div class="mode-toggle" style="flex-shrink:0;margin-bottom:0;">
           <button class="mtog" id="mRidge" onclick="setMode('이랑')">이랑 (수)</button>
           <button class="mtog active" id="mLength" onclick="setMode('길이')">길이 (cm)</button>
@@ -1590,6 +2063,19 @@ textarea {
     </div>
 
     <div id="alertBox" class="alert" style="margin-top:11px;">⚠ 1번 비율의 A포구가 0이랑입니다. 그대로 2번 비율을 사용하고 1번 이랑으로 선정하세요.</div>
+
+    <!-- ══ [v27] 지도 기반 A/B포구 자동 선정 진입 버튼 ══ -->
+    <button type="button" id="fpOpenBtn" onclick="fpOpen()"
+      style="width:100%;margin-top:11px;padding:12px;border:1.5px solid #3B6D11;border-radius:10px;
+             background:#EEF5EA;color:#27500A;font-size:13.5px;font-weight:800;font-family:inherit;
+             cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;
+             justify-content:center;gap:7px;">
+      🗺 지도에서 A/B포구 위치 선정
+    </button>
+    <div style="font-size:11px;color:#666;font-weight:600;margin-top:5px;line-height:1.5;">
+      필지 경계 → 가·나·다 지점 → 세로 방향 조절 → A/B포구 자동 표시.
+      계산은 위 ③⑤⑥ 통합계산기 결과를 그대로 사용합니다.
+    </div>
   </div>
 
   <!-- ════ ④ 재배형태 ════ -->
@@ -1662,10 +2148,13 @@ textarea {
       <!-- A 측정값 (포구선정 - 세로기점, 3㎡ 조사길이) -->
       <div class="sub-ttl">📐 A포구 측정값 (세로기점·조사길이)</div>
       <div style="font-size:12px;color:#C0392B;font-weight:600;margin:-2px 0 8px;">세로총길이와 평균너비를 입력하세요.</div>
-      <div class="meas-grid">
+      <div class="meas-grid meas-grid-se">
         <div class="fg">
           <label>세로 총길이 (cm)</label>
-          <input type="number" inputmode="numeric" step="any" id="heightA" placeholder="A 세로" oninput="updateABDerived()" data-need="always">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <input type="number" inputmode="numeric" step="any" id="heightA" placeholder="A 세로" oninput="updateABDerived()" data-need="always" style="flex:1;min-width:0;">
+            <button type="button" onclick="tonghabMeasLen('heightA')" title="지도에서 길이 측정" style="flex-shrink:0;width:40px;height:40px;border:1px solid #c9b3ee;border-radius:8px;background:#efe4fc;color:#7c3aed;font-size:18px;cursor:pointer;line-height:1;">📏</button>
+          </div>
         </div>
         <div class="fg">
           <label>세로 기점 계산값</label>
@@ -1828,6 +2317,11 @@ textarea {
       <span id="ratioUsedBadge6" style="font-size:10px;font-weight:800;background:rgba(255,255,255,.22);color:#fff;border:1px solid rgba(255,255,255,.5);padding:2px 10px;border-radius:100px;margin-left:auto;flex-shrink:0;">1번 비율</span>
     </div>
     <div class="port-body">
+      <!-- v26: B포구 가로기점 실시간 표시(③에서 다시 위로 올라가지 않아도 확인) · 논벼(길이)는 cm 단위 자동 -->
+      <div id="bBaseRefBox" style="display:flex;align-items:center;justify-content:space-between;gap:8px;background:#FAF3F3;border:1.5px solid #D5A0A0;border-radius:8px;padding:9px 12px;margin-bottom:10px;">
+        <span style="font-size:12.5px;font-weight:800;color:#A34747;">📍 B포구 가로기점</span>
+        <span style="font-size:20px;font-weight:900;color:#A34747;line-height:1;" id="bBaseRefVal">—</span>
+      </div>
       <div class="b-skip-note">※ B포구는 옵션입니다. 입력하지 않으면 A포구만 계산되고, 가로기점만 표시됩니다.</div>
 
       <!-- B 시설 평균너비 -->
@@ -1879,10 +2373,13 @@ textarea {
 
       <!-- B 측정값 -->
       <div class="sub-ttl">📐 B포구 측정값 (세로기점·조사길이)</div>
-      <div class="meas-grid">
+      <div class="meas-grid meas-grid-se">
         <div class="fg">
           <label>세로 총길이 (cm)</label>
-          <input type="number" inputmode="numeric" step="any" id="heightB" placeholder="B 세로" oninput="updateABDerived()" data-need="bport">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <input type="number" inputmode="numeric" step="any" id="heightB" placeholder="B 세로" oninput="updateABDerived()" data-need="bport" style="flex:1;min-width:0;">
+            <button type="button" onclick="tonghabMeasLen('heightB')" title="지도에서 길이 측정" style="flex-shrink:0;width:40px;height:40px;border:1px solid #c9b3ee;border-radius:8px;background:#efe4fc;color:#7c3aed;font-size:18px;cursor:pointer;line-height:1;">📏</button>
+          </div>
         </div>
         <div class="fg">
           <label>세로 기점 계산값</label>
@@ -3628,7 +4125,7 @@ function nonbyeInitJusuGrid(){
     });
   }
   updateRequiredHighlights();
-  setTimeout(()=>{const f=document.getElementById('nbJ-1');if(f)f.focus({preventScroll:true});},100);
+  /* v11: 논벼 선택 시 이삭수 1번으로 커서 자동이동/포커스 제거 (안드로이드 인터넷 커서 튐 방지) */
 }
 
 /* 10포기 이삭수 계산 */
@@ -3764,6 +4261,9 @@ function setMode(mode){
   /* v108: 모드별 placeholder 안내문구 */
   var lenInp=document.getElementById('lenGaNa');
   if(lenInp) lenInp.placeholder=mode==='이랑'?'전체 이랑수 입력해주세요':'전체 가-나 길이를 입력하세요';
+  /* v14: 길이(cm) 모드일 때만 가-나 총길이 옆 지도 길이측정 버튼 노출 */
+  var lenMeasBtn=document.getElementById('lenGaNaMeasBtn');
+  if(lenMeasBtn) lenMeasBtn.style.display = (mode==='길이') ? '' : 'none';
   updateHalf();
 }
 
@@ -3802,7 +4302,7 @@ function updateRatioWarning(aGa){
 
   if(isZero){
     // 0이랑: 경고 표시 + 2번 자동 전환 (최초 1회)
-    box.innerHTML = '⚠ 1번 비율의 A포구가 0이랑입니다. 그대로 <strong>2번 비율을 사용</strong>하고 <strong>1번 이랑</strong>으로 선정하세요.';
+    box.innerHTML = '⚠ 1번 비율의 A포구가 0이랑(' + ((typeof aGa==='number'&&isFinite(aGa)) ? aGa.toFixed(2) : '-') + ')입니다. 그대로 <strong>2번 비율을 사용</strong>하고 그대로 0이면 <strong>첫번째 1이랑</strong>을 선택하세요.';
     box.classList.add('show');
     if(!_autoSwitchedTo2 && selectedRatio !== 2){
       _autoSwitchedTo2 = true;
@@ -3857,6 +4357,20 @@ function updateRatioNote(visible, a_ga_ratio1){
   noteB.className = cls; noteB.textContent = text;
 }
 
+/* v26: ⑥ B포구 카드에 B포구 가로기점 미러 표시(③ rtBVal/rtBUnit 그대로 반영, 논벼=cm) */
+function syncBBaseRef(){
+  var box = document.getElementById('bBaseRefVal');
+  if(!box) return;
+  var wrap = document.getElementById('rtWrap');
+  var v = document.getElementById('rtBVal');
+  var u = document.getElementById('rtBUnit');
+  if(wrap && !wrap.classList.contains('hidden') && v && v.textContent && v.textContent !== '—'){
+    box.textContent = v.textContent + (u ? u.textContent : '');
+  } else {
+    box.textContent = '—';
+  }
+}
+
 /* 실시간 가로기점 계산 */
 function updateRealtimeCalc(){
   const L = parseFloat(document.getElementById('lenGaNa').value);
@@ -3882,6 +4396,7 @@ function updateRealtimeCalc(){
       wrap.classList.remove('hidden');
       updateRatioWarning(1);
       updateRatioNote(true, 1);
+      syncBBaseRef();
       return;
     }
 
@@ -3919,6 +4434,7 @@ function updateRealtimeCalc(){
     updateRatioWarning(NaN);
     updateRatioNote(false);
   }
+  syncBBaseRef();
 }
 
 /* ═════════════════════════════════════════
@@ -7203,9 +7719,11 @@ document.addEventListener('DOMContentLoaded', function(){
       <button class="sl-close" onclick="closeSaveLoadModal()">✕</button>
     </div>
     <div class="sl-body">
+      <div id="sl-sec-badge" style="margin-bottom:10px;font-size:12px;font-weight:700;border-radius:8px;padding:7px 10px;line-height:1.4;"></div>
       <button class="sl-save-now" id="slSmartSaveBtn" onclick="slSmartSave()">💾 새로 저장</button>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;gap:8px;">
         <span class="sl-section" style="margin-bottom:0;flex:1;min-width:0;">저장된 자료 목록 <span style="color:#c0392b;font-size:10px;font-weight:700;letter-spacing:-.01em;">(버튼이 안 눌리면 새로고침)</span></span>
+        <button onclick="slBulkToMap()" style="flex-shrink:0;background:none;border:1px solid #27500A;border-radius:7px;color:#27500A;font-size:11px;font-weight:700;padding:4px 9px;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;">🗺 지도반영</button>
         <button onclick="confirmDeleteAll_sl()" style="flex-shrink:0;background:none;border:1px solid #d93030;border-radius:7px;color:#d93030;font-size:11px;font-weight:700;padding:4px 9px;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;">전체삭제</button>
       </div>
       <div class="sl-list" id="sl-list"><div class="sl-empty">저장된 자료가 없습니다.</div></div>
@@ -7237,17 +7755,14 @@ document.addEventListener('DOMContentLoaded', function(){
 (function(){
   var lastY=0, ticking=false;
   var THRESHOLD=40; /* 이 픽셀 이상 스크롤 후 반응 */
+  var UP_NEEDED=56, refUp=0; /* 위로 이만큼 이상 올려야 헤더 표시(작은 스크롤엔 안 내려옴) */
   function onScroll(){
     var y=window.scrollY||window.pageYOffset;
     var hdr=document.querySelector('.sticky-top');
     if(!hdr){lastY=y;ticking=false;return;}
-    if(y>lastY && y>THRESHOLD){
-      /* 아래로 스크롤(화면 올림) → 전체 헤더 위로 숨김 */
-      hdr.style.transform='translateY(-100%)';
-    } else if(y<lastY){
-      /* 위로 스크롤(화면 내림) → 전체 헤더 복귀 */
-      hdr.style.transform='translateY(0)';
-    }
+    if(y<=THRESHOLD){ hdr.style.transform='translateY(0)'; refUp=y; }          /* 최상단 근처: 항상 표시 */
+    else if(y>lastY){ hdr.style.transform='translateY(-100%)'; refUp=y; }       /* 아래로: 숨김 + 위전환 기준점 리셋 */
+    else if(y<lastY && (refUp - y) > UP_NEEDED){ hdr.style.transform='translateY(0)'; }  /* 충분히 위로 올렸을 때만 표시 */
     lastY=y;
     ticking=false;
   }
@@ -7255,16 +7770,22 @@ document.addEventListener('DOMContentLoaded', function(){
     if(!ticking){ticking=true;requestAnimationFrame(onScroll);}
   },{passive:true});
 })();
-/* ===== 10a 결과 아래 전체 초기화 버튼 보완 ===== */
+/* ===== 10a 결과 아래 전체 초기화 버튼 보완 (v137 Safari 안전화) ===== */
 function prodFullResetAll(){
   if(!confirm('전체 데이터가 초기화됩니다. 초기화 하시겠습니까?')) return;
   try{
+    window._allowLeave = true;
+    window._slBusy = true;
     sessionStorage.setItem('tonghabForceTop','1');
     sessionStorage.setItem('tonghabScrollTopAfterReload','1');
     if('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    localStorage.removeItem('tonghabAutoSave_v1');
   }catch(e){}
-  window._allowLeave = true;
-  window.location.replace(window.location.pathname + '?reset=' + Date.now());
+  /* iOS 27 Safari에서 location.replace('?reset=...') 후 멈춤 가능성이 있어
+     query reset 방식 대신 일반 진입으로 재시작 */
+  setTimeout(function(){
+    window.location.href = window.location.pathname;
+  }, 80);
 }
 function goHomeAndReset(){
   if(!confirm('모든 데이터가 초기화됩니다. 홈으로 가시겠습니까?')) return false;
@@ -7505,12 +8026,12 @@ document.addEventListener('DOMContentLoaded', function(){
     return;
   }
   var ref = document.referrer;
-  /* referrer 가 있고, 현재 페이지 URL(해시·쿼리 제외)과 다를 때 = 링크 진입
-     v137: ?reset= 같은 자기 페이지 내 쿼리는 비교에서 제외 → 초기화 시 reload 2번 발생 방지 */
-  var curBase = location.href.split('#')[0].split('?')[0];
-  if(ref && ref.split('#')[0].split('?')[0] !== curBase){
+  /* referrer 가 있고, 현재 페이지 URL(해시 제외)과 다를 때 = 링크 진입 */
+  var curBase = location.href.split('#')[0];
+  if(ref && ref.split('#')[0] !== curBase){
+    /* v137: iOS 27 Safari에서 링크 진입 자동 reload가 저장/초기화 동작과 충돌할 수 있어 비활성화 */
     sessionStorage.setItem(RKEY, '1');
-    location.reload();  /* 1회 새로고침 → 이후 referrer 없어져 루프 없음 */
+    // location.reload();
   }
 })();
 
@@ -7538,7 +8059,6 @@ document.addEventListener('DOMContentLoaded', function(){
      iOS WebKit 은 해시가 다르면 "문서 내 다른 위치"로 인식해
      popstate + hashchange 를 모두 발화함. 이중 차단 보장. */
   var _bbIdx = 0;
-  var _lastBBHash = '';   /* v137: 우리가 마지막으로 설정한 해시 (재진입 가드용) */
   var _BASE = location.pathname + (location.search || '');
 
   function _pushBlock(){
@@ -7551,16 +8071,11 @@ document.addEventListener('DOMContentLoaded', function(){
       /* pushState: 버퍼 엔트리 2개 — iOS가 한 번에 여러 엔트리 건너뛰더라도 차단 */
       history.pushState( {_bb:'g', i:_bbIdx}, '', _BASE + h2);
       history.pushState( {_bb:'g', i:_bbIdx}, '', _BASE + h3);
-      _lastBBHash = h3;   /* v137: 현재 머무는 해시 기록 */
     }catch(e){}
   }
 
   function _onBlock(){
     if(window._allowLeave) return;
-    /* v137: iOS26+ 베타 Safari 회귀 대응 — pushState가 hashchange를 유발해 무한루프(멈춤)가 나는 문제.
-       우리가 방금 설정한 해시 그대로면(자기 유발 이벤트) 무시한다.
-       실제 뒤로가기는 이전 해시로 이동해 location.hash가 달라지므로 정상 차단된다. */
-    if(location.hash === _lastBBHash) return;
     _pushBlock();
     window._showBackToast(
       '🔒 뒤로가기 차단 중<br>'
@@ -7596,7 +8111,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
   /* ── beforeunload: 탭 닫기 / 주소창 이동 경고 ── */
   window.addEventListener('beforeunload', function(e){
-    if(window._allowLeave) return;
+    if(window._allowLeave || window._slBusy) return;
     e.preventDefault();
     e.returnValue = '';
   });
@@ -7699,6 +8214,12 @@ function _pmwUpdate(id, ab, type){
     deduct = deductEl ? (parseFloat(deductEl.value)||0) : 0;
   }
   var finalSum = deduct > 0 ? Math.max(0, sum - deduct) : sum;
+  // v24: 다중중량(pmw) 필수 입력란도 값이 채워지면 노란 배경/강조 해제(pfilled 토글)
+  var _pwrap = document.getElementById('pwrap-' + id.replace(/^p/, ''));
+  if(_pwrap){
+    if(finalSum > 0) _pwrap.classList.add('pfilled');
+    else _pwrap.classList.remove('pfilled');
+  }
   // 합계 표시 ("제외" 없이 표시)
   var sumEl = document.getElementById('pmw-sum-'+id);
   if(sumEl){
@@ -7904,11 +8425,34 @@ function _slUpdateSaveBtn(){
 }
 /* 선택 여부에 따라 새로저장 또는 덮어쓰기 (v83) */
 function slSmartSave(){
-  if(_slSelectedKey){
-    overwriteSavedData(_slSelectedKey);
-  } else {
-    saveCurrentData();
+  if(window._slBusy) return;
+  window._slBusy = true;
+  var btn=document.getElementById('slSmartSaveBtn');
+  if(btn) btn.disabled = true;
+  try{
+    if(_slSelectedKey){ overwriteSavedData(_slSelectedKey); }
+    else { saveCurrentData(); }
+  } finally {
+    setTimeout(function(){ window._slBusy=false; if(btn) btn.disabled=false; }, 700);
   }
+}
+
+/* 지도에서 조사표 입력으로 넘어온 실제 클릭 좌표 보관 */
+var _tenarMapLat = null, _tenarMapLng = null, _tenarMapColor = '';
+function _tenarSetMapCoord(lat, lng, color){
+  lat = Number(lat); lng = Number(lng);
+  if(isFinite(lat) && isFinite(lng)){ _tenarMapLat = lat; _tenarMapLng = lng; }
+  if(color){ _tenarMapColor = String(color).trim(); }
+}
+function _tenarGetMapCoordFromSaved(d){
+  var lat = Number(d && d.__mapLat), lng = Number(d && d.__mapLng);
+  var color = (d && d.__mapColor) ? String(d.__mapColor).trim() : (_tenarMapColor || '');
+  if(isFinite(lat) && isFinite(lng)) return {lat:lat, lng:lng, color:color};
+  if(isFinite(_tenarMapLat) && isFinite(_tenarMapLng)) return {lat:_tenarMapLat, lng:_tenarMapLng, color:color};
+  return null;
+}
+function _tenarGetMapColorFromSaved(d){
+  return (d && d.__mapColor) ? String(d.__mapColor).trim() : (_tenarMapColor || '');
 }
 
 /* 현재 화면 데이터 수집 (자동저장과 동일 방식) */
@@ -7927,11 +8471,18 @@ function _slCollect(){
     var el=document.getElementById(id);
     if(el){var t=(el.textContent||'').replace(/[^0-9.]/g,'');var v=parseFloat(t);if(isFinite(v)&&v>0)d['__res_'+id]=v;}
   });
+  if(isFinite(_tenarMapLat) && isFinite(_tenarMapLng)){
+    d['__mapLat'] = _tenarMapLat;
+    d['__mapLng'] = _tenarMapLng;
+  }
+  if(_tenarMapColor){ d['__mapColor'] = _tenarMapColor; }
   return d;
 }
 
 /* 데이터 화면에 적용 (자동저장 복원과 동일 방식) */
 function _slApply(d, _onDone){
+  if(d && d['__mapLat'] !== undefined && d['__mapLng'] !== undefined) _tenarSetMapCoord(d['__mapLat'], d['__mapLng'], d['__mapColor']||'');
+  else if(d && d['__mapColor']) _tenarMapColor = String(d['__mapColor']).trim();
   if(d['__crop']&&typeof selectCrop==='function'){
     var cb=document.querySelector('.crop-btn[data-crop="'+d['__crop']+'"]');if(cb)selectCrop(cb);
   }
@@ -8009,7 +8560,23 @@ function _slModalTouchMove(e){
 }
 
 /* 모달 열기/닫기 */
+/* 저장/불러오기 화면 상단 — 캐시 암호화 상태 배지 (🔒 켜짐 / 🔓 비활성) */
+window._tenarRenderSecBadge=function(){
+  var el=document.getElementById('sl-sec-badge'); if(!el) return;
+  var st=window.__tenarSecureActive;
+  if(st===true){
+    el.style.background='#e7f4ea'; el.style.color='#1f5132'; el.style.border='1px solid #b6dcc1';
+    el.textContent='🟢 암호화 저장 켜짐 — 이 기기의 저장자료가 자동 암호화됩니다';
+  }else if(st===false){
+    el.style.background='#fdecec'; el.style.color='#b3261e'; el.style.border='1px solid #f3c2c2';
+    el.textContent='🔴 보안 저장 비활성 — 이 브라우저에서는 평문으로 저장됩니다';
+  }else{
+    el.style.background='#f4f4f4'; el.style.color='#666'; el.style.border='1px solid #ddd';
+    el.textContent='⏳ 보안 저장 상태 확인 중…';
+  }
+};
 function openSaveLoadModal(){
+  if(typeof window._tenarRenderSecBadge==='function') window._tenarRenderSecBadge();
   /* v133: 마지막으로 불러오기/저장한 항목이 목록에 있으면 자동 선택(덮어쓰기 준비), 없으면 선택 해제 */
   _slSelectedKey = (_slLastLoadedKey && _slGetList().some(function(i){return i.key===_slLastLoadedKey;}))
     ? _slLastLoadedKey : null;
@@ -8068,6 +8635,103 @@ function closeSaveLoadModal(){
 }
 
 /* 지금 바로 저장 */
+/* 저장/덮어쓰기 시 지도 자동반영 대기열(tenar_map_bulk)에 등록.
+   지도가 열려 있으면 storage 이벤트로 즉시, 닫혀 있으면 다음에 지도 열 때 반영된다. */
+function _queueMapSync(key){
+  try{
+    var s = localStorage.getItem(SL_DATA_PFX+key);
+    var d = s ? JSON.parse(s) : {};
+    var a = (d && d['address'] ? d['address'] : '').trim();
+    if(!a) return;   /* 주소 없으면 지도반영 안 함 */
+    var item = (typeof _slGetList==='function') ? _slGetList().find(function(x){return x.key===key;}) : null;
+    var crop = (item && item.crop) ? item.crop : (d['__crop']||'');
+    var coord = _tenarGetMapCoordFromSaved(d);
+    var entry = { addr:a, crop:crop, app:'tonghab', surveyKey:key };
+    var mapColor = (coord && coord.color) ? coord.color : _tenarGetMapColorFromSaved(d);
+    if(mapColor){ entry.color = mapColor; }
+    if(coord){
+      entry.lat = coord.lat; entry.lng = coord.lng;
+    } else {
+      /* v153/v88: 좌표 없이 주소만 저장된 조사표임을 명시한다.
+         실제 좌표 생성은 map.html 이 이 주소를 지오코딩해서 처리한다. */
+      entry.needsGeocode = true;
+    }
+    var q = [];
+    try{ q = JSON.parse(localStorage.getItem('tenar_map_bulk')||'[]')||[]; }catch(e){ q=[]; }
+    q = q.filter(function(x){ return x.surveyKey !== key; });   /* 같은 항목 중복 제거 */
+    q.push(entry);
+    localStorage.setItem('tenar_map_bulk', JSON.stringify(q));
+    _upsertMapFavIfCoord(entry);
+  }catch(e){}
+}
+
+/* v150: 조사표 삭제 시 연결된 지도 핀도 자동 삭제 */
+function _removeMapFavBySurveyKey(app, key){
+  if(!key) return 0;
+  var removed = 0;
+  try{
+    var favKey = 'tenar_map_favs_v1';
+    var favs = JSON.parse(localStorage.getItem(favKey) || '[]') || [];
+    var kept = [];
+    favs.forEach(function(f){
+      if(f && f.surveyKey === key && (!app || !f.surveyApp || f.surveyApp === app)) removed++;
+      else kept.push(f);
+    });
+    if(removed) localStorage.setItem(favKey, JSON.stringify(kept));
+  }catch(e){}
+  try{
+    var q = JSON.parse(localStorage.getItem('tenar_map_bulk') || '[]') || [];
+    q = q.filter(function(x){ return x && x.surveyKey !== key; });
+    localStorage.setItem('tenar_map_bulk', JSON.stringify(q));
+  }catch(e){}
+  return removed;
+}
+
+
+/* v152/v87: 저장목록 위치 아이콘 상태 표시용 — 지도 즐겨찾기에 surveyKey가 연결돼 있는지 확인 */
+function _tenarMapFavLinked(app, key){
+  if(!key) return false;
+  try{
+    var favs = JSON.parse(localStorage.getItem('tenar_map_favs_v1') || '[]') || [];
+    for(var i=0;i<favs.length;i++){
+      var f = favs[i] || {};
+      if(f.surveyKey === key && (!app || !f.surveyApp || f.surveyApp === app)) return true;
+    }
+  }catch(e){}
+  return false;
+}
+/* 좌표가 이미 있는 조사표는 지도 화면을 열지 않아도 즐겨찾기 핀을 바로 갱신한다.
+   좌표가 없으면 기존처럼 tenar_map_bulk 대기열에 넣고 map.html 이 지오코딩한다. */
+function _upsertMapFavIfCoord(entry){
+  try{
+    if(!entry || !entry.surveyKey) return false;
+    var lat = Number(entry.lat), lng = Number(entry.lng);
+    if(!isFinite(lat) || !isFinite(lng)) return false;
+    var favKey = 'tenar_map_favs_v1';
+    var favs = JSON.parse(localStorage.getItem(favKey) || '[]') || [];
+    var dup = -1;
+    for(var i=0;i<favs.length;i++){
+      if(favs[i] && favs[i].surveyKey === entry.surveyKey && (!entry.app || !favs[i].surveyApp || favs[i].surveyApp === entry.app)){ dup = i; break; }
+    }
+    if(dup < 0){
+      for(var j=0;j<favs.length;j++){
+        var f=favs[j]||{};
+        if(!f.surveyKey && Math.abs((Number(f.lat)||0)-lat)<0.0001 && Math.abs((Number(f.lng)||0)-lng)<0.0001){ dup=j; break; }
+      }
+    }
+    var old = dup>=0 ? (favs[dup]||{}) : {};
+    var color = old.color || entry.color || (entry.app==='chungchi'?'blue':'green');
+    var crop = (entry.crop||'').trim();
+    var addr = (entry.addr||'').trim();
+    var label = (crop ? crop + ' · ' : '') + (addr || (lat.toFixed(6)+', '+lng.toFixed(6)));
+    var rec = { label:label.slice(0,40), lat:lat, lng:lng, addr:addr, color:color,
+                locked:!!old.locked, surveyKey:entry.surveyKey, surveyApp:entry.app||'', crop:crop };
+    if(dup>=0) favs[dup]=rec; else favs.unshift(rec);
+    localStorage.setItem(favKey, JSON.stringify(favs));
+    return true;
+  }catch(e){ return false; }
+}
+
 function saveCurrentData(){
   var d=_slCollect();
   var crop=d['__crop']||'unknown';
@@ -8084,8 +8748,9 @@ function saveCurrentData(){
   catch(e){alert('저장 실패: 저장 공간이 부족합니다.');return;}
   var list=_slGetList();
   list.unshift({key:key,label:label,ymd:ymd,hm:hh+':'+mm,crop:cropKo,addr:addrShort,yields:_slCollectYields()});
-  if(list.length>30){var rm=list.splice(30);rm.forEach(function(r){try{localStorage.removeItem(SL_DATA_PFX+r.key);}catch(e){}});}
+  if(list.length>30){var rm=list.splice(30);rm.forEach(function(r){try{localStorage.removeItem(SL_DATA_PFX+r.key);}catch(e){} _removeMapFavBySurveyKey('tonghab', r.key);});}
   _slSetList(list);
+  _queueMapSync(key);   /* 지도 자동반영 대기열 등록 */
   _slLastLoadedKey = key; /* v133: 방금 저장한 항목을 다음 오픈 시 자동 선택 */
   _slRenderList();
   var btn=document.getElementById('slSmartSaveBtn');
@@ -8124,6 +8789,7 @@ function deleteSavedData(key){
   if(chk&&chk.fav){alert('🔒 잠금 해제 후 삭제하세요.');return;}
   if(!confirm('이 저장 자료를 삭제할까요?'))return;
   try{localStorage.removeItem(SL_DATA_PFX+key);}catch(e){}
+  _removeMapFavBySurveyKey('tonghab', key);
   _slSetList(_slGetList().filter(function(i){return i.key!==key;}));
   if(_slSelectedKey===key) _slSelectedKey=null;
   if(_slLastLoadedKey===key) _slLastLoadedKey=null; /* v133 */
@@ -8157,6 +8823,7 @@ function overwriteSavedData(key){
     }
   }
   _slSetList(list);
+  _queueMapSync(key);   /* 지도 자동반영 대기열 등록 */
   _slSelectedKey = null; /* v83: 덮어쓰기 후 선택 초기화 */
   _slLastLoadedKey = key; /* v133: 덮어쓴 항목을 다음 오픈 시에도 자동 선택 */
   _slRenderList();
@@ -8169,31 +8836,27 @@ function overwriteSavedData(key){
   setTimeout(function(){try{document.body.removeChild(t);}catch(e){}},1800);
 }
 
-/* JSON 공유 — Web Share API 사용 (iOS·Android 네이티브 공유 시트) */
+/* JSON 공유 — 저장/불러오기 목록 전체를 비밀번호 암호화 후 Web Share API 사용 */
 function shareJSON(){
-  var d=_slCollect();
-  var crop=d['__crop']||'data';
-  var cropKo=(typeof PROD_CROP_KO!=='undefined'&&PROD_CROP_KO[crop])?PROD_CROP_KO[crop]:crop;
-  var addr=(d['address']||'').trim().replace(/[\/\\:*?"<>|\s]+/g,'_').slice(0,15);
+  var d=_slBuildBackupBundle();
+  if(!d.list.length){ alert('내보낼 저장목록이 없습니다.'); return; }
   var now=new Date();var kst=new Date(now.getTime()+9*3600000);
-  var ymd=kst.toISOString().slice(0,10);
+  var ymd=kst.toISOString().slice(0,10).replace(/-/g,'');
   var hh=String(kst.getUTCHours()).padStart(2,'0');
   var mm=String(kst.getUTCMinutes()).padStart(2,'0');
-  var fname='tonghab_'+cropKo+(addr?'_'+addr:'')+'_'+ymd+'_'+hh+mm+'.json';
-  var jsonText=JSON.stringify(d,null,2);
-  var blob=new Blob([jsonText],{type:'application/json'});
-  var file=new File([blob],fname,{type:'application/json'});
-
-  // (1) navigator.share + files 지원 (iOS 16+ Safari, 최신 Android Chrome) → 카카오톡 등에 파일 직접 공유
-  if(navigator.canShare && navigator.canShare({files:[file]})){
-    navigator.share({files:[file], title:fname, text:'통합계산기 데이터 공유'})
-      .catch(function(err){
-        if(err && err.name!=='AbortError') _shareJSONFallback(blob,jsonText,fname);
-      });
-    return;
-  }
-  // (2) v130: 파일 공유 미지원(일부 안드로이드) → 실제 .json 파일 다운로드 후 카카오톡 첨부 안내
-  _shareJSONFallback(blob,jsonText,fname);
+  var fname='tenar_tonghab_list_'+((window.TenarCrypto&&TenarCrypto.ok)?'secure_':'')+ymd+'_'+hh+mm+'.json';
+  window._tenarBuildExport(d,'tonghab').then(function(r){
+    if(!r) return;   /* 사용자 취소 */
+    var jsonText=r.text;
+    var blob=new Blob([jsonText],{type:'application/json'});
+    var file=new File([blob],fname,{type:'application/json'});
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      navigator.share({files:[file], title:fname, text:'통합계산기 저장목록 전체 공유 '+d.list.length+'건'+(r.encrypted?'(암호화)':'')})
+        .catch(function(err){ if(err && err.name!=='AbortError') _shareJSONFallback(blob,jsonText,fname); });
+      return;
+    }
+    _shareJSONFallback(blob,jsonText,fname);
+  }).catch(function(){ alert('내보내기 중 오류가 발생했습니다.'); });
 }
 /* v130: 안드로이드 등 파일공유 미지원 시 — JSON 파일을 실제로 다운로드시켜 카카오톡에 파일 첨부 가능하게 함 */
 function _shareJSONFallback(blob,jsonText,fname){
@@ -8241,6 +8904,7 @@ function deleteAllUnlocked_sl(){
   var list=_slGetList();
   list.filter(function(i){return !i.fav;}).forEach(function(i){
     try{localStorage.removeItem(SL_DATA_PFX+i.key);}catch(e){}
+    _removeMapFavBySurveyKey('tonghab', i.key);
   });
   var kept=list.filter(function(i){return i.fav;});
   _slSetList(kept);
@@ -8410,6 +9074,19 @@ function slAggToggleCrop(ci){
   if(a) a.textContent=show?'▲':'▼';
 }
 
+/* 저장목록 항목별 실제 캐시 암호화 여부 아이콘 (🟢 암호화 / 🔴 평문) */
+function _slItemSecIcon(key){
+  try{
+    if(!window._tenarRawGet) return '';
+    var raw=window._tenarRawGet(SL_DATA_PFX+key);
+    if(!raw) return '';
+    var o=null; try{ o=JSON.parse(raw); }catch(e){}
+    var enc=!!(o && o.tenarSecure===true && o.secureType==='device-cache');
+    return enc
+      ? '<span title="이 자료는 암호화되어 저장됨" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#22a447;box-shadow:0 0 0 2px rgba(34,164,71,.2);margin-right:5px;vertical-align:middle;"></span>'
+      : '<span title="이 자료는 평문(비암호화)으로 저장됨" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#c0c4cc;margin-right:5px;vertical-align:middle;"></span>';
+  }catch(e){ return ''; }
+}
 function _slRenderList(){
   var list=_slGetList();
   var el=document.getElementById('sl-list');
@@ -8431,15 +9108,294 @@ function _slRenderList(){
     return '<div class="sl-item'+selCls+'">'
       +'<div class="sl-item-num" style="'+numBg+'">'+num+'</div>'
       +'<div class="sl-item-info" onclick="slSelectItem(\''+it.key+'\')" style="cursor:pointer;">'
-        +'<div class="sl-item-label">'+it.label+'</div>'
+        +'<div class="sl-item-label">'+_slItemSecIcon(it.key)+it.label+'</div>'
         +addrLine
         +'<div class="sl-item-date">'+it.ymd+' '+it.hm+'</div>'
       +'</div>'
       +'<button class="'+lockCls+'" onclick="toggleFav(\''+it.key+'\')" aria-label="잠금">'+lockIcon+'</button>'
+      +(it.addr?'<button class="sl-item-load '+(_tenarMapFavLinked('tonghab', it.key)?'sl-item-map-linked':'sl-item-map-unlinked')+'" onclick="slOpenMap(\''+it.key+'\')" aria-label="지도에서 위치보기" title="'+(_tenarMapFavLinked('tonghab', it.key)?'지도 핀 연결됨 · 위치보기':'지도 핀 미연결 · 누르면 지도에 저장')+'">📍</button>':'')
       +'<button class="sl-item-load" onclick="loadSavedData(\''+it.key+'\')" aria-label="불러오기">📂</button>'
       +delBtn
       +'</div>';
   }).join('');
+}
+
+
+/* ── 지도 열기 공통 함수: 모바일/PWA에서 window.open이 기존 탭만 갱신하고 화면 전환이 안 되는 문제 방지 ── */
+function _tenarOpenMapUrl(u){
+  try{ sessionStorage.setItem('tenar_last_calc_url', location.href); }catch(e){}
+  /* 현장 사용 기준: 새 창이 아니라 현재 화면을 지도 화면으로 확실히 이동 */
+  location.href = u;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   [v27] 지도 기반 A/B포구 위치 선정 — 지도로 넘기기 / 결과 받기
+   · 지도(map_v22.html)는 미리보기만 하고, 최종 확정 계산은 여기(통합계산기)가 한다.
+   · 지도에서 받은 값은 ③가-나, ⑤A세로총길이, ⑥B세로총길이 칸에만 넣고
+     그 다음은 기존 updateHalf()/updateABDerived() 가 그대로 계산한다.
+════════════════════════════════════════════════════════════════ */
+/* 지도 파일 경로 — 같은 폴더의 mapp.html (상대경로: 폴더째 옮겨도 그대로 연결됨)
+   나중에 map.html로 승격하면 이 한 줄만 바꾸면 된다 */
+var FP_MAP_URL = 'mapp.html';
+
+function fpOpen(){
+  function rv(id){ var e=document.getElementById(id); return e ? (e.value||'').trim() : ''; }
+  var ctx = {
+    app:'tonghab', ts:Date.now(),
+    crop:selectedCrop, mode:measureMode, ratio:selectedRatio,
+    r1:{ ga:rv('r1_ga'), na:rv('r1_na'), da:rv('r1_da') },
+    r2:{ ga:rv('r2_ga'), na:rv('r2_na'), da:rv('r2_da') },
+    L: parseFloat(rv('lenGaNa'))
+  };
+  if(!(parseFloat(ctx.r1.ga)>0) && !(parseFloat(ctx.r2.ga)>0)){
+    alert('먼저 ② 비율 설정에서 가·나·다 비율을 입력해주세요.\n지도는 이 비율로 A/B포구를 계산합니다.');
+    return;
+  }
+  var linkedKey=null;
+  try{ linkedKey=(typeof _slSelectedKey!=='undefined'&&_slSelectedKey)||(typeof _slLastLoadedKey!=='undefined'&&_slLastLoadedKey)||null; }catch(e){}
+  if(linkedKey) ctx.surveyKey = linkedKey;
+
+  try{ localStorage.setItem('tenar_fieldplot_ctx', JSON.stringify(ctx)); }catch(e){}
+  try{ localStorage.removeItem('tenar_fieldplot_result'); }catch(e){}
+  /* 이 조사표에 이전 지도작업이 있으면 이어서 열기 */
+  try{
+    var hs=document.getElementById('__thFieldPlotStore');
+    var prev = hs && hs.value ? JSON.parse(hs.value) : null;
+    if(prev && prev.polygon) localStorage.setItem('tenar_fieldplot_preload', JSON.stringify(prev));
+    else localStorage.removeItem('tenar_fieldplot_preload');
+  }catch(e){}
+
+  var u = FP_MAP_URL + '?fieldplot=1&app=tonghab';
+  var a = (document.getElementById('address') && document.getElementById('address').value || '').trim();
+  if(a) u += '&q=' + encodeURIComponent(a);
+  if(linkedKey) u += '&surveyKey=' + encodeURIComponent(linkedKey);
+  _tenarOpenMapUrl(u);
+}
+
+/* ── 지도에서 전송된 A/B포구 결과 반영 ── */
+(function(){
+  function apply(){
+    var r=null;
+    try{ r = JSON.parse(localStorage.getItem('tenar_fieldplot_result')||'null'); }catch(e){}
+    if(!r || r.app!=='tonghab') return;
+    try{ localStorage.removeItem('tenar_fieldplot_result'); }catch(e){}
+
+    /* 작물/모드가 지도 작업과 다르면 사용자에게 알림만 (덮어쓰지 않음) */
+    if(r.mode && r.mode !== measureMode){
+      alert('지도에서 사용한 측정기준('+r.mode+')이 현재 조사표('+measureMode+')와 다릅니다.\n작물 선택을 확인해주세요.');
+    }
+    /* ③ 가-나 : 논벼=cm, 밭작물=이랑수 */
+    var lenEl=document.getElementById('lenGaNa');
+    if(lenEl && r.L>0){ lenEl.value = r.L; }
+    /* ⑤⑥ 세로총길이(cm) */
+    var ha=document.getElementById('heightA'), hb=document.getElementById('heightB');
+    if(ha && r.heightA>0) ha.value = Math.round(r.heightA);
+    if(hb && r.heightB>0) hb.value = Math.round(r.heightB);
+
+    /* 여기서부터는 기존 계산기가 스스로 계산 (1이랑 자동 2번비율 포함) */
+    if(typeof updateHalf==='function') updateHalf();
+    if(typeof applyOneRidgeRatioIfNeeded==='function') applyOneRidgeRatioIfNeeded();
+    if(typeof updateABDerived==='function') updateABDerived();
+    if(typeof updateRealtimeCalc==='function') updateRealtimeCalc();
+
+    /* 지도 작업 원본을 조사표 데이터로 보관 → 저장/복원/재편집 */
+    try{
+      var hs=document.getElementById('__thFieldPlotStore');
+      if(hs){ hs.value=JSON.stringify(r); hs.dispatchEvent(new Event('input',{bubbles:true})); }
+    }catch(e){}
+
+    var msg = '🗺 지도 A/B포구 반영 — '
+      + (r.mode==='이랑' ? ('가-나 '+r.L+'이랑 · A '+r.aSel+'번째 · B '+r.bSel+'번째 이랑')
+                         : ('가-나 '+Number(r.L).toLocaleString()+'cm · A '+Number(r.aSel).toLocaleString()+'cm · B '+Number(r.bSel).toLocaleString()+'cm'))
+      + '<br>A세로총길이 '+Number(Math.round(r.heightA)).toLocaleString()+'cm · B세로총길이 '+Number(Math.round(r.heightB)).toLocaleString()+'cm';
+    if(typeof window._showBackToast==='function') window._showBackToast(msg, 5000);
+
+    var el=document.getElementById('fpOpenBtn');
+    if(el) setTimeout(function(){ try{ el.scrollIntoView({behavior:'smooth', block:'center'}); }catch(e){} }, 600);
+  }
+  /* 복원·이전자료 팝업 이후에 덮이지 않도록 늦게 한 번 더 적용 */
+  function run(){ apply(); setTimeout(apply, 1200); }
+  if(document.readyState==='complete') setTimeout(run, 700);
+  else window.addEventListener('load', function(){ setTimeout(run, 700); });
+})();
+
+/* ── v14: 지도에서 길이(cm) 측정 → 해당 입력칸(field)으로 전송 ── */
+function tonghabMeasLen(field){
+  try{ localStorage.setItem('tenar_meas_ctx', JSON.stringify({app:'tonghab', mtype:'length', field:field, ts:Date.now()})); }catch(e){}
+  try{ localStorage.removeItem('tenar_meas_result'); }catch(e){}
+  var base='https://ubaldos00-ship-it.github.io/home/map.html';
+  var u=base+'?measure=1&app=tonghab&mtype=length&field='+encodeURIComponent(field);
+  var a=(document.getElementById('address') && document.getElementById('address').value || '').trim();
+  if(a) u+='&q='+encodeURIComponent(a);   /* 주소 있으면 지도 중심 이동(선택) */
+  /* v18: 조사표(surveyKey) 단위로 측정 위치 기억 — surveyKey 전달 + 저장된 이전 측정위치로 지도 열기 */
+  var linkedKey=null;
+  try{ linkedKey=(typeof _slSelectedKey!=='undefined'&&_slSelectedKey)||(typeof _slLastLoadedKey!=='undefined'&&_slLastLoadedKey)||null; }catch(e){}
+  if(linkedKey) u+='&surveyKey='+encodeURIComponent(linkedKey);
+  /* v21: 이 조사표 데이터(hidden)에 이 칸의 측정 점이 있을 때만 지도로 넘겨 자동 표시(초기화/처음엔 없음 → 주소/현재위치만) */
+  try{
+    var hs=document.getElementById('__thMeasPtsStore'); var store={};
+    try{ store=hs?(JSON.parse(hs.value||'{}')||{}):{}; }catch(e){ store={}; }
+    var rec=store[field];
+    if(rec && rec.pts && rec.pts.length){ localStorage.setItem('tenar_meas_preload', JSON.stringify(rec)); }
+    else { localStorage.removeItem('tenar_meas_preload'); }
+  }catch(e){}
+  _tenarOpenMapUrl(u);
+}
+
+/* ── v14: 지도에서 전송된 측정 길이(cm)를 해당 입력칸에 반영 (복원·이전자료팝업 이후에도 유지) ── */
+(function(){
+  var _mlPending=null, _mlShown=false, _mlOv=null, _mlOvHide=null;
+  function _mlToast(msg, sticky){
+    if(!_mlOv){ _mlOv=document.createElement('div');
+      _mlOv.style.cssText='position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:99990;background:#5b21b6;color:#fff;font-size:14px;font-weight:800;padding:11px 18px;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.3);font-family:inherit;transition:opacity .3s;';
+      document.body.appendChild(_mlOv); }
+    _mlOv.style.opacity='1'; _mlOv.innerHTML=msg;
+    if(_mlOvHide){ clearTimeout(_mlOvHide); _mlOvHide=null; }
+    if(!sticky){ _mlOvHide=setTimeout(function(){ if(_mlOv){ _mlOv.style.opacity='0'; setTimeout(function(){ if(_mlOv){_mlOv.remove(); _mlOv=null;} },350); } }, 2400); }
+  }
+  function _capture(){
+    if(_mlPending!==null) return true;
+    var res=null,ctx=null;
+    try{ res=JSON.parse(localStorage.getItem('tenar_meas_result')||'null'); }catch(e){}
+    try{ ctx=JSON.parse(localStorage.getItem('tenar_meas_ctx')||'null'); }catch(e){}
+    if(!res||res.mtype!=='length'||!(res.length>0)||!ctx||ctx.app!=='tonghab'){ return false; }
+    var field=((res.field||ctx.field||'')+'').trim();
+    if(!field){ return false; }
+    _mlPending={ len:Math.round(res.length), field:field };
+    try{ window._tonghabReapplyPending=true; }catch(e){}   /* v15: 복원 후 '맨 위로' 스크롤 대신 측정칸 복귀 */
+    /* v21: 측정 점(핀)을 필드별로 조사표 데이터에 보관(자동저장) → 이모지 재클릭 시 그대로 표시 */
+    try{
+      if(res.pts && res.pts.length){
+        var hs=document.getElementById('__thMeasPtsStore');
+        if(hs){ var store={}; try{ store=JSON.parse(hs.value||'{}')||{}; }catch(e){ store={}; }
+          store[field]={pts:res.pts, mode:res.mode||'dist'};
+          hs.value=JSON.stringify(store); hs.dispatchEvent(new Event('input',{bubbles:true})); }
+      }
+    }catch(e){}
+    try{ localStorage.removeItem('tenar_meas_result'); localStorage.removeItem('tenar_meas_ctx'); }catch(e){}
+    return true;
+  }
+  function _getInp(){ return _mlPending ? document.getElementById(_mlPending.field) : null; }
+  function _apply(){   /* 값이 다를 때만 다시 채움 (idempotent) */
+    if(!_mlPending) return false;
+    var inp=_getInp(); if(!inp) return false;
+    var want=String(_mlPending.len);
+    if(String(inp.value).trim()!==want){
+      if(_mlPending.field==='lenGaNa' && typeof setMode==='function' && typeof measureMode!=='undefined' && measureMode!=='길이'){ try{ setMode('길이'); }catch(e){} }
+      inp.value=want;
+      inp.dispatchEvent(new Event('input',{bubbles:true}));   /* → updateHalf/updateABDerived + document input→autoSave */
+      inp.dispatchEvent(new Event('change',{bubbles:true}));
+      return true;
+    }
+    return false;
+  }
+  function _toastDone(){ if(_mlShown) return; _mlShown=true; _mlToast('✅ 길이 입력완료 · '+Number(_mlPending.len).toLocaleString('ko-KR')+'cm', false); }
+  function _scrollField(){ var inp=_getInp(); if(!inp) return; try{ inp.scrollIntoView({behavior:'smooth', block:'center'}); }catch(e){} }
+  /* v15: 자동복원([이어서 입력]) 완료 후 호출되는 훅 —
+     복원이 측정값을 이전자료로 덮어써도 그 '위에' 측정값을 다시 적용하고(측정값이 최신값),
+     측정 버튼을 눌렀던 위치(입력칸)로 화면을 복귀시킨다. */
+  window._tonghabReapplyMeas = function(){
+    if(!_mlPending) return;
+    [40,180,420].forEach(function(t){ setTimeout(_apply, t); });          /* 복원 덮어쓰기 위에 재적용 */
+    setTimeout(_toastDone, 220);
+    [260,650,1200].forEach(function(t){ setTimeout(_scrollField, t); });  /* 복원의 '맨 위로' 스크롤 이후 입력칸으로 복귀 */
+  };
+  function _run(){
+    if(!_capture()) return;
+    _mlToast('⏳ 길이 입력 대기중…', true);
+    _apply();   /* 초기 적용 (복원이 없거나 팝업 뜨기 전) */
+    /* 백업 폴링: 복원/이전자료팝업 등으로 값이 지워지면 다시 채움.
+       팝업이 열려 있는 동안엔 종료하지 않음(안정 카운트 리셋) → 사용자가 [이어서 입력]을 누른 뒤에도 재적용 보장. */
+    var tries=0, stable=0;
+    (function loop(){
+      tries++;
+      var popupOpen=!!document.getElementById('prevDataOverlay');
+      var inp=_getInp();
+      if(inp){
+        if(String(inp.value).trim()!==String(_mlPending.len)){ _apply(); stable=0; }
+        else { stable = popupOpen ? 0 : (stable+1); }
+      }
+      if((popupOpen || stable<5) && tries<160) setTimeout(loop, 350);
+      else { _toastDone(); _scrollField(); setTimeout(function(){ try{ window._tonghabReapplyPending=false; }catch(e){} }, 2000); }   /* 최종: 완료 안내 + 입력칸 복귀 */
+    })();
+  }
+  if(document.readyState==='complete') setTimeout(_run, 300);
+  else window.addEventListener('load', function(){ setTimeout(_run, 300); });
+})();
+function _tenarOpenMapFromAddress(){
+  var a = (document.getElementById('address') && document.getElementById('address').value || '').trim();
+  /* 저장/불러오기 목록의 위치 버튼과 같은 흐름으로 동작:
+     현재 선택·불러온 저장자료가 있으면 surveyKey를 포함해 지도 핀 연결까지 수행한다. */
+  var linkedKey = _slSelectedKey || _slLastLoadedKey || null;
+  if(linkedKey){
+    try{
+      var raw = localStorage.getItem(SL_DATA_PFX+linkedKey);
+      var d = raw ? JSON.parse(raw) : null;
+      var savedAddr = d ? ((d.address || d['address'] || '')+'').trim() : '';
+      if(savedAddr && (!a || savedAddr === a)){ slOpenMap(linkedKey); return; }
+    }catch(e){}
+  }
+  var base = 'https://ubaldos00-ship-it.github.io/home/map.html';
+  if(!a){ _tenarOpenMapUrl(base); return; }
+  /* 주소를 지오코딩해 이동 → 핀 저장 → 선택 (save=1). 저장자료면 surveyKey 연결 */
+  var u = base + '?q=' + encodeURIComponent(a) + '&save=1&app=tonghab&color=' + encodeURIComponent(_tenarMapColor || 'green');
+  if(linkedKey){ u += '&surveyKey=' + encodeURIComponent(linkedKey); }
+  /* 선택된 작물명을 함께 전달 → 지도 즐겨찾기에 "작물 · 지번"으로 저장, 핀 옆 작물명 표시 */
+  var _crop = (typeof selectedCrop !== 'undefined' && selectedCrop) ? selectedCrop : '';
+  if(_crop){ u += '&label=' + encodeURIComponent(_crop + ' · ' + a); }
+  _tenarOpenMapUrl(u);
+}
+
+/* ── 지도 연동: 목록 항목의 📍 클릭 → 지도(map.html)에서 그 주소를 띄우고 즐겨찾기에 자동 저장 ──
+   목록의 addr은 15자로 잘린 축약값이라, 정확한 지오코딩을 위해 저장 데이터의 전체 주소를 읽어 넘긴다. */
+function slOpenMap(key){
+  try{
+    var s = localStorage.getItem(SL_DATA_PFX+key);
+    var d = s ? JSON.parse(s) : {};
+    var a = (d['address']||'').trim();
+    if(!a){ alert('이 항목에는 필지 주소가 없습니다.'); return; }
+    var crop = d['__crop']||'';
+    /* 목록에 저장된 작물명(it.crop)을 그대로 사용 — 한글 작물도 누락 없이 전달.
+       (이전엔 영어키 사전에 없으면 빈값이 되어 작물명이 지도로 안 넘어갔음) */
+    var item = (typeof _slGetList==='function') ? _slGetList().find(function(x){return x.key===key;}) : null;
+    var cropKo = (item && item.crop) ? item.crop
+               : ((typeof PROD_CROP_KO!=='undefined' && PROD_CROP_KO[crop]) ? PROD_CROP_KO[crop] : crop);
+    var label = (cropKo?cropKo+' · ':'') + a;
+    var coord = _tenarGetMapCoordFromSaved(d);
+    var u = 'https://ubaldos00-ship-it.github.io/home/map.html'
+          + '?q='        + encodeURIComponent(a)
+          + '&save=1&app=tonghab&color=' + encodeURIComponent((coord && coord.color) || _tenarGetMapColorFromSaved(d) || 'green')
+          + '&surveyKey=' + encodeURIComponent(key)
+          + '&label='    + encodeURIComponent(label);
+    if(coord){ u += '&lat=' + encodeURIComponent(coord.lat.toFixed(8)) + '&lng=' + encodeURIComponent(coord.lng.toFixed(8)); }
+    _tenarOpenMapUrl(u);
+  }catch(e){ alert('지도 열기 실패: '+e.message); }
+}
+
+/* ── 저장목록 전체를 한꺼번에 지도 즐겨찾기로 반영 ──
+   주소가 있는 모든 항목을 모아 localStorage 로 지도에 넘기고 map.html?bulk=1 로 연다.
+   지도가 각 주소를 지오코딩해 작물명과 함께 핀으로 저장한다. */
+function slBulkToMap(){
+  var list = (typeof _slGetList==='function') ? _slGetList() : [];
+  var items = [];
+  list.forEach(function(it){
+    var s = null; try{ s = localStorage.getItem(SL_DATA_PFX+it.key); }catch(e){}
+    var d = s ? JSON.parse(s) : {};
+    var a = (d && d['address'] ? d['address'] : '').trim();
+    if(!a) return;
+    var crop = it.crop || (d['__crop']||'');
+    var entry = { addr:a, crop:crop, app:'tonghab', surveyKey:it.key };
+    var coord = _tenarGetMapCoordFromSaved(d);
+    var mapColor = (coord && coord.color) ? coord.color : _tenarGetMapColorFromSaved(d);
+    if(mapColor){ entry.color = mapColor; }
+    if(coord){ entry.lat = coord.lat; entry.lng = coord.lng; }
+    items.push(entry);
+  });
+  if(!items.length){ alert('지도에 반영할 주소가 있는 저장 항목이 없습니다.'); return; }
+  if(!confirm('저장된 '+items.length+'곳의 주소를 지도 즐겨찾기에 한꺼번에 반영합니다.\n(작물명도 함께 표시됩니다) 계속할까요?')) return;
+  try{ localStorage.setItem('tenar_map_bulk', JSON.stringify(items)); }
+  catch(e){ alert('지도반영 준비 실패: '+e.message); return; }
+  _tenarOpenMapUrl('https://ubaldos00-ship-it.github.io/home/map.html?bulk=1');
 }
 
 /* v111: 잠금 토글 (순서 변경 없음) */
@@ -8452,50 +9408,122 @@ function toggleFav(key){
   _slRenderList();
 }
 
-/* JSON 파일로 내보내기 */
-function exportJSON(){
-  var d=_slCollect();
-  var crop=d['__crop']||'data';
-  var cropKo=(typeof PROD_CROP_KO!=='undefined'&&PROD_CROP_KO[crop])?PROD_CROP_KO[crop]:crop;
-  var addr=(d['address']||'').trim().replace(/[\/\\:*?"<>|\s]+/g,'_').slice(0,15);
-  var now=new Date();var kst=new Date(now.getTime()+9*3600000);
-  var ymd=kst.toISOString().slice(0,10);
-  var hh=String(kst.getUTCHours()).padStart(2,'0');
-  var mm=String(kst.getUTCMinutes()).padStart(2,'0');
-  var fname='tonghab_'+cropKo+(addr?'_'+addr:'')+'_'+ymd+'_'+hh+mm+'.json';
-  var blob=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});
-  var url=URL.createObjectURL(blob);
-  var a=document.createElement('a');a.href=url;a.download=fname;
-  document.body.appendChild(a);a.click();
-  setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},1000);
-  setTimeout(function(){
-    var msg=document.getElementById('_exportMsg');
-    if(!msg){msg=document.createElement('div');msg.id='_exportMsg';
-      msg.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#27500A;color:#fff;padding:10px 18px;border-radius:12px;font-size:13px;font-weight:700;z-index:9999;text-align:center;line-height:1.5;max-width:90vw;box-shadow:0 4px 16px rgba(0,0,0,.35);';
-      document.body.appendChild(msg);}
-    msg.innerHTML='✅ 저장 완료: <b>'+fname+'</b><br><span style="font-weight:400;font-size:11px;">📂 기기 다운로드 폴더에 저장되었습니다</span>';
-    msg.style.display='block';
-    clearTimeout(msg._t);msg._t=setTimeout(function(){msg.style.display='none';},4000);
-  },400);
+/* JSON 파일로 내보내기 — 비밀번호(PBKDF2/AES-GCM) 암호화 */
+/* v3: 저장/불러오기 목록 전체 백업 묶음 생성 — 현재 화면값(_slCollect)이 아니라 목록+각 저장자료를 내보냄 */
+function _slBuildBackupBundle(){
+  var list=_slGetList();
+  var records={};
+  list.forEach(function(it){
+    if(!it || !it.key) return;
+    try{
+      var raw=localStorage.getItem(SL_DATA_PFX+it.key);
+      if(raw) records[it.key]=JSON.parse(raw);
+    }catch(e){}
+  });
+  return {tenarBackup:true, backupType:'save-list', app:'tonghab', version:3,
+          exportedAt:(new Date(Date.now()+9*3600000)).toISOString().replace('Z','+09:00'),
+          count:list.length, list:list, records:records};
+}
+function _slIsBackupBundle(d){ return !!(d && d.tenarBackup===true && d.backupType==='save-list'); }
+function _slRestoreBackupBundle(pkg){
+  if(!pkg || pkg.app!=='tonghab'){ alert('통합계산기 저장목록 파일이 아닙니다.'); return; }
+  var incoming=Array.isArray(pkg.list)?pkg.list:[];
+  var records=pkg.records||{};
+  if(!incoming.length){ alert('불러올 저장목록이 없습니다.'); return; }
+  window._tenarChoice3({
+    title:'저장목록 불러오기',
+    message:'파일에 저장목록 '+incoming.length+'건이 있습니다.\n어떻게 불러올까요?\n\n[추가] 기존 목록은 그대로 두고 더하기\n[교체] 기존 목록 전체 삭제 후 불러오기\n[취소] 불러오지 않고 닫기'
+  }).then(function(choice){
+    if(choice==='cancel') return;
+    try{
+      if(choice==='replace'){
+        _slGetList().forEach(function(old){
+          if(old && old.key){ try{localStorage.removeItem(SL_DATA_PFX+old.key);}catch(e){} _removeMapFavBySurveyKey('tonghab', old.key); }
+        });
+        _slSetList([]);
+      }
+      var cur=_slGetList();
+      var exist={}; cur.forEach(function(i){ if(i&&i.key) exist[i.key]=true; });
+      var added=0;
+      incoming.forEach(function(it){
+        if(!it || !it.key) return;
+        var rec=records[it.key];
+        if(!rec) return;
+        if(typeof rec==='string'){ try{rec=JSON.parse(rec);}catch(e){return;} }
+        var item=it, key=it.key;
+        if(exist[key]){ key=String(Date.now())+String(Math.floor(Math.random()*1000)); item=Object.assign({}, it, {key:key}); }
+        exist[key]=true;
+        localStorage.setItem(SL_DATA_PFX+key, JSON.stringify(rec));
+        cur.unshift(item);
+        _queueMapSync(key);
+        added++;
+      });
+      _slSetList(cur);
+      _slSelectedKey=null; _slLastLoadedKey=null;
+      _slRenderList(); _slUpdateSaveBtn();
+      openSaveLoadModal();   /* 불러오기 후 저장/불러오기 화면을 열어 결과 확인 */
+      var t=document.createElement('div');
+      t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1f5132;color:#fff;padding:10px 16px;border-radius:12px;font-size:13px;font-weight:700;z-index:2147483647;box-shadow:0 4px 16px rgba(0,0,0,.35);';
+      t.textContent='✅ '+added+'건 '+(choice==='replace'?'교체':'추가')+' 완료';
+      document.body.appendChild(t);
+      setTimeout(function(){ try{document.body.removeChild(t);}catch(e){} }, 2200);
+    }catch(e){ alert('저장목록 불러오기 실패: '+e.message); }
+  });
 }
 
-/* JSON 파일 불러오기 */
+/* JSON 파일로 내보내기 — 저장/불러오기 목록 전체를 비밀번호(PBKDF2/AES-GCM) 암호화 */
+function exportJSON(){
+  var d=_slBuildBackupBundle();
+  if(!d.list.length){ alert('내보낼 저장목록이 없습니다.'); return; }
+  var now=new Date();var kst=new Date(now.getTime()+9*3600000);
+  var ymd=kst.toISOString().slice(0,10).replace(/-/g,'');
+  var hh=String(kst.getUTCHours()).padStart(2,'0');
+  var mm=String(kst.getUTCMinutes()).padStart(2,'0');
+  var fname='tenar_tonghab_list_'+((window.TenarCrypto&&TenarCrypto.ok)?'secure_':'')+ymd+'_'+hh+mm+'.json';
+  window._tenarBuildExport(d,'tonghab').then(function(r){
+    if(!r) return;
+    var blob=new Blob([r.text],{type:'application/json'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');a.href=url;a.download=fname;
+    document.body.appendChild(a);a.click();
+    setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},1000);
+    setTimeout(function(){
+      var msg=document.getElementById('_exportMsg');
+      if(!msg){msg=document.createElement('div');msg.id='_exportMsg';
+        msg.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#27500A;color:#fff;padding:10px 18px;border-radius:12px;font-size:13px;font-weight:700;z-index:9999;text-align:center;line-height:1.5;max-width:90vw;box-shadow:0 4px 16px rgba(0,0,0,.35);';
+        document.body.appendChild(msg);}
+      msg.innerHTML=(r.encrypted?'🔒 저장목록 전체 암호화 저장 완료: ':'⚠ (암호화 미지원 환경·평문) 저장목록 저장 완료: ')+'<b>'+fname+'</b><br><span style="font-weight:400;font-size:11px;">총 '+d.list.length+'건 · 📂 기기 다운로드 폴더'+(r.encrypted?' · 가져올 때 같은 암호 필요':'')+'</span>';
+      msg.style.display='block';
+      clearTimeout(msg._t);msg._t=setTimeout(function(){msg.style.display='none';},4500);
+    },400);
+  }).catch(function(){ alert('내보내기 중 오류가 발생했습니다.'); });
+}
+
+/* JSON 파일 불러오기 — v3 저장목록 전체 복원 + 구 평문/현재화면 파일 호환 */
 function importJSON(input){
   var file=input.files[0];if(!file)return;
   var reader=new FileReader();
   reader.onload=function(e){
-    try{
-      var d=JSON.parse(e.target.result);
-      if(!confirm('JSON 파일을 불러옵니다.\n현재 입력 내용이 덮어씌워집니다. 계속할까요?'))return;
+    var obj;
+    try{ obj=JSON.parse(e.target.result); }
+    catch(err){ alert('파일 읽기 실패: JSON 형식이 아닙니다.'); return; }
+    window._tenarParseImport(obj,'tonghab').then(function(d){
+      if(_slIsBackupBundle(d)){ _slRestoreBackupBundle(d); return; }
+      if(!confirm('구버전 JSON 파일입니다.\n저장목록 전체가 아니라 현재 조사표 화면에만 불러옵니다. 계속할까요?')) return;
       closeSaveLoadModal();
-      _slApply(d); // 내부에서 복원 완료 후 자동 스크롤
-    }catch(err){alert('파일 읽기 실패: JSON 형식이 아닙니다.');}
+      _slApply(d);
+    }).catch(function(er){
+      if(!er||!er.code||er.code==='CANCELLED') return;
+      if(er.code==='APP_MISMATCH'){ alert('이 파일은 '+window._tenarAppKo(er.app)+' 저장파일입니다.\n통합계산기에서는 불러올 수 없습니다.'); return; }
+      if(er.code==='NO_CRYPTO'){ alert('이 환경에서는 복호화를 사용할 수 없습니다. (보안 컨텍스트 필요)'); return; }
+      if(er.code==='BAD_PW'){ alert('암호가 맞지 않거나 파일이 손상되었습니다.\n저장할 때 사용한 암호를 다시 확인해 주세요.'); return; }
+    });
   };
   reader.readAsText(file);
   input.value='';
 }
-</script>
 
+</script>
 <script>
 /* ══════════════════════════════════════════
    자동 저장 / 복원 — localStorage 기반
@@ -8525,7 +9553,7 @@ function importJSON(input){
      (2) !_initialLoadDone 차단 — 페이지 로드 직후, 복원 시도 전 pagehide/beforeunload
          (특히 v47 링크진입 자동 reload)로 인한 빈 DOM 저장 차단 */
   function doSave(){
-    if(window._allowLeave) return;  // 홈/초기화 이탈 중 — pagehide가 지운 데이터 재저장 차단
+    if(window._allowLeave || window._slBusy) return;  // 홈/초기화/수동 저장 중 — pagehide가 지운 데이터 재저장 차단
     if(window._tonghabPopupPending) return;  // v124: 이전자료 팝업 대기 중 — 빈 폼이 데이터 덮어쓰기 방지
     if(_restoring) return;
     if(!_initialLoadDone) return;
@@ -8605,7 +9633,7 @@ function importJSON(input){
     try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
     var ov = document.getElementById('prevDataOverlay'); if(ov) ov.remove();
     window._allowLeave = true; /* 이탈 직전 재저장 차단 */
-    window.location.href = location.pathname + '?reset=1';
+    window.location.href = location.pathname;
   };
 
   function autoRestore(){
@@ -8674,8 +9702,10 @@ function importJSON(input){
             _restoring = false;       // 복원 완료 — autoSave/doSave 재개
             _initialLoadDone = true;  // 초기 로드 완료 — pagehide 등에서 정상 저장 허용
             doSave();                 // 최종 상태를 즉시 한 번 더 저장 (안전망)
-            // 복원 완료 후 ①공통사항 맨위로 스크롤 (v84/1)
-            setTimeout(function(){ window.scrollTo(0,0); }, 200);
+            /* v15: 복원이 지도 측정값을 이전자료로 덮어썼다면, 그 위에 측정값을 다시 적용 + 측정칸으로 복귀 */
+            try{ if(typeof window._tonghabReapplyMeas==='function') window._tonghabReapplyMeas(); }catch(e){}
+            // 복원 완료 후 ①공통사항 맨위로 스크롤 (v84/1) — 단, 측정값 대기 중이면 측정칸으로 복귀하므로 생략
+            setTimeout(function(){ if(!window._tonghabReapplyPending) window.scrollTo(0,0); }, 200);
           }, 300);
         }, 400);
       }, 500);
@@ -8870,6 +9900,187 @@ wcs_add["wa"] = "19e5d0d688a0f70";
 if(window.wcs) {
   wcs_do();
 }
+</script>
+
+<!-- ══ 지도 풀왕복 연동: URL 수신부 ══
+     map.html 의 「📋 조사표 열기」가 tonghab.html?load=<key> 로 열면 해당 저장자료를 자동 복원.
+     (map.html 이 ?addr=<주소> 로 주소만 넘기는 경우도 지원) -->
+<script>
+(function(){
+  var p; try{ p = new URLSearchParams(location.search); }catch(e){ return; }
+  var loadKey = (p.get('load') || '').trim();
+  var addrIn  = (p.get('addr') || '').trim();
+  /* 지도에서 "작물 · 주소" 형태로 올 수 있음 → 주소필지엔 주소만 넣도록 작물 접두 제거 */
+  (function(){ var _d = addrIn.indexOf(' · '); if(_d > 0) addrIn = addrIn.slice(_d + 3).trim(); })();
+  var latIn   = Number(p.get('lat'));
+  var lngIn   = Number(p.get('lng'));
+  var colorIn = (p.get('color') || '').trim();
+  try{
+    var pend = JSON.parse(localStorage.getItem('tenar_pending_survey_coord') || 'null');
+    if(pend && (!addrIn || !pend.addr || pend.addr === addrIn)){
+      if(!isFinite(latIn) && isFinite(Number(pend.lat))) latIn = Number(pend.lat);
+      if(!isFinite(lngIn) && isFinite(Number(pend.lng))) lngIn = Number(pend.lng);
+      if(!colorIn && pend.color) colorIn = String(pend.color).trim();
+    }
+  }catch(e){}
+  if(isFinite(latIn) && isFinite(lngIn)){
+    try{ _tenarSetMapCoord(latIn, lngIn, colorIn); }catch(e){ window._tenarMapLat = latIn; window._tenarMapLng = lngIn; window._tenarMapColor = colorIn; }
+  } else if(colorIn){ _tenarMapColor = colorIn; }
+  if(!loadKey && !addrIn) return;
+  /* ★ 데이터 보호: 지도에서 ?load 로 열렸을 때는 위험한 "이전 자료/초기화" 팝업을 막고
+     입력 중 자료는 그대로(조용히) 복원되게 한다. (초기화 선택으로 데이터가 삭제되던 문제 방지) */
+  if(loadKey || addrIn){ try{ window._tonghabRestoreChoice = 'continue'; }catch(e){} }
+  function cleanUrl(){ try{ history.replaceState(null,'',location.pathname); }catch(e){} }
+  /* 입력 중(자동저장) 자료가 의미있게 있는지 가볍게 확인 */
+  function _hasPrev(){
+    try{
+      var pv = JSON.parse(localStorage.getItem('tonghabAutoSave_v1')||'null');
+      if(!pv) return false;
+      if((pv.address||'').toString().trim()) return true;
+      if(pv['__crop']) return true;
+      var keys=['lenGaNa','heightA','heightB','waAvg','wbAvg','aN','bN','pa-weight','pb-weight','pa-plants','pb-plants','rsHyeonmi','nbTotalGrains'];
+      for(var i=0;i<keys.length;i++){ var v=pv[keys[i]]; if(v!==undefined && String(v).trim()!=='') return true; }
+      return false;
+    }catch(e){ return false; }
+  }
+  /* "저장된 자료입니다" 확인 팝업 (기존 lc-overlay 스타일 재사용) */
+  function _mapLoadConfirm(onYes){
+    if(document.getElementById('mapLoadOverlay')) return;
+    var ov=document.createElement('div');
+    ov.className='lc-overlay'; ov.id='mapLoadOverlay';
+    ov.innerHTML='<div class="lc-box"><p><b>저장된 자료입니다.</b><br>지도에서 선택한 저장 자료를 불러올까요?<br><span style="font-size:12px;color:#c0392b;font-weight:700;">현재 입력 중인 내용은 사라집니다.</span></p><div class="lc-btns"><button class="lc-cancel" id="mapLoadCancel">취소(현재 유지)</button><button class="lc-ok" id="mapLoadOk">불러오기</button></div></div>';
+    document.body.appendChild(ov);
+    document.getElementById('mapLoadCancel').onclick=function(){ ov.remove(); };
+    document.getElementById('mapLoadOk').onclick=function(){ ov.remove(); onYes(); };
+  }
+  function _esc(s){ return (''+(s||'')).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+  /* 지도에서 주소가 바뀐 채 돌아온 경우 — 입력중 자료는 그대로 두고, 새 주소를 적용(안내+확인 단일버튼) */
+  function _addrChangeNotice(oldAddr, newAddr, onOk){
+    if(document.getElementById('mapLoadOverlay')) return;
+    var ov=document.createElement('div'); ov.className='lc-overlay'; ov.id='mapLoadOverlay';
+    ov.innerHTML='<div class="lc-box"><p><b>지도에서 주소가 변경되었습니다.</b><br>'
+      +'<span style="font-size:12.5px;color:#1a7a3e;font-weight:700">새 주소: '+_esc(newAddr)+'</span><br>'
+      +'<span style="font-size:12px;color:#888">기존 주소: '+_esc(oldAddr||'(없음)')+'</span><br>'
+      +'<span style="font-size:11px;color:#888">입력 중인 자료는 그대로 유지됩니다.</span></p>'
+      +'<div class="lc-btns"><button class="lc-ok" id="addrOk" style="width:100%">확인</button></div></div>';
+    document.body.appendChild(ov);
+    document.getElementById('addrOk').onclick=function(){ ov.remove(); onOk(); };
+  }
+  /* #1 핀 이동(위치변경): 저장된 조사표 데이터는 어느 쪽이든 불러오고, 위치(주소·좌표)만 선택 */
+  function _addrApplyConfirm(oldAddr, newAddr, onApply, onKeep){
+    if(document.getElementById('mapLoadOverlay')) return;
+    var ov=document.createElement('div'); ov.className='lc-overlay'; ov.id='mapLoadOverlay';
+    ov.innerHTML='<div class="lc-box"><p><b>저장된 자료입니다.</b><br>지도에서 위치 주소가 변경되었습니다. 반영하시겠습니까?<br>'
+      +'<span style="font-size:12.5px;color:#1a7a3e;font-weight:700">새 위치: '+_esc(newAddr)+'</span><br>'
+      +'<span style="font-size:12px;color:#888">기존 위치: '+_esc(oldAddr||'(없음)')+'</span><br>'
+      +'<span style="font-size:11px;color:#888">조사표 데이터는 그대로 불러오고, 위치(주소)만 선택합니다.</span></p>'
+      +'<div class="lc-btns"><button class="lc-cancel" id="addrKeep">취소(기존위치)</button><button class="lc-ok" id="addrApply">반영(새위치)</button></div></div>';
+    document.body.appendChild(ov);
+    document.getElementById('addrKeep').onclick=function(){ ov.remove(); if(typeof onKeep==='function') onKeep(); };
+    document.getElementById('addrApply').onclick=function(){ ov.remove(); onApply(); };
+  }
+  /* #2 조사표 열기: 작성중 자료 vs 저장된 자료 선택 (위치는 항상 지도에서 선택한 위치로 반영) */
+  function _dataChoiceConfirm(onDraft, onSaved){
+    if(document.getElementById('mapLoadOverlay')) return;
+    var ov=document.createElement('div'); ov.className='lc-overlay'; ov.id='mapLoadOverlay';
+    ov.innerHTML='<div class="lc-box"><p><b>작성 중인 자료가 있습니다.</b><br>어느 자료로 여시겠습니까?<br>'
+      +'<span style="font-size:11px;color:#888">위치(주소·좌표)는 지도에서 선택한 위치로 반영됩니다.</span></p>'
+      +'<div class="lc-btns"><button class="lc-cancel" id="dcDraft">작성중 자료</button><button class="lc-ok" id="dcSaved">저장된 자료</button></div></div>';
+    document.body.appendChild(ov);
+    document.getElementById('dcDraft').onclick=function(){ ov.remove(); onDraft(); };
+    document.getElementById('dcSaved').onclick=function(){ ov.remove(); onSaved(); };
+  }
+  /* #2 불러오는 중 진행표시 */
+  function _loadProgressShow(){
+    if(document.getElementById('loadProgOv')) return;
+    var ov=document.createElement('div'); ov.id='loadProgOv';
+    ov.style.cssText='position:fixed;inset:0;z-index:3000;background:rgba(255,255,255,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:inherit;';
+    ov.innerHTML='<div style="width:44px;height:44px;border:4px solid #e0e0e0;border-top-color:#1a7a3e;border-radius:50%;animation:_ldspin .8s linear infinite"></div><div style="margin-top:14px;font-size:15px;font-weight:800;color:#333">자료 불러오는 중…</div><style>@keyframes _ldspin{to{transform:rotate(360deg)}}</style>';
+    document.body.appendChild(ov);
+  }
+  /* #2 불러오기 완료 팝업 */
+  function _loadDoneShow(){
+    var p=document.getElementById('loadProgOv'); if(p) p.remove();
+    if(document.getElementById('loadDoneOv')) return;
+    var ov=document.createElement('div'); ov.id='loadDoneOv';
+    ov.style.cssText='position:fixed;inset:0;z-index:3001;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;padding:24px;font-family:inherit;';
+    ov.innerHTML='<div style="background:#fff;border-radius:16px;max-width:300px;width:100%;padding:22px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.25)"><div style="font-size:34px">✅</div><div style="font-size:16px;font-weight:800;color:#1a5c22;margin:8px 0 16px">불러오기 완료</div><button id="loadDoneOk" style="width:100%;border:none;background:#1a7a3e;color:#fff;border-radius:11px;padding:12px;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer">확인</button></div>';
+    document.body.appendChild(ov);
+    document.getElementById('loadDoneOk').onclick=function(){ ov.remove(); };
+  }
+  function run(){
+    /* autoRestore(800ms·3000ms)보다 늦게 적용 */
+    setTimeout(function(){
+      if(loadKey){
+        try{
+          var s = localStorage.getItem(SL_DATA_PFX + loadKey);
+          if(s && typeof _slApply==='function'){
+            if(typeof _slLastLoadedKey!=='undefined') _slLastLoadedKey = loadKey;   /* 항상 기억 → 저장/불러오기 자동선택(덮어쓰기 준비) */
+            var d = JSON.parse(s);
+            var savedAddr = ((d && d.address) ? d.address : '').toString().trim();
+            var setAddr = function(v){
+              var ap = function(){ var el = document.getElementById('address');
+                if(el){ el.value = v; el.dispatchEvent(new Event('input',{bubbles:true})); el.dispatchEvent(new Event('change',{bubbles:true})); } };
+              ap(); setTimeout(ap, 900);   /* 복원이 늦게 끝나도 새 주소가 최종 반영 */
+            };
+            cleanUrl();   /* 새로고침 시 재실행 방지 */
+            var pinLat = Number(latIn), pinLng = Number(lngIn);
+            var hasPin = !!addrIn || (isFinite(pinLat) && isFinite(pinLng));
+            /* 주소/좌표를 지도에서 선택한(변경된) 위치로 강제 반영 — 복원 후에도 유지 */
+            var applyPinLoc = function(){
+              if(addrIn){ setAddr(addrIn); setTimeout(function(){ setAddr(addrIn); }, 3300); }
+              if(isFinite(pinLat) && isFinite(pinLng)) _tenarSetMapCoord(pinLat, pinLng);
+            };
+            /* 저장된 자료 불러오기(#2 진행표시+완료). 위치는 항상 지도에서 선택한 위치 */
+            var applySaved = function(){
+              var dd = d;
+              if(hasPin){
+                try{ dd = JSON.parse(JSON.stringify(d)); }catch(e){ dd = d; }   /* 복원 데이터 자체에 새 위치 주입(경합 제거) */
+                if(addrIn) dd.address = addrIn;
+                if(isFinite(pinLat) && isFinite(pinLng)){ dd.__mapLat = pinLat; dd.__mapLng = pinLng; }
+              }
+              _loadProgressShow();
+              _slApply(dd, function(){
+                if(hasPin && addrIn) setAddr(addrIn);   /* 복원 완료 후 새 주소 최종 확정 */
+                _loadDoneShow();
+              });
+              if(hasPin) applyPinLoc();
+              cleanUrl();
+            };
+            /* 작성중(현재) 자료 유지 + 위치만 지도에서 선택한 위치로 반영 */
+            var keepDraft = function(){
+              applyPinLoc();
+              cleanUrl();
+              setTimeout(_loadDoneShow, 700);
+            };
+            /* #2 작성중 자료가 있으면 [작성중]/[저장된] 선택, 없으면 저장된 자료 불러오기. 위치는 항상 새 위치 */
+            if(_hasPrev()){ _dataChoiceConfirm(keepDraft, applySaved); }
+            else { applySaved(); }
+            return;
+          }
+          alert('연결된 조사자료를 찾을 수 없습니다. (이 기기에 저장된 자료만 열 수 있습니다)');
+        }catch(e){}
+      }
+      if(addrIn){
+        /* 지도 주소를 최종값으로 반영 — 복원(autoRestore)이 늦게 끝나도 지도 주소가 이기도록 한 번 더 적용 */
+        var applyMapAddr = function(){
+          var el = document.getElementById('address');
+          if(el && el.value !== addrIn){
+            el.value = addrIn;
+            el.dispatchEvent(new Event('input',  {bubbles:true}));
+            el.dispatchEvent(new Event('change', {bubbles:true}));
+          }
+          if(isFinite(latIn) && isFinite(lngIn)) _tenarSetMapCoord(latIn, lngIn);
+        };
+        applyMapAddr();
+        setTimeout(applyMapAddr, 900);   /* 복원 완료 후 다시 한 번(지도 주소 우선) */
+      }
+      cleanUrl();
+    }, 1500);
+  }
+  if(document.readyState==='complete') run();
+  else window.addEventListener('load', run);
+})();
 </script>
 </body>
 </html>
