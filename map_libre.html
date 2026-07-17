@@ -1,4 +1,5 @@
-<!-- map_v7.html (v7) · 저장: 2026-07-17 19:37 KST · [v7] ①뒤로가기 버튼 ②회전안내문 삭제 ③지도정보-회전각 정렬 ④레이어/위치추적 SVG 아이콘 ⑤현재위치 zoom15·추적 zoom18 ⑥레이어/저장핀/즐겨찾기 시트 50% ⑦현재위치 시트 재구성(주소+복사 / 우편번호·위도·경도 / 초록버튼3) ⑧100dvh 전체화면 ⑨연속측정+측정 저장/목록/재편집(v6b) -->
+<!-- map_v8.html (v8a) · 저장: 2026-07-18 06:18 KST · [v8a] UI 개선 — ①뒤로가기 버튼 선명하게(흰배경·테두리·그림자) ⑧현재위치 팝업 내용높이 자동(공백제거) ⑨복사버튼 축소 ⑩현재위치·추적 확대 통일(LOCATION_FOCUS_ZOOM=17)+팝업가림 보정 ⑪위치추적 상태값(isTrackingLocation)로 관리, 지도이벤트로 안풀림 ⑫화면밖 자동중앙복귀(줌유지) ⑬수동이동 허용 ⑭⑮지번라벨 흰배경제거·흰글씨+검정halo·줌별크기·중복제거 ⑯즐겨찾기→목록 제목+화면복귀 ⑰⑱잠금/삭제 색상통일·카드배경 ⑲암호화 배너 ⑳잠금≠암호화 구분 · v8b 예정: 토지이용계획·공시지가·필지정보 -->
+<!-- (이전) map_v7.html (v7) · 저장: 2026-07-17 19:37 KST · [v7] ①뒤로가기 버튼 ②회전안내문 삭제 ③지도정보-회전각 정렬 ④레이어/위치추적 SVG 아이콘 ⑤현재위치 zoom15·추적 zoom18 ⑥레이어/저장핀/즐겨찾기 시트 50% ⑦현재위치 시트 재구성(주소+복사 / 우편번호·위도·경도 / 초록버튼3) ⑧100dvh 전체화면 ⑨연속측정+측정 저장/목록/재편집(v6b) -->
 <!-- (이전) map_v6.html (v6a) · 저장: 2026-07-17 16:05 KST · [v6a] 요청 1~7 반영 — ①바텀시트 헤더 전체 드래그+스와이프+30/50/90 스냅 ②작물핀 터치 50% 시트 ③VWorld 표기 회전각 옆으로 이동 ④롱프레스(0.5초) 퀵메뉴 5종(도착·측정·주소·공유·저장) ⑤면적 꼭짓점 번호+마지막 빨강/완료 일반색 ⑥거리 1~2구간 파랑·3구간+ 보라·전체거리 굵은 라벨 ⑦측정 중 모드전환 제한 · v6b 예정: ⑧연속측정 ⑨측정 저장/목록 ⑩저장본 재편집 -->
 <!-- (이전) map_v5.html (v5) · 저장: 2026-07-17 08:50 KST · [v5] UI 정리 9건 — ①이모지 30%축소 ②레이어 이모지 최신(🗺️) ③확대/축소·나침반 왼쪽최하단 이동+축소, 중복 위치추적버튼 숨김(재활성 가능) ④버튼5개 오른쪽최하단+바텀시트 연동 ⑤측정버튼 토글+삭제확인창 ⑥실측도구 가로절반·헤더드래그 이동·버튼명 단축 ⑦결과 접기(기본닫힘)·면적 중앙 ㎡/평 라벨·길이 m 소수2자리 ⑧핀 방향 수정(SVG) -->
 <!-- (이전) map_v4.html (v4a) · 저장: 2026-07-17 07:45 KST · [v4a] 네이버 지도 → MapLibre·VWorld 교체판 · 오른쪽 원형버튼6 · 현재위치 상세/주소복사 · 핀저장(6색·랜덤) · 즐겨찾기(잠금·JSON공유/내보내기/불러오기) · 저장핀/작물 필터 · 레이어(일반/항공/하이브리드/지적도·투명도/토지이용/경계) · 실시간 위치추적 · 길찾기(네이버/카카오/T맵) · 조사표 전달 · 지도상태 복원 · TenarCrypto 그대로 유지 -->
@@ -317,14 +318,19 @@ TenarSecureStore.init('map',
     background: rgba(255,255,255,.96); border-radius: 12px; padding: 5px 6px 5px 6px;
     box-shadow: 0 2px 10px rgba(0,0,0,.25);
   }
-  /* [v7-1] 검색창 왼쪽 뒤로가기 버튼 */
+  /* [v8-2] 뒤로가기 버튼 — 위성/항공 위에서도 잘 보이도록 선명하게
+     (불투명 흰 배경 + 테두리 + 그림자, 진한 초록 아이콘, 터치영역 44px 확보) */
   #backBtn {
-    flex-shrink: 0; width: 36px; height: 36px; border: 0; border-radius: 9px;
-    background: #f1f2f0; color: #27500A; font-size: 18px; font-weight: 900; line-height: 1;
+    flex-shrink: 0; width: 38px; height: 38px; border: 1.5px solid #cfd6cc; border-radius: 50%;
+    background: #ffffff; color: #1b3d08; font-size: 20px; font-weight: 900; line-height: 1;
     cursor: pointer; -webkit-appearance: none; -webkit-tap-highlight-color: transparent;
     display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,.35);
+    position: relative;
   }
-  #backBtn:active { background: #e2e5e0; }
+  /* 실제 아이콘보다 넓은 터치 영역(44px 이상) */
+  #backBtn::after { content: ''; position: absolute; inset: -4px; }
+  #backBtn:active { background: #eef0ec; }
   #searchInput {
     flex: 1; min-width: 0; height: 36px; border: 0; outline: none; background: transparent;
     font-size: 16px; color: #222; -webkit-appearance: none;
@@ -542,10 +548,15 @@ TenarSecureStore.init('map',
     box-shadow: 0 1px 5px rgba(0,0,0,.4); pointer-events: none;
   }
   /* 지적도 지번(본번-부번) 라벨 */
+  /* [v8-14] 지번 라벨 —— 흰색 배경 제거, 흰 글씨 + 검정 halo(가독성).
+     지도를 축소해도 항공사진을 가리지 않는다. 크기는 JS에서 줌에 따라 조절. */
   .cad-label {
-    padding: 1px 4px; border-radius: 4px; background: rgba(255,255,255,.82); color: #a11;
-    font-size: 10px; font-weight: 800; white-space: nowrap; pointer-events: none;
-    text-shadow: 0 0 2px #fff;
+    padding: 0; background: transparent; color: #ffffff;
+    font-weight: 800; white-space: nowrap; pointer-events: none;
+    text-shadow:
+      -1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000,
+      -1.5px  1.5px 0 #000, 1.5px  1.5px 0 #000,
+       0 0 2px #000;
   }
   .maplibregl-popup-content { font-size: 12.5px; line-height: 1.6; padding: 10px 12px; border-radius: 8px; max-width: 240px; }
 
@@ -580,6 +591,13 @@ TenarSecureStore.init('map',
     width: 32px; height: 32px; border: 0; border-radius: 16px; background: #f0f0f4;
     color: #555; font-size: 15px; cursor: pointer; -webkit-appearance: none;
   }
+  /* [v8-16] 시트 헤더 액션 버튼(예: 화면복귀) */
+  #sheetAction {
+    border: 1.5px solid #d7dcd4; border-radius: 9px; background: #f2f5f0; color: #27500A;
+    font-size: 12.5px; font-weight: 800; padding: 6px 11px; min-height: 32px;
+    cursor: pointer; -webkit-appearance: none; font-family: inherit;
+  }
+  #sheetAction:active { background: #e6ebe2; }
   #sheetBody {
     padding: 12px 16px calc(env(safe-area-inset-bottom, 0px) + 16px);
     overflow-y: auto; -webkit-overflow-scrolling: touch; flex: 1;
@@ -602,15 +620,27 @@ TenarSecureStore.init('map',
   .addr-main { font-size: 19px; font-weight: 800; color: #14612f; line-height: 1.4; word-break: keep-all; }
   .addr-label { font-size: 11px; font-weight: 800; color: #888; margin-top: 10px; }
   .addr-value { font-size: 14px; color: #333; }
+  /* [v8-9] 복사 버튼 축소 (약 25%) + 넓은 터치영역 유지 */
   .copy-btn {
-    border: 1.5px solid #cfd8cf; border-radius: 8px; background: #f3f7f3; color: #27500A;
-    font-size: 12px; font-weight: 800; padding: 6px 10px; min-height: 34px; cursor: pointer; -webkit-appearance: none;
+    position: relative;
+    border: 1.5px solid #cfd8cf; border-radius: 7px; background: #f3f7f3; color: #27500A;
+    font-size: 11px; font-weight: 800; padding: 3px 8px; min-height: 26px; cursor: pointer; -webkit-appearance: none;
   }
+  .copy-btn::after { content: ''; position: absolute; inset: -9px; }   /* 터치영역 44px 확보 */
+
+  /* [v8-19] 즐겨찾기 보안 상태 배너 */
+  .sec-banner {
+    display: flex; align-items: center; gap: 7px; margin: 2px 0 12px;
+    padding: 8px 11px; border-radius: 10px; font-size: 12px; font-weight: 700; line-height: 1.4;
+  }
+  .sec-banner.enc { background: #eef6ef; color: #1c6b34; border: 1px solid #cfe6d4; }
+  .sec-banner.plain { background: #fff5e8; color: #9a5b00; border: 1px solid #f0d9b3; }
 
   .fav-card {
     border: 1px solid #e6e6ec; border-radius: 12px; padding: 10px; margin-bottom: 8px;
-    display: flex; gap: 9px; align-items: flex-start; background: #fff;
+    display: flex; gap: 9px; align-items: flex-start; background: #fffdf5;   /* 해제: 연한 아이보리 */
   }
+  .fav-card.locked { background: #eef4ff; border-color: #cdddf7; }             /* [v8-18] 잠금: 연한 파랑 */
   .fav-num {
     width: 28px; height: 28px; border-radius: 14px; flex-shrink: 0; color: #fff;
     font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center;
@@ -621,10 +651,14 @@ TenarSecureStore.init('map',
   .fav-coord { font-size: 11px; color: #999; margin-top: 2px; }
   .fav-acts { display: flex; flex-direction: column; gap: 5px; flex-shrink: 0; }
   .icon-btn {
-    width: 34px; height: 34px; border: 1px solid #e0e0e6; border-radius: 8px; background: #fff;
-    font-size: 14px; cursor: pointer; -webkit-appearance: none; line-height: 1;
+    width: 36px; height: 36px; border: 1.5px solid #e0e0e6; border-radius: 9px; background: #fff;
+    font-size: 15px; cursor: pointer; -webkit-appearance: none; line-height: 1;
   }
-  .icon-btn.locked { background: #eaf1ff; border-color: #b9cdf5; }
+  /* [v8-17] 잠금/삭제 버튼 상태별 색상 통일 (첨부 이미지 기준) */
+  .icon-btn.lock-on   { background: #eaf1ff; border-color: #3b82f6; color: #2563eb; }   /* 잠금: 파란 */
+  .icon-btn.lock-off  { background: #f5f5f7; border-color: #d0d0d6; color: #888; }       /* 해제: 회색 */
+  .icon-btn.del-on    { background: #fdf1f1; border-color: #e2554e; color: #d0342c; }    /* 삭제 활성: 빨강 */
+  .icon-btn.del-off   { background: #f2f2f4; border-color: #e2e2e6; color: #b8b8be; }    /* 삭제 비활성: 회색 */
 
   .color-row { display: flex; gap: 8px; margin: 6px 0 4px; }
   .color-dot {
@@ -740,7 +774,10 @@ TenarSecureStore.init('map',
     <div id="sheetGrip"><div class="bar"></div></div>
     <div id="sheetHead">
       <div id="sheetTitle">제목</div>
-      <button id="sheetClose" type="button">✕</button>
+      <div style="display:flex;align-items:center;gap:7px;flex-shrink:0;">
+        <button id="sheetAction" type="button" style="display:none;"></button>
+        <button id="sheetClose" type="button">✕</button>
+      </div>
     </div>
     <div id="sheetBody"></div>
   </div>
@@ -777,8 +814,10 @@ TenarSecureStore.init('map',
        · 현재위치(📍) : 최대확대에서 5단계 축소  → 20 - 5 = 15
        · 위치추적(◎)  : 최대확대에서 2단계 축소  → 20 - 2 = 18            */
   var MAX_ZOOM   = 20;
-  var ZOOM_HERE  = MAX_ZOOM - 5;
-  var ZOOM_TRACK = MAX_ZOOM - 2;
+  /* [v8-10] 현재위치 핀·위치추적 시작 확대 수준을 하나로 통일 (한 곳에서 관리) */
+  var LOCATION_FOCUS_ZOOM = 17;
+  var ZOOM_HERE  = LOCATION_FOCUS_ZOOM;
+  var ZOOM_TRACK = LOCATION_FOCUS_ZOOM;
 
   /* 저장 키 (TenarSecureStore 관리 대상) */
   var FAV_KEY      = 'tenar_map_favs_v1';
@@ -969,8 +1008,17 @@ TenarSecureStore.init('map',
     showToast(msg, 6000);
     setTrackBtn(false);
   });
-  geolocateControl.on('trackuserlocationstart', function () { setTrackBtn(true); });
-  geolocateControl.on('trackuserlocationend', function () { setTrackBtn(false); });
+  /* [v8-11] 위치추적 상태는 지도 이벤트가 아니라 별도 상태값(isTrackingLocation)으로만 관리한다.
+     지도를 확대/축소/이동해도 버튼 반전이 풀리지 않도록, 컨트롤의 start/end 이벤트로
+     버튼 클래스를 토글하지 않는다. 버튼은 toggleTracking()과 error에서만 바뀐다. */
+  geolocateControl.on('geolocate', function (pos) {
+    if (pos && pos.coords) {
+      lastTrackedLoc = [pos.coords.longitude, pos.coords.latitude];
+      /* 혹시라도 클래스가 풀렸으면 추적 중일 때 다시 활성 상태로 되돌린다 */
+      if (isTrackingLocation) document.getElementById('btnTrack').classList.add('active');
+      maybeRecenterTracked();   /* [v8-12] 현재 위치가 화면 밖이면 중앙으로 복귀 */
+    }
+  });
 
   if (!('geolocation' in navigator)) console.warn('이 브라우저는 위치 기능을 지원하지 않습니다.');
   else if (window.isSecureContext === false) showToast('HTTPS가 아니면 현재 위치 기능이 동작하지 않습니다.', 6000);
@@ -1099,22 +1147,38 @@ TenarSecureStore.init('map',
   function clearCadLabels() { cadLabelMarkers.forEach(function (m) { m.remove(); }); cadLabelMarkers = []; }
   var CAD_LABEL_MAX = 150;   /* 라벨은 성능을 위해 개수 제한 */
 
+  /* [v8-15] 줌에 따라 글씨 크기 보간 (zoom15→10px, 17→13px, 19→16px) */
+  function cadLabelSize() {
+    var z = map.getZoom();
+    if (z <= 15) return 10;
+    if (z >= 19) return 16;
+    if (z <= 17) return 10 + (z - 15) * (13 - 10) / 2;   /* 15~17: 10→13 */
+    return 13 + (z - 17) * (16 - 13) / 2;                /* 17~19: 13→16 */
+  }
   function renderCadLabels(fc) {
     clearCadLabels();
     if (!hasTurf) return;
-    if (map.getZoom() < 17) return;   /* 너무 축소하면 라벨이 뒤엉키므로 생략 */
-    var n = Math.min(fc.features.length, CAD_LABEL_MAX);
-    for (var i = 0; i < n; i++) {
+    if (map.getZoom() < 17) return;   /* [v8-15] 낮은 줌: 지번 숨김 (겹침·가림 방지) */
+    var size = cadLabelSize();
+    var seen = {};                    /* 같은 지번 중복 표시 방지 */
+    var count = 0;
+    for (var i = 0; i < fc.features.length && count < CAD_LABEL_MAX; i++) {
       var f = fc.features[i];
       var p = f.properties || {};
-      var txt = (p.bonbun || '') + (p.bubun && p.bubun !== '0' ? '-' + p.bubun : '');
+      /* [v8-14] 본번-부번 한 번만 표시 (820-8 형태) */
+      var txt = (p.bonbun || '') + (p.bubun && p.bubun !== '0' && p.bubun !== '' ? '-' + p.bubun : '');
       if (!txt) continue;
       var c = null;
       try { c = turf.centerOfMass(f).geometry.coordinates; } catch (e) { continue; }
+      var key = txt + '@' + c[0].toFixed(5) + ',' + c[1].toFixed(5);
+      if (seen[key]) continue;
+      seen[key] = true;
       var el2 = document.createElement('div');
       el2.className = 'cad-label';
+      el2.style.fontSize = size + 'px';
       el2.textContent = txt;
       cadLabelMarkers.push(new maplibregl.Marker({ element: el2 }).setLngLat(c).addTo(map));
+      count++;
     }
   }
 
@@ -1214,17 +1278,43 @@ TenarSecureStore.init('map',
     if (e.propertyName === 'height' || e.propertyName === 'transform') updateBottomBtnsPos();
   });
 
+  /* [v8-16] 시트 헤더 액션 버튼 설정 (label 없으면 숨김) */
+  var sheetActionEl = document.getElementById('sheetAction');
+  function setSheetAction(label, handler) {
+    if (!label) { sheetActionEl.style.display = 'none'; sheetActionEl.onclick = null; return; }
+    sheetActionEl.textContent = label;
+    sheetActionEl.style.display = '';
+    sheetActionEl.onclick = handler;
+  }
+
   function openSheet(title, node, snap) {
+    setSheetAction(null);                 /* 기본은 액션 버튼 없음 */
     sheetTitle.textContent = title;
     sheetBody.innerHTML = '';
     if (typeof node === 'string') sheetBody.innerHTML = node;
     else sheetBody.appendChild(node);
-    sheetSnap = snap || 50;
-    sheetEl.style.height = sheetSnap + '%';
     sheetOverlay.classList.add('show');
     sheetEl.classList.add('show');
     sheetOpen = true;
-    requestAnimationFrame(updateBottomBtnsPos);
+
+    if (snap === 'auto') {
+      /* [v8-8] 내용 높이에 맞춰 열기(불필요한 빈 공간 제거).
+         마지막 버튼 아래 여백은 CSS의 padding-bottom(safe-area+16px)만 사용.
+         내용이 많으면 최대 90%에서 내부 스크롤. */
+      sheetEl.style.height = 'auto';
+      requestAnimationFrame(function () {
+        var h = sheetEl.scrollHeight;
+        var maxH = window.innerHeight * 0.9;
+        var finalH = Math.min(h, maxH);
+        sheetEl.style.height = finalH + 'px';
+        sheetSnap = Math.round(finalH / window.innerHeight * 100);
+        updateBottomBtnsPos();
+      });
+    } else {
+      sheetSnap = snap || 50;
+      sheetEl.style.height = sheetSnap + '%';
+      requestAnimationFrame(updateBottomBtnsPos);
+    }
   }
   function closeSheet() {
     sheetEl.classList.remove('show');
@@ -1609,7 +1699,7 @@ TenarSecureStore.init('map',
     row.appendChild(bSave); row.appendChild(bNav); row.appendChild(bSurvey);
 
     box.appendChild(addrRow); box.appendChild(meta); box.appendChild(row);
-    openSheet('현재 위치', box, 50);
+    openSheet('현재 위치', box, 'auto');   /* [v8-8] 내용 높이만큼만 (버튼 아래 공백 제거) */
   }
 
   function copyText(txt) {
@@ -1643,9 +1733,11 @@ TenarSecureStore.init('map',
     showToast('현재 위치를 확인하고 있습니다.', 0, 'info');
     navigator.geolocation.getCurrentPosition(function (pos) {
       var lat = pos.coords.latitude, lng = pos.coords.longitude;
-      setGeoZoom(ZOOM_HERE);       /* [v7-5] 최대확대에서 5단계 축소 = 15 */
+      setGeoZoom(ZOOM_HERE);       /* [v8-10] 현재위치 = 위치추적과 같은 LOCATION_FOCUS_ZOOM(17) */
       geolocateControl.trigger();  /* 정확도 원·진행방향 표시 */
-      map.flyTo({ center: [lng, lat], zoom: ZOOM_HERE, essential: true });
+      /* [v8-10] 팝업(하단시트) 뒤로 핀이 가려지지 않게 중심을 화면 위쪽으로 보정
+         (아래로 offset → 지도상 중심이 화면 위쪽에 오도록) */
+      map.flyTo({ center: [lng, lat], zoom: ZOOM_HERE, offset: [0, -Math.round(window.innerHeight * 0.18)], essential: true });
       requestVWorldReverse(lng, lat).then(function (a) {
         showToast('현재 위치를 확인했습니다.', 2000, 'success');
         openHereSheet({ lat: lat, lng: lng, jibunAddress: a.jibunAddress, roadAddress: a.roadAddress, postalCode: a.postalCode });
@@ -1735,8 +1827,20 @@ TenarSecureStore.init('map',
   }
 
   /* ================= 즐겨찾기 목록 ================= */
+  /* [v8-16] 화면복귀 —— 즐겨찾기를 열기 직전의 지도 상태로 되돌린다 */
+  var favReturnView = null;
   function openFavSheet() {
+    favReturnView = { center: map.getCenter().toArray(), zoom: map.getZoom(), bearing: map.getBearing(), pitch: map.getPitch() };
+
     var box = el('div');
+
+    /* [v8-19] 보안(암호화) 상태 배너 — 삭제방지 잠금과는 별개의 저장 데이터 보안 상태 */
+    var enc = (window.__tenarSecureActive === true);
+    var banner = el('div', 'sec-banner ' + (enc ? 'enc' : 'plain'));
+    banner.innerHTML = enc
+      ? '🔐 즐겨찾기 데이터 암호화 저장 중 <span style="font-weight:600;opacity:.85;">(내보내기 파일도 암호 필요)</span>'
+      : '⚠️ 즐겨찾기 데이터가 암호화되지 않았습니다 <span style="font-weight:600;opacity:.85;">(평문 저장 중)</span>';
+    box.appendChild(banner);
 
     var r1 = el('div', 'btn-row');
     var bAdd = el('button', 'sheet-btn primary', '＋ 현재 위치 저장');
@@ -1758,7 +1862,12 @@ TenarSecureStore.init('map',
     var list = el('div');
     list.id = 'favList';
     box.appendChild(r1); box.appendChild(r2); box.appendChild(list);
-    openSheet('⭐ 즐겨찾기 위치', box, 50);
+    openSheet('⭐ 즐겨찾기 목록', box, 50);   /* [v8-16] 제목 변경 */
+    /* [v8-16] 헤더 오른쪽에 화면복귀 버튼 (닫기 ✕ 는 그대로) */
+    setSheetAction('↺ 화면복귀', function () {
+      if (favReturnView) map.easeTo({ center: favReturnView.center, zoom: favReturnView.zoom, bearing: favReturnView.bearing, pitch: favReturnView.pitch, duration: 500 });
+      showToast('이전 지도 위치로 돌아왔습니다.', 2000, 'info');
+    });
     renderFavList();
   }
 
@@ -1768,11 +1877,12 @@ TenarSecureStore.init('map',
     var favs = getFavs();
     list.innerHTML = '';
     if (!favs.length) {
-      list.appendChild(el('div', null, '<div style="color:#888;font-size:13px;padding:18px 2px;">저장된 즐겨찾기 위치가 없습니다.</div>'));
+      list.appendChild(el('div', null, '<div style="color:#888;font-size:13px;padding:18px 2px;">저장된 즐겨찾기 목록이 없습니다.</div>'));
       return;
     }
     favs.forEach(function (f, i) {
-      var card = el('div', 'fav-card');
+      /* [v8-18] 잠금 카드는 연한 파랑, 해제 카드는 연한 아이보리 */
+      var card = el('div', 'fav-card' + (f.locked ? ' locked' : ''));
       var num = el('div', 'fav-num', String(favs.length - i));
       num.style.background = colorHex(f.color);
 
@@ -1783,21 +1893,26 @@ TenarSecureStore.init('map',
         '<div class="fav-coord">' + f.latitude.toFixed(6) + ', ' + f.longitude.toFixed(6) + '</div>');
       body.addEventListener('click', function () {
         closeSheet();
-        map.flyTo({ center: [f.longitude, f.latitude], zoom: 18, essential: true });
+        map.flyTo({ center: [f.longitude, f.latitude], zoom: LOCATION_FOCUS_ZOOM, essential: true });
         setTimeout(function () {
           openHereSheet({ lat: f.latitude, lng: f.longitude, jibunAddress: f.jibunAddress, roadAddress: f.roadAddress, postalCode: f.postalCode });
         }, 350);
       });
 
       var acts = el('div', 'fav-acts');
-      var lock = el('button', 'icon-btn' + (f.locked ? ' locked' : ''), f.locked ? '🔒' : '🔓');
-      lock.addEventListener('click', function () {
+      /* [v8-17] 잠금: 파란 자물쇠 / 해제: 회색 열린 자물쇠 */
+      var lock = el('button', 'icon-btn ' + (f.locked ? 'lock-on' : 'lock-off'), f.locked ? '🔒' : '🔓');
+      lock.title = '삭제 방지 잠금';   /* [v8-20] 잠금은 삭제 방지용 (암호화와 별개) */
+      lock.addEventListener('click', function (ev) {
+        ev.stopPropagation();
         var arr = getFavs();
         for (var k = 0; k < arr.length; k++) if (arr[k].id === f.id) { arr[k].locked = !arr[k].locked; arr[k].updatedAt = kstNowStr(); }
         setFavs(arr); renderFavList();
       });
-      var del = el('button', 'icon-btn', '🗑');
-      del.addEventListener('click', function () {
+      /* [v8-17] 잠금 시 삭제 버튼은 회색 비활성 / 해제 시 빨강 활성 */
+      var del = el('button', 'icon-btn ' + (f.locked ? 'del-off' : 'del-on'), '🗑');
+      del.addEventListener('click', function (ev) {
+        ev.stopPropagation();
         if (f.locked) { showToast('잠금된 위치입니다.\n잠금을 해제한 후 삭제해주세요.', 4000); return; }
         if (!window.confirm('이 즐겨찾기 위치를 삭제하시겠습니까?')) return;
         setFavs(getFavs().filter(function (x) { return x.id !== f.id; }));
@@ -1891,11 +2006,15 @@ TenarSecureStore.init('map',
     inp.click();
   }
   function favDeleteAll() {
-    if (!window.confirm('잠금되지 않은 즐겨찾기 위치를 모두 삭제하시겠습니까?\n잠금된 위치는 유지됩니다.')) return;
-    var kept = getFavs().filter(function (f) { return f.locked; });
-    setFavs(kept);
+    /* [v8-17] 삭제 개수·유지 개수를 미리 안내 */
+    var all = getFavs();
+    var locked = all.filter(function (f) { return f.locked; }).length;
+    var unlocked = all.length - locked;
+    if (unlocked === 0) { showToast('삭제할 즐겨찾기가 없습니다.\n(잠금된 위치만 있습니다)', 3500, 'info'); return; }
+    if (!window.confirm('잠금 해제된 즐겨찾기 ' + unlocked + '개를 삭제하시겠습니까?\n잠금된 즐겨찾기 ' + locked + '개는 유지됩니다.')) return;
+    setFavs(all.filter(function (f) { return f.locked; }));
     renderFavList();
-    showToast('잠금되지 않은 즐겨찾기를 삭제했습니다.', 3000, 'success');
+    showToast('잠금 해제된 즐겨찾기 ' + unlocked + '개를 삭제했습니다.', 3000, 'success');
   }
 
   /* ================= 저장핀·작물 표시 ================= */
@@ -2042,11 +2161,25 @@ TenarSecureStore.init('map',
   }
 
   /* ================= 실시간 위치추적 ================= */
-  var tracking = false;
+  var isTrackingLocation = false;   /* [v8-11] 추적 여부의 유일한 상태값 */
+  var lastTrackedLoc = null;        /* 마지막 GPS 좌표 [lng,lat] */
   var trackNoticeShown = false;
   function setTrackBtn(on) {
-    tracking = on;
+    isTrackingLocation = on;
     document.getElementById('btnTrack').classList.toggle('active', on);
+  }
+
+  /* [v8-12/13] 추적 중 현재 위치가 화면 밖으로 벗어났을 때만 중앙으로 복귀.
+     - 사용자가 확대/축소한 줌 값은 그대로 유지(easeTo에 zoom 미지정)
+     - 화면 가장자리 여유(30px)만큼 안쪽에서 벗어나야 복귀 → 잦은 복귀 방지
+     - 사용자의 수동 이동만으로는 추적을 해제하지 않는다 */
+  function maybeRecenterTracked() {
+    if (!isTrackingLocation || !lastTrackedLoc) return;
+    var pt = map.project(lastTrackedLoc);
+    var m = 30;   /* 가장자리 여유 */
+    var inView = pt.x >= m && pt.y >= m && pt.x <= (map.getCanvas().clientWidth - m) && pt.y <= (map.getCanvas().clientHeight - m);
+    if (inView) return;
+    map.easeTo({ center: lastTrackedLoc, duration: 500 });   /* zoom 유지 */
   }
   /* [v7-5] GeolocateControl은 trigger() 시 자체적으로 확대 수준을 정한다(기본 15).
      버튼마다 원하는 확대가 다르므로 trigger 직전에 맞춰준다. */
@@ -2058,16 +2191,21 @@ TenarSecureStore.init('map',
   }
 
   function toggleTracking() {
-    if (!tracking) {
+    if (!isTrackingLocation) {
       if (!trackNoticeShown) {
         showToast('실시간 위치추적은 배터리 사용량이 증가할 수 있습니다.', 4000, 'info');
         trackNoticeShown = true;
       }
-      setGeoZoom(ZOOM_TRACK);       /* 최대확대에서 2단계 축소 = 18 */
+      setGeoZoom(ZOOM_TRACK);       /* 시작 시 확대 = LOCATION_FOCUS_ZOOM */
+      setTrackBtn(true);            /* [v8-11] 상태값 먼저 켜고 버튼 반전 유지 */
       geolocateControl.trigger();   /* ACTIVE_LOCK → 추적 시작 */
     } else {
-      geolocateControl.trigger();   /* 다시 누르면 해제 (마지막 마커는 유지) */
+      /* 해제: 컨트롤이 BACKGROUND 상태면 trigger 한 번으론 안 꺼질 수 있어 최대 2회 시도 */
       setTrackBtn(false);
+      try {
+        geolocateControl.trigger();
+        if (geolocateControl._watchState && geolocateControl._watchState !== 'OFF') geolocateControl.trigger();
+      } catch (e) {}
     }
   }
 
