@@ -1,4 +1,5 @@
-<!-- map_v8.html (v8a) · 저장: 2026-07-18 06:18 KST · [v8a] UI 개선 — ①뒤로가기 버튼 선명하게(흰배경·테두리·그림자) ⑧현재위치 팝업 내용높이 자동(공백제거) ⑨복사버튼 축소 ⑩현재위치·추적 확대 통일(LOCATION_FOCUS_ZOOM=17)+팝업가림 보정 ⑪위치추적 상태값(isTrackingLocation)로 관리, 지도이벤트로 안풀림 ⑫화면밖 자동중앙복귀(줌유지) ⑬수동이동 허용 ⑭⑮지번라벨 흰배경제거·흰글씨+검정halo·줌별크기·중복제거 ⑯즐겨찾기→목록 제목+화면복귀 ⑰⑱잠금/삭제 색상통일·카드배경 ⑲암호화 배너 ⑳잠금≠암호화 구분 · v8b 예정: 토지이용계획·공시지가·필지정보 -->
+<!-- map_v9.html (v8b/v9) · 저장: 2026-07-18 07:00 KST · [v9] 토지정보/토지이용계획 — ③④필지 터치 토지정보 시트(전체지번+지목·도로명·우편·PNU복사)+추가정보 지연조회(면적·개별공시지가+연도·용도지역, 농업진흥/토지이용상황은 확인되지않음+공식링크) ⑤⑥⑦토지이용계획 레이어(용도지역 색상채움·범례·투명도20~70%기본45%·지적아래 배치) ㉑현재 필지정보 버튼 ㉒조사표 PNU/지목/면적/용도지역 연계 · PNU 10분 캐시 · 토지이음 공식조회 링크 -->
+<!-- (이전) map_v8.html (v8a) · 저장: 2026-07-18 06:18 KST · [v8a] UI 개선 — ①뒤로가기 버튼 선명하게(흰배경·테두리·그림자) ⑧현재위치 팝업 내용높이 자동(공백제거) ⑨복사버튼 축소 ⑩현재위치·추적 확대 통일(LOCATION_FOCUS_ZOOM=17)+팝업가림 보정 ⑪위치추적 상태값(isTrackingLocation)로 관리, 지도이벤트로 안풀림 ⑫화면밖 자동중앙복귀(줌유지) ⑬수동이동 허용 ⑭⑮지번라벨 흰배경제거·흰글씨+검정halo·줌별크기·중복제거 ⑯즐겨찾기→목록 제목+화면복귀 ⑰⑱잠금/삭제 색상통일·카드배경 ⑲암호화 배너 ⑳잠금≠암호화 구분 · v8b 예정: 토지이용계획·공시지가·필지정보 -->
 <!-- (이전) map_v7.html (v7) · 저장: 2026-07-17 19:37 KST · [v7] ①뒤로가기 버튼 ②회전안내문 삭제 ③지도정보-회전각 정렬 ④레이어/위치추적 SVG 아이콘 ⑤현재위치 zoom15·추적 zoom18 ⑥레이어/저장핀/즐겨찾기 시트 50% ⑦현재위치 시트 재구성(주소+복사 / 우편번호·위도·경도 / 초록버튼3) ⑧100dvh 전체화면 ⑨연속측정+측정 저장/목록/재편집(v6b) -->
 <!-- (이전) map_v6.html (v6a) · 저장: 2026-07-17 16:05 KST · [v6a] 요청 1~7 반영 — ①바텀시트 헤더 전체 드래그+스와이프+30/50/90 스냅 ②작물핀 터치 50% 시트 ③VWorld 표기 회전각 옆으로 이동 ④롱프레스(0.5초) 퀵메뉴 5종(도착·측정·주소·공유·저장) ⑤면적 꼭짓점 번호+마지막 빨강/완료 일반색 ⑥거리 1~2구간 파랑·3구간+ 보라·전체거리 굵은 라벨 ⑦측정 중 모드전환 제한 · v6b 예정: ⑧연속측정 ⑨측정 저장/목록 ⑩저장본 재편집 -->
 <!-- (이전) map_v5.html (v5) · 저장: 2026-07-17 08:50 KST · [v5] UI 정리 9건 — ①이모지 30%축소 ②레이어 이모지 최신(🗺️) ③확대/축소·나침반 왼쪽최하단 이동+축소, 중복 위치추적버튼 숨김(재활성 가능) ④버튼5개 오른쪽최하단+바텀시트 연동 ⑤측정버튼 토글+삭제확인창 ⑥실측도구 가로절반·헤더드래그 이동·버튼명 단축 ⑦결과 접기(기본닫힘)·면적 중앙 ㎡/평 라벨·길이 m 소수2자리 ⑧핀 방향 수정(SVG) -->
@@ -852,6 +853,37 @@ TenarSecureStore.init('map',
     return '📍';
   }
 
+  /* [v9] 용도지역명 → 표준 색상 (국토부 토지이용계획 색상체계 근사).
+     정확한 이름이 조금씩 달라도 키워드로 분류한다. */
+  function landuseColor(uname) {
+    var u = String(uname || '');
+    if (/전용주거/.test(u)) return '#FFF6C2';
+    if (/제1종일반주거/.test(u)) return '#FFEC99';
+    if (/제2종일반주거/.test(u)) return '#FFE066';
+    if (/제3종일반주거/.test(u)) return '#FFD11A';
+    if (/준주거/.test(u)) return '#F6A94A';
+    if (/일반주거/.test(u)) return '#FFE066';
+    if (/중심상업|일반상업/.test(u)) return '#EF6E85';
+    if (/근린상업|유통상업|상업/.test(u)) return '#F58CA0';
+    if (/전용공업/.test(u)) return '#B48FD9';
+    if (/일반공업|준공업|공업/.test(u)) return '#C6A8E4';
+    if (/보전녹지/.test(u)) return '#6FBF56';
+    if (/생산녹지/.test(u)) return '#93D97A';
+    if (/자연녹지|녹지/.test(u)) return '#BCE5A6';
+    if (/계획관리/.test(u)) return '#E4E3A6';
+    if (/생산관리/.test(u)) return '#D2E0A0';
+    if (/보전관리|관리지역/.test(u)) return '#C2D890';
+    if (/농림/.test(u)) return '#A6D18B';
+    if (/자연환경보전|보전지역/.test(u)) return '#8FD0C4';
+    return '#B9B9C4';   /* 기타/미분류 */
+  }
+  /* 색상 범례 (레이어 시트에서 사용) */
+  var LANDUSE_LEGEND = [
+    ['주거지역', '#FFE066'], ['준주거지역', '#F6A94A'], ['상업지역', '#F58CA0'],
+    ['공업지역', '#C6A8E4'], ['녹지지역', '#BCE5A6'], ['관리지역', '#D2E0A0'],
+    ['농림지역', '#A6D18B'], ['자연환경보전', '#8FD0C4']
+  ];
+
   function tileUrl(layer, ext) {
     return VWORLD_TILE_BASE + VWORLD_API_KEY + '/' + layer + '/{z}/{y}/{x}.' + ext;
   }
@@ -940,8 +972,9 @@ TenarSecureStore.init('map',
 
   var DEFAULT_SETTINGS = {
     baseType: 'base',
-    overlays: { hybrid: false, cadastral: false, uq111: false, adsido: false, adsigg: false, ademd: false, adri: false },
+    overlays: { hybrid: false, cadastral: false, landuse: false, adsido: false, adsigg: false, ademd: false, adri: false },
     cadastralOpacity: 0.65,
+    landuseOpacity: 0.45,   /* [v9] 토지이용계획 기본 투명도 45% */
     showFavPins: true,
     cropFilter: ''
   };
@@ -1052,8 +1085,9 @@ TenarSecureStore.init('map',
   /* 하이브리드만 WMTS 래스터, 나머지는 데이터 API(JSONP) 벡터 */
   var OVERLAY_DEFS = [
     { id: 'hybrid',    ko: '하이브리드',    desc: '지명·도로 겹치기 (WMTS)',        kind: 'wmts', layer: 'Hybrid', ext: 'png' },
+    /* [v9] 토지이용계획을 지적도보다 먼저(아래) 그려 지적경계·지번을 가리지 않게 한다 */
+    { id: 'landuse',   ko: '토지이용계획',  desc: '용도지역 색상 표시 (확대 13↑)',    kind: 'data', data: 'LT_C_UQ111', color: '#7c3aed', width: 0.8, minzoom: 13, fillByUse: true },
     { id: 'cadastral', ko: '지적도',        desc: '연속지적 · 지번 표시 (확대 16↑)', kind: 'data', data: 'LP_PA_CBND_BUBUN', color: '#d92c2c', width: 1.4, minzoom: 16, labels: true },
-    { id: 'uq111',     ko: '토지이용',      desc: '용도지역 · LT_C_UQ111 (확대 13↑)', kind: 'data', data: 'LT_C_UQ111', color: '#7c3aed', width: 1.2, minzoom: 13 },
     { id: 'adri',      ko: '리 경계',       desc: 'LT_C_ADRI_INFO (확대 12↑)',      kind: 'data', data: 'LT_C_ADRI_INFO', color: '#065f46', width: 1.6, minzoom: 12 },
     { id: 'ademd',     ko: '읍면동 경계',   desc: 'LT_C_ADEMD_INFO (확대 10↑)',     kind: 'data', data: 'LT_C_ADEMD_INFO', color: '#0f766e', width: 1.8, minzoom: 10 },
     { id: 'adsigg',    ko: '시군구 경계',   desc: 'LT_C_ADSIGG_INFO (확대 8↑)',     kind: 'data', data: 'LT_C_ADSIGG_INFO', color: '#b45309', width: 2, minzoom: 8 },
@@ -1097,13 +1131,21 @@ TenarSecureStore.init('map',
             paint: { 'fill-color': '#d92c2c', 'fill-opacity': 0.05 }
           });
         }
+        /* [v9] 토지이용계획: 용도지역 색상으로 채움 (각 feature의 _fillColor 사용) */
+        if (d.fillByUse) {
+          map.addLayer({
+            id: 'ov-' + d.id + '-fill', type: 'fill', source: srcId,
+            layout: { visibility: 'none' },
+            paint: { 'fill-color': ['coalesce', ['get', '_fillColor'], '#999999'], 'fill-opacity': settings.landuseOpacity }
+          });
+        }
         map.addLayer({
           id: 'ov-' + d.id + '-layer', type: 'line', source: srcId,
           layout: { visibility: 'none', 'line-cap': 'round', 'line-join': 'round' },
           paint: {
-            'line-color': d.color,
+            'line-color': d.fillByUse ? ['coalesce', ['get', '_fillColor'], d.color] : d.color,
             'line-width': d.width,
-            'line-opacity': (d.id === 'cadastral') ? settings.cadastralOpacity : 0.9
+            'line-opacity': (d.id === 'cadastral') ? settings.cadastralOpacity : 0.7
           }
         });
       }
@@ -1201,6 +1243,13 @@ TenarSecureStore.init('map',
       fetchVWorldData(d).then(function (fc) {
         dataLoading[d.id] = false;
         if (!settings.overlays[d.id]) return;
+        /* [v9] 토지이용계획: 각 필지에 용도지역 색상을 미리 계산해 넣는다 */
+        if (d.fillByUse && fc.features) {
+          fc.features.forEach(function (ft) {
+            ft.properties = ft.properties || {};
+            ft.properties._fillColor = landuseColor(ft.properties.uname);
+          });
+        }
         src.setData(fc);
         if (d.labels) renderCadLabels(fc);
       }).catch(function (e) {
@@ -1223,6 +1272,9 @@ TenarSecureStore.init('map',
     if (id === 'cadastral' && map.getLayer('ov-cadastral-fill')) {
       map.setLayoutProperty('ov-cadastral-fill', 'visibility', on ? 'visible' : 'none');
     }
+    if (d.fillByUse && map.getLayer('ov-' + id + '-fill')) {
+      map.setLayoutProperty('ov-' + id + '-fill', 'visibility', on ? 'visible' : 'none');
+    }
     settings.overlays[id] = !!on;
     saveSettings();
     if (d.kind === 'data') {
@@ -1238,6 +1290,12 @@ TenarSecureStore.init('map',
     if (map.getLayer('ov-cadastral-fill')) map.setPaintProperty('ov-cadastral-fill', 'fill-opacity', v * 0.08);
     saveSettings();
   }
+  /* [v9] 토지이용계획 투명도 (20~70%) */
+  function setLanduseOpacity(v) {
+    settings.landuseOpacity = v;
+    if (map.getLayer('ov-landuse-fill')) map.setPaintProperty('ov-landuse-fill', 'fill-opacity', v);
+    saveSettings();
+  }
   function applySettingsToMap() {
     setMapType(settings.baseType);
     OVERLAY_DEFS.forEach(function (d) {
@@ -1248,8 +1306,12 @@ TenarSecureStore.init('map',
       if (d.id === 'cadastral' && map.getLayer('ov-cadastral-fill')) {
         map.setLayoutProperty('ov-cadastral-fill', 'visibility', on ? 'visible' : 'none');
       }
+      if (d.fillByUse && map.getLayer('ov-' + d.id + '-fill')) {
+        map.setLayoutProperty('ov-' + d.id + '-fill', 'visibility', on ? 'visible' : 'none');
+      }
     });
     setCadastralOpacity(settings.cadastralOpacity);
+    setLanduseOpacity(settings.landuseOpacity);
     reloadDataOverlays(true);
   }
 
@@ -1698,7 +1760,23 @@ TenarSecureStore.init('map',
     bSurvey.addEventListener('click', function () { openSurveySheet(info); });
     row.appendChild(bSave); row.appendChild(bNav); row.appendChild(bSurvey);
 
-    box.appendChild(addrRow); box.appendChild(meta); box.appendChild(row);
+    /* [v9-21] 현재 필지정보 — 현재 좌표의 필지를 조회해 토지정보 시트로 확장 */
+    var bParcel = el('button', 'sheet-btn', '🧾 현재 필지정보');
+    bParcel.style.cssText += 'width:100%;margin-top:8px;';
+    bParcel.addEventListener('click', function () {
+      bParcel.textContent = '조회 중…'; bParcel.disabled = true;
+      requestParcelAt(info.lng, info.lat).then(function (f) {
+        if (!f) { showToast('현재 위치의 필지정보를 찾지 못했습니다.', 3500, 'info'); bParcel.textContent = '🧾 현재 필지정보'; bParcel.disabled = false; return; }
+        var p = Object.assign({}, f.properties || {});
+        if (f.geometry) p._geom = f.geometry;
+        openParcelInfoSheet(p, { lng: info.lng, lat: info.lat });
+      }).catch(function () {
+        showToast('필지정보를 불러오지 못했습니다.', 3500);
+        bParcel.textContent = '🧾 현재 필지정보'; bParcel.disabled = false;
+      });
+    });
+
+    box.appendChild(addrRow); box.appendChild(meta); box.appendChild(row); box.appendChild(bParcel);
     openSheet('현재 위치', box, 'auto');   /* [v8-8] 내용 높이만큼만 (버튼 아래 공백 제거) */
   }
 
@@ -2087,25 +2165,193 @@ TenarSecureStore.init('map',
   }
 
   /* ================= 조사표 전달 ================= */
+  /* ===================================================================
+     [v9] 필지 토지정보 (items 3·4·21·22)
+     · 기본: 전체지번+지목 / 도로명주소 / 우편번호 / PNU(복사)
+     · 추가정보(지연 조회): 면적 / 개별공시지가+연도 / 용도지역
+       농업진흥지역·토지이용상황은 깨끗한 데이터셋이 없어 "확인되지 않음" 처리하고
+       공식 토지이용계획(토지이음) 링크를 제공한다.
+     · 같은 PNU는 캐시(10분)하여 반복 호출을 줄인다.
+     =================================================================== */
+  var parcelCache = {};   /* pnu → { ts, road, zip, jiga, gosiYear, uname, areaM2 } */
+  var PARCEL_CACHE_MS = 10 * 60 * 1000;
+
+  function parseJimok(jibun) {
+    var m = String(jibun || '').match(/([가-힣]+)\s*$/);
+    return m ? m[1] : '';
+  }
+
+  /* 좌표로 필지 1건 조회 (지목·PNU·공시지가·geometry) */
+  function requestParcelAt(lng, lat) {
+    var cb = '__vwParcel' + (++dataFetchSeq);
+    var url = 'https://api.vworld.kr/req/data?service=data&request=GetFeature&version=2.0' +
+      '&data=LP_PA_CBND_BUBUN&key=' + encodeURIComponent(VWORLD_API_KEY) + '&domain=' + VWORLD_DOMAIN +
+      '&geomFilter=' + encodeURIComponent('POINT(' + lng + ' ' + lat + ')') +
+      '&crs=EPSG:4326&format=json&size=1&geometry=true&attribute=true&callback=' + cb;
+    return vworldJsonp(url, cb).then(function (d) {
+      var r = d && d.response;
+      if (!r || r.status !== 'OK') return null;
+      var fs = (r.result && r.result.featureCollection && r.result.featureCollection.features) || [];
+      return fs.length ? fs[0] : null;
+    });
+  }
+  /* 좌표로 용도지역명 조회 */
+  function requestLanduseAt(lng, lat) {
+    var cb = '__vwUse' + (++dataFetchSeq);
+    var url = 'https://api.vworld.kr/req/data?service=data&request=GetFeature&version=2.0' +
+      '&data=LT_C_UQ111&key=' + encodeURIComponent(VWORLD_API_KEY) + '&domain=' + VWORLD_DOMAIN +
+      '&geomFilter=' + encodeURIComponent('POINT(' + lng + ' ' + lat + ')') +
+      '&crs=EPSG:4326&format=json&size=3&geometry=false&attribute=true&callback=' + cb;
+    return vworldJsonp(url, cb).then(function (d) {
+      var r = d && d.response;
+      if (!r || r.status !== 'OK') return [];
+      var fs = (r.result && r.result.featureCollection && r.result.featureCollection.features) || [];
+      return fs.map(function (f) { return (f.properties || {}).uname; }).filter(Boolean);
+    });
+  }
+
+  var lastParcel = null;   /* 조사표/공유용으로 최근 조회 필지 보관 */
+
+  function openParcelInfoSheet(props, lngLat) {
+    props = props || {};
+    var pnu = props.pnu || '';
+    var jibun = props.jibun || '';
+    var jimok = parseJimok(jibun);
+    var fullJibun = props.addr || '';
+    lastParcel = { pnu: pnu, jibun: jibun, jimok: jimok, addr: fullJibun, lng: lngLat.lng, lat: lngLat.lat, jiga: props.jiga || '', gosiYear: props.gosi_year || '' };
+
+    var box = el('div');
+
+    /* ① 전체지번 + 지목 */
+    box.appendChild(el('div', null,
+      '<div class="addr-label" style="margin-top:0;">전체 지번</div>' +
+      '<div class="addr-main" style="font-size:17px;">' + escapeHtml(fullJibun || '주소 없음') + (jimok ? ' <span style="color:#27500A;">(' + escapeHtml(jimok) + ')</span>' : '') + '</div>'));
+
+    /* ② 도로명주소 (역지오코딩) */
+    var roadBox = el('div', null, '<div class="addr-label">도로명주소</div><div class="addr-value" id="pcRoad">조회 중…</div>');
+    box.appendChild(roadBox);
+    /* ③ 우편번호 */
+    var zipBox = el('div', null, '<div class="addr-label">우편번호</div><div class="addr-value" id="pcZip">조회 중…</div>');
+    box.appendChild(zipBox);
+
+    /* ④ PNU (복사) */
+    var pnuRow = el('div');
+    pnuRow.style.cssText = 'display:flex;align-items:flex-end;gap:8px;';
+    pnuRow.appendChild(el('div', null, '<div class="addr-label">PNU</div><div class="addr-value" style="word-break:break-all;">' + escapeHtml(pnu || '-') + '</div>'));
+    if (pnu) {
+      var pnuCopy = el('button', 'copy-btn', '복사');
+      pnuCopy.style.flexShrink = '0';
+      pnuCopy.addEventListener('click', function () { copyText(pnu); });
+      pnuRow.appendChild(pnuCopy);
+    }
+    box.appendChild(pnuRow);
+
+    /* 추가정보 열기/접기 */
+    var moreBtn = el('button', 'sheet-btn', '∨ 추가정보 열기');
+    moreBtn.style.cssText += 'width:100%;margin-top:12px;';
+    var moreBox = el('div');
+    moreBox.style.display = 'none';
+    var loaded = false;
+    moreBtn.addEventListener('click', function () {
+      var open = moreBox.style.display === 'none';
+      moreBox.style.display = open ? 'block' : 'none';
+      moreBtn.textContent = open ? '∧ 추가정보 접기' : '∨ 추가정보 열기';
+      if (open && !loaded) { loaded = true; loadParcelExtra(); }
+    });
+    box.appendChild(moreBtn);
+    box.appendChild(moreBox);
+
+    function loadParcelExtra() {
+      moreBox.innerHTML = '<div class="addr-value" style="color:#888;padding:8px 0;">추가정보를 불러오는 중…</div>';
+      var cached = pnu && parcelCache[pnu] && (Date.now() - parcelCache[pnu].ts < PARCEL_CACHE_MS) ? parcelCache[pnu] : null;
+
+      /* 면적: 화면에 렌더된 필지 geometry는 타일 경계로 잘려 있어 실제보다 작다.
+         반드시 데이터 API로 전체 필지를 받아 계산한다(캐시 있으면 캐시 사용). */
+      var pArea = (cached && cached.areaM2) ? Promise.resolve(cached.areaM2)
+        : requestParcelAt(lngLat.lng, lngLat.lat).then(function (f) {
+            if (f && f.geometry && hasTurf) { try { return turf.area(f); } catch (e) {} }
+            return 0;
+          }).catch(function () { return 0; });
+      var pUse = cached ? Promise.resolve(cached.uname) : requestLanduseAt(lngLat.lng, lngLat.lat).then(function (arr) { return arr[0] || ''; }).catch(function () { return ''; });
+
+      Promise.all([pArea, pUse]).then(function (res) {
+        var areaM2 = res[0] || 0, uname = res[1] || '';
+        var jiga = props.jiga || (cached ? cached.jiga : '');
+        var gyear = props.gosi_year || (cached ? cached.gosiYear : '');
+        if (pnu) parcelCache[pnu] = { ts: Date.now(), uname: uname, jiga: jiga, gosiYear: gyear, areaM2: areaM2 };
+        lastParcel.areaM2 = areaM2; lastParcel.uname = uname;
+
+        var html = '';
+        html += '<div class="addr-label">면적</div><div class="addr-value">' +
+          (areaM2 ? formatNumber(areaM2, 0) + '㎡ / 약 ' + formatNumber(areaM2 / 3.305785, 1) + '평' : '확인되지 않음') + '</div>';
+        html += '<div class="addr-label">개별공시지가</div><div class="addr-value">' +
+          (jiga ? formatNumber(Number(jiga), 0) + '원/㎡' + (gyear ? '<br><span style="color:#888;font-size:12px;">기준연도: ' + escapeHtml(gyear) + '년</span>' : '') : '공시지가 정보 없음') + '</div>';
+        html += '<div class="addr-label">용도지역</div><div class="addr-value">' + (uname ? escapeHtml(uname) : '확인되지 않음') + '</div>';
+        html += '<div class="addr-label">농업진흥지역</div><div class="addr-value" style="color:#999;">확인되지 않음 <span style="font-size:11px;">(공식 조회 이용)</span></div>';
+        html += '<div class="addr-label">토지이용상황</div><div class="addr-value" style="color:#999;">확인되지 않음 <span style="font-size:11px;">(공식 조회 이용)</span></div>';
+        moreBox.innerHTML = html;
+
+        /* 공식 토지이용계획(토지이음) 조회 링크 — 임의 해석 대신 공식값 연결 */
+        var official = el('button', 'sheet-btn', '🔗 공식 토지이용계획 확인');
+        official.style.cssText += 'width:100%;margin-top:10px;';
+        official.addEventListener('click', function () {
+          if (!pnu) { showToast('PNU가 없어 공식 조회를 열 수 없습니다.', 3000, 'info'); return; }
+          window.open('https://www.eum.go.kr/web/ar/lu/luLandDet.jsp?pnu=' + encodeURIComponent(pnu), '_blank', 'noopener');
+        });
+        moreBox.appendChild(official);
+      });
+    }
+
+    /* 조사표 전달 버튼 (item 22: PNU 우선) */
+    var surveyBtn = el('button', 'sheet-btn primary', '📋 조사표로 전달');
+    surveyBtn.style.cssText += 'width:100%;margin-top:12px;';
+    surveyBtn.addEventListener('click', function () {
+      openSurveySheet({
+        lat: lngLat.lat, lng: lngLat.lng, jibunAddress: fullJibun, roadAddress: (document.getElementById('pcRoad') || {}).textContent || '',
+        postalCode: (document.getElementById('pcZip') || {}).textContent || '', pnu: pnu, jimok: jimok
+      });
+    });
+    box.appendChild(surveyBtn);
+
+    openSheet('토지정보', box, 'auto');
+
+    /* 도로명·우편 역지오코딩 채우기 */
+    requestVWorldReverse(lngLat.lng, lngLat.lat).then(function (a) {
+      var r = document.getElementById('pcRoad'), z = document.getElementById('pcZip');
+      if (r) r.textContent = a.roadAddress || '도로명주소 없음';
+      if (z) z.textContent = a.postalCode || '확인되지 않음';
+      lastParcel.road = a.roadAddress || ''; lastParcel.zip = a.postalCode || '';
+    }).catch(function () {
+      var r = document.getElementById('pcRoad'), z = document.getElementById('pcZip');
+      if (r) r.textContent = '도로명주소 없음';
+      if (z) z.textContent = '확인되지 않음';
+    });
+  }
+
   function openSurveySheet(info) {
     var box = el('div');
     box.appendChild(el('div', null, '<div style="font-size:13px;color:#555;margin-bottom:10px;">' +
-      escapeHtml(info.jibunAddress || '') + '<br>좌표를 조사표로 전달합니다.</div>'));
+      escapeHtml(info.jibunAddress || '') + (info.pnu ? '<br>PNU ' + escapeHtml(info.pnu) : '') + '<br>좌표를 조사표로 전달합니다.</div>'));
     [['실측조사표', 'tonghab'], ['청취조사표', 'chungchi']].forEach(function (s) {
       var b = el('button', 'sheet-btn', s[0]);
       b.style.cssText += 'width:100%;margin-bottom:8px;';
       b.addEventListener('click', function () {
+        /* [v9-22] PNU 우선 식별 + 지목·면적·용도지역 함께 전달 */
+        var lp = (lastParcel && info.pnu && lastParcel.pnu === info.pnu) ? lastParcel : {};
         var payload = {
           latitude: info.lat, longitude: info.lng,
           jibunAddress: info.jibunAddress || '', roadAddress: info.roadAddress || '',
           postalCode: info.postalCode || '',
           favoriteId: info.favoriteId || null,
           color: info.color || '', crop: info.crop || '',
+          pnu: info.pnu || lp.pnu || '', jimok: info.jimok || lp.jimok || '',
+          areaM2: lp.areaM2 || 0, landuse: lp.uname || '',
+          jiga: lp.jiga || '', gosiYear: lp.gosiYear || '',
           surveyType: s[1], savedAt: kstNowStr()
         };
         saveJSON(PENDING_KEY, payload);
         closeSheet();
-        showToast(s[0] + '로 전달할 좌표를 저장했습니다.\n(조사표 자동 열기는 다음 버전)', 4000, 'success');
+        showToast(s[0] + '로 전달할 정보를 저장했습니다.' + (payload.pnu ? '\nPNU ' + payload.pnu : '') + '\n(조사표 자동 열기는 다음 버전)', 4000, 'success');
       });
       box.appendChild(b);
     });
@@ -2154,9 +2400,34 @@ TenarSecureStore.init('map',
       if (t) t.textContent = rng.value + '%';
     });
     box.appendChild(val); box.appendChild(rng);
-    box.appendChild(el('div', null, '<div class="lyr-desc" style="margin-top:8px;">' +
-      '지적도는 확대 16 이상에서 표시되며, 지번(본번-부번) 라벨은 확대 17 이상에서 나타납니다.<br>' +
-      '지적 필지를 누르면 지번·PNU를 확인할 수 있습니다.</div>'));
+
+    /* [v9] 토지이용계획 투명도 (20~70%) + 색상 범례 */
+    box.appendChild(el('div', 'sec-title', '토지이용계획 투명도'));
+    var luVal = el('div', null, '<div class="lyr-desc" id="luVal">' + Math.round(settings.landuseOpacity * 100) + '%</div>');
+    var luRng = el('input');
+    luRng.type = 'range'; luRng.min = '20'; luRng.max = '70'; luRng.step = '5';
+    luRng.value = String(Math.round(settings.landuseOpacity * 100));
+    luRng.addEventListener('input', function () {
+      var v = Number(luRng.value) / 100;
+      setLanduseOpacity(v);
+      var t = document.getElementById('luVal');
+      if (t) t.textContent = luRng.value + '%';
+    });
+    box.appendChild(luVal); box.appendChild(luRng);
+    var legend = el('div', null, '');
+    legend.style.cssText = 'display:flex;flex-wrap:wrap;gap:5px 12px;margin-top:8px;';
+    LANDUSE_LEGEND.forEach(function (x) {
+      var item = el('div', null,
+        '<span style="display:inline-block;width:13px;height:13px;border-radius:3px;background:' + x[1] +
+        ';border:1px solid rgba(0,0,0,.15);vertical-align:middle;margin-right:4px;"></span>' +
+        '<span style="font-size:11px;color:#555;vertical-align:middle;">' + escapeHtml(x[0]) + '</span>');
+      legend.appendChild(item);
+    });
+    box.appendChild(legend);
+
+    box.appendChild(el('div', null, '<div class="lyr-desc" style="margin-top:10px;">' +
+      '지적도는 확대 16 이상, 지번 라벨은 확대 17 이상, 토지이용계획은 확대 13 이상에서 표시됩니다.<br>' +
+      '지적 필지를 누르면 지번·지목·PNU와 추가정보(면적·공시지가·용도지역)를 확인할 수 있습니다.</div>'));
     openSheet('🗺 레이어', box, 50);
   }
 
@@ -2650,16 +2921,13 @@ TenarSecureStore.init('map',
     if (mode === 'polygon') { addFieldPoint(e.lngLat); return; }
     if (mode === 'distance') { addDistancePoint(e.lngLat); return; }
 
-    /* 측정 중이 아닐 때 지적도를 누르면 지번 정보 표시 */
+    /* [v9] 측정 중이 아닐 때 지적 필지를 누르면 토지정보 시트를 연다 */
     if (settings.overlays.cadastral && map.getLayer('ov-cadastral-fill')) {
       var hits = map.queryRenderedFeatures(e.point, { layers: ['ov-cadastral-fill'] });
       if (hits.length) {
-        var p = hits[0].properties || {};
-        var html = '<div style="font-weight:800;margin-bottom:3px;">' + escapeHtml(p.addr || p.jibun || '지적 정보') + '</div>' +
-          (p.jibun ? '<div>지번 ' + escapeHtml(p.jibun) + '</div>' : '') +
-          (p.bonbun ? '<div>본번 ' + escapeHtml(p.bonbun) + (p.bubun && p.bubun !== '0' ? ' · 부번 ' + escapeHtml(p.bubun) : '') + '</div>' : '') +
-          (p.pnu ? '<div style="color:#888;">PNU ' + escapeHtml(p.pnu) + '</div>' : '');
-        new maplibregl.Popup({ offset: 6 }).setLngLat(e.lngLat).setHTML(html).addTo(map);
+        var p = Object.assign({}, hits[0].properties || {});
+        if (hits[0].geometry) p._geom = hits[0].geometry;   /* 면적 계산용 */
+        openParcelInfoSheet(p, e.lngLat);
       }
     }
   });
@@ -3401,8 +3669,16 @@ TenarSecureStore.init('map',
     var savedSettings = loadJSON(SETTINGS_KEY, null);
     if (savedSettings && typeof savedSettings === 'object') {
       if (savedSettings.baseType) settings.baseType = savedSettings.baseType;
-      if (savedSettings.overlays) Object.assign(settings.overlays, savedSettings.overlays);
+      if (savedSettings.overlays) {
+        /* [v9] 이전 버전의 'uq111' 설정을 'landuse'로 자동 이관 */
+        if ('uq111' in savedSettings.overlays && !('landuse' in savedSettings.overlays)) {
+          savedSettings.overlays.landuse = savedSettings.overlays.uq111;
+        }
+        Object.assign(settings.overlays, savedSettings.overlays);
+        delete settings.overlays.uq111;
+      }
       if (isFinite(savedSettings.cadastralOpacity)) settings.cadastralOpacity = savedSettings.cadastralOpacity;
+      if (isFinite(savedSettings.landuseOpacity)) settings.landuseOpacity = savedSettings.landuseOpacity;
       if (typeof savedSettings.showFavPins === 'boolean') settings.showFavPins = savedSettings.showFavPins;
       if (typeof savedSettings.cropFilter === 'string') settings.cropFilter = savedSettings.cropFilter;
     }
