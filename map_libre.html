@@ -1,4 +1,5 @@
-<!-- map_v4.html (v4a) · 저장: 2026-07-17 07:45 KST · [v4a] 네이버 지도 → MapLibre·VWorld 교체판 · 오른쪽 원형버튼6 · 현재위치 상세/주소복사 · 핀저장(6색·랜덤) · 즐겨찾기(잠금·JSON공유/내보내기/불러오기) · 저장핀/작물 필터 · 레이어(일반/항공/하이브리드/지적도·투명도/토지이용/경계) · 실시간 위치추적 · 길찾기(네이버/카카오/T맵) · 조사표 전달 · 지도상태 복원 · TenarCrypto 그대로 유지 -->
+<!-- map_v5.html (v5) · 저장: 2026-07-17 08:50 KST · [v5] UI 정리 9건 — ①이모지 30%축소 ②레이어 이모지 최신(🗺️) ③확대/축소·나침반 왼쪽최하단 이동+축소, 중복 위치추적버튼 숨김(재활성 가능) ④버튼5개 오른쪽최하단+바텀시트 연동 ⑤측정버튼 토글+삭제확인창 ⑥실측도구 가로절반·헤더드래그 이동·버튼명 단축 ⑦결과 접기(기본닫힘)·면적 중앙 ㎡/평 라벨·길이 m 소수2자리 ⑧핀 방향 수정(SVG) -->
+<!-- (이전) map_v4.html (v4a) · 저장: 2026-07-17 07:45 KST · [v4a] 네이버 지도 → MapLibre·VWorld 교체판 · 오른쪽 원형버튼6 · 현재위치 상세/주소복사 · 핀저장(6색·랜덤) · 즐겨찾기(잠금·JSON공유/내보내기/불러오기) · 저장핀/작물 필터 · 레이어(일반/항공/하이브리드/지적도·투명도/토지이용/경계) · 실시간 위치추적 · 길찾기(네이버/카카오/T맵) · 조사표 전달 · 지도상태 복원 · TenarCrypto 그대로 유지 -->
 <!-- (이전) map_libre_v3.html · [v3] 필지경계·거리측정·면적/둘레·꼭짓점수정 (Turf.js) -->
 <!-- (이전) map_libre_v2.html · [v2] 브이월드 일반/영상 + 주소·지번 검색 -->
 <!-- ※ v4b 예정: 측정 바텀시트 전환 · 길이 cm 표시 · 면적 중앙 ㎡/평 라벨 · 측정 저장/목록 · 이미지 공유 -->
@@ -332,16 +333,27 @@ TenarSecureStore.init('map',
     padding: 3px 8px; font-size: 11px; font-weight: 600; color: #444; pointer-events: none;
   }
 
-  /* ===== 오른쪽 원형 버튼 ===== */
+  /* ===== 원형 버튼 (v5: 레이어=오른쪽 위 / 나머지 5개=오른쪽 아래) ===== */
   #sideBtns {
     position: absolute;
     right: calc(env(safe-area-inset-right, 0px) + 10px);
     top: calc(env(safe-area-inset-top, 0px) + 10px);
     z-index: 14; display: flex; flex-direction: column; gap: 8px; touch-action: auto;
   }
+  /* [v5-4] 저장핀·측정·추적·즐겨찾기·현재위치는 오른쪽 최하단으로 이동.
+     바텀시트가 올라오면 JS(updateBottomBtnsPos)가 시트 위로 밀어 올린다. */
+  #bottomBtns {
+    position: absolute;
+    right: calc(env(safe-area-inset-right, 0px) + 10px);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+    z-index: 14; display: flex; flex-direction: column; gap: 8px; touch-action: auto;
+    transition: bottom .18s ease;
+  }
   .side-btn {
-    width: 48px; height: 48px; border-radius: 24px; border: 0;
-    background: #fff; color: #27500A; font-size: 21px; line-height: 1;
+    width: 44px; height: 44px; border-radius: 22px; border: 0;
+    background: #fff; color: #27500A;
+    font-size: 15px;            /* [v5-1] 이모지 21px → 15px (약 30% 축소) */
+    line-height: 1;
     box-shadow: 0 2px 8px rgba(0,0,0,.3); cursor: pointer;
     display: flex; align-items: center; justify-content: center;
     -webkit-appearance: none; -webkit-tap-highlight-color: transparent;
@@ -349,44 +361,61 @@ TenarSecureStore.init('map',
   .side-btn.active { background: #27500A; color: #fff; }
   .side-btn:active { transform: scale(.94); }
 
-  /* MapLibre 기본 컨트롤(확대/축소·나침반)은 오른쪽 버튼 아래에 */
-  .maplibregl-ctrl-top-right {
-    top: calc(env(safe-area-inset-top, 0px) + 340px);
-    right: calc(env(safe-area-inset-right, 0px) + 14px);
+  /* [v5-3] MapLibre 기본 컨트롤(확대·축소·나침반 정위치)을 왼쪽 최하단(회전각 위)으로 이동 + 축소 */
+  .maplibregl-ctrl-bottom-left {
+    left: calc(env(safe-area-inset-left, 0px) + 12px);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 52px);   /* 회전각 박스 위 */
+    margin: 0;
   }
-  .maplibregl-ctrl-group button { width: 40px; height: 40px; }
+  .maplibregl-ctrl-bottom-left .maplibregl-ctrl-group { margin: 0; }
+  .maplibregl-ctrl-group button { width: 30px; height: 30px; }
+  .maplibregl-ctrl-group button .maplibregl-ctrl-icon { transform: scale(.8); }
+  /* [v5-3] 기본 위치추적 버튼은 오른쪽 🎯/📍 버튼과 중복 → 화면에서만 숨김.
+     (컨트롤 자체는 살아 있어야 정확도 원·진행방향 표시가 동작한다.
+      다시 보이게 하려면 아래 한 줄을 지우거나 SHOW_NATIVE_GEOLOCATE=true 로 바꾼다) */
+  .maplibregl-ctrl-geolocate.tenar-hidden { display: none !important; }
   .maplibregl-ctrl-bottom-right { margin-bottom: env(safe-area-inset-bottom, 0px); }
 
   /* ===== 실측 도구(좌측 패널 · v4b에서 바텀시트로 이전 예정) ===== */
+  /* [v5-6] 가로 절반(186→96px) · 헤더 바를 잡고 이동 가능 */
   #toolPanel {
     position: absolute;
     left: calc(env(safe-area-inset-left, 0px) + 10px);
     top: calc(env(safe-area-inset-top, 0px) + 110px);
-    z-index: 13; width: 186px; display: none; flex-direction: column;
+    z-index: 13; width: 96px; display: none; flex-direction: column;
     max-height: calc(100% - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 190px);
-    background: rgba(255,255,255,.96); border-radius: 12px;
+    background: rgba(255,255,255,.96); border-radius: 10px;
     box-shadow: 0 2px 12px rgba(0,0,0,.28); overflow: hidden; touch-action: auto;
   }
   #toolPanel.show { display: flex; }
   #toolHeader {
-    display: flex; align-items: center; justify-content: space-between;
-    min-height: 42px; padding: 0 10px; background: #27500A; color: #fff;
-    font-size: 13.5px; font-weight: 800; cursor: pointer; user-select: none; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: space-between; gap: 2px;
+    min-height: 34px; padding: 0 6px; background: #27500A; color: #fff;
+    font-size: 11.5px; font-weight: 800; user-select: none; flex-shrink: 0;
+    cursor: grab; touch-action: none;   /* 헤더 바 = 이동 손잡이 */
   }
-  #toolBody { padding: 8px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  #toolHeader:active { cursor: grabbing; }
+  #toolBody { padding: 6px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
   #toolBody.collapsed { display: none; }
-  #toolBtns { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  #toolBtns { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
   .tool-btn {
-    min-height: 42px; padding: 4px 2px; border: 1.5px solid #d8d8e0; border-radius: 8px;
-    background: #fff; color: #333; font-size: 12px; font-weight: 700; line-height: 1.3;
+    min-height: 34px; padding: 3px 1px; border: 1.5px solid #d8d8e0; border-radius: 7px;
+    background: #fff; color: #333; font-size: 10.5px; font-weight: 700; line-height: 1.2;
     cursor: pointer; -webkit-appearance: none;
   }
+  /* [v5-7] 결과(면적·둘레) 접기/펴기 — 기본 닫힘 */
+  #resultToggle {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 6px; padding: 5px 6px; border-radius: 7px; background: #eef1ec;
+    font-size: 10.5px; font-weight: 800; color: #27500A; cursor: pointer; user-select: none;
+  }
+  #resultBox.collapsed { display: none; }
   .tool-btn.active { background: #27500A; border-color: #27500A; color: #fff; }
   .tool-btn.wide { grid-column: 1 / -1; }
   .tool-btn.danger { border-color: #e8b4b4; color: #b32020; }
-  #resultBox { margin-top: 8px; padding: 8px; border-radius: 8px; background: #f5f6f4; font-size: 12px; line-height: 1.55; color: #333; }
-  #resultBox .res-title { font-size: 11px; font-weight: 800; color: #27500A; }
-  #resultBox .res-main { font-size: 15px; font-weight: 800; color: #1b1b1b; margin: 1px 0 3px; }
+  #resultBox { margin-top: 5px; padding: 6px; border-radius: 7px; background: #f5f6f4; font-size: 10.5px; line-height: 1.5; color: #333; }
+  #resultBox .res-title { font-size: 9.5px; font-weight: 800; color: #27500A; }
+  #resultBox .res-main { font-size: 12.5px; font-weight: 800; color: #1b1b1b; margin: 1px 0 3px; }
   #resultBox .res-sub { color: #555; }
   #resultBox .res-empty { color: #888; }
   #resultBox hr { border: 0; border-top: 1px solid #e0e0e0; margin: 7px 0; }
@@ -415,19 +444,25 @@ TenarSecureStore.init('map',
   #toast.toast-success { background: rgba(25,130,65,.93); }
   #toast.toast-info { background: rgba(45,90,175,.92); }
 
-  .search-marker {
-    width: 22px; height: 22px; border-radius: 50% 50% 50% 0; background: #e5342a;
-    border: 2.5px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,.45); transform: rotate(-45deg); cursor: pointer;
+  /* [v5-8] 핀 방향 수정 —— 기존에는 마커 요소에 transform:rotate(-45deg)를 걸었는데
+     MapLibre Marker가 같은 요소의 transform(위치이동)을 직접 덮어써서 회전이 사라지고
+     핀이 왼쪽으로 틀어져 보였다. → CSS 회전을 버리고 SVG 물방울 모양으로 교체.
+     SVG 꼭짓점이 viewBox 하단 중앙에 있으므로 anchor:'bottom'이면 좌표에 정확히 꽂힌다. */
+  .pin { position: relative; width: 24px; height: 30px; cursor: pointer; }
+  .pin svg { display: block; }
+  .pin .pin-emoji {
+    position: absolute; left: 0; right: 0; top: 4px;
+    text-align: center; font-size: 10px; line-height: 1; pointer-events: none;
   }
-  .fav-marker {
-    width: 26px; height: 26px; border-radius: 50% 50% 50% 0; border: 2.5px solid #fff;
-    box-shadow: 0 2px 6px rgba(0,0,0,.45); transform: rotate(-45deg); cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .fav-marker span { transform: rotate(45deg); font-size: 12px; line-height: 1; }
   .seg-label {
     padding: 2px 6px; border-radius: 6px; background: rgba(20,70,160,.92); color: #fff;
     font-size: 11px; font-weight: 800; white-space: nowrap; box-shadow: 0 1px 4px rgba(0,0,0,.35); pointer-events: none;
+  }
+  /* [v5-7] 면적 중앙 라벨 (㎡ / 평 두 줄) */
+  .area-label {
+    padding: 3px 7px; border-radius: 7px; background: rgba(20,97,47,.92); color: #fff;
+    font-size: 11px; font-weight: 800; line-height: 1.35; text-align: center; white-space: nowrap;
+    box-shadow: 0 1px 5px rgba(0,0,0,.4); pointer-events: none;
   }
   /* 지적도 지번(본번-부번) 라벨 */
   .cad-label {
@@ -550,30 +585,35 @@ TenarSecureStore.init('map',
     <div id="hint">두 손가락 회전 · 확대 가능</div>
   </div>
 
-  <!-- 오른쪽 원형 버튼 (위→아래: 레이어·저장핀·측정·추적·즐겨찾기·현재위치) -->
+  <!-- [v5-2/4] 레이어만 오른쪽 위 (이모지 최신 🗺️) -->
   <div id="sideBtns">
-    <button class="side-btn" id="btnLayer"  type="button" title="레이어">🗺</button>
-    <button class="side-btn" id="btnPins"   type="button" title="저장핀·작물">🌱</button>
-    <button class="side-btn" id="btnMeasure" type="button" title="면적·길이 측정">📐</button>
-    <button class="side-btn" id="btnTrack"  type="button" title="실시간 위치추적">🎯</button>
-    <button class="side-btn" id="btnFav"    type="button" title="즐겨찾기">⭐</button>
-    <button class="side-btn" id="btnHere"   type="button" title="현재 위치">📍</button>
+    <button class="side-btn" id="btnLayer" type="button" title="레이어">🗺️</button>
   </div>
 
-  <!-- 실측 도구 -->
+  <!-- [v5-4] 나머지 5개는 오른쪽 최하단 (바텀시트가 열리면 시트 위로 이동) -->
+  <div id="bottomBtns">
+    <button class="side-btn" id="btnPins"    type="button" title="저장핀·작물">🌱</button>
+    <button class="side-btn" id="btnMeasure" type="button" title="면적·길이 측정">📐</button>
+    <button class="side-btn" id="btnTrack"   type="button" title="실시간 위치추적">🎯</button>
+    <button class="side-btn" id="btnFav"     type="button" title="즐겨찾기">⭐</button>
+    <button class="side-btn" id="btnHere"    type="button" title="현재 위치">📍</button>
+  </div>
+
+  <!-- 실측 도구 (헤더 바를 잡고 이동) -->
   <div id="toolPanel">
     <div id="toolHeader"><span>실측 도구</span><span id="toolToggle">▼</span></div>
     <div id="toolBody">
       <div id="toolBtns">
-        <button class="tool-btn" type="button" id="btnField">▱ 면적 측정</button>
-        <button class="tool-btn" type="button" id="btnDistance">↔ 길이 측정</button>
+        <button class="tool-btn" type="button" id="btnField">▱ 면적</button>
+        <button class="tool-btn" type="button" id="btnDistance">↔ 길이</button>
         <button class="tool-btn" type="button" id="btnEdit">✥ 수정</button>
-        <button class="tool-btn" type="button" id="btnUndo">↶ 한 단계 취소</button>
-        <button class="tool-btn wide" type="button" id="btnCenterAdd">＋ 중심점 추가</button>
-        <button class="tool-btn" type="button" id="btnFinish">✓ 측정 완료</button>
-        <button class="tool-btn danger" type="button" id="btnReset">🗑 전체 초기화</button>
+        <button class="tool-btn" type="button" id="btnUndo">↶ UNDO</button>
+        <button class="tool-btn" type="button" id="btnCenterAdd">＋ 센터추가</button>
+        <button class="tool-btn" type="button" id="btnFinish">✓ 완료</button>
+        <button class="tool-btn danger wide" type="button" id="btnReset">🗑 초기화</button>
       </div>
-      <div id="resultBox"><span class="res-empty">측정 결과가 없습니다.</span></div>
+      <div id="resultToggle"><span>측정 결과</span><span id="resultArrow">▶</span></div>
+      <div id="resultBox" class="collapsed"><span class="res-empty">측정 결과가 없습니다.</span></div>
     </div>
   </div>
 
@@ -776,7 +816,8 @@ TenarSecureStore.init('map',
   map.dragRotate.enable();
   map.touchPitch.enable();
 
-  map.addControl(new maplibregl.NavigationControl({ showCompass: true, showZoom: true, visualizePitch: true }), 'top-right');
+  /* [v5-3] 확대·축소·나침반(각도 정위치)은 왼쪽 최하단(회전각 위)으로 이동 */
+  map.addControl(new maplibregl.NavigationControl({ showCompass: true, showZoom: true, visualizePitch: true }), 'bottom-left');
 
   var geolocateControl = new maplibregl.GeolocateControl({
     positionOptions: { enableHighAccuracy: true, timeout: 10000 },
@@ -784,7 +825,21 @@ TenarSecureStore.init('map',
     showUserHeading: true,
     showAccuracyCircle: true
   });
-  map.addControl(geolocateControl, 'top-right');
+  /* [v5-3] 기본 위치추적 버튼은 오른쪽 🎯·📍 버튼과 중복이라 화면에서 숨긴다.
+     컨트롤 자체는 지도에 붙여 두어야 정확도 원·진행방향 표시가 계속 동작한다.
+     ★ 다시 보이게 하려면 아래 값을 true 로만 바꾸면 된다. */
+  var SHOW_NATIVE_GEOLOCATE = false;
+  map.addControl(geolocateControl, 'bottom-left');
+  if (!SHOW_NATIVE_GEOLOCATE) {
+    setTimeout(function () {
+      var b = document.querySelector('.maplibregl-ctrl-geolocate');
+      if (b) {
+        b.classList.add('tenar-hidden');
+        var grp = b.parentNode;   /* 버튼만 있는 빈 그룹 상자도 함께 숨김 */
+        if (grp && grp.children.length === 1) grp.style.display = 'none';
+      }
+    }, 0);
+  }
 
   geolocateControl.on('error', function (e) {
     console.error('위치 오류:', e);
@@ -1024,6 +1079,17 @@ TenarSecureStore.init('map',
   var sheetSnap = 58;
   var sheetOpen = false;
 
+  /* [v5-4] 바텀시트가 올라오면 오른쪽 아래 버튼들을 시트 위로 밀어 올린다 */
+  var bottomBtnsEl = document.getElementById('bottomBtns');
+  function updateBottomBtnsPos() {
+    if (sheetOpen) {
+      var h = sheetEl.getBoundingClientRect().height;
+      bottomBtnsEl.style.bottom = (h + 12) + 'px';
+    } else {
+      bottomBtnsEl.style.bottom = '';   /* CSS 기본값(safe-area + 12px)으로 복귀 */
+    }
+  }
+
   function openSheet(title, node, snap) {
     sheetTitle.textContent = title;
     sheetBody.innerHTML = '';
@@ -1034,11 +1100,13 @@ TenarSecureStore.init('map',
     sheetOverlay.classList.add('show');
     sheetEl.classList.add('show');
     sheetOpen = true;
+    requestAnimationFrame(updateBottomBtnsPos);
   }
   function closeSheet() {
     sheetEl.classList.remove('show');
     sheetOverlay.classList.remove('show');
     sheetOpen = false;
+    updateBottomBtnsPos();
   }
   document.getElementById('sheetClose').addEventListener('click', closeSheet);
   sheetOverlay.addEventListener('click', closeSheet);
@@ -1057,6 +1125,7 @@ TenarSecureStore.init('map',
       var dy = pt(e) - startY;
       var h = Math.max(60, startH - dy);
       sheetEl.style.height = Math.min(h, window.innerHeight * 0.92) + 'px';
+      updateBottomBtnsPos();          /* 시트를 끌면 버튼도 같이 따라 움직임 */
       if (e.cancelable) e.preventDefault();
     }
     function up() {
@@ -1069,6 +1138,7 @@ TenarSecureStore.init('map',
       SNAPS.forEach(function (s) { var d = Math.abs(s - pct); if (d < bd) { bd = d; best = s; } });
       sheetSnap = best;
       sheetEl.style.height = best + '%';
+      setTimeout(updateBottomBtnsPos, 190);   /* 스냅 애니메이션 후 위치 재계산 */
     }
     grip.addEventListener('touchstart', down, { passive: true });
     grip.addEventListener('touchmove', move, { passive: false });
@@ -1086,12 +1156,25 @@ TenarSecureStore.init('map',
   }
 
   /* ================= 검색 마커 ================= */
+  /* [v5-8] SVG 물방울 핀 — 꼭짓점이 viewBox 하단 중앙(12,29.4)에 있어
+     anchor:'bottom' 이면 좌표에 정확히 수직으로 꽂힌다. */
+  function makePinElement(hex, emoji) {
+    var e = document.createElement('div');
+    e.className = 'pin';
+    e.innerHTML =
+      '<svg width="24" height="30" viewBox="0 0 24 30" xmlns="http://www.w3.org/2000/svg">' +
+      '<path d="M12 29.4C12 29.4 21.6 17.6 21.6 11.1A9.6 9.6 0 1 0 2.4 11.1C2.4 17.6 12 29.4 12 29.4Z" ' +
+      'fill="' + hex + '" stroke="#ffffff" stroke-width="2" stroke-linejoin="round"/>' +
+      '</svg>' +
+      (emoji ? '<span class="pin-emoji">' + emoji + '</span>' : '');
+    return e;
+  }
+
   var searchMarker = null;
   function clearSearchMarker() { if (searchMarker) { searchMarker.remove(); searchMarker = null; } }
   function showSearchMarker(result) {
     clearSearchMarker();
-    var e = document.createElement('div');
-    e.className = 'search-marker';
+    var e = makePinElement('#e5342a', '');
     var rows = '<div><b>검색어</b><br>' + escapeHtml(result.query) + '</div>';
     if (result.parcel) rows += '<div style="margin-top:5px;"><b>지번주소</b><br>' + escapeHtml(result.parcel) + '</div>';
     if (result.road) rows += '<div style="margin-top:5px;"><b>도로명주소</b><br>' + escapeHtml(result.road) + '</div>';
@@ -1268,10 +1351,7 @@ TenarSecureStore.init('map',
     var favs = getFavs();
     favs.forEach(function (f) {
       if (settings.cropFilter && f.crop !== settings.cropFilter) return;
-      var e = document.createElement('div');
-      e.className = 'fav-marker';
-      e.style.background = colorHex(f.color);
-      e.innerHTML = '<span>' + (f.cropIcon || '📍') + '</span>';
+      var e = makePinElement(colorHex(f.color), f.cropIcon || '');
       var html = '<div style="font-weight:800;margin-bottom:3px;">' + escapeHtml(f.name) + '</div>' +
         (f.jibunAddress ? '<div>' + escapeHtml(f.jibunAddress) + '</div>' : '') +
         (f.roadAddress ? '<div style="color:#666;">' + escapeHtml(f.roadAddress) + '</div>' : '') +
@@ -1821,9 +1901,9 @@ TenarSecureStore.init('map',
   function formatNumber(value, digits) {
     return Number(value).toLocaleString('ko-KR', { minimumFractionDigits: digits, maximumFractionDigits: digits });
   }
+  /* [v5-7] 길이는 항상 미터 · 소수점 둘째 자리까지 */
   function formatMeasurementValue(meters) {
-    if (meters >= 1000) return formatNumber(meters / 1000, 3) + 'km';
-    return formatNumber(meters, 1) + 'm';
+    return formatNumber(meters, 2) + 'm';
   }
   function closedRing(points) { var r = points.slice(); r.push(points[0]); return r; }
 
@@ -1865,8 +1945,25 @@ TenarSecureStore.init('map',
     }
     map.getSource('survey-field-source').setData(fc);
     calculateFieldArea(); calculateFieldPerimeter();
+    updateAreaLabel();
     updateMeasurementResultPanel();
     syncSurveyMapData();
+  }
+
+  /* [v5-7] 점 3개 이상이면 필지 중앙에 면적을 ㎡·평 두 줄로 표시 */
+  var areaLabelMarker = null;
+  function clearAreaLabel() { if (areaLabelMarker) { areaLabelMarker.remove(); areaLabelMarker = null; } }
+  function updateAreaLabel() {
+    clearAreaLabel();
+    var s = surveyMeasureState;
+    if (!hasTurf || !s.fieldPolygon || s.fieldPoints.length < 3) return;
+    var c = null;
+    try { c = turf.centerOfMass(s.fieldPolygon).geometry.coordinates; } catch (e) { return; }
+    if (!c || !isFinite(c[0]) || !isFinite(c[1])) return;
+    var e2 = document.createElement('div');
+    e2.className = 'area-label';
+    e2.innerHTML = formatNumber(s.fieldAreaM2, 1) + '㎡<br>' + formatNumber(s.fieldAreaM2 / 3.305785, 1) + '평';
+    areaLabelMarker = new maplibregl.Marker({ element: e2 }).setLngLat(c).addTo(map);
   }
   function clearSegmentLabels() { segmentLabelMarkers.forEach(function (m) { m.remove(); }); segmentLabelMarkers = []; }
   function updateDistanceGeometry() {
@@ -2126,17 +2223,117 @@ TenarSecureStore.init('map',
   document.getElementById('btnFav').addEventListener('click', openFavSheet);
   document.getElementById('btnHere').addEventListener('click', goHere);
   document.getElementById('btnTrack').addEventListener('click', toggleTracking);
+  /* [v5-5] 측정 버튼 = 열기/닫기 토글.
+     닫을 때 측정 중이거나 측정값이 남아 있으면 삭제 여부를 먼저 확인한다. */
+  function hasMeasureData() {
+    var s = surveyMeasureState;
+    return (s.fieldPoints.length > 0 || s.distancePoints.length > 0);
+  }
+  function closeMeasurePanel(clearData) {
+    if (clearData) {
+      var s = surveyMeasureState;
+      s.fieldPoints = []; s.fieldPolygon = null; s.fieldAreaM2 = 0; s.fieldPerimeterM = 0;
+      s.distancePoints = []; s.segmentDistances = []; s.totalDistanceM = 0;
+      s.isFieldComplete = false; s.dragging = null;
+      updateMeasurementSources();
+    }
+    setSurveyMode('none');   /* 면적/길이/수정 모드 해제 */
+    toolPanelEl.classList.remove('show');
+    document.getElementById('btnMeasure').classList.remove('active');
+  }
   document.getElementById('btnMeasure').addEventListener('click', function () {
-    var p = document.getElementById('toolPanel');
-    var on = p.classList.toggle('show');
-    document.getElementById('btnMeasure').classList.toggle('active', on);
+    var isOpen = toolPanelEl.classList.contains('show');
+    if (!isOpen) {
+      toolPanelEl.classList.add('show');
+      this.classList.add('active');
+      return;
+    }
+    if (hasMeasureData()) {
+      askMeasureClose().then(function (choice) {
+        if (choice === 'close') closeMeasurePanel(true);
+      });
+      return;
+    }
+    closeMeasurePanel(false);
   });
 
+  /* 측정 닫기 확인창 — [취소] [삭제(닫기)] */
+  function askMeasureClose() {
+    return new Promise(function (resolve) {
+      var ov = document.createElement('div');
+      ov.style.cssText = 'position:fixed;inset:0;z-index:2147483645;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:22px;';
+      var box = document.createElement('div');
+      box.style.cssText = 'background:#fff;border-radius:16px;max-width:340px;width:100%;padding:20px 18px;box-shadow:0 8px 30px rgba(0,0,0,.35);text-align:center;';
+      box.innerHTML =
+        '<div style="font-size:16px;font-weight:800;color:#222;margin-bottom:8px;">측정을 닫으시겠습니까?</div>' +
+        '<div style="font-size:13px;color:#555;line-height:1.55;margin-bottom:16px;">' +
+        '닫으면 측정한 자료가 삭제됩니다.<br>저장하려면 「측정저장」을 먼저 해주세요.</div>';
+      var row = document.createElement('div');
+      row.style.cssText = 'display:flex;gap:8px;';
+      function mk(label, bg, val) {
+        var b = document.createElement('button');
+        b.textContent = label;
+        b.style.cssText = 'flex:1;border:none;border-radius:11px;padding:12px 4px;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer;color:#fff;background:' + bg + ';-webkit-tap-highlight-color:transparent;';
+        b.onclick = function () { try { ov.remove(); } catch (e) {} resolve(val); };
+        return b;
+      }
+      row.appendChild(mk('취소', '#8a8a8a', 'cancel'));
+      row.appendChild(mk('삭제(닫기)', '#c62828', 'close'));
+      box.appendChild(row); ov.appendChild(box);
+      ov.addEventListener('click', function (e) { if (e.target === ov) { try { ov.remove(); } catch (_) {} resolve('cancel'); } });
+      document.body.appendChild(ov);
+    });
+  }
+
+  /* [v5-6] 실측 도구: 헤더 바를 잡고 이동 (짧게 누르면 접기/펴기) */
   var toolBody = document.getElementById('toolBody');
   var toolToggle = document.getElementById('toolToggle');
-  document.getElementById('toolHeader').addEventListener('click', function () {
-    var collapsed = toolBody.classList.toggle('collapsed');
-    toolToggle.textContent = collapsed ? '▲' : '▼';
+  var toolPanelEl = document.getElementById('toolPanel');
+  (function () {
+    var head = document.getElementById('toolHeader');
+    var dragging = false, moved = false, sx = 0, sy = 0, ox = 0, oy = 0;
+    function pt(e) { return e.touches ? e.touches[0] : e; }
+    function down(e) {
+      var p = pt(e);
+      var r = toolPanelEl.getBoundingClientRect();
+      dragging = true; moved = false;
+      sx = p.clientX; sy = p.clientY; ox = r.left; oy = r.top;
+      toolPanelEl.style.right = 'auto';
+    }
+    function move(e) {
+      if (!dragging) return;
+      var p = pt(e);
+      var dx = p.clientX - sx, dy = p.clientY - sy;
+      if (Math.abs(dx) > 4 || Math.abs(dy) > 4) moved = true;
+      var w = toolPanelEl.offsetWidth, h = toolPanelEl.offsetHeight;
+      /* 화면 밖으로 나가지 않도록 제한 */
+      var nx = Math.min(Math.max(0, ox + dx), window.innerWidth - w);
+      var ny = Math.min(Math.max(0, oy + dy), window.innerHeight - Math.min(h, 80));
+      toolPanelEl.style.left = nx + 'px';
+      toolPanelEl.style.top = ny + 'px';
+      if (e.cancelable) e.preventDefault();
+    }
+    function up() {
+      if (!dragging) return;
+      dragging = false;
+      if (!moved) {   /* 이동이 아니면 접기/펴기 */
+        var collapsed = toolBody.classList.toggle('collapsed');
+        toolToggle.textContent = collapsed ? '▲' : '▼';
+      }
+    }
+    head.addEventListener('touchstart', down, { passive: true });
+    head.addEventListener('touchmove', move, { passive: false });
+    head.addEventListener('touchend', up);
+    head.addEventListener('mousedown', down);
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', up);
+  })();
+
+  /* [v5-7] 측정 결과 접기/펴기 (기본 닫힘) */
+  var resultArrow = document.getElementById('resultArrow');
+  document.getElementById('resultToggle').addEventListener('click', function () {
+    var closed = resultBox.classList.toggle('collapsed');
+    resultArrow.textContent = closed ? '▶' : '▼';
   });
   document.getElementById('btnField').addEventListener('click', startFieldDrawing);
   document.getElementById('btnDistance').addEventListener('click', startDistanceMeasurement);
