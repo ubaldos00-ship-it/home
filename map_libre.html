@@ -1,4 +1,5 @@
-<!-- map_v6.html (v6a) · 저장: 2026-07-17 16:05 KST · [v6a] 요청 1~7 반영 — ①바텀시트 헤더 전체 드래그+스와이프+30/50/90 스냅 ②작물핀 터치 50% 시트 ③VWorld 표기 회전각 옆으로 이동 ④롱프레스(0.5초) 퀵메뉴 5종(도착·측정·주소·공유·저장) ⑤면적 꼭짓점 번호+마지막 빨강/완료 일반색 ⑥거리 1~2구간 파랑·3구간+ 보라·전체거리 굵은 라벨 ⑦측정 중 모드전환 제한 · v6b 예정: ⑧연속측정 ⑨측정 저장/목록 ⑩저장본 재편집 -->
+<!-- map_v7.html (v7) · 저장: 2026-07-17 19:37 KST · [v7] ①뒤로가기 버튼 ②회전안내문 삭제 ③지도정보-회전각 정렬 ④레이어/위치추적 SVG 아이콘 ⑤현재위치 zoom15·추적 zoom18 ⑥레이어/저장핀/즐겨찾기 시트 50% ⑦현재위치 시트 재구성(주소+복사 / 우편번호·위도·경도 / 초록버튼3) ⑧100dvh 전체화면 ⑨연속측정+측정 저장/목록/재편집(v6b) -->
+<!-- (이전) map_v6.html (v6a) · 저장: 2026-07-17 16:05 KST · [v6a] 요청 1~7 반영 — ①바텀시트 헤더 전체 드래그+스와이프+30/50/90 스냅 ②작물핀 터치 50% 시트 ③VWorld 표기 회전각 옆으로 이동 ④롱프레스(0.5초) 퀵메뉴 5종(도착·측정·주소·공유·저장) ⑤면적 꼭짓점 번호+마지막 빨강/완료 일반색 ⑥거리 1~2구간 파랑·3구간+ 보라·전체거리 굵은 라벨 ⑦측정 중 모드전환 제한 · v6b 예정: ⑧연속측정 ⑨측정 저장/목록 ⑩저장본 재편집 -->
 <!-- (이전) map_v5.html (v5) · 저장: 2026-07-17 08:50 KST · [v5] UI 정리 9건 — ①이모지 30%축소 ②레이어 이모지 최신(🗺️) ③확대/축소·나침반 왼쪽최하단 이동+축소, 중복 위치추적버튼 숨김(재활성 가능) ④버튼5개 오른쪽최하단+바텀시트 연동 ⑤측정버튼 토글+삭제확인창 ⑥실측도구 가로절반·헤더드래그 이동·버튼명 단축 ⑦결과 접기(기본닫힘)·면적 중앙 ㎡/평 라벨·길이 m 소수2자리 ⑧핀 방향 수정(SVG) -->
 <!-- (이전) map_v4.html (v4a) · 저장: 2026-07-17 07:45 KST · [v4a] 네이버 지도 → MapLibre·VWorld 교체판 · 오른쪽 원형버튼6 · 현재위치 상세/주소복사 · 핀저장(6색·랜덤) · 즐겨찾기(잠금·JSON공유/내보내기/불러오기) · 저장핀/작물 필터 · 레이어(일반/항공/하이브리드/지적도·투명도/토지이용/경계) · 실시간 위치추적 · 길찾기(네이버/카카오/T맵) · 조사표 전달 · 지도상태 복원 · TenarCrypto 그대로 유지 -->
 <!-- (이전) map_libre_v3.html · [v3] 필지경계·거리측정·면적/둘레·꼭짓점수정 (Turf.js) -->
@@ -287,8 +288,15 @@ TenarSecureStore.init('map',
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.css">
 
 <style>
+  /* [v7-8] 화면을 끝까지 채우기 —— 100dvh(동적 뷰포트)로 사파리 툴바 변화에 맞춰 늘어남.
+     ※ 상단 시계·배터리(상태바)와 하단 주소창은 Safari 자체 UI라 웹페이지가 그 아래로
+       그릴 수 없습니다. 진짜 끝까지 채우려면 공유 → "홈 화면에 추가" 로 실행하세요.
+       (홈 화면 실행 시 status-bar-style=black-translucent + viewport-fit=cover 로 전체화면) */
   html, body {
-    margin: 0; padding: 0; width: 100%; height: 100%;
+    margin: 0; padding: 0; width: 100%;
+    height: 100%;
+    height: -webkit-fill-available;
+    height: 100dvh;
     overflow: hidden; overscroll-behavior: none;
     -webkit-text-size-adjust: 100%;
     font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
@@ -306,9 +314,17 @@ TenarSecureStore.init('map',
   }
   #searchBar {
     display: flex; align-items: center; gap: 6px;
-    background: rgba(255,255,255,.96); border-radius: 12px; padding: 5px 6px 5px 12px;
+    background: rgba(255,255,255,.96); border-radius: 12px; padding: 5px 6px 5px 6px;
     box-shadow: 0 2px 10px rgba(0,0,0,.25);
   }
+  /* [v7-1] 검색창 왼쪽 뒤로가기 버튼 */
+  #backBtn {
+    flex-shrink: 0; width: 36px; height: 36px; border: 0; border-radius: 9px;
+    background: #f1f2f0; color: #27500A; font-size: 18px; font-weight: 900; line-height: 1;
+    cursor: pointer; -webkit-appearance: none; -webkit-tap-highlight-color: transparent;
+    display: flex; align-items: center; justify-content: center;
+  }
+  #backBtn:active { background: #e2e5e0; }
   #searchInput {
     flex: 1; min-width: 0; height: 36px; border: 0; outline: none; background: transparent;
     font-size: 16px; color: #222; -webkit-appearance: none;
@@ -361,6 +377,10 @@ TenarSecureStore.init('map',
   }
   .side-btn.active { background: #27500A; color: #fff; }
   .side-btn:active { transform: scale(.94); }
+  /* [v7-4] SVG 아이콘 버튼 — 활성 시 currentColor가 흰색으로 바뀌어 아이콘도 반전 */
+  .side-btn.ico svg { display: block; }
+  .side-btn.ico { color: #27500A; }
+  .side-btn.ico.active { color: #fff; }
 
   /* [v5-3] MapLibre 기본 컨트롤(확대·축소·나침반 정위치)을 왼쪽 최하단(회전각 위)으로 이동 + 축소 */
   .maplibregl-ctrl-bottom-left {
@@ -377,14 +397,19 @@ TenarSecureStore.init('map',
   .maplibregl-ctrl-geolocate.tenar-hidden { display: none !important; }
   /* [v6-3] MapLibre·VWorld 저작권 표기가 오른쪽 최하단 버튼(📍)에 가려지던 문제 →
      왼쪽 아래 회전각 박스 바로 오른쪽으로 이동. 오른쪽 버튼열(약 64px)과 겹치지 않도록 폭 제한. */
+  /* [v7-3] 회전각 박스와 같은 높이(31px)의 행으로 만들어 세로 중앙을 정확히 맞춘다.
+     (기존에는 MapLibre 컨트롤 안쪽 기본 여백 10px 때문에 지도정보가 위로 떠 보였다) */
   .maplibregl-ctrl-bottom-right {
     right: auto;
     left: calc(env(safe-area-inset-left, 0px) + 106px);
     bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
     margin: 0;
+    height: 31px;                 /* = #bearingBox 높이 */
+    display: flex; align-items: center;
     max-width: calc(100% - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px) - 190px);
     z-index: 8;
   }
+  .maplibregl-ctrl-bottom-right .maplibregl-ctrl { margin: 0; }
   .maplibregl-ctrl-attrib { font-size: 10px; border-radius: 6px; }
   .maplibregl-ctrl-attrib.maplibregl-compact { min-height: 22px; }
 
@@ -566,6 +591,9 @@ TenarSecureStore.init('map',
     -webkit-appearance: none; font-family: inherit;
   }
   .sheet-btn.primary { background: #27500A; border-color: #27500A; color: #fff; }
+  /* [v7-7] 길찾기·조사표 = 현재핀 저장과 같은 초록 계열, 조금 더 연한 색 */
+  .sheet-btn.green-soft { background: #5a8f3c; border-color: #5a8f3c; color: #fff; }
+  .sheet-btn.green-soft:active { background: #4d7c33; }
   .sheet-btn.danger { border-color: #e8b4b4; color: #b32020; }
   .sheet-btn.active { background: #27500A; border-color: #27500A; color: #fff; }
   .btn-row { display: flex; gap: 7px; margin-bottom: 8px; }
@@ -631,6 +659,7 @@ TenarSecureStore.init('map',
 <body>
   <div id="topUI">
     <div id="searchBar">
+      <button id="backBtn" type="button" title="뒤로가기" aria-label="뒤로가기">‹</button>
       <input id="searchInput" type="search" inputmode="text" autocomplete="off"
              autocorrect="off" autocapitalize="off" spellcheck="false"
              enterkeyhint="search" placeholder="주소 또는 지번을 입력하세요">
@@ -638,19 +667,32 @@ TenarSecureStore.init('map',
       <button id="searchBtn" type="button">검색</button>
     </div>
     <div id="modeBadge"></div>
-    <div id="hint">두 손가락 회전 · 확대 가능</div>
+<!-- [v7-2] 「두 손가락 회전 · 확대 가능」 안내문 삭제 -->
   </div>
 
-  <!-- [v5-2/4] 레이어만 오른쪽 위 (이모지 최신 🗺️) -->
+  <!-- [v7-4] 레이어 아이콘: 마름모꼴이 겹친 레이어 SVG -->
   <div id="sideBtns">
-    <button class="side-btn" id="btnLayer" type="button" title="레이어">🗺️</button>
+    <button class="side-btn ico" id="btnLayer" type="button" title="레이어" aria-label="레이어">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+        <path d="M12 3.2 2.6 8.1l9.4 4.9 9.4-4.9L12 3.2Z" fill="currentColor"/>
+        <path d="M4.9 11.4 2.6 12.6l9.4 4.9 9.4-4.9-2.3-1.2-7.1 3.7-7.1-3.7Z" fill="currentColor"/>
+        <path d="M4.9 15.9 2.6 17.1 12 22l9.4-4.9-2.3-1.2-7.1 3.7-7.1-3.7Z" fill="currentColor"/>
+      </svg>
+    </button>
   </div>
 
   <!-- [v5-4] 나머지 5개는 오른쪽 최하단 (바텀시트가 열리면 시트 위로 이동) -->
   <div id="bottomBtns">
     <button class="side-btn" id="btnPins"    type="button" title="저장핀·작물">🌱</button>
     <button class="side-btn" id="btnMeasure" type="button" title="면적·길이 측정">📐</button>
-    <button class="side-btn" id="btnTrack"   type="button" title="실시간 위치추적">🎯</button>
+    <!-- [v7-4] 위치추적 아이콘: 조준(타겟) SVG -->
+    <button class="side-btn ico" id="btnTrack" type="button" title="실시간 위치추적" aria-label="실시간 위치추적">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+        <circle cx="12" cy="12" r="7.1" fill="none" stroke="currentColor" stroke-width="1.9"/>
+        <circle cx="12" cy="12" r="2.9" fill="currentColor"/>
+        <path d="M12 1.4v3.6M12 19v3.6M1.4 12h3.6M19 12h3.6" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/>
+      </svg>
+    </button>
     <button class="side-btn" id="btnFav"     type="button" title="즐겨찾기">⭐</button>
     <button class="side-btn" id="btnHere"    type="button" title="현재 위치">📍</button>
   </div>
@@ -666,6 +708,10 @@ TenarSecureStore.init('map',
         <button class="tool-btn" type="button" id="btnUndo">↶ UNDO</button>
         <button class="tool-btn" type="button" id="btnCenterAdd">＋ 센터추가</button>
         <button class="tool-btn" type="button" id="btnFinish">✓ 완료</button>
+        <!-- [v7-9] 연속 측정 · 측정 저장 · 목록 -->
+        <button class="tool-btn wide" type="button" id="btnNew">＋ 새 면적</button>
+        <button class="tool-btn" type="button" id="btnSaveMeas">💾 저장</button>
+        <button class="tool-btn" type="button" id="btnMeasList">📋 목록</button>
         <button class="tool-btn danger wide" type="button" id="btnReset">🗑 초기화</button>
       </div>
       <div id="resultToggle"><span>측정 결과</span><span id="resultArrow">▶</span></div>
@@ -726,6 +772,13 @@ TenarSecureStore.init('map',
 
   var VWORLD_TILE_BASE = 'https://api.vworld.kr/req/wmts/1.0.0/';
   var VWORLD_MAX_DATA_ZOOM = 19;
+
+  /* [v7-5] 확대 수준 —— 지도 최대확대(MAX_ZOOM)를 기준으로 몇 단계 축소할지
+       · 현재위치(📍) : 최대확대에서 5단계 축소  → 20 - 5 = 15
+       · 위치추적(◎)  : 최대확대에서 2단계 축소  → 20 - 2 = 18            */
+  var MAX_ZOOM   = 20;
+  var ZOOM_HERE  = MAX_ZOOM - 5;
+  var ZOOM_TRACK = MAX_ZOOM - 2;
 
   /* 저장 키 (TenarSecureStore 관리 대상) */
   var FAV_KEY      = 'tenar_map_favs_v1';
@@ -1517,33 +1570,45 @@ TenarSecureStore.init('map',
 
   function openHereSheet(info) {
     currentLoc = info;
+    /* [v7-7] 짧게 재구성 —— ①주소+복사(같은 줄) ②우편번호·위도·경도(한 줄) ③버튼 3개 */
     var box = el('div');
-    var head = el('div', null,
-      '<div class="addr-main">📍 ' + escapeHtml(info.jibunAddress || '주소를 찾을 수 없습니다') + '</div>');
-    var copyRow = el('div', null, '');
-    copyRow.style.cssText = 'display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;';
-    [['지번주소 복사', 'jibun'], ['도로명 복사', 'road'], ['좌표 복사', 'coord'], ['전체정보 복사', 'all']].forEach(function (c) {
-      var b = el('button', 'copy-btn', c[0]);
-      b.addEventListener('click', function () { copyAddr(c[1]); });
-      copyRow.appendChild(b);
-    });
-    var rest = el('div', null,
-      (info.roadAddress ? '<div class="addr-label">도로명</div><div class="addr-value">' + escapeHtml(info.roadAddress) + '</div>' : '') +
-      (info.postalCode ? '<div class="addr-label">우편번호</div><div class="addr-value">' + escapeHtml(info.postalCode) + '</div>' : '') +
-      '<div class="addr-label">위도</div><div class="addr-value">' + info.lat.toFixed(6) + '</div>' +
-      '<div class="addr-label">경도</div><div class="addr-value">' + info.lng.toFixed(6) + '</div>');
 
+    /* ① 지번주소 + [복사] 같은 행 */
+    var addrRow = el('div');
+    addrRow.style.cssText = 'display:flex;align-items:flex-start;gap:8px;';
+    var addrText = el('div', null,
+      '<div class="addr-main">📍 ' + escapeHtml(info.jibunAddress || '주소를 찾을 수 없습니다') + '</div>' +
+      (info.roadAddress ? '<div class="addr-value" style="color:#888;margin-top:2px;">' + escapeHtml(info.roadAddress) + '</div>' : ''));
+    addrText.style.cssText = 'flex:1;min-width:0;';
+    var bCopy = el('button', 'copy-btn', '복사');
+    bCopy.style.flexShrink = '0';
+    bCopy.addEventListener('click', function () { copyAddr('jibun'); });
+    addrRow.appendChild(addrText); addrRow.appendChild(bCopy);
+
+    /* ② 우편번호 · 위도 · 경도 한 줄 */
+    var meta = el('div');
+    meta.style.cssText = 'display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;';
+    function metaItem(label, value) {
+      return '<div><div class="addr-label" style="margin-top:0;">' + label + '</div>' +
+             '<div class="addr-value">' + escapeHtml(value) + '</div></div>';
+    }
+    meta.innerHTML =
+      (info.postalCode ? metaItem('우편번호', info.postalCode) : '') +
+      metaItem('위도', info.lat.toFixed(6)) +
+      metaItem('경도', info.lng.toFixed(6));
+
+    /* ③ 현재 핀 저장 / 길찾기 / 조사표 — 모두 초록 계열(저장은 진하게, 나머지는 연하게) */
     var row = el('div', 'btn-row');
     row.style.marginTop = '16px';
     var bSave = el('button', 'sheet-btn primary', '⭐ 현재 핀 저장');
     bSave.addEventListener('click', function () { openPinSaveSheet(info); });
-    var bNav = el('button', 'sheet-btn', '🚗 길찾기');
+    var bNav = el('button', 'sheet-btn green-soft', '🚗 길찾기');
     bNav.addEventListener('click', function () { openNavSheet(info); });
-    var bSurvey = el('button', 'sheet-btn', '📋 조사표');
+    var bSurvey = el('button', 'sheet-btn green-soft', '📋 조사표');
     bSurvey.addEventListener('click', function () { openSurveySheet(info); });
     row.appendChild(bSave); row.appendChild(bNav); row.appendChild(bSurvey);
 
-    box.appendChild(head); box.appendChild(copyRow); box.appendChild(rest); box.appendChild(row);
+    box.appendChild(addrRow); box.appendChild(meta); box.appendChild(row);
     openSheet('현재 위치', box, 50);
   }
 
@@ -1578,8 +1643,9 @@ TenarSecureStore.init('map',
     showToast('현재 위치를 확인하고 있습니다.', 0, 'info');
     navigator.geolocation.getCurrentPosition(function (pos) {
       var lat = pos.coords.latitude, lng = pos.coords.longitude;
+      setGeoZoom(ZOOM_HERE);       /* [v7-5] 최대확대에서 5단계 축소 = 15 */
       geolocateControl.trigger();  /* 정확도 원·진행방향 표시 */
-      map.flyTo({ center: [lng, lat], zoom: 18, essential: true });
+      map.flyTo({ center: [lng, lat], zoom: ZOOM_HERE, essential: true });
       requestVWorldReverse(lng, lat).then(function (a) {
         showToast('현재 위치를 확인했습니다.', 2000, 'success');
         openHereSheet({ lat: lat, lng: lng, jibunAddress: a.jibunAddress, roadAddress: a.roadAddress, postalCode: a.postalCode });
@@ -1692,7 +1758,7 @@ TenarSecureStore.init('map',
     var list = el('div');
     list.id = 'favList';
     box.appendChild(r1); box.appendChild(r2); box.appendChild(list);
-    openSheet('⭐ 즐겨찾기 위치', box, 90);
+    openSheet('⭐ 즐겨찾기 위치', box, 50);
     renderFavList();
   }
 
@@ -1863,7 +1929,7 @@ TenarSecureStore.init('map',
     }
     box.appendChild(mkRow('전체 표시', ''));
     CROPS.forEach(function (c) { box.appendChild(mkRow(c.icon + ' ' + c.name, c.name)); });
-    openSheet('🌱 저장핀 · 작물 표시', box, 90);
+    openSheet('🌱 저장핀 · 작물 표시', box, 50);
   }
 
   /* ================= 길찾기 ================= */
@@ -1972,7 +2038,7 @@ TenarSecureStore.init('map',
     box.appendChild(el('div', null, '<div class="lyr-desc" style="margin-top:8px;">' +
       '지적도는 확대 16 이상에서 표시되며, 지번(본번-부번) 라벨은 확대 17 이상에서 나타납니다.<br>' +
       '지적 필지를 누르면 지번·PNU를 확인할 수 있습니다.</div>'));
-    openSheet('🗺 레이어', box, 90);
+    openSheet('🗺 레이어', box, 50);
   }
 
   /* ================= 실시간 위치추적 ================= */
@@ -1982,12 +2048,22 @@ TenarSecureStore.init('map',
     tracking = on;
     document.getElementById('btnTrack').classList.toggle('active', on);
   }
+  /* [v7-5] GeolocateControl은 trigger() 시 자체적으로 확대 수준을 정한다(기본 15).
+     버튼마다 원하는 확대가 다르므로 trigger 직전에 맞춰준다. */
+  function setGeoZoom(z) {
+    try {
+      geolocateControl.options.fitBoundsOptions =
+        Object.assign({}, geolocateControl.options.fitBoundsOptions || {}, { maxZoom: z });
+    } catch (e) { console.warn('확대 수준 설정 실패', e); }
+  }
+
   function toggleTracking() {
     if (!tracking) {
       if (!trackNoticeShown) {
         showToast('실시간 위치추적은 배터리 사용량이 증가할 수 있습니다.', 4000, 'info');
         trackNoticeShown = true;
       }
+      setGeoZoom(ZOOM_TRACK);       /* 최대확대에서 2단계 축소 = 18 */
       geolocateControl.trigger();   /* ACTIVE_LOCK → 추적 시작 */
     } else {
       geolocateControl.trigger();   /* 다시 누르면 해제 (마지막 마커는 유지) */
@@ -1998,11 +2074,17 @@ TenarSecureStore.init('map',
   /* ===================================================================
      실측 측정 (v3 검증 코드 유지 · v4b에서 바텀시트/ cm 표시로 확장)
      =================================================================== */
+  /* [v7-9] 연속 측정 —— 완료한 면적/거리를 areas[] · lines[] 에 쌓아 여러 개를 동시에 표시.
+     fieldPoints/distancePoints 는 "지금 작업 중인" 한 건이며 기존 구조를 그대로 유지한다
+     (A/B포구 연동 등 기존 코드가 이 두 배열을 그대로 참조하기 때문). */
   var surveyMeasureState = {
     mode: 'none', fieldPoints: [], fieldPolygon: null,
     fieldAreaM2: 0, fieldPerimeterM: 0,
     distancePoints: [], segmentDistances: [], totalDistanceM: 0,
-    isFieldComplete: false, isEditing: false, dragging: null
+    isFieldComplete: false, isEditing: false, dragging: null,
+    areas: [],            /* [{id, points, areaM2, perimeterM}] 완료된 면적들 */
+    lines: [],            /* [{id, points, segs, totalM}]       완료된 거리들 */
+    editingSaveId: null   /* 저장본을 불러와 수정 중이면 그 ID */
   };
   var segmentLabelMarkers = [];
   var crosshairEl = document.getElementById('crosshair');
@@ -2089,6 +2171,21 @@ TenarSecureStore.init('map',
   }
   function updateFieldGeometry() {
     var s = surveyMeasureState, fc = emptyFC(), i;
+
+    /* [v7-9] 완료된 면적들(연속 측정)을 먼저 그린다 */
+    s.areas.forEach(function (ar) {
+      fc.features.push({
+        type: 'Feature', properties: { type: 'field', done: true },
+        geometry: { type: 'Polygon', coordinates: [closedRing(ar.points)] }
+      });
+      ar.points.forEach(function (p, k) {
+        fc.features.push({
+          type: 'Feature', properties: { type: 'field-vertex', index: k, last: false, done: true, areaId: ar.id },
+          geometry: { type: 'Point', coordinates: p }
+        });
+      });
+    });
+
     if (s.fieldPoints.length >= 3) {
       s.fieldPolygon = { type: 'Feature', properties: { type: 'field' }, geometry: { type: 'Polygon', coordinates: [closedRing(s.fieldPoints)] } };
       fc.features.push(s.fieldPolygon);
@@ -2134,23 +2231,47 @@ TenarSecureStore.init('map',
   }
 
   /* [v5-7] 점 3개 이상이면 필지 중앙에 면적을 ㎡·평 두 줄로 표시 */
-  var areaLabelMarker = null;
-  function clearAreaLabel() { if (areaLabelMarker) { areaLabelMarker.remove(); areaLabelMarker = null; } }
-  function updateAreaLabel() {
-    clearAreaLabel();
-    var s = surveyMeasureState;
-    if (!hasTurf || !s.fieldPolygon || s.fieldPoints.length < 3) return;
+  var areaLabelMarkers = [];
+  function clearAreaLabel() { areaLabelMarkers.forEach(function (m) { m.remove(); }); areaLabelMarkers = []; }
+  function addAreaLabel(polygon, areaM2) {
+    if (!hasTurf || !polygon) return;
     var c = null;
-    try { c = turf.centerOfMass(s.fieldPolygon).geometry.coordinates; } catch (e) { return; }
+    try { c = turf.centerOfMass(polygon).geometry.coordinates; } catch (e) { return; }
     if (!c || !isFinite(c[0]) || !isFinite(c[1])) return;
     var e2 = document.createElement('div');
     e2.className = 'area-label';
-    e2.innerHTML = formatNumber(s.fieldAreaM2, 1) + '㎡<br>' + formatNumber(s.fieldAreaM2 / 3.305785, 1) + '평';
-    areaLabelMarker = new maplibregl.Marker({ element: e2 }).setLngLat(c).addTo(map);
+    e2.innerHTML = formatNumber(areaM2, 1) + '㎡<br>' + formatNumber(areaM2 / 3.305785, 1) + '평';
+    areaLabelMarkers.push(new maplibregl.Marker({ element: e2 }).setLngLat(c).addTo(map));
+  }
+  function updateAreaLabel() {
+    clearAreaLabel();
+    var s = surveyMeasureState;
+    /* [v7-9] 완료된 면적들 + 현재 작업 중인 면적 각각에 라벨 */
+    s.areas.forEach(function (ar) {
+      addAreaLabel({ type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [closedRing(ar.points)] } }, ar.areaM2);
+    });
+    if (s.fieldPolygon && s.fieldPoints.length >= 3) addAreaLabel(s.fieldPolygon, s.fieldAreaM2);
   }
   function clearSegmentLabels() { segmentLabelMarkers.forEach(function (m) { m.remove(); }); segmentLabelMarkers = []; }
   function updateDistanceGeometry() {
     var s = surveyMeasureState, fc = emptyFC(), i;
+
+    /* [v7-9] 완료된 거리들(연속 측정)을 먼저 그린다 */
+    s.lines.forEach(function (ln) {
+      for (var k = 0; k < ln.points.length - 1; k++) {
+        fc.features.push({
+          type: 'Feature', properties: { type: 'distance-line', segIndex: k },
+          geometry: { type: 'LineString', coordinates: [ln.points[k], ln.points[k + 1]] }
+        });
+      }
+      ln.points.forEach(function (p, k2) {
+        fc.features.push({
+          type: 'Feature', properties: { type: 'distance-vertex', index: k2, lineId: ln.id },
+          geometry: { type: 'Point', coordinates: p }
+        });
+      });
+    });
+
     /* [v6-6] 구간마다 별도 LineString → 1~2구간(파랑)과 3구간 이후(보라) 색 구분 */
     for (i = 0; i < s.distancePoints.length - 1; i++) {
       fc.features.push({
@@ -2164,6 +2285,18 @@ TenarSecureStore.init('map',
     map.getSource('survey-distance-source').setData(fc);
     calculateSegmentDistances();
     clearSegmentLabels();
+
+    /* [v7-9] 완료된 거리들의 전체거리 라벨 */
+    s.lines.forEach(function (ln) {
+      if (!ln.points.length) return;
+      var te2 = document.createElement('div');
+      te2.className = 'total-label';
+      te2.textContent = '전체 ' + formatMeasurementValue(ln.totalM);
+      segmentLabelMarkers.push(
+        new maplibregl.Marker({ element: te2, offset: [0, -22] }).setLngLat(ln.points[ln.points.length - 1]).addTo(map)
+      );
+    });
+
     /* 구간 라벨: 1~2구간 파랑 / 3구간 이후 보라 */
     for (i = 0; i < s.segmentDistances.length; i++) {
       var a = s.distancePoints[i], b = s.distancePoints[i + 1];
@@ -2189,6 +2322,18 @@ TenarSecureStore.init('map',
   var resultBox = document.getElementById('resultBox');
   function updateMeasurementResultPanel() {
     var s = surveyMeasureState, html = '';
+    updateNewMeasureBtn();
+
+    /* [v7-9] 연속 측정: 완료된 면적·거리 합계를 먼저 보여준다 */
+    if (s.areas.length || s.lines.length) {
+      var sumA = s.areas.reduce(function (a, x) { return a + (x.areaM2 || 0); }, 0);
+      var sumL = s.lines.reduce(function (a, x) { return a + (x.totalM || 0); }, 0);
+      html += '<div class="res-title">완료된 측정</div>';
+      if (s.areas.length) html += '<div class="res-sub">면적 ' + s.areas.length + '건<br>' + formatNumber(sumA, 1) + '㎡ / ' + formatNumber(sumA / 3.305785, 1) + '평</div>';
+      if (s.lines.length) html += '<div class="res-sub">거리 ' + s.lines.length + '건<br>' + formatMeasurementValue(sumL) + '</div>';
+      html += '<hr>';
+    }
+
     if (s.fieldPolygon) {
       var m2 = s.fieldAreaM2;
       html += '<div class="res-title">필지 면적</div>';
@@ -2260,7 +2405,8 @@ TenarSecureStore.init('map',
     s.isFieldComplete = true;
     setSurveyMode('none');
     updateFieldGeometry();
-    showToast('필지 경계가 완성되었습니다.', 3000, 'success');
+    showToast('필지 경계가 완성되었습니다.\n「새 면적」을 누르면 계속 측정할 수 있습니다.', 3500, 'success');
+    updateNewMeasureBtn();
     return true;
   }
   function finishDistanceMeasurement() {
@@ -2268,8 +2414,67 @@ TenarSecureStore.init('map',
     if (s.distancePoints.length < 2) { showToast('거리를 측정하려면 최소 2개의 지점이 필요합니다.', 4000); return false; }
     setSurveyMode('none');
     updateDistanceGeometry();
-    showToast('거리 측정을 완료했습니다.\n총 거리 ' + formatMeasurementValue(s.totalDistanceM), 3500, 'success');
+    showToast('거리 측정을 완료했습니다. 총 ' + formatMeasurementValue(s.totalDistanceM) +
+              '\n「새 거리」를 누르면 계속 측정할 수 있습니다.', 3500, 'success');
+    updateNewMeasureBtn();
     return true;
+  }
+
+  /* [v7-9] 연속 측정 —— 완료한 측정을 목록에 넣고 새 측정을 시작한다.
+     (자동 종료하지 않고, 여러 개의 면적·거리를 계속 만들 수 있다) */
+  function commitCurrentArea() {
+    var s = surveyMeasureState;
+    if (s.fieldPoints.length < 3) return false;
+    s.areas.push({
+      id: 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+      points: s.fieldPoints.slice(),
+      areaM2: s.fieldAreaM2,
+      perimeterM: s.fieldPerimeterM
+    });
+    s.fieldPoints = []; s.fieldPolygon = null; s.fieldAreaM2 = 0; s.fieldPerimeterM = 0;
+    s.isFieldComplete = false;
+    return true;
+  }
+  function commitCurrentLine() {
+    var s = surveyMeasureState;
+    if (s.distancePoints.length < 2) return false;
+    s.lines.push({
+      id: 'l' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+      points: s.distancePoints.slice(),
+      segs: s.segmentDistances.slice(),
+      totalM: s.totalDistanceM
+    });
+    s.distancePoints = []; s.segmentDistances = []; s.totalDistanceM = 0;
+    return true;
+  }
+  function startNewMeasurement() {
+    var s = surveyMeasureState;
+    /* 면적이 완성돼 있으면 새 면적, 거리가 있으면 새 거리로 이어간다 */
+    if (s.fieldPoints.length >= 3) {
+      commitCurrentArea();
+      updateMeasurementSources();
+      startFieldDrawing();
+      showToast('새 면적 측정을 시작합니다.\n이전 면적은 지도에 그대로 남아 있습니다.', 3500, 'info');
+    } else if (s.distancePoints.length >= 2) {
+      commitCurrentLine();
+      updateMeasurementSources();
+      startDistanceMeasurement();
+      showToast('새 거리 측정을 시작합니다.\n이전 거리는 지도에 그대로 남아 있습니다.', 3500, 'info');
+    } else {
+      showToast('먼저 측정을 완료한 후 눌러주세요.', 3000, 'info');
+    }
+    updateNewMeasureBtn();
+  }
+  /* 완료된 측정이 있을 때만 「새 면적/새 거리」 버튼을 활성화 */
+  function updateNewMeasureBtn() {
+    var s = surveyMeasureState;
+    var b = document.getElementById('btnNew');
+    if (!b) return;
+    var canArea = (s.fieldPoints.length >= 3);
+    var canLine = (s.distancePoints.length >= 2);
+    b.textContent = canLine && !canArea ? '＋ 새 거리' : '＋ 새 면적';
+    b.disabled = !(canArea || canLine);
+    b.style.opacity = b.disabled ? '.45' : '1';
   }
   function finishCurrentMeasurement() {
     var s = surveyMeasureState;
@@ -2295,8 +2500,10 @@ TenarSecureStore.init('map',
     s.fieldPoints = []; s.fieldPolygon = null; s.fieldAreaM2 = 0; s.fieldPerimeterM = 0;
     s.distancePoints = []; s.segmentDistances = []; s.totalDistanceM = 0;
     s.isFieldComplete = false; s.dragging = null;
+    s.areas = []; s.lines = []; s.editingSaveId = null;   /* [v7-9] 연속 측정분까지 모두 정리 */
     setSurveyMode('none');
     updateMeasurementSources();
+    updateNewMeasureBtn();
     showToast('모든 측정값이 초기화되었습니다.', 3000, 'success');
   }
 
@@ -2335,14 +2542,57 @@ TenarSecureStore.init('map',
     var hits = map.queryRenderedFeatures(bbox, { layers: layers });
     if (!hits.length) return null;
     var f = hits[0];
-    return { kind: f.properties.type === 'field-vertex' ? 'field' : 'distance', index: f.properties.index };
+    /* [v7-9] 완료된 측정(areas[]/lines[])의 꼭짓점도 잡아서 옮길 수 있게 소속을 함께 넘긴다.
+       (areaId/lineId 가 없으면 지금 작업 중인 측정의 점) */
+    return {
+      kind: f.properties.type === 'field-vertex' ? 'field' : 'distance',
+      index: f.properties.index,
+      areaId: f.properties.areaId || null,
+      lineId: f.properties.lineId || null
+    };
   }
   function updateDraggedVertex(lngLat) {
     var s = surveyMeasureState;
     if (!s.dragging) return;
     var coord = [lngLat.lng, lngLat.lat];
-    if (s.dragging.kind === 'field') { s.fieldPoints[s.dragging.index] = coord; updateFieldGeometry(); }
-    else { s.distancePoints[s.dragging.index] = coord; updateDistanceGeometry(); }
+    var d = s.dragging, i;
+
+    if (d.kind === 'field') {
+      if (d.areaId) {                                  /* 완료된 면적의 꼭짓점 */
+        for (i = 0; i < s.areas.length; i++) {
+          if (s.areas[i].id !== d.areaId) continue;
+          s.areas[i].points[d.index] = coord;
+          var poly = { type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [closedRing(s.areas[i].points)] } };
+          if (hasTurf) {
+            s.areas[i].areaM2 = turf.area(poly);        /* 즉시 재계산 */
+            s.areas[i].perimeterM = turf.length(turf.lineString(closedRing(s.areas[i].points)), { units: 'kilometers' }) * 1000;
+          }
+          break;
+        }
+      } else {
+        s.fieldPoints[d.index] = coord;
+      }
+      updateFieldGeometry();
+    } else {
+      if (d.lineId) {                                  /* 완료된 거리의 측정점 */
+        for (i = 0; i < s.lines.length; i++) {
+          if (s.lines[i].id !== d.lineId) continue;
+          s.lines[i].points[d.index] = coord;
+          if (hasTurf) {
+            var segs = [], tot = 0;
+            for (var k = 0; k < s.lines[i].points.length - 1; k++) {
+              var mm = turf.distance(turf.point(s.lines[i].points[k]), turf.point(s.lines[i].points[k + 1]), { units: 'kilometers' }) * 1000;
+              segs.push(mm); tot += mm;
+            }
+            s.lines[i].segs = segs; s.lines[i].totalM = tot;   /* 즉시 재계산 */
+          }
+          break;
+        }
+      } else {
+        s.distancePoints[d.index] = coord;
+      }
+      updateDistanceGeometry();
+    }
   }
   function onDragStart(e) {
     if (surveyMeasureState.mode !== 'edit') return;
@@ -2369,6 +2619,254 @@ TenarSecureStore.init('map',
   map.on('mouseup', onDragEnd);
   map.on('touchend', onDragEnd);
   map.on('touchcancel', onDragEnd);
+
+  /* ===================================================================
+     [v7-9] 측정 저장 · 목록 · 재편집   (저장 키: tenar_measure_saves_v1)
+     · 저장은 첫 번째 핀 좌표를 기준으로 주소를 자동 조회한다.
+     · 목록에서 불러오면 핀이 다시 표시되고, 수정 모드로 드래그하면
+       면적·거리가 즉시 재계산되며 「저장」으로 덮어쓸 수 있다.
+     =================================================================== */
+  function getMeasSaves() {
+    var arr = loadJSON(MEAS_KEY, []);
+    return Array.isArray(arr) ? arr : [];
+  }
+  function setMeasSaves(arr) {
+    if (!secureReady) { showToast('저장 준비 중입니다.\n잠시 후 다시 시도해주세요.', 3000, 'info'); return false; }
+    saveJSON(MEAS_KEY, arr);
+    return true;
+  }
+
+  /* 현재 화면의 모든 측정(작업 중 + 완료된 것)을 하나의 저장 객체로 만든다 */
+  function buildMeasureRecord(extra) {
+    var s = surveyMeasureState;
+    var areas = s.areas.slice();
+    var lines = s.lines.slice();
+    if (s.fieldPoints.length >= 3) areas.push({ id: 'cur', points: s.fieldPoints.slice(), areaM2: s.fieldAreaM2, perimeterM: s.fieldPerimeterM });
+    if (s.distancePoints.length >= 2) lines.push({ id: 'cur', points: s.distancePoints.slice(), segs: s.segmentDistances.slice(), totalM: s.totalDistanceM });
+
+    var totalArea = areas.reduce(function (a, x) { return a + (x.areaM2 || 0); }, 0);
+    var totalDist = lines.reduce(function (a, x) { return a + (x.totalM || 0); }, 0);
+    var firstPt = areas.length ? areas[0].points[0] : (lines.length ? lines[0].points[0] : null);
+
+    return Object.assign({
+      id: 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+      type: (areas.length && lines.length) ? 'both' : (areas.length ? 'area' : 'distance'),
+      name: '', jibunAddress: '', roadAddress: '', crop: '', memo: '',
+      geometry: areas.length ? { type: 'Polygon', coordinates: [closedRing(areas[0].points)] } : null,
+      /* 기존(v4a) 저장 구조와 호환되는 필드 */
+      fieldPoints: areas.length ? areas[0].points.slice() : [],
+      distancePoints: lines.length ? lines[0].points.slice() : [],
+      areaM2: totalArea,
+      areaPyeong: totalArea / 3.305785,
+      totalDistanceM: totalDist,
+      totalDistanceCm: totalDist * 100,
+      segmentDistances: lines.length ? lines[0].segs.slice() : [],
+      /* v7: 여러 개의 면적·거리를 모두 보관 */
+      areas: areas.map(function (a) { return { points: a.points, areaM2: a.areaM2, perimeterM: a.perimeterM }; }),
+      lines: lines.map(function (l) { return { points: l.points, segs: l.segs, totalM: l.totalM }; }),
+      firstPoint: firstPt,
+      mapCenter: map.getCenter().toArray(),
+      zoom: map.getZoom(), bearing: map.getBearing(), pitch: map.getPitch(),
+      createdAt: kstNowStr(), updatedAt: kstNowStr()
+    }, extra || {});
+  }
+
+  function openMeasSaveSheet() {
+    var s = surveyMeasureState;
+    if (!s.areas.length && !s.lines.length && s.fieldPoints.length < 3 && s.distancePoints.length < 2) {
+      showToast('저장할 측정 결과가 없습니다.', 3000, 'info');
+      return;
+    }
+    var editing = s.editingSaveId ? getMeasSaves().filter(function (x) { return x.id === s.editingSaveId; })[0] : null;
+    var rec = buildMeasureRecord();
+    var firstPt = rec.firstPoint;
+
+    var box = el('div');
+    var f1 = el('div', 'fld', '<label>측정 이름</label>');
+    var inName = el('input'); inName.type = 'text';
+    inName.value = editing ? editing.name : '';
+    f1.appendChild(inName);
+
+    var addrBox = el('div', null, '<div class="addr-label">주소 (첫 측정 지점 기준)</div><div class="addr-value" id="measAddr">조회 중…</div>');
+
+    var f2 = el('div', 'fld', '<label>작물</label>');
+    var inCrop = el('select');
+    inCrop.appendChild(new Option('선택 안 함', ''));
+    CROPS.forEach(function (c) { inCrop.appendChild(new Option(c.icon + ' ' + c.name, c.name)); });
+    if (editing && editing.crop) inCrop.value = editing.crop;
+    f2.appendChild(inCrop);
+
+    var f3 = el('div', 'fld', '<label>메모</label>');
+    var inMemo = el('textarea');
+    if (editing && editing.memo) inMemo.value = editing.memo;
+    f3.appendChild(inMemo);
+
+    var sum = el('div', null,
+      '<div class="addr-label">측정 내용</div><div class="addr-value">' +
+      (rec.areas.length ? '면적 ' + rec.areas.length + '건 · ' + formatNumber(rec.areaM2, 1) + '㎡ (' + formatNumber(rec.areaPyeong, 1) + '평)<br>' : '') +
+      (rec.lines.length ? '거리 ' + rec.lines.length + '건 · ' + formatMeasurementValue(rec.totalDistanceM) : '') +
+      '</div>');
+
+    var addr = { jibunAddress: '', roadAddress: '' };
+    if (firstPt) {
+      requestVWorldReverse(firstPt[0], firstPt[1]).then(function (a) {
+        addr = a;
+        var t = document.getElementById('measAddr');
+        if (t) t.textContent = a.jibunAddress || '주소를 찾을 수 없습니다';
+        if (!inName.value) inName.value = (a.jibunAddress || '측정') + (rec.areas.length ? ' 면적' : ' 거리');
+      }).catch(function () {
+        var t = document.getElementById('measAddr');
+        if (t) t.textContent = '주소 조회 실패 (좌표로 저장됩니다)';
+      });
+    }
+
+    var bSave = el('button', 'sheet-btn primary', editing ? '💾 덮어쓰기 저장' : '💾 저장');
+    bSave.style.cssText += 'width:100%;margin-top:12px;';
+    bSave.addEventListener('click', function () {
+      var arr = getMeasSaves();
+      rec.name = inName.value.trim() || (addr.jibunAddress || '측정');
+      rec.jibunAddress = addr.jibunAddress || (editing ? editing.jibunAddress : '');
+      rec.roadAddress = addr.roadAddress || (editing ? editing.roadAddress : '');
+      rec.crop = inCrop.value;
+      rec.memo = inMemo.value.trim();
+      if (editing) {
+        rec.id = editing.id;
+        rec.createdAt = editing.createdAt;
+        rec.locked = editing.locked;
+        for (var i = 0; i < arr.length; i++) if (arr[i].id === editing.id) { arr[i] = rec; break; }
+      } else {
+        arr.unshift(rec);
+      }
+      if (!setMeasSaves(arr)) return;
+      surveyMeasureState.editingSaveId = rec.id;
+      closeSheet();
+      showToast(editing ? '측정을 덮어썼습니다.' : '측정을 저장했습니다.', 2500, 'success');
+    });
+
+    box.appendChild(f1); box.appendChild(addrBox); box.appendChild(f2); box.appendChild(f3);
+    box.appendChild(sum); box.appendChild(bSave);
+    openSheet(editing ? '측정 수정 저장' : '💾 측정 저장', box, 90);
+  }
+
+  /* 저장된 측정을 지도에 복원 (핀 다시 표시) */
+  function loadMeasure(rec, quiet) {
+    var s = surveyMeasureState;
+    s.areas = (rec.areas || []).map(function (a) {
+      return { id: 'a' + Math.random().toString(36).slice(2, 7), points: a.points.slice(), areaM2: a.areaM2, perimeterM: a.perimeterM };
+    });
+    s.lines = (rec.lines || []).map(function (l) {
+      return { id: 'l' + Math.random().toString(36).slice(2, 7), points: l.points.slice(), segs: (l.segs || []).slice(), totalM: l.totalM };
+    });
+    /* 마지막 한 건은 '작업 중'으로 올려 바로 수정할 수 있게 한다 */
+    s.fieldPoints = []; s.fieldPolygon = null; s.distancePoints = []; s.segmentDistances = [];
+    s.fieldAreaM2 = 0; s.fieldPerimeterM = 0; s.totalDistanceM = 0; s.isFieldComplete = false;
+    if (s.areas.length) {
+      var last = s.areas.pop();
+      s.fieldPoints = last.points.slice();
+      s.isFieldComplete = true;
+    } else if (s.lines.length) {
+      var lastL = s.lines.pop();
+      s.distancePoints = lastL.points.slice();
+    }
+    s.editingSaveId = rec.id;
+    setSurveyMode('none');
+    updateMeasurementSources();
+    updateNewMeasureBtn();
+    toolPanelEl.classList.add('show');
+    document.getElementById('btnMeasure').classList.add('active');
+
+    if (rec.mapCenter) {
+      map.flyTo({ center: rec.mapCenter, zoom: rec.zoom || map.getZoom(), bearing: rec.bearing || 0, pitch: rec.pitch || 0, essential: true });
+    }
+    if (!quiet) showToast('측정을 불러왔습니다.\n「수정」으로 꼭짓점을 옮기면 자동으로 다시 계산됩니다.', 4500, 'success');
+  }
+
+  function shareMeasure(rec) {
+    var lines = [];
+    lines.push('[텐아르 측정] ' + (rec.name || ''));
+    if (rec.jibunAddress) lines.push('주소: ' + rec.jibunAddress);
+    if (rec.crop) lines.push('작물: ' + rec.crop);
+    if (rec.areaM2) lines.push('면적: ' + formatNumber(rec.areaM2, 1) + '㎡ (' + formatNumber(rec.areaPyeong, 1) + '평)');
+    if (rec.totalDistanceM) lines.push('거리: ' + formatMeasurementValue(rec.totalDistanceM));
+    if (rec.firstPoint) lines.push('좌표: ' + rec.firstPoint[1].toFixed(6) + ', ' + rec.firstPoint[0].toFixed(6));
+    if (rec.memo) lines.push('메모: ' + rec.memo);
+    lines.push('측정시각: ' + (rec.createdAt || '').slice(0, 16).replace('T', ' '));
+    var text = lines.join('\n');
+    if (navigator.share) {
+      navigator.share({ title: '텐아르 측정 결과', text: text }).catch(function (e) {
+        if (e && e.name === 'AbortError') return;
+        copyText(text);
+      });
+    } else copyText(text);
+  }
+
+  function openMeasListSheet() {
+    var box = el('div');
+    var list = el('div'); list.id = 'measList';
+    box.appendChild(list);
+    openSheet('📋 측정 목록', box, 90);
+    renderMeasList();
+  }
+  function renderMeasList() {
+    var list = document.getElementById('measList');
+    if (!list) return;
+    var arr = getMeasSaves();
+    list.innerHTML = '';
+    if (!arr.length) {
+      list.appendChild(el('div', null, '<div style="color:#888;font-size:13px;padding:18px 2px;">저장된 측정이 없습니다.</div>'));
+      return;
+    }
+    arr.forEach(function (rec, i) {
+      var card = el('div', 'fav-card');
+      var num = el('div', 'fav-num', String(arr.length - i));
+      num.style.background = (rec.type === 'distance') ? '#1a5fd0' : '#1f8a4c';
+
+      var kindKo = rec.type === 'both' ? '면적+거리' : (rec.type === 'distance' ? '거리' : '면적');
+      var body = el('div', 'fav-body',
+        '<div class="fav-name">' + escapeHtml((rec.crop ? cropIconOf(rec.crop) + ' ' : '') + (rec.name || '측정')) + '</div>' +
+        '<div class="fav-addr">' + escapeHtml(kindKo) + ' · ' + escapeHtml(rec.jibunAddress || '주소 없음') + '</div>' +
+        '<div class="fav-addr" style="color:#888;">' +
+          (rec.areaM2 ? formatNumber(rec.areaM2, 1) + '㎡ (' + formatNumber(rec.areaPyeong, 1) + '평)' : '') +
+          (rec.areaM2 && rec.totalDistanceM ? ' · ' : '') +
+          (rec.totalDistanceM ? formatMeasurementValue(rec.totalDistanceM) : '') + '</div>' +
+        '<div class="fav-coord">' + escapeHtml((rec.createdAt || '').slice(0, 16).replace('T', ' ')) + '</div>');
+      body.addEventListener('click', function () { closeSheet(); loadMeasure(rec); });   /* 지도로 이동 + 불러오기 */
+
+      var acts = el('div', 'fav-acts');
+      var bEdit = el('button', 'icon-btn', '✏️');
+      bEdit.title = '수정';
+      bEdit.addEventListener('click', function () {
+        closeSheet();
+        loadMeasure(rec, true);
+        startMeasurementEdit();   /* 바로 수정 모드 */
+        showToast('꼭짓점을 끌어 위치를 수정한 뒤 「저장」으로 덮어쓰세요.', 4500, 'info');
+      });
+      var bShare = el('button', 'icon-btn', '📤');
+      bShare.title = '공유';
+      bShare.addEventListener('click', function () { shareMeasure(rec); });
+      var bDel = el('button', 'icon-btn', '🗑');
+      bDel.title = '삭제';
+      bDel.addEventListener('click', function () {
+        if (rec.locked) { showToast('잠금된 측정입니다.\n잠금을 해제한 후 삭제해주세요.', 4000); return; }
+        if (!window.confirm('이 측정을 삭제하시겠습니까?')) return;
+        setMeasSaves(getMeasSaves().filter(function (x) { return x.id !== rec.id; }));
+        renderMeasList();
+        showToast('삭제되었습니다.', 2000, 'success');
+      });
+      var bLock = el('button', 'icon-btn' + (rec.locked ? ' locked' : ''), rec.locked ? '🔒' : '🔓');
+      bLock.title = '잠금';
+      bLock.addEventListener('click', function () {
+        var a2 = getMeasSaves();
+        for (var k = 0; k < a2.length; k++) if (a2[k].id === rec.id) { a2[k].locked = !a2[k].locked; a2[k].updatedAt = kstNowStr(); }
+        setMeasSaves(a2);
+        renderMeasList();
+      });
+      acts.appendChild(bEdit); acts.appendChild(bShare); acts.appendChild(bLock); acts.appendChild(bDel);
+
+      card.appendChild(num); card.appendChild(body); card.appendChild(acts);
+      list.appendChild(card);
+    });
+  }
 
   /* ===================================================================
      [v6-4] 길게 누르기(0.5초) Quick Action —— 도착 / 측정 / 주소 / 공유 / 저장
@@ -2608,6 +3106,12 @@ TenarSecureStore.init('map',
   blockMapPropagation(toastEl);
   blockMapPropagation(quickMenuEl);   /* [v6-4] 퀵메뉴를 눌러도 지도에 점이 찍히지 않도록 */
 
+  /* [v7-1] 뒤로가기 — 이전 페이지가 있으면 그쪽으로, 없으면 텐아르 허브로 */
+  document.getElementById('backBtn').addEventListener('click', function () {
+    if (window.history.length > 1) window.history.back();
+    else window.location.href = 'https://ubaldos00-ship-it.github.io/home/';
+  });
+
   document.getElementById('searchBtn').addEventListener('click', searchAddress);
   searchInput.addEventListener('keydown', function (e) {
     if (e.key === 'Enter' || e.keyCode === 13) { e.preventDefault(); searchInput.blur(); searchAddress(); }
@@ -2741,6 +3245,11 @@ TenarSecureStore.init('map',
   document.getElementById('btnCenterAdd').addEventListener('click', addCenterPoint);
   document.getElementById('btnFinish').addEventListener('click', finishCurrentMeasurement);
   document.getElementById('btnReset').addEventListener('click', resetAllMeasurements);
+  /* [v7-9] 연속 측정 · 저장 · 목록 */
+  document.getElementById('btnNew').addEventListener('click', startNewMeasurement);
+  document.getElementById('btnSaveMeas').addEventListener('click', openMeasSaveSheet);
+  document.getElementById('btnMeasList').addEventListener('click', openMeasListSheet);
+  updateNewMeasureBtn();
 
   /* ================= 지도 로딩 · 상태 복원 ================= */
   var mapLoaded = false;
