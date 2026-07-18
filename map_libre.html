@@ -1,4 +1,5 @@
-<!-- map_v13.html (v13) · 저장: 2026-07-19 06:03 KST · [v13] 실측모드에서 저장핀(즐겨찾기)을 측정점으로 사용 — 일반 지도모드는 기존대로 저장위치 상세시트를 열고, 면적·길이 측정모드에서는 상세시트 대신 저장핀의 실제 위도·경도를 다음 측정점으로 추가. 중복좌표 방지 / 한 번 터치로 점 두 개 생기지 않게 이벤트 전파차단(suppressNextMapClick) / 실측모드에서 길게 누르면 저장핀 정보 확인 / 측정점 번호가 저장핀에 가리지 않도록 z-index 정리. 저장핀 원본(좌표·색상·작물·잠금)과 즐겨찾기 저장구조·JSON·암호화는 변경 없음 -->
+<!-- map_v14.html (v14) · 저장: 2026-07-19 · [v14] 실측도구에 ①필지선택 모드(지적 필지를 누르면 파란 테두리 강조 + 꺾이는 꼭짓점을 면적측정처럼 번호 핀으로 자동 표시, 꼭짓점 40개 초과 시 형태 유지 단순화) ②재배구역 직접 그리기 모드(주황 도형, 면적 계산 로직은 기존 그대로 재사용) 추가. 두 모드 모두 저장핀 터치로 점 추가/필지 선택 가능(SURVEY_POINT_INPUT_MODES 확장). UNDO·완료·센터추가·초기화·연속측정 모두 새 모드 대응. 저장위치 상세의 작물 이모지 잔재 제거(한글만). 가·나·다·A끝·B끝은 다음 버전 예정 -->
+<!-- (이전) map_v13.html (v13) · 저장: 2026-07-19 06:03 KST · [v13] 실측모드에서 저장핀(즐겨찾기)을 측정점으로 사용 — 일반 지도모드는 기존대로 저장위치 상세시트를 열고, 면적·길이 측정모드에서는 상세시트 대신 저장핀의 실제 위도·경도를 다음 측정점으로 추가. 중복좌표 방지 / 한 번 터치로 점 두 개 생기지 않게 이벤트 전파차단(suppressNextMapClick) / 실측모드에서 길게 누르면 저장핀 정보 확인 / 측정점 번호가 저장핀에 가리지 않도록 z-index 정리. 저장핀 원본(좌표·색상·작물·잠금)과 즐겨찾기 저장구조·JSON·암호화는 변경 없음 -->
 <!-- (이전) map_v11.html (v11) · 저장: 2026-07-19 · [v11] ①시트 열려도 지도 이동/확대/회전 가능(오버레이 통과)+제목줄까지 내려가는 최소화 스냅+최소화 버튼 ②레이어 초기화 버튼 ③축소 시 핀 크기 축소(좌표 고정, z16↑기본/z13~15 작게/z13↓점) ④선택 필지 안쪽 채움 제거(테두리만) ⑥토지정보 아이콘 📍 ⑦지도출처 ⓘ 중복 제거+주소 표기 ⑧핀 안 이모지→핀 위 작물명, 저장핀 시트 토글 2개 ⑨핀 수정=위치수정/이름수정 선택(좌표 기준 저장) ⑩메모 축소+시트 auto 높이 ⑪누른점 파랑+공유에 화면 캡처 첨부 -->
 <!-- (이전) map_v10.html (v10) · 저장: 2026-07-18 · [v10] ①②토지이용 범례 독립패널(가로형·드래그이동·접기·위치저장) ③실측도구 최소화 1회 동작(중복이벤트 제거) ④선택 필지 파란 강조 ⑤시트 위로 지도이동(padding) ⑥토지정보 4줄 재구성 ⑦공시지가 최신/전년 ⑧⑨PNU→추가정보 ⑩하단버튼 3개 통일 ⑪⑫⑬핀저장·길찾기·조사표(PNU/면적/공시지가/용도지역/필지경계) ⑭시트 열린채 길게누르기 ⑮회전각+i flex ⑯주소→공통 토지정보 ⑰표적 SVG 아이콘 ⑱⑲저장위치 재배치+현재필지정보+시트스택 ⑳즐겨찾기→저장위치 팝업 -->
 <!-- (이전) map_v9.html (v8b/v9) · 저장: 2026-07-18 07:00 KST · [v9] 토지정보/토지이용계획 — ③④필지 터치 토지정보 시트(전체지번+지목·도로명·우편·PNU복사)+추가정보 지연조회(면적·개별공시지가+연도·용도지역, 농업진흥/토지이용상황은 확인되지않음+공식링크) ⑤⑥⑦토지이용계획 레이어(용도지역 색상채움·범례·투명도20~70%기본45%·지적아래 배치) ㉑현재 필지정보 버튼 ㉒조사표 PNU/지목/면적/용도지역 연계 · PNU 10분 캐시 · 토지이음 공식조회 링크 -->
@@ -354,6 +355,8 @@ TenarSecureStore.init('map',
   #modeBadge.m-area { background: #1f8a4c; }
   #modeBadge.m-dist { background: #1a5fd0; }
   #modeBadge.m-edit { background: #7c3aed; }
+  #modeBadge.m-parcel { background: #1565C0; }   /* [v14] 필지선택 */
+  #modeBadge.m-crop { background: #d97706; }     /* [v14] 재배구역 */
 
   #hint {
     align-self: flex-start; background: rgba(255,255,255,.8); border-radius: 8px;
@@ -858,6 +861,9 @@ TenarSecureStore.init('map',
       <div id="toolBtns">
         <button class="tool-btn" type="button" id="btnField">▱ 면적</button>
         <button class="tool-btn" type="button" id="btnDistance">↔ 길이</button>
+        <!-- [v14] 필지선택 · 재배구역 직접 그리기 -->
+        <button class="tool-btn" type="button" id="btnParcelPick">▣ 필지선택</button>
+        <button class="tool-btn" type="button" id="btnCrop">🌾 재배구역</button>
         <button class="tool-btn" type="button" id="btnEdit">✥ 수정</button>
         <button class="tool-btn" type="button" id="btnUndo">↶ UNDO</button>
         <button class="tool-btn" type="button" id="btnCenterAdd">＋ 센터추가</button>
@@ -1972,7 +1978,7 @@ TenarSecureStore.init('map',
        edit(수정)은 기존 점을 옮기는 모드이므로 점 추가 대상이 아니다.
      ※ 앞으로 재배구역 그리기·생산량지점(가·나·다·A끝·B끝)이 추가되면
         아래 배열에 모드명만 넣으면 그대로 동작한다. */
-  var SURVEY_POINT_INPUT_MODES = ['polygon', 'distance'];
+  var SURVEY_POINT_INPUT_MODES = ['polygon', 'distance', 'cropBoundary', 'parcelPick'];   /* [v14] 재배구역·필지선택 추가 */
   function getActiveSurveyInputMode() { return surveyMeasureState.mode; }
   function isSurveyPointInputMode() {
     return SURVEY_POINT_INPUT_MODES.indexOf(getActiveSurveyInputMode()) >= 0;
@@ -2006,6 +2012,20 @@ TenarSecureStore.init('map',
         }
         addDistancePoint(lngLat);
         showToast('저장핀 위치를 길이 측정점으로 추가했습니다. (' + s.distancePoints.length + '번 점)', 3000, 'success');
+        break;
+
+      /* [v14] 재배구역 그리기: 다음 경계점으로 추가 */
+      case 'cropBoundary':
+        if (s.fieldPoints.some(function (q) { return _samePt(q, pt); })) {
+          showToast('이미 선택된 측정 지점입니다.', 2500, 'info'); return;
+        }
+        addFieldPoint(lngLat);
+        showToast('저장핀 위치를 재배구역 경계점으로 추가했습니다. (' + s.fieldPoints.length + '번 점)', 3000, 'success');
+        break;
+
+      /* [v14] 필지선택: 저장핀이 있는 위치의 필지를 선택 */
+      case 'parcelPick':
+        pickParcelAt(p.longitude, p.latitude);
         break;
 
       /* [v13] 재배구역 그리기·생산량지점(가·나·다·A끝·B끝)이 추가되면
@@ -2103,7 +2123,7 @@ TenarSecureStore.init('map',
 
     /* 작물·메모·저장일시 */
     var extra = '';
-    if (f.crop) extra += '<div class="addr-label">작물</div><div class="addr-value">' + escapeHtml((f.cropIcon || '') + ' ' + f.crop) + '</div>';
+    if (f.crop) extra += '<div class="addr-label">작물</div><div class="addr-value">' + escapeHtml(f.crop) + '</div>';   /* [v14] 이모지 제거, 한글만 */
     if (f.memo) extra += '<div class="addr-label">메모</div><div class="addr-value">' + escapeHtml(f.memo) + '</div>';
     if (f.createdAt) extra += '<div class="addr-label">저장일시</div><div class="addr-value" style="font-size:12px;color:#888;">' + escapeHtml(String(f.createdAt).slice(0, 16).replace('T', ' ')) + '</div>';
     if (extra) box.appendChild(el('div', null, extra));
@@ -3257,6 +3277,7 @@ TenarSecureStore.init('map',
     fieldAreaM2: 0, fieldPerimeterM: 0,
     distancePoints: [], segmentDistances: [], totalDistanceM: 0,
     isFieldComplete: false, isEditing: false, dragging: null,
+    fieldKind: 'field',   /* [v14] 'field'=필지/면적, 'crop'=재배구역 (계산 로직은 동일, 색·문구만 다름) */
     areas: [],            /* [{id, points, areaM2, perimeterM}] 완료된 면적들 */
     lines: [],            /* [{id, points, segs, totalM}]       완료된 거리들 */
     editingSaveId: null   /* 저장본을 불러와 수정 중이면 그 ID */
@@ -3288,13 +3309,14 @@ TenarSecureStore.init('map',
     map.addLayer({
       id: 'survey-field-fill', type: 'fill', source: 'survey-field-source',
       filter: ['==', ['get', 'type'], 'field'],
-      paint: { 'fill-color': '#1f8a4c', 'fill-opacity': 0.2 }
+      /* [v14] 재배구역은 주황, 필지/면적은 초록 */
+      paint: { 'fill-color': ['case', ['==', ['coalesce', ['get', 'kind'], 'field'], 'crop'], '#d97706', '#1f8a4c'], 'fill-opacity': 0.2 }
     });
     map.addLayer({
       id: 'survey-field-outline', type: 'line', source: 'survey-field-source',
       filter: ['in', ['get', 'type'], ['literal', ['field', 'field-line']]],
       layout: { 'line-cap': 'round', 'line-join': 'round' },
-      paint: { 'line-color': '#14612f', 'line-width': 3 }
+      paint: { 'line-color': ['case', ['==', ['coalesce', ['get', 'kind'], 'field'], 'crop'], '#b45309', '#14612f'], 'line-width': 3 }
     });
     /* [v6-6] 구간별로 선을 나눠 1~2구간과 3구간 이후 색을 구분한다 */
     map.addLayer({
@@ -3314,8 +3336,9 @@ TenarSecureStore.init('map',
         'circle-radius': ['case', ['get', 'last'], 7, 6],
         'circle-color': '#ffffff',
         'circle-stroke-color': ['case',
-          ['get', 'done'], '#14612f',
           ['get', 'last'], '#e5342a',
+          ['==', ['coalesce', ['get', 'kind'], 'field'], 'crop'], '#b45309',
+          ['get', 'done'], '#14612f',
           '#1a5fd0'],
         'circle-stroke-width': 3
       }
@@ -3364,31 +3387,31 @@ TenarSecureStore.init('map',
     /* [v7-9] 완료된 면적들(연속 측정)을 먼저 그린다 */
     s.areas.forEach(function (ar) {
       fc.features.push({
-        type: 'Feature', properties: { type: 'field', done: true },
+        type: 'Feature', properties: { type: 'field', done: true, kind: (ar.kind || 'field') },
         geometry: { type: 'Polygon', coordinates: [closedRing(ar.points)] }
       });
       ar.points.forEach(function (p, k) {
         fc.features.push({
-          type: 'Feature', properties: { type: 'field-vertex', index: k, last: false, done: true, areaId: ar.id },
+          type: 'Feature', properties: { type: 'field-vertex', index: k, last: false, done: true, areaId: ar.id, kind: (ar.kind || 'field') },
           geometry: { type: 'Point', coordinates: p }
         });
       });
     });
 
     if (s.fieldPoints.length >= 3) {
-      s.fieldPolygon = { type: 'Feature', properties: { type: 'field' }, geometry: { type: 'Polygon', coordinates: [closedRing(s.fieldPoints)] } };
+      s.fieldPolygon = { type: 'Feature', properties: { type: 'field', kind: s.fieldKind }, geometry: { type: 'Polygon', coordinates: [closedRing(s.fieldPoints)] } };
       fc.features.push(s.fieldPolygon);
     } else {
       s.fieldPolygon = null;
       if (s.fieldPoints.length === 2) {
-        fc.features.push({ type: 'Feature', properties: { type: 'field-line' }, geometry: { type: 'LineString', coordinates: s.fieldPoints.slice() } });
+        fc.features.push({ type: 'Feature', properties: { type: 'field-line', kind: s.fieldKind }, geometry: { type: 'LineString', coordinates: s.fieldPoints.slice() } });
       }
     }
     for (i = 0; i < s.fieldPoints.length; i++) {
       fc.features.push({
         type: 'Feature',
         properties: {
-          type: 'field-vertex', index: i,
+          type: 'field-vertex', index: i, kind: s.fieldKind,
           last: (!s.isFieldComplete && i === s.fieldPoints.length - 1),   /* [v6-5] 마지막 = 빨강 */
           done: !!s.isFieldComplete                                        /* 완료 = 전부 일반색 */
         },
@@ -3525,10 +3548,10 @@ TenarSecureStore.init('map',
 
     if (s.fieldPolygon) {
       var m2 = s.fieldAreaM2;
-      html += '<div class="res-title">필지 면적</div>';
+      html += '<div class="res-title">' + (s.fieldKind === 'crop' ? '재배구역 면적' : '필지 면적') + '</div>';
       html += '<div class="res-main">' + formatNumber(m2, 1) + '㎡</div>';
       html += '<div class="res-sub">' + formatNumber(m2 / 3.305785, 1) + '평<br>' + formatNumber(m2 / 100, 2) + 'a<br>' + formatNumber(m2 / 10000, 3) + 'ha</div>';
-      html += '<div class="res-title" style="margin-top:6px;">필지 둘레</div>';
+      html += '<div class="res-title" style="margin-top:6px;">' + (s.fieldKind === 'crop' ? '재배구역 둘레' : '필지 둘레') + '</div>';
       html += '<div class="res-sub">' + formatMeasurementValue(s.fieldPerimeterM) + '</div>';
     }
     if (s.segmentDistances.length > 0) {
@@ -3549,26 +3572,135 @@ TenarSecureStore.init('map',
     document.getElementById('btnField').classList.toggle('active', mode === 'polygon');
     document.getElementById('btnDistance').classList.toggle('active', mode === 'distance');
     document.getElementById('btnEdit').classList.toggle('active', mode === 'edit');
-    crosshairEl.style.display = (mode === 'polygon' || mode === 'distance') ? 'block' : 'none';
+    /* [v14] 새 모드 버튼 활성 표시 */
+    var _bp = document.getElementById('btnParcelPick'), _bc = document.getElementById('btnCrop');
+    if (_bp) _bp.classList.toggle('active', mode === 'parcelPick');
+    if (_bc) _bc.classList.toggle('active', mode === 'cropBoundary');
+    crosshairEl.style.display = (mode === 'polygon' || mode === 'distance' || mode === 'cropBoundary') ? 'block' : 'none';
     map.getCanvas().style.cursor = (mode === 'none') ? '' : 'crosshair';
 
     modeBadge.className = '';
     if (mode === 'polygon') { modeBadge.textContent = '면적측정 모드'; modeBadge.classList.add('m-area'); modeBadge.style.display = 'block'; }
     else if (mode === 'distance') { modeBadge.textContent = '길이측정 모드'; modeBadge.classList.add('m-dist'); modeBadge.style.display = 'block'; }
     else if (mode === 'edit') { modeBadge.textContent = '수정 모드'; modeBadge.classList.add('m-edit'); modeBadge.style.display = 'block'; }
+    else if (mode === 'parcelPick') { modeBadge.textContent = '필지선택 모드'; modeBadge.classList.add('m-parcel'); modeBadge.style.display = 'block'; }
+    else if (mode === 'cropBoundary') { modeBadge.textContent = '재배구역 그리기'; modeBadge.classList.add('m-crop'); modeBadge.style.display = 'block'; }
     else modeBadge.style.display = 'none';
   }
   /* [v6-7] 측정 모드 전환 제한 —— 점을 하나라도 찍은 뒤에는 다른 모드로 못 바꾼다.
      완료(✓) 또는 초기화(🗑) 후에는 다시 자유롭게 변경 가능. */
   function canSwitchMode(to) {
     var s = surveyMeasureState;
-    if (to === 'polygon' && s.mode === 'distance' && s.distancePoints.length > 0) return false;
-    if (to === 'distance' && s.mode === 'polygon' && s.fieldPoints.length > 0 && !s.isFieldComplete) return false;
+    var drawing = (s.mode === 'polygon' || s.mode === 'cropBoundary');
+    if (to === 'distance' && drawing && s.fieldPoints.length > 0 && !s.isFieldComplete) return false;
+    if ((to === 'polygon' || to === 'cropBoundary') && s.mode === 'distance' && s.distancePoints.length > 0) return false;
+    /* [v14] 면적 ↔ 재배구역 은 그리는 중이면 서로 바꾸지 않는다(도형이 섞이지 않게) */
+    if (to === 'polygon' && s.mode === 'cropBoundary' && s.fieldPoints.length > 0) return false;
+    if (to === 'cropBoundary' && s.mode === 'polygon' && s.fieldPoints.length > 0) return false;
     return true;
   }
+  /* ===================================================================
+     [v14] 재배구역 직접 그리기
+       면적측정과 계산 로직은 완전히 동일하고(fieldPoints 재사용),
+       도형 색상과 안내 문구만 '재배구역'으로 구분한다.
+     =================================================================== */
+  function startCropBoundary() {
+    if (!hasTurf) { showToast('측정 라이브러리를 불러오지 못했습니다.\n인터넷 연결을 확인해주세요.', 0); return; }
+    if (!canSwitchMode('cropBoundary')) { showToast('현재 측정을 완료한 후 변경할 수 있습니다.', 3500, 'info'); return; }
+    surveyMeasureState.fieldKind = 'crop';
+    setSurveyMode('cropBoundary');
+    surveyMeasureState.isFieldComplete = false;
+    showToast('실제 재배구역의 모서리를 순서대로 터치하세요.\n저장핀을 눌러도 경계점으로 추가됩니다.', 5000, 'info');
+  }
+
+  /* ===================================================================
+     [v14] 필지 선택 —— 지적 필지를 누르면 파란 테두리로 강조하고,
+       그 필지의 꺾이는 지점(꼭짓점)을 면적측정처럼 번호 핀으로 찍어 준다.
+       이후 「수정」으로 꼭짓점을 옮기거나 「완료」로 확정할 수 있다.
+     =================================================================== */
+  var PARCEL_VERTEX_MAX = 40;   /* 꼭짓점이 너무 많으면 단순화 */
+  function startParcelPick() {
+    if (!hasTurf) { showToast('측정 라이브러리를 불러오지 못했습니다.\n인터넷 연결을 확인해주세요.', 0); return; }
+    if (surveyMeasureState.fieldPoints.length > 0 || surveyMeasureState.distancePoints.length > 0) {
+      showToast('현재 측정을 완료하거나 초기화한 후 선택할 수 있습니다.', 3500, 'info'); return;
+    }
+    setSurveyMode('parcelPick');
+    showToast('측정할 필지를 지도에서 누르세요.\n필지 경계가 파란색으로 표시되고 꼭짓점이 자동으로 찍힙니다.', 5000, 'info');
+  }
+
+  /* 폴리곤 좌표를 측정 꼭짓점 배열로 (닫는 점 제거 + 너무 많으면 단순화) */
+  function parcelRingToPoints(geometry) {
+    if (!geometry) return [];
+    var ring = null;
+    if (geometry.type === 'Polygon') ring = geometry.coordinates[0];
+    else if (geometry.type === 'MultiPolygon') {
+      /* 여러 조각이면 가장 넓은 조각을 사용 */
+      var best = null, bestA = -1;
+      geometry.coordinates.forEach(function (poly) {
+        try {
+          var a = turf.area({ type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: poly } });
+          if (a > bestA) { bestA = a; best = poly; }
+        } catch (e) {}
+      });
+      ring = best ? best[0] : null;
+    }
+    if (!ring || ring.length < 4) return [];
+
+    var pts = ring.slice();
+    /* 마지막 = 첫 점(닫는 점) 제거 */
+    if (pts.length > 1 &&
+        Math.abs(pts[0][0] - pts[pts.length - 1][0]) < 1e-12 &&
+        Math.abs(pts[0][1] - pts[pts.length - 1][1]) < 1e-12) pts.pop();
+
+    if (pts.length > PARCEL_VERTEX_MAX && hasTurf) {
+      /* 꼭짓점이 많으면 형태를 유지한 채 단순화 */
+      for (var tol = 0.000005; tol <= 0.0002; tol *= 2) {
+        try {
+          var sim = turf.simplify({ type: 'Feature', properties: {},
+            geometry: { type: 'Polygon', coordinates: [ring] } }, { tolerance: tol, highQuality: true });
+          var r2 = sim.geometry.coordinates[0].slice();
+          if (r2.length > 1 &&
+              Math.abs(r2[0][0] - r2[r2.length - 1][0]) < 1e-12 &&
+              Math.abs(r2[0][1] - r2[r2.length - 1][1]) < 1e-12) r2.pop();
+          if (r2.length >= 3 && r2.length <= PARCEL_VERTEX_MAX) { pts = r2; break; }
+        } catch (e) { break; }
+      }
+    }
+    return pts;
+  }
+
+  /* 좌표 위치의 필지를 선택 → 파란 강조 + 꼭짓점 자동 찍기 */
+  function pickParcelAt(lng, lat) {
+    showToast('필지 경계를 불러오는 중입니다.', 0, 'info');
+    requestParcelAt(lng, lat).then(function (f) {
+      if (!f || !f.geometry) { showToast('이 위치에서 필지를 찾지 못했습니다.', 3500, 'info'); return; }
+      var pts = parcelRingToPoints(f.geometry);
+      if (pts.length < 3) { showToast('필지 경계를 사용할 수 없습니다.', 3500, 'info'); return; }
+
+      highlightSelectedParcel(f.geometry);          /* 파란 테두리 강조 (기존 함수 재사용) */
+
+      var s = surveyMeasureState;
+      s.fieldKind = 'field';
+      s.fieldPoints = pts.slice();
+      s.isFieldComplete = true;                     /* 경계가 이미 닫힌 상태 */
+      updateFieldGeometry();                        /* 면적·둘레·번호핀 자동 계산 */
+      setSurveyMode('none');
+      updateNewMeasureBtn();
+
+      var p = f.properties || {};
+      showToast('필지를 선택했습니다. ' + (p.addr || p.jibun || '') +
+                '\n꼭짓점 ' + pts.length + '개 · ' + formatNumber(s.fieldAreaM2, 1) + '㎡ (' +
+                formatNumber(s.fieldAreaM2 / 3.305785, 1) + '평)', 5000, 'success');
+    }).catch(function (e) {
+      console.warn('필지 조회 실패', e);
+      showToast('필지정보를 불러오지 못했습니다.', 3500);
+    });
+  }
+
   function startFieldDrawing() {
     if (!hasTurf) { showToast('측정 라이브러리를 불러오지 못했습니다.\n인터넷 연결을 확인해주세요.', 0); return; }
     if (!canSwitchMode('polygon')) { showToast('현재 측정을 완료한 후 변경할 수 있습니다.', 3500, 'info'); return; }
+    surveyMeasureState.fieldKind = 'field';
     setSurveyMode('polygon');
     surveyMeasureState.isFieldComplete = false;
     showToast('필지 모서리를 순서대로 터치하세요.\n3개 이상의 점을 찍은 후 측정 완료를 눌러주세요.', 5000, 'info');
@@ -3594,7 +3726,7 @@ TenarSecureStore.init('map',
     s.isFieldComplete = true;
     setSurveyMode('none');
     updateFieldGeometry();
-    showToast('필지 경계가 완성되었습니다.\n「새 면적」을 누르면 계속 측정할 수 있습니다.', 3500, 'success');
+    showToast((s.fieldKind === 'crop' ? '재배구역' : '필지') + ' 경계가 완성되었습니다.\n「새 면적」을 누르면 계속 측정할 수 있습니다.', 3500, 'success');
     updateNewMeasureBtn();
     return true;
   }
@@ -3618,7 +3750,8 @@ TenarSecureStore.init('map',
       id: 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
       points: s.fieldPoints.slice(),
       areaM2: s.fieldAreaM2,
-      perimeterM: s.fieldPerimeterM
+      perimeterM: s.fieldPerimeterM,
+      kind: s.fieldKind          /* [v14] 필지/재배구역 구분 보존 */
     });
     s.fieldPoints = []; s.fieldPolygon = null; s.fieldAreaM2 = 0; s.fieldPerimeterM = 0;
     s.isFieldComplete = false;
@@ -3667,17 +3800,21 @@ TenarSecureStore.init('map',
   }
   function finishCurrentMeasurement() {
     var s = surveyMeasureState;
-    if (s.mode === 'polygon') return finishFieldDrawing();
+    if (s.mode === 'polygon' || s.mode === 'cropBoundary') return finishFieldDrawing();   /* [v14] */
     if (s.mode === 'distance') return finishDistanceMeasurement();
     if (s.mode === 'edit') return finishMeasurementEdit();
+    if (s.mode === 'parcelPick') { setSurveyMode('none'); showToast('필지선택을 종료했습니다.', 2000, 'info'); return true; }
     showToast('진행 중인 측정이 없습니다.', 2500, 'info');
     return false;
   }
   function undoLastMeasurementPoint() {
     var s = surveyMeasureState;
-    if (s.mode === 'polygon' && s.fieldPoints.length) { s.fieldPoints.pop(); updateFieldGeometry(); showToast('마지막 필지 꼭짓점을 삭제했습니다.', 2000, 'info'); return; }
+    if ((s.mode === 'polygon' || s.mode === 'cropBoundary') && s.fieldPoints.length) {
+      s.fieldPoints.pop(); updateFieldGeometry();
+      showToast('마지막 ' + (s.fieldKind === 'crop' ? '재배구역 경계점' : '필지 꼭짓점') + '을 삭제했습니다.', 2000, 'info'); return;
+    }
     if (s.mode === 'distance' && s.distancePoints.length) { s.distancePoints.pop(); updateDistanceGeometry(); showToast('마지막 거리 측정점을 삭제했습니다.', 2000, 'info'); return; }
-    if (s.mode !== 'polygon' && s.mode !== 'distance') {
+    if (s.mode !== 'polygon' && s.mode !== 'cropBoundary' && s.mode !== 'distance') {
       if (s.distancePoints.length) { s.distancePoints.pop(); updateDistanceGeometry(); showToast('마지막 거리 측정점을 삭제했습니다.', 2000, 'info'); return; }
       if (s.fieldPoints.length) { s.fieldPoints.pop(); s.isFieldComplete = false; updateFieldGeometry(); showToast('마지막 필지 꼭짓점을 삭제했습니다.', 2000, 'info'); return; }
     }
@@ -3690,6 +3827,8 @@ TenarSecureStore.init('map',
     s.distancePoints = []; s.segmentDistances = []; s.totalDistanceM = 0;
     s.isFieldComplete = false; s.dragging = null;
     s.areas = []; s.lines = []; s.editingSaveId = null;   /* [v7-9] 연속 측정분까지 모두 정리 */
+    s.fieldKind = 'field';                                /* [v14] 기본(필지)으로 복귀 */
+    if (typeof clearSelectedParcelHighlight === 'function') clearSelectedParcelHighlight();
     setSurveyMode('none');
     updateMeasurementSources();
     updateNewMeasureBtn();
@@ -3700,8 +3839,9 @@ TenarSecureStore.init('map',
     /* [v13] 저장핀을 눌러 측정점을 넣은 직후의 지도 클릭은 무시 (점 두 개 방지) */
     if (suppressNextMapClick) { suppressNextMapClick = false; return; }
     var mode = surveyMeasureState.mode;
-    if (mode === 'polygon') { addFieldPoint(e.lngLat); return; }
+    if (mode === 'polygon' || mode === 'cropBoundary') { addFieldPoint(e.lngLat); return; }   /* [v14] 재배구역도 같은 파이프라인 */
     if (mode === 'distance') { addDistancePoint(e.lngLat); return; }
+    if (mode === 'parcelPick') { pickParcelAt(e.lngLat.lng, e.lngLat.lat); return; }          /* [v14] 필지 선택 */
 
     /* [v10-16] 측정 중이 아닐 때 지적 필지를 누르면 공통 토지정보 시트 */
     if (settings.overlays.cadastral && map.getLayer('ov-cadastral-fill')) {
@@ -3713,7 +3853,8 @@ TenarSecureStore.init('map',
   });
   function addCenterPoint() {
     var s = surveyMeasureState;
-    if (s.mode === 'polygon') addFieldPoint(map.getCenter());
+    if (s.mode === 'parcelPick') { var c0 = map.getCenter(); pickParcelAt(c0.lng, c0.lat); return; }   /* [v14] 화면 중앙 필지 선택 */
+    if (s.mode === 'polygon' || s.mode === 'cropBoundary') addFieldPoint(map.getCenter());
     else if (s.mode === 'distance') addDistancePoint(map.getCenter());
     else showToast('먼저 면적 측정 또는 길이 측정을 선택해주세요.', 3000, 'info');
   }
@@ -4558,6 +4699,8 @@ TenarSecureStore.init('map',
   });
   document.getElementById('btnField').addEventListener('click', startFieldDrawing);
   document.getElementById('btnDistance').addEventListener('click', startDistanceMeasurement);
+  document.getElementById('btnParcelPick').addEventListener('click', startParcelPick);   /* [v14] */
+  document.getElementById('btnCrop').addEventListener('click', startCropBoundary);       /* [v14] */
   document.getElementById('btnEdit').addEventListener('click', startMeasurementEdit);
   document.getElementById('btnUndo').addEventListener('click', undoLastMeasurementPoint);
   document.getElementById('btnCenterAdd').addEventListener('click', addCenterPoint);
