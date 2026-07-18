@@ -1,4 +1,4 @@
-<!-- map_v12.html (v12) · 저장: 2026-07-19 · [v12] ①★핀 위치 어긋남 근본 수정(.pin position:relative→absolute — 마커가 문서 흐름에 쌓여 축소 시 일자로 늘어서던 버그) ②회전각 옆 지도 레벨 작게 표시 ③작물명 축소해도 계속 표시 ④목록/상세 작물 이모지→한글 배지 ⑤html2canvas 지연 로딩(공유 시 화면 전체 캡처) ⑥하단 MapLibre|©VWorld 표기 제거(출처는 i 버튼) -->
+<!-- map_v13.html (v13) · 저장: 2026-07-19 06:03 KST · [v13] 실측모드에서 저장핀(즐겨찾기)을 측정점으로 사용 — 일반 지도모드는 기존대로 저장위치 상세시트를 열고, 면적·길이 측정모드에서는 상세시트 대신 저장핀의 실제 위도·경도를 다음 측정점으로 추가. 중복좌표 방지 / 한 번 터치로 점 두 개 생기지 않게 이벤트 전파차단(suppressNextMapClick) / 실측모드에서 길게 누르면 저장핀 정보 확인 / 측정점 번호가 저장핀에 가리지 않도록 z-index 정리. 저장핀 원본(좌표·색상·작물·잠금)과 즐겨찾기 저장구조·JSON·암호화는 변경 없음 -->
 <!-- (이전) map_v11.html (v11) · 저장: 2026-07-19 · [v11] ①시트 열려도 지도 이동/확대/회전 가능(오버레이 통과)+제목줄까지 내려가는 최소화 스냅+최소화 버튼 ②레이어 초기화 버튼 ③축소 시 핀 크기 축소(좌표 고정, z16↑기본/z13~15 작게/z13↓점) ④선택 필지 안쪽 채움 제거(테두리만) ⑥토지정보 아이콘 📍 ⑦지도출처 ⓘ 중복 제거+주소 표기 ⑧핀 안 이모지→핀 위 작물명, 저장핀 시트 토글 2개 ⑨핀 수정=위치수정/이름수정 선택(좌표 기준 저장) ⑩메모 축소+시트 auto 높이 ⑪누른점 파랑+공유에 화면 캡처 첨부 -->
 <!-- (이전) map_v10.html (v10) · 저장: 2026-07-18 · [v10] ①②토지이용 범례 독립패널(가로형·드래그이동·접기·위치저장) ③실측도구 최소화 1회 동작(중복이벤트 제거) ④선택 필지 파란 강조 ⑤시트 위로 지도이동(padding) ⑥토지정보 4줄 재구성 ⑦공시지가 최신/전년 ⑧⑨PNU→추가정보 ⑩하단버튼 3개 통일 ⑪⑫⑬핀저장·길찾기·조사표(PNU/면적/공시지가/용도지역/필지경계) ⑭시트 열린채 길게누르기 ⑮회전각+i flex ⑯주소→공통 토지정보 ⑰표적 SVG 아이콘 ⑱⑲저장위치 재배치+현재필지정보+시트스택 ⑳즐겨찾기→저장위치 팝업 -->
 <!-- (이전) map_v9.html (v8b/v9) · 저장: 2026-07-18 07:00 KST · [v9] 토지정보/토지이용계획 — ③④필지 터치 토지정보 시트(전체지번+지목·도로명·우편·PNU복사)+추가정보 지연조회(면적·개별공시지가+연도·용도지역, 농업진흥/토지이용상황은 확인되지않음+공식링크) ⑤⑥⑦토지이용계획 레이어(용도지역 색상채움·범례·투명도20~70%기본45%·지적아래 배치) ㉑현재 필지정보 버튼 ㉒조사표 PNU/지목/면적/용도지역 연계 · PNU 10분 캐시 · 토지이음 공식조회 링크 -->
@@ -571,7 +571,11 @@ TenarSecureStore.init('map',
      이전 버전에서 .pin 에 position:relative 를 주는 바람에 마커가 문서 흐름에도
      자리를 차지하면서(세로로 쌓임) 그 위치에서 transform 이 더해져 좌표가 틀어졌다.
      축소할수록 흐름 쌓임이 지배해 핀들이 일자로 늘어서 보였다. */
-  .pin { position: absolute; width: 24px; height: 30px; cursor: pointer; }
+  .pin { position: absolute; width: 24px; height: 30px; cursor: pointer; z-index: 1; }
+  /* [v13] 저장핀을 측정점으로 쓰면 같은 자리에 핀과 측정점 번호가 겹친다.
+           번호·라벨이 저장핀에 가려지지 않도록 위로 올린다.
+           (측정 경계선·측정선은 지도 캔버스에 그려져 항상 마커 아래) */
+  .vtx-num, .seg-label, .total-label, .area-label { z-index: 3; }
   .pin svg { display: block; }
   /* [v11-8] 핀 안 작물 이모지 대신, 물방울 위쪽에 작물명을 표시 */
   .pin .pin-crop {
@@ -1945,6 +1949,76 @@ TenarSecureStore.init('map',
     refreshFavPins();
   }
 
+  /* ══════════════════════════════════════════════════════════════
+     [v13] 실측모드에서 저장핀(즐겨찾기)을 측정점으로 사용
+       · 일반 지도모드 : 저장핀 터치 → 기존 저장위치 상세시트 (동작 변경 없음)
+       · 실측모드      : 저장핀 터치 → 상세시트를 열지 않고, 저장된 실제
+                         위도·경도를 현재 실측모드의 다음 측정점으로 추가
+       · 저장핀 원본(좌표·색상·작물·잠금)은 절대 변경하지 않는다.
+     ══════════════════════════════════════════════════════════════ */
+
+  /* 저장핀 좌표 호환 추출 — 예전 저장분(lat/lng, lon)까지 모두 지원.
+     좌표가 없는 오래된 핀은 null 을 돌려준다. */
+  function getFavoriteLngLat(f) {
+    if (!f) return null;
+    var lng = Number(f.longitude != null ? f.longitude : (f.lng != null ? f.lng : f.lon));
+    var lat = Number(f.latitude  != null ? f.latitude  : f.lat);
+    if (!isFinite(lng) || !isFinite(lat)) return null;
+    return { longitude: lng, latitude: lat };
+  }
+
+  /* 지금 "측정점을 찍어 넣는" 모드인가?
+       polygon(면적) · distance(길이) 만 해당.
+       edit(수정)은 기존 점을 옮기는 모드이므로 점 추가 대상이 아니다.
+     ※ 앞으로 재배구역 그리기·생산량지점(가·나·다·A끝·B끝)이 추가되면
+        아래 배열에 모드명만 넣으면 그대로 동작한다. */
+  var SURVEY_POINT_INPUT_MODES = ['polygon', 'distance'];
+  function getActiveSurveyInputMode() { return surveyMeasureState.mode; }
+  function isSurveyPointInputMode() {
+    return SURVEY_POINT_INPUT_MODES.indexOf(getActiveSurveyInputMode()) >= 0;
+  }
+
+  /* 같은 좌표가 이미 마지막/기존 점으로 들어가 있는지 (중복 추가 방지) */
+  function _samePt(a, b) {
+    return a && b && Math.abs(a[0] - b[0]) < 1e-9 && Math.abs(a[1] - b[1]) < 1e-9;
+  }
+
+  /* 저장핀을 현재 실측모드의 다음 측정점으로 사용 (공통 진입함수) */
+  function useFavoritePinAsSurveyPoint(f) {
+    var p = getFavoriteLngLat(f);
+    if (!p) { showToast('이 저장핀에는 사용할 수 있는 좌표정보가 없습니다.', 3000, 'info'); return; }
+    var lngLat = { lng: p.longitude, lat: p.latitude };
+    var pt = [p.longitude, p.latitude];
+    var s = surveyMeasureState;
+
+    switch (getActiveSurveyInputMode()) {
+      case 'polygon':
+        if (s.fieldPoints.some(function (q) { return _samePt(q, pt); })) {
+          showToast('이미 선택된 측정 지점입니다.', 2500, 'info'); return;
+        }
+        addFieldPoint(lngLat);
+        showToast('저장핀 위치를 면적 측정점으로 추가했습니다. (' + s.fieldPoints.length + '번 점)', 3000, 'success');
+        break;
+
+      case 'distance':
+        if (_samePt(s.distancePoints[s.distancePoints.length - 1], pt)) {
+          showToast('이미 선택된 측정 지점입니다.', 2500, 'info'); return;
+        }
+        addDistancePoint(lngLat);
+        showToast('저장핀 위치를 길이 측정점으로 추가했습니다. (' + s.distancePoints.length + '번 점)', 3000, 'success');
+        break;
+
+      /* [v13] 재배구역 그리기·생산량지점(가·나·다·A끝·B끝)이 추가되면
+               여기에 case 를 잇는다. 계산 로직은 각 기능의 기존 함수를 그대로 호출할 것. */
+      default:
+        break;
+    }
+  }
+
+  /* 저장핀 한 번 터치가 "핀 클릭 + 그 아래 지도 클릭"으로 두 번 처리되어
+     점이 두 개 생기는 것을 막는 플래그 (map click 핸들러에서 확인) */
+  var suppressNextMapClick = false;
+
   var favMarkers = [];
   function clearFavPins() { favMarkers.forEach(function (m) { m.remove(); }); favMarkers = []; }
   function refreshFavPins() {
@@ -1954,10 +2028,32 @@ TenarSecureStore.init('map',
     favs.forEach(function (f) {
       /* [v11-8] 작물별 필터 없음 — 저장핀은 모두 표시, 작물명만 켜고 끔 */
       var e = makePinElement(colorHex(f.color), settings.showCropName ? (f.crop || '') : '');
-      /* [v6-2] 작물핀 터치 → 큰 팝업 대신 50% 바텀시트 (위로 끌면 90%까지) */
+      /* [v6-2] 작물핀 터치 → 큰 팝업 대신 50% 바텀시트 (위로 끌면 90%까지)
+         [v13] 실측모드에서는 상세시트 대신 측정점으로 추가.
+               실측모드에서도 핀 정보를 봐야 할 수 있으므로 "길게 누르기"로 상세시트를 연다. */
+      var _lpTimer = null, _longPressed = false;
+      function _clearLp() { if (_lpTimer) { clearTimeout(_lpTimer); _lpTimer = null; } }
+      e.addEventListener('pointerdown', function () {
+        if (!isSurveyPointInputMode()) return;
+        _longPressed = false;
+        _clearLp();
+        _lpTimer = setTimeout(function () {
+          _longPressed = true;
+          openFavPinSheet(f);                       /* 길게 누르면 실측모드에서도 정보 확인 */
+        }, 600);
+      });
+      ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (evt) {
+        e.addEventListener(evt, _clearLp);
+      });
       e.addEventListener('click', function (ev) {
+        ev.preventDefault();
         ev.stopPropagation();
-        openFavPinSheet(f);
+        suppressNextMapClick = true;                /* 핀 아래 지도까지 눌린 것으로 처리되지 않게 */
+        setTimeout(function () { suppressNextMapClick = false; }, 350);
+        _clearLp();
+        if (_longPressed) { _longPressed = false; return; }   /* 길게눌러 정보시트를 이미 열었음 */
+        if (isSurveyPointInputMode()) { useFavoritePinAsSurveyPoint(f); return; }
+        openFavPinSheet(f);                         /* 일반 지도모드: 기존 동작 그대로 */
       });
       var mk = new maplibregl.Marker({ element: e, anchor: 'bottom' })
         .setLngLat([f.longitude, f.latitude])
@@ -3601,6 +3697,8 @@ TenarSecureStore.init('map',
   }
 
   map.on('click', function (e) {
+    /* [v13] 저장핀을 눌러 측정점을 넣은 직후의 지도 클릭은 무시 (점 두 개 방지) */
+    if (suppressNextMapClick) { suppressNextMapClick = false; return; }
     var mode = surveyMeasureState.mode;
     if (mode === 'polygon') { addFieldPoint(e.lngLat); return; }
     if (mode === 'distance') { addDistancePoint(e.lngLat); return; }
