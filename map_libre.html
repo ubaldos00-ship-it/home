@@ -1,4 +1,5 @@
-<!-- map_v11.html (v11) · 저장: 2026-07-19 · [v11] ①시트 열려도 지도 이동/확대/회전 가능(오버레이 통과)+제목줄까지 내려가는 최소화 스냅+최소화 버튼 ②레이어 초기화 버튼 ③축소 시 핀 크기 축소(좌표 고정, z16↑기본/z13~15 작게/z13↓점) ④선택 필지 안쪽 채움 제거(테두리만) ⑥토지정보 아이콘 📍 ⑦지도출처 ⓘ 중복 제거+주소 표기 ⑧핀 안 이모지→핀 위 작물명, 저장핀 시트 토글 2개 ⑨핀 수정=위치수정/이름수정 선택(좌표 기준 저장) ⑩메모 축소+시트 auto 높이 ⑪누른점 파랑+공유에 화면 캡처 첨부 -->
+<!-- map_v12.html (v12) · 저장: 2026-07-19 · [v12] ①★핀 위치 어긋남 근본 수정(.pin position:relative→absolute — 마커가 문서 흐름에 쌓여 축소 시 일자로 늘어서던 버그) ②회전각 옆 지도 레벨 작게 표시 ③작물명 축소해도 계속 표시 ④목록/상세 작물 이모지→한글 배지 ⑤html2canvas 지연 로딩(공유 시 화면 전체 캡처) ⑥하단 MapLibre|©VWorld 표기 제거(출처는 i 버튼) -->
+<!-- (이전) map_v11.html (v11) · 저장: 2026-07-19 · [v11] ①시트 열려도 지도 이동/확대/회전 가능(오버레이 통과)+제목줄까지 내려가는 최소화 스냅+최소화 버튼 ②레이어 초기화 버튼 ③축소 시 핀 크기 축소(좌표 고정, z16↑기본/z13~15 작게/z13↓점) ④선택 필지 안쪽 채움 제거(테두리만) ⑥토지정보 아이콘 📍 ⑦지도출처 ⓘ 중복 제거+주소 표기 ⑧핀 안 이모지→핀 위 작물명, 저장핀 시트 토글 2개 ⑨핀 수정=위치수정/이름수정 선택(좌표 기준 저장) ⑩메모 축소+시트 auto 높이 ⑪누른점 파랑+공유에 화면 캡처 첨부 -->
 <!-- (이전) map_v10.html (v10) · 저장: 2026-07-18 · [v10] ①②토지이용 범례 독립패널(가로형·드래그이동·접기·위치저장) ③실측도구 최소화 1회 동작(중복이벤트 제거) ④선택 필지 파란 강조 ⑤시트 위로 지도이동(padding) ⑥토지정보 4줄 재구성 ⑦공시지가 최신/전년 ⑧⑨PNU→추가정보 ⑩하단버튼 3개 통일 ⑪⑫⑬핀저장·길찾기·조사표(PNU/면적/공시지가/용도지역/필지경계) ⑭시트 열린채 길게누르기 ⑮회전각+i flex ⑯주소→공통 토지정보 ⑰표적 SVG 아이콘 ⑱⑲저장위치 재배치+현재필지정보+시트스택 ⑳즐겨찾기→저장위치 팝업 -->
 <!-- (이전) map_v9.html (v8b/v9) · 저장: 2026-07-18 07:00 KST · [v9] 토지정보/토지이용계획 — ③④필지 터치 토지정보 시트(전체지번+지목·도로명·우편·PNU복사)+추가정보 지연조회(면적·개별공시지가+연도·용도지역, 농업진흥/토지이용상황은 확인되지않음+공식링크) ⑤⑥⑦토지이용계획 레이어(용도지역 색상채움·범례·투명도20~70%기본45%·지적아래 배치) ㉑현재 필지정보 버튼 ㉒조사표 PNU/지목/면적/용도지역 연계 · PNU 10분 캐시 · 토지이음 공식조회 링크 -->
 <!-- (이전) map_v8.html (v8a) · 저장: 2026-07-18 06:18 KST · [v8a] UI 개선 — ①뒤로가기 버튼 선명하게(흰배경·테두리·그림자) ⑧현재위치 팝업 내용높이 자동(공백제거) ⑨복사버튼 축소 ⑩현재위치·추적 확대 통일(LOCATION_FOCUS_ZOOM=17)+팝업가림 보정 ⑪위치추적 상태값(isTrackingLocation)로 관리, 지도이벤트로 안풀림 ⑫화면밖 자동중앙복귀(줌유지) ⑬수동이동 허용 ⑭⑮지번라벨 흰배경제거·흰글씨+검정halo·줌별크기·중복제거 ⑯즐겨찾기→목록 제목+화면복귀 ⑰⑱잠금/삭제 색상통일·카드배경 ⑲암호화 배너 ⑳잠금≠암호화 구분 · v8b 예정: 토지이용계획·공시지가·필지정보 -->
@@ -495,11 +496,13 @@ TenarSecureStore.init('map',
     bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
     z-index: 10; display: flex; align-items: center; gap: 6px;
   }
+  /* [v12-2] 회전각 + 지도 레벨을 작게 표시 */
   #bearingBox {
-    background: rgba(255,255,255,.85); border-radius: 10px; padding: 7px 11px;
-    font-size: 13px; font-weight: 700; color: #222; box-shadow: 0 2px 8px rgba(0,0,0,.2);
+    background: rgba(255,255,255,.85); border-radius: 10px; padding: 5px 9px;
+    font-size: 11px; font-weight: 700; color: #222; box-shadow: 0 2px 8px rgba(0,0,0,.2);
     pointer-events: none; white-space: nowrap;
   }
+  #zoomLevel { margin-left: 7px; color: #27500A; font-weight: 800; }
   #mapInfoBtn {
     width: 28px; height: 28px; border-radius: 14px; border: 0; flex-shrink: 0;
     background: rgba(255,255,255,.92); color: #333; font-size: 13px; font-weight: 800;
@@ -563,7 +566,12 @@ TenarSecureStore.init('map',
      MapLibre Marker가 같은 요소의 transform(위치이동)을 직접 덮어써서 회전이 사라지고
      핀이 왼쪽으로 틀어져 보였다. → CSS 회전을 버리고 SVG 물방울 모양으로 교체.
      SVG 꼭짓점이 viewBox 하단 중앙에 있으므로 anchor:'bottom'이면 좌표에 정확히 꽂힌다. */
-  .pin { position: relative; width: 24px; height: 30px; cursor: pointer; }
+  /* [v12-1] ★ 핀 위치 어긋남 원인 수정 ★
+     MapLibre 마커 요소는 반드시 position:absolute 여야 한다.
+     이전 버전에서 .pin 에 position:relative 를 주는 바람에 마커가 문서 흐름에도
+     자리를 차지하면서(세로로 쌓임) 그 위치에서 transform 이 더해져 좌표가 틀어졌다.
+     축소할수록 흐름 쌓임이 지배해 핀들이 일자로 늘어서 보였다. */
+  .pin { position: absolute; width: 24px; height: 30px; cursor: pointer; }
   .pin svg { display: block; }
   /* [v11-8] 핀 안 작물 이모지 대신, 물방울 위쪽에 작물명을 표시 */
   .pin .pin-crop {
@@ -575,12 +583,14 @@ TenarSecureStore.init('map',
   /* [v11-3] 축소하면 핀을 작게 → 실제 좌표(핀 끝)와의 시각 오차를 줄임 */
   .pin.pin-sm { width: 14px; height: 17px; }
   .pin.pin-sm svg { width: 14px; height: 17px; }
-  .pin.pin-sm .pin-crop { display: none; }
   .pin.pin-dot { width: 10px; height: 10px; }
   .pin.pin-dot svg { display: none; }
-  .pin.pin-dot .pin-crop { display: none; }
+  /* [v12-3] 작물명은 축소해도 계속 표시 (겹쳐도 됨) — 작은 핀/점일 때 위치만 조정 */
+  .pin.pin-sm .pin-crop { bottom: 19px; font-size: 9.5px; }
+  .pin.pin-dot .pin-crop { bottom: 9px; font-size: 9.5px; }
   .pin.pin-dot::before {
-    content: ''; position: absolute; left: 0; top: 0; width: 10px; height: 10px;
+    /* 원의 중심이 실제 좌표(요소 하단)에 오도록 아래로 5px 내림 */
+    content: ''; position: absolute; left: 0; top: auto; bottom: -5px; width: 10px; height: 10px;
     border-radius: 5px; background: var(--pin-color, #e5342a); border: 2px solid #fff;
     box-shadow: 0 1px 3px rgba(0,0,0,.5);
   }
@@ -747,6 +757,12 @@ TenarSecureStore.init('map',
   }
   .fav-body { flex: 1; min-width: 0; cursor: pointer; }
   .fav-name { font-size: 14px; font-weight: 800; color: #1b1b1b; margin-bottom: 2px; }
+  /* [v12-4] 작물은 이모지 대신 한글 배지로 (이모지가 중복돼 구분이 안 되던 문제) */
+  .crop-tag {
+    display: inline-block; margin-right: 5px; padding: 1px 6px; border-radius: 6px;
+    background: #eaf3ea; color: #14612f; font-size: 11.5px; font-weight: 800;
+    vertical-align: middle;
+  }
   .fav-addr { font-size: 12px; color: #555; line-height: 1.45; word-break: keep-all; }
   .fav-coord { font-size: 11px; color: #999; margin-top: 2px; }
   .fav-acts { display: flex; flex-direction: column; gap: 5px; flex-shrink: 0; }
@@ -877,7 +893,7 @@ TenarSecureStore.init('map',
   </div>
   <!-- [v10-15] 회전각과 i 아이콘을 한 줄(flex)로 — 회전각이 길어져도 i가 가려지지 않음 -->
   <div id="bottomInfoRow">
-    <div id="bearingBox">회전각: <span id="bearingValue">0.0</span>°</div>
+    <div id="bearingBox">회전각 <span id="bearingValue">0.0</span>°<span id="zoomLevel">레벨 --</span></div>
     <button id="mapInfoBtn" type="button" aria-label="지도 출처 정보">i</button>
   </div>
   <div id="toast"></div>
@@ -900,6 +916,8 @@ TenarSecureStore.init('map',
 
 <script src="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7/turf.min.js"></script>
+<!-- [v12-5] html2canvas 는 "공유"를 누를 때만 내려받는다(지연 로딩).
+     페이지 첫 로딩 속도에는 영향이 없다. -->
 <script>
 (function () {
   'use strict';
@@ -1175,7 +1193,11 @@ TenarSecureStore.init('map',
   else if (window.isSecureContext === false) showToast('HTTPS가 아니면 현재 위치 기능이 동작하지 않습니다.', 6000);
 
   var bearingValue = document.getElementById('bearingValue');
-  function updateBearing() { bearingValue.textContent = map.getBearing().toFixed(1); }
+  var zoomLevelEl = document.getElementById('zoomLevel');
+  function updateBearing() {
+    bearingValue.textContent = map.getBearing().toFixed(1);
+    if (zoomLevelEl) zoomLevelEl.textContent = '레벨 ' + map.getZoom().toFixed(1);   /* [v12-2] */
+  }
   map.on('rotate', updateBearing);
   map.on('rotatestart', updateBearing);
   map.on('rotateend', updateBearing);
@@ -1945,6 +1967,7 @@ TenarSecureStore.init('map',
     applyPinScale();   /* [v11-3] 현재 줌에 맞는 핀 크기 적용 */
   }
   map.on('zoomend', applyPinScale);   /* [v11-3] 줌에 따라 핀 크기 갱신 */
+  map.on('zoom', updateBearing);      /* [v12-2] 레벨 실시간 표시 */
   window.refreshFavPins = refreshFavPins;
 
   /* [v6-2] 저장핀 상세 시트 (기본 50% · 위로 끌면 90%) */
@@ -1960,7 +1983,9 @@ TenarSecureStore.init('map',
     var addrRow = el('div', 'li-row');
     addrRow.style.marginTop = '0';
     addrRow.appendChild(el('div', 'li-grow',
-      '<div class="addr-main" style="font-size:16.5px;">' + escapeHtml((f.cropIcon || '📍') + ' ' + f.name) + '</div>' +
+      '<div class="addr-main" style="font-size:16.5px;">' +
+        (f.crop ? '<span class="crop-tag">' + escapeHtml(f.crop) + '</span>' : '') +
+        escapeHtml(f.name) + '</div>' +
       '<div class="addr-label">전체 지번</div>' +
       '<div class="addr-value">' + escapeHtml(f.jibunAddress || '주소 없음') + '</div>'));
     var bCopy = el('button', 'copy-btn', '복사');
@@ -2276,7 +2301,7 @@ TenarSecureStore.init('map',
     var f3 = el('div', 'fld', '<label>작물</label>');
     var inCrop = el('select');
     inCrop.appendChild(new Option('선택 안 함', ''));
-    CROPS.forEach(function (c) { inCrop.appendChild(new Option(c.icon + ' ' + c.name, c.name)); });
+    CROPS.forEach(function (c) { inCrop.appendChild(new Option(c.name, c.name)); });   /* [v12-4] 한글만 */
     if (existing && existing.crop) inCrop.value = existing.crop;
     f3.appendChild(inCrop);
 
@@ -2382,7 +2407,9 @@ TenarSecureStore.init('map',
       num.style.background = colorHex(f.color);
 
       var body = el('div', 'fav-body',
-        '<div class="fav-name">' + escapeHtml((f.cropIcon || '📍') + ' ' + f.name) + '</div>' +
+        '<div class="fav-name">' +
+        (f.crop ? '<span class="crop-tag">' + escapeHtml(f.crop) + '</span>' : '') +
+        escapeHtml(f.name) + '</div>' +
         '<div class="fav-addr">' + escapeHtml(f.jibunAddress || '-') + '</div>' +
         (f.roadAddress ? '<div class="fav-addr" style="color:#888;">' + escapeHtml(f.roadAddress) + '</div>' : '') +
         '<div class="fav-coord">' + f.latitude.toFixed(6) + ', ' + f.longitude.toFixed(6) + '</div>');
@@ -3753,7 +3780,7 @@ TenarSecureStore.init('map',
     var f2 = el('div', 'fld', '<label>작물</label>');
     var inCrop = el('select');
     inCrop.appendChild(new Option('선택 안 함', ''));
-    CROPS.forEach(function (c) { inCrop.appendChild(new Option(c.icon + ' ' + c.name, c.name)); });
+    CROPS.forEach(function (c) { inCrop.appendChild(new Option(c.name, c.name)); });   /* [v12-4] 한글만 */
     if (editing && editing.crop) inCrop.value = editing.crop;
     f2.appendChild(inCrop);
 
@@ -4075,9 +4102,10 @@ TenarSecureStore.init('map',
     lines.push('지도: ' + url);
     var text = lines.join('\n');
 
-    /* [v11-11] 지도 화면도 함께 공유.
-       퀵메뉴·누른점 표시는 이미 숨긴 뒤 캡처하므로 화면에는 지도만 나온다.
-       (지도는 preserveDrawingBuffer:true 로 생성되어 canvas 캡처가 가능) */
+    /* [v12-5] 화면 전체 캡처 후 공유.
+       html2canvas 로 지도 + 핀 + 작물명 + 라벨까지 담고,
+       실패하면 지도 캔버스만이라도 담고, 그것도 안 되면 글자만 공유한다.
+       ※ 라이브러리는 이 시점에 처음 내려받는다(지연 로딩). */
     hideQuickMenu();
     showToast('화면을 캡처해 공유를 준비합니다.', 0, 'info');
 
@@ -4093,31 +4121,71 @@ TenarSecureStore.init('map',
         showToast('공유를 지원하지 않아 클립보드에 복사했습니다.', 3500, 'info');
       }
     }
+    function shareBlob(blob) {
+      toastEl.style.display = 'none';
+      if (!blob) { shareTextOnly(); return; }
+      var file = new File([blob], 'tenar_map_' + Date.now() + '.png', { type: 'image/png' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({ files: [file], title: '텐아르 위치 공유', text: text }).catch(function (e) {
+          if (e && e.name === 'AbortError') return;
+          shareTextOnly();
+        });
+      } else shareTextOnly();
+    }
+    /* 지도 캔버스만 캡처 (html2canvas 실패 시 대비) */
+    function captureMapCanvasOnly() {
+      try {
+        map.once('render', function () {
+          setTimeout(function () {
+            var cv = map.getCanvas();
+            if (!cv || !cv.toBlob) { shareTextOnly(); return; }
+            cv.toBlob(shareBlob, 'image/png');
+          }, 60);
+        });
+        map.triggerRepaint();
+      } catch (e) { shareTextOnly(); }
+    }
 
-    /* 캡처는 다음 렌더 프레임에서 (퀵메뉴가 사라진 화면을 담기 위해) */
-    map.once('render', function () {
-      setTimeout(function () {
-        var canvas = null;
-        try { canvas = map.getCanvas(); } catch (e) {}
-        if (!canvas || !canvas.toBlob) { shareTextOnly(); return; }
-        try {
-          canvas.toBlob(function (blob) {
-            toastEl.style.display = 'none';
-            if (!blob) { shareTextOnly(); return; }
-            var file = new File([blob], 'tenar_map_' + Date.now() + '.png', { type: 'image/png' });
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-              navigator.share({ files: [file], title: '텐아르 위치 공유', text: text }).catch(function (e) {
-                if (e && e.name === 'AbortError') return;
-                shareTextOnly();
-              });
-            } else {
-              shareTextOnly();   /* 파일 공유 미지원 → 글자만 */
+    loadHtml2Canvas().then(function (ok) {
+      if (!ok || typeof html2canvas === 'undefined') { captureMapCanvasOnly(); return; }
+      map.once('render', function () {
+        setTimeout(function () {
+          html2canvas(document.body, {
+            useCORS: true, allowTaint: true, backgroundColor: null,
+            scale: Math.min(window.devicePixelRatio || 1, 2),
+            /* 퀵메뉴·토스트·시트는 캡처에서 제외해 지도 화면만 담는다 */
+            ignoreElements: function (el2) {
+              var id = el2.id || '';
+              return id === 'quickMenu' || id === 'toast' || id === 'sheet' ||
+                     id === 'sheetOverlay' || id === 'pressDot';
             }
-          }, 'image/png');
-        } catch (e) { shareTextOnly(); }
-      }, 60);
+          }).then(function (cv) {
+            if (!cv.toBlob) { captureMapCanvasOnly(); return; }
+            cv.toBlob(shareBlob, 'image/png');
+          }).catch(function (e) {
+            console.warn('html2canvas 실패 → 지도 캔버스만 공유', e);
+            captureMapCanvasOnly();
+          });
+        }, 80);
+      });
+      map.triggerRepaint();
     });
-    map.triggerRepaint();
+  }
+
+  /* [v12-5] html2canvas 지연 로딩 (한 번만) */
+  var _h2cPromise = null;
+  function loadHtml2Canvas() {
+    if (typeof html2canvas !== 'undefined') return Promise.resolve(true);
+    if (_h2cPromise) return _h2cPromise;
+    _h2cPromise = new Promise(function (resolve) {
+      var sc = document.createElement('script');
+      sc.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+      sc.onload = function () { resolve(true); };
+      sc.onerror = function () { console.warn('html2canvas 로딩 실패'); resolve(false); };
+      document.head.appendChild(sc);
+      setTimeout(function () { resolve(typeof html2canvas !== 'undefined'); }, 8000);
+    });
+    return _h2cPromise;
   }
 
   /* 4-2 측정: 누른 좌표를 첫 번째 측정 핀으로 지정 */
@@ -4212,11 +4280,11 @@ TenarSecureStore.init('map',
   blockMapPropagation(llEl);          /* [v10-1] 범례 조작이 지도로 번지지 않도록 */
   blockMapPropagation(document.getElementById('bottomInfoRow'));
 
-  /* [v10-15] MapLibre 저작권 표기를 회전각·i 와 같은 줄로 이동 (겹침 방지) */
-  (function moveAttribIntoRow() {
-    var row = document.getElementById('bottomInfoRow');
+  /* [v12-6] 하단 저작권 표기 제거 — 회전각 옆 정보가 두 개라 헷갈려서 하나만 남긴다.
+     출처(MapLibre·VWorld·토지이음)는 i 버튼을 누르면 나오는 시트에서 그대로 안내한다. */
+  (function removeAttribBar() {
     var attrib = document.querySelector('.maplibregl-ctrl-bottom-right');
-    if (row && attrib && attrib.parentNode !== row) row.appendChild(attrib);
+    if (attrib && attrib.parentNode) attrib.parentNode.removeChild(attrib);
   })();
 
   /* [v10-15] 지도 출처 정보 */
