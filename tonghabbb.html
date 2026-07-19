@@ -1,4 +1,4 @@
-<!-- tonghabbb_v15.html (v15) · 저장: 2026-07-19 07:56 KST · [v15] 지도 연동 주소를 map_libre.html 로 변경 (그 외 변경 없음) -->
+<!-- tonghabbb_v16.html (v16) · 저장: 2026-07-19 14:20 KST · [v16-8] 지도에서 A/B포구 선정이 끝나면 진입 버튼에 「✓ 완료」 배지 + 결과 요약 표시. 계산 로직 변경 없음 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -2070,8 +2070,14 @@ select,
              background:#EEF5EA;color:#27500A;font-size:13.5px;font-weight:800;font-family:inherit;
              cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;
              justify-content:center;gap:7px;">
-      🗺 지도에서 A/B포구 위치 선정
+      <span id="fpOpenBtnLabel">🗺 지도에서 A/B포구 위치 선정</span>
+      <!-- [v16-8] 지도에서 포구 선정이 끝나면 여기에 완료 표시가 붙는다 -->
+      <span id="fpDoneBadge" style="display:none;padding:2px 8px;border-radius:999px;
+            background:#1f8a4c;color:#fff;font-size:11px;font-weight:900;">✓ 완료</span>
     </button>
+    <div id="fpDoneInfo" style="display:none;margin-top:6px;padding:8px 10px;border-radius:9px;
+         background:#eaf5ec;border:1px solid #bcdcc4;color:#14612f;font-size:11.5px;
+         font-weight:700;line-height:1.6;"></div>
     <div style="font-size:11px;color:#666;font-weight:600;margin-top:5px;line-height:1.5;">
       필지 경계 → 가·나·다 지점 → 세로 방향 조절 → A/B포구 자동 표시.
       계산은 위 ③⑤⑥ 통합계산기 결과를 그대로 사용합니다.
@@ -9172,6 +9178,33 @@ function fpOpen(){
   _tenarOpenMapUrl(u);
 }
 
+/* ── [v16-8] 지도에서 포구 선정이 완료되었는지 버튼에 표시 ── */
+function fpUpdateDoneBadge(){
+  var badge=document.getElementById('fpDoneBadge');
+  var info=document.getElementById('fpDoneInfo');
+  var btn=document.getElementById('fpOpenBtn');
+  if(!badge||!info||!btn) return;
+  var r=null;
+  try{ r=JSON.parse((document.getElementById('__thFieldPlotStore')||{}).value||'null'); }catch(e){}
+  var done = !!(r && r.aSel>0 && r.heightA>0);
+  badge.style.display = done ? 'inline-block' : 'none';
+  info.style.display  = done ? 'block' : 'none';
+  btn.style.background = done ? '#DFF0E3' : '#EEF5EA';
+  btn.style.borderColor = done ? '#1f8a4c' : '#3B6D11';
+  var lbl=document.getElementById('fpOpenBtnLabel');
+  if(lbl) lbl.textContent = done ? '🗺 지도에서 A/B포구 다시 선정' : '🗺 지도에서 A/B포구 위치 선정';
+  if(done){
+    var u=(r.mode==='이랑')?'이랑':'cm';
+    var f=function(n){ return Number(Math.round(n||0)).toLocaleString(); };
+    info.innerHTML='✅ 지도에서 A/B포구 선정 완료'
+      +'<br>가-나 '+f(r.L)+u+' · '+(r.ratio||1)+'번 비율'
+      +'<br>가로기점 A '+f(r.aSel)+u+' · B '+f(r.bSel)+u
+      +'<br>세로총길이 A '+f(r.heightA)+'cm · B '+f(r.heightB)+'cm'
+      +(r.savedAt?('<br><span style="font-weight:600;opacity:.8;">'+String(r.savedAt).slice(0,16).replace('T',' ')+'</span>'):'');
+  }
+}
+window.fpUpdateDoneBadge=fpUpdateDoneBadge;
+
 /* ── 지도에서 전송된 A/B포구 결과 반영 ── */
 (function(){
   function apply(){
@@ -9202,6 +9235,7 @@ function fpOpen(){
     try{
       var hs=document.getElementById('__thFieldPlotStore');
       if(hs){ hs.value=JSON.stringify(r); hs.dispatchEvent(new Event('input',{bubbles:true})); }
+      fpUpdateDoneBadge();   /* [v16-8] */
     }catch(e){}
 
     var msg = '🗺 지도 A/B포구 반영 — '
@@ -9214,7 +9248,11 @@ function fpOpen(){
     if(el) setTimeout(function(){ try{ el.scrollIntoView({behavior:'smooth', block:'center'}); }catch(e){} }, 600);
   }
   /* 복원·이전자료 팝업 이후에 덮이지 않도록 늦게 한 번 더 적용 */
-  function run(){ apply(); setTimeout(apply, 1200); }
+  function run(){
+    apply(); fpUpdateDoneBadge();
+    setTimeout(function(){ apply(); fpUpdateDoneBadge(); }, 1200);
+    setTimeout(fpUpdateDoneBadge, 2600);   /* 저장자료 복원 뒤에도 표시가 맞도록 */
+  }
   if(document.readyState==='complete') setTimeout(run, 700);
   else window.addEventListener('load', function(){ setTimeout(run, 700); });
 })();
