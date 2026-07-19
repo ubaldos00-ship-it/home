@@ -1,4 +1,4 @@
-<!-- tonghabbb_v16.html (v16) · 저장: 2026-07-19 14:20 KST · [v16-8] 지도에서 A/B포구 선정이 끝나면 진입 버튼에 「✓ 완료」 배지 + 결과 요약 표시. 계산 로직 변경 없음 -->
+<!-- tonghabbb_v17.html (v17) · 저장: 2026-07-19 23:56 KST · [v17] 지도 진입 시 스크롤 위치 기억 → 복귀 시 그 자리로 복원. 지도에서 1번↔2번 비율을 바꿨으면 조사표 비율도 함께 변경. 계산식 변경 없음 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -9145,6 +9145,8 @@ function _tenarOpenMapUrl(u){
 var FP_MAP_URL = 'map_libre.html';   /* [v15] 테스트 링크 파일명 */
 
 function fpOpen(){
+  /* [v17-8] 지도에 다녀온 뒤 보던 자리로 돌아오도록 스크롤 위치를 기억 */
+  try{ sessionStorage.setItem('tenar_fp_scroll', String(window.scrollY||window.pageYOffset||0)); }catch(e){}
   function rv(id){ var e=document.getElementById(id); return e ? (e.value||'').trim() : ''; }
   var ctx = {
     app:'tonghab', ts:Date.now(),
@@ -9212,6 +9214,23 @@ window.fpUpdateDoneBadge=fpUpdateDoneBadge;
     try{ r = JSON.parse(localStorage.getItem('tenar_fieldplot_result')||'null'); }catch(e){}
     if(!r || r.app!=='tonghab') return;
     try{ localStorage.removeItem('tenar_fieldplot_result'); }catch(e){}
+
+    /* [v17-8] 지도에서 비율을 바꿨으면 조사표도 그 비율로 맞춘다 */
+    if(r.ratio && typeof selectRatio==='function' && Number(r.ratio)!==Number(selectedRatio)){
+      try{
+        selectRatio(Number(r.ratio));
+        if(typeof _showBackToast==='function'){}
+      }catch(e){}
+    }
+    /* [v17-8] 지도로 나가기 전 보던 자리로 스크롤 복원 */
+    try{
+      var _sy = sessionStorage.getItem('tenar_fp_scroll');
+      if(_sy!=null){
+        sessionStorage.removeItem('tenar_fp_scroll');
+        setTimeout(function(){ window.scrollTo(0, parseInt(_sy,10)||0); }, 260);
+        setTimeout(function(){ window.scrollTo(0, parseInt(_sy,10)||0); }, 900);
+      }
+    }catch(e){}
 
     /* 작물/모드가 지도 작업과 다르면 사용자에게 알림만 (덮어쓰지 않음) */
     if(r.mode && r.mode !== measureMode){
