@@ -1,4 +1,4 @@
-<!-- map_v26.html (v26) · 저장: 2026-07-20 21:25 KST · [v26] ①가-나 위에 이랑을 작은 점으로 표시(5개 단위 색 구분·번호) ②포구도구를 파란 안내창 위로(z-index 14>12, 모드 라벨 터치 통과) ③1번 비율이 0이랑이면 「1번 비율은 0이랑으로 사용할 수 없습니다」 안내 ④완료됨이면 초기화·조사설정·선택취소·수정까지 잠금 ⑥⑦청취계산기(chungchiii.html) 면적측정 연동 — ?measure=1&app=chungchi 로 측정도구 자동 열기, 전송 시 tenar_meas_result 규약으로 저장 후 복귀 -->
+<!-- map_v27.html (v27) · 저장: 2026-07-21 01:55 KST · [v27] 토지정보·저장위치의 「조사표」 버튼을 실제 조사표(tonghabbb.html / chungchiii.html)로 연결. 토지정보·현재위치는 항상 실측/청취 선택 팝업, 저장핀은 이미 연결된 조사표가 있으면 바로 열고 없으면 선택 후 연결 기록(연결 해제 버튼 포함). 조사표가 읽는 addr/lat/lng/color 파라미터로 전달 -->
 <!-- (이전) map_v13.html (v13) · 저장: 2026-07-19 06:03 KST · [v13] 실측모드에서 저장핀(즐겨찾기)을 측정점으로 사용 — 일반 지도모드는 기존대로 저장위치 상세시트를 열고, 면적·길이 측정모드에서는 상세시트 대신 저장핀의 실제 위도·경도를 다음 측정점으로 추가. 중복좌표 방지 / 한 번 터치로 점 두 개 생기지 않게 이벤트 전파차단(suppressNextMapClick) / 실측모드에서 길게 누르면 저장핀 정보 확인 / 측정점 번호가 저장핀에 가리지 않도록 z-index 정리. 저장핀 원본(좌표·색상·작물·잠금)과 즐겨찾기 저장구조·JSON·암호화는 변경 없음 -->
 <!-- (이전) map_v11.html (v11) · 저장: 2026-07-19 · [v11] ①시트 열려도 지도 이동/확대/회전 가능(오버레이 통과)+제목줄까지 내려가는 최소화 스냅+최소화 버튼 ②레이어 초기화 버튼 ③축소 시 핀 크기 축소(좌표 고정, z16↑기본/z13~15 작게/z13↓점) ④선택 필지 안쪽 채움 제거(테두리만) ⑥토지정보 아이콘 📍 ⑦지도출처 ⓘ 중복 제거+주소 표기 ⑧핀 안 이모지→핀 위 작물명, 저장핀 시트 토글 2개 ⑨핀 수정=위치수정/이름수정 선택(좌표 기준 저장) ⑩메모 축소+시트 auto 높이 ⑪누른점 파랑+공유에 화면 캡처 첨부 -->
 <!-- (이전) map_v10.html (v10) · 저장: 2026-07-18 · [v10] ①②토지이용 범례 독립패널(가로형·드래그이동·접기·위치저장) ③실측도구 최소화 1회 동작(중복이벤트 제거) ④선택 필지 파란 강조 ⑤시트 위로 지도이동(padding) ⑥토지정보 4줄 재구성 ⑦공시지가 최신/전년 ⑧⑨PNU→추가정보 ⑩하단버튼 3개 통일 ⑪⑫⑬핀저장·길찾기·조사표(PNU/면적/공시지가/용도지역/필지경계) ⑭시트 열린채 길게누르기 ⑮회전각+i flex ⑯주소→공통 토지정보 ⑰표적 SVG 아이콘 ⑱⑲저장위치 재배치+현재필지정보+시트스택 ⑳즐겨찾기→저장위치 팝업 -->
@@ -1227,6 +1227,27 @@ TenarSecureStore.init('map',
   var VIEW_KEY     = 'tenar_map_last_view_v1';
   var SETTINGS_KEY = 'tenar_map_settings_v1';
   var PENDING_KEY  = 'tenar_pending_survey_coord';
+  /* [v27] 조사표 파일 — 같은 폴더 상대경로 (폴더째 옮겨도 연결 유지) */
+  var SURVEY_FILES = { tonghab: 'tonghabbb.html', chungchi: 'chungchiii.html' };
+  var SURVEY_NAMES = { tonghab: '실측조사표', chungchi: '청취조사표' };
+  function surveyUrl(type, info) {
+    var f = SURVEY_FILES[type] || SURVEY_FILES.tonghab;
+    var base;
+    try { base = new URL(f, location.href).href; } catch (e) { base = f; }
+    if (!info) return base;
+    /* 조사표가 읽는 이름 그대로 붙인다 : addr · lat · lng · color · load
+       (조사표 쪽 코드는 손대지 않는다) */
+    var q = [];
+    var a = (info.jibunAddress || info.roadAddress || '').trim();
+    if (a) q.push('addr=' + encodeURIComponent(a));
+    if (isFinite(info.lat) && isFinite(info.lng)) {
+      q.push('lat=' + encodeURIComponent(info.lat));
+      q.push('lng=' + encodeURIComponent(info.lng));
+    }
+    if (info.color) q.push('color=' + encodeURIComponent(info.color));
+    if (info.surveyId) q.push('load=' + encodeURIComponent(info.surveyId));
+    return q.length ? (base + '?' + q.join('&')) : base;
+  }
 
   /* 핀 색상 — 저장은 기존 map.html과 동일한 key('red'…'purple')로 하여 호환 유지 */
   var FAV_COLORS = [
@@ -2400,7 +2421,7 @@ TenarSecureStore.init('map',
     var bNav = el('button', 'sheet-btn primary', '🚗 길찾기');
     bNav.addEventListener('click', function () { openNavSheet(info); });
     var bSurvey = el('button', 'sheet-btn green-soft', '📋 조사표');
-    bSurvey.addEventListener('click', function () { openSurveySheet(info); });
+    bSurvey.addEventListener('click', function () { openSurveySheet(info, { mode: 'pin' });   /* [v27-2] 저장핀 : 연결돼 있으면 바로 열기 */ });
     r1.appendChild(bNav); r1.appendChild(bSurvey);
 
     var r2 = el('div', 'btn-row');
@@ -2474,7 +2495,7 @@ TenarSecureStore.init('map',
     var bNav = el('button', 'sheet-btn green-soft', '🚗 길찾기');
     bNav.addEventListener('click', function () { openNavSheet(info); });
     var bSurvey = el('button', 'sheet-btn green-soft', '📋 조사표');
-    bSurvey.addEventListener('click', function () { openSurveySheet(info); });
+    bSurvey.addEventListener('click', function () { openSurveySheet(info, { mode: 'new' });   /* [v27-2] 현재위치 : 항상 선택 */ });
     row.appendChild(bSave); row.appendChild(bNav); row.appendChild(bSurvey);
 
     /* [v10-21] 현재 필지정보 — 공통 토지정보 시트로 (닫으면 현재 위치로 복귀) */
@@ -3257,8 +3278,8 @@ TenarSecureStore.init('map',
         jibunAddress: data.jibunAddress || data.parcelAddr || '', roadAddress: data.roadAddress || ''
       });
     });
-    var bSurvey = el('button', 'sheet-btn green-soft', '📋 조사표로 전달');
-    bSurvey.addEventListener('click', function () { openSurveySheet(buildSurveyInfo(data)); });
+    var bSurvey = el('button', 'sheet-btn green-soft', '📋 조사표로 전달');   /* [v27-2] 토지정보 → 항상 선택 */
+    bSurvey.addEventListener('click', function () { openSurveySheet(buildSurveyInfo(data), { mode: 'new' });   /* [v27-2] 토지정보 : 처음 여는 것이므로 항상 선택 */ });
     row.appendChild(bSave); row.appendChild(bNav); row.appendChild(bSurvey);
     box.appendChild(row);
 
@@ -3362,42 +3383,117 @@ TenarSecureStore.init('map',
   }
   var sheetIsLandInfo = false;
   var sheetLandInfoReturn = null;
-  function openSurveySheet(info) {
+  /* [v27] 지도 → 조사표 전달 payload (기존 필드 그대로) */
+  function buildSurveyPayload(info, type) {
+    return {
+      latitude: info.lat, longitude: info.lng,
+      jibunAddress: info.jibunAddress || '', roadAddress: info.roadAddress || '',
+      postalCode: info.postalCode || '',
+      favoriteId: info.favoriteId || null,
+      color: info.color || '', crop: info.crop || '',
+      pnu: info.pnu || '', jimok: info.jimok || '',
+      areaM2: info.areaM2 || 0,
+      officialPriceLatest: info.officialPriceLatest || null,
+      officialPricePrevious: info.officialPricePrevious || null,
+      zoning: info.zoning || '',
+      agriculturalZone: info.agriculturalZone || '',
+      landUseStatus: info.landUseStatus || '',
+      parcelGeometry: info.parcelGeometry || null,
+      surveyType: type,
+      surveyKey: info.surveyId || '',
+      /* [v27] 조사표가 읽는 이름(lat/lng/addr)도 함께 담는다 — 기존 필드는 그대로 둔다 */
+      lat: info.lat, lng: info.lng,
+      addr: info.jibunAddress || info.roadAddress || '',
+      savedAt: kstNowStr()
+    };
+  }
+
+  /* [v27] 저장핀에 "어느 조사표에 연결됐는지" 기록해 둔다 → 다음엔 바로 열린다 */
+  function linkFavoriteToSurvey(favId, type) {
+    if (!favId) return;
+    var arr = getFavs();
+    var changed = false;
+    for (var i = 0; i < arr.length; i++) {
+      if (arr[i].id === favId) {
+        arr[i].surveyType = type; arr[i].surveyApp = type;
+        arr[i].updatedAt = kstNowStr();
+        changed = true; break;
+      }
+    }
+    if (changed) setFavs(arr);
+  }
+
+  /* [v27] 조사표를 실제로 연다 */
+  function openSurveyApp(info, type, favId) {
+    var payload = buildSurveyPayload(info, type);
+    saveJSON(PENDING_KEY, payload);
+    if (favId) linkFavoriteToSurvey(favId, type);
+    closeSheet();
+    showToast(SURVEY_NAMES[type] + '를 엽니다.' +
+              (payload.jibunAddress ? '\n' + payload.jibunAddress : ''), 2200, 'success');
+    setTimeout(function () { window.location.href = surveyUrl(type, info); }, 700);
+  }
+
+  /* [v27-1][v27-2] 조사표 선택 시트
+       opts.mode = 'new'   토지정보에서 → 항상 고르게 한다 (처음 여는 경우)
+       opts.mode = 'pin'   저장위치에서 → 이미 연결된 조사표가 있으면 바로 연다 */
+  function openSurveySheet(info, opts) {
+    opts = opts || {};
+    var favId = info.favoriteId || null;
+
+    /* 저장핀에 이미 연결된 조사표가 있으면 고르지 않고 바로 연다 */
+    if (opts.mode === 'pin' && favId) {
+      var fav = getFavs().filter(function (x) { return x.id === favId; })[0];
+      var linked = fav && (fav.surveyType || fav.surveyApp);
+      if (linked && SURVEY_FILES[linked]) {
+        info.surveyId = fav.surveyId || fav.surveyKey || '';
+        openSurveyApp(info, linked, favId);
+        return;
+      }
+    }
+
     var box = el('div');
-    box.appendChild(el('div', null, '<div style="font-size:13px;color:#555;margin-bottom:10px;">' +
-      escapeHtml(info.jibunAddress || '') + (info.pnu ? '<br>PNU ' + escapeHtml(info.pnu) : '') + '<br>좌표를 조사표로 전달합니다.</div>'));
-    [['실측조사표', 'tonghab'], ['청취조사표', 'chungchi']].forEach(function (s) {
-      var b = el('button', 'sheet-btn', s[0]);
-      b.style.cssText += 'width:100%;margin-bottom:8px;';
-      b.addEventListener('click', function () {
-        /* [v10-13] PNU 우선 식별 + 면적·공시지가(최신/전년)·용도지역·필지경계 전달 */
-        var payload = {
-          latitude: info.lat, longitude: info.lng,
-          jibunAddress: info.jibunAddress || '', roadAddress: info.roadAddress || '',
-          postalCode: info.postalCode || '',
-          favoriteId: info.favoriteId || null,
-          color: info.color || '', crop: info.crop || '',
-          pnu: info.pnu || '', jimok: info.jimok || '',
-          areaM2: info.areaM2 || 0,
-          officialPriceLatest: info.officialPriceLatest || null,
-          officialPricePrevious: info.officialPricePrevious || null,
-          zoning: info.zoning || '',
-          agriculturalZone: info.agriculturalZone || '',
-          landUseStatus: info.landUseStatus || '',
-          parcelGeometry: info.parcelGeometry || null,
-          surveyType: s[1], savedAt: kstNowStr()
-        };
-        saveJSON(PENDING_KEY, payload);
-        closeSheet();
-        showToast(s[0] + '로 전달할 정보를 저장했습니다.' + (payload.pnu ? '\nPNU ' + payload.pnu : '') + '\n(조사표 자동 열기는 다음 버전)', 4000, 'success');
-      });
+    box.appendChild(el('div', null,
+      '<div style="font-size:13px;color:#555;margin-bottom:4px;line-height:1.6;">' +
+      escapeHtml(info.jibunAddress || '') +
+      (info.pnu ? '<br>PNU ' + escapeHtml(info.pnu) : '') +
+      '</div>' +
+      '<div style="font-size:12px;color:#888;margin-bottom:12px;">' +
+      (opts.mode === 'pin'
+        ? '이 저장핀은 아직 조사표에 연결되지 않았습니다.<br>연결할 조사표를 골라주세요. (다음부터는 바로 열립니다)'
+        : '이 위치의 정보를 가지고 조사표를 엽니다.') +
+      '</div>'));
+
+    [['tonghab', '📐 실측조사표', '통합계산기 (tonghabbb)'],
+     ['chungchi', '🎧 청취조사표', '청취 10a 계산기 (chungchiii)']].forEach(function (x) {
+      var b = el('button', 'sheet-btn', '');
+      b.style.cssText += 'width:100%;margin-bottom:8px;text-align:left;line-height:1.5;';
+      b.innerHTML = '<div style="font-size:15px;font-weight:800;">' + x[1] + '</div>' +
+                    '<div style="font-size:11px;color:#888;font-weight:600;">' + x[2] + '</div>';
+      b.addEventListener('click', function () { openSurveyApp(info, x[0], favId); });
       box.appendChild(b);
     });
+
+    /* 연결만 바꾸고 열지 않기 (저장핀에서 잘못 연결했을 때) */
+    if (opts.mode === 'pin' && favId) {
+      var fav2 = getFavs().filter(function (y) { return y.id === favId; })[0];
+      if (fav2 && (fav2.surveyType || fav2.surveyApp)) {
+        var bUnlink = el('button', 'sheet-btn', '🔗 연결 해제');
+        bUnlink.style.cssText += 'width:100%;margin-bottom:8px;';
+        bUnlink.addEventListener('click', function () {
+          linkFavoriteToSurvey(favId, '');
+          closeSheet();
+          showToast('조사표 연결을 해제했습니다.\n다음에 누르면 다시 고를 수 있습니다.', 3200, 'success');
+        });
+        box.appendChild(bUnlink);
+      }
+    }
+
     var c = el('button', 'sheet-btn danger', '취소');
     c.style.cssText += 'width:100%;';
     c.addEventListener('click', closeSheet);
     box.appendChild(c);
-    openSheet('📋 조사표', box, 50);
+    openSheet('📋 조사표 선택', box, 'auto');
   }
 
   /* ================= 레이어 시트 ================= */
