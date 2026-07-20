@@ -1,4 +1,4 @@
-<!-- map_v30.html (v30) · 저장: 2026-07-21 06:05 KST · [v30] ①위치저장 막대에 상단 손잡이(드래그 이동)·아직 저장 안 된 위치는 📍 이모지(저장하면 물방울 핀), 핀 없으면 저장/이미 있으면 이동 ②즐겨찾기 작물 없으면 「없음」 회색 배지 ③연결은 좌표로·표시는 주소로 ④여러 건 지도반영(?bulk=1) — tenar_map_bulk 대기열을 즐겨찾기에 반영(좌표 있으면 그대로·없으면 지오코딩), 같은 조사표면 갱신 -->
+<!-- map_v31.html (v31) · 저장: 2026-07-21 06:35 KST · [v31] 위치저장 막대에서 "지금 찍는 위치" 임시 마커를 언제나 📍 이모지로 유지 — v30에서 저장 후 임시 마커까지 물방울로 바뀌어 📍가 사라지던 문제 수정. 저장된 위치는 물방울 핀으로 따로 표시(즐겨찾기) -->
 <!-- (이전) map_v13.html (v13) · 저장: 2026-07-19 06:03 KST · [v13] 실측모드에서 저장핀(즐겨찾기)을 측정점으로 사용 — 일반 지도모드는 기존대로 저장위치 상세시트를 열고, 면적·길이 측정모드에서는 상세시트 대신 저장핀의 실제 위도·경도를 다음 측정점으로 추가. 중복좌표 방지 / 한 번 터치로 점 두 개 생기지 않게 이벤트 전파차단(suppressNextMapClick) / 실측모드에서 길게 누르면 저장핀 정보 확인 / 측정점 번호가 저장핀에 가리지 않도록 z-index 정리. 저장핀 원본(좌표·색상·작물·잠금)과 즐겨찾기 저장구조·JSON·암호화는 변경 없음 -->
 <!-- (이전) map_v11.html (v11) · 저장: 2026-07-19 · [v11] ①시트 열려도 지도 이동/확대/회전 가능(오버레이 통과)+제목줄까지 내려가는 최소화 스냅+최소화 버튼 ②레이어 초기화 버튼 ③축소 시 핀 크기 축소(좌표 고정, z16↑기본/z13~15 작게/z13↓점) ④선택 필지 안쪽 채움 제거(테두리만) ⑥토지정보 아이콘 📍 ⑦지도출처 ⓘ 중복 제거+주소 표기 ⑧핀 안 이모지→핀 위 작물명, 저장핀 시트 토글 2개 ⑨핀 수정=위치수정/이름수정 선택(좌표 기준 저장) ⑩메모 축소+시트 auto 높이 ⑪누른점 파랑+공유에 화면 캡처 첨부 -->
 <!-- (이전) map_v10.html (v10) · 저장: 2026-07-18 · [v10] ①②토지이용 범례 독립패널(가로형·드래그이동·접기·위치저장) ③실측도구 최소화 1회 동작(중복이벤트 제거) ④선택 필지 파란 강조 ⑤시트 위로 지도이동(padding) ⑥토지정보 4줄 재구성 ⑦공시지가 최신/전년 ⑧⑨PNU→추가정보 ⑩하단버튼 3개 통일 ⑪⑫⑬핀저장·길찾기·조사표(PNU/면적/공시지가/용도지역/필지경계) ⑭시트 열린채 길게누르기 ⑮회전각+i flex ⑯주소→공통 토지정보 ⑰표적 SVG 아이콘 ⑱⑲저장위치 재배치+현재필지정보+시트스택 ⑳즐겨찾기→저장위치 팝업 -->
@@ -7395,23 +7395,17 @@ TenarSecureStore.init('map',
     saveMode.lat = lat; saveMode.lng = lng;
     if (addr) saveMode.addr = addr;
     if (saveModeMarker) saveModeMarker.remove();
-    /* [v30-1] "아직 저장 안 된 위치"는 📍 이모지로 — 저장된 물방울 핀과 눈으로 구분 */
+    /* [v31] "지금 찍는 위치"를 나타내는 임시 마커는 언제나 📍 이모지로 둔다.
+       저장된 위치는 refreshFavPins() 가 물방울 핀으로 따로 그리므로,
+       임시 마커까지 물방울로 바꾸면 📍 가 사라져 구분이 안 됐다(v30 문제). */
     var e = document.createElement('div');
     e.className = 'temp-pin';
-    e.textContent = saveMode.saved ? '' : '📍';
-    if (saveMode.saved) {
-      /* 저장된 뒤에는 물방울 핀 모양 */
-      e.className = 'pin';
-      e.style.setProperty('--pin-color', colorHex(saveMode.color || 'green'));
-      e.innerHTML = '<svg width="24" height="30" viewBox="0 0 24 30" xmlns="http://www.w3.org/2000/svg">' +
-        '<path d="M12 29.4C12 29.4 21.6 17.6 21.6 11.1A9.6 9.6 0 1 0 2.4 11.1C2.4 17.6 12 29.4 12 29.4Z" fill="' +
-        colorHex(saveMode.color || 'green') + '" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg>';
-    }
+    e.textContent = '📍';
     saveModeMarker = new maplibregl.Marker({ element: e, anchor: 'bottom' }).setLngLat([lng, lat]).addTo(map);
     var t = document.querySelector('#saveModeBar .smb-txt');
     if (t) t.innerHTML = '📍 ' + escapeHtml(saveMode.addr || '') +
       '<br><span style="opacity:.85;">' +
-      (saveMode.saved ? '저장됨 · 위치를 옮기면 다시 저장됩니다' : '지도를 눌러 위치를 고칠 수 있습니다') +
+      (saveMode.saved ? '저장됨(물방울 핀) · 📍를 옮기면 다시 저장됩니다' : '지도를 눌러 위치를 고칠 수 있습니다') +
       '</span>';
   }
   function saveModeInit() {
