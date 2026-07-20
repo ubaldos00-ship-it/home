@@ -1,4 +1,4 @@
-<!-- tonghabbb_v24.html (v24) · 저장: 2026-07-20 20:17 KST · [v24] 「이전 자료가 있습니다 → 이어서 입력」 복원이 지도 A/B포구 값을 덮어쓰던 문제 해결 — 기존 「지도 길이측정 → 조사표」 모듈과 같은 방식(복원 후 재적용 + 값 감시)을 A/B포구에도 적용. 전송값은 더 이상 덮어쓰이지 않는 것이 확인된 뒤 삭제. 다른 이전자료 항목은 그대로 유지 -->
+<!-- tonghabbb_v25.html (v25) · 저장: 2026-07-20 20:40 KST · [v25] 1번·2번 비율도 가-나·세로총길이와 같이 항상 전송되도록 변경. 「이어서 입력」 복원이 비율을 되돌려도 다시 넣도록 감시 대상에 포함. 계산식 변경 없음 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -9351,9 +9351,21 @@ window.fpUpdateDoneBadge=fpUpdateDoneBadge;
       }
     }
 
-    /* ③ 비율 — 비어 있는 칸만 채운다 (이미 넣은 값은 유지) */
-    if(r.r1){ fillIfEmpty('r1_ga', r.r1.ga, '1번 가'); fillIfEmpty('r1_na', r.r1.na, '1번 나'); fillIfEmpty('r1_da', r.r1.da, '1번 다'); }
-    if(r.r2){ fillIfEmpty('r2_ga', r.r2.ga, '2번 가'); fillIfEmpty('r2_na', r.r2.na, '2번 나'); fillIfEmpty('r2_da', r.r2.da, '2번 다'); }
+    /* ③ [v25-1] 비율 — 가-나·세로총길이와 마찬가지로 "지도에서 정한 값"이므로
+       빈 칸만이 아니라 항상 반영한다. (예전에는 조사표에 값이 있으면 유지해서
+       지도에서 비율을 고쳐도 전송되지 않았다) */
+    function putRatio(id, val, label){
+      var el=document.getElementById(id);
+      if(!el || val===''||val==null) return;
+      var v = String(val);
+      if(String(el.value).trim() === v) return;
+      el.value = v;
+      el.dispatchEvent(new Event('input',{bubbles:true}));
+      el.dispatchEvent(new Event('change',{bubbles:true}));
+      _filled.push(label);
+    }
+    if(r.r1){ putRatio('r1_ga', r.r1.ga, '1번 가'); putRatio('r1_na', r.r1.na, '1번 나'); putRatio('r1_da', r.r1.da, '1번 다'); }
+    if(r.r2){ putRatio('r2_ga', r.r2.ga, '2번 가'); putRatio('r2_na', r.r2.na, '2번 나'); putRatio('r2_da', r.r2.da, '2번 다'); }
 
     /* ④ 지도에서 계산된 항목 — 항상 반영 */
     var lenEl=document.getElementById('lenGaNa');
@@ -9411,6 +9423,14 @@ window.fpUpdateDoneBadge=fpUpdateDoneBadge;
     if(len && r.L>0 && String(len.value).trim() !== String(r.L)) return false;
     if(ha && r.heightA>0 && String(ha.value).trim() !== String(Math.round(r.heightA))) return false;
     if(hb && r.heightB>0 && String(hb.value).trim() !== String(Math.round(r.heightB))) return false;
+    /* [v25-1] 비율도 지켜본다 — 복원이 이전 비율로 되돌리면 다시 넣는다 */
+    function rchk(id, v){
+      if(v===''||v==null) return true;
+      var el=document.getElementById(id);
+      return !el || String(el.value).trim() === String(v);
+    }
+    if(r.r1 && !(rchk('r1_ga',r.r1.ga) && rchk('r1_na',r.r1.na) && rchk('r1_da',r.r1.da))) return false;
+    if(r.r2 && !(rchk('r2_ga',r.r2.ga) && rchk('r2_na',r.r2.na) && rchk('r2_da',r.r2.da))) return false;
     return true;
   }
   function _fpReapply(){
