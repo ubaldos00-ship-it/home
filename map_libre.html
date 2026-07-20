@@ -1,4 +1,4 @@
-<!-- map_v25.html (v25) · 저장: 2026-07-20 20:40 KST · [v25] 2번 비율로도 A포구가 0이랑이라 A를 1이랑으로 올렸을 때 B도 1이랑이면 B를 2이랑으로 잡아 겹치지 않게 함(계산서식 자체는 그대로) -->
+<!-- map_v26.html (v26) · 저장: 2026-07-20 21:25 KST · [v26] ①가-나 위에 이랑을 작은 점으로 표시(5개 단위 색 구분·번호) ②포구도구를 파란 안내창 위로(z-index 14>12, 모드 라벨 터치 통과) ③1번 비율이 0이랑이면 「1번 비율은 0이랑으로 사용할 수 없습니다」 안내 ④완료됨이면 초기화·조사설정·선택취소·수정까지 잠금 ⑥⑦청취계산기(chungchiii.html) 면적측정 연동 — ?measure=1&app=chungchi 로 측정도구 자동 열기, 전송 시 tenar_meas_result 규약으로 저장 후 복귀 -->
 <!-- (이전) map_v13.html (v13) · 저장: 2026-07-19 06:03 KST · [v13] 실측모드에서 저장핀(즐겨찾기)을 측정점으로 사용 — 일반 지도모드는 기존대로 저장위치 상세시트를 열고, 면적·길이 측정모드에서는 상세시트 대신 저장핀의 실제 위도·경도를 다음 측정점으로 추가. 중복좌표 방지 / 한 번 터치로 점 두 개 생기지 않게 이벤트 전파차단(suppressNextMapClick) / 실측모드에서 길게 누르면 저장핀 정보 확인 / 측정점 번호가 저장핀에 가리지 않도록 z-index 정리. 저장핀 원본(좌표·색상·작물·잠금)과 즐겨찾기 저장구조·JSON·암호화는 변경 없음 -->
 <!-- (이전) map_v11.html (v11) · 저장: 2026-07-19 · [v11] ①시트 열려도 지도 이동/확대/회전 가능(오버레이 통과)+제목줄까지 내려가는 최소화 스냅+최소화 버튼 ②레이어 초기화 버튼 ③축소 시 핀 크기 축소(좌표 고정, z16↑기본/z13~15 작게/z13↓점) ④선택 필지 안쪽 채움 제거(테두리만) ⑥토지정보 아이콘 📍 ⑦지도출처 ⓘ 중복 제거+주소 표기 ⑧핀 안 이모지→핀 위 작물명, 저장핀 시트 토글 2개 ⑨핀 수정=위치수정/이름수정 선택(좌표 기준 저장) ⑩메모 축소+시트 auto 높이 ⑪누른점 파랑+공유에 화면 캡처 첨부 -->
 <!-- (이전) map_v10.html (v10) · 저장: 2026-07-18 · [v10] ①②토지이용 범례 독립패널(가로형·드래그이동·접기·위치저장) ③실측도구 최소화 1회 동작(중복이벤트 제거) ④선택 필지 파란 강조 ⑤시트 위로 지도이동(padding) ⑥토지정보 4줄 재구성 ⑦공시지가 최신/전년 ⑧⑨PNU→추가정보 ⑩하단버튼 3개 통일 ⑪⑫⑬핀저장·길찾기·조사표(PNU/면적/공시지가/용도지역/필지경계) ⑭시트 열린채 길게누르기 ⑮회전각+i flex ⑯주소→공통 토지정보 ⑰표적 SVG 아이콘 ⑱⑲저장위치 재배치+현재필지정보+시트스택 ⑳즐겨찾기→저장위치 팝업 -->
@@ -348,6 +348,7 @@ TenarSecureStore.init('map',
 
   /* 측정 모드 배지 */
   #modeBadge {
+    pointer-events: none;   /* [v26-2] 안내 라벨이라 터치를 통과시킨다 (포구도구를 위로 옮겨도 눌림) */
     align-self: flex-start; display: none;
     border-radius: 8px; padding: 4px 10px; font-size: 12px; font-weight: 800; color: #fff;
     box-shadow: 0 1px 6px rgba(0,0,0,.25);
@@ -673,7 +674,7 @@ TenarSecureStore.init('map',
   /* [v17-9] 주소검색창 아래 : 작물·기준·1번/2번 비율을 표로 보여주고 골라 쓴다 */
   #fpBanner {
     display: none; position: absolute; left: 8px; right: 8px;
-    top: calc(env(safe-area-inset-top, 0px) + 70px); z-index: 30;   /* [v22-6] 검색창과 간격 */
+    top: calc(env(safe-area-inset-top, 0px) + 70px); z-index: 12;   /* [v26-2] 포구도구(14)보다 아래로 */
     flex-direction: column; gap: 5px; padding: 7px 9px; border-radius: 10px;
     background: rgba(21, 101, 192, .95); color: #fff; font-size: 11px; line-height: 1.3;
     box-shadow: 0 2px 8px rgba(0,0,0,.3);
@@ -701,6 +702,21 @@ TenarSecureStore.init('map',
   .area-label .area-crop { font-size: 10px; font-weight: 900; color: #ffe98a; }
 
   /* [v18-2] 가·나는 확실히 보이도록 크게 */
+  /* [v26-1] 가-나 위에 이랑 하나하나를 아주 작은 점으로 표시 (5개마다 색 구분) */
+  .fp-ridge {
+    position: absolute; width: 5px; height: 5px; border-radius: 3px;
+    border: 0.8px solid rgba(255,255,255,.9); box-shadow: 0 0 1.5px rgba(0,0,0,.5);
+  }
+  .fp-ridge-a { background: #1565C0; }   /* 1~5   */
+  .fp-ridge-b { background: #f59e0b; }   /* 6~10  */
+  .fp-ridge-c { background: #16a34a; }   /* 11~15 */
+  .fp-ridge-d { background: #d0342c; }   /* 16~20 */
+  .fp-ridge-num {
+    position: absolute; left: 50%; top: -13px; transform: translateX(-50%);
+    font-size: 7.5px; font-weight: 900; color: #111827; white-space: nowrap;
+    text-shadow: 0 0 2px #fff, 0 0 2px #fff, 0 0 2px #fff;
+  }
+
   .fp-gana {
     position: absolute; width: 26px; height: 26px; border-radius: 13px;
     background: #111827; color: #fff; font-size: 15px; font-weight: 900;
@@ -4529,6 +4545,10 @@ TenarSecureStore.init('map',
      · 면적 계산식은 손대지 않고, 이미 계산된 합계를 그대로 넘긴다.
      =================================================================== */
   var MEAS_AREA_RESULT_KEY = 'tenar_area_result';
+  /* [v26-6] 청취계산기(chungchiii.html)가 읽는 키 — 기존 map.html 규약 그대로 */
+  var CC_MEAS_RESULT_KEY = 'tenar_meas_result';
+  var CC_MEAS_CTX_KEY    = 'tenar_meas_ctx';
+  var CC_MEAS_PRELOAD_KEY = 'tenar_meas_preload';
   function measureTotals() {
     var s = surveyMeasureState;
     var areas = s.areas.slice();
@@ -4541,7 +4561,42 @@ TenarSecureStore.init('map',
       totalPyeong: total / 3.305785
     };
   }
+  /* [v26-6] 청취계산기에서 「📐 면적측정」으로 들어왔는지 */
+  function ccMeasCtx() {
+    try {
+      var c = JSON.parse(localStorage.getItem(CC_MEAS_CTX_KEY) || 'null');
+      return (c && c.app === 'chungchi') ? c : null;
+    } catch (e) { return null; }
+  }
+  /* [v26-6] 청취계산기로 면적을 보내고 되돌아간다 */
+  function sendAreaToChungchi() {
+    var s = surveyMeasureState;
+    var t = measureTotals();
+    if (!(t.totalM2 > 0)) { showToast('전송할 면적이 없습니다.\n먼저 면적을 측정해주세요.', 3500, 'info'); return; }
+    var pts = s.fieldPoints.length >= 3 ? s.fieldPoints.slice()
+            : (s.areas.length ? s.areas[s.areas.length - 1].points.slice() : []);
+    var msg = '청취조사표로 면적을 전송하시겠습니까?\n\n' +
+              '측정 건수 ' + t.count + '건\n' +
+              '전체 면적합계 ' + formatNumber(t.totalM2, 1) + '㎡ (' + formatNumber(t.totalPyeong, 1) + '평)';
+    if (!window.confirm(msg)) return;
+    try {
+      /* 기존 map.html 이 쓰던 규약 그대로 : { area, pts, mode } */
+      localStorage.setItem(CC_MEAS_RESULT_KEY, JSON.stringify({
+        area: Math.round(t.totalM2 * 10) / 10,
+        pts: pts, mode: 'area', savedAt: kstNowStr()
+      }));
+    } catch (e) { showToast('전송 저장에 실패했습니다.', 3500); return; }
+    showToast('청취조사표로 면적을 전송했습니다.\n' + formatNumber(t.totalM2, 1) + '㎡', 2600, 'success');
+    setTimeout(function () {
+      var back = 'chungchiii.html';
+      try { back = new URL('chungchiii.html', location.href).href; } catch (e) {}
+      window.location.href = back;
+    }, 900);
+  }
+
   function sendAreaToSurvey() {
+    /* [v26-6] 청취계산기에서 들어왔으면 그쪽 규약으로 보낸다 */
+    if (ccMeasCtx()) { sendAreaToChungchi(); return; }
     var t = measureTotals();
     if (!(t.totalM2 > 0)) { showToast('전송할 면적이 없습니다.\n먼저 면적을 측정해주세요.', 3500, 'info'); return; }
     var msg = '청취조사표로 면적을 전송하시겠습니까?\n\n' +
@@ -5915,6 +5970,26 @@ TenarSecureStore.init('map',
     if (fp.bBase && fp.bEnd && !fpIsOneRidge()) fc.features.push({ type: 'Feature', properties: { t: 'vb' }, geometry: { type: 'LineString', coordinates: [fp.bBase, fp.bEnd] } });
     if (map.getSource('fp-source')) map.getSource('fp-source').setData(fc);
 
+    /* [v26-1] 이랑 기준일 때 이랑 하나하나를 작은 점으로 찍어 준다.
+       (가-나를 이랑수+1 로 나눈 자리 = 가로기점을 잡는 자리와 같은 규칙)
+       5개 단위로 색이 바뀌고, 5의 배수마다 번호를 적는다. */
+    if (fpIsRidgeMode() && fp.path && fp.path.length >= 2) {
+      var Lr = parseFloat((fp.ctx && fp.ctx.L) || 0);
+      if (Lr > 0 && Lr <= 200) {                       /* 너무 많으면 화면이 지저분해져 생략 */
+        var colors = ['fp-ridge-a', 'fp-ridge-b', 'fp-ridge-c', 'fp-ridge-d'];
+        for (var ri = 1; ri <= Lr; ri++) {
+          var rp = fpAlongPath(fp.L_cm * (ri / (Lr + 1)));
+          if (!rp) continue;
+          var band = Math.floor((ri - 1) / 5) % colors.length;
+          var showNum = (ri % 5 === 0) || (ri === 1) || (ri === Lr);
+          fpMark(rp,
+            '<span class="fp-ridge ' + colors[band] + '"></span>' +
+            (showNum ? '<span class="fp-ridge-num">' + ri + '</span>' : ''),
+            'fp-base');
+        }
+      }
+    }
+
     /* [v19-10] 1이랑이면 가로기점이 하나(가-나 중간)뿐이다 */
     if (fpIsOneRidge()) {
       if (fp.aBase) fpMark(fp.aBase, '<span class="fp-dot fp-dot-a"></span><span class="fp-tag fp-tag-a">1 이랑</span>', 'fp-base');
@@ -6114,6 +6189,18 @@ TenarSecureStore.init('map',
       : '각도 조절을 껐습니다.', fp.angleMode ? 5000 : 2000, 'info');
   }
   function fpSetRatio(n) {
+    /* [v26-3] 1번 비율의 A포구가 0이랑이면 1번으로 갈 수 없다 — 이유를 정확히 알린다 */
+    if (n === 1 && fpIsRidgeMode()) {
+      var c0 = fp.ctx || {};
+      var g1 = parseFloat((c0.r1 || {}).ga);
+      var L0 = parseFloat(c0.L || 0);
+      if (g1 > 0 && L0 > 0 && Math.round(L0 * g1) === 0) {
+        showToast('1번 비율은 0이랑으로 사용할 수 없습니다.\n(' + L0 + '이랑 × ' + g1 + ' = ' +
+                  (Math.round(L0 * g1 * 100) / 100) + ' → 0이랑)\n2번 비율을 사용합니다.', 5000, 'info');
+        fpMarkRatioButtons();
+        return;
+      }
+    }
     fp.ratio = n;
     var b1 = document.getElementById('fpR1'), b2 = document.getElementById('fpR2');
     if (b1) b1.classList.toggle('active', n === 1);
@@ -6129,7 +6216,7 @@ TenarSecureStore.init('map',
     fp.picking = null; fp.angleMode = false;
     setSurveyMode('none');
     fpRender(); fpSyncButtons();
-    showToast('포구 선정을 완료했습니다.\n고칠 곳이 있으면 「수정」으로 꼭짓점을 옮기세요.', 4500, 'success');
+    showToast('포구 선정을 완료했습니다.\n조사구역·가·나·각도·설정이 잠겼습니다.\n고치려면 「완료됨 ↺」을 다시 눌러 완료를 풀어주세요.', 5200, 'success');
   }
   function fpUnfinish() {
     fp.finished = false;
@@ -6524,8 +6611,11 @@ TenarSecureStore.init('map',
     function set(id, fn) { var b = document.getElementById(id); if (b) fn(b); }
     /* [v17-6] 완료하면 가·나·각도·필지·재배구역·UNDO·REDO 를 잠근다. 「수정」만 살린다 */
     var lock = fp.finished;
+    /* [v26-4] 완료됨 상태에서는 아래를 모두 잠근다 (초기화·조사설정·선택취소·수정 포함).
+       「완료됨 ↺」을 다시 눌러 완료를 풀면 전부 다시 쓸 수 있다. */
     ['fpGa', 'fpNa', 'fpAngleBtn', 'fpAngleSep', 'fpAngleOrtho',
-     'fpTParcel', 'fpTCrop', 'fpTUndo', 'fpTRedo', 'fpTCenter'].forEach(function (id) {
+     'fpTParcel', 'fpTCrop', 'fpTUndo', 'fpTRedo', 'fpTCenter',
+     'fpTReset', 'fpTSetup', 'fpTCancelArea', 'fpTEdit'].forEach(function (id) {
       set(id, function (b) { b.disabled = lock; });
     });
     if (!lock) updateUndoRedoButtons();
@@ -6705,6 +6795,51 @@ TenarSecureStore.init('map',
     } catch (e) {}
   }
 
+  /* [v26-6] 청취계산기 → 지도(측정도구) 진입 처리
+     주소 이동 · 이전 측정점 복원 · 측정도구 자동 열기 */
+  function ccMeasInit() {
+    var qs = new URLSearchParams(location.search);
+    if (qs.get('measure') !== '1' || qs.get('app') !== 'chungchi') return;
+    var ctx = ccMeasCtx();
+    if (!ctx) return;
+
+    /* 측정도구를 열고 면적 모드로 */
+    if (fpToolPanelEl.classList.contains('show')) closeFpTool(false);
+    toolPanelEl.classList.add('show');
+    document.getElementById('btnMeasure').classList.add('active');
+
+    /* 이전에 그린 측정점이 있으면 되살린다 */
+    var moved = false;
+    try {
+      var pre = JSON.parse(localStorage.getItem(CC_MEAS_PRELOAD_KEY) || 'null');
+      if (pre && pre.pts && pre.pts.length >= 3) {
+        surveyMeasureState.fieldPoints = pre.pts.slice();
+        surveyMeasureState.fieldKind = 'field';
+        surveyMeasureState.isFieldComplete = true;
+        updateFieldGeometry();
+        updateNewMeasureBtn();
+        setTimeout(function () {
+          try {
+            var b = new maplibregl.LngLatBounds();
+            pre.pts.forEach(function (p) { b.extend(p); });
+            map.fitBounds(b, { padding: 90, duration: 600 });
+          } catch (e) {}
+        }, 500);
+        moved = true;
+      }
+    } catch (e) {}
+
+    var q = qs.get('q');
+    if (!moved) {
+      setTimeout(function () {
+        if (q) { var si = document.getElementById('searchInput'); if (si) si.value = q; searchAddress(); }
+        else goHere();
+      }, 700);
+    }
+    if (!surveyMeasureState.fieldPoints.length) startFieldDrawing();
+    showToast('청취조사표 면적측정입니다.\n① 면적을 그린 뒤 ④ 「조사표 전송」을 눌러주세요.', 6000, 'info');
+  }
+
   /* [v17] 포구도구 · 측정도구 버튼 바인딩 */
   (function () {
     function on(id, fn) { var el = document.getElementById(id); if (el) el.addEventListener('click', fn); }
@@ -6776,6 +6911,7 @@ TenarSecureStore.init('map',
     mapLoaded = true;
     restoreWhenBothReady();
     try { fpInit(); } catch (e) { console.error('[v15] fieldplot init 오류:', e); }   /* [v15] */
+    try { ccMeasInit(); } catch (e) { console.error('[v26] 청취 면적측정 init 오류:', e); }   /* [v26-6] */
   });
 
   /* [v19-4] 면적 라벨은 "화면에서 도형 아래"에 놓이므로 회전하면 다시 계산한다.

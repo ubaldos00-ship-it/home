@@ -1,4 +1,4 @@
-<!-- tonghabbb_v25.html (v25) · 저장: 2026-07-20 20:40 KST · [v25] 1번·2번 비율도 가-나·세로총길이와 같이 항상 전송되도록 변경. 「이어서 입력」 복원이 비율을 되돌려도 다시 넣도록 감시 대상에 포함. 계산식 변경 없음 -->
+<!-- tonghabbb_v26.html (v26) · 저장: 2026-07-20 21:25 KST · [v26] ⑤필지주소 옆 📍(지도) 버튼을 map_libre.html 로 연결(기존 github map.html 고정 → 같은 폴더 상대경로) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -9166,6 +9166,11 @@ function _slRenderList(){
 
 
 /* ── 지도 열기 공통 함수: 모바일/PWA에서 window.open이 기존 탭만 갱신하고 화면 전환이 안 되는 문제 방지 ── */
+/* [v26-5] 지도 파일 경로 — 같은 폴더의 map_libre.html
+   (예전에는 github 주소의 map.html 로 고정돼 있어 새 지도로 연결되지 않았다) */
+function _tenarMapBase(){
+  try{ return new URL('map_libre.html', location.href).href; }catch(e){ return 'map_libre.html'; }
+}
 function _tenarOpenMapUrl(u){
   try{ sessionStorage.setItem('tenar_last_calc_url', location.href); }catch(e){}
   /* 현장 사용 기준: 새 창이 아니라 현재 화면을 지도 화면으로 확실히 이동 */
@@ -9496,7 +9501,7 @@ window.fpUpdateDoneBadge=fpUpdateDoneBadge;
 function tonghabMeasLen(field){
   try{ localStorage.setItem('tenar_meas_ctx', JSON.stringify({app:'tonghab', mtype:'length', field:field, ts:Date.now()})); }catch(e){}
   try{ localStorage.removeItem('tenar_meas_result'); }catch(e){}
-  var base='https://ubaldos00-ship-it.github.io/home/map.html';
+  var base=_tenarMapBase();
   var u=base+'?measure=1&app=tonghab&mtype=length&field='+encodeURIComponent(field);
   var a=(document.getElementById('address') && document.getElementById('address').value || '').trim();
   if(a) u+='&q='+encodeURIComponent(a);   /* 주소 있으면 지도 중심 이동(선택) */
@@ -9608,7 +9613,7 @@ function _tenarOpenMapFromAddress(){
       if(savedAddr && (!a || savedAddr === a)){ slOpenMap(linkedKey); return; }
     }catch(e){}
   }
-  var base = 'https://ubaldos00-ship-it.github.io/home/map.html';
+  var base = _tenarMapBase();
   if(!a){ _tenarOpenMapUrl(base); return; }
   /* 주소를 지오코딩해 이동 → 핀 저장 → 선택 (save=1). 저장자료면 surveyKey 연결 */
   var u = base + '?q=' + encodeURIComponent(a) + '&save=1&app=tonghab&color=' + encodeURIComponent(_tenarMapColor || 'green');
@@ -9635,7 +9640,7 @@ function slOpenMap(key){
                : ((typeof PROD_CROP_KO!=='undefined' && PROD_CROP_KO[crop]) ? PROD_CROP_KO[crop] : crop);
     var label = (cropKo?cropKo+' · ':'') + a;
     var coord = _tenarGetMapCoordFromSaved(d);
-    var u = 'https://ubaldos00-ship-it.github.io/home/map.html'
+    var u = _tenarMapBase()
           + '?q='        + encodeURIComponent(a)
           + '&save=1&app=tonghab&color=' + encodeURIComponent((coord && coord.color) || _tenarGetMapColorFromSaved(d) || 'green')
           + '&surveyKey=' + encodeURIComponent(key)
@@ -9668,7 +9673,7 @@ function slBulkToMap(){
   if(!confirm('저장된 '+items.length+'곳의 주소를 지도 즐겨찾기에 한꺼번에 반영합니다.\n(작물명도 함께 표시됩니다) 계속할까요?')) return;
   try{ localStorage.setItem('tenar_map_bulk', JSON.stringify(items)); }
   catch(e){ alert('지도반영 준비 실패: '+e.message); return; }
-  _tenarOpenMapUrl('https://ubaldos00-ship-it.github.io/home/map.html?bulk=1');
+  _tenarOpenMapUrl('map_libre.html?bulk=1');
 }
 
 /* v111: 잠금 토글 (순서 변경 없음) */
