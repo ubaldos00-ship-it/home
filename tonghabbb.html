@@ -1,4 +1,4 @@
-<!-- tonghabbb_v22.html (v22) · 저장: 2026-07-20 17:18 KST · [v22] ①저장자료 불러오기 후 「A/B포구 다시 선정」 표시 갱신(연결 복원) ②이전 지도작업이 있으면 짧은 주소로 지도를 옮기지 않음 ③저장된 회전각으로 지도 열기. 계산식 변경 없음 -->
+<!-- tonghabbb_v23.html (v23) · 저장: 2026-07-20 18:05 KST · [v23] ①두 번째 이후 전송이 반영되지 않던 문제 보강 — 전송값을 반영 성공 후에 삭제, 화면 복귀(visibilitychange/focus/storage)마다 재확인, 중복 반영은 savedAt+linkId 로 차단 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -9271,7 +9271,12 @@ window.fpUpdateDoneBadge=fpUpdateDoneBadge;
     var r=null;
     try{ r = JSON.parse(localStorage.getItem('tenar_fieldplot_result')||'null'); }catch(e){}
     if(!r || r.app!=='tonghab') return;
-    try{ localStorage.removeItem('tenar_fieldplot_result'); }catch(e){}
+    /* [v23-1] 같은 자료를 두 번 반영하지 않도록 표시만 해 두고,
+       실제 삭제는 값을 다 넣은 뒤에 한다.
+       (예전에는 여기서 바로 지워서, 중간에 끊기면 전송값이 사라졌다) */
+    var _stamp = String(r.savedAt||'') + '|' + String(r.linkId||'');
+    if(window.__fpLastApplied === _stamp) return;
+    window.__fpLastApplied = _stamp;
 
     /* [v17-8] 지도에서 비율을 바꿨으면 조사표도 그 비율로 맞춘다 */
     if(r.ratio && typeof selectRatio==='function' && Number(r.ratio)!==Number(selectedRatio)){
@@ -9364,6 +9369,8 @@ window.fpUpdateDoneBadge=fpUpdateDoneBadge;
       if(hs){ hs.value=JSON.stringify(r); hs.dispatchEvent(new Event('input',{bubbles:true})); }
       fpUpdateDoneBadge();   /* [v16-8] */
     }catch(e){}
+    /* [v23-1] 여기까지 왔으면 반영 완료 — 이제 전송값을 지운다 */
+    try{ localStorage.removeItem('tenar_fieldplot_result'); }catch(e){}
 
     var _extra = '';
     if(_filled.length) _extra += '<br><span style="font-weight:700;opacity:.9;">채움: '+_filled.join(' · ')+'</span>';
@@ -9390,6 +9397,18 @@ window.fpUpdateDoneBadge=fpUpdateDoneBadge;
   /* [v20-2] 아이폰에서 뒤로가기로 되돌아오면 load 가 다시 안 뜬다(bfcache).
      그때도 지도에서 보낸 값을 반영하도록 pageshow 에서 한 번 더 실행한다. */
   window.addEventListener('pageshow', function(e){ if(e && e.persisted) run(); });
+  /* [v23-1] 아이폰에서 지도 → 조사표로 돌아올 때 load/pageshow 가 모두
+     안 뜨는 경우가 있어(사파리 복원 방식에 따라) 전송값이 반영되지 않았다.
+     화면이 다시 보일 때마다 한 번씩 확인한다.
+     (이미 반영한 자료는 savedAt+linkId 로 걸러 두 번 들어가지 않는다) */
+  document.addEventListener('visibilitychange', function(){
+    if(document.visibilityState === 'visible') setTimeout(run, 120);
+  });
+  window.addEventListener('focus', function(){ setTimeout(run, 120); });
+  /* 다른 탭/창에서 전송값이 들어와도 즉시 반영 */
+  window.addEventListener('storage', function(e){
+    if(e && e.key === 'tenar_fieldplot_result' && e.newValue) setTimeout(run, 60);
+  });
 })();
 
 /* ── v14: 지도에서 길이(cm) 측정 → 해당 입력칸(field)으로 전송 ── */

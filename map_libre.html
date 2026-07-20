@@ -1,4 +1,4 @@
-<!-- map_v22.html (v22) · 저장: 2026-07-20 17:18 KST · [v22] ①조사표↔지도 연결용 linkId 저장 ②③저장된 좌표·회전각·확대로 지도를 열고 짧은 주소로 이동하지 않음 ④필지·재배구역만 취소하는 「선택 취소」 버튼(확인창) ⑤수정모드 드래그 8px 이상에서만 시작·두 손가락 제외·끌기 1회를 UNDO 1단계로 ⑥배너를 검색창과 띄우고 포구도구 시작위치도 내림 ⑦세로총길이 라벨을 테두리 밖으로 더 이동 -->
+<!-- map_v23.html (v23) · 저장: 2026-07-20 18:05 KST · [v23] ②2번 비율로도 A포구가 0이랑이면 A는 첫번째 1이랑 사용(B는 계산값) ③이랑 위치를 (총이랑수+1)등분으로 수정 — 이랑 2개면 1/3·2/3 자리(고랑 3개 기준) -->
 <!-- (이전) map_v13.html (v13) · 저장: 2026-07-19 06:03 KST · [v13] 실측모드에서 저장핀(즐겨찾기)을 측정점으로 사용 — 일반 지도모드는 기존대로 저장위치 상세시트를 열고, 면적·길이 측정모드에서는 상세시트 대신 저장핀의 실제 위도·경도를 다음 측정점으로 추가. 중복좌표 방지 / 한 번 터치로 점 두 개 생기지 않게 이벤트 전파차단(suppressNextMapClick) / 실측모드에서 길게 누르면 저장핀 정보 확인 / 측정점 번호가 저장핀에 가리지 않도록 z-index 정리. 저장핀 원본(좌표·색상·작물·잠금)과 즐겨찾기 저장구조·JSON·암호화는 변경 없음 -->
 <!-- (이전) map_v11.html (v11) · 저장: 2026-07-19 · [v11] ①시트 열려도 지도 이동/확대/회전 가능(오버레이 통과)+제목줄까지 내려가는 최소화 스냅+최소화 버튼 ②레이어 초기화 버튼 ③축소 시 핀 크기 축소(좌표 고정, z16↑기본/z13~15 작게/z13↓점) ④선택 필지 안쪽 채움 제거(테두리만) ⑥토지정보 아이콘 📍 ⑦지도출처 ⓘ 중복 제거+주소 표기 ⑧핀 안 이모지→핀 위 작물명, 저장핀 시트 토글 2개 ⑨핀 수정=위치수정/이름수정 선택(좌표 기준 저장) ⑩메모 축소+시트 auto 높이 ⑪누른점 파랑+공유에 화면 캡처 첨부 -->
 <!-- (이전) map_v10.html (v10) · 저장: 2026-07-18 · [v10] ①②토지이용 범례 독립패널(가로형·드래그이동·접기·위치저장) ③실측도구 최소화 1회 동작(중복이벤트 제거) ④선택 필지 파란 강조 ⑤시트 위로 지도이동(padding) ⑥토지정보 4줄 재구성 ⑦공시지가 최신/전년 ⑧⑨PNU→추가정보 ⑩하단버튼 3개 통일 ⑪⑫⑬핀저장·길찾기·조사표(PNU/면적/공시지가/용도지역/필지경계) ⑭시트 열린채 길게누르기 ⑮회전각+i flex ⑯주소→공통 토지정보 ⑰표적 SVG 아이콘 ⑱⑲저장위치 재배치+현재필지정보+시트스택 ⑳즐겨찾기→저장위치 팝업 -->
@@ -5810,7 +5810,7 @@ TenarSecureStore.init('map',
        (통합계산기 updateABDerived 의 one-ridge 식 그대로) */
     if (fpIsOneRidge()) {
       fp.aSel = 1; fp.bSel = 1;
-      var midDist = Lmap_cm / 2;
+      var midDist = Lmap_cm / 2;   /* 이랑 1개 → (1+1)등분의 1자리 = 가운데 */
       fp.aBase = fpAlongPath(midDist);
       fp.bBase = fp.aBase;
       var cm = fp.aBase ? fpCastInward(fp.aBase, poly, fpPathBearingAt(midDist, Lmap_cm), fp.angleA) : null;
@@ -5831,11 +5831,25 @@ TenarSecureStore.init('map',
     var half = L / 2;
     var b_ga = fpIsRidgeMode() ? (Math.round(a_ga * 100) / 100 + half) : (aInt + half);
     var bInt = Math.round(b_ga);
+    /* [v23-2] 통합계산기 규칙 — 1번 비율이 0이랑이면 2번 비율을 쓰고,
+       2번 비율로도 0이랑이면 A포구는 무조건 「첫번째 1이랑」을 쓴다.
+       B포구는 계산된 값을 그대로 쓴다. */
+    fp.aForcedOne = false;
+    if (fpIsRidgeMode() && aInt === 0) {
+      aInt = 1;
+      fp.aForcedOne = true;
+    }
     fp.aSel = aInt; fp.bSel = bInt;
 
-    /* 가로기점 좌표 : 경계선 경로 위의 위치 */
-    var aRatio = Math.max(0, Math.min(1, aInt / L));
-    var bRatio = Math.max(0, Math.min(1, bInt / L));
+    /* [v23-3] 가로기점 좌표
+       · 이랑 기준 : 이랑이 L개면 고랑은 L+1개이므로 가-나를 (L+1)등분해서
+         i번째 이랑을 i/(L+1) 자리에 놓는다.
+         예) 이랑 2개 → 1/3, 2/3 자리 (3등분)
+             이랑 1개 → 1/2 자리 (가운데)
+       · 길이(cm) 기준 : 실제 길이 비율 그대로 */
+    var denom = fpIsRidgeMode() ? (L + 1) : L;
+    var aRatio = Math.max(0, Math.min(1, aInt / denom));
+    var bRatio = Math.max(0, Math.min(1, bInt / denom));
     var aDist = Lmap_cm * aRatio, bDist = Lmap_cm * bRatio;
     fp.aBase = fpAlongPath(aDist);
     fp.bBase = fpAlongPath(bDist);
@@ -5991,7 +6005,8 @@ TenarSecureStore.init('map',
       html += '<div class="fp-line"><b>1이랑</b> 2번 비율 · 가-나 중간 세로선 1개</div>';
     } else {
       html += '<div class="fp-line"><b>가로기점</b> A ' + (fp.aSel ? formatNumber(fp.aSel, 0) + unit : '—') +
-              ' · B ' + (fp.bSel ? formatNumber(fp.bSel, 0) + unit : '—') + '</div>';
+              ' · B ' + (fp.bSel ? formatNumber(fp.bSel, 0) + unit : '—') +
+              (fp.aForcedOne ? ' <span class="fp-sub">(A는 0이랑 → 첫번째 1이랑)</span>' : '') + '</div>';
     }
     html += '<div class="fp-line"><b>세로총길이</b> A ' + (fp.heightA ? formatNumber(fp.heightA, 0) + 'cm' : '—') +
             ' · B ' + (fp.heightB ? formatNumber(fp.heightB, 0) + 'cm' : '—') + '</div>';
