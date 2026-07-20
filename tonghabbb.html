@@ -1,4 +1,4 @@
-<!-- tonghabbb_v26.html (v26) · 저장: 2026-07-20 21:25 KST · [v26] ⑤필지주소 옆 📍(지도) 버튼을 map_libre.html 로 연결(기존 github map.html 고정 → 같은 폴더 상대경로) -->
+<!-- tonghabbb_v28.html (v28) · 저장: 2026-07-21 04:49 KST · [v28-1] 지도 저장핀 ↔ 조사표 저장자료 연결 — 저장/덮어쓰기한 항목 key 를 그 핀에 기록. 계산식 변경 없음 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -8433,6 +8433,42 @@ function _pmwRestoreAll(d){
 /* ══════════════════════════════════════════
    저장 / 불러오기 — 수동 슬롯 (localStorage)
    ══════════════════════════════════════════ */
+
+/* [v28-1] 지도 저장핀 ↔ 조사표 저장자료 연결
+   지도에서 이 핀으로 조사표를 열었다면(tenar_pin_link),
+   저장/덮어쓰기한 항목의 key 를 그 핀에 기록해 둔다.
+   다음에 지도에서 그 핀의 「조사표」를 누르면 이 자료가 바로 열린다. */
+function _tenarLinkPinToSurvey(app, key){
+  try{
+    var raw = localStorage.getItem('tenar_pin_link');
+    if(!raw) return;
+    var lk = JSON.parse(raw);
+    if(!lk) return;
+    if(lk.app && lk.app !== app) return;
+    var favs = JSON.parse(localStorage.getItem('tenar_map_favs_v1') || '[]');
+    if(!Array.isArray(favs)) return;
+    function near(a,b){ return (typeof a==='number'&&typeof b==='number') ? Math.abs(a-b) < 0.00005 : false; }
+    var idx = -1;
+    /* ① id 로 찾기 */
+    for(var i=0;i<favs.length;i++){ if(favs[i] && favs[i].id === lk.favoriteId){ idx=i; break; } }
+    /* ② 저장 과정에서 핀이 새로 쓰이며 id 가 사라졌을 수 있다 → 좌표·주소로 찾기 */
+    if(idx<0){
+      for(var j=0;j<favs.length;j++){
+        var f=favs[j]; if(!f) continue;
+        var flat = (f.latitude!=null? Number(f.latitude): Number(f.lat));
+        var flng = (f.longitude!=null? Number(f.longitude): Number(f.lng));
+        if(near(flat, Number(lk.lat)) && near(flng, Number(lk.lng))){ idx=j; break; }
+        var fa = String(f.jibunAddress || f.addr || '').trim();
+        if(lk.addr && fa && fa === String(lk.addr).trim()){ idx=j; break; }
+      }
+    }
+    if(idx<0) return;
+    if(!favs[idx].id) favs[idx].id = lk.favoriteId;   /* 사라진 id 되살림 */
+    favs[idx].surveyId = key; favs[idx].surveyKey = key;
+    favs[idx].surveyType = app; favs[idx].surveyApp = app;
+    localStorage.setItem('tenar_map_favs_v1', JSON.stringify(favs));
+  }catch(e){}
+}
 var SL_LIST_KEY   = 'tonghabSaveList';
 var SL_DATA_PFX   = 'tonghabSave_';
 var _slSelectedKey = null; /* v83: 목록에서 선택된 항목 key */
@@ -8796,6 +8832,7 @@ function saveCurrentData(){
   _slSetList(list);
   _queueMapSync(key);   /* 지도 자동반영 대기열 등록 */
   _slLastLoadedKey = key; /* v133: 방금 저장한 항목을 다음 오픈 시 자동 선택 */
+  _tenarLinkPinToSurvey('tonghab', key);   /* [v28-1] 지도 저장핀과 연결 */
   _slRenderList();
   var btn=document.getElementById('slSmartSaveBtn');
   if(btn){var orig=btn.textContent;btn.textContent='✅ 새로 저장 완료!';setTimeout(function(){btn.textContent=orig;_slUpdateSaveBtn();},1600);}
@@ -8870,6 +8907,7 @@ function overwriteSavedData(key){
   _queueMapSync(key);   /* 지도 자동반영 대기열 등록 */
   _slSelectedKey = null; /* v83: 덮어쓰기 후 선택 초기화 */
   _slLastLoadedKey = key; /* v133: 덮어쓴 항목을 다음 오픈 시에도 자동 선택 */
+  _tenarLinkPinToSurvey('tonghab', key);   /* [v28-1] 지도 저장핀과 연결 */
   _slRenderList();
   _slUpdateSaveBtn();
   // 토스트 안내

@@ -1,4 +1,4 @@
-<!-- map_v27.html (v27) · 저장: 2026-07-21 01:55 KST · [v27] 토지정보·저장위치의 「조사표」 버튼을 실제 조사표(tonghabbb.html / chungchiii.html)로 연결. 토지정보·현재위치는 항상 실측/청취 선택 팝업, 저장핀은 이미 연결된 조사표가 있으면 바로 열고 없으면 선택 후 연결 기록(연결 해제 버튼 포함). 조사표가 읽는 addr/lat/lng/color 파라미터로 전달 -->
+<!-- map_v28.html (v28) · 저장: 2026-07-21 04:49 KST · [v28] ①저장핀↔조사표 저장자료 연결(?load=) ②안내 배지를 파란창 아래 가운데로·문구 정리(조사구역을 선택하세요/필지선택 ON/각도조절 ON/따로 각도조절/입력완료) ③수정모드 센터 십자+센터추가로 점 추가 ④결과값 한 줄에 하나씩 ⑤저장·목록을 「저장/불러오기」 한 화면으로(새로저장↔덮어쓰기·잠금/불러오기/삭제 가로배치·JSON 공유/내보내기/불러오기) ⑥가·나 20% 축소·A/B포구 최상위·좁은 필지에서 값 라벨 자동 벌림 ⑦저장핀/작물명/면적라벨/AB포구값 표시 켜짐꺼짐 -->
 <!-- (이전) map_v13.html (v13) · 저장: 2026-07-19 06:03 KST · [v13] 실측모드에서 저장핀(즐겨찾기)을 측정점으로 사용 — 일반 지도모드는 기존대로 저장위치 상세시트를 열고, 면적·길이 측정모드에서는 상세시트 대신 저장핀의 실제 위도·경도를 다음 측정점으로 추가. 중복좌표 방지 / 한 번 터치로 점 두 개 생기지 않게 이벤트 전파차단(suppressNextMapClick) / 실측모드에서 길게 누르면 저장핀 정보 확인 / 측정점 번호가 저장핀에 가리지 않도록 z-index 정리. 저장핀 원본(좌표·색상·작물·잠금)과 즐겨찾기 저장구조·JSON·암호화는 변경 없음 -->
 <!-- (이전) map_v11.html (v11) · 저장: 2026-07-19 · [v11] ①시트 열려도 지도 이동/확대/회전 가능(오버레이 통과)+제목줄까지 내려가는 최소화 스냅+최소화 버튼 ②레이어 초기화 버튼 ③축소 시 핀 크기 축소(좌표 고정, z16↑기본/z13~15 작게/z13↓점) ④선택 필지 안쪽 채움 제거(테두리만) ⑥토지정보 아이콘 📍 ⑦지도출처 ⓘ 중복 제거+주소 표기 ⑧핀 안 이모지→핀 위 작물명, 저장핀 시트 토글 2개 ⑨핀 수정=위치수정/이름수정 선택(좌표 기준 저장) ⑩메모 축소+시트 auto 높이 ⑪누른점 파랑+공유에 화면 캡처 첨부 -->
 <!-- (이전) map_v10.html (v10) · 저장: 2026-07-18 · [v10] ①②토지이용 범례 독립패널(가로형·드래그이동·접기·위치저장) ③실측도구 최소화 1회 동작(중복이벤트 제거) ④선택 필지 파란 강조 ⑤시트 위로 지도이동(padding) ⑥토지정보 4줄 재구성 ⑦공시지가 최신/전년 ⑧⑨PNU→추가정보 ⑩하단버튼 3개 통일 ⑪⑫⑬핀저장·길찾기·조사표(PNU/면적/공시지가/용도지역/필지경계) ⑭시트 열린채 길게누르기 ⑮회전각+i flex ⑯주소→공통 토지정보 ⑰표적 SVG 아이콘 ⑱⑲저장위치 재배치+현재필지정보+시트스택 ⑳즐겨찾기→저장위치 팝업 -->
@@ -347,12 +347,17 @@ TenarSecureStore.init('map',
   #searchBtn:active { background: #1b3806; }
 
   /* 측정 모드 배지 */
+  /* [v28-2] 안내 배지 — 파란 안내창 바로 아래, 화면 가운데 */
   #modeBadge {
-    pointer-events: none;   /* [v26-2] 안내 라벨이라 터치를 통과시킨다 (포구도구를 위로 옮겨도 눌림) */
-    align-self: flex-start; display: none;
-    border-radius: 8px; padding: 4px 10px; font-size: 12px; font-weight: 800; color: #fff;
-    box-shadow: 0 1px 6px rgba(0,0,0,.25);
+    pointer-events: none;
+    position: absolute; left: 50%; transform: translateX(-50%);
+    top: calc(env(safe-area-inset-top, 0px) + 132px);
+    z-index: 13; display: none; white-space: nowrap;
+    border-radius: 999px; padding: 6px 14px; font-size: 12.5px; font-weight: 800; color: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,.3);
   }
+  body.no-fpbanner #modeBadge { top: calc(env(safe-area-inset-top, 0px) + 66px); }
+  #modeBadge.m-warn { background: #d0342c; }
   #modeBadge.m-area { background: #1f8a4c; }
   #modeBadge.m-dist { background: #1a5fd0; }
   #modeBadge.m-edit { background: #7c3aed; }
@@ -717,11 +722,12 @@ TenarSecureStore.init('map',
     text-shadow: 0 0 2px #fff, 0 0 2px #fff, 0 0 2px #fff;
   }
 
+  /* [v28-6] 가·나 20% 축소 (26 → 21px) */
   .fp-gana {
-    position: absolute; width: 26px; height: 26px; border-radius: 13px;
-    background: #111827; color: #fff; font-size: 15px; font-weight: 900;
-    line-height: 26px; text-align: center;
-    border: 2.5px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,.5);
+    position: absolute; width: 21px; height: 21px; border-radius: 11px;
+    background: #111827; color: #fff; font-size: 12px; font-weight: 900;
+    line-height: 21px; text-align: center;
+    border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,.5);
     z-index: 6;
   }
   .fp-base { position: absolute; width: 0; height: 0; }
@@ -734,6 +740,7 @@ TenarSecureStore.init('map',
   /* [v18-6] 가로기점 값 — 글자 키움 */
   .fp-base .fp-tag {
     position: absolute; left: 50%; top: 7px; transform: translateX(-50%);
+    z-index: 4;
     white-space: nowrap; padding: 2px 5px; border-radius: 6px;
     font-size: 11px; font-weight: 900; background: #fff;
     box-shadow: 0 1px 3px rgba(0,0,0,.35);
@@ -741,9 +748,10 @@ TenarSecureStore.init('map',
   .fp-base .fp-tag-a { border: 1.6px solid #1565C0; color: #1565C0; }
   .fp-base .fp-tag-b { border: 1.6px solid #d0342c; color: #d0342c; }
   /* [v15-6] 세로 포구지점은 점 "안"에 A(파랑) · B(빨강) */
-  .fp-po-wrap { position: absolute; width: 0; height: 0; }
+  /* [v28-6] A/B포구 점은 언제나 가장 위 — 겹쳐서 안 보이면 현장에서 곤란하다 */
+  .fp-po-wrap { position: absolute; width: 0; height: 0; z-index: 9; }
   .fp-po {
-    position: absolute; left: -6px; top: -6px; width: 12px; height: 12px; border-radius: 6px;
+    position: absolute; left: -6px; top: -6px; width: 12px; height: 12px; border-radius: 6px; z-index: 10;
     color: #fff; font-size: 7.5px; font-weight: 900; line-height: 12px; text-align: center;
     border: 1.5px solid #fff; box-shadow: 0 1px 3px rgba(0,0,0,.45);
   }
@@ -788,13 +796,23 @@ TenarSecureStore.init('map',
   }
   /* [v18-6] A/B포구 세로기점 값 — 글자만 있어 안 보이던 것을 네모박스 안에 넣었다 */
   .fp-po-txt {
-    position: absolute; left: 11px; top: -8px; white-space: nowrap;
+    position: absolute; left: 11px; top: -8px; white-space: nowrap; z-index: 8;
     padding: 2px 5px; border-radius: 6px;
     font-size: 11px; font-weight: 900; background: #fff;
     box-shadow: 0 1px 3px rgba(0,0,0,.35);
   }
   .fp-po-txt-a { border: 1.6px solid #1565C0; color: #1565C0; }
   .fp-po-txt-b { border: 1.6px solid #d0342c; color: #d0342c; }
+  /* [v28-6] 작은 필지에서 값이 겹칠 때 — 라벨만 위/아래로 비켜 놓는다
+     (점과 선의 위치는 그대로, 라벨에 이음선을 그려 어디 값인지 알 수 있게) */
+  .fp-shift-up   { transform: translate(-50%, -22px) !important; }
+  .fp-shift-down { transform: translate(-50%,  22px) !important; }
+  .fp-po-txt.fp-shift-up   { transform: translateY(-20px) !important; }
+  .fp-po-txt.fp-shift-down { transform: translateY( 20px) !important; }
+  .fp-tick {
+    position: absolute; left: 50%; width: 1.5px; background: rgba(0,0,0,.35);
+    transform: translateX(-50%); pointer-events: none;
+  }
   /* [v6-6] 전체거리 라벨 — 구간 라벨보다 크고 굵게 */
   .total-label {
     padding: 3px 8px; border-radius: 7px; background: #0b3d91; color: #fff;
@@ -947,6 +965,8 @@ TenarSecureStore.init('map',
   .icon-btn.lock-off  { background: #f5f5f7; border-color: #d0d0d6; color: #888; }       /* 해제: 회색 */
   .icon-btn.del-on    { background: #fdf1f1; border-color: #e2554e; color: #d0342c; }    /* 삭제 활성: 빨강 */
   .icon-btn.del-off   { background: #f2f2f4; border-color: #e2e2e6; color: #b8b8be; }    /* 삭제 비활성: 회색 */
+  /* [v28-5] 불러오기(폴더) — 파랑 계열 */
+  .icon-btn.open-on   { background: #eef4ff; border-color: #a8c4f0; color: #1a5fd0; }
 
   .color-row { display: flex; gap: 8px; margin: 6px 0 4px; }
   .color-dot {
@@ -988,9 +1008,10 @@ TenarSecureStore.init('map',
       <button id="clearBtn" type="button" aria-label="입력 지우기">✕</button>
       <button id="searchBtn" type="button">검색</button>
     </div>
-    <div id="modeBadge"></div>
 <!-- [v7-2] 「두 손가락 회전 · 확대 가능」 안내문 삭제 -->
   </div>
+  <!-- [v28-2] 안내 배지 : 파란 안내창 아래 가운데 -->
+  <div id="modeBadge"></div>
 
   <!-- [v7-4] 레이어 아이콘: 마름모꼴이 겹친 레이어 SVG -->
   <div id="sideBtns">
@@ -1081,11 +1102,8 @@ TenarSecureStore.init('map',
       <div class="tp-sec">④ 완료</div>
       <button class="tool-btn one-line" type="button" id="fpTFinish" style="width:100%">✓ 완료</button>
 
-      <div class="tp-sec">⑤ 저장 / 목록</div>
-      <div class="tp-grid">
-        <button class="tool-btn one-line" type="button" id="fpSaveBtn"><span class="em">💾</span>저장</button>
-        <button class="tool-btn one-line" type="button" id="fpListBtn"><span class="em">📋</span>목록</button>
-      </div>
+      <div class="tp-sec">⑤ 저장 / 불러오기</div>
+      <button class="tool-btn one-line" type="button" id="fpSaveBtn" style="width:100%"><span class="em">💾</span>저장 / 불러오기</button>
 
       <div class="tp-sec">⑥ 조사표 전송</div>
       <button class="tool-btn one-line" type="button" id="fpSendBtn" style="width:100%"><span class="em">📤</span>조사표 전송</button>
@@ -1224,6 +1242,7 @@ TenarSecureStore.init('map',
   var FAV_KEY      = 'tenar_map_favs_v1';
   var MEAS_KEY     = 'tenar_measure_saves_v1';
   var FPS_KEY      = 'tenar_fieldplot_saves_v1';   /* [v16-6] A/B포구는 면적·길이와 다른 목록에 저장 */
+  var DISP_KEY     = 'tenar_map_display_v1';       /* [v28-7] 화면 표시 켜짐/꺼짐 */
   var VIEW_KEY     = 'tenar_map_last_view_v1';
   var SETTINGS_KEY = 'tenar_map_settings_v1';
   var PENDING_KEY  = 'tenar_pending_survey_coord';
@@ -1399,6 +1418,8 @@ TenarSecureStore.init('map',
     landuseOpacity: 0.45,   /* [v9] 토지이용계획 기본 투명도 45% */
     showFavPins: true,
     showCropName: true,   /* [v11-8] 작물명 표시 (기본 켜짐) */
+    showAreaLabel: true,  /* [v28-7] 도형의 작물명·㎡·평 표시 */
+    showFpValues: true,   /* [v28-7] 가-나 총길이·세로총길이·A/B 기점 값 표시 */
     cropFilter: '',       /* (사용 안 함 · 기존 저장값 호환용으로 남겨둠) */
     /* [v10-2] 토지이용 범례 위치·접힘 상태 저장 (null이면 기본 위치) */
     landLegend: { left: null, top: null, collapsed: false }
@@ -2972,6 +2993,32 @@ TenarSecureStore.init('map',
       function () { return !!settings.showCropName; },
       function (v) { settings.showCropName = v; }));
 
+    /* [v28-7] 도형·측정값 표시 켜고 끄기 */
+    function toggleRow2(title, desc, getter, setter) {
+      var row = el('div', 'lyr-row');
+      row.appendChild(el('div', null,
+        '<div class="lyr-name">' + escapeHtml(title) + '</div>' +
+        '<div class="lyr-desc">' + escapeHtml(desc) + '</div>'));
+      var sw = el('div', 'switch' + (getter() ? ' on' : ''), '<div class="knob"></div>');
+      sw.addEventListener('click', function () {
+        var v = !getter();
+        setter(v); saveSettings();
+        try { updateAreaLabel(); } catch (e) {}
+        try { fpRender(); } catch (e) {}
+        sw.classList.toggle('on', v);
+      });
+      row.appendChild(sw);
+      return row;
+    }
+    box.appendChild(toggleRow2(
+      '면적 라벨 표시', '필지·재배구역의 작물명 · ㎡ · 평을 표시합니다',
+      function () { return settings.showAreaLabel !== false; },
+      function (v) { settings.showAreaLabel = v; }));
+    box.appendChild(toggleRow2(
+      'A/B포구 값 표시', '가-나 총길이 · 세로총길이 · A/B 기점 값을 표시합니다',
+      function () { return settings.showFpValues !== false; },
+      function (v) { settings.showFpValues = v; }));
+
     var favs = getFavs();
     box.appendChild(el('div', null,
       '<div class="lyr-desc" style="margin-top:12px;">저장된 핀 ' + favs.length + '개' +
@@ -3428,6 +3475,14 @@ TenarSecureStore.init('map',
     var payload = buildSurveyPayload(info, type);
     saveJSON(PENDING_KEY, payload);
     if (favId) linkFavoriteToSurvey(favId, type);
+    /* [v28-1] 조사표가 저장할 때 이 핀에 저장자료 key 를 기록하도록 남긴다 */
+    try {
+      if (favId) localStorage.setItem('tenar_pin_link', JSON.stringify({
+        favoriteId: favId, app: type, ts: Date.now(),
+        lat: info.lat, lng: info.lng, addr: info.jibunAddress || ''
+      }));
+      else localStorage.removeItem('tenar_pin_link');
+    } catch (e) {}
     closeSheet();
     showToast(SURVEY_NAMES[type] + '를 엽니다.' +
               (payload.jibunAddress ? '\n' + payload.jibunAddress : ''), 2200, 'success');
@@ -3446,6 +3501,7 @@ TenarSecureStore.init('map',
       var fav = getFavs().filter(function (x) { return x.id === favId; })[0];
       var linked = fav && (fav.surveyType || fav.surveyApp);
       if (linked && SURVEY_FILES[linked]) {
+        /* [v28-1] 연결된 저장자료가 있으면 ?load= 로 그 자료를 바로 연다 */
         info.surveyId = fav.surveyId || fav.surveyKey || '';
         openSurveyApp(info, linked, favId);
         return;
@@ -3460,7 +3516,8 @@ TenarSecureStore.init('map',
       '</div>' +
       '<div style="font-size:12px;color:#888;margin-bottom:12px;">' +
       (opts.mode === 'pin'
-        ? '이 저장핀은 아직 조사표에 연결되지 않았습니다.<br>연결할 조사표를 골라주세요. (다음부터는 바로 열립니다)'
+        ? '이 저장핀은 아직 조사표에 연결되지 않았습니다.<br>연결할 조사표를 골라주세요. (다음부터는 바로 열립니다)<br>' +
+          '<span style="color:#1a5fd0;">조사표에서 저장하면 그 자료까지 연결됩니다.</span>'
         : '이 위치의 정보를 가지고 조사표를 엽니다.') +
       '</div>'));
 
@@ -3814,6 +3871,7 @@ TenarSecureStore.init('map',
      핀·주소 라벨과 겹치지 않도록 위로 살짝 띄운다. */
   function addAreaLabel(polygon, areaM2) {
     if (!hasTurf || !polygon) return;
+    if (settings.showAreaLabel === false) return;   /* [v28-7] */
     var c = null;
     try { c = turf.centerOfMass(polygon).geometry.coordinates; } catch (e) { return; }
     if (!c || !isFinite(c[0]) || !isFinite(c[1])) return;
@@ -3965,17 +4023,20 @@ TenarSecureStore.init('map',
     if (_bp) { _bp.classList.toggle('active', mode === 'parcelPick'); _bp.textContent = (mode === 'parcelPick') ? '▣ 필지선택 ON' : '▣ 필지선택'; }
     if (_bc) { _bc.classList.toggle('active', mode === 'cropBoundary'); _bc.textContent = (mode === 'cropBoundary') ? '🌾 재배구역 ON' : '🌾 재배구역'; }
     if (typeof fpSyncButtons === 'function') setTimeout(fpSyncButtons, 0);
-    crosshairEl.style.display = (mode === 'polygon' || mode === 'distance' || mode === 'cropBoundary') ? 'block' : 'none';
+    /* [v28-3] 수정 모드에서도 센터 십자를 보여 「센터추가」로 점을 찍을 수 있게 */
+    crosshairEl.style.display = (mode === 'polygon' || mode === 'distance' ||
+                                 mode === 'cropBoundary' || mode === 'edit') ? 'block' : 'none';
     map.getCanvas().style.cursor = (mode === 'none') ? '' : 'crosshair';
 
     modeBadge.className = '';
     if (mode === 'polygon') { modeBadge.textContent = '면적측정 모드'; modeBadge.classList.add('m-area'); modeBadge.style.display = 'block'; }
     else if (mode === 'distance') { modeBadge.textContent = '길이측정 모드'; modeBadge.classList.add('m-dist'); modeBadge.style.display = 'block'; }
-    else if (mode === 'edit') { modeBadge.textContent = '수정 모드'; modeBadge.classList.add('m-edit'); modeBadge.style.display = 'block'; }
-    else if (mode === 'parcelPick') { modeBadge.textContent = '필지선택 모드'; modeBadge.classList.add('m-parcel'); modeBadge.style.display = 'block'; }
-    else if (mode === 'cropBoundary') { modeBadge.textContent = '재배구역 그리기'; modeBadge.classList.add('m-crop'); modeBadge.style.display = 'block'; }
-    else if (mode === 'fieldplot') { modeBadge.textContent = (fp.picking === 'na' ? '나' : '가') + ' 지점 선택'; modeBadge.classList.add('m-parcel'); modeBadge.style.display = 'block'; }
+    else if (mode === 'edit') { modeBadge.textContent = '수정 모드 · 점을 끌어 옮기세요'; modeBadge.classList.add('m-edit'); modeBadge.style.display = 'block'; }
+    else if (mode === 'parcelPick') { modeBadge.textContent = '필지선택 ON · 필지를 누르세요'; modeBadge.classList.add('m-parcel'); modeBadge.style.display = 'block'; }
+    else if (mode === 'cropBoundary') { modeBadge.textContent = '재배구역 ON · 경계를 그리세요'; modeBadge.classList.add('m-crop'); modeBadge.style.display = 'block'; }
+    else if (mode === 'fieldplot') { modeBadge.textContent = (fp.picking === 'na' ? '나' : '가') + ' 지점을 꼭짓점에서 고르세요'; modeBadge.classList.add('m-parcel'); modeBadge.style.display = 'block'; }
     else modeBadge.style.display = 'none';
+    if (typeof fpUpdateGuide === 'function') setTimeout(fpUpdateGuide, 0);
   }
   /* [v6-7] 측정 모드 전환 제한 —— 점을 하나라도 찍은 뒤에는 다른 모드로 못 바꾼다.
      완료(✓) 또는 초기화(🗑) 후에는 다시 자유롭게 변경 가능. */
@@ -4316,10 +4377,23 @@ TenarSecureStore.init('map',
   });
   function addCenterPoint() {
     var s = surveyMeasureState;
-    if (s.mode === 'parcelPick') { var c0 = map.getCenter(); pickParcelAt(c0.lng, c0.lat); return; }   /* [v14] 화면 중앙 필지 선택 */
-    if (s.mode === 'polygon' || s.mode === 'cropBoundary') addFieldPoint(map.getCenter());
-    else if (s.mode === 'distance') addDistancePoint(map.getCenter());
-    else showToast('먼저 면적 측정 또는 길이 측정을 선택해주세요.', 3000, 'info');
+    if (s.mode === 'parcelPick') { var c0 = map.getCenter(); pickParcelAt(c0.lng, c0.lat); return; }
+    if (s.mode === 'polygon' || s.mode === 'cropBoundary') { addFieldPoint(map.getCenter()); return; }
+    if (s.mode === 'distance') { addDistancePoint(map.getCenter()); return; }
+    /* [v28-3] 수정 모드에서도 화면 중앙에 점을 하나 더 찍는다 */
+    if (s.mode === 'edit') {
+      if (s.fieldPoints.length >= 3) {
+        addFieldPoint(map.getCenter());
+        showToast('화면 중앙에 점을 추가했습니다. (' + s.fieldPoints.length + '번 점)', 2600, 'success');
+      } else if (s.distancePoints.length >= 2) {
+        addDistancePoint(map.getCenter());
+        showToast('화면 중앙에 측정점을 추가했습니다.', 2600, 'success');
+      } else {
+        showToast('먼저 필지선택 또는 재배구역으로 도형을 만들어주세요.', 3200, 'info');
+      }
+      return;
+    }
+    showToast('먼저 면적 측정 또는 길이 측정을 선택해주세요.', 3000, 'info');
   }
 
   var HIT_PAD = 22;
@@ -4718,7 +4792,8 @@ TenarSecureStore.init('map',
      · 내보내기는 기존 TenarCrypto 방식(암호 기본 2026)을 그대로 사용한다.
      · 불러오기는 「전체」와 「선택해서」 중 고를 수 있다.
      =================================================================== */
-  function fpListTools(opts) {
+  function fpListTools(opts, extra) {
+    extra = extra || {};
     /* opts = { type, fileBase, label, get, set, render } */
     var row = el('div', 'btn-row');
     function add(txt, cls, fn) {
@@ -4757,7 +4832,7 @@ TenarSecureStore.init('map',
       });
     });
     add('불러오기', null, function () { fpListImport(opts); });
-    add('전체삭제', 'danger', function () {
+    if (!extra.hideDeleteAll) add('전체삭제', 'danger', function () {
       var all = opts.get();
       var locked = all.filter(function (x) { return x.locked; }).length;
       var unlocked = all.length - locked;
@@ -4854,7 +4929,8 @@ TenarSecureStore.init('map',
   }
   function fpSaveOpts() {
     return { type: 'fieldplots', fileBase: 'tenar_map_fieldplots', label: 'A/B포구',
-             get: getFpSaves, set: setFpSaves, render: renderFpList };
+             get: getFpSaves, set: setFpSaves,
+             render: function () { try { renderFpSaveSheet(); } catch (e) {} } };
   }
 
   function openMeasListSheet() {
@@ -4875,62 +4951,139 @@ TenarSecureStore.init('map',
     saveJSON(FPS_KEY, arr);
     return true;
   }
+  /* ===================================================================
+     [v28-5] A/B포구 저장 / 불러오기 — 통합계산기의 저장/불러오기와 같은 모양
+       · 맨 위 : 암호화 상태 → 새로 저장 (목록에서 고르면 「덮어쓰기」로 바뀜)
+       · 목록 : 각 항목 아래에 [잠금] [불러오기] [삭제] 가로 배치
+       · 아래 : JSON 공유 / 내보내기 / 불러오기
+       · 시트는 기존 바텀시트 그대로 (아래에서 올라오고 위로 끌어 키움 · 최소화)
+     =================================================================== */
+  var fpSelectedId = null;   /* 목록에서 고른 항목 → 덮어쓰기 대상 */
+
   function openFpListSheet() {
+    fpSelectedId = fp.editingId || null;
     var box = el('div');
-    box.appendChild(fpListTools(fpSaveOpts()));
-    var list = el('div'); list.id = 'fpList';
-    box.appendChild(list);
-    openSheet('📋 A/B포구 저장 목록', box, 90);
-    renderFpList();
+    box.id = 'fpSaveBox';
+    box.appendChild(el('div', null, '<div id="fpSaveInner"></div>'));
+    openSheet('💾 저장 / 불러오기', box, 90);
+    renderFpSaveSheet();
   }
-  function renderFpList() {
-    var list = document.getElementById('fpList');
-    if (!list) return;
+
+  function renderFpSaveSheet() {
+    var wrap = document.getElementById('fpSaveInner');
+    if (!wrap) return;
+    wrap.innerHTML = '';
     var arr = getFpSaves();
-    list.innerHTML = '';
+
+    /* ① 암호화 상태 */
+    var enc = (window.__tenarSecureActive === true);
+    var banner = el('div', 'sec-banner ' + (enc ? 'enc' : 'plain'));
+    banner.innerHTML = enc
+      ? '🟢 암호화 저장 켜짐 — 이 기기의 저장자료가 자동 암호화됩니다'
+      : '⚠️ 암호화되지 않았습니다 (평문 저장 중)';
+    wrap.appendChild(banner);
+
+    /* ② 새로 저장 / 덮어쓰기 */
+    var sel = fpSelectedId ? arr.filter(function (x) { return x.id === fpSelectedId; })[0] : null;
+    var bMain = el('button', 'sheet-btn ' + (sel ? 'danger' : 'primary'), '');
+    bMain.style.cssText += 'width:100%;margin:10px 0 12px;font-size:15px;font-weight:800;padding:14px;';
+    bMain.textContent = sel ? ('💾 덮어쓰기 · ' + (sel.name || 'A/B포구')) : '💾 새로 저장';
+    bMain.addEventListener('click', function () {
+      if (!fpCanSubmit()) { showToast('가·나 지점까지 지정한 뒤 저장해주세요.', 3200, 'info'); return; }
+      if (sel) {
+        if (!window.confirm('「' + (sel.name || 'A/B포구') + '」에 덮어쓰시겠습니까?')) return;
+        fp.editingId = sel.id;
+        fpSaveOnly(false);
+      } else {
+        fp.editingId = null;
+        fpSaveOnly(true);
+      }
+      fpSelectedId = fp.editingId;
+      renderFpSaveSheet();
+    });
+    wrap.appendChild(bMain);
+
+    /* ③ 목록 머리말 + 전체삭제 */
+    var head = el('div');
+    head.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;';
+    head.appendChild(el('div', null, '<div style="font-size:12.5px;font-weight:800;color:#555;">저장된 자료 목록</div>'));
+    var bAll = el('button', 'sheet-btn danger', '전체삭제');
+    bAll.style.cssText += 'flex:0 0 auto;padding:6px 12px;font-size:12.5px;';
+    bAll.addEventListener('click', function () {
+      var all = getFpSaves();
+      var locked = all.filter(function (x) { return x.locked; }).length;
+      var un = all.length - locked;
+      if (un === 0) { showToast('삭제할 자료가 없습니다.\n(잠금된 것만 있습니다)', 3200, 'info'); return; }
+      if (!window.confirm('잠금 해제된 ' + un + '개를 삭제하시겠습니까?\n잠금된 ' + locked + '개는 유지됩니다.')) return;
+      setFpSaves(all.filter(function (x) { return x.locked; }));
+      if (fpSelectedId && !getFpSaves().some(function (x) { return x.id === fpSelectedId; })) fpSelectedId = null;
+      renderFpSaveSheet();
+      showToast(un + '개를 삭제했습니다.', 2600, 'success');
+    });
+    head.appendChild(bAll);
+    wrap.appendChild(head);
+
+    /* ④ 목록 */
     if (!arr.length) {
-      list.appendChild(el('div', null, '<div style="color:#888;font-size:13px;padding:18px 2px;">저장된 A/B포구가 없습니다.</div>'));
-      return;
+      wrap.appendChild(el('div', null, '<div style="color:#888;font-size:13px;padding:18px 2px;">저장된 A/B포구가 없습니다.</div>'));
     }
     arr.forEach(function (rec, i) {
       var unit = (rec.mode === '이랑') ? '이랑' : 'cm';
+      var picked = (rec.id === fpSelectedId);
       var card = el('div', 'fav-card' + (rec.locked ? ' locked' : ''));
+      if (picked) card.style.cssText += 'border-color:#27500A;background:#eef5ea;box-shadow:0 0 0 1.5px #27500A;';
       var num = el('div', 'fav-num', String(arr.length - i));
-      num.style.background = '#7c3aed';
+      num.style.background = picked ? '#27500A' : '#7c3aed';
+
       var body = el('div', 'fav-body',
         '<div class="fav-name">' + escapeHtml(rec.name || 'A/B포구') + '</div>' +
-        '<div class="fav-addr">' + escapeHtml(rec.crop || '작물 없음') + ' · ' + escapeHtml(rec.jibunAddress || '주소 없음') + '</div>' +
+        '<div class="fav-addr">📍 ' + escapeHtml(rec.jibunAddress || '주소 없음') + '</div>' +
         '<div class="fav-addr" style="color:#888;">가-나 ' + formatNumber(rec.L || 0, 0) + unit +
           ' · A ' + formatNumber(rec.aSel || 0, 0) + unit + ' / B ' + formatNumber(rec.bSel || 0, 0) + unit + '</div>' +
-        '<div class="fav-addr" style="color:#888;">세로 A ' + formatNumber(rec.heightA || 0, 0) + 'cm · B ' + formatNumber(rec.heightB || 0, 0) + 'cm</div>' +
         '<div class="fav-coord">' + escapeHtml((rec.createdAt || rec.savedAt || '').slice(0, 16).replace('T', ' ')) + '</div>');
-      body.addEventListener('click', function () { closeSheet(); loadFpSave(rec); });
+      /* 항목을 누르면 "덮어쓰기 대상"으로 고른다 (여는 것은 아래 폴더 버튼) */
+      body.addEventListener('click', function () {
+        fpSelectedId = (fpSelectedId === rec.id) ? null : rec.id;
+        renderFpSaveSheet();
+      });
 
+      /* ⑤ 항목 아래 가로 버튼 : 잠금 · 불러오기 · 삭제 */
       var acts = el('div', 'fav-acts');
-      var bEdit = el('button', 'icon-btn', '✏️'); bEdit.title = '수정';
-      bEdit.addEventListener('click', function () { closeSheet(); loadFpSave(rec); showToast('불러왔습니다. 각도조절·가·나를 고친 뒤 「저장」으로 덮어쓰세요.', 4500, 'info'); });
-      var bShare = el('button', 'icon-btn', '📤'); bShare.title = '공유';
-      bShare.addEventListener('click', function () { shareFpSave(rec); });
-      var bLock = el('button', 'icon-btn ' + (rec.locked ? 'lock-on' : 'lock-off'), rec.locked ? '🔒' : '🔓'); bLock.title = '잠금';
+      var bLock = el('button', 'icon-btn ' + (rec.locked ? 'lock-on' : 'lock-off'), rec.locked ? '🔒' : '🔓');
+      bLock.title = '잠금';
       bLock.addEventListener('click', function () {
         var a2 = getFpSaves();
         for (var k = 0; k < a2.length; k++) if (a2[k].id === rec.id) a2[k].locked = !a2[k].locked;
-        setFpSaves(a2); renderFpList();
+        setFpSaves(a2); renderFpSaveSheet();
       });
-      var bDel = el('button', 'icon-btn ' + (rec.locked ? 'del-off' : 'del-on'), '🗑'); bDel.title = '삭제';
+      var bOpen = el('button', 'icon-btn open-on', '📂');
+      bOpen.title = '불러오기';
+      bOpen.addEventListener('click', function () { closeSheet(); loadFpSave(rec); });
+      var bDel = el('button', 'icon-btn ' + (rec.locked ? 'del-off' : 'del-on'), '🗑');
+      bDel.title = '삭제';
       bDel.addEventListener('click', function () {
-        if (rec.locked) { showToast('잠금된 항목입니다.\n잠금을 해제한 후 삭제해주세요.', 4000); return; }
-        if (!window.confirm('이 A/B포구 저장을 삭제하시겠습니까?')) return;
+        if (rec.locked) { showToast('잠금된 자료입니다.\n잠금을 해제한 후 삭제해주세요.', 3600); return; }
+        if (!window.confirm('이 자료를 삭제하시겠습니까?')) return;
         setFpSaves(getFpSaves().filter(function (x) { return x.id !== rec.id; }));
-        renderFpList();
+        if (fpSelectedId === rec.id) fpSelectedId = null;
+        renderFpSaveSheet();
         showToast('삭제되었습니다.', 2000, 'success');
       });
-      /* [v16-7] 수정 → 공유 → 잠금 → 휴지통 순 가로 정렬 */
-      acts.appendChild(bEdit); acts.appendChild(bShare); acts.appendChild(bLock); acts.appendChild(bDel);
+      acts.appendChild(bLock); acts.appendChild(bOpen); acts.appendChild(bDel);
+
       card.appendChild(num); card.appendChild(body); card.appendChild(acts);
-      list.appendChild(card);
+      wrap.appendChild(card);
     });
+
+    /* ⑥ JSON 공유 / 내보내기 / 불러오기 */
+    wrap.appendChild(el('div', null,
+      '<div style="margin-top:16px;padding-top:12px;border-top:1px solid #e6e6ec;' +
+      'font-size:12px;font-weight:800;color:#888;">JSON 파일 공유 / 내보내기 / 불러오기</div>'));
+    var opts = fpSaveOpts();
+    opts.render = renderFpSaveSheet;
+    wrap.appendChild(fpListTools(opts, { hideDeleteAll: true }));
   }
+
   function shareFpSave(rec) {
     var unit = (rec.mode === '이랑') ? '이랑' : 'cm';
     var t = ['[텐아르 A/B포구] ' + (rec.name || ''),
@@ -6049,10 +6202,22 @@ TenarSecureStore.init('map',
     var fc = { type: 'FeatureCollection', features: [] };
     var unit = fpIsRidgeMode() ? '이랑' : 'cm';
 
+    /* [v28-7] 값 표시 끄기 · [v28-6] 작은 필지에서 값이 겹치면 자동으로 벌린다 */
+    var showVals = (settings.showFpValues !== false);
+    /* 화면상 가-나 길이로 "작은 필지"인지 판단한다 (140px 미만이면 좁다) */
+    var tight = false;
+    try {
+      if (fp.ga && fp.na) {
+        var pg = map.project(fp.ga), pn = map.project(fp.na);
+        tight = Math.hypot(pn.x - pg.x, pn.y - pg.y) < 140;
+      }
+    } catch (e) {}
+    fpTight = tight;
+
     if (fp.ga) fpMark(fp.ga, '가', 'fp-gana');
     /* [v16-3] 전체 가-나 가로길이는 「나」 아래에 표기 */
     if (fp.na) {
-      var Ltxt = fp.L_cm ? ('가-나 ' + formatNumber(fpIsRidgeMode() ? ((fp.ctx && fp.ctx.L) || 0) : Math.round(fp.L_cm), 0) + unit) : '';
+      var Ltxt = (showVals && fp.L_cm) ? ('가-나 ' + formatNumber(fpIsRidgeMode() ? ((fp.ctx && fp.ctx.L) || 0) : Math.round(fp.L_cm), 0) + unit) : '';
       fpMark(fp.na, '나' + (Ltxt ? '<span class="fp-gana-len">' + Ltxt + '</span>' : ''), 'fp-gana');
     }
 
@@ -6077,7 +6242,7 @@ TenarSecureStore.init('map',
           var rp = fpAlongPath(fp.L_cm * (ri / (Lr + 1)));
           if (!rp) continue;
           var band = Math.floor((ri - 1) / 5) % colors.length;
-          var showNum = (ri % 5 === 0) || (ri === 1) || (ri === Lr);
+          var showNum = showVals && ((ri % 5 === 0) || (ri === 1) || (ri === Lr));
           fpMark(rp,
             '<span class="fp-ridge ' + colors[band] + '"></span>' +
             (showNum ? '<span class="fp-ridge-num">' + ri + '</span>' : ''),
@@ -6088,11 +6253,16 @@ TenarSecureStore.init('map',
 
     /* [v19-10] 1이랑이면 가로기점이 하나(가-나 중간)뿐이다 */
     if (fpIsOneRidge()) {
-      if (fp.aBase) fpMark(fp.aBase, '<span class="fp-dot fp-dot-a"></span><span class="fp-tag fp-tag-a">1 이랑</span>', 'fp-base');
+      if (fp.aBase) fpMark(fp.aBase, '<span class="fp-dot fp-dot-a"></span>' +
+        (showVals ? '<span class="fp-tag fp-tag-a">1 이랑</span>' : ''), 'fp-base');
     } else {
-      /* [v15-6] 가로 기점 : 점 아래에 A / B */
-      if (fp.aBase) fpMark(fp.aBase, '<span class="fp-dot fp-dot-a"></span><span class="fp-tag fp-tag-a">A ' + formatNumber(fp.aSel, 0) + unit + '</span>', 'fp-base');
-      if (fp.bBase) fpMark(fp.bBase, '<span class="fp-dot fp-dot-b"></span><span class="fp-tag fp-tag-b">B ' + formatNumber(fp.bSel, 0) + unit + '</span>', 'fp-base');
+      /* [v15-6] 가로 기점 : 점 아래에 A / B
+         [v28-6] 좁으면 A는 위, B는 아래로 벌려 서로 겹치지 않게 한다 */
+      var shA = tight ? ' fp-shift-up' : '', shB = tight ? ' fp-shift-down' : '';
+      if (fp.aBase) fpMark(fp.aBase, '<span class="fp-dot fp-dot-a"></span>' +
+        (showVals ? '<span class="fp-tag fp-tag-a' + shA + '">A ' + formatNumber(fp.aSel, 0) + unit + '</span>' : ''), 'fp-base');
+      if (fp.bBase) fpMark(fp.bBase, '<span class="fp-dot fp-dot-b"></span>' +
+        (showVals ? '<span class="fp-tag fp-tag-b' + shB + '">B ' + formatNumber(fp.bSel, 0) + unit + '</span>' : ''), 'fp-base');
     }
 
     /* [v18-4] 세로 "전체" 길이는 세로선 끝에서 조금 더 나간 "구역 밖"에 표시 */
@@ -6107,9 +6277,9 @@ TenarSecureStore.init('map',
       } catch (e) { return end; }
     }
     var oA = outsideOf(fp.aBase, fp.aEnd), oB = outsideOf(fp.bBase, fp.bEnd);
-    if (oA) fpMark(oA, '<span class="fp-endtip fp-endtip-a">세로 ' + formatNumber(fp.heightA, 0) + 'cm</span>', 'fp-end-wrap');
+    if (showVals && oA) fpMark(oA, '<span class="fp-endtip fp-endtip-a' + (tight ? ' fp-shift-up' : '') + '">세로 ' + formatNumber(fp.heightA, 0) + 'cm</span>', 'fp-end-wrap');
     /* 1이랑은 세로선이 하나이므로 B쪽 라벨을 겹쳐 그리지 않는다 */
-    if (oB && !fpIsOneRidge()) fpMark(oB, '<span class="fp-endtip fp-endtip-b">세로 ' + formatNumber(fp.heightB, 0) + 'cm</span>', 'fp-end-wrap');
+    if (showVals && oB && !fpIsOneRidge()) fpMark(oB, '<span class="fp-endtip fp-endtip-b' + (tight ? ' fp-shift-down' : '') + '">세로 ' + formatNumber(fp.heightB, 0) + 'cm</span>', 'fp-end-wrap');
 
     /* [v15-6][v16-3] A/B포구 : 점 안에 A(파랑)·B(빨강), 옆에는 "가로기점 → 포구점" 계산값 */
     if (fp.aPo) fpMarkPo('a', fp.aPo, fp.aPoLen);
@@ -6120,12 +6290,15 @@ TenarSecureStore.init('map',
   }
 
   /* [v16-4] A/B포구 마커 — 각도조절이 켜져 있으면 끌 수 있고 손잡이(↔)가 보인다 */
+  var fpTight = false;   /* [v28-6] 화면상 좁은 필지인가 */
   function fpMarkPo(which, coord, lenCm) {
     var e = document.createElement('div');
     e.className = 'fp-po-wrap' + (fp.angleMode ? ' fp-drag' : '');
     e.innerHTML =
       '<span class="fp-po fp-po-' + which + '">' + which.toUpperCase() + '</span>' +
-      '<span class="fp-po-txt fp-po-txt-' + which + '">' + formatNumber(lenCm, 0) + 'cm</span>' +
+      ((settings.showFpValues !== false)
+        ? '<span class="fp-po-txt fp-po-txt-' + which + (fpTight ? (which === 'a' ? ' fp-shift-up' : ' fp-shift-down') : '') + '">' +
+          formatNumber(lenCm, 0) + 'cm</span>' : '') +
       (fp.angleMode ? '<span class="fp-grip">↔</span><span class="fp-hit"></span>' : '');
     var mk = new maplibregl.Marker({ element: e, draggable: fp.angleMode }).setLngLat(coord).addTo(map);
     if (fp.angleMode) {
@@ -6174,26 +6347,36 @@ TenarSecureStore.init('map',
     var rv = fpRatioVals();
     var unit = fpIsRidgeMode() ? '이랑' : 'cm';
     var L = fpIsRidgeMode() ? ((fp.ctx && fp.ctx.L) || 0) : Math.round(fp.L_cm);
+    function n(v, u) { return v ? (formatNumber(v, 0) + u) : '—'; }
+    /* [v28-4] 한 줄에 하나씩 */
     var html = '';
-    html += '<div class="fp-line"><b>가-나</b> ' + (L ? formatNumber(L, 0) + unit : '—') +
-            (fpIsRidgeMode() ? ' <span class="fp-sub">(계산기 입력)</span>' : ' <span class="fp-sub">(지도 실측)</span>') + '</div>';
+    html += '<div class="fp-line"><b>가-나</b> ' + n(L, unit) + '</div>';
     if (fpIsOneRidge()) {
-      html += '<div class="fp-line"><b>1이랑</b> 2번 비율 · 가-나 중간 세로선 1개</div>';
+      html += '<div class="fp-line fp-sub">1이랑 · 2번 비율 · 가-나 중간 세로선 1개</div>';
     } else {
-      html += '<div class="fp-line"><b>가로기점</b> A ' + (fp.aSel ? formatNumber(fp.aSel, 0) + unit : '—') +
-              ' · B ' + (fp.bSel ? formatNumber(fp.bSel, 0) + unit : '—') +
-              (fp.aForcedOne ? ' <span class="fp-sub">(A는 0이랑 → 첫번째 1이랑' +
-                               (fp.bBumped ? ', B는 겹쳐서 2이랑' : '') + ')</span>' : '') + '</div>';
+      html += '<div class="fp-line"><b>가로기점</b></div>';
+      html += '<div class="fp-line">· A ' + n(fp.aSel, unit) + '</div>';
+      html += '<div class="fp-line">· B ' + n(fp.bSel, unit) + '</div>';
+      if (fp.aForcedOne) {
+        html += '<div class="fp-line fp-sub">A는 0이랑 → 첫번째 1이랑' +
+                (fp.bBumped ? ' / B는 겹쳐서 2이랑' : '') + '</div>';
+      }
     }
-    html += '<div class="fp-line"><b>세로총길이</b> A ' + (fp.heightA ? formatNumber(fp.heightA, 0) + 'cm' : '—') +
-            ' · B ' + (fp.heightB ? formatNumber(fp.heightB, 0) + 'cm' : '—') + '</div>';
-    html += '<div class="fp-line"><b>포구지점</b> A ' + (fp.aPoLen ? formatNumber(fp.aPoLen, 0) + 'cm' : '—') +
-            ' · B ' + (fp.bPoLen ? formatNumber(fp.bPoLen, 0) + 'cm' : '—') + '</div>';
-    html += '<div class="fp-line fp-sub">비율 ' + fp.ratio + '번 · 가 ' + (rv.ga || '—') + ' / 나 ' + (rv.na || '—') + ' / 다 ' + (rv.da || '—') + '</div>';
+    html += '<div class="fp-line"><b>세로총길이</b></div>';
+    html += '<div class="fp-line">· A ' + n(fp.heightA, 'cm') + '</div>';
+    html += '<div class="fp-line">· B ' + n(fp.heightB, 'cm') + '</div>';
+    html += '<div class="fp-line"><b>포구지점</b></div>';
+    html += '<div class="fp-line">· A ' + n(fp.aPoLen, 'cm') + '</div>';
+    html += '<div class="fp-line">· B ' + n(fp.bPoLen, 'cm') + '</div>';
+    html += '<div class="fp-line fp-sub">비율 ' + fp.ratio + '번 · 가 ' + (rv.ga || '—') +
+            ' / 나 ' + (rv.na || '—') + ' / 다 ' + (rv.da || '—') + '</div>';
+    html += '<div class="fp-line"><b>각도</b></div>';
+    html += '<div class="fp-line">· A ' + (fp.angleA > 0 ? '+' : '') + fp.angleA + '°</div>';
+    html += '<div class="fp-line">· B ' + (fp.angleB > 0 ? '+' : '') + fp.angleB + '°</div>';
     box.innerHTML = html;
+    fpRenderBanner();
   }
 
-  /* ---------- 조작 ---------- */
   function fpStartPick(which) {
     if (!fpHasShape()) { showToast('먼저 필지선택 또는 재배구역을 완료해주세요.', 3500, 'info'); return; }
     fp.picking = which;
@@ -6253,10 +6436,6 @@ TenarSecureStore.init('map',
     geoPush();   /* [v19-6] 가·나 지정도 되돌리기 이력에 남긴다 */
   }
   /* [v16-4] 각도 조절 켜기/끄기 — 켜면 A/B포구에 ↔ 손잡이가 보이고 끌 수 있다 */
-  function fpUpdateAngleLabel() {
-    var lbl = document.getElementById('fpAngleVal');
-    if (lbl) lbl.textContent = '각도 A ' + (fp.angleA > 0 ? '+' : '') + fp.angleA + '° · B ' + (fp.angleB > 0 ? '+' : '') + fp.angleB + '°';
-  }
   /* [v17-5] 각도따로 켜기/끄기 */
   function fpToggleAngleSep() {
     fp.angleSep = !fp.angleSep;
@@ -6347,6 +6526,7 @@ TenarSecureStore.init('map',
     fp.jibunAddress = ''; fp.roadAddress = '';   /* [v20-1] */
     fpUpdateAngleLabel();
     fpRender(); fpSyncButtons();
+    if (typeof fpUpdateGuide === 'function') fpUpdateGuide();   /* [v28-2] */
   }
 
   /* [v22-4] 선택한 필지 / 그린 재배구역만 취소한다 (작물·비율 설정은 그대로) */
@@ -6676,6 +6856,32 @@ TenarSecureStore.init('map',
     sheetIsLandInfo = false;
   }
 
+  /* [v16-4] 각도 표시 라벨 (v28 에서 결과패널을 바꾸며 실수로 지웠던 것을 되살림) */
+  function fpUpdateAngleLabel() {
+    var lbl = document.getElementById('fpAngleVal');
+    if (lbl) lbl.textContent = '각도 A ' + (fp.angleA > 0 ? '+' : '') + fp.angleA +
+                               '° · B ' + (fp.angleB > 0 ? '+' : '') + fp.angleB + '°';
+  }
+
+  /* [v28-2] 상황 안내 — 조사구역 없음 / 각도조절 / 입력완료 */
+  function fpUpdateGuide() {
+    var mb = document.getElementById('modeBadge');
+    if (!mb) return;
+    var bn = document.getElementById('fpBanner');
+    document.body.classList.toggle('no-fpbanner', !(bn && getComputedStyle(bn).display !== 'none'));
+    if (surveyMeasureState.mode !== 'none') return;   /* 모드 배지가 우선 */
+    function show(txt, cls) {
+      mb.className = ''; if (cls) mb.classList.add(cls);
+      mb.textContent = txt; mb.style.display = 'block';
+    }
+    if (!fp.toolOpen) return;
+    if (fp.finished) { show('입력완료 · 고치려면 「입력완료 ↺」', 'm-area'); return; }
+    if (fp.angleMode) { show(fp.angleSep ? '따로 각도조절 모드' : '각도조절 모드 · ↔를 좌우로', 'm-edit'); return; }
+    var hasCtx = !!(fp.ctx && (parseFloat((fp.ctx.r1 || {}).ga) > 0 || parseFloat((fp.ctx.r2 || {}).ga) > 0));
+    if (hasCtx && !fpHasShape()) { show('조사구역을 선택하세요', 'm-warn'); return; }
+    mb.style.display = 'none';
+  }
+
   /* [v17-9] 주소검색창 아래 안내 — 작물 / 기준 / 1번·2번 비율(가·나·다) */
   function fpRenderBanner() {
     var c = fp.ctx || {};
@@ -6728,12 +6934,13 @@ TenarSecureStore.init('map',
       b.classList.toggle('active', on); b.textContent = on ? '재배구역 ON' : '재배구역';
     });
     set('fpTEdit', function (b) { b.classList.toggle('active', surveyMeasureState.mode === 'edit'); b.textContent = (surveyMeasureState.mode === 'edit') ? '수정 ON' : '수정'; });
-    set('fpAngleBtn', function (b) { b.classList.toggle('active', fp.angleMode); b.textContent = fp.angleMode ? '각도 ON' : '각도조절'; });
+    set('fpAngleBtn', function (b) { b.classList.toggle('active', fp.angleMode); b.textContent = fp.angleMode ? '각도조절 ON' : '각도조절'; });
     set('fpAngleSep', function (b) { b.classList.toggle('active', fp.angleSep); b.textContent = fp.angleSep ? '따로 ON' : '각도따로'; });
-    set('fpTFinish', function (b) { b.classList.toggle('active', fp.finished); b.textContent = fp.finished ? '완료됨 ↺' : '✓ 완료'; });
+    set('fpTFinish', function (b) { b.classList.toggle('active', fp.finished); b.textContent = fp.finished ? '입력완료 ↺' : '✓ 완료'; });
     fpUpdateAngleLabel();
     var box = document.getElementById('fpPanel');
     if (box) box.style.display = (fp.ga && fp.na) ? 'block' : 'none';
+    if (typeof fpUpdateGuide === 'function') fpUpdateGuide();   /* [v28-2] */
   }
 
   /* [v17-1] 포구도구 열기/닫기 — 측정도구와 동시에 열리지 않게 한다 */
@@ -6979,8 +7186,7 @@ TenarSecureStore.init('map',
     /* ④ 완료 */
     on('fpTFinish', function () { if (fp.finished) fpUnfinish(); else fpFinish(); });
     /* ⑤ 저장 / 목록 */
-    on('fpSaveBtn', fpSavePrompt);
-    on('fpListBtn', openFpListSheet);
+    on('fpSaveBtn', openFpListSheet);   /* [v28-5] 저장·목록을 한 화면으로 */
     /* ⑥ 조사표 전송 */
     on('fpSendBtn', fpSubmit);
     /* [v17-9] 비율 선택 */
