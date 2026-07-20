@@ -1,4 +1,4 @@
-<!-- map_v28.html (v28) · 저장: 2026-07-21 04:49 KST · [v28] ①저장핀↔조사표 저장자료 연결(?load=) ②안내 배지를 파란창 아래 가운데로·문구 정리(조사구역을 선택하세요/필지선택 ON/각도조절 ON/따로 각도조절/입력완료) ③수정모드 센터 십자+센터추가로 점 추가 ④결과값 한 줄에 하나씩 ⑤저장·목록을 「저장/불러오기」 한 화면으로(새로저장↔덮어쓰기·잠금/불러오기/삭제 가로배치·JSON 공유/내보내기/불러오기) ⑥가·나 20% 축소·A/B포구 최상위·좁은 필지에서 값 라벨 자동 벌림 ⑦저장핀/작물명/면적라벨/AB포구값 표시 켜짐꺼짐 -->
+<!-- map_v29.html (v29) · 저장: 2026-07-21 05:13 KST · [v29] ①조사표 「지도에서 위치 보기」(?q=&save=1) 처리 복구 — 주소로 이동·핀 저장·「조사표로」 누르면 addr/lat/lng(+load) 를 달고 복귀. v26에서 조사표 연결만 map_libre 로 바꾸고 이 처리를 옮기지 않아 좌표가 저장되지 않던 문제 ②포구도구에 「📌 중심에 핀 저장」 추가 — 필지·재배구역 중심 좌표를 역지오코딩해 즐겨찾기에 저장(같은 조사표면 갱신) -->
 <!-- (이전) map_v13.html (v13) · 저장: 2026-07-19 06:03 KST · [v13] 실측모드에서 저장핀(즐겨찾기)을 측정점으로 사용 — 일반 지도모드는 기존대로 저장위치 상세시트를 열고, 면적·길이 측정모드에서는 상세시트 대신 저장핀의 실제 위도·경도를 다음 측정점으로 추가. 중복좌표 방지 / 한 번 터치로 점 두 개 생기지 않게 이벤트 전파차단(suppressNextMapClick) / 실측모드에서 길게 누르면 저장핀 정보 확인 / 측정점 번호가 저장핀에 가리지 않도록 z-index 정리. 저장핀 원본(좌표·색상·작물·잠금)과 즐겨찾기 저장구조·JSON·암호화는 변경 없음 -->
 <!-- (이전) map_v11.html (v11) · 저장: 2026-07-19 · [v11] ①시트 열려도 지도 이동/확대/회전 가능(오버레이 통과)+제목줄까지 내려가는 최소화 스냅+최소화 버튼 ②레이어 초기화 버튼 ③축소 시 핀 크기 축소(좌표 고정, z16↑기본/z13~15 작게/z13↓점) ④선택 필지 안쪽 채움 제거(테두리만) ⑥토지정보 아이콘 📍 ⑦지도출처 ⓘ 중복 제거+주소 표기 ⑧핀 안 이모지→핀 위 작물명, 저장핀 시트 토글 2개 ⑨핀 수정=위치수정/이름수정 선택(좌표 기준 저장) ⑩메모 축소+시트 auto 높이 ⑪누른점 파랑+공유에 화면 캡처 첨부 -->
 <!-- (이전) map_v10.html (v10) · 저장: 2026-07-18 · [v10] ①②토지이용 범례 독립패널(가로형·드래그이동·접기·위치저장) ③실측도구 최소화 1회 동작(중복이벤트 제거) ④선택 필지 파란 강조 ⑤시트 위로 지도이동(padding) ⑥토지정보 4줄 재구성 ⑦공시지가 최신/전년 ⑧⑨PNU→추가정보 ⑩하단버튼 3개 통일 ⑪⑫⑬핀저장·길찾기·조사표(PNU/면적/공시지가/용도지역/필지경계) ⑭시트 열린채 길게누르기 ⑮회전각+i flex ⑯주소→공통 토지정보 ⑰표적 SVG 아이콘 ⑱⑲저장위치 재배치+현재필지정보+시트스택 ⑳즐겨찾기→저장위치 팝업 -->
@@ -723,6 +723,23 @@ TenarSecureStore.init('map',
   }
 
   /* [v28-6] 가·나 20% 축소 (26 → 21px) */
+  /* [v29-1] 조사표 위치 저장 막대 */
+  #saveModeBar {
+    position: absolute; left: 10px; right: 10px;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
+    z-index: 40; display: flex; align-items: center; gap: 8px;
+    padding: 10px 12px; border-radius: 14px;
+    background: rgba(39,80,10,.96); color: #fff;
+    box-shadow: 0 4px 16px rgba(0,0,0,.35);
+  }
+  #saveModeBar .smb-txt { flex: 1; font-size: 11.5px; font-weight: 700; line-height: 1.45; min-width: 0; }
+  #saveModeBar button {
+    flex: 0 0 auto; border: 0; border-radius: 10px; padding: 9px 11px;
+    font-size: 12px; font-weight: 800; font-family: inherit; cursor: pointer;
+  }
+  #saveModeBar #smbSave { background: #fff; color: #27500A; }
+  #saveModeBar #smbBack { background: #ffc107; color: #3b2f00; }
+
   .fp-gana {
     position: absolute; width: 21px; height: 21px; border-radius: 11px;
     background: #111827; color: #fff; font-size: 12px; font-weight: 900;
@@ -1074,6 +1091,8 @@ TenarSecureStore.init('map',
         <button class="tool-btn one-line" type="button" id="fpTParcel">필지선택</button>
         <button class="tool-btn one-line" type="button" id="fpTCrop">재배구역</button>
       </div>
+      <!-- [v29-2] 조사구역 중심에 핀을 찍어 즐겨찾기에 저장 -->
+      <button class="tool-btn one-line" type="button" id="fpTPin" style="width:100%;margin-top:4px;">📌 중심에 핀 저장</button>
       <!-- [v22-4] 선택한 필지·그린 재배구역만 취소 -->
       <button class="tool-btn one-line danger" type="button" id="fpTCancelArea" style="width:100%;margin-top:4px;">✕ 선택 취소</button>
       <div class="tp-editbox">
@@ -6529,6 +6548,57 @@ TenarSecureStore.init('map',
     if (typeof fpUpdateGuide === 'function') fpUpdateGuide();   /* [v28-2] */
   }
 
+  /* ═══════════════════════════════════════════════════════════════
+     [v29-2] 조사구역(필지·재배구역)의 중심에 핀을 찍어 즐겨찾기에 저장
+     · 조사표에서 이 위치로 다시 찾아올 수 있게 하는 것이 목적이다.
+     · 주소는 중심 좌표로 조회해 넣고, 작물은 조사설정의 작물을 쓴다.
+     ═══════════════════════════════════════════════════════════════ */
+  function fpSaveCenterPin() {
+    var poly = fpPolygon();
+    if (!poly || !hasTurf) { showToast('먼저 필지선택 또는 재배구역을 완료해주세요.', 3400, 'info'); return; }
+    var c = null;
+    try { c = turf.centerOfMass(poly).geometry.coordinates; } catch (e) {}
+    if (!c || !isFinite(c[0])) { showToast('중심을 계산하지 못했습니다.', 3000); return; }
+
+    var crop = (fp.ctx && fp.ctx.crop) || '';
+    var kind = (surveyMeasureState.fieldKind === 'crop') ? '재배구역' : '필지';
+    showToast('주소를 확인하는 중입니다…', 0, 'info');
+
+    function put(addr) {
+      var arr = getFavs();
+      /* 같은 조사표(surveyKey)에 붙은 핀이 있으면 그 핀을 갱신한다 */
+      var sk = (fp.ctx && fp.ctx.surveyKey) || '';
+      var idx = -1;
+      if (sk) for (var i = 0; i < arr.length; i++) {
+        if (arr[i] && (arr[i].surveyId === sk || arr[i].surveyKey === sk)) { idx = i; break; }
+      }
+      var base = (idx >= 0) ? arr[idx] : {};
+      var rec = normalizeFav({
+        id: base.id || undefined,
+        name: (crop ? crop + ' · ' : '') + (addr || kind + ' 중심'),
+        jibunAddress: addr || '',
+        latitude: c[1], longitude: c[0],
+        color: base.color || 'green',
+        crop: crop || base.crop || '',
+        memo: base.memo || (kind + ' 중심점'),
+        locked: !!base.locked,
+        surveyType: base.surveyType || 'tonghab',
+        surveyId: sk || base.surveyId || '',
+        createdAt: base.createdAt
+      });
+      if (idx >= 0) arr[idx] = rec; else arr.unshift(rec);
+      if (!setFavs(arr)) return;
+      refreshFavPins();
+      fp.jibunAddress = addr || fp.jibunAddress;
+      toastEl.style.display = 'none';
+      showToast((idx >= 0 ? '핀을 갱신했습니다.' : '즐겨찾기에 핀을 저장했습니다.') +
+                '\n' + kind + ' 중심 · ' + (addr || '주소 없음'), 4000, 'success');
+    }
+    requestVWorldReverse(c[0], c[1])
+      .then(function (a) { put((a && a.jibunAddress) || ''); })
+      .catch(function () { put(''); });
+  }
+
   /* [v22-4] 선택한 필지 / 그린 재배구역만 취소한다 (작물·비율 설정은 그대로) */
   function fpCancelArea() {
     var s = surveyMeasureState;
@@ -6917,7 +6987,7 @@ TenarSecureStore.init('map',
        「완료됨 ↺」을 다시 눌러 완료를 풀면 전부 다시 쓸 수 있다. */
     ['fpGa', 'fpNa', 'fpAngleBtn', 'fpAngleSep', 'fpAngleOrtho',
      'fpTParcel', 'fpTCrop', 'fpTUndo', 'fpTRedo', 'fpTCenter',
-     'fpTReset', 'fpTSetup', 'fpTCancelArea', 'fpTEdit'].forEach(function (id) {
+     'fpTReset', 'fpTSetup', 'fpTCancelArea', 'fpTEdit', 'fpTPin'].forEach(function (id) {
       set(id, function (b) { b.disabled = lock; });
     });
     if (!lock) updateUndoRedoButtons();
@@ -7098,6 +7168,137 @@ TenarSecureStore.init('map',
     } catch (e) {}
   }
 
+  /* ═══════════════════════════════════════════════════════════════
+     [v29-1] 조사표 → 지도 「위치 보기 / 위치 저장」 (?q=…&save=1)
+     ─────────────────────────────────────────────────────────────
+     · 예전 map.html 이 하던 일을 새 지도(map_libre)에 옮겼습니다.
+       v26 에서 조사표의 지도 연결만 map_libre 로 바꾸고 이 처리를
+       옮기지 않아, 좌표가 조사표로 돌아가지 않았습니다.
+     · 주소를 찾아 이동 → 핀을 즐겨찾기에 저장 →
+       「조사표로 돌아가기」를 누르면 addr·lat·lng 를 달고 복귀합니다.
+     · 핀은 지도를 눌러 위치를 고칠 수 있습니다.
+     ═══════════════════════════════════════════════════════════════ */
+  var saveMode = null;        /* { app, color, label, crop, surveyKey, addr, lat, lng } */
+  var saveModeMarker = null;
+
+  function saveModeBackUrl() {
+    var f = (saveMode && saveMode.app === 'chungchi') ? 'chungchiii.html' : 'tonghabbb.html';
+    try { return new URL(f, location.href).href; } catch (e) { return f; }
+  }
+  function saveModeReturn() {
+    if (!saveMode) return;
+    var lat = saveMode.lat, lng = saveMode.lng;
+    if (!(isFinite(lat) && isFinite(lng))) { showToast('먼저 지도에서 위치를 정해주세요.', 3200, 'info'); return; }
+    /* 즐겨찾기에 저장(같은 조사표면 갱신) */
+    saveModePin(true);
+    var q = ['lat=' + encodeURIComponent(lat), 'lng=' + encodeURIComponent(lng)];
+    if (saveMode.addr) q.push('addr=' + encodeURIComponent(saveMode.addr));
+    if (saveMode.color) q.push('color=' + encodeURIComponent(saveMode.color));
+    if (saveMode.surveyKey) q.push('load=' + encodeURIComponent(saveMode.surveyKey));
+    showToast('조사표로 위치를 보냅니다.', 1600, 'success');
+    setTimeout(function () { window.location.href = saveModeBackUrl() + '?' + q.join('&'); }, 600);
+  }
+  /* 즐겨찾기에 저장/갱신 — 같은 조사표(surveyKey)면 덮어쓴다 */
+  function saveModePin(silent) {
+    if (!saveMode || !isFinite(saveMode.lat) || !isFinite(saveMode.lng)) return;
+    var arr = getFavs();
+    var idx = -1;
+    if (saveMode.surveyKey) {
+      for (var i = 0; i < arr.length; i++) {
+        if (arr[i] && (arr[i].surveyId === saveMode.surveyKey || arr[i].surveyKey === saveMode.surveyKey)) { idx = i; break; }
+      }
+    }
+    var base = (idx >= 0) ? arr[idx] : {};
+    var rec = normalizeFav({
+      id: base.id || undefined,
+      name: saveMode.label || saveMode.addr || '조사 위치',
+      jibunAddress: saveMode.addr || base.jibunAddress || '',
+      latitude: saveMode.lat, longitude: saveMode.lng,
+      color: saveMode.color || base.color || 'green',
+      crop: saveMode.crop || base.crop || '',
+      locked: !!base.locked,
+      surveyType: saveMode.app || base.surveyType || '',
+      surveyId: saveMode.surveyKey || base.surveyId || '',
+      createdAt: base.createdAt
+    });
+    if (idx >= 0) arr[idx] = rec; else arr.unshift(rec);
+    setFavs(arr);
+    refreshFavPins();
+    if (!silent) showToast('이 위치를 즐겨찾기에 저장했습니다.', 2400, 'success');
+  }
+  /* 화면에 「여기로 정하기 / 조사표로 돌아가기」 막대 */
+  function saveModeBar() {
+    var bar = document.createElement('div');
+    bar.id = 'saveModeBar';
+    bar.innerHTML =
+      '<div class="smb-txt">지도를 눌러 위치를 정한 뒤<br><b>조사표로 돌아가기</b>를 누르세요</div>' +
+      '<button type="button" id="smbSave">📌 여기에 저장</button>' +
+      '<button type="button" id="smbBack">↩ 조사표로</button>';
+    document.body.appendChild(bar);
+    document.getElementById('smbSave').addEventListener('click', function () { saveModePin(false); });
+    document.getElementById('smbBack').addEventListener('click', saveModeReturn);
+  }
+  function saveModeSetPoint(lng, lat, addr) {
+    if (!saveMode) return;
+    saveMode.lat = lat; saveMode.lng = lng;
+    if (addr) saveMode.addr = addr;
+    if (saveModeMarker) saveModeMarker.remove();
+    var e = document.createElement('div');
+    e.className = 'pin';
+    e.style.setProperty('--pin-color', colorHex(saveMode.color || 'green'));
+    e.innerHTML = '<svg width="24" height="30" viewBox="0 0 24 30" xmlns="http://www.w3.org/2000/svg">' +
+      '<path d="M12 29.4C12 29.4 21.6 17.6 21.6 11.1A9.6 9.6 0 1 0 2.4 11.1C2.4 17.6 12 29.4 12 29.4Z" fill="' +
+      colorHex(saveMode.color || 'green') + '" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg>';
+    saveModeMarker = new maplibregl.Marker({ element: e, anchor: 'bottom' }).setLngLat([lng, lat]).addTo(map);
+    var t = document.querySelector('#saveModeBar .smb-txt');
+    if (t) t.innerHTML = '📍 ' + escapeHtml(saveMode.addr || '') +
+      '<br><span style="opacity:.85;">지도를 눌러 위치를 고칠 수 있습니다</span>';
+  }
+  function saveModeInit() {
+    var qs = new URLSearchParams(location.search);
+    if (qs.get('save') !== '1') return;
+    saveMode = {
+      app: (qs.get('app') || 'tonghab').trim(),
+      color: (qs.get('color') || '').trim(),
+      label: (qs.get('label') || '').trim(),
+      surveyKey: (qs.get('surveyKey') || '').trim(),
+      addr: (qs.get('q') || '').trim(),
+      lat: NaN, lng: NaN
+    };
+    /* 라벨이 「작물 · 주소」 형태면 작물만 뽑아 둔다 */
+    var d = saveMode.label.indexOf(' · ');
+    if (d > 0) saveMode.crop = saveMode.label.slice(0, d).trim();
+    saveModeBar();
+    /* 지도를 눌러 위치 조정 */
+    map.on('click', function (e) {
+      if (!saveMode) return;
+      if (surveyMeasureState.mode !== 'none') return;   /* 측정 중에는 관여하지 않음 */
+      saveModeSetPoint(e.lngLat.lng, e.lngLat.lat, saveMode.addr);
+      requestVWorldReverse(e.lngLat.lng, e.lngLat.lat).then(function (a) {
+        if (a && a.jibunAddress) { saveMode.addr = a.jibunAddress; saveModeSetPoint(e.lngLat.lng, e.lngLat.lat, a.jibunAddress); }
+      }).catch(function () {});
+    });
+    /* 주소로 이동 — 지번 먼저, 없으면 도로명 (검색과 같은 방식) */
+    if (saveMode.addr) {
+      requestVWorldGeocode(saveMode.addr, 'PARCEL')
+        .then(function (data) {
+          var hit = parseGeocode(data, 'PARCEL');
+          if (hit) return hit;
+          return requestVWorldGeocode(saveMode.addr, 'ROAD').then(function (d2) { return parseGeocode(d2, 'ROAD'); });
+        })
+        .then(function (hit) {
+          if (!hit) { showToast('주소를 찾지 못했습니다.\n지도를 눌러 위치를 정해주세요.', 4500, 'info'); return; }
+          map.jumpTo({ center: [hit.lng, hit.lat], zoom: 18 });
+          saveModeSetPoint(hit.lng, hit.lat, saveMode.addr);
+        })
+        .catch(function () {
+          showToast('주소를 찾지 못했습니다.\n지도를 눌러 위치를 정해주세요.', 4500, 'info');
+        });
+    } else {
+      showToast('지도를 눌러 위치를 정해주세요.', 4000, 'info');
+    }
+  }
+
   /* [v26-6] 청취계산기 → 지도(측정도구) 진입 처리
      주소 이동 · 이전 측정점 복원 · 측정도구 자동 열기 */
   function ccMeasInit() {
@@ -7175,6 +7376,7 @@ TenarSecureStore.init('map',
     on('fpTCenter', addCenterPoint);
     on('fpTReset', fpToolReset);
     on('fpTCancelArea', fpCancelArea);   /* [v22-4] */
+    on('fpTPin', fpSaveCenterPin);       /* [v29-2] */
     on('fpTSetup', openFpSetupSheet);   /* [v18-7] */
     /* ② 가 / 나 */
     on('fpGa', function () { fpStartPick('ga'); fpSyncButtons(); });
@@ -7214,6 +7416,7 @@ TenarSecureStore.init('map',
     restoreWhenBothReady();
     try { fpInit(); } catch (e) { console.error('[v15] fieldplot init 오류:', e); }   /* [v15] */
     try { ccMeasInit(); } catch (e) { console.error('[v26] 청취 면적측정 init 오류:', e); }   /* [v26-6] */
+    try { saveModeInit(); } catch (e) { console.error('[v29] 위치저장 init 오류:', e); }        /* [v29-1] */
   });
 
   /* [v19-4] 면적 라벨은 "화면에서 도형 아래"에 놓이므로 회전하면 다시 계산한다.
