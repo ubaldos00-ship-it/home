@@ -1,4 +1,4 @@
-<!-- tonghabbb_v23.html (v23) · 저장: 2026-07-20 18:05 KST · [v23] ①두 번째 이후 전송이 반영되지 않던 문제 보강 — 전송값을 반영 성공 후에 삭제, 화면 복귀(visibilitychange/focus/storage)마다 재확인, 중복 반영은 savedAt+linkId 로 차단 -->
+<!-- tonghabbb_v24.html (v24) · 저장: 2026-07-20 20:17 KST · [v24] 「이전 자료가 있습니다 → 이어서 입력」 복원이 지도 A/B포구 값을 덮어쓰던 문제 해결 — 기존 「지도 길이측정 → 조사표」 모듈과 같은 방식(복원 후 재적용 + 값 감시)을 A/B포구에도 적용. 전송값은 더 이상 덮어쓰이지 않는 것이 확인된 뒤 삭제. 다른 이전자료 항목은 그대로 유지 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -8546,6 +8546,8 @@ function _slApply(d, _onDone){
            (이 호출이 없어서 불러오기 후에도 「위치 선정」으로만 보였다) */
         try{ if(typeof fpUpdateDoneBadge==='function') fpUpdateDoneBadge(); }catch(e){}
         setTimeout(function(){ try{ if(typeof fpUpdateDoneBadge==='function') fpUpdateDoneBadge(); }catch(e){} }, 400);
+        /* [v24] 목록 불러오기가 지도 값을 덮었으면 그 위에 다시 적용 */
+        try{ if(typeof window._tonghabReapplyFieldPlot==='function') window._tonghabReapplyFieldPlot(); }catch(e){}
         if(typeof _onDone==='function') _onDone();
       },300);
     },400);
@@ -9267,7 +9269,7 @@ window.fpUpdateDoneBadge=fpUpdateDoneBadge;
 
 /* ── 지도에서 전송된 A/B포구 결과 반영 ── */
 (function(){
-  function apply(){
+  function apply(_force){
     var r=null;
     try{ r = JSON.parse(localStorage.getItem('tenar_fieldplot_result')||'null'); }catch(e){}
     if(!r || r.app!=='tonghab') return;
@@ -9275,7 +9277,10 @@ window.fpUpdateDoneBadge=fpUpdateDoneBadge;
        실제 삭제는 값을 다 넣은 뒤에 한다.
        (예전에는 여기서 바로 지워서, 중간에 끊기면 전송값이 사라졌다) */
     var _stamp = String(r.savedAt||'') + '|' + String(r.linkId||'');
-    if(window.__fpLastApplied === _stamp) return;
+    /* [v24] 「이어서 입력」 복원이 지도 값을 덮어쓰므로, 같은 자료라도
+       복원 뒤에는 다시 적용해야 한다. force 일 때는 중복차단을 건너뛴다.
+       (v23 의 중복차단이 이 재적용까지 막아 이전자료가 남아 있었다) */
+    if(!_force && window.__fpLastApplied === _stamp) return;
     window.__fpLastApplied = _stamp;
 
     /* [v17-8] 지도에서 비율을 바꿨으면 조사표도 그 비율로 맞춘다 */
@@ -9369,8 +9374,12 @@ window.fpUpdateDoneBadge=fpUpdateDoneBadge;
       if(hs){ hs.value=JSON.stringify(r); hs.dispatchEvent(new Event('input',{bubbles:true})); }
       fpUpdateDoneBadge();   /* [v16-8] */
     }catch(e){}
-    /* [v23-1] 여기까지 왔으면 반영 완료 — 이제 전송값을 지운다 */
-    try{ localStorage.removeItem('tenar_fieldplot_result'); }catch(e){}
+    /* [v24] 아직 지우지 않는다.
+       「이전 자료가 있습니다 → 이어서 입력」 복원이 뒤늦게 돌면서 이 값을
+       이전자료로 덮어쓰기 때문에, 복원이 끝난 뒤 다시 넣어야 한다.
+       그래서 원본을 들고 있다가, 다 끝난 것이 확인되면 그때 지운다. */
+    window.__fpPending = r;
+    if(typeof _fpStartGuard==='function') _fpStartGuard();
 
     var _extra = '';
     if(_filled.length) _extra += '<br><span style="font-weight:700;opacity:.9;">채움: '+_filled.join(' · ')+'</span>';
@@ -9386,6 +9395,58 @@ window.fpUpdateDoneBadge=fpUpdateDoneBadge;
     var el=document.getElementById('fpOpenBtn');
     if(el) setTimeout(function(){ try{ el.scrollIntoView({behavior:'smooth', block:'center'}); }catch(e){} }, 600);
   }
+  /* ═══════════════════════════════════════════════════════════════
+     [v24] 지도 A/B포구 값이 「이어서 입력」 복원에 덮이지 않게 지킨다.
+     · 기존 「지도 길이측정 → 조사표」 모듈이 쓰던 방식(재적용 + 감시)을
+       A/B포구에도 똑같이 적용했다.
+     · 복원이 끝나면 그 위에 지도 값을 다시 넣고,
+       값이 이전자료로 되돌아가면 다시 넣는다.
+     · 이전자료 팝업이 열려 있는 동안에는 감시를 끝내지 않는다.
+     ═══════════════════════════════════════════════════════════════ */
+  function _fpValuesMatch(){
+    var r = window.__fpPending;
+    if(!r) return true;
+    var len=document.getElementById('lenGaNa');
+    var ha=document.getElementById('heightA'), hb=document.getElementById('heightB');
+    if(len && r.L>0 && String(len.value).trim() !== String(r.L)) return false;
+    if(ha && r.heightA>0 && String(ha.value).trim() !== String(Math.round(r.heightA))) return false;
+    if(hb && r.heightB>0 && String(hb.value).trim() !== String(Math.round(r.heightB))) return false;
+    return true;
+  }
+  function _fpReapply(){
+    var r = window.__fpPending;
+    if(!r) return;
+    /* 저장소에 잠시 되돌려 놓고 force 로 다시 반영 */
+    try{ localStorage.setItem('tenar_fieldplot_result', JSON.stringify(r)); }catch(e){}
+    apply(true);
+  }
+  var _fpGuardOn=false;
+  function _fpStartGuard(){
+    if(_fpGuardOn) return;
+    _fpGuardOn=true;
+    var tries=0, stable=0;
+    (function loop(){
+      tries++;
+      var popupOpen = !!document.getElementById('prevDataOverlay');
+      var restoring = (typeof _restoring!=='undefined' && _restoring);
+      if(!_fpValuesMatch()){ _fpReapply(); stable=0; }
+      else { stable = (popupOpen || restoring) ? 0 : (stable+1); }
+      if((popupOpen || restoring || stable<5) && tries<160){ setTimeout(loop, 350); }
+      else {
+        /* 더 이상 덮어쓰이지 않는다 → 이제 전송값을 지운다 */
+        try{ localStorage.removeItem('tenar_fieldplot_result'); }catch(e){}
+        window.__fpPending = null;
+        _fpGuardOn = false;
+      }
+    })();
+  }
+  /* 복원([이어서 입력])이 끝난 직후 호출된다 */
+  window._tonghabReapplyFieldPlot = function(){
+    if(!window.__fpPending) return;
+    [40,180,420,900].forEach(function(t){ setTimeout(_fpReapply, t); });
+    _fpStartGuard();
+  };
+
   /* 복원·이전자료 팝업 이후에 덮이지 않도록 늦게 한 번 더 적용 */
   function run(){
     apply(); fpUpdateDoneBadge();
@@ -9896,6 +9957,8 @@ function importJSON(input){
             doSave();                 // 최종 상태를 즉시 한 번 더 저장 (안전망)
             /* v15: 복원이 지도 측정값을 이전자료로 덮어썼다면, 그 위에 측정값을 다시 적용 + 측정칸으로 복귀 */
             try{ if(typeof window._tonghabReapplyMeas==='function') window._tonghabReapplyMeas(); }catch(e){}
+            /* [v24] 지도 A/B포구 값도 복원 위에 다시 적용 */
+            try{ if(typeof window._tonghabReapplyFieldPlot==='function') window._tonghabReapplyFieldPlot(); }catch(e){}
             // 복원 완료 후 ①공통사항 맨위로 스크롤 (v84/1) — 단, 측정값 대기 중이면 측정칸으로 복귀하므로 생략
             setTimeout(function(){ if(!window._tonghabReapplyPending) window.scrollTo(0,0); }, 200);
           }, 300);
