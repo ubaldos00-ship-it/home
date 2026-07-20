@@ -1,4 +1,4 @@
-<!-- tonghabbb_v21.html (v21) · 저장: 2026-07-20 15:27 KST · [v21] ③풀투리프레시 차단기를 한 곳으로 합침(목록·팝업 안 스크롤은 막지 않도록 개선). 기존의 거친 차단기 제거. 계산식 변경 없음 -->
+<!-- tonghabbb_v22.html (v22) · 저장: 2026-07-20 17:18 KST · [v22] ①저장자료 불러오기 후 「A/B포구 다시 선정」 표시 갱신(연결 복원) ②이전 지도작업이 있으면 짧은 주소로 지도를 옮기지 않음 ③저장된 회전각으로 지도 열기. 계산식 변경 없음 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -8541,6 +8541,11 @@ function _slApply(d, _onDone){
         });
         // 복원 완료 후 맨 위 스크롤 (Android·iOS 공통)
         _slScrollToTop();
+        /* [v22-1] 저장된 지도 A/B포구 작업이 함께 복원되었으므로
+           「지도에서 A/B포구 다시 선정」으로 표시를 갱신한다.
+           (이 호출이 없어서 불러오기 후에도 「위치 선정」으로만 보였다) */
+        try{ if(typeof fpUpdateDoneBadge==='function') fpUpdateDoneBadge(); }catch(e){}
+        setTimeout(function(){ try{ if(typeof fpUpdateDoneBadge==='function') fpUpdateDoneBadge(); }catch(e){} }, 400);
         if(typeof _onDone==='function') _onDone();
       },300);
     },400);
@@ -9206,12 +9211,34 @@ function fpOpen(){
 
   var u = FP_MAP_URL + '?fieldplot=1&app=tonghab';
   var a = (document.getElementById('address') && document.getElementById('address').value || '').trim();
-  if(a) u += '&q=' + encodeURIComponent(a);
+  /* [v22-2] 이전 지도작업이 있으면 그때의 좌표·회전각으로 열리므로 주소로 옮기지 않는다.
+     (조사표에 짧은 주소가 적혀 있어도 엉뚱한 곳으로 가지 않는다) */
+  var _hasPrevView = false;
+  try{
+    var _hs=document.getElementById('__thFieldPlotStore');
+    var _pv=_hs && _hs.value ? JSON.parse(_hs.value) : null;
+    _hasPrevView = !!(_pv && _pv.mapCenter);
+  }catch(e){}
+  if(a && !_hasPrevView) u += '&q=' + encodeURIComponent(a);
   if(linkedKey) u += '&surveyKey=' + encodeURIComponent(linkedKey);
   _tenarOpenMapUrl(u);
 }
 
 /* ── [v16-8] 지도에서 포구 선정이 완료되었는지 버튼에 표시 ── */
+/* [v22-1] 조사표 ↔ 지도 연결 확인용 — 지도 작업이 이 조사표에 붙어 있는지 */
+function fpLinkInfo(){
+  var r=null;
+  try{ r=JSON.parse((document.getElementById('__thFieldPlotStore')||{}).value||'null'); }catch(e){}
+  if(!r) return null;
+  var ok = (r.aSel>0 && r.heightA>0);
+  return ok ? {
+    linkId: r.linkId || '',
+    ga: r.ga || null, na: r.na || null,
+    center: r.mapCenter || null, bearing: r.bearing, zoom: r.zoom, pitch: r.pitch,
+    addr: r.jibunAddress || ''
+  } : null;
+}
+
 function fpUpdateDoneBadge(){
   var badge=document.getElementById('fpDoneBadge');
   var info=document.getElementById('fpDoneInfo');

@@ -1,4 +1,4 @@
-<!-- map_v21.html (v21) · 저장: 2026-07-20 15:27 KST · [v21] ①조사설정(작물·기준·총이랑수·1번2번비율)을 A/B포구 저장자료에 함께 저장하고 목록에서 불러올 때 그대로 복원. 포구도구 초기화 시 조사설정도 함께 초기화 ②조사표↔지도 양방향 전달 확인 -->
+<!-- map_v22.html (v22) · 저장: 2026-07-20 17:18 KST · [v22] ①조사표↔지도 연결용 linkId 저장 ②③저장된 좌표·회전각·확대로 지도를 열고 짧은 주소로 이동하지 않음 ④필지·재배구역만 취소하는 「선택 취소」 버튼(확인창) ⑤수정모드 드래그 8px 이상에서만 시작·두 손가락 제외·끌기 1회를 UNDO 1단계로 ⑥배너를 검색창과 띄우고 포구도구 시작위치도 내림 ⑦세로총길이 라벨을 테두리 밖으로 더 이동 -->
 <!-- (이전) map_v13.html (v13) · 저장: 2026-07-19 06:03 KST · [v13] 실측모드에서 저장핀(즐겨찾기)을 측정점으로 사용 — 일반 지도모드는 기존대로 저장위치 상세시트를 열고, 면적·길이 측정모드에서는 상세시트 대신 저장핀의 실제 위도·경도를 다음 측정점으로 추가. 중복좌표 방지 / 한 번 터치로 점 두 개 생기지 않게 이벤트 전파차단(suppressNextMapClick) / 실측모드에서 길게 누르면 저장핀 정보 확인 / 측정점 번호가 저장핀에 가리지 않도록 z-index 정리. 저장핀 원본(좌표·색상·작물·잠금)과 즐겨찾기 저장구조·JSON·암호화는 변경 없음 -->
 <!-- (이전) map_v11.html (v11) · 저장: 2026-07-19 · [v11] ①시트 열려도 지도 이동/확대/회전 가능(오버레이 통과)+제목줄까지 내려가는 최소화 스냅+최소화 버튼 ②레이어 초기화 버튼 ③축소 시 핀 크기 축소(좌표 고정, z16↑기본/z13~15 작게/z13↓점) ④선택 필지 안쪽 채움 제거(테두리만) ⑥토지정보 아이콘 📍 ⑦지도출처 ⓘ 중복 제거+주소 표기 ⑧핀 안 이모지→핀 위 작물명, 저장핀 시트 토글 2개 ⑨핀 수정=위치수정/이름수정 선택(좌표 기준 저장) ⑩메모 축소+시트 auto 높이 ⑪누른점 파랑+공유에 화면 캡처 첨부 -->
 <!-- (이전) map_v10.html (v10) · 저장: 2026-07-18 · [v10] ①②토지이용 범례 독립패널(가로형·드래그이동·접기·위치저장) ③실측도구 최소화 1회 동작(중복이벤트 제거) ④선택 필지 파란 강조 ⑤시트 위로 지도이동(padding) ⑥토지정보 4줄 재구성 ⑦공시지가 최신/전년 ⑧⑨PNU→추가정보 ⑩하단버튼 3개 통일 ⑪⑫⑬핀저장·길찾기·조사표(PNU/면적/공시지가/용도지역/필지경계) ⑭시트 열린채 길게누르기 ⑮회전각+i flex ⑯주소→공통 토지정보 ⑰표적 SVG 아이콘 ⑱⑲저장위치 재배치+현재필지정보+시트스택 ⑳즐겨찾기→저장위치 팝업 -->
@@ -447,7 +447,11 @@ TenarSecureStore.init('map',
     box-shadow: 0 2px 12px rgba(0,0,0,.28); overflow: hidden; touch-action: auto;
   }
   /* [v17] 포구도구는 조금 넓게 (① ② ③ 구획이 들어간다) */
-  #fpToolPanel { width: 112px; left: calc(env(safe-area-inset-left, 0px) + 10px); z-index: 14; }
+  /* [v22-6] 배너가 아래로 내려간 만큼 포구도구도 처음 위치를 내린다 */
+  #fpToolPanel {
+    width: 112px; left: calc(env(safe-area-inset-left, 0px) + 10px); z-index: 14;
+    top: calc(env(safe-area-inset-top, 0px) + 150px);
+  }
   #toolPanel.show, #fpToolPanel.show { display: flex; }
   #fpToolHeader { background: #B04A00 !important; }   /* 포구도구는 주황 계열로 구분 */
   #fpToolBody { padding: 6px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
@@ -669,7 +673,7 @@ TenarSecureStore.init('map',
   /* [v17-9] 주소검색창 아래 : 작물·기준·1번/2번 비율을 표로 보여주고 골라 쓴다 */
   #fpBanner {
     display: none; position: absolute; left: 8px; right: 8px;
-    top: calc(env(safe-area-inset-top, 0px) + 56px); z-index: 30;
+    top: calc(env(safe-area-inset-top, 0px) + 70px); z-index: 30;   /* [v22-6] 검색창과 간격 */
     flex-direction: column; gap: 5px; padding: 7px 9px; border-radius: 10px;
     background: rgba(21, 101, 192, .95); color: #fff; font-size: 11px; line-height: 1.3;
     box-shadow: 0 2px 8px rgba(0,0,0,.3);
@@ -1033,6 +1037,8 @@ TenarSecureStore.init('map',
         <button class="tool-btn one-line" type="button" id="fpTParcel">필지선택</button>
         <button class="tool-btn one-line" type="button" id="fpTCrop">재배구역</button>
       </div>
+      <!-- [v22-4] 선택한 필지·그린 재배구역만 취소 -->
+      <button class="tool-btn one-line danger" type="button" id="fpTCancelArea" style="width:100%;margin-top:4px;">✕ 선택 취소</button>
       <div class="tp-editbox">
         <div class="tp-cap">편집</div>
         <div class="tp-grid">
@@ -4087,7 +4093,7 @@ TenarSecureStore.init('map',
      [v17] UNDO / REDO — 도형 상태를 통째로 쌓아 두고 앞뒤로 이동한다.
      · 포구도구·측정도구가 같은 이력을 쓴다(도형이 하나이기 때문).
      =================================================================== */
-  var geoHist = { stack: [], idx: -1, busy: false };
+  var geoHist = { stack: [], idx: -1, busy: false, suspend: false };
   function geoSnapshot() {
     var s = surveyMeasureState;
     return JSON.stringify({
@@ -4104,7 +4110,7 @@ TenarSecureStore.init('map',
     setTimeout(geoPush, 0);   /* 지금 상태를 새 출발점으로 */
   }
   function geoPush() {
-    if (geoHist.busy) return;
+    if (geoHist.busy || geoHist.suspend) return;   /* [v22-5] 끄는 중에는 쌓지 않는다 */
     var snap = geoSnapshot();
     if (geoHist.idx >= 0 && geoHist.stack[geoHist.idx] === snap) return;   /* 변화 없으면 안 쌓음 */
     geoHist.stack = geoHist.stack.slice(0, geoHist.idx + 1);
@@ -4274,23 +4280,59 @@ TenarSecureStore.init('map',
       updateDistanceGeometry();
     }
   }
+  /* ===================================================================
+     [v22-5] 수정 모드에서 점이 너무 쉽게 움직이던 문제
+     · 손가락 두 개(확대/축소)일 때는 점을 잡지 않는다.
+     · 손가락을 8px 이상 움직여야 비로소 점이 따라온다.
+       (살짝 눌렀다 떼거나 지도만 옮기려 할 때 점이 밀리지 않는다)
+     · 되돌리기 이력은 "끌기 한 번"에 하나만 쌓는다.
+       (예전에는 1px 움직일 때마다 쌓여 UNDO 가 너무 잘게 동작했다)
+     =================================================================== */
+  var DRAG_START_PX = 8;      /* 이만큼 움직여야 점을 잡는다 */
+  var DRAG_MIN_PX = 4;        /* 이보다 적게 움직였으면 이력에 남기지 않는다 */
+  var dragCand = null;        /* { hit, x, y } — 아직 시작 전 후보 */
+
+  function touchCount(e) {
+    var oe = e && e.originalEvent;
+    return (oe && oe.touches) ? oe.touches.length : 1;
+  }
   function onDragStart(e) {
     if (surveyMeasureState.mode !== 'edit') return;
+    if (touchCount(e) > 1) { dragCand = null; return; }   /* 확대/축소는 그대로 둔다 */
     var hit = findVertexAt(e.point);
     if (!hit) return;
-    surveyMeasureState.dragging = hit;
-    map.dragPan.disable();
-    if (e.preventDefault) e.preventDefault();
+    /* 아직 점을 잡지는 않는다. 충분히 움직이면 그때 잡는다. */
+    dragCand = { hit: hit, x: e.point.x, y: e.point.y, moved: 0 };
   }
   function onDragMove(e) {
-    if (!surveyMeasureState.dragging) return;
+    var s = surveyMeasureState;
+    if (!s.dragging) {
+      if (!dragCand) return;
+      if (touchCount(e) > 1) { dragCand = null; return; }
+      var dx = e.point.x - dragCand.x, dy = e.point.y - dragCand.y;
+      if (Math.sqrt(dx * dx + dy * dy) < DRAG_START_PX) return;   /* 아직 멀었다 */
+      /* 여기서부터 진짜 끌기 시작 */
+      s.dragging = dragCand.hit;
+      geoHist.suspend = true;                 /* 끄는 동안 이력 쌓지 않음 */
+      map.dragPan.disable();
+    }
+    if (dragCand) {
+      var mx = e.point.x - dragCand.x, my = e.point.y - dragCand.y;
+      dragCand.moved = Math.sqrt(mx * mx + my * my);
+    }
     updateDraggedVertex(e.lngLat);
     if (e.preventDefault) e.preventDefault();
   }
   function onDragEnd() {
-    if (!surveyMeasureState.dragging) return;
-    surveyMeasureState.dragging = null;
+    var s = surveyMeasureState;
+    var moved = dragCand ? dragCand.moved : 0;
+    dragCand = null;
+    if (!s.dragging) return;
+    s.dragging = null;
     map.dragPan.enable();
+    geoHist.suspend = false;
+    /* 끌기 한 번을 되돌리기 한 단계로 남긴다 (아주 조금 움직였으면 남기지 않음) */
+    if (moved >= DRAG_MIN_PX) geoPush();
   }
   map.on('mousedown', onDragStart);
   map.on('touchstart', onDragStart);
@@ -5869,8 +5911,8 @@ TenarSecureStore.init('map',
       try {
         var brg = turf.bearing(turf.point(base), turf.point(end));
         var d = turf.distance(turf.point(base), turf.point(end), { units: 'kilometers' });
-        /* [v19-3] 테두리 바로 바깥에 붙인다 (어느 세로선의 값인지 바로 알 수 있게) */
-        var out = Math.max(0.002, d * 0.015);
+        /* [v22-7] 테두리에 너무 붙어 보기 어려워 조금 더 바깥으로 뺐다 */
+        var out = Math.max(0.006, d * 0.045);
         return turf.destination(turf.point(end), out, brg, { units: 'kilometers' }).geometry.coordinates;
       } catch (e) { return end; }
     }
@@ -6103,6 +6145,25 @@ TenarSecureStore.init('map',
     fpRender(); fpSyncButtons();
   }
 
+  /* [v22-4] 선택한 필지 / 그린 재배구역만 취소한다 (작물·비율 설정은 그대로) */
+  function fpCancelArea() {
+    var s = surveyMeasureState;
+    if (!s.fieldPoints.length && !s.areas.length) {
+      showToast('취소할 필지·재배구역이 없습니다.', 2600, 'info'); return;
+    }
+    var what = (s.fieldKind === 'crop') ? '그린 재배구역' : '선택한 필지';
+    if (!window.confirm(what + '을(를) 취소하시겠습니까?\n\n선택필지·그리기가 초기화됩니다.\n(작물·기준·비율 설정은 그대로 있습니다)')) return;
+    s.fieldPoints = []; s.fieldPolygon = null; s.fieldAreaM2 = 0; s.fieldPerimeterM = 0;
+    s.isFieldComplete = false; s.dragging = null; s.areas = []; s.fieldKind = 'field';
+    if (typeof clearSelectedParcelHighlight === 'function') clearSelectedParcelHighlight();
+    setSurveyMode('none');
+    updateMeasurementSources();
+    updateNewMeasureBtn();
+    fpReset();                 /* 가·나·각도·계산값도 함께 정리 */
+    geoClearHistory();
+    showToast(what + '을(를) 취소했습니다.', 2600, 'success');
+  }
+
   /* [v17-3] 포구도구 초기화 — 조사구역·가·나·각도까지 모두 지운다 */
   function fpToolReset() {
     if (!window.confirm('포구도구의 조사구역·가·나·각도를 모두 초기화하시겠습니까?')) return;
@@ -6147,6 +6208,9 @@ TenarSecureStore.init('map',
       path: fp.path, aPoLen: Math.round(fp.aPoLen || 0), bPoLen: Math.round(fp.bPoLen || 0),
       aBase: fp.aBase, bBase: fp.bBase, aPo: fp.aPo, bPo: fp.bPo,
       surveyKey: (fp.ctx && fp.ctx.surveyKey) || '',
+      /* [v22-1] 조사표 ↔ 지도 저장자료를 잇는 고정 식별자.
+         조사표에도 함께 저장되므로, 조사표를 불러오면 이 작업을 다시 찾을 수 있다. */
+      linkId: fp.editingId || fp._linkId || (fp._linkId = 'lk' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)),
       /* [v20-1] 조사표 「필지 주소」에 넣을 값 */
       jibunAddress: fp.jibunAddress || '',
       roadAddress: fp.roadAddress || '',
@@ -6556,13 +6620,18 @@ TenarSecureStore.init('map',
 
     /* [v15-1] 주소(q)가 있으면 그 위치로, 없으면 현재 위치로 */
     var q = qs.get('q');
-    if (q) {
-      var si = document.getElementById('searchInput');
-      if (si) si.value = q;
-      setTimeout(function () { searchAddress(); }, 400);
-    } else {
-      setTimeout(function () { goHere(); }, 500);
-    }
+    /* [v22-2][v22-3] 이전 작업(좌표·회전각)이 있으면 주소로 옮기지 않는다.
+       조사표에 짧은 주소가 적혀 있어도 엉뚱한 곳으로 가지 않는다. */
+    setTimeout(function () {
+      if (fp._skipAddressMove) return;
+      if (q) {
+        var si = document.getElementById('searchInput');
+        if (si) si.value = q;
+        searchAddress();
+      } else {
+        goHere();
+      }
+    }, 700);
     showToast('포구도구가 열렸습니다.\n① 조사구역(필지선택·재배구역) → ② 가·나 → ③ 각도 → ④ 완료 순서로 진행하세요.', 6500, 'info');
 
     /* 이전 작업 이어서 열기 */
@@ -6584,15 +6653,33 @@ TenarSecureStore.init('map',
           fp.angleSep = !!pre.angleSep;
           fpCompute(); fpRender();
         }
+        fp.jibunAddress = pre.jibunAddress || '';
+        fp.roadAddress = pre.roadAddress || '';
+        fp.editingId = pre.linkId || fp.editingId;
         fpSyncButtons();
+        /* [v22-3] 저장할 때의 회전각·중심·확대·Pitch 그대로 연다.
+           (조사표에서 「다시 선정」으로 들어와도 회전을 다시 안 해도 되도록) */
+        var hasView = pre.mapCenter && isFinite(pre.mapCenter[0]) && isFinite(pre.mapCenter[1]);
+        fp._skipAddressMove = hasView;
         setTimeout(function () {
           try {
-            var b = new maplibregl.LngLatBounds();
-            ring.forEach(function (p) { b.extend(p); });
-            map.fitBounds(b, { padding: 90, duration: 600 });
+            if (hasView) {
+              map.jumpTo({
+                center: pre.mapCenter,
+                zoom: (pre.zoom != null) ? pre.zoom : map.getZoom(),
+                bearing: (pre.bearing != null) ? pre.bearing : 0,
+                pitch: (pre.pitch != null) ? pre.pitch : 0
+              });
+            } else {
+              var b = new maplibregl.LngLatBounds();
+              ring.forEach(function (p) { b.extend(p); });
+              map.fitBounds(b, { padding: 90, duration: 600 });
+            }
           } catch (e) {}
         }, 600);
-        showToast('이전 A/B포구 작업을 불러왔습니다.', 3000, 'success');
+        showToast('이전 A/B포구 작업을 불러왔습니다.' +
+                  (hasView && pre.bearing ? '\n(저장된 회전각 ' + formatNumber(pre.bearing, 1) + '° 로 열었습니다)' : ''),
+                  3600, 'success');
       }
     } catch (e) {}
   }
@@ -6628,6 +6715,7 @@ TenarSecureStore.init('map',
     on('fpTEdit', fpToggleEdit);
     on('fpTCenter', addCenterPoint);
     on('fpTReset', fpToolReset);
+    on('fpTCancelArea', fpCancelArea);   /* [v22-4] */
     on('fpTSetup', openFpSetupSheet);   /* [v18-7] */
     /* ② 가 / 나 */
     on('fpGa', function () { fpStartPick('ga'); fpSyncButtons(); });
