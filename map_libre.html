@@ -1,4 +1,4 @@
-<!-- map_v18.html (v18) · 저장: 2026-07-20 07:09 KST · [v18] ①가·나는 꼭짓점(점)에만 지정 — 선 위에는 안 찍힘 ②가·나 마커 2배 확대 ③B포구를 A포구와 같은 방향으로 세로 측정 ④세로총길이를 세로선 끝 구역 밖에 표시 ⑤작물명·면적·평을 도형 아래쪽 바깥으로 이동(세로선·점 가림 방지) ⑥가-나/가로기점/세로총길이/세로기점 글자 확대 + 세로기점 값에 네모박스 ⑦포구도구 ⓪조사설정(작물·기준·1번2번 비율) 직접 입력 ⑧조사표 전송 시 tonghabbb.html 로 확실히 이동 ⑨포구도구 닫을 때 측정 삭제 확인창 -->
+<!-- map_v19.html (v19) · 저장: 2026-07-20 14:16 KST · [v19] ①가 찍으면 바로 나 입력 ②가-나 총길이 라벨을 나 원과 안 겹치게 ③세로총길이를 테두리 가까이 ④면적라벨을 화면기준 도형 아래 바깥(회전 시 재계산) ⑤필지선택/재배구역 ON 토글 ⑥초기화 시 UNDO/REDO 이력 초기화·가나도 되돌리기 대상·가나 하나 없으면 선과 값 삭제 ⑦B포구 세로각도를 A와 동일 ⑧조사설정(논벼=길이/그외=이랑 자동, 0. 고정표시, 두자리 입력 후 자동이동, 탭 시 전체선택, 초기화 버튼, 저장 후 배너 표시) ⑨1번 A포구 0이랑이면 2번 비율 자동 ⑩1이랑은 2번비율·가나 중간 세로선 1개·A=(H/2)×나, B=(H/2)×다+(H/2) -->
 <!-- (이전) map_v13.html (v13) · 저장: 2026-07-19 06:03 KST · [v13] 실측모드에서 저장핀(즐겨찾기)을 측정점으로 사용 — 일반 지도모드는 기존대로 저장위치 상세시트를 열고, 면적·길이 측정모드에서는 상세시트 대신 저장핀의 실제 위도·경도를 다음 측정점으로 추가. 중복좌표 방지 / 한 번 터치로 점 두 개 생기지 않게 이벤트 전파차단(suppressNextMapClick) / 실측모드에서 길게 누르면 저장핀 정보 확인 / 측정점 번호가 저장핀에 가리지 않도록 z-index 정리. 저장핀 원본(좌표·색상·작물·잠금)과 즐겨찾기 저장구조·JSON·암호화는 변경 없음 -->
 <!-- (이전) map_v11.html (v11) · 저장: 2026-07-19 · [v11] ①시트 열려도 지도 이동/확대/회전 가능(오버레이 통과)+제목줄까지 내려가는 최소화 스냅+최소화 버튼 ②레이어 초기화 버튼 ③축소 시 핀 크기 축소(좌표 고정, z16↑기본/z13~15 작게/z13↓점) ④선택 필지 안쪽 채움 제거(테두리만) ⑥토지정보 아이콘 📍 ⑦지도출처 ⓘ 중복 제거+주소 표기 ⑧핀 안 이모지→핀 위 작물명, 저장핀 시트 토글 2개 ⑨핀 수정=위치수정/이름수정 선택(좌표 기준 저장) ⑩메모 축소+시트 auto 높이 ⑪누른점 파랑+공유에 화면 캡처 첨부 -->
 <!-- (이전) map_v10.html (v10) · 저장: 2026-07-18 · [v10] ①②토지이용 범례 독립패널(가로형·드래그이동·접기·위치저장) ③실측도구 최소화 1회 동작(중복이벤트 제거) ④선택 필지 파란 강조 ⑤시트 위로 지도이동(padding) ⑥토지정보 4줄 재구성 ⑦공시지가 최신/전년 ⑧⑨PNU→추가정보 ⑩하단버튼 3개 통일 ⑪⑫⑬핀저장·길찾기·조사표(PNU/면적/공시지가/용도지역/필지경계) ⑭시트 열린채 길게누르기 ⑮회전각+i flex ⑯주소→공통 토지정보 ⑰표적 SVG 아이콘 ⑱⑲저장위치 재배치+현재필지정보+시트스택 ⑳즐겨찾기→저장위치 팝업 -->
@@ -734,7 +734,7 @@ TenarSecureStore.init('map',
   /* [v17-4] 가-나 총길이는 「나」 오른쪽 바깥쪽에 */
   /* [v18-6] 가-나 총길이 — 「나」 오른쪽 바깥, 글자 키움 */
   .fp-gana-len {
-    position: absolute; left: 18px; top: 2px;
+    position: absolute; left: 25px; top: 2px;   /* [v19-2] 나 동그라미(반지름 15px)와 안 겹치게 */
     white-space: nowrap; padding: 2px 6px; border-radius: 6px;
     background: #111827; color: #fff; font-size: 11px; font-weight: 800;
     box-shadow: 0 1px 3px rgba(0,0,0,.4);
@@ -3699,11 +3699,20 @@ TenarSecureStore.init('map',
     var c = null;
     try { c = turf.centerOfMass(polygon).geometry.coordinates; } catch (e) { return; }
     if (!c || !isFinite(c[0]) || !isFinite(c[1])) return;
-    /* [v18-5] A/B포구 세로선·점을 가리지 않도록, 라벨을 도형 "아래쪽 바깥"으로 내린다.
-       (가운데에 두면 세로선을 가로질러 가장 중요한 정보를 덮는다) */
+    /* [v19-4] 지도가 회전해 있어도 "테두리 밖 아래"가 되도록 화면 좌표로 계산한다.
+       (경위도 bbox 만 쓰면 회전 시 선 위에 걸쳐 면적 글씨가 선과 겹쳤다) */
     try {
-      var bb = turf.bbox(polygon);          /* [minLng, minLat, maxLng, maxLat] */
-      if (bb && isFinite(bb[1])) c = [c[0], bb[1]];
+      var ring = polygon.geometry.coordinates[0];
+      var lowest = null;                     /* 화면에서 y 가 가장 큰(가장 아래) 점 */
+      for (var qi = 0; qi < ring.length; qi++) {
+        var sp = map.project(ring[qi]);
+        if (!lowest || sp.y > lowest.y) lowest = sp;
+      }
+      if (lowest) {
+        var cs = map.project(c);
+        var ll = map.unproject([cs.x, lowest.y]);
+        c = [ll.lng, ll.lat];
+      }
     } catch (e) {}
     var e2 = document.createElement('div');
     e2.className = 'area-label';
@@ -3835,8 +3844,9 @@ TenarSecureStore.init('map',
     document.getElementById('btnEdit').classList.toggle('active', mode === 'edit');
     /* [v14] 새 모드 버튼 활성 표시 */
     var _bp = document.getElementById('btnParcelPick'), _bc = document.getElementById('btnCrop');
-    if (_bp) _bp.classList.toggle('active', mode === 'parcelPick');
-    if (_bc) _bc.classList.toggle('active', mode === 'cropBoundary');
+    if (_bp) { _bp.classList.toggle('active', mode === 'parcelPick'); _bp.textContent = (mode === 'parcelPick') ? '▣ 필지선택 ON' : '▣ 필지선택'; }
+    if (_bc) { _bc.classList.toggle('active', mode === 'cropBoundary'); _bc.textContent = (mode === 'cropBoundary') ? '🌾 재배구역 ON' : '🌾 재배구역'; }
+    if (typeof fpSyncButtons === 'function') setTimeout(fpSyncButtons, 0);
     crosshairEl.style.display = (mode === 'polygon' || mode === 'distance' || mode === 'cropBoundary') ? 'block' : 'none';
     map.getCanvas().style.cursor = (mode === 'none') ? '' : 'crosshair';
 
@@ -4083,6 +4093,12 @@ TenarSecureStore.init('map',
       ga: fp.ga, na: fp.na
     });
   }
+  /* [v19-6] 되돌리기 이력을 완전히 비운다 (초기화할 때 이전 값이 되살아나던 문제) */
+  function geoClearHistory() {
+    geoHist.stack = []; geoHist.idx = -1;
+    updateUndoRedoButtons();
+    setTimeout(geoPush, 0);   /* 지금 상태를 새 출발점으로 */
+  }
   function geoPush() {
     if (geoHist.busy) return;
     var snap = geoSnapshot();
@@ -4105,6 +4121,7 @@ TenarSecureStore.init('map',
     updateMeasurementSources();
     updateNewMeasureBtn();
     if (fp.ga && fp.na && fpHasShape()) { fpCompute(); }
+    else fpClearDerived();   /* [v19-6] 가·나 중 하나라도 없으면 선·값을 모두 지운다 */
     fpRender(); fpSyncButtons();
     geoHist.busy = false;
     updateUndoRedoButtons();
@@ -4150,6 +4167,7 @@ TenarSecureStore.init('map',
     setSurveyMode('none');
     updateMeasurementSources();
     updateNewMeasureBtn();
+    if (typeof geoClearHistory === 'function') geoClearHistory();   /* [v19-6] */
     showToast('모든 측정값이 초기화되었습니다.', 3000, 'success');
   }
 
@@ -5404,8 +5422,13 @@ TenarSecureStore.init('map',
 
   document.getElementById('btnField').addEventListener('click', startFieldDrawing);
   document.getElementById('btnDistance').addEventListener('click', startDistanceMeasurement);
-  document.getElementById('btnParcelPick').addEventListener('click', startParcelPick);   /* [v14] */
-  document.getElementById('btnCrop').addEventListener('click', startCropBoundary);       /* [v14] */
+  /* [v19-5] 측정도구에서도 다시 누르면 해제 */
+  document.getElementById('btnParcelPick').addEventListener('click', function () {
+    if (surveyMeasureState.mode === 'parcelPick') setSurveyMode('none'); else startParcelPick();
+  });
+  document.getElementById('btnCrop').addEventListener('click', function () {
+    if (surveyMeasureState.mode === 'cropBoundary') setSurveyMode('none'); else startCropBoundary();
+  });
   document.getElementById('btnEdit').addEventListener('click', startMeasurementEdit);
   /* [v17] UNDO 는 언제나 「한 단계 뒤로」.
      점을 찍을 때마다 이력이 쌓이므로, 그리는 중 UNDO 는 자연스럽게
@@ -5525,6 +5548,37 @@ TenarSecureStore.init('map',
     return { ga: parseFloat(r.ga), na: parseFloat(r.na), da: parseFloat(r.da) };
   }
   function fpIsRidgeMode() { return (fp.ctx && fp.ctx.mode === '이랑'); }
+  /* [v19-10] 통합계산기 isOneRidgeMode() 와 같은 조건 : 이랑 기준 + 총이랑수 1 */
+  function fpIsOneRidge() {
+    return fpIsRidgeMode() && parseFloat((fp.ctx && fp.ctx.L) || 0) === 1;
+  }
+  /* [v19-9] 통합계산기 규칙 — 1번 비율의 A포구 가로기점이 0이랑이면 2번 비율을 쓴다.
+     1이랑이면 무조건 2번 비율. (계산기 updateRatioWarning / applyOneRidgeRatioIfNeeded 와 동일) */
+  function fpAutoRatio(L) {
+    if (fpIsOneRidge()) {
+      if (fp.ratio !== 2) { fp.ratio = 2; fpMarkRatioButtons(); showToast('가-나 총이랑수가 1이랑이므로 2번 비율을 사용합니다.', 4000, 'info'); }
+      return;
+    }
+    if (!fpIsRidgeMode()) return;                 /* 이랑 기준일 때만 판정 */
+    var c = fp.ctx || {};
+    var ga1 = parseFloat((c.r1 || {}).ga);
+    if (!(ga1 > 0) || !(L > 0)) return;
+    var aGa1 = Math.round(L * ga1);
+    if (aGa1 === 0) {
+      if (fp.ratio !== 2) {
+        fp._autoTo2 = true; fp.ratio = 2; fpMarkRatioButtons();
+        showToast('1번 비율의 A포구가 0이랑입니다.\n2번 비율로 자동 전환했습니다.', 4500, 'info');
+      }
+    } else if (fp._autoTo2 && fp.ratio === 2) {
+      fp._autoTo2 = false; fp.ratio = 1; fpMarkRatioButtons();
+      showToast('1번 비율 A포구가 1이랑 이상이 되어 1번 비율로 돌아왔습니다.', 4000, 'success');
+    }
+  }
+  function fpMarkRatioButtons() {
+    var b1 = document.getElementById('fpR1'), b2 = document.getElementById('fpR2');
+    if (b1) b1.classList.toggle('active', fp.ratio === 1);
+    if (b2) b2.classList.toggle('active', fp.ratio === 2);
+  }
 
   /* 현재 도형(필지 또는 재배구역)의 폴리곤 */
   function fpPolygon() {
@@ -5633,6 +5687,23 @@ TenarSecureStore.init('map',
     if (!best) return null;
     return { end: best.end, len_cm: best.d * 100000, bearing: best.brg };
   }
+  /* [v19-7] 정해진 방위각 하나로만 쏘아 경계까지 재는 함수 */
+  function fpCastAlong(basePt, poly, brg) {
+    try {
+      var probe = turf.destination(turf.point(basePt), 0.0003, brg, { units: 'kilometers' });
+      if (!turf.booleanPointInPolygon(probe, poly)) return null;
+      var far = turf.destination(turf.point(basePt), 5, brg, { units: 'kilometers' }).geometry.coordinates;
+      var hits = turf.lineIntersect(turf.lineString([basePt, far]), turf.polygonToLine(poly));
+      if (!hits || !hits.features.length) return null;
+      var nearest = null, nd = Infinity;
+      hits.features.forEach(function (h) {
+        var d = turf.distance(turf.point(basePt), h, { units: 'kilometers' });
+        if (d > 0.0002 && d < nd) { nd = d; nearest = h.geometry.coordinates; }
+      });
+      if (!nearest) return null;
+      return { end: nearest, len_cm: nd * 100000, bearing: brg };
+    } catch (e) { return null; }
+  }
   /* 두 방위각 사이의 최소 각도차(0~180) */
   function angDiff(a, b) {
     var d = Math.abs(a - b) % 360;
@@ -5641,11 +5712,11 @@ TenarSecureStore.init('map',
 
   /* A/B포구 전체 재계산 */
   function fpCompute() {
-    if (!fp.ga || !fp.na || !hasTurf) return false;
+    if (!fp.ga || !fp.na || !hasTurf) { fpClearDerived(); return false; }
     var poly = fpPolygon();
     if (!poly) return false;
     var rv = fpRatioVals();
-    if (!(rv.ga > 0)) { showToast('비율(가)이 없습니다. 계산기에서 비율을 입력해주세요.', 4000); return false; }
+    if (!(rv.ga > 0)) { showToast('비율(가)이 없습니다. ⓪ 조사 설정에서 비율을 입력해주세요.', 4000); return false; }
 
     /* [v16-2] 가-나 길이 = 새 직선이 아니라 경계선을 따라간 길이 */
     var pl = fpBuildPath() ? fpPathLine() : null;
@@ -5653,7 +5724,31 @@ TenarSecureStore.init('map',
     var Lmap_cm = turf.length(pl, { units: 'kilometers' }) * 100000;
     fp.L_cm = Lmap_cm;
     var L = fpIsRidgeMode() ? parseFloat((fp.ctx && fp.ctx.L) || 0) : Math.round(Lmap_cm);
-    if (!(L > 0)) { showToast('가-나 값이 없습니다.\n이랑 작물은 계산기에서 총이랑수를 먼저 입력해주세요.', 4500); return false; }
+    if (!(L > 0)) { showToast('가-나 값이 없습니다.\n이랑 작물은 총이랑수를 먼저 입력해주세요.', 4500); return false; }
+
+    /* [v19-9] 계산기 규칙대로 비율을 자동으로 고른다 */
+    fpAutoRatio(L);
+    rv = fpRatioVals();
+
+    /* [v19-10] 1이랑 : 2번 비율 고정 · 가-나 중간에 세로선 하나 ·
+       A포구 = 세로총길이/2 × 나  ·  B포구 = 세로총길이/2 × 다 + 세로총길이/2
+       (통합계산기 updateABDerived 의 one-ridge 식 그대로) */
+    if (fpIsOneRidge()) {
+      fp.aSel = 1; fp.bSel = 1;
+      var midDist = Lmap_cm / 2;
+      fp.aBase = fpAlongPath(midDist);
+      fp.bBase = fp.aBase;
+      var cm = fp.aBase ? fpCastInward(fp.aBase, poly, fpPathBearingAt(midDist, Lmap_cm), fp.angleA) : null;
+      fp.aEnd = cm ? cm.end : null; fp.bEnd = fp.aEnd;
+      fp.heightA = cm ? cm.len_cm : 0; fp.heightB = fp.heightA;
+      fp.aBrg = cm ? cm.bearing : null; fp.bBrg = fp.aBrg;
+      var H = fp.heightA;
+      fp.aPoLen = (rv.na > 0) ? (H / 2) * rv.na : 0;
+      fp.bPoLen = (rv.da > 0) ? (H / 2) * rv.da + (H / 2) : 0;
+      fp.aPo = (cm && fp.aPoLen > 0) ? turf.destination(turf.point(fp.aBase), fp.aPoLen / 100000, cm.bearing, { units: 'kilometers' }).geometry.coordinates : null;
+      fp.bPo = (cm && fp.bPoLen > 0) ? turf.destination(turf.point(fp.aBase), fp.bPoLen / 100000, cm.bearing, { units: 'kilometers' }).geometry.coordinates : null;
+      return true;
+    }
 
     /* 통합계산기와 동일한 식 (그대로 유지) */
     var a_ga = L * rv.ga;
@@ -5672,9 +5767,17 @@ TenarSecureStore.init('map',
 
     /* 세로: 그 지점 경계선에 직각(+각도보정) 방향으로 안쪽 경계까지 */
     var ca = fp.aBase ? fpCastInward(fp.aBase, poly, fpPathBearingAt(aDist, Lmap_cm), fp.angleA) : null;
-    /* [v18-3] B는 A가 잡은 방향을 기준으로 같은 쪽을 향하게 한다 */
-    var cb = fp.bBase ? fpCastInward(fp.bBase, poly, fpPathBearingAt(bDist, Lmap_cm), fp.angleB,
-                                     ca ? ca.bearing : null) : null;
+    /* [v19-7] B의 세로 각도는 "그 자리의 직각"이 아니라 A와 똑같은 각도를 쓴다.
+       (필요하면 사용자가 ③ 각도조절로 바꾼다) */
+    var cb = null;
+    if (fp.bBase) {
+      if (ca) {
+        /* A와 같은 방위각 + (각도따로일 때만) B의 추가 보정각 */
+        var bBrg = ca.bearing + (fp.angleSep ? (fp.angleB - fp.angleA) : 0);
+        cb = fpCastAlong(fp.bBase, poly, bBrg);
+      }
+      if (!cb) cb = fpCastInward(fp.bBase, poly, fpPathBearingAt(bDist, Lmap_cm), fp.angleB, ca ? ca.bearing : null);
+    }
     fp.aEnd = ca ? ca.end : null; fp.heightA = ca ? ca.len_cm : 0;
     fp.bEnd = cb ? cb.end : null; fp.heightB = cb ? cb.len_cm : 0;
 
@@ -5714,12 +5817,18 @@ TenarSecureStore.init('map',
     }
     /* 세로선 */
     if (fp.aBase && fp.aEnd) fc.features.push({ type: 'Feature', properties: { t: 'va' }, geometry: { type: 'LineString', coordinates: [fp.aBase, fp.aEnd] } });
-    if (fp.bBase && fp.bEnd) fc.features.push({ type: 'Feature', properties: { t: 'vb' }, geometry: { type: 'LineString', coordinates: [fp.bBase, fp.bEnd] } });
+    /* [v19-10] 1이랑은 세로선 하나만 그린다 */
+    if (fp.bBase && fp.bEnd && !fpIsOneRidge()) fc.features.push({ type: 'Feature', properties: { t: 'vb' }, geometry: { type: 'LineString', coordinates: [fp.bBase, fp.bEnd] } });
     if (map.getSource('fp-source')) map.getSource('fp-source').setData(fc);
 
-    /* [v15-6] 가로 기점 : 점 아래에 A / B */
-    if (fp.aBase) fpMark(fp.aBase, '<span class="fp-dot fp-dot-a"></span><span class="fp-tag fp-tag-a">A ' + formatNumber(fp.aSel, 0) + unit + '</span>', 'fp-base');
-    if (fp.bBase) fpMark(fp.bBase, '<span class="fp-dot fp-dot-b"></span><span class="fp-tag fp-tag-b">B ' + formatNumber(fp.bSel, 0) + unit + '</span>', 'fp-base');
+    /* [v19-10] 1이랑이면 가로기점이 하나(가-나 중간)뿐이다 */
+    if (fpIsOneRidge()) {
+      if (fp.aBase) fpMark(fp.aBase, '<span class="fp-dot fp-dot-a"></span><span class="fp-tag fp-tag-a">1 이랑</span>', 'fp-base');
+    } else {
+      /* [v15-6] 가로 기점 : 점 아래에 A / B */
+      if (fp.aBase) fpMark(fp.aBase, '<span class="fp-dot fp-dot-a"></span><span class="fp-tag fp-tag-a">A ' + formatNumber(fp.aSel, 0) + unit + '</span>', 'fp-base');
+      if (fp.bBase) fpMark(fp.bBase, '<span class="fp-dot fp-dot-b"></span><span class="fp-tag fp-tag-b">B ' + formatNumber(fp.bSel, 0) + unit + '</span>', 'fp-base');
+    }
 
     /* [v18-4] 세로 "전체" 길이는 세로선 끝에서 조금 더 나간 "구역 밖"에 표시 */
     function outsideOf(base, end) {
@@ -5727,20 +5836,22 @@ TenarSecureStore.init('map',
       try {
         var brg = turf.bearing(turf.point(base), turf.point(end));
         var d = turf.distance(turf.point(base), turf.point(end), { units: 'kilometers' });
-        /* 세로 길이의 8%(최소 12m)만큼 경계 바깥으로 밀어낸다 */
-        var out = Math.max(0.012, d * 0.08);
+        /* [v19-3] 테두리 바로 바깥에 붙인다 (어느 세로선의 값인지 바로 알 수 있게) */
+        var out = Math.max(0.002, d * 0.015);
         return turf.destination(turf.point(end), out, brg, { units: 'kilometers' }).geometry.coordinates;
       } catch (e) { return end; }
     }
     var oA = outsideOf(fp.aBase, fp.aEnd), oB = outsideOf(fp.bBase, fp.bEnd);
     if (oA) fpMark(oA, '<span class="fp-endtip fp-endtip-a">세로 ' + formatNumber(fp.heightA, 0) + 'cm</span>', 'fp-end-wrap');
-    if (oB) fpMark(oB, '<span class="fp-endtip fp-endtip-b">세로 ' + formatNumber(fp.heightB, 0) + 'cm</span>', 'fp-end-wrap');
+    /* 1이랑은 세로선이 하나이므로 B쪽 라벨을 겹쳐 그리지 않는다 */
+    if (oB && !fpIsOneRidge()) fpMark(oB, '<span class="fp-endtip fp-endtip-b">세로 ' + formatNumber(fp.heightB, 0) + 'cm</span>', 'fp-end-wrap');
 
     /* [v15-6][v16-3] A/B포구 : 점 안에 A(파랑)·B(빨강), 옆에는 "가로기점 → 포구점" 계산값 */
     if (fp.aPo) fpMarkPo('a', fp.aPo, fp.aPoLen);
     if (fp.bPo) fpMarkPo('b', fp.bPo, fp.bPoLen);
 
     fpUpdatePanel();
+    fpRenderBanner();   /* [v19-8] 가로길이·비율 표시 갱신 */
   }
 
   /* [v16-4] A/B포구 마커 — 각도조절이 켜져 있으면 끌 수 있고 손잡이(↔)가 보인다 */
@@ -5801,8 +5912,12 @@ TenarSecureStore.init('map',
     var html = '';
     html += '<div class="fp-line"><b>가-나</b> ' + (L ? formatNumber(L, 0) + unit : '—') +
             (fpIsRidgeMode() ? ' <span class="fp-sub">(계산기 입력)</span>' : ' <span class="fp-sub">(지도 실측)</span>') + '</div>';
-    html += '<div class="fp-line"><b>가로기점</b> A ' + (fp.aSel ? formatNumber(fp.aSel, 0) + unit : '—') +
-            ' · B ' + (fp.bSel ? formatNumber(fp.bSel, 0) + unit : '—') + '</div>';
+    if (fpIsOneRidge()) {
+      html += '<div class="fp-line"><b>1이랑</b> 2번 비율 · 가-나 중간 세로선 1개</div>';
+    } else {
+      html += '<div class="fp-line"><b>가로기점</b> A ' + (fp.aSel ? formatNumber(fp.aSel, 0) + unit : '—') +
+              ' · B ' + (fp.bSel ? formatNumber(fp.bSel, 0) + unit : '—') + '</div>';
+    }
     html += '<div class="fp-line"><b>세로총길이</b> A ' + (fp.heightA ? formatNumber(fp.heightA, 0) + 'cm' : '—') +
             ' · B ' + (fp.heightB ? formatNumber(fp.heightB, 0) + 'cm' : '—') + '</div>';
     html += '<div class="fp-line"><b>포구지점</b> A ' + (fp.aPoLen ? formatNumber(fp.aPoLen, 0) + 'cm' : '—') +
@@ -5841,12 +5956,33 @@ TenarSecureStore.init('map',
       showToast('가·나는 꼭짓점(점)에만 찍을 수 있습니다.\n경계선이 아니라 번호가 붙은 점을 눌러주세요.', 4200, 'info');
       return;
     }
-    if (fp.picking === 'ga') { fp.ga = c; showToast('가 지점을 지정했습니다.', 2000, 'success'); }
-    else if (fp.picking === 'na') { fp.na = c; showToast('나 지점을 지정했습니다.', 2000, 'success'); }
+    if (fp.picking === 'ga') {
+      fp.ga = c;
+      /* [v19-1] 가를 찍으면 「나」 선택으로 바로 넘어간다 (버튼을 다시 누를 필요 없음) */
+      if (!fp.na) {
+        fp.picking = 'na';
+        showToast('가 지점을 지정했습니다.\n이어서 「나」 지점을 찍으세요.', 2600, 'success');
+        fpRender(); fpSyncButtons(); geoPush();
+        return;
+      }
+      showToast('가 지점을 지정했습니다.', 2000, 'success');
+    }
+    else if (fp.picking === 'na') {
+      fp.na = c;
+      /* 나를 먼저 찍었고 가가 비어 있으면 이어서 가를 받는다 */
+      if (!fp.ga) {
+        fp.picking = 'ga';
+        showToast('나 지점을 지정했습니다.\n이어서 「가」 지점을 찍으세요.', 2600, 'success');
+        fpRender(); fpSyncButtons(); geoPush();
+        return;
+      }
+      showToast('나 지점을 지정했습니다.', 2000, 'success');
+    }
     fp.picking = null;
     if (fp.ga && fp.na) { fpCompute(); }
     fpRender();
     fpSyncButtons();
+    geoPush();   /* [v19-6] 가·나 지정도 되돌리기 이력에 남긴다 */
   }
   /* [v16-4] 각도 조절 켜기/끄기 — 켜면 A/B포구에 ↔ 손잡이가 보이고 끌 수 있다 */
   function fpUpdateAngleLabel() {
@@ -5904,6 +6040,14 @@ TenarSecureStore.init('map',
     showToast('완료를 해제했습니다. 다시 고칠 수 있습니다.', 2600, 'info');
   }
 
+  /* [v19-6] 가·나로 계산된 선·지점·값만 지운다 (가·나 자체와 도형은 그대로) */
+  function fpClearDerived() {
+    fp.path = null;
+    fp.aBase = fp.bBase = fp.aEnd = fp.bEnd = fp.aPo = fp.bPo = null;
+    fp.aBrg = fp.bBrg = null;
+    fp.L_cm = 0; fp.aSel = fp.bSel = 0;
+    fp.heightA = fp.heightB = 0; fp.aPoLen = fp.bPoLen = 0;
+  }
   function fpReset() {
     fp.ga = fp.na = null; fp.aBase = fp.bBase = fp.aEnd = fp.bEnd = fp.aPo = fp.bPo = null;
     fp.aSel = fp.bSel = fp.heightA = fp.heightB = fp.aPoLen = fp.bPoLen = 0;
@@ -5924,7 +6068,7 @@ TenarSecureStore.init('map',
     setSurveyMode('none');
     updateMeasurementSources();
     fpReset();
-    geoPush();
+    geoClearHistory();   /* [v19-6] UNDO/REDO 이력까지 비움 */
     showToast('포구도구를 초기화했습니다.', 2600, 'success');
   }
 
@@ -6048,28 +6192,66 @@ TenarSecureStore.init('map',
     if (c.crop) inCrop.value = c.crop;
     f1.appendChild(inCrop);
 
-    var f2 = el('div', 'fld', '<label>기준</label>');
+    /* [v19-8] 기준은 작물이 정한다 — 논벼는 길이, 그 밖은 이랑. 직접 못 고친다 */
+    var f2 = el('div', 'fld', '<label>기준 (작물에 따라 자동)</label>');
     var inMode = el('select');
-    inMode.appendChild(new Option('길이 (cm) — 논벼 등', '길이'));
-    inMode.appendChild(new Option('이랑 (수) — 밭작물', '이랑'));
-    inMode.value = (c.mode === '이랑') ? '이랑' : '길이';
+    inMode.appendChild(new Option('길이 (cm)', '길이'));
+    inMode.appendChild(new Option('이랑 (수)', '이랑'));
+    inMode.disabled = true;
+    inMode.style.background = '#f2f2f5';
     f2.appendChild(inMode);
 
-    /* 이랑 기준일 때만 쓰는 총이랑수 */
-    var f3 = el('div', 'fld', '<label>가-나 총이랑수 (이랑 기준일 때만)</label>');
+    var f3 = el('div', 'fld', '<label id="fpLLabel">가-나 총이랑수</label>');
     var inL = el('input'); inL.type = 'number'; inL.inputMode = 'numeric';
     inL.value = (c.L != null && c.L !== '') ? c.L : '';
     f3.appendChild(inL);
 
+    function syncMode() {
+      var isRice = (inCrop.value === '논벼');
+      inMode.value = isRice ? '길이' : '이랑';
+      var lab = document.getElementById('fpLLabel');
+      if (lab) lab.textContent = isRice ? '가-나 가로길이 (지도에서 실측 — 입력 불필요)' : '가-나 총이랑수';
+      f3.style.display = isRice ? 'none' : 'block';   /* 논벼는 지도에서 재므로 숨김 */
+    }
+    inCrop.addEventListener('change', syncMode);
+
+    /* [v19-8] 비율 입력칸 — 「0.」 고정 표시, 두 자리 치면 다음 칸으로, 누르면 전체 선택 */
+    var allRatioInputs = [];
     function ratioRow(title, r) {
       var wrap = el('div', 'fld', '<label>' + title + ' (가 / 나 / 다)</label>');
-      var row = el('div'); row.style.cssText = 'display:flex;gap:6px;';
+      var row = el('div'); row.style.cssText = 'display:flex;gap:6px;align-items:center;';
       var ins = ['ga', 'na', 'da'].map(function (k) {
-        var i = el('input'); i.type = 'number'; i.step = '0.01'; i.inputMode = 'decimal';
+        var cell = el('div');
+        cell.style.cssText = 'flex:1;min-width:0;display:flex;align-items:center;gap:2px;' +
+          'border:1.5px solid #dcdce4;border-radius:9px;padding:0 6px;background:#fff;';
+        var pre = el('span', null, '0.');
+        pre.style.cssText = 'font-size:16px;font-weight:800;color:#888;flex:0 0 auto;';
+        var i = el('input');
+        i.type = 'text'; i.inputMode = 'numeric'; i.maxLength = 2;
         i.placeholder = ({ ga: '가', na: '나', da: '다' })[k];
-        i.value = (r && r[k] != null && r[k] !== '') ? r[k] : '';
-        i.style.cssText = 'flex:1;min-width:0;';
-        row.appendChild(i);
+        /* 0.4 → "40", 0.35 → "35" 로 보여준다 (소수 둘째자리까지) */
+        var v0 = (r && r[k] != null && r[k] !== '') ? Number(r[k]) : NaN;
+        i.value = isFinite(v0) ? String(Math.round(v0 * 100)).padStart(2, '0') : '';
+        i.style.cssText = 'flex:1;min-width:0;border:0;outline:none;padding:10px 0;font-size:16px;' +
+          'font-family:inherit;font-weight:800;background:transparent;';
+        i.dataset.key = k;
+        /* 누르면 전체 선택 */
+        i.addEventListener('focus', function () { var t = this; setTimeout(function () { try { t.select(); } catch (e) {} }, 0); });
+        i.addEventListener('click', function () { try { this.select(); } catch (e) {} });
+        /* 숫자만, 두 자리 채우면 다음 칸으로 */
+        i.addEventListener('input', function () {
+          this.value = this.value.replace(/[^0-9]/g, '').slice(0, 2);
+          if (this.value.length === 2) {
+            var idx = allRatioInputs.indexOf(this);
+            if (idx >= 0 && idx < allRatioInputs.length - 1) {
+              var nx = allRatioInputs[idx + 1];
+              nx.focus(); try { nx.select(); } catch (e) {}
+            } else { this.blur(); }
+          }
+        });
+        cell.appendChild(pre); cell.appendChild(i);
+        row.appendChild(cell);
+        allRatioInputs.push(i);
         return i;
       });
       wrap.appendChild(row);
@@ -6080,34 +6262,50 @@ TenarSecureStore.init('map',
 
     var note = el('div', null,
       '<div class="lyr-desc" style="margin:2px 0 10px;line-height:1.6;">' +
-      '가 = 가로기점 비율, 나 = A포구 세로 비율, 다 = B포구 세로 비율입니다.<br>' +
+      '가 = 가로기점 비율, 나 = A포구 세로 비율, 다 = B포구 세로 비율<br>' +
+      '두 자리만 누르면 됩니다. 예) <b>40</b> → 0.40, <b>35</b> → 0.35<br>' +
       '계산은 통합계산기와 똑같은 식을 그대로 씁니다.</div>');
 
+    /* 값 읽기 : "40" → 0.4 */
+    function readRatio(R) {
+      function num(i) {
+        var t = (i.value || '').replace(/[^0-9]/g, '');
+        if (!t) return '';
+        return Math.round(parseInt(t.padEnd(2, '0'), 10)) / 100;
+      }
+      return { ga: num(R.ins[0]), na: num(R.ins[1]), da: num(R.ins[2]) };
+    }
+
+    var btnRow = el('div', 'btn-row');
+    var bClear = el('button', 'sheet-btn danger', '초기화');           /* [v19-8] */
+    bClear.addEventListener('click', function () {
+      if (!window.confirm('조사 설정을 모두 비우시겠습니까?')) return;
+      inCrop.value = ''; inL.value = '';
+      allRatioInputs.forEach(function (i) { i.value = ''; });
+      syncMode();
+      showToast('조사 설정을 비웠습니다.', 2200, 'info');
+    });
     var bOk = el('button', 'sheet-btn primary', '설정 저장');
-    bOk.style.cssText += 'width:100%;margin-top:8px;';
     bOk.addEventListener('click', function () {
-      function num(v) { var n = parseFloat(v); return isFinite(n) ? n : ''; }
+      var r1 = readRatio(R1), r2 = readRatio(R2);
       var next = {
         app: 'tonghab', ts: Date.now(),
         crop: inCrop.value,
         mode: inMode.value,
-        L: num(inL.value),
-        r1: { ga: num(R1.ins[0].value), na: num(R1.ins[1].value), da: num(R1.ins[2].value) },
-        r2: { ga: num(R2.ins[0].value), na: num(R2.ins[1].value), da: num(R2.ins[2].value) },
+        L: (inMode.value === '이랑') ? (parseFloat(inL.value) || '') : '',
+        r1: r1, r2: r2,
         ratio: fp.ratio,
         surveyKey: (fp.ctx && fp.ctx.surveyKey) || ''
       };
-      if (!(parseFloat(next.r1.ga) > 0) && !(parseFloat(next.r2.ga) > 0)) {
-        showToast('1번 또는 2번 비율의 「가」 값을 넣어주세요.', 4000, 'info');
-        return;
+      if (!(parseFloat(r1.ga) > 0) && !(parseFloat(r2.ga) > 0)) {
+        showToast('1번 또는 2번 비율의 「가」 값을 넣어주세요.', 4000, 'info'); return;
       }
       if (next.mode === '이랑' && !(parseFloat(next.L) > 0)) {
-        showToast('이랑 기준은 「가-나 총이랑수」가 있어야 계산됩니다.', 4200, 'info');
-        return;
+        showToast('이랑 작물은 「가-나 총이랑수」가 있어야 계산됩니다.', 4200, 'info'); return;
       }
       fp.ctx = next;
+      fp._autoTo2 = false;
       try { saveJSON(FP_CTX_KEY, next); } catch (e) {}
-      /* 비어 있는 비율은 고를 수 없게 */
       if (!(parseFloat(next['r' + fp.ratio].ga) > 0)) fp.ratio = (fp.ratio === 1) ? 2 : 1;
       var banner = document.getElementById('fpBanner');
       if (banner) banner.style.display = 'flex';
@@ -6115,13 +6313,15 @@ TenarSecureStore.init('map',
       if (fp.ga && fp.na) { fpCompute(); }
       fpRender(); fpSyncButtons();
       closeSheet();
-      showToast('조사 설정을 저장했습니다.\n이제 ① 조사구역부터 진행하세요.', 3600, 'success');
+      showToast('조사 설정을 저장했습니다.\n주소창 아래에서 비율을 고를 수 있습니다.', 3800, 'success');
     });
+    btnRow.appendChild(bClear); btnRow.appendChild(bOk);
 
     box.appendChild(f1); box.appendChild(f2); box.appendChild(f3);
     box.appendChild(R1.wrap); box.appendChild(R2.wrap);
-    box.appendChild(note); box.appendChild(bOk);
+    box.appendChild(note); box.appendChild(btnRow);
     openSheet('⓪ 조사 설정 (작물·기준·비율)', box, 90);
+    syncMode();
     sheetHasForm = true;
     sheetIsLandInfo = false;
   }
@@ -6133,9 +6333,12 @@ TenarSecureStore.init('map',
     if (t && !c.crop && !(c.r1 && c.r1.ga)) {
       t.innerHTML = '⓪ 「작물·기준·비율」을 눌러 설정하세요';
     } else if (t) {
+      /* [v19-8] 작물 · 기준 · 이랑수(또는 지도에서 잰 가로길이) */
+      var extra = '';
+      if (c.mode === '이랑' && c.L) extra = ' &nbsp;·&nbsp; 총이랑수 <b>' + escapeHtml(String(c.L)) + '</b>';
+      else if (fp.L_cm > 0) extra = ' &nbsp;·&nbsp; 가로길이 <b>' + formatNumber(Math.round(fp.L_cm), 0) + 'cm</b>';
       t.innerHTML = '작물 <b>' + escapeHtml(c.crop || '—') + '</b> &nbsp;·&nbsp; 기준 <b>' +
-                    ((c.mode === '이랑') ? '이랑' : '길이') + '</b>' +
-                    (c.mode === '이랑' && c.L ? ' &nbsp;·&nbsp; 총이랑수 <b>' + escapeHtml(String(c.L)) + '</b>' : '');
+                    ((c.mode === '이랑') ? '이랑' : '길이') + '</b>' + extra;
     }
     function vals(r) {
       r = r || {};
@@ -6162,8 +6365,15 @@ TenarSecureStore.init('map',
 
     set('fpGa', function (b) { b.classList.toggle('active', fp.picking === 'ga'); b.textContent = fp.ga ? '가 ✓' : '가'; });
     set('fpNa', function (b) { b.classList.toggle('active', fp.picking === 'na'); b.textContent = fp.na ? '나 ✓' : '나'; });
-    set('fpTParcel', function (b) { b.classList.toggle('active', surveyMeasureState.mode === 'parcelPick'); });
-    set('fpTCrop', function (b) { b.classList.toggle('active', surveyMeasureState.mode === 'cropBoundary'); });
+    /* [v19-5] 켜져 있으면 「필지선택 ON」 / 「재배구역 ON」 으로 표시 */
+    set('fpTParcel', function (b) {
+      var on = (surveyMeasureState.mode === 'parcelPick');
+      b.classList.toggle('active', on); b.textContent = on ? '필지선택 ON' : '필지선택';
+    });
+    set('fpTCrop', function (b) {
+      var on = (surveyMeasureState.mode === 'cropBoundary');
+      b.classList.toggle('active', on); b.textContent = on ? '재배구역 ON' : '재배구역';
+    });
     set('fpTEdit', function (b) { b.classList.toggle('active', surveyMeasureState.mode === 'edit'); b.textContent = (surveyMeasureState.mode === 'edit') ? '수정 ON' : '수정'; });
     set('fpAngleBtn', function (b) { b.classList.toggle('active', fp.angleMode); b.textContent = fp.angleMode ? '각도 ON' : '각도조절'; });
     set('fpAngleSep', function (b) { b.classList.toggle('active', fp.angleSep); b.textContent = fp.angleSep ? '따로 ON' : '각도따로'; });
@@ -6320,8 +6530,17 @@ TenarSecureStore.init('map',
       closeFpTool(false);
     });
     /* ① 조사구역 */
-    on('fpTParcel', function () { startParcelPick(); fpSyncButtons(); });
-    on('fpTCrop', function () { startCropBoundary(); fpSyncButtons(); });
+    /* [v19-5] 다시 누르면 해제 — 켜짐/꺼짐을 눈으로 알 수 있게 */
+    on('fpTParcel', function () {
+      if (surveyMeasureState.mode === 'parcelPick') { setSurveyMode('none'); showToast('필지선택을 껐습니다.', 1800, 'info'); }
+      else startParcelPick();
+      fpSyncButtons();
+    });
+    on('fpTCrop', function () {
+      if (surveyMeasureState.mode === 'cropBoundary') { setSurveyMode('none'); showToast('재배구역을 껐습니다.', 1800, 'info'); }
+      else startCropBoundary();
+      fpSyncButtons();
+    });
     on('fpTUndo', smartUndo);
     on('fpTRedo', geoRedo);
     on('fpTEdit', fpToggleEdit);
@@ -6367,6 +6586,19 @@ TenarSecureStore.init('map',
     restoreWhenBothReady();
     try { fpInit(); } catch (e) { console.error('[v15] fieldplot init 오류:', e); }   /* [v15] */
   });
+
+  /* [v19-4] 면적 라벨은 "화면에서 도형 아래"에 놓이므로 회전하면 다시 계산한다.
+     (회전 후에도 선 위로 올라오지 않게) */
+  (function () {
+    var t = null;
+    function redraw() {
+      clearTimeout(t);
+      t = setTimeout(function () { try { updateAreaLabel(); } catch (e) {} }, 120);
+    }
+    map.on('rotateend', redraw);
+    map.on('pitchend', redraw);
+    map.on('zoomend', redraw);
+  })();
 
   function resizeMap() { map.resize(); }
   window.addEventListener('resize', resizeMap);
