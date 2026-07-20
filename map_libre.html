@@ -1,4 +1,4 @@
-<!-- map_v19.html (v19) · 저장: 2026-07-20 14:16 KST · [v19] ①가 찍으면 바로 나 입력 ②가-나 총길이 라벨을 나 원과 안 겹치게 ③세로총길이를 테두리 가까이 ④면적라벨을 화면기준 도형 아래 바깥(회전 시 재계산) ⑤필지선택/재배구역 ON 토글 ⑥초기화 시 UNDO/REDO 이력 초기화·가나도 되돌리기 대상·가나 하나 없으면 선과 값 삭제 ⑦B포구 세로각도를 A와 동일 ⑧조사설정(논벼=길이/그외=이랑 자동, 0. 고정표시, 두자리 입력 후 자동이동, 탭 시 전체선택, 초기화 버튼, 저장 후 배너 표시) ⑨1번 A포구 0이랑이면 2번 비율 자동 ⑩1이랑은 2번비율·가나 중간 세로선 1개·A=(H/2)×나, B=(H/2)×다+(H/2) -->
+<!-- map_v21.html (v21) · 저장: 2026-07-20 15:27 KST · [v21] ①조사설정(작물·기준·총이랑수·1번2번비율)을 A/B포구 저장자료에 함께 저장하고 목록에서 불러올 때 그대로 복원. 포구도구 초기화 시 조사설정도 함께 초기화 ②조사표↔지도 양방향 전달 확인 -->
 <!-- (이전) map_v13.html (v13) · 저장: 2026-07-19 06:03 KST · [v13] 실측모드에서 저장핀(즐겨찾기)을 측정점으로 사용 — 일반 지도모드는 기존대로 저장위치 상세시트를 열고, 면적·길이 측정모드에서는 상세시트 대신 저장핀의 실제 위도·경도를 다음 측정점으로 추가. 중복좌표 방지 / 한 번 터치로 점 두 개 생기지 않게 이벤트 전파차단(suppressNextMapClick) / 실측모드에서 길게 누르면 저장핀 정보 확인 / 측정점 번호가 저장핀에 가리지 않도록 z-index 정리. 저장핀 원본(좌표·색상·작물·잠금)과 즐겨찾기 저장구조·JSON·암호화는 변경 없음 -->
 <!-- (이전) map_v11.html (v11) · 저장: 2026-07-19 · [v11] ①시트 열려도 지도 이동/확대/회전 가능(오버레이 통과)+제목줄까지 내려가는 최소화 스냅+최소화 버튼 ②레이어 초기화 버튼 ③축소 시 핀 크기 축소(좌표 고정, z16↑기본/z13~15 작게/z13↓점) ④선택 필지 안쪽 채움 제거(테두리만) ⑥토지정보 아이콘 📍 ⑦지도출처 ⓘ 중복 제거+주소 표기 ⑧핀 안 이모지→핀 위 작물명, 저장핀 시트 토글 2개 ⑨핀 수정=위치수정/이름수정 선택(좌표 기준 저장) ⑩메모 축소+시트 auto 높이 ⑪누른점 파랑+공유에 화면 캡처 첨부 -->
 <!-- (이전) map_v10.html (v10) · 저장: 2026-07-18 · [v10] ①②토지이용 범례 독립패널(가로형·드래그이동·접기·위치저장) ③실측도구 최소화 1회 동작(중복이벤트 제거) ④선택 필지 파란 강조 ⑤시트 위로 지도이동(padding) ⑥토지정보 4줄 재구성 ⑦공시지가 최신/전년 ⑧⑨PNU→추가정보 ⑩하단버튼 3개 통일 ⑪⑫⑬핀저장·길찾기·조사표(PNU/면적/공시지가/용도지역/필지경계) ⑭시트 열린채 길게누르기 ⑮회전각+i flex ⑯주소→공통 토지정보 ⑰표적 SVG 아이콘 ⑱⑲저장위치 재배치+현재필지정보+시트스택 ⑳즐겨찾기→저장위치 팝업 -->
@@ -3960,6 +3960,10 @@ TenarSecureStore.init('map',
       updateNewMeasureBtn();
 
       var p = f.properties || {};
+      /* [v20-1] 선택한 필지의 주소를 조사표 전송용으로 보관 */
+      var padr = p.addr || p.jibun || p.ADDR || p.JIBUN || '';
+      if (padr) { fp.jibunAddress = String(padr); }
+      else { fpLookupAddress(lng, lat); }
       showToast('필지를 선택했습니다. ' + (p.addr || p.jibun || '') +
                 '\n꼭짓점 ' + pts.length + '개 · ' + formatNumber(s.fieldAreaM2, 1) + '㎡ (' +
                 formatNumber(s.fieldAreaM2 / 3.305785, 1) + '평)', 5000, 'success');
@@ -4761,12 +4765,39 @@ TenarSecureStore.init('map',
     surveyMeasureState.isFieldComplete = true;
     updateFieldGeometry();
     fp.editingId = rec.id;
+    /* [v21-1] 작물·기준·총이랑수·비율까지 저장된 값으로 되살린다 */
+    if (rec.ctx) {
+      fp.ctx = {
+        app: 'tonghab', ts: Date.now(),
+        crop: rec.ctx.crop || '', mode: rec.ctx.mode || '길이',
+        L: (rec.ctx.L === 0 || rec.ctx.L) ? rec.ctx.L : '',
+        r1: rec.ctx.r1 || null, r2: rec.ctx.r2 || null,
+        ratio: rec.ctx.ratio || rec.ratio || 1,
+        surveyKey: rec.ctx.surveyKey || ''
+      };
+      try { saveJSON(FP_CTX_KEY, fp.ctx); } catch (e) {}
+    } else if (rec.crop || rec.r1 || rec.r2) {
+      /* v20 이전에 저장된 자료도 최대한 되살린다 */
+      fp.ctx = {
+        app: 'tonghab', ts: Date.now(),
+        crop: rec.crop || '', mode: rec.mode || '길이',
+        L: (rec.mode === '이랑') ? (rec.L || '') : '',
+        r1: rec.r1 || null, r2: rec.r2 || null,
+        ratio: rec.ratio || 1, surveyKey: rec.surveyKey || ''
+      };
+      try { saveJSON(FP_CTX_KEY, fp.ctx); } catch (e) {}
+    }
     fp.ratio = rec.ratio || 1;
+    fp.jibunAddress = rec.jibunAddress || '';
+    fp.roadAddress = rec.roadAddress || '';
     fp.ga = rec.ga || null; fp.na = rec.na || null;
     fp.angleA = Number(rec.angleA != null ? rec.angleA : rec.angle) || 0;
     fp.angleB = Number(rec.angleB != null ? rec.angleB : rec.angle) || 0;
     fp.angleMode = false;
     fpSetRatio(fp.ratio);
+    var _bn = document.getElementById('fpBanner');
+    if (_bn) { _bn.style.display = 'flex'; }
+    fpRenderBanner();                       /* [v21-1] 작물·기준·비율 표시 갱신 */
     if (fp.ga && fp.na) fpCompute();
     fpRender(); fpSyncButtons();
     fp.finished = !!rec.finished;
@@ -5532,6 +5563,8 @@ TenarSecureStore.init('map',
     angleSep: false,      /* [v17-5] 각도따로 : 끄면 A·B가 함께 움직인다 */
     finished: false,      /* [v17-6] 완료 상태 */
     toolOpen: false,      /* [v17] 포구도구 패널이 열려 있는가 */
+    jibunAddress: '',     /* [v20-1] 조사표 「필지 주소」로 보낼 지번주소 */
+    roadAddress: '',
     aPoLen: 0, bPoLen: 0, /* [v16-3] 가로기점 → 포구점 계산값(cm) */
     L_cm: 0,              /* 가-나 길이(cm) — 길이모드에서 지도 실측 */
     aSel: 0, bSel: 0,     /* 가로기점 (cm 또는 이랑 번째) */
@@ -5980,6 +6013,7 @@ TenarSecureStore.init('map',
     }
     fp.picking = null;
     if (fp.ga && fp.na) { fpCompute(); }
+    if (!fp.jibunAddress && fp.ga) fpLookupAddress(fp.ga[0], fp.ga[1]);   /* [v20-1] */
     fpRender();
     fpSyncButtons();
     geoPush();   /* [v19-6] 가·나 지정도 되돌리기 이력에 남긴다 */
@@ -6040,6 +6074,17 @@ TenarSecureStore.init('map',
     showToast('완료를 해제했습니다. 다시 고칠 수 있습니다.', 2600, 'info');
   }
 
+  /* [v20-1] 좌표로 지번주소를 찾아 보관한다 (재배구역처럼 필지 정보가 없을 때) */
+  function fpLookupAddress(lng, lat) {
+    try {
+      return requestVWorldReverse(lng, lat).then(function (a) {
+        if (a && a.jibunAddress) fp.jibunAddress = a.jibunAddress;
+        if (a && a.roadAddress) fp.roadAddress = a.roadAddress;
+        return fp.jibunAddress;
+      }).catch(function () { return fp.jibunAddress; });
+    } catch (e) { return Promise.resolve(fp.jibunAddress); }
+  }
+
   /* [v19-6] 가·나로 계산된 선·지점·값만 지운다 (가·나 자체와 도형은 그대로) */
   function fpClearDerived() {
     fp.path = null;
@@ -6053,6 +6098,7 @@ TenarSecureStore.init('map',
     fp.aSel = fp.bSel = fp.heightA = fp.heightB = fp.aPoLen = fp.bPoLen = 0;
     fp.picking = null; fp.angleA = fp.angleB = 0; fp.angleMode = false; fp.path = null;
     fp.finished = false; fp.angleSep = false;
+    fp.jibunAddress = ''; fp.roadAddress = '';   /* [v20-1] */
     fpUpdateAngleLabel();
     fpRender(); fpSyncButtons();
   }
@@ -6068,8 +6114,14 @@ TenarSecureStore.init('map',
     setSurveyMode('none');
     updateMeasurementSources();
     fpReset();
+    /* [v21-1] 작물·기준·총이랑수·비율(조사설정)도 함께 비운다 */
+    fp.ctx = null; fp.ratio = 1; fp._autoTo2 = false;
+    try { localStorage.removeItem(FP_CTX_KEY); } catch (e) {}
+    try { localStorage.removeItem(FP_PRELOAD_KEY); } catch (e) {}
+    fpMarkRatioButtons();
+    fpRenderBanner();
     geoClearHistory();   /* [v19-6] UNDO/REDO 이력까지 비움 */
-    showToast('포구도구를 초기화했습니다.', 2600, 'success');
+    showToast('포구도구를 초기화했습니다.\n작물·기준·비율도 함께 비웠습니다.', 3600, 'success');
   }
 
   /* ---------- 저장 / 조사표 전송 ---------- */
@@ -6095,6 +6147,24 @@ TenarSecureStore.init('map',
       path: fp.path, aPoLen: Math.round(fp.aPoLen || 0), bPoLen: Math.round(fp.bPoLen || 0),
       aBase: fp.aBase, bBase: fp.bBase, aPo: fp.aPo, bPo: fp.bPo,
       surveyKey: (fp.ctx && fp.ctx.surveyKey) || '',
+      /* [v20-1] 조사표 「필지 주소」에 넣을 값 */
+      jibunAddress: fp.jibunAddress || '',
+      roadAddress: fp.roadAddress || '',
+      /* [v20-2] 조사표가 비어 있을 때 채워 넣을 기준값들 */
+      r1: (fp.ctx && fp.ctx.r1) || null,
+      r2: (fp.ctx && fp.ctx.r2) || null,
+      oneRidge: fpIsOneRidge(),
+      /* [v21-1] 조사설정(작물·기준·총이랑수·비율)을 통째로 보관 →
+         목록에서 불러오면 그대로 되살아난다 */
+      ctx: fp.ctx ? {
+        crop: fp.ctx.crop || '',
+        mode: fp.ctx.mode || '길이',
+        L: (fp.ctx.L === 0 || fp.ctx.L) ? fp.ctx.L : '',
+        r1: fp.ctx.r1 || null,
+        r2: fp.ctx.r2 || null,
+        ratio: fp.ratio,
+        surveyKey: fp.ctx.surveyKey || ''
+      } : null,
       savedAt: kstNowStr()
     };
   }
@@ -6145,6 +6215,18 @@ TenarSecureStore.init('map',
 
   function fpSubmit() {
     if (!fpCanSubmit()) { showToast('가·나 지점을 먼저 지정해주세요.', 3000, 'info'); return; }
+    /* [v20-1] 주소를 아직 못 받았으면 최대 2초만 기다렸다 보낸다 */
+    if (!fp.jibunAddress && fp.ga) {
+      showToast('필지 주소를 확인하는 중입니다…', 0, 'info');
+      var done = false;
+      var go = function () { if (done) return; done = true; toastEl.style.display = 'none'; fpSubmitNow(); };
+      fpLookupAddress(fp.ga[0], fp.ga[1]).then(go);
+      setTimeout(go, 2000);
+      return;
+    }
+    fpSubmitNow();
+  }
+  function fpSubmitNow() {
     var rec = fpBuildResult();
     var unit = fpIsRidgeMode() ? '이랑' : 'cm';
     var msg = '조사표의 가-나·세로총길이 값을 덮어쓰고 전송하시겠습니까?\n\n' +
