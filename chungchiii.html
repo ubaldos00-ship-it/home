@@ -1,4 +1,4 @@
-<!-- chungchi_v33.html (v33) · 저장: 2026-07-21 18:32 KST · [v33] _tenarSetMapCoord 가 0,0 좌표 거부(통합계산기와 동일) -->
+<!-- chungchi_v34.html (v34) · 저장: 2026-07-22 04:16 KST · [v34] ⑥지역 기본선택 제거(경북)·초기화 시 작물/지역 해제 — 저장 시 미선택이면 안내 팝업으로 막음 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -651,7 +651,7 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
   <p style="font-size:12px;color:#555;margin-bottom:5px">■ 지역 선택</p>
   <div class="bg" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
     <button class="brg" data-region="대구" onclick="selReg(this)">대구</button>
-    <button class="brg on" data-region="경북" onclick="selReg(this)">경북</button>
+    <button class="brg" data-region="경북" onclick="selReg(this)">경북</button>
     <button class="brg" data-region="강원" onclick="selReg(this)">강원</button>
   </div>
   <p style="font-size:12px;color:#555;margin-bottom:5px;margin-top:9px">■ 작물 선택</p>
@@ -979,10 +979,15 @@ function ccDmgUpdate(){
   }
 }
 const EM={'대구':'🏙️','경북':'🌄','강원':'⛰️','서울':'🗼','부산':'🌊','인천':'✈️','광주':'🌻','대전':'🚀','울산':'🏭','세종':'🏛️','경기':'🌿','충북':'🌲','충남':'🌾','전북':'🌻','전남':'🌊','경남':'🌺','제주':'🍊'};
-let sR='경북',sC=null;
+let sR='',sC=null;   /* [v34-6] 지역·작물 기본선택 없음 */
+function _ccNeedSelect(what){
+  var msg = what + '을(를) 먼저 선택해주세요.';
+  try{ if(typeof _showBackToast==='function') _showBackToast('⚠ '+msg,3500); }catch(e){}
+  try{ alert(msg); }catch(e){}
+}
 function updateHeadStatus(){
   const el=document.getElementById('headStatus');
-  if(el) el.textContent=`${sR||'-'} · ${sC||'사과'}`;
+  if(el) el.textContent=`${sR||'-'} · ${sC||'-'}`;
 }
 function f(n){if(n===null||n===undefined||isNaN(n))return '-';return Number(n).toLocaleString('ko-KR');}
 function r1(v){return Math.round(v*10)/10;}
@@ -1023,7 +1028,7 @@ function goHome(){
   document.getElementById('address').value='';
   document.getElementById('surveyDate').valueAsDate=new Date();
   document.querySelectorAll('.bc').forEach(b=>b.classList.remove('on'));
-  sC='사과';
+  sC='';   /* [v34-6] 기본 작물 없음 */
   try{document.getElementById('memo').value='';}catch(e){}
   try{document.getElementById('uib').style.display='block';}catch(e){}
   try{document.getElementById('uibT').innerHTML='📌 <b>사과</b> 기본단위: 컨테이너 × 18kg';}catch(e){}
@@ -1692,7 +1697,9 @@ function resetAll(scrollTop=false){
   if(!confirm('모든 입력을 초기화하시겠습니까?'))return;
   document.getElementById('address').value='';
   document.getElementById('surveyDate').valueAsDate=new Date();
-  document.querySelectorAll('.bc').forEach(b=>b.classList.remove('on'));sC='사과';document.getElementById('memo').value='';
+  document.querySelectorAll('.bc').forEach(b=>b.classList.remove('on'));sC='';
+  document.querySelectorAll('.brg').forEach(b=>b.classList.remove('on'));sR='';   /* [v34-6] 기본 작물·지역 없음 */
+  document.getElementById('memo').value='';
   document.getElementById('uib').style.display='block';
   document.getElementById('uibT').innerHTML='📌 <b>사과</b> 기본단위: 컨테이너 × 18kg';
   document.getElementById('dUnit').textContent='컨테이너';
@@ -2195,6 +2202,9 @@ function _upsertMapFavIfCoord(entry){
 }
 
 function saveCurrentData(){
+  /* [v34-6] 작물·지역을 고르지 않으면 저장 진행 불가 */
+  if(!sC){ _ccNeedSelect('작물'); return; }
+  if(!sR){ _ccNeedSelect('지역'); return; }
   if(window._ccManualSaving) return;
   window._ccManualSaving = true;
   setTimeout(function(){ window._ccManualSaving = false; }, 700);

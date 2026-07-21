@@ -1,4 +1,4 @@
-<!-- tonghabbb_v33.html (v33) · 저장: 2026-07-21 18:32 KST · [v33] A/B포구(위치 계산) 왕복 후 지도 좌표가 사라져 0,0 핀이 생기던 근본 원인 차단 — fpOpen 에서 좌표 보관 후 복귀 시 복원, _tenarSetMapCoord 가 0,0 을 거부(초안 __mapLat:0 이 좋은 좌표를 지우지 못하게) -->
+<!-- tonghabbb_v34.html (v34) · 저장: 2026-07-22 04:16 KST · [v34] ⑥작물·지역 기본선택 제거(마늘·경북) — 처음엔 미선택, 「지도에서 위치 계산」·저장 시 미선택이면 안내 팝업으로 막음 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1859,7 +1859,7 @@ select,
         <div class="crop-grid">
 
       <!-- 마늘 -->
-      <button class="crop-btn active" data-crop="마늘" data-mode="이랑" data-n="20" onclick="selectCrop(this)">
+      <button class="crop-btn" data-crop="마늘" data-mode="이랑" data-n="20" onclick="selectCrop(this)">
         <div class="crop-ico"><svg width="26" height="28" viewBox="0 0 26 28" fill="none">
           <line x1="13" y1="1" x2="13" y2="6" stroke="#5A9020" stroke-width="1.6" stroke-linecap="round"/>
           <ellipse cx="13" cy="22.5" rx="5.5" ry="1.2" fill="#C8A840" opacity="0.35"/>
@@ -3673,7 +3673,7 @@ select,
 ═════════════════════════════════════════ */
 let selectedRatio = 1;
 let measureMode   = '길이';   // '이랑' | '길이'
-let selectedCrop  = '마늘';
+let selectedCrop  = '';   /* [v34-6] 기본 선택 없음 — 사용자가 고르게 */
 let cultivationType = '노지'; // '노지' | '시설'
 
 // 난수표 조회 결과 캐시
@@ -6136,9 +6136,7 @@ async function shareCaptureFromModal(){
       });
     }
 
-    // 기본 작물: 마늘
-    const defaultCropBtn = document.querySelector('.crop-btn[data-crop="마늘"]');
-    if(defaultCropBtn){ selectCrop(defaultCropBtn); }
+    // [v34-6] 기본 작물 없음 — 사용자가 직접 선택 (마늘 자동선택 제거)
 
     // 기본 비율: 1번
     selectRatio(1);
@@ -7642,7 +7640,7 @@ function nbDmgUpdate(ab){
 // ── prod 초기화 ──
 document.addEventListener('DOMContentLoaded', function(){
   if(typeof prodSyncFromCrop==='function') prodSyncFromCrop('마늘');
-  if(typeof prodSelectRegion==='function') prodSelectRegion('gyeongbuk');
+  /* [v34-6] 기본 지역 없음 — 사용자가 직접 선택 (경북 자동선택 제거) */
   // 논벼 피해부호 기본값(01 정상) 설명 초기 표시 (v88)
   setTimeout(function(){
     if(typeof nbDmgUpdate==='function'){ nbDmgUpdate('a'); nbDmgUpdate('b'); }
@@ -8522,6 +8520,18 @@ var _tenarMapLat = null, _tenarMapLng = null, _tenarMapColor = '';
     }
   }catch(e){}
 })();
+/* [v34-6] 「○○을 선택해주세요」 안내 팝업 (기존 확인창 스타일 재사용) */
+function _tenarNeedSelect(what){
+  try{
+    var msg = what + '을(를) 먼저 선택해주세요.';
+    if(typeof _showBackToast==='function'){ _showBackToast('⚠ ' + msg, 3500); }
+    alert(msg);
+  }catch(e){ try{ alert(what+'을(를) 먼저 선택해주세요.'); }catch(_){} }
+}
+/* [v34-6] 지역이 선택되었는지 (10a 생산량 지역 버튼) */
+function _prodRegionSelected(){
+  return !!document.querySelector('.prod-zone .ptog-btn.p-active-region');
+}
 function _tenarSetMapCoord(lat, lng, color){
   lat = Number(lat); lng = Number(lng);
   /* [v33] 0,0 은 한국에서 유효한 좌표가 아니다 → 좌표를 덮어쓰지 않는다.
@@ -8860,6 +8870,9 @@ function _upsertMapFavIfCoord(entry){
 }
 
 function saveCurrentData(){
+  /* [v34-6] 작물·지역을 고르지 않으면 저장 진행 불가 (팝업 안내) */
+  if(!selectedCrop){ _tenarNeedSelect('작물'); return; }
+  if(typeof _prodRegionSelected==='function' && !_prodRegionSelected()){ _tenarNeedSelect('지역'); return; }
   var d=_slCollect();
   var crop=d['__crop']||'unknown';
   var cropKo=(typeof PROD_CROP_KO!=='undefined'&&PROD_CROP_KO[crop])?PROD_CROP_KO[crop]:crop;
@@ -9273,6 +9286,11 @@ function _tenarOpenMapUrl(u){
 var FP_MAP_URL = 'map_libre.html';   /* [v15] 테스트 링크 파일명 */
 
 function fpOpen(){
+  /* [v34-6] 작물을 먼저 골라야 진행된다 */
+  if(!selectedCrop){
+    _tenarNeedSelect('작물');
+    return;
+  }
   /* [v17-8] 지도에 다녀온 뒤 보던 자리로 돌아오도록 스크롤 위치를 기억 */
   try{ sessionStorage.setItem('tenar_fp_scroll', String(window.scrollY||window.pageYOffset||0)); }catch(e){}
   /* [v33] A/B포구(위치 계산)에 다녀오면 지도 좌표가 사라져 즐겨찾기 핀이 0,0 으로
