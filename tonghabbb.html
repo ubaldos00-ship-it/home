@@ -1,4 +1,4 @@
-<!-- tonghabbb_v31.html (v31) · 저장: 2026-07-21 06:35 KST · [v31] 변경 없음 (v30 그대로) -->
+<!-- tonghabbb_v32.html (v32) · 저장: 2026-07-21 18:03 KST · [v32] ①즐겨찾기 핀 중복 방지 — 좌표가 유실돼도(A/B포구 왕복 후 0,0) 주소로 기존 핀을 찾아 갱신, 0,0 핀 생성 차단, 핀 id 보존 ②「지도에서 A/B포구 위치 선정」→「지도에서 위치 계산」 제목 변경 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -2070,7 +2070,7 @@ select,
              background:#EEF5EA;color:#27500A;font-size:13.5px;font-weight:800;font-family:inherit;
              cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;
              justify-content:center;gap:7px;">
-      <span id="fpOpenBtnLabel">🗺 지도에서 A/B포구 위치 선정</span>
+      <span id="fpOpenBtnLabel">🗺 지도에서 위치 계산</span>
       <!-- [v16-8] 지도에서 포구 선정이 끝나면 여기에 완료 표시가 붙는다 -->
       <span id="fpDoneBadge" style="display:none;padding:2px 8px;border-radius:999px;
             background:#1f8a4c;color:#fff;font-size:11px;font-weight:900;">✓ 완료</span>
@@ -8786,26 +8786,59 @@ function _upsertMapFavIfCoord(entry){
   try{
     if(!entry || !entry.surveyKey) return false;
     var lat = Number(entry.lat), lng = Number(entry.lng);
-    if(!isFinite(lat) || !isFinite(lng)) return false;
+    var addr = (entry.addr||'').trim();
+    /* [v32-1] 좌표가 없거나 0,0 이면 새 핀을 만들지 않는다.
+       (A/B포구 왕복 중 지도 좌표가 사라지면 0,0 핀이 새로 생기던 문제) */
+    var hasCoord = isFinite(lat) && isFinite(lng) && !(Math.abs(lat)<1e-6 && Math.abs(lng)<1e-6);
     var favKey = 'tenar_map_favs_v1';
     var favs = JSON.parse(localStorage.getItem(favKey) || '[]') || [];
     var dup = -1;
+    /* ① 같은 조사표(surveyKey) */
     for(var i=0;i<favs.length;i++){
-      if(favs[i] && favs[i].surveyKey === entry.surveyKey && (!entry.app || !favs[i].surveyApp || favs[i].surveyApp === entry.app)){ dup = i; break; }
+      if(favs[i] && (favs[i].surveyKey === entry.surveyKey || favs[i].surveyId === entry.surveyKey)
+         && (!entry.app || !favs[i].surveyApp || favs[i].surveyApp === entry.app)){ dup = i; break; }
     }
-    if(dup < 0){
+    /* ② 좌표가 거의 같은 핀 (조사표 연결 없는 것) */
+    if(dup < 0 && hasCoord){
       for(var j=0;j<favs.length;j++){
         var f=favs[j]||{};
-        if(!f.surveyKey && Math.abs((Number(f.lat)||0)-lat)<0.0001 && Math.abs((Number(f.lng)||0)-lng)<0.0001){ dup=j; break; }
+        var flat=(f.latitude!=null?Number(f.latitude):Number(f.lat)), flng=(f.longitude!=null?Number(f.longitude):Number(f.lng));
+        if((!f.surveyKey&&!f.surveyId) && Math.abs((flat||0)-lat)<0.0001 && Math.abs((flng||0)-lng)<0.0001){ dup=j; break; }
       }
     }
+    /* ③ [v32-1] 주소가 같은 핀 (좌표를 잃어버린 경우에도 중복 방지) */
+    if(dup < 0 && addr){
+      for(var k=0;k<favs.length;k++){
+        var g=favs[k]||{};
+        var gaddr=String(g.jibunAddress||g.addr||'').trim();
+        if(gaddr && gaddr===addr){ dup=k; break; }
+      }
+    }
+    /* 좌표도 없고 맞출 핀도 없으면 아무것도 하지 않는다 (0,0 핀 방지) */
+    if(dup < 0 && !hasCoord) return false;
+
     var old = dup>=0 ? (favs[dup]||{}) : {};
+    /* [v32-1] 좌표가 없으면 기존 핀(또는 주소로 찾은 핀)의 좌표를 유지한다 */
+    if(!hasCoord){
+      lat = (old.latitude!=null?Number(old.latitude):Number(old.lat));
+      lng = (old.longitude!=null?Number(old.longitude):Number(old.lng));
+      if(!(isFinite(lat)&&isFinite(lng))) return false;
+    }
     var color = old.color || entry.color || (entry.app==='chungchi'?'blue':'green');
     var crop = (entry.crop||'').trim();
-    var addr = (entry.addr||'').trim();
     var label = (crop ? crop + ' · ' : '') + (addr || (lat.toFixed(6)+', '+lng.toFixed(6)));
-    var rec = { label:label.slice(0,40), lat:lat, lng:lng, addr:addr, color:color,
-                locked:!!old.locked, surveyKey:entry.surveyKey, surveyApp:entry.app||'', crop:crop };
+    var rec = {
+      /* [v32-1] 기존 핀의 id 를 지키고, latitude/longitude 도 함께 채운다 */
+      id: old.id || undefined,
+      label:label.slice(0,40),
+      lat:lat, lng:lng, latitude:lat, longitude:lng,
+      addr:addr, jibunAddress:addr || old.jibunAddress || '',
+      color:color, locked:!!old.locked,
+      crop:crop || old.crop || '',
+      surveyKey:entry.surveyKey, surveyApp:entry.app||old.surveyApp||'',
+      surveyId:entry.surveyKey, surveyType:entry.app||old.surveyType||'',
+      createdAt: old.createdAt
+    };
     if(dup>=0) favs[dup]=rec; else favs.unshift(rec);
     localStorage.setItem(favKey, JSON.stringify(favs));
     return true;
@@ -9297,7 +9330,7 @@ function fpUpdateDoneBadge(){
   btn.style.background = done ? '#DFF0E3' : '#EEF5EA';
   btn.style.borderColor = done ? '#1f8a4c' : '#3B6D11';
   var lbl=document.getElementById('fpOpenBtnLabel');
-  if(lbl) lbl.textContent = done ? '🗺 지도에서 A/B포구 다시 선정' : '🗺 지도에서 A/B포구 위치 선정';
+  if(lbl) lbl.textContent = done ? '🗺 지도에서 위치 다시 계산' : '🗺 지도에서 위치 계산';
   if(done){
     var u=(r.mode==='이랑')?'이랑':'cm';
     var f=function(n){ return Number(Math.round(n||0)).toLocaleString(); };
