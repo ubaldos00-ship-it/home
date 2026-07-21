@@ -1,4 +1,4 @@
-<!-- chungchi_v34.html (v34) · 저장: 2026-07-22 04:16 KST · [v34] ⑥지역 기본선택 제거(경북)·초기화 시 작물/지역 해제 — 저장 시 미선택이면 안내 팝업으로 막음 -->
+<!-- chungchi_v35.html (v35) · 저장: 2026-07-22 05:02 KST · [v35] ④작물 기본선택(사과) 자동선택 제거 — 초기·초기화 모두 작물/지역 미선택 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1021,7 +1021,7 @@ document.addEventListener('touchmove',e=>{
 },{passive:false});
 document.getElementById('surveyDate').valueAsDate=new Date();
 bldHR();
-requestAnimationFrame(()=>{const apple=document.querySelector('.bc[data-crop="사과"]'); if(apple) selCrop(apple);});
+/* [v35-4] 초기 작물 자동선택(사과) 제거 — 사용자가 직접 고른다 */
 function goHome(){
   if(!confirm('모든 데이터가 초기화됩니다. 홈으로 가시겠습니까?')) return;
   /* 초기화 실행 (confirm 없이) */
@@ -1030,12 +1030,12 @@ function goHome(){
   document.querySelectorAll('.bc').forEach(b=>b.classList.remove('on'));
   sC='';   /* [v34-6] 기본 작물 없음 */
   try{document.getElementById('memo').value='';}catch(e){}
-  try{document.getElementById('uib').style.display='block';}catch(e){}
-  try{document.getElementById('uibT').innerHTML='📌 <b>사과</b> 기본단위: 컨테이너 × 18kg';}catch(e){}
-  try{document.getElementById('dUnit').textContent='컨테이너';}catch(e){}
-  try{document.getElementById('dWeight').textContent='18 kg';}catch(e){}
-  try{document.getElementById('tULbl').textContent='컨테이너';}catch(e){}
-  const apple=document.querySelector('.bc[data-crop="사과"]'); if(apple) apple.classList.add('on');
+  /* [v35-4] 초기화 시 작물 미선택 — 사과 자동선택/유닛박스 표시 제거 */
+  try{document.getElementById('uib').style.display='none';}catch(e){}
+  try{document.getElementById('uibT').innerHTML='';}catch(e){}
+  sR='';   /* 지역도 미선택 */
+  document.querySelectorAll('.brg').forEach(b=>b.classList.remove('on'));
+  if(typeof updateHeadStatus==='function') updateHeadStatus();
   try{rstA();}catch(e){}
   try{document.getElementById('hRows').innerHTML='';bldHR();}catch(e){}
   try{document.getElementById('resPer10a').textContent='0 kg';}catch(e){}
@@ -1703,9 +1703,10 @@ function resetAll(scrollTop=false){
   document.getElementById('uib').style.display='block';
   document.getElementById('uibT').innerHTML='📌 <b>사과</b> 기본단위: 컨테이너 × 18kg';
   document.getElementById('dUnit').textContent='컨테이너';
-  document.getElementById('dWeight').textContent='18 kg';
-  document.getElementById('tULbl').textContent='컨테이너';
-  const apple=document.querySelector('.bc[data-crop="사과"]'); if(apple) apple.classList.add('on'); updateHeadStatus();
+  /* [v35-4] 초기화 시 작물 미선택 (사과 자동선택 제거) */
+  try{document.getElementById('uib').style.display='none';}catch(e){}
+  try{document.getElementById('uibT').innerHTML='';}catch(e){}
+  updateHeadStatus();
   rstA();
   document.getElementById('hRows').innerHTML='';bldHR();
   document.getElementById('resPer10a').textContent='0 kg';

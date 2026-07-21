@@ -1,4 +1,4 @@
-<!-- map_v34.html (v34) · 저장: 2026-07-22 04:16 KST · [v34] ①②③위치저장 지도 — 진입 시 주소의 전체 지번주소로 제목·전체주소 통일, 핀 안 찍고 「조사표로」만 눌러도 저장·이동 가능 ④즐겨찾기 시트 높이↑(2개+ 보임)·좌표 아래 간격 축소·주소 한 줄 ⑤목록에 불러오기(📂) 버튼 추가(잠금·불러오기·삭제) -->
+<!-- map_v35.html (v35) · 저장: 2026-07-22 05:02 KST · [v35] ①「여기에 저장」 눌렀을 때만 전체주소·좌표 저장·조사표 전송, 저장 안 하고 「조사표로」만 누르면 저장 안 하고 입력 주소 그대로 유지 ②위치 저장 막대 버튼을 안내문 아래로(안내문 가로 전체) ③막대를 아래→위 슬라이드+상단 손잡이·닫기(✕→저장취소 확인, 나가기=조사표), 이 화면에서는 오른쪽 이모지 중 현재위치만 표시 -->
 <!-- (이전) map_v13.html (v13) · 저장: 2026-07-19 06:03 KST · [v13] 실측모드에서 저장핀(즐겨찾기)을 측정점으로 사용 — 일반 지도모드는 기존대로 저장위치 상세시트를 열고, 면적·길이 측정모드에서는 상세시트 대신 저장핀의 실제 위도·경도를 다음 측정점으로 추가. 중복좌표 방지 / 한 번 터치로 점 두 개 생기지 않게 이벤트 전파차단(suppressNextMapClick) / 실측모드에서 길게 누르면 저장핀 정보 확인 / 측정점 번호가 저장핀에 가리지 않도록 z-index 정리. 저장핀 원본(좌표·색상·작물·잠금)과 즐겨찾기 저장구조·JSON·암호화는 변경 없음 -->
 <!-- (이전) map_v11.html (v11) · 저장: 2026-07-19 · [v11] ①시트 열려도 지도 이동/확대/회전 가능(오버레이 통과)+제목줄까지 내려가는 최소화 스냅+최소화 버튼 ②레이어 초기화 버튼 ③축소 시 핀 크기 축소(좌표 고정, z16↑기본/z13~15 작게/z13↓점) ④선택 필지 안쪽 채움 제거(테두리만) ⑥토지정보 아이콘 📍 ⑦지도출처 ⓘ 중복 제거+주소 표기 ⑧핀 안 이모지→핀 위 작물명, 저장핀 시트 토글 2개 ⑨핀 수정=위치수정/이름수정 선택(좌표 기준 저장) ⑩메모 축소+시트 auto 높이 ⑪누른점 파랑+공유에 화면 캡처 첨부 -->
 <!-- (이전) map_v10.html (v10) · 저장: 2026-07-18 · [v10] ①②토지이용 범례 독립패널(가로형·드래그이동·접기·위치저장) ③실측도구 최소화 1회 동작(중복이벤트 제거) ④선택 필지 파란 강조 ⑤시트 위로 지도이동(padding) ⑥토지정보 4줄 재구성 ⑦공시지가 최신/전년 ⑧⑨PNU→추가정보 ⑩하단버튼 3개 통일 ⑪⑫⑬핀저장·길찾기·조사표(PNU/면적/공시지가/용도지역/필지경계) ⑭시트 열린채 길게누르기 ⑮회전각+i flex ⑯주소→공통 토지정보 ⑰표적 SVG 아이콘 ⑱⑲저장위치 재배치+현재필지정보+시트스택 ⑳즐겨찾기→저장위치 팝업 -->
@@ -727,30 +727,48 @@ TenarSecureStore.init('map',
   /* [v30-1] 아직 저장 안 된 위치 표시 (📍 이모지) */
   .temp-pin { font-size: 30px; line-height: 1; filter: drop-shadow(0 2px 3px rgba(0,0,0,.4)); transform: translateY(2px); }
   /* [v30-1] 조사표 위치 저장 막대 — 상단 손잡이를 잡고 이동 가능 */
+  /* [v35-2/3] 위치 저장 막대 — 아래에서 위로 슬라이드, 상단 손잡이로 닫기, 버튼은 안내문 아래 */
   #saveModeBar {
     position: absolute; left: 10px; right: 10px;
     bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
-    z-index: 40; border-radius: 14px;
-    background: rgba(39,80,10,.96); color: #fff;
-    box-shadow: 0 4px 16px rgba(0,0,0,.35);
+    z-index: 40; border-radius: 16px 16px 14px 14px;
+    background: rgba(39,80,10,.97); color: #fff;
+    box-shadow: 0 -4px 18px rgba(0,0,0,.35);
     overflow: hidden; touch-action: none;
+    transform: translateY(120%); transition: transform .28s ease;
   }
+  #saveModeBar.up { transform: translateY(0); }
   #saveModeBar.dragged { left: auto; right: auto; bottom: auto; }
   #smbHead {
     display: flex; align-items: center; justify-content: space-between; gap: 6px;
-    padding: 5px 10px; background: rgba(0,0,0,.22);
-    font-size: 11px; font-weight: 800; cursor: grab; user-select: none; touch-action: none;
+    padding: 7px 12px; background: rgba(0,0,0,.22);
+    font-size: 11.5px; font-weight: 800; cursor: grab; user-select: none; touch-action: none;
+    position: relative;
   }
   #smbHead:active { cursor: grabbing; }
-  #smbHead .smb-grip { opacity: .8; letter-spacing: 2px; }
-  #smbBody { display: flex; align-items: center; gap: 8px; padding: 10px 12px; }
-  #saveModeBar .smb-txt { flex: 1; font-size: 11.5px; font-weight: 700; line-height: 1.45; min-width: 0; }
-  #saveModeBar button {
-    flex: 0 0 auto; border: 0; border-radius: 10px; padding: 9px 11px;
-    font-size: 12px; font-weight: 800; font-family: inherit; cursor: pointer;
+  /* 가운데 손잡이 바 */
+  #smbHead::before {
+    content: ''; position: absolute; left: 50%; top: 4px; transform: translateX(-50%);
+    width: 40px; height: 4px; border-radius: 2px; background: rgba(255,255,255,.5);
+  }
+  #smbHead .smb-close {
+    border: 0; background: rgba(255,255,255,.18); color: #fff;
+    width: 26px; height: 26px; border-radius: 8px; font-size: 15px; font-weight: 800;
+    cursor: pointer; line-height: 1; flex: 0 0 auto; z-index: 1;
+  }
+  /* [v35-2] 본문 : 안내문(가로 전체) 위, 버튼줄 아래 */
+  #smbBody { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px 12px; }
+  #saveModeBar .smb-txt { font-size: 12px; font-weight: 700; line-height: 1.5; }
+  #smbBtns { display: flex; gap: 8px; }
+  #saveModeBar #smbBtns button {
+    flex: 1; border: 0; border-radius: 10px; padding: 11px 8px;
+    font-size: 13px; font-weight: 800; font-family: inherit; cursor: pointer;
   }
   #saveModeBar #smbSave { background: #fff; color: #27500A; }
   #saveModeBar #smbBack { background: #ffc107; color: #3b2f00; }
+  /* [v35-3] 위치 저장 화면일 때 오른쪽 버튼은 현재위치만 남긴다 */
+  body.save-mode #sideBtns, body.save-mode #btnLayer, body.save-mode #btnPins, body.save-mode #btnFpTool,
+  body.save-mode #btnMeasure, body.save-mode #btnTrack, body.save-mode #btnFav { display: none !important; }
 
   .fp-gana {
     position: absolute; width: 21px; height: 21px; border-radius: 11px;
@@ -7336,19 +7354,17 @@ TenarSecureStore.init('map',
   }
   function saveModeReturn() {
     if (!saveMode) return;
-    /* [v34-1] 좌표가 아직 없으면(핀도 안 찍고 지오코딩도 안 끝남) 타이핑 주소로
-       좌표·전체주소를 먼저 만든 뒤 보낸다 → 핀 없이도 조사표로 이동 가능 */
-    if (!(isFinite(saveMode.lat) && isFinite(saveMode.lng))) {
-      if (!saveMode.addr) { showToast('먼저 지도에서 위치를 정해주세요.', 3200, 'info'); return; }
-      showToast('주소 위치를 확인하는 중입니다…', 0, 'info');
-      saveModeGeocodeTyped(saveMode.addr, false).then(function (hit) {
-        toastEl.style.display = 'none';
-        if (hit && isFinite(saveMode.lat) && isFinite(saveMode.lng)) saveModeReturnNow();
-        else showToast('주소를 찾지 못했습니다.\n지도를 눌러 위치를 정해주세요.', 4500, 'info');
-      });
-      return;
+    document.body.classList.remove('save-mode');
+    /* [v35-1] 저장했으면(여기에 저장 눌렀거나 핀 찍고 저장) 전체주소·좌표를 보낸다.
+       저장 안 했으면 아무 것도 안 넘기고 그냥 돌아간다
+       → 조사표는 원래 입력했던 주소를 그대로 유지한다 (주소를 잘못 적었을 때 대비). */
+    if (saveMode.saved && isFinite(saveMode.lat) && isFinite(saveMode.lng)) {
+      saveModeReturnNow();
+    } else {
+      showToast('저장하지 않고 조사표로 돌아갑니다.', 1800, 'info');
+      var bar = document.getElementById('saveModeBar'); if (bar) bar.classList.remove('up');
+      setTimeout(function () { window.location.href = saveModeBackUrl(); }, 400);
     }
-    saveModeReturnNow();
   }
   /* 즐겨찾기에 저장/갱신 — 같은 조사표(surveyKey)면 덮어쓴다 */
   function saveModePin(silent) {
@@ -7398,16 +7414,31 @@ TenarSecureStore.init('map',
     var bar = document.createElement('div');
     bar.id = 'saveModeBar';
     bar.innerHTML =
-      '<div id="smbHead"><span>📌 조사 위치 저장</span><span class="smb-grip">⋮⋮</span></div>' +
+      '<div id="smbHead"><span>📌 조사 위치 저장</span><button type="button" class="smb-close" aria-label="닫기">✕</button></div>' +
       '<div id="smbBody">' +
-      '<div class="smb-txt">지도를 눌러 위치를 정한 뒤<br><b>조사표로 돌아가기</b>를 누르세요</div>' +
+      '<div class="smb-txt">지도를 눌러 위치를 정한 뒤 아래 버튼을 누르세요</div>' +
+      '<div id="smbBtns">' +
       '<button type="button" id="smbSave">📍 여기에 저장</button>' +
       '<button type="button" id="smbBack">↩ 조사표로</button>' +
-      '</div>';
+      '</div></div>';
     document.body.appendChild(bar);
     document.getElementById('smbSave').addEventListener('click', function () { saveModePin(false); });
     document.getElementById('smbBack').addEventListener('click', saveModeReturn);
-    makeDraggable(bar, document.getElementById('smbHead'));   /* [v30-1] 손잡이로 이동 */
+    bar.querySelector('.smb-close').addEventListener('click', saveModeClose);
+    makeDraggable(bar, document.getElementById('smbHead'));   /* 손잡이로 이동 */
+    /* [v35-3] 아래에서 위로 슬라이드 · 위치 저장 화면 표시(오른쪽 버튼 숨김) */
+    document.body.classList.add('save-mode');
+    requestAnimationFrame(function () { setTimeout(function () { bar.classList.add('up'); }, 30); });
+  }
+
+  /* [v35-3] 닫기 → 저장 취소 확인 (취소=현재유지 / 나가기=처음화면) */
+  function saveModeClose() {
+    var go = window.confirm('조사 위치 저장이 취소됩니다.\n\n확인 = 처음 화면(조사표)으로 나가기\n취소 = 현재 화면 유지');
+    if (!go) return;
+    document.body.classList.remove('save-mode');
+    var bar = document.getElementById('saveModeBar'); if (bar) bar.classList.remove('up');
+    /* 저장하지 않고 조사표로 나간다 (좌표·주소 안 넘김 → 조사표는 입력했던 주소 유지) */
+    setTimeout(function () { window.location.href = saveModeBackUrl(); }, 250);
   }
 
   /* [v30-1] 요소를 손잡이로 잡아 화면 안에서 옮긴다 (터치·마우스 공용) */
