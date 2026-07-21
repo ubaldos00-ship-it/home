@@ -1,4 +1,4 @@
-<!-- map_v35.html (v35) · 저장: 2026-07-22 05:02 KST · [v35] ①「여기에 저장」 눌렀을 때만 전체주소·좌표 저장·조사표 전송, 저장 안 하고 「조사표로」만 누르면 저장 안 하고 입력 주소 그대로 유지 ②위치 저장 막대 버튼을 안내문 아래로(안내문 가로 전체) ③막대를 아래→위 슬라이드+상단 손잡이·닫기(✕→저장취소 확인, 나가기=조사표), 이 화면에서는 오른쪽 이모지 중 현재위치만 표시 -->
+<!-- map_v36.html (v36) · 저장: 2026-07-22 05:28 KST · [v36] ①조사위치 저장 모드에 주소 없이 들어오면 현재 위치를 잡아 그 자리·전체주소로 채움(권한 없으면 안내) ②저장 모드 화면에서 레이어 이모지 복원 — 레이어·현재위치 둘 다 표시(나머지는 숨김) -->
 <!-- (이전) map_v13.html (v13) · 저장: 2026-07-19 06:03 KST · [v13] 실측모드에서 저장핀(즐겨찾기)을 측정점으로 사용 — 일반 지도모드는 기존대로 저장위치 상세시트를 열고, 면적·길이 측정모드에서는 상세시트 대신 저장핀의 실제 위도·경도를 다음 측정점으로 추가. 중복좌표 방지 / 한 번 터치로 점 두 개 생기지 않게 이벤트 전파차단(suppressNextMapClick) / 실측모드에서 길게 누르면 저장핀 정보 확인 / 측정점 번호가 저장핀에 가리지 않도록 z-index 정리. 저장핀 원본(좌표·색상·작물·잠금)과 즐겨찾기 저장구조·JSON·암호화는 변경 없음 -->
 <!-- (이전) map_v11.html (v11) · 저장: 2026-07-19 · [v11] ①시트 열려도 지도 이동/확대/회전 가능(오버레이 통과)+제목줄까지 내려가는 최소화 스냅+최소화 버튼 ②레이어 초기화 버튼 ③축소 시 핀 크기 축소(좌표 고정, z16↑기본/z13~15 작게/z13↓점) ④선택 필지 안쪽 채움 제거(테두리만) ⑥토지정보 아이콘 📍 ⑦지도출처 ⓘ 중복 제거+주소 표기 ⑧핀 안 이모지→핀 위 작물명, 저장핀 시트 토글 2개 ⑨핀 수정=위치수정/이름수정 선택(좌표 기준 저장) ⑩메모 축소+시트 auto 높이 ⑪누른점 파랑+공유에 화면 캡처 첨부 -->
 <!-- (이전) map_v10.html (v10) · 저장: 2026-07-18 · [v10] ①②토지이용 범례 독립패널(가로형·드래그이동·접기·위치저장) ③실측도구 최소화 1회 동작(중복이벤트 제거) ④선택 필지 파란 강조 ⑤시트 위로 지도이동(padding) ⑥토지정보 4줄 재구성 ⑦공시지가 최신/전년 ⑧⑨PNU→추가정보 ⑩하단버튼 3개 통일 ⑪⑫⑬핀저장·길찾기·조사표(PNU/면적/공시지가/용도지역/필지경계) ⑭시트 열린채 길게누르기 ⑮회전각+i flex ⑯주소→공통 토지정보 ⑰표적 SVG 아이콘 ⑱⑲저장위치 재배치+현재필지정보+시트스택 ⑳즐겨찾기→저장위치 팝업 -->
@@ -767,7 +767,8 @@ TenarSecureStore.init('map',
   #saveModeBar #smbSave { background: #fff; color: #27500A; }
   #saveModeBar #smbBack { background: #ffc107; color: #3b2f00; }
   /* [v35-3] 위치 저장 화면일 때 오른쪽 버튼은 현재위치만 남긴다 */
-  body.save-mode #sideBtns, body.save-mode #btnLayer, body.save-mode #btnPins, body.save-mode #btnFpTool,
+  /* [v36-1] 조사위치 저장 화면 — 레이어·현재위치만 남기고 나머지는 숨긴다 */
+  body.save-mode #btnPins, body.save-mode #btnFpTool,
   body.save-mode #btnMeasure, body.save-mode #btnTrack, body.save-mode #btnFav { display: none !important; }
 
   .fp-gana {
@@ -7515,8 +7516,30 @@ TenarSecureStore.init('map',
     if (saveMode.addr) {
       saveModeGeocodeTyped(saveMode.addr, true);
     } else {
-      showToast('지도를 눌러 위치를 정해주세요.', 4000, 'info');
+      /* [v36-1] 주소가 없으면(또는 안 넣고 들어오면) 현재 위치를 잡아 그 자리를 보여준다 */
+      saveModeUseCurrentLocation();
     }
+  }
+
+  /* [v36-1] 조사위치 저장 모드에서 현재 위치를 잡아 그 좌표·전체주소로 채운다 */
+  function saveModeUseCurrentLocation() {
+    if (!navigator.geolocation) {
+      showToast('현재 위치를 쓸 수 없습니다.\n지도를 눌러 위치를 정해주세요.', 4500, 'info');
+      return;
+    }
+    showToast('현재 위치를 확인하고 있습니다…', 0, 'info');
+    navigator.geolocation.getCurrentPosition(function (pos) {
+      var lat = pos.coords.latitude, lng = pos.coords.longitude;
+      map.jumpTo({ center: [lng, lat], zoom: 18 });
+      saveModeSetPoint(lng, lat, saveMode.addr || '');
+      requestVWorldReverse(lng, lat).then(function (a) {
+        toastEl.style.display = 'none';
+        if (a && a.jibunAddress) saveModeSetFullAddr(a.jibunAddress);
+        else showToast('현재 위치입니다. 주소를 못 찾았지만 좌표는 잡혔습니다.', 3500, 'info');
+      }).catch(function () { toastEl.style.display = 'none'; });
+    }, function () {
+      showToast('현재 위치 권한이 없습니다.\n지도를 눌러 위치를 정해주세요.', 4500, 'info');
+    }, { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 });
   }
 
   /* [v34-1] 타이핑한 주소 → 좌표 → 그 자리의 전체 지번주소로 채운다 */

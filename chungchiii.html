@@ -1,4 +1,4 @@
-<!-- chungchi_v35.html (v35) · 저장: 2026-07-22 05:02 KST · [v35] ④작물 기본선택(사과) 자동선택 제거 — 초기·초기화 모두 작물/지역 미선택 -->
+<!-- chungchi_v36.html (v36) · 저장: 2026-07-22 05:28 KST · [v36] 필지주소 📍 를 주소 없이 눌러도 save=1(조사위치 저장 모드)로 진입 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -2488,7 +2488,15 @@ function _tenarOpenMapFromAddress(){
     }catch(e){}
   }
   var base = _tenarMapBase();
-  if(!a){ _tenarOpenMapUrl(base); return; }
+  /* [v36-1] 주소가 없어도(또는 틀려도) 조사위치 저장 모드로 진입해 현재위치를 잡는다.
+     예전에는 주소가 없으면 save 모드 없이 그냥 지도만 열었다. */
+  if(!a){
+    var u0 = base + '?save=1&app=chungchi&color=' + encodeURIComponent(_tenarMapColor || 'blue');
+    if(linkedKey){ u0 += '&surveyKey=' + encodeURIComponent(linkedKey); }
+    var _crop0 = (typeof sC !== 'undefined' && sC) ? sC : '';
+    if(_crop0){ u0 += '&label=' + encodeURIComponent(_crop0); }
+    _tenarOpenMapUrl(u0); return;
+  }
   /* 주소를 지오코딩해 이동 → 핀 저장 → 선택 (save=1). 저장자료면 surveyKey 연결 */
   var u = base + '?q=' + encodeURIComponent(a) + '&save=1&app=chungchi&color=' + encodeURIComponent(_tenarMapColor || 'blue');
   if(linkedKey){ u += '&surveyKey=' + encodeURIComponent(linkedKey); }
