@@ -1,4 +1,4 @@
-<!-- tonghabbb_v32.html (v32) · 저장: 2026-07-21 18:03 KST · [v32] ①즐겨찾기 핀 중복 방지 — 좌표가 유실돼도(A/B포구 왕복 후 0,0) 주소로 기존 핀을 찾아 갱신, 0,0 핀 생성 차단, 핀 id 보존 ②「지도에서 A/B포구 위치 선정」→「지도에서 위치 계산」 제목 변경 -->
+<!-- tonghabbb_v33.html (v33) · 저장: 2026-07-21 18:32 KST · [v33] A/B포구(위치 계산) 왕복 후 지도 좌표가 사라져 0,0 핀이 생기던 근본 원인 차단 — fpOpen 에서 좌표 보관 후 복귀 시 복원, _tenarSetMapCoord 가 0,0 을 거부(초안 __mapLat:0 이 좋은 좌표를 지우지 못하게) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -8512,9 +8512,23 @@ function slSmartSave(){
 
 /* 지도에서 조사표 입력으로 넘어온 실제 클릭 좌표 보관 */
 var _tenarMapLat = null, _tenarMapLng = null, _tenarMapColor = '';
+/* [v33] A/B포구에 다녀온 뒤 좌표가 비어 있으면 보관해 둔 값으로 되살린다 */
+(function(){
+  try{
+    var c = JSON.parse(sessionStorage.getItem('tenar_fp_coord')||'null');
+    if(c && isFinite(Number(c.lat)) && isFinite(Number(c.lng))){
+      _tenarMapLat = Number(c.lat); _tenarMapLng = Number(c.lng);
+      if(c.color) _tenarMapColor = String(c.color);
+    }
+  }catch(e){}
+})();
 function _tenarSetMapCoord(lat, lng, color){
   lat = Number(lat); lng = Number(lng);
-  if(isFinite(lat) && isFinite(lng)){ _tenarMapLat = lat; _tenarMapLng = lng; }
+  /* [v33] 0,0 은 한국에서 유효한 좌표가 아니다 → 좌표를 덮어쓰지 않는다.
+     (A/B포구 왕복 후 복원된 초안의 __mapLat:0 이 좋은 좌표를 지우던 문제 방지) */
+  if(isFinite(lat) && isFinite(lng) && !(Math.abs(lat)<1e-6 && Math.abs(lng)<1e-6)){
+    _tenarMapLat = lat; _tenarMapLng = lng;
+  }
   if(color){ _tenarMapColor = String(color).trim(); }
 }
 function _tenarGetMapCoordFromSaved(d){
@@ -9261,6 +9275,13 @@ var FP_MAP_URL = 'map_libre.html';   /* [v15] 테스트 링크 파일명 */
 function fpOpen(){
   /* [v17-8] 지도에 다녀온 뒤 보던 자리로 돌아오도록 스크롤 위치를 기억 */
   try{ sessionStorage.setItem('tenar_fp_scroll', String(window.scrollY||window.pageYOffset||0)); }catch(e){}
+  /* [v33] A/B포구(위치 계산)에 다녀오면 지도 좌표가 사라져 즐겨찾기 핀이 0,0 으로
+     새로 생기던 문제 → 나가기 전에 현재 좌표를 보관해 두었다가 돌아오면 되살린다. */
+  try{
+    if(isFinite(_tenarMapLat) && isFinite(_tenarMapLng)){
+      sessionStorage.setItem('tenar_fp_coord', JSON.stringify({lat:_tenarMapLat, lng:_tenarMapLng, color:_tenarMapColor||''}));
+    }
+  }catch(e){}
   function rv(id){ var e=document.getElementById(id); return e ? (e.value||'').trim() : ''; }
   var ctx = {
     app:'tonghab', ts:Date.now(),
@@ -9358,6 +9379,16 @@ window.fpUpdateDoneBadge=fpUpdateDoneBadge;
        (v23 의 중복차단이 이 재적용까지 막아 이전자료가 남아 있었다) */
     if(!_force && window.__fpLastApplied === _stamp) return;
     window.__fpLastApplied = _stamp;
+
+    /* [v33] 좌표가 비어 있으면 보관해 둔 지도 좌표로 되살린다 (핀 0,0 방지) */
+    try{
+      if(!(isFinite(_tenarMapLat)&&isFinite(_tenarMapLng))){
+        var _c = JSON.parse(sessionStorage.getItem('tenar_fp_coord')||'null');
+        if(_c && isFinite(Number(_c.lat)) && isFinite(Number(_c.lng))){
+          _tenarSetMapCoord(Number(_c.lat), Number(_c.lng), _c.color||'');
+        }
+      }
+    }catch(e){}
 
     /* [v17-8] 지도에서 비율을 바꿨으면 조사표도 그 비율로 맞춘다 */
     if(r.ratio && typeof selectRatio==='function' && Number(r.ratio)!==Number(selectedRatio)){

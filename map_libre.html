@@ -1,4 +1,4 @@
-<!-- map_v32.html (v32) · 저장: 2026-07-21 18:03 KST · [v32] ③포구도구에서 필지선택 시 파란 강조선을 그리지 않음(측정도구에서는 그대로) ②버튼 제목은 계산기에서 변경 -->
+<!-- map_v33.html (v33) · 저장: 2026-07-21 18:32 KST · [v33] 좌표 0,0(한반도 밖) 저장핀을 목록·저장소에서 자동 정리(앱 시작 시 1회). 잘못 저장된 핀 제거 -->
 <!-- (이전) map_v13.html (v13) · 저장: 2026-07-19 06:03 KST · [v13] 실측모드에서 저장핀(즐겨찾기)을 측정점으로 사용 — 일반 지도모드는 기존대로 저장위치 상세시트를 열고, 면적·길이 측정모드에서는 상세시트 대신 저장핀의 실제 위도·경도를 다음 측정점으로 추가. 중복좌표 방지 / 한 번 터치로 점 두 개 생기지 않게 이벤트 전파차단(suppressNextMapClick) / 실측모드에서 길게 누르면 저장핀 정보 확인 / 측정점 번호가 저장핀에 가리지 않도록 z-index 정리. 저장핀 원본(좌표·색상·작물·잠금)과 즐겨찾기 저장구조·JSON·암호화는 변경 없음 -->
 <!-- (이전) map_v11.html (v11) · 저장: 2026-07-19 · [v11] ①시트 열려도 지도 이동/확대/회전 가능(오버레이 통과)+제목줄까지 내려가는 최소화 스냅+최소화 버튼 ②레이어 초기화 버튼 ③축소 시 핀 크기 축소(좌표 고정, z16↑기본/z13~15 작게/z13↓점) ④선택 필지 안쪽 채움 제거(테두리만) ⑥토지정보 아이콘 📍 ⑦지도출처 ⓘ 중복 제거+주소 표기 ⑧핀 안 이모지→핀 위 작물명, 저장핀 시트 토글 2개 ⑨핀 수정=위치수정/이름수정 선택(좌표 기준 저장) ⑩메모 축소+시트 auto 높이 ⑪누른점 파랑+공유에 화면 캡처 첨부 -->
 <!-- (이전) map_v10.html (v10) · 저장: 2026-07-18 · [v10] ①②토지이용 범례 독립패널(가로형·드래그이동·접기·위치저장) ③실측도구 최소화 1회 동작(중복이벤트 제거) ④선택 필지 파란 강조 ⑤시트 위로 지도이동(padding) ⑥토지정보 4줄 재구성 ⑦공시지가 최신/전년 ⑧⑨PNU→추가정보 ⑩하단버튼 3개 통일 ⑪⑫⑬핀저장·길찾기·조사표(PNU/면적/공시지가/용도지역/필지경계) ⑭시트 열린채 길게누르기 ⑮회전각+i flex ⑯주소→공통 토지정보 ⑰표적 SVG 아이콘 ⑱⑲저장위치 재배치+현재필지정보+시트스택 ⑳즐겨찾기→저장위치 팝업 -->
@@ -2275,10 +2275,30 @@ TenarSecureStore.init('map',
       surveyApp: r.surveyType || r.surveyApp || ''
     };
   }
+  /* [v33] 좌표가 0,0(또는 한반도 범위 밖)인 핀은 잘못 저장된 것이므로 목록에서 뺀다 */
+  function _favCoordOk(r) {
+    var la = Number(r.latitude), lo = Number(r.longitude);
+    if (!(isFinite(la) && isFinite(lo))) return false;
+    if (Math.abs(la) < 1e-6 && Math.abs(lo) < 1e-6) return false;   /* 0,0 */
+    if (la < 32 || la > 40 || lo < 124 || lo > 132) return false;   /* 한반도 대략 범위 밖 */
+    return true;
+  }
   function getFavs() {
     var arr = loadJSON(FAV_KEY, []);
     if (!Array.isArray(arr)) arr = [];
-    return arr.map(normalizeFav).filter(function (r) { return isFinite(r.latitude) && isFinite(r.longitude); });
+    return arr.map(normalizeFav).filter(_favCoordOk);
+  }
+  /* [v33] 잘못 저장된 0,0 핀을 실제 저장소에서도 한 번 정리한다 (앱 시작 시 1회) */
+  function cleanupBadFavs() {
+    try {
+      var raw = loadJSON(FAV_KEY, []);
+      if (!Array.isArray(raw) || !raw.length) return;
+      var good = raw.map(normalizeFav).filter(_favCoordOk);
+      if (good.length !== raw.length && secureReady) {
+        saveJSON(FAV_KEY, good.map(normalizeFav));
+        console.log('[v33] 잘못된 저장핀 ' + (raw.length - good.length) + '개 정리');
+      }
+    } catch (e) {}
   }
   function setFavs(arr) {
     /* 보안저장 준비 전에는 기존 데이터를 덮어쓰지 않는다 (데이터 유실 방지) */
@@ -7576,6 +7596,7 @@ TenarSecureStore.init('map',
     try { ccMeasInit(); } catch (e) { console.error('[v26] 청취 면적측정 init 오류:', e); }   /* [v26-6] */
     try { saveModeInit(); } catch (e) { console.error('[v29] 위치저장 init 오류:', e); }        /* [v29-1] */
     try { bulkSyncInit(); } catch (e) { console.error('[v30] bulk init 오류:', e); }              /* [v30-4] */
+    try { setTimeout(cleanupBadFavs, 300); } catch (e) {}                                          /* [v33] 0,0 핀 정리 */
   });
 
   /* [v19-4] 면적 라벨은 "화면에서 도형 아래"에 놓이므로 회전하면 다시 계산한다.
