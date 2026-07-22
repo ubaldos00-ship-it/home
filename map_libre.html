@@ -1,4 +1,5 @@
-<!-- map_v36.html (v36) · 저장: 2026-07-22 05:28 KST · [v36] ①조사위치 저장 모드에 주소 없이 들어오면 현재 위치를 잡아 그 자리·전체주소로 채움(권한 없으면 안내) ②저장 모드 화면에서 레이어 이모지 복원 — 레이어·현재위치 둘 다 표시(나머지는 숨김) -->
+<!-- map_v37.html (v37) · 저장: 2026-07-22 14:56 KST · [v37] 즐겨찾기·포구·측정 저장목록 통합 — 즐겨찾기(부모)+요도(자식) 구조. 새 키 tenar_map_items_v1. 포구/면적/길이 저장 시 대표좌표로 부모 즐겨찾기를 찾아(PNU>surveyId>5m좌표는 확인후) 연결·없으면 새로 생성. 옛 키(favs/fieldplot/measure) 보존+1회 마이그레이션(tenar_map_library_migrated_v37). 통합 목록: 부모 카드에 포구·면적·길이 개수, 펼치면 자식별 표시(눈)/잠금/삭제, 부모 전체표시/숨김. JSON version:37(favorites+mapItems, 구버전 호환). 측정도구 목록 버튼→즐겨찾기에서 보기. 조사표 연결(surveyId/recordId) 유지 -->
+<!-- (이전)  map_v36.html (v36) · 저장: 2026-07-22 05:28 KST · [v36] ①조사위치 저장 모드에 주소 없이 들어오면 현재 위치를 잡아 그 자리·전체주소로 채움(권한 없으면 안내) ②저장 모드 화면에서 레이어 이모지 복원 — 레이어·현재위치 둘 다 표시(나머지는 숨김) -->
 <!-- (이전) map_v13.html (v13) · 저장: 2026-07-19 06:03 KST · [v13] 실측모드에서 저장핀(즐겨찾기)을 측정점으로 사용 — 일반 지도모드는 기존대로 저장위치 상세시트를 열고, 면적·길이 측정모드에서는 상세시트 대신 저장핀의 실제 위도·경도를 다음 측정점으로 추가. 중복좌표 방지 / 한 번 터치로 점 두 개 생기지 않게 이벤트 전파차단(suppressNextMapClick) / 실측모드에서 길게 누르면 저장핀 정보 확인 / 측정점 번호가 저장핀에 가리지 않도록 z-index 정리. 저장핀 원본(좌표·색상·작물·잠금)과 즐겨찾기 저장구조·JSON·암호화는 변경 없음 -->
 <!-- (이전) map_v11.html (v11) · 저장: 2026-07-19 · [v11] ①시트 열려도 지도 이동/확대/회전 가능(오버레이 통과)+제목줄까지 내려가는 최소화 스냅+최소화 버튼 ②레이어 초기화 버튼 ③축소 시 핀 크기 축소(좌표 고정, z16↑기본/z13~15 작게/z13↓점) ④선택 필지 안쪽 채움 제거(테두리만) ⑥토지정보 아이콘 📍 ⑦지도출처 ⓘ 중복 제거+주소 표기 ⑧핀 안 이모지→핀 위 작물명, 저장핀 시트 토글 2개 ⑨핀 수정=위치수정/이름수정 선택(좌표 기준 저장) ⑩메모 축소+시트 auto 높이 ⑪누른점 파랑+공유에 화면 캡처 첨부 -->
 <!-- (이전) map_v10.html (v10) · 저장: 2026-07-18 · [v10] ①②토지이용 범례 독립패널(가로형·드래그이동·접기·위치저장) ③실측도구 최소화 1회 동작(중복이벤트 제거) ④선택 필지 파란 강조 ⑤시트 위로 지도이동(padding) ⑥토지정보 4줄 재구성 ⑦공시지가 최신/전년 ⑧⑨PNU→추가정보 ⑩하단버튼 3개 통일 ⑪⑫⑬핀저장·길찾기·조사표(PNU/면적/공시지가/용도지역/필지경계) ⑭시트 열린채 길게누르기 ⑮회전각+i flex ⑯주소→공통 토지정보 ⑰표적 SVG 아이콘 ⑱⑲저장위치 재배치+현재필지정보+시트스택 ⑳즐겨찾기→저장위치 팝업 -->
@@ -276,7 +277,7 @@
   window._tenarAppKo=function(app){ return app==='tonghab'?'통합계산기':(app==='chungchi'?'청취계산기':(app==='map'?'지도':app)); };
 })();
 TenarSecureStore.init('map',
-  ['tenar_map_favs_v1','tenar_map_bulk','tenar_pending_survey_coord','tenar_meas_ctx','tenar_meas_result','tenar_measure_saves_v1','tenar_fieldplot_saves_v1','tenar_map_last_view_v1','tenar_map_settings_v1'],
+  ['tenar_map_favs_v1','tenar_map_items_v1','tenar_map_bulk','tenar_pending_survey_coord','tenar_meas_ctx','tenar_meas_result','tenar_measure_saves_v1','tenar_fieldplot_saves_v1','tenar_map_last_view_v1','tenar_map_settings_v1'],
   ['tonghabSave_','chungchiSave_']);
 </script>
 <!-- ═══════════ /TenarCrypto 보안 저장 계층 ═══════════ -->
@@ -1196,7 +1197,7 @@ TenarSecureStore.init('map',
       <div class="tp-sec">③ 저장 / 목록</div>
       <div class="tp-grid">
         <button class="tool-btn one-line" type="button" id="btnSaveMeas"><span class="em">💾</span>저장</button>
-        <button class="tool-btn one-line" type="button" id="btnMeasList"><span class="em">📋</span>목록</button>
+        <button class="tool-btn one-line" type="button" id="btnMeasList"><span class="em">⭐</span>즐겨찾기에서 보기</button>
       </div>
       <div class="tp-sec">④ 조사표 전송</div>
       <button class="tool-btn one-line" type="button" id="btnSendArea" style="width:100%"><span class="em">📤</span>조사표 전송</button>
@@ -1293,6 +1294,231 @@ TenarSecureStore.init('map',
   var FAV_KEY      = 'tenar_map_favs_v1';
   var MEAS_KEY     = 'tenar_measure_saves_v1';
   var FPS_KEY      = 'tenar_fieldplot_saves_v1';   /* [v16-6] A/B포구는 면적·길이와 다른 목록에 저장 */
+  var MAP_ITEM_KEY = 'tenar_map_items_v1';         /* [v37] 즐겨찾기에 연결되는 포구·면적·길이 요도(자식) */
+  var MIGRATED_FLAG = 'tenar_map_library_migrated_v37';
+
+  /* ═══════════════════════════════════════════════════════════════
+     [v37] 통합 저장목록 — 즐겨찾기(부모) + 요도(자식) 구조
+     · 부모 : tenar_map_favs_v1 (기존, id 절대 안 바꿈)
+     · 자식 : tenar_map_items_v1 (포구·면적·길이 도형/계산값)
+     · 자식은 favoriteId 로 부모에 연결. 주소·좌표는 부모에만 한 번 저장.
+     ═══════════════════════════════════════════════════════════════ */
+  function _uid37(pfx) { return (pfx || 'it') + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+  function getMapItems() { var a = loadJSON(MAP_ITEM_KEY, []); return Array.isArray(a) ? a : []; }
+  function setMapItems(arr) {
+    if (!secureReady) { showToast('저장 준비 중입니다.\n잠시 후 다시 시도해주세요.', 3000, 'info'); return false; }
+    saveJSON(MAP_ITEM_KEY, Array.isArray(arr) ? arr : []);
+    return true;
+  }
+  function itemsOfFav(favId) { return getMapItems().filter(function (x) { return x && x.favoriteId === favId; }); }
+  function itemCounts(favId) {
+    var c = { fieldplot: 0, area: 0, distance: 0 };
+    itemsOfFav(favId).forEach(function (x) { if (c[x.type] != null) c[x.type]++; });
+    return c;
+  }
+  /* 요도 종류별 다음 순번(이름 자동) */
+  function nextItemName(favId, type) {
+    var n = itemsOfFav(favId).filter(function (x) { return x.type === type; }).length + 1;
+    var label = (type === 'fieldplot') ? 'A/B포구' : (type === 'area') ? '면적' : '길이';
+    return label + ' ' + n;
+  }
+  /* 종류별 색 순환 (면적·길이 구분용) */
+  var _AREA_COLORS = ['#1f8a4c', '#d97706', '#7c3aed', '#0891b2', '#db2777'];
+  var _DIST_COLORS = ['#1a5fd0', '#0891b2', '#7c3aed', '#059669', '#d97706'];
+  function nextItemColor(favId, type) {
+    var same = itemsOfFav(favId).filter(function (x) { return x.type === type; }).length;
+    if (type === 'area') return _AREA_COLORS[same % _AREA_COLORS.length];
+    if (type === 'distance') return _DIST_COLORS[same % _DIST_COLORS.length];
+    return '#111827';   /* 포구는 내부 A파랑/B빨강 유지 */
+  }
+
+  /* [v37-8] 대표 좌표로 연결할 즐겨찾기 찾기 (PNU > 좌표 5m > 없음)
+     자동병합은 하지 않고, 근처 후보가 있으면 favIdxNear 로 알려 확인창을 띄운다. */
+  function findFavForLocation(opts) {
+    var arr = getFavs();
+    /* ① favoriteId 명시 */
+    if (opts.favoriteId) {
+      for (var i = 0; i < arr.length; i++) if (arr[i].id === opts.favoriteId) return { idx: i, how: 'id' };
+    }
+    /* ② PNU 동일 */
+    if (opts.pnu) {
+      for (var j = 0; j < arr.length; j++) if (arr[j].pnu && arr[j].pnu === opts.pnu) return { idx: j, how: 'pnu' };
+    }
+    /* ③ surveyId(recordId) 동일 */
+    if (opts.surveyId) {
+      for (var k = 0; k < arr.length; k++) if ((arr[k].surveyId || arr[k].surveyKey) === opts.surveyId) return { idx: k, how: 'survey' };
+    }
+    /* ④ 좌표 5m 이내 → 후보만 반환(자동병합 금지) */
+    if (isFinite(opts.lat) && isFinite(opts.lng)) {
+      for (var m = 0; m < arr.length; m++) {
+        var f = arr[m]; var fl = Number(f.latitude), fg = Number(f.longitude);
+        if (!(isFinite(fl) && isFinite(fg))) continue;
+        var d = _haversine(opts.lat, opts.lng, fl, fg);
+        if (d <= 5) return { idx: m, how: 'near', dist: d };
+      }
+    }
+    return { idx: -1, how: 'none' };
+  }
+  function _haversine(la1, lo1, la2, lo2) {
+    var R = 6371000, toR = Math.PI / 180;
+    var dLa = (la2 - la1) * toR, dLo = (lo2 - lo1) * toR;
+    var a = Math.sin(dLa / 2) * Math.sin(dLa / 2) +
+            Math.cos(la1 * toR) * Math.cos(la2 * toR) * Math.sin(dLo / 2) * Math.sin(dLo / 2);
+    return 2 * R * Math.asin(Math.min(1, Math.sqrt(a)));
+  }
+  /* 새 즐겨찾기(부모) 생성 후 인덱스 반환 */
+  function createFavForItem(opts) {
+    var arr = getFavs();
+    var rec = normalizeFav({
+      name: opts.name || opts.addr || '조사 위치',
+      jibunAddress: opts.addr || '', latitude: opts.lat, longitude: opts.lng,
+      pnu: opts.pnu || '', color: opts.color || 'green', crop: opts.crop || '',
+      surveyType: opts.surveyType || '', surveyId: opts.surveyId || ''
+    });
+    arr.unshift(rec); setFavs(arr);
+    return rec;
+  }
+  /* 요도 하나 저장(부모 결정 → 자식 추가). onDone(favRec, itemRec, how) */
+  function saveMapItem(itemData, locOpts, onDone) {
+    function commit(favRec, how) {
+      var items = getMapItems();
+      var it = {
+        id: _uid37('it'), favoriteId: favRec.id,
+        type: itemData.type, name: itemData.name || nextItemName(favRec.id, itemData.type),
+        visible: true, locked: false,
+        geometry: itemData.geometry || null, points: itemData.points || [],
+        fieldPlotData: itemData.fieldPlotData || null, measurementData: itemData.measurementData || null,
+        color: (itemData.color != null) ? itemData.color : nextItemColor(favRec.id, itemData.type),
+        crop: itemData.crop || favRec.crop || '',
+        surveyType: itemData.surveyType || '', surveyId: itemData.surveyId || '', recordId: itemData.recordId || '',
+        addrSnapshot: favRec.jibunAddress || '',
+        mapCenter: itemData.mapCenter || null, mapZoom: itemData.mapZoom || 0,
+        mapBearing: itemData.mapBearing || 0, mapPitch: itemData.mapPitch || 0,
+        createdAt: kstNowStr(), updatedAt: kstNowStr()
+      };
+      items.unshift(it); setMapItems(items);
+      renderMapItems();
+      if (typeof onDone === 'function') onDone(favRec, it, how);
+    }
+    var hit = findFavForLocation(locOpts);
+    if (hit.idx >= 0 && hit.how === 'near') {
+      /* 좌표만 가까운 경우 → 확인창 */
+      var f = getFavs()[hit.idx];
+      _tenarChoice3({
+        title: '가까운 저장 위치',
+        message: '근처(약 ' + Math.round(hit.dist) + 'm)에 저장된 위치가 있습니다.\n「' +
+                 (f.name || f.jibunAddress || '저장 위치') + '」\n\n기존 위치에 연결할까요, 새 위치로 저장할까요?',
+        addLabel: '기존 위치에 연결', replaceLabel: '새 위치로 저장', cancelLabel: '취소'
+      }).then(function (c) {
+        if (c === 'cancel') return;
+        if (c === 'add') commit(getFavs()[hit.idx], 'near');
+        else commit(createFavForItem(locOpts), 'new');
+      });
+      return;
+    }
+    if (hit.idx >= 0) { commit(getFavs()[hit.idx], hit.how); return; }
+    commit(createFavForItem(locOpts), 'new');
+  }
+
+  /* [v37] 저장된 요도들을 지도에 그린다 (visible 이면서 부모 childrenVisible 인 것만) */
+  function renderMapItems() {
+    if (!map.getSource || !map.getSource('map-items-source')) return;
+    var favById = {}; getFavs().forEach(function (f) { favById[f.id] = f; });
+    var fc = { type: 'FeatureCollection', features: [] };
+    getMapItems().forEach(function (it) {
+      var parent = favById[it.favoriteId];
+      var parentOn = !parent || parent.childrenVisible !== false;
+      var vis = parentOn && it.visible !== false;
+      var col = it.color || (it.type === 'area' ? '#1f8a4c' : it.type === 'distance' ? '#1a5fd0' : '#111827');
+      if (it.type === 'fieldplot' && it.geometry) {
+        fc.features.push({ type: 'Feature', id: it.id, properties: { itemId: it.id, kind: 'poly', visible: vis, color: '#7c3aed' }, geometry: it.geometry.type ? it.geometry : { type: 'Polygon', coordinates: it.geometry } });
+      } else if (it.type === 'area' && it.geometry) {
+        fc.features.push({ type: 'Feature', id: it.id, properties: { itemId: it.id, kind: 'poly', visible: vis, color: col }, geometry: it.geometry });
+      } else if (it.type === 'distance' && it.points && it.points.length >= 2) {
+        fc.features.push({ type: 'Feature', id: it.id, properties: { itemId: it.id, kind: 'line', visible: vis, color: col }, geometry: { type: 'LineString', coordinates: it.points } });
+      }
+    });
+    map.getSource('map-items-source').setData(fc);
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     [v37] 마이그레이션 — 기존 A/B포구·측정 저장자료를 통합 구조로 복사
+     · 원본(FPS_KEY, MEAS_KEY)은 그대로 둔다 (읽기 유지·백업).
+     · 한 번만 실행 (MIGRATED_FLAG).
+     ═══════════════════════════════════════════════════════════════ */
+  function migrateMapLibraryV37() {
+    try {
+      if (localStorage.getItem(MIGRATED_FLAG) === '1') return;
+      if (!secureReady) return;   /* 복호화 준비 전엔 하지 않음 */
+      var items = getMapItems();
+      var existingKeys = {}; items.forEach(function (x) { if (x.srcKey) existingKeys[x.srcKey] = true; });
+      var added = 0;
+
+      function ensureFav(loc) {
+        var hit = findFavForLocation(loc);
+        if (hit.idx >= 0) return getFavs()[hit.idx];
+        return createFavForItem(loc);
+      }
+
+      /* A/B포구 → fieldplot 요도 */
+      (getFpSaves() || []).forEach(function (rec) {
+        var srcKey = 'fp:' + rec.id;
+        if (existingKeys[srcKey]) return;
+        var ga = rec.ga, poly = rec.polygon;
+        var lat = ga ? ga[1] : (rec.mapCenter ? rec.mapCenter[1] : NaN);
+        var lng = ga ? ga[0] : (rec.mapCenter ? rec.mapCenter[0] : NaN);
+        var fav = ensureFav({ lat: lat, lng: lng, addr: rec.jibunAddress || '', crop: rec.crop || '', surveyId: rec.surveyKey || '', color: 'green' });
+        items.unshift({
+          id: _uid37('it'), favoriteId: fav.id, srcKey: srcKey,
+          type: 'fieldplot', name: rec.name || nextItemName(fav.id, 'fieldplot'),
+          visible: true, locked: !!rec.locked,
+          geometry: poly ? { type: 'Polygon', coordinates: poly } : null, points: [],
+          fieldPlotData: rec, measurementData: null, color: '#7c3aed',
+          crop: rec.crop || '', surveyType: rec.surveyType || 'tonghab', surveyId: rec.surveyKey || '',
+          addrSnapshot: rec.jibunAddress || '',
+          mapCenter: rec.mapCenter || null, mapZoom: rec.zoom || 0, mapBearing: rec.bearing || 0, mapPitch: rec.pitch || 0,
+          createdAt: rec.createdAt || rec.savedAt || kstNowStr(), updatedAt: kstNowStr()
+        });
+        added++;
+      });
+
+      /* 측정 저장 → area/distance 요도 (한 레코드에 여러 개면 각각) */
+      (getMeasSaves() || []).forEach(function (rec) {
+        var srcKey = 'ms:' + rec.id;
+        if (existingKeys[srcKey]) return;
+        var first = rec.firstPoint || (rec.areas && rec.areas[0] && rec.areas[0].points[0]) || (rec.lines && rec.lines[0] && rec.lines[0].points[0]) || (rec.mapCenter || null);
+        var lat = first ? first[1] : NaN, lng = first ? first[0] : NaN;
+        var fav = ensureFav({ lat: lat, lng: lng, addr: rec.jibunAddress || '', crop: rec.crop || '', color: 'green' });
+        (rec.areas || []).forEach(function (ar, ai) {
+          items.unshift({
+            id: _uid37('it'), favoriteId: fav.id, srcKey: srcKey + ':a' + ai,
+            type: 'area', name: nextItemName(fav.id, 'area'), visible: true, locked: !!rec.locked,
+            geometry: { type: 'Polygon', coordinates: [closedRing(ar.points)] }, points: ar.points,
+            measurementData: { areaM2: ar.areaM2, perimeterM: ar.perimeterM }, fieldPlotData: null,
+            color: nextItemColor(fav.id, 'area'), crop: rec.crop || '', addrSnapshot: rec.jibunAddress || '',
+            createdAt: rec.createdAt || kstNowStr(), updatedAt: kstNowStr()
+          });
+          added++;
+        });
+        (rec.lines || []).forEach(function (ln, li) {
+          items.unshift({
+            id: _uid37('it'), favoriteId: fav.id, srcKey: srcKey + ':l' + li,
+            type: 'distance', name: nextItemName(fav.id, 'distance'), visible: true, locked: !!rec.locked,
+            geometry: null, points: ln.points,
+            measurementData: { segs: ln.segs, totalM: ln.totalM }, fieldPlotData: null,
+            color: nextItemColor(fav.id, 'distance'), crop: rec.crop || '', addrSnapshot: rec.jibunAddress || '',
+            createdAt: rec.createdAt || kstNowStr(), updatedAt: kstNowStr()
+          });
+          added++;
+        });
+      });
+
+      setMapItems(items);
+      localStorage.setItem(MIGRATED_FLAG, '1');
+      renderMapItems();
+      if (added > 0) showToast('기존 포구·측정 저장자료 ' + added + '건을 즐겨찾기 목록으로 통합했습니다.\n기존 원본은 그대로 유지됩니다.', 5000, 'success');
+    } catch (e) { console.warn('[v37] 마이그레이션 오류', e); }
+  }
   var DISP_KEY     = 'tenar_map_display_v1';       /* [v28-7] 화면 표시 켜짐/꺼짐 */
   var VIEW_KEY     = 'tenar_map_last_view_v1';
   var SETTINGS_KEY = 'tenar_map_settings_v1';
@@ -2277,6 +2503,8 @@ TenarSecureStore.init('map',
       postalCode: r.postalCode || '',
       latitude: lat, longitude: lng,
       color: colorKey,
+      pnu: r.pnu || '',                           /* [v37] 필지 식별 */
+      childrenVisible: (r.childrenVisible !== false),   /* [v37] 연결 요도 전체 표시 */
       crop: r.crop || '',
       cropIcon: r.cropIcon || cropIconOf(r.crop || ''),
       memo: r.memo || '',
@@ -2895,18 +3123,22 @@ TenarSecureStore.init('map',
       return;
     }
     favs.forEach(function (f, i) {
-      /* [v8-18] 잠금 카드는 연한 파랑, 해제 카드는 연한 아이보리 */
       var card = el('div', 'fav-card' + (f.locked ? ' locked' : ''));
       var num = el('div', 'fav-num', String(favs.length - i));
       num.style.background = colorHex(f.color);
+
+      var cnt = itemCounts(f.id);
+      var total = cnt.fieldplot + cnt.area + cnt.distance;
+      var summary = total
+        ? '<div class="fav-items">🚩 포구 ' + cnt.fieldplot + ' · ▱ 면적 ' + cnt.area + ' · ↔ 길이 ' + cnt.distance + '</div>'
+        : '<div class="fav-items" style="color:#aaa;">연결된 자료 없음</div>';
 
       var body = el('div', 'fav-body',
         '<div class="fav-name">' +
         '<span class="crop-tag' + (f.crop ? '' : ' crop-none') + '">' + escapeHtml(f.crop || '없음') + '</span>' +
         escapeHtml(f.name) + '</div>' +
         '<div class="fav-addr">' + escapeHtml(f.jibunAddress || f.name || '-') + '</div>' +
-        '<div class="fav-coord">' + f.latitude.toFixed(6) + ', ' + f.longitude.toFixed(6) + '</div>');
-      /* [v10-20] 즐겨찾기 목록 선택 → 저장 위치 팝업 (GPS 현재위치 팝업이 아님) */
+        summary);
       body.addEventListener('click', function () {
         closeSheet();
         map.flyTo({ center: [f.longitude, f.latitude], zoom: LOCATION_FOCUS_ZOOM, essential: true });
@@ -2914,26 +3146,24 @@ TenarSecureStore.init('map',
       });
 
       var acts = el('div', 'fav-acts');
-      /* [v8-17] 잠금: 파란 자물쇠 / 해제: 회색 열린 자물쇠 */
+      /* [v37] 연결요도 전체 표시/숨김 (부모 childrenVisible) */
+      var eye = el('button', 'icon-btn ' + (f.childrenVisible === false ? 'lock-off' : 'open-on'), f.childrenVisible === false ? '🚫' : '👁');
+      eye.title = '연결 요도 전체 표시/숨김';
+      eye.style.display = total ? '' : 'none';
+      eye.addEventListener('click', function (ev) {
+        ev.stopPropagation();
+        var arr = getFavs();
+        for (var k = 0; k < arr.length; k++) if (arr[k].id === f.id) { arr[k].childrenVisible = (arr[k].childrenVisible === false); arr[k].updatedAt = kstNowStr(); }
+        setFavs(arr); renderMapItems(); renderFavList();
+      });
       var lock = el('button', 'icon-btn ' + (f.locked ? 'lock-on' : 'lock-off'), f.locked ? '🔒' : '🔓');
-      lock.title = '삭제 방지 잠금';   /* [v8-20] 잠금은 삭제 방지용 (암호화와 별개) */
+      lock.title = '삭제 방지 잠금';
       lock.addEventListener('click', function (ev) {
         ev.stopPropagation();
         var arr = getFavs();
         for (var k = 0; k < arr.length; k++) if (arr[k].id === f.id) { arr[k].locked = !arr[k].locked; arr[k].updatedAt = kstNowStr(); }
         setFavs(arr); renderFavList();
       });
-      /* [v8-17] 잠금 시 삭제 버튼은 회색 비활성 / 해제 시 빨강 활성 */
-      var del = el('button', 'icon-btn ' + (f.locked ? 'del-off' : 'del-on'), '🗑');
-      del.addEventListener('click', function (ev) {
-        ev.stopPropagation();
-        if (f.locked) { showToast('잠금된 위치입니다.\n잠금을 해제한 후 삭제해주세요.', 4000); return; }
-        if (!window.confirm('이 즐겨찾기 위치를 삭제하시겠습니까?')) return;
-        setFavs(getFavs().filter(function (x) { return x.id !== f.id; }));
-        renderFavList();
-        showToast('삭제되었습니다.', 2000, 'success');
-      });
-      /* [v34-5] 불러오기 : 그 핀 위치로 지도를 옮기고 저장 위치 시트를 연다 */
       var load = el('button', 'icon-btn open-on', '📂');
       load.title = '이 핀 불러오기';
       load.addEventListener('click', function (ev) {
@@ -2942,11 +3172,109 @@ TenarSecureStore.init('map',
         map.flyTo({ center: [f.longitude, f.latitude], zoom: LOCATION_FOCUS_ZOOM, essential: true });
         setTimeout(function () { openSavedLocationSheet(f); }, 350);
       });
-      acts.appendChild(lock); acts.appendChild(load); acts.appendChild(del);
+      /* [v37-21] 삭제 : 연결 요도가 있으면 확인 */
+      var del = el('button', 'icon-btn ' + (f.locked ? 'del-off' : 'del-on'), '🗑');
+      del.addEventListener('click', function (ev) {
+        ev.stopPropagation();
+        if (f.locked) { showToast('잠금된 위치입니다.\n잠금을 해제한 후 삭제해주세요.', 4000); return; }
+        var c2 = itemCounts(f.id), t2 = c2.fieldplot + c2.area + c2.distance;
+        if (t2 > 0) {
+          if (!window.confirm('이 위치에는 연결된 자료가 있습니다.\n포구 ' + c2.fieldplot + ' · 면적 ' + c2.area + ' · 길이 ' + c2.distance +
+                              '\n\n위치와 연결 자료를 모두 삭제하시겠습니까?')) return;
+          setMapItems(getMapItems().filter(function (x) { return x.favoriteId !== f.id; }));
+          renderMapItems();
+        } else {
+          if (!window.confirm('이 즐겨찾기 위치를 삭제하시겠습니까?')) return;
+        }
+        setFavs(getFavs().filter(function (x) { return x.id !== f.id; }));
+        renderFavList();
+        showToast('삭제되었습니다.', 2000, 'success');
+      });
+      acts.appendChild(eye); acts.appendChild(lock); acts.appendChild(load); acts.appendChild(del);
 
       card.appendChild(num); card.appendChild(body); card.appendChild(acts);
+
+      /* [v37-9] 연결 요도 펼치기 */
+      if (total) {
+        var toggle = el('div', 'fav-expand', '▼ 연결된 자료 ' + total + '개');
+        toggle.style.cssText = 'width:100%;margin-top:6px;padding:5px 2px;font-size:12px;font-weight:800;color:#1a5fd0;cursor:pointer;';
+        var childBox = el('div', 'fav-children');
+        childBox.style.cssText = 'width:100%;display:none;margin-top:2px;';
+        toggle.addEventListener('click', function (ev) {
+          ev.stopPropagation();
+          var open = childBox.style.display === 'none';
+          childBox.style.display = open ? 'block' : 'none';
+          toggle.textContent = (open ? '▲' : '▼') + ' 연결된 자료 ' + total + '개';
+          if (open && !childBox.dataset.built) { buildFavChildren(childBox, f.id); childBox.dataset.built = '1'; }
+        });
+        card.appendChild(toggle); card.appendChild(childBox);
+      }
       list.appendChild(card);
     });
+  }
+
+  /* [v37] 연결된 요도 목록 (개별 표시/숨김·잠금·삭제) */
+  function buildFavChildren(box, favId) {
+    box.innerHTML = '';
+    var icons = { fieldplot: '🚩', area: '▱', distance: '↔' };
+    itemsOfFav(favId).forEach(function (it) {
+      var row = el('div', 'fav-child-row');
+      row.style.cssText = 'display:flex;align-items:center;gap:6px;padding:5px 6px;border-top:1px solid #f0f0f4;';
+      var nm = el('div', null, '<span style="font-size:13px;">' + (icons[it.type] || '•') + '</span> <span style="font-size:12.5px;font-weight:700;">' + escapeHtml(it.name || it.type) + '</span>');
+      nm.style.cssText = 'flex:1;min-width:0;cursor:pointer;';
+      nm.addEventListener('click', function () {
+        closeSheet();
+        focusMapItem(it);
+      });
+      var vis = el('button', 'icon-btn ' + (it.visible === false ? 'lock-off' : 'open-on'), it.visible === false ? '🚫' : '👁');
+      vis.style.cssText = 'width:34px;height:30px;flex:0 0 auto;';
+      vis.title = '표시/숨김';
+      vis.addEventListener('click', function () {
+        var arr = getMapItems();
+        for (var k = 0; k < arr.length; k++) if (arr[k].id === it.id) arr[k].visible = (arr[k].visible === false);
+        setMapItems(arr); renderMapItems();
+        it.visible = (it.visible === false);
+        vis.className = 'icon-btn ' + (it.visible === false ? 'lock-off' : 'open-on');
+        vis.textContent = it.visible === false ? '🚫' : '👁';
+      });
+      var lk = el('button', 'icon-btn ' + (it.locked ? 'lock-on' : 'lock-off'), it.locked ? '🔒' : '🔓');
+      lk.style.cssText = 'width:34px;height:30px;flex:0 0 auto;';
+      lk.addEventListener('click', function () {
+        var arr = getMapItems();
+        for (var k = 0; k < arr.length; k++) if (arr[k].id === it.id) arr[k].locked = !arr[k].locked;
+        setMapItems(arr); it.locked = !it.locked;
+        lk.className = 'icon-btn ' + (it.locked ? 'lock-on' : 'lock-off');
+        lk.textContent = it.locked ? '🔒' : '🔓';
+      });
+      var dl = el('button', 'icon-btn del-on', '🗑');
+      dl.style.cssText = 'width:34px;height:30px;flex:0 0 auto;';
+      dl.addEventListener('click', function () {
+        if (it.locked) { showToast('잠긴 요도입니다. 잠금을 풀어주세요.', 3000); return; }
+        if (!window.confirm('이 요도를 삭제하시겠습니까? (대표 위치는 유지됩니다)')) return;
+        setMapItems(getMapItems().filter(function (x) { return x.id !== it.id; }));
+        renderMapItems();
+        box.dataset.built = ''; buildFavChildren(box, favId);
+        renderFavList();
+        showToast('요도를 삭제했습니다.', 2000, 'success');
+      });
+      row.appendChild(nm); row.appendChild(vis); row.appendChild(lk); row.appendChild(dl);
+      box.appendChild(row);
+    });
+  }
+
+  /* [v37] 요도로 지도 이동 + 강조 표시 */
+  function focusMapItem(it) {
+    try {
+      if (it.type === 'fieldplot' && it.fieldPlotData) { loadFpSave(it.fieldPlotData); return; }
+      var coords = null;
+      if (it.geometry && it.geometry.coordinates) coords = (it.type === 'distance') ? it.points : it.geometry.coordinates[0];
+      else if (it.points && it.points.length) coords = it.points;
+      if (coords && coords.length) {
+        var b = new maplibregl.LngLatBounds();
+        coords.forEach(function (c) { b.extend(c); });
+        map.fitBounds(b, { padding: 90, duration: 600 });
+      }
+    } catch (e) {}
   }
 
   function favFitBounds() {
@@ -2965,7 +3293,7 @@ TenarSecureStore.init('map',
   function favShare() {
     var favs = getFavs();
     if (!favs.length) { showToast('저장된 즐겨찾기 위치가 없습니다.', 3000, 'info'); return; }
-    window._tenarBuildExport({ app: 'map', type: 'favorites', savedAt: kstNowStr(), favorites: favs }, 'map')
+    window._tenarBuildExport({ app: 'map', type: 'favorites', version: 37, savedAt: kstNowStr(), exportedAt: kstNowStr(), favorites: favs, mapItems: getMapItems() }, 'map')  /* [v37] 요도 포함 */
       .then(function (out) {
         if (!out) return;
         var file = new File([out.text], 'tenar_map_favs_' + Date.now() + '.json', { type: 'application/json' });
@@ -3015,8 +3343,15 @@ TenarSecureStore.init('map',
             var next = (choice === 'replace') ? incoming.map(normalizeFav)
                                               : incoming.map(normalizeFav).concat(cur);
             setFavs(next);
+            /* [v37] 요도(map items)도 함께 불러온다 (있을 때만) */
+            var inItems = (data && data.mapItems && data.mapItems.length) ? data.mapItems : null;
+            if (inItems) {
+              var curItems = getMapItems();
+              setMapItems((choice === 'replace') ? inItems.slice() : inItems.concat(curItems));
+              renderMapItems();
+            }
             renderFavList();
-            showToast('즐겨찾기 ' + incoming.length + '개를 불러왔습니다.', 3000, 'success');
+            showToast('즐겨찾기 ' + incoming.length + '개' + (inItems ? (' · 요도 ' + inItems.length + '개') : '') + '를 불러왔습니다.', 3000, 'success');
           });
         }).catch(function (e) {
           if (e && e.code === 'CANCELLED') return;
@@ -3802,6 +4137,19 @@ TenarSecureStore.init('map',
 
     map.addSource('survey-field-source', { type: 'geojson', data: emptyFC() });
     map.addSource('survey-distance-source', { type: 'geojson', data: emptyFC() });
+    /* [v37] 저장된 요도(포구·면적·길이) 표시용 소스/레이어 — 개별 visible 은 필터로 처리 */
+    map.addSource('map-items-source', { type: 'geojson', data: emptyFC() });
+    map.addLayer({
+      id: 'map-items-fill', type: 'fill', source: 'map-items-source',
+      filter: ['all', ['==', ['get', 'kind'], 'poly'], ['==', ['get', 'visible'], true]],
+      paint: { 'fill-color': ['coalesce', ['get', 'color'], '#1f8a4c'], 'fill-opacity': 0.14 }
+    });
+    map.addLayer({
+      id: 'map-items-line', type: 'line', source: 'map-items-source',
+      filter: ['all', ['in', ['get', 'kind'], ['literal', ['poly', 'line']]], ['==', ['get', 'visible'], true]],
+      layout: { 'line-cap': 'round', 'line-join': 'round' },
+      paint: { 'line-color': ['coalesce', ['get', 'color'], '#1f8a4c'], 'line-width': 3 }
+    });
 
     map.addLayer({
       id: 'survey-field-fill', type: 'fill', source: 'survey-field-source',
@@ -4226,6 +4574,9 @@ TenarSecureStore.init('map',
       var padr = p.addr || p.jibun || p.ADDR || p.JIBUN || '';
       if (padr) { fp.jibunAddress = String(padr); }
       else { fpLookupAddress(lng, lat); }
+      /* [v37] PNU·필지중심 보관 (통합 저장 시 같은 필지 판단·대표 좌표) */
+      fp.parcelPnu = p.pnu || p.PNU || p.pnu_cd || '';
+      try { var _c = turf.centerOfMass(f).geometry.coordinates; fp.parcelCenter = _c; } catch (e) { fp.parcelCenter = null; }
       showToast('필지를 선택했습니다. ' + (p.addr || p.jibun || '') +
                 '\n꼭짓점 ' + pts.length + '개 · ' + formatNumber(s.fieldAreaM2, 1) + '㎡ (' +
                 formatNumber(s.fieldAreaM2 / 3.305785, 1) + '평)', 5000, 'success');
@@ -4628,6 +4979,31 @@ TenarSecureStore.init('map',
   }
 
   /* 현재 화면의 모든 측정(작업 중 + 완료된 것)을 하나의 저장 객체로 만든다 */
+  /* [v37] 측정 저장(면적·길이)을 통합 즐겨찾기 목록에 요도로 연결한다.
+     대표 좌표 : 면적=첫 꼭짓점, 길이=첫 측정점 */
+  function measSaveToLibrary(rec, addr) {
+    var first = rec.firstPoint;
+    if (!first) return;
+    var loc = {
+      lat: first[1], lng: first[0], addr: (addr && addr.jibunAddress) || rec.jibunAddress || '',
+      crop: rec.crop || '', color: 'green', name: (addr && addr.jibunAddress) || rec.name || '측정 위치'
+    };
+    /* 면적 요도들 */
+    (rec.areas || []).forEach(function (ar) {
+      saveMapItem({
+        type: 'area', geometry: { type: 'Polygon', coordinates: [closedRing(ar.points)] }, points: ar.points,
+        measurementData: { areaM2: ar.areaM2, perimeterM: ar.perimeterM }, crop: rec.crop || ''
+      }, loc);
+    });
+    /* 길이 요도들 */
+    (rec.lines || []).forEach(function (ln) {
+      saveMapItem({
+        type: 'distance', points: ln.points,
+        measurementData: { segs: ln.segs, totalM: ln.totalM }, crop: rec.crop || ''
+      }, loc);
+    });
+  }
+
   function buildMeasureRecord(extra) {
     var s = surveyMeasureState;
     var areas = s.areas.slice();
@@ -4730,8 +5106,10 @@ TenarSecureStore.init('map',
       }
       if (!setMeasSaves(arr)) return;
       surveyMeasureState.editingSaveId = rec.id;
+      /* [v37] 통합 즐겨찾기 목록에도 면적·길이 요도로 연결 (각각 하나씩) */
+      measSaveToLibrary(rec, addr);
       closeSheet();
-      showToast(editing ? '측정을 덮어썼습니다.' : '측정을 저장했습니다.', 2500, 'success');
+      showToast(editing ? '측정을 덮어썼습니다.' : '측정 결과를 즐겨찾기 위치에 저장했습니다.', 2500, 'success');
     });
 
     box.appendChild(f1); box.appendChild(addrBox); box.appendChild(f2); box.appendChild(f3);
@@ -5903,7 +6281,7 @@ TenarSecureStore.init('map',
   /* [v7-9] 연속 측정 · 저장 · 목록 */
   document.getElementById('btnNew').addEventListener('click', startNewMeasurement);
   document.getElementById('btnSaveMeas').addEventListener('click', openMeasSaveSheet);
-  document.getElementById('btnMeasList').addEventListener('click', openMeasListSheet);
+  document.getElementById('btnMeasList').addEventListener('click', openFavSheet);   /* [v37] 측정 목록 → 통합 즐겨찾기 */
   document.getElementById('btnSendArea').addEventListener('click', sendAreaToSurvey);   /* [v17-10] */
   updateNewMeasureBtn();
 
@@ -6770,8 +7148,8 @@ TenarSecureStore.init('map',
     if (!setFpSaves(arr)) return;
     fp.editingId = rec.id;
     try { saveJSON(FP_PRELOAD_KEY, rec); } catch (e) {}
-    showToast((prev ? 'A/B포구를 덮어썼습니다.' : 'A/B포구 목록에 저장했습니다.') +
-              '\n(조사표로는 전송하지 않았습니다)', 3500, 'success');
+    /* [v37] 통합 즐겨찾기 목록에도 포구 요도로 연결 저장 */
+    fpSaveToLibrary(rec);
     if (!rec.jibunAddress && rec.ga) {
       requestVWorldReverse(rec.ga[0], rec.ga[1]).then(function (a) {
         var a2 = getFpSaves();
@@ -6780,6 +7158,31 @@ TenarSecureStore.init('map',
       }).catch(function () {});
     }
   }
+  /* [v37] 포구 저장 결과를 통합 즐겨찾기 목록에 요도로 연결한다.
+     대표 좌표 우선순위 : 필지중심 > 가점 > A포구 > 지도중심 */
+  function fpSaveToLibrary(rec) {
+    var c = fp.parcelCenter || rec.ga || rec.aPo || rec.aBase || (rec.mapCenter || null);
+    var lat = c ? c[1] : NaN, lng = c ? c[0] : NaN;
+    var loc = {
+      lat: lat, lng: lng, addr: rec.jibunAddress || fp.jibunAddress || '',
+      pnu: fp.parcelPnu || '', crop: rec.crop || (fp.ctx && fp.ctx.crop) || '',
+      surveyId: rec.surveyKey || '', surveyType: 'tonghab', color: 'green',
+      name: (rec.jibunAddress || fp.jibunAddress || (rec.crop || 'A/B포구'))
+    };
+    var itemData = {
+      type: 'fieldplot', name: rec.name,
+      geometry: rec.polygon ? { type: 'Polygon', coordinates: rec.polygon } : null,
+      fieldPlotData: rec, crop: loc.crop, surveyType: 'tonghab', surveyId: rec.surveyKey || '',
+      mapCenter: rec.mapCenter, mapZoom: rec.zoom, mapBearing: rec.bearing, mapPitch: rec.pitch
+    };
+    saveMapItem(itemData, loc, function (fav, it, how) {
+      fp._libFavId = fav.id; fp._libItemId = it.id;
+      var m = (how === 'new') ? '새 즐겨찾기 위치를 만들고 A/B포구를 연결했습니다.'
+                              : '기존 즐겨찾기 위치에 A/B포구를 연결했습니다.';
+      showToast(m, 3500, 'success');
+    });
+  }
+
   /* [v17-7] 저장 버튼 — 이미 저장된 것을 열어 놓았으면 새로저장/덮어쓰기를 묻는다 */
   function fpSavePrompt() {
     if (!fpCanSubmit()) { showToast('가·나 지점을 먼저 지정해주세요.', 3000, 'info'); return; }
@@ -7696,6 +8099,8 @@ TenarSecureStore.init('map',
     try { saveModeInit(); } catch (e) { console.error('[v29] 위치저장 init 오류:', e); }        /* [v29-1] */
     try { bulkSyncInit(); } catch (e) { console.error('[v30] bulk init 오류:', e); }              /* [v30-4] */
     try { setTimeout(cleanupBadFavs, 300); } catch (e) {}                                          /* [v33] 0,0 핀 정리 */
+    /* [v37] 옛 저장목록(포구·측정)을 통합 즐겨찾기로 1회 이전 후 요도 렌더 */
+    try { setTimeout(function () { migrateMapLibraryV37(); renderMapItems(); }, 400); } catch (e) { console.error('[v37] 통합 이전 오류:', e); }
   });
 
   /* [v19-4] 면적 라벨은 "화면에서 도형 아래"에 놓이므로 회전하면 다시 계산한다.
