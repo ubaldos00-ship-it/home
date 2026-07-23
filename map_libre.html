@@ -1,4 +1,5 @@
-<!-- map_v38.html (v38) · 저장: 2026-07-23 17:58 KST · [v38] ①저장핀 이모지 물방울→깃발(핀 색상 유지) ②같은 지번주소면 기존 즐겨찾기에 연결해 핀 중복 생성 방지(findFavForLocation·bulk 모두 주소매칭) ③(계산기)지역 미선택이어도 저장 허용 ④즐겨찾기 자식(요도) 행 레이아웃 정렬·오른쪽 넘침 수정(box-sizing·flex-basis 100 percent·말줄임) -->
+<!-- map_v39.html (v39) · 저장: 2026-07-23 20:02 KST · [v39] 정식 배포판 링크 정리 — 조사표 파일명을 tonghab.html·chungchi.html(정식)로 변경(SURVEY_FILES·복귀URL). 지도 파일은 map_libre.html로 배포(기존 네이버 map.html은 서버에 그대로 보존). 그 외 기능 v38과 동일 -->
+<!-- (이전)  map_v38.html (v38) · 저장: 2026-07-23 17:58 KST · [v38] ①저장핀 이모지 물방울→깃발(핀 색상 유지) ②같은 지번주소면 기존 즐겨찾기에 연결해 핀 중복 생성 방지(findFavForLocation·bulk 모두 주소매칭) ③(계산기)지역 미선택이어도 저장 허용 ④즐겨찾기 자식(요도) 행 레이아웃 정렬·오른쪽 넘침 수정(box-sizing·flex-basis 100 percent·말줄임) -->
 <!-- (이전)  map_v37.html (v37) · 저장: 2026-07-22 14:56 KST · [v37] 즐겨찾기·포구·측정 저장목록 통합 — 즐겨찾기(부모)+요도(자식) 구조. 새 키 tenar_map_items_v1. 포구/면적/길이 저장 시 대표좌표로 부모 즐겨찾기를 찾아(PNU>surveyId>5m좌표는 확인후) 연결·없으면 새로 생성. 옛 키(favs/fieldplot/measure) 보존+1회 마이그레이션(tenar_map_library_migrated_v37). 통합 목록: 부모 카드에 포구·면적·길이 개수, 펼치면 자식별 표시(눈)/잠금/삭제, 부모 전체표시/숨김. JSON version:37(favorites+mapItems, 구버전 호환). 측정도구 목록 버튼→즐겨찾기에서 보기. 조사표 연결(surveyId/recordId) 유지 -->
 <!-- (이전)  map_v36.html (v36) · 저장: 2026-07-22 05:28 KST · [v36] ①조사위치 저장 모드에 주소 없이 들어오면 현재 위치를 잡아 그 자리·전체주소로 채움(권한 없으면 안내) ②저장 모드 화면에서 레이어 이모지 복원 — 레이어·현재위치 둘 다 표시(나머지는 숨김) -->
 <!-- (이전) map_v13.html (v13) · 저장: 2026-07-19 06:03 KST · [v13] 실측모드에서 저장핀(즐겨찾기)을 측정점으로 사용 — 일반 지도모드는 기존대로 저장위치 상세시트를 열고, 면적·길이 측정모드에서는 상세시트 대신 저장핀의 실제 위도·경도를 다음 측정점으로 추가. 중복좌표 방지 / 한 번 터치로 점 두 개 생기지 않게 이벤트 전파차단(suppressNextMapClick) / 실측모드에서 길게 누르면 저장핀 정보 확인 / 측정점 번호가 저장핀에 가리지 않도록 z-index 정리. 저장핀 원본(좌표·색상·작물·잠금)과 즐겨찾기 저장구조·JSON·암호화는 변경 없음 -->
@@ -1534,7 +1535,7 @@ TenarSecureStore.init('map',
   var SETTINGS_KEY = 'tenar_map_settings_v1';
   var PENDING_KEY  = 'tenar_pending_survey_coord';
   /* [v27] 조사표 파일 — 같은 폴더 상대경로 (폴더째 옮겨도 연결 유지) */
-  var SURVEY_FILES = { tonghab: 'tonghabbb.html', chungchi: 'chungchiii.html' };
+  var SURVEY_FILES = { tonghab: 'tonghab.html', chungchi: 'chungchi.html' };
   var SURVEY_NAMES = { tonghab: '실측조사표', chungchi: '청취조사표' };
   function surveyUrl(type, info) {
     var f = SURVEY_FILES[type] || SURVEY_FILES.tonghab;
@@ -5187,7 +5188,7 @@ TenarSecureStore.init('map',
      · 면적 계산식은 손대지 않고, 이미 계산된 합계를 그대로 넘긴다.
      =================================================================== */
   var MEAS_AREA_RESULT_KEY = 'tenar_area_result';
-  /* [v26-6] 청취계산기(chungchiii.html)가 읽는 키 — 기존 map.html 규약 그대로 */
+  /* [v26-6] 청취계산기(chungchi.html)가 읽는 키 — 기존 map.html 규약 그대로 */
   var CC_MEAS_RESULT_KEY = 'tenar_meas_result';
   var CC_MEAS_CTX_KEY    = 'tenar_meas_ctx';
   var CC_MEAS_PRELOAD_KEY = 'tenar_meas_preload';
@@ -5230,8 +5231,8 @@ TenarSecureStore.init('map',
     } catch (e) { showToast('전송 저장에 실패했습니다.', 3500); return; }
     showToast('청취조사표로 면적을 전송했습니다.\n' + formatNumber(t.totalM2, 1) + '㎡', 2600, 'success');
     setTimeout(function () {
-      var back = 'chungchiii.html';
-      try { back = new URL('chungchiii.html', location.href).href; } catch (e) {}
+      var back = 'chungchi.html';
+      try { back = new URL('chungchi.html', location.href).href; } catch (e) {}
       window.location.href = back;
     }, 900);
   }
@@ -7243,12 +7244,12 @@ TenarSecureStore.init('map',
               (rec.ratioChanged ? '\n(비율도 ' + fp.ratio + '번으로 바꿉니다)' : ''), 2800, 'success');
     setTimeout(function () {
       /* 계산기 화면으로 복귀 */
-      /* [v18-8] 실측 통합조사표는 항상 같은 폴더의 tonghabbb.html 로 이동한다.
+      /* [v18-8] 실측 통합조사표는 항상 같은 폴더의 tonghab.html 로 이동한다.
          (referrer 로 되돌아가면 지도 주소로 되돌아가 이동이 안 되는 경우가 있었다) */
-      var back = 'tonghabbb.html';
+      var back = 'tonghab.html';
       try {
-        back = new URL('tonghabbb.html', location.href).href;
-      } catch (e) { back = 'tonghabbb.html'; }
+        back = new URL('tonghab.html', location.href).href;
+      } catch (e) { back = 'tonghab.html'; }
       window.location.href = back;   /* 뒤로가기 차단(pushState) 때문에 history.back() 대신 주소 이동 */
     }, 900);
   }
@@ -7755,7 +7756,7 @@ TenarSecureStore.init('map',
   var saveModeMarker = null;
 
   function saveModeBackUrl() {
-    var f = (saveMode && saveMode.app === 'chungchi') ? 'chungchiii.html' : 'tonghabbb.html';
+    var f = (saveMode && saveMode.app === 'chungchi') ? 'chungchi.html' : 'tonghab.html';
     try { return new URL(f, location.href).href; } catch (e) { return f; }
   }
   function saveModeReturnNow() {

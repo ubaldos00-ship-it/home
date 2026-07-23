@@ -1,4 +1,7 @@
-<!-- chungchi.html (업로드 정식·v21) · 저장: 2026-07-13 17:49 KST · [v21] 면적측정 점을 조사표 데이터로 보관/복원(초기화 시 제거) -->
+<!-- chungchi.html (v39) · 저장: 2026-07-23 20:02 KST · [v39] 정식 배포판. 지도 연동은 map_libre.html(기존). 기능 v38과 동일 — 파일명만 chungchi.html로 정식화 -->
+<!-- (이전)  chungchi_v38.html (v38) · 저장: 2026-07-23 17:58 KST · [v38] 저장 시 지역 미선택이어도 저장 허용(작물만 필수). 그 외 변경 없음 -->
+<!-- (이전)  chungchi_v37.html (v37) · 저장: 2026-07-22 14:56 KST · [v37] 변경 없음(통합은 지도에서 처리, 기존 조사표 연결·전송 규약 유지) -->
+<!-- (이전)  chungchi_v36.html (v36) · 저장: 2026-07-22 05:28 KST · [v36] 필지주소 📍 를 주소 없이 눌러도 save=1(조사위치 저장 모드)로 진입 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -651,7 +654,7 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
   <p style="font-size:12px;color:#555;margin-bottom:5px">■ 지역 선택</p>
   <div class="bg" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
     <button class="brg" data-region="대구" onclick="selReg(this)">대구</button>
-    <button class="brg on" data-region="경북" onclick="selReg(this)">경북</button>
+    <button class="brg" data-region="경북" onclick="selReg(this)">경북</button>
     <button class="brg" data-region="강원" onclick="selReg(this)">강원</button>
   </div>
   <p style="font-size:12px;color:#555;margin-bottom:5px;margin-top:9px">■ 작물 선택</p>
@@ -979,10 +982,15 @@ function ccDmgUpdate(){
   }
 }
 const EM={'대구':'🏙️','경북':'🌄','강원':'⛰️','서울':'🗼','부산':'🌊','인천':'✈️','광주':'🌻','대전':'🚀','울산':'🏭','세종':'🏛️','경기':'🌿','충북':'🌲','충남':'🌾','전북':'🌻','전남':'🌊','경남':'🌺','제주':'🍊'};
-let sR='경북',sC=null;
+let sR='',sC=null;   /* [v34-6] 지역·작물 기본선택 없음 */
+function _ccNeedSelect(what){
+  var msg = what + '을(를) 먼저 선택해주세요.';
+  try{ if(typeof _showBackToast==='function') _showBackToast('⚠ '+msg,3500); }catch(e){}
+  try{ alert(msg); }catch(e){}
+}
 function updateHeadStatus(){
   const el=document.getElementById('headStatus');
-  if(el) el.textContent=`${sR||'-'} · ${sC||'사과'}`;
+  if(el) el.textContent=`${sR||'-'} · ${sC||'-'}`;
 }
 function f(n){if(n===null||n===undefined||isNaN(n))return '-';return Number(n).toLocaleString('ko-KR');}
 function r1(v){return Math.round(v*10)/10;}
@@ -1016,21 +1024,21 @@ document.addEventListener('touchmove',e=>{
 },{passive:false});
 document.getElementById('surveyDate').valueAsDate=new Date();
 bldHR();
-requestAnimationFrame(()=>{const apple=document.querySelector('.bc[data-crop="사과"]'); if(apple) selCrop(apple);});
+/* [v35-4] 초기 작물 자동선택(사과) 제거 — 사용자가 직접 고른다 */
 function goHome(){
   if(!confirm('모든 데이터가 초기화됩니다. 홈으로 가시겠습니까?')) return;
   /* 초기화 실행 (confirm 없이) */
   document.getElementById('address').value='';
   document.getElementById('surveyDate').valueAsDate=new Date();
   document.querySelectorAll('.bc').forEach(b=>b.classList.remove('on'));
-  sC='사과';
+  sC='';   /* [v34-6] 기본 작물 없음 */
   try{document.getElementById('memo').value='';}catch(e){}
-  try{document.getElementById('uib').style.display='block';}catch(e){}
-  try{document.getElementById('uibT').innerHTML='📌 <b>사과</b> 기본단위: 컨테이너 × 18kg';}catch(e){}
-  try{document.getElementById('dUnit').textContent='컨테이너';}catch(e){}
-  try{document.getElementById('dWeight').textContent='18 kg';}catch(e){}
-  try{document.getElementById('tULbl').textContent='컨테이너';}catch(e){}
-  const apple=document.querySelector('.bc[data-crop="사과"]'); if(apple) apple.classList.add('on');
+  /* [v35-4] 초기화 시 작물 미선택 — 사과 자동선택/유닛박스 표시 제거 */
+  try{document.getElementById('uib').style.display='none';}catch(e){}
+  try{document.getElementById('uibT').innerHTML='';}catch(e){}
+  sR='';   /* 지역도 미선택 */
+  document.querySelectorAll('.brg').forEach(b=>b.classList.remove('on'));
+  if(typeof updateHeadStatus==='function') updateHeadStatus();
   try{rstA();}catch(e){}
   try{document.getElementById('hRows').innerHTML='';bldHR();}catch(e){}
   try{document.getElementById('resPer10a').textContent='0 kg';}catch(e){}
@@ -1168,7 +1176,7 @@ function measRow(b){
   try{ localStorage.setItem('tenar_meas_ctx', JSON.stringify({app:'chungchi', idx:idx, ts:Date.now()})); }catch(e){}
   try{ localStorage.removeItem('tenar_meas_result'); }catch(e){}
   try{ if(typeof ccAutoSave==='function') ccAutoSave(); }catch(e){}   /* 돌아왔을 때 같은 행이 복원되도록 */
-  var base='https://ubaldos00-ship-it.github.io/home/map.html';
+  var base=_tenarMapBase();
   var u=base+'?measure=1&app=chungchi';
   if(a) u+='&q='+encodeURIComponent(a);
   var linkedKey=_slSelectedKey||_slLastLoadedKey||null;
@@ -1692,13 +1700,16 @@ function resetAll(scrollTop=false){
   if(!confirm('모든 입력을 초기화하시겠습니까?'))return;
   document.getElementById('address').value='';
   document.getElementById('surveyDate').valueAsDate=new Date();
-  document.querySelectorAll('.bc').forEach(b=>b.classList.remove('on'));sC='사과';document.getElementById('memo').value='';
+  document.querySelectorAll('.bc').forEach(b=>b.classList.remove('on'));sC='';
+  document.querySelectorAll('.brg').forEach(b=>b.classList.remove('on'));sR='';   /* [v34-6] 기본 작물·지역 없음 */
+  document.getElementById('memo').value='';
   document.getElementById('uib').style.display='block';
   document.getElementById('uibT').innerHTML='📌 <b>사과</b> 기본단위: 컨테이너 × 18kg';
   document.getElementById('dUnit').textContent='컨테이너';
-  document.getElementById('dWeight').textContent='18 kg';
-  document.getElementById('tULbl').textContent='컨테이너';
-  const apple=document.querySelector('.bc[data-crop="사과"]'); if(apple) apple.classList.add('on'); updateHeadStatus();
+  /* [v35-4] 초기화 시 작물 미선택 (사과 자동선택 제거) */
+  try{document.getElementById('uib').style.display='none';}catch(e){}
+  try{document.getElementById('uibT').innerHTML='';}catch(e){}
+  updateHeadStatus();
   rstA();
   document.getElementById('hRows').innerHTML='';bldHR();
   document.getElementById('resPer10a').textContent='0 kg';
@@ -1797,6 +1808,42 @@ document.addEventListener('scroll',function(){
    ════════════════════════════════════════════════ */
 
 var CC_AUTO_KEY  = 'chungchiAutoSave_v1';
+
+/* [v28-1] 지도 저장핀 ↔ 조사표 저장자료 연결
+   지도에서 이 핀으로 조사표를 열었다면(tenar_pin_link),
+   저장/덮어쓰기한 항목의 key 를 그 핀에 기록해 둔다.
+   다음에 지도에서 그 핀의 「조사표」를 누르면 이 자료가 바로 열린다. */
+function _tenarLinkPinToSurvey(app, key){
+  try{
+    var raw = localStorage.getItem('tenar_pin_link');
+    if(!raw) return;
+    var lk = JSON.parse(raw);
+    if(!lk) return;
+    if(lk.app && lk.app !== app) return;
+    var favs = JSON.parse(localStorage.getItem('tenar_map_favs_v1') || '[]');
+    if(!Array.isArray(favs)) return;
+    function near(a,b){ return (typeof a==='number'&&typeof b==='number') ? Math.abs(a-b) < 0.00005 : false; }
+    var idx = -1;
+    /* ① id 로 찾기 */
+    for(var i=0;i<favs.length;i++){ if(favs[i] && favs[i].id === lk.favoriteId){ idx=i; break; } }
+    /* ② 저장 과정에서 핀이 새로 쓰이며 id 가 사라졌을 수 있다 → 좌표·주소로 찾기 */
+    if(idx<0){
+      for(var j=0;j<favs.length;j++){
+        var f=favs[j]; if(!f) continue;
+        var flat = (f.latitude!=null? Number(f.latitude): Number(f.lat));
+        var flng = (f.longitude!=null? Number(f.longitude): Number(f.lng));
+        if(near(flat, Number(lk.lat)) && near(flng, Number(lk.lng))){ idx=j; break; }
+        var fa = String(f.jibunAddress || f.addr || '').trim();
+        if(lk.addr && fa && fa === String(lk.addr).trim()){ idx=j; break; }
+      }
+    }
+    if(idx<0) return;
+    if(!favs[idx].id) favs[idx].id = lk.favoriteId;   /* 사라진 id 되살림 */
+    favs[idx].surveyId = key; favs[idx].surveyKey = key;
+    favs[idx].surveyType = app; favs[idx].surveyApp = app;
+    localStorage.setItem('tenar_map_favs_v1', JSON.stringify(favs));
+  }catch(e){}
+}
 var CC_LIST_KEY  = 'chungchiSaveList';
 var CC_DATA_PFX  = 'chungchiSave_';
 
@@ -1804,7 +1851,11 @@ var CC_DATA_PFX  = 'chungchiSave_';
 var _tenarMapLat = null, _tenarMapLng = null, _tenarMapColor = '';
 function _tenarSetMapCoord(lat, lng, color){
   lat = Number(lat); lng = Number(lng);
-  if(isFinite(lat) && isFinite(lng)){ _tenarMapLat = lat; _tenarMapLng = lng; }
+  /* [v33] 0,0 은 한국에서 유효한 좌표가 아니다 → 좌표를 덮어쓰지 않는다.
+     (A/B포구 왕복 후 복원된 초안의 __mapLat:0 이 좋은 좌표를 지우던 문제 방지) */
+  if(isFinite(lat) && isFinite(lng) && !(Math.abs(lat)<1e-6 && Math.abs(lng)<1e-6)){
+    _tenarMapLat = lat; _tenarMapLng = lng;
+  }
   if(color){ _tenarMapColor = String(color).trim(); }
 }
 function _tenarGetMapCoordFromSaved(d){
@@ -2095,26 +2146,59 @@ function _upsertMapFavIfCoord(entry){
   try{
     if(!entry || !entry.surveyKey) return false;
     var lat = Number(entry.lat), lng = Number(entry.lng);
-    if(!isFinite(lat) || !isFinite(lng)) return false;
+    var addr = (entry.addr||'').trim();
+    /* [v32-1] 좌표가 없거나 0,0 이면 새 핀을 만들지 않는다.
+       (A/B포구 왕복 중 지도 좌표가 사라지면 0,0 핀이 새로 생기던 문제) */
+    var hasCoord = isFinite(lat) && isFinite(lng) && !(Math.abs(lat)<1e-6 && Math.abs(lng)<1e-6);
     var favKey = 'tenar_map_favs_v1';
     var favs = JSON.parse(localStorage.getItem(favKey) || '[]') || [];
     var dup = -1;
+    /* ① 같은 조사표(surveyKey) */
     for(var i=0;i<favs.length;i++){
-      if(favs[i] && favs[i].surveyKey === entry.surveyKey && (!entry.app || !favs[i].surveyApp || favs[i].surveyApp === entry.app)){ dup = i; break; }
+      if(favs[i] && (favs[i].surveyKey === entry.surveyKey || favs[i].surveyId === entry.surveyKey)
+         && (!entry.app || !favs[i].surveyApp || favs[i].surveyApp === entry.app)){ dup = i; break; }
     }
-    if(dup < 0){
+    /* ② 좌표가 거의 같은 핀 (조사표 연결 없는 것) */
+    if(dup < 0 && hasCoord){
       for(var j=0;j<favs.length;j++){
         var f=favs[j]||{};
-        if(!f.surveyKey && Math.abs((Number(f.lat)||0)-lat)<0.0001 && Math.abs((Number(f.lng)||0)-lng)<0.0001){ dup=j; break; }
+        var flat=(f.latitude!=null?Number(f.latitude):Number(f.lat)), flng=(f.longitude!=null?Number(f.longitude):Number(f.lng));
+        if((!f.surveyKey&&!f.surveyId) && Math.abs((flat||0)-lat)<0.0001 && Math.abs((flng||0)-lng)<0.0001){ dup=j; break; }
       }
     }
+    /* ③ [v32-1] 주소가 같은 핀 (좌표를 잃어버린 경우에도 중복 방지) */
+    if(dup < 0 && addr){
+      for(var k=0;k<favs.length;k++){
+        var g=favs[k]||{};
+        var gaddr=String(g.jibunAddress||g.addr||'').trim();
+        if(gaddr && gaddr===addr){ dup=k; break; }
+      }
+    }
+    /* 좌표도 없고 맞출 핀도 없으면 아무것도 하지 않는다 (0,0 핀 방지) */
+    if(dup < 0 && !hasCoord) return false;
+
     var old = dup>=0 ? (favs[dup]||{}) : {};
+    /* [v32-1] 좌표가 없으면 기존 핀(또는 주소로 찾은 핀)의 좌표를 유지한다 */
+    if(!hasCoord){
+      lat = (old.latitude!=null?Number(old.latitude):Number(old.lat));
+      lng = (old.longitude!=null?Number(old.longitude):Number(old.lng));
+      if(!(isFinite(lat)&&isFinite(lng))) return false;
+    }
     var color = old.color || entry.color || (entry.app==='chungchi'?'blue':'green');
     var crop = (entry.crop||'').trim();
-    var addr = (entry.addr||'').trim();
     var label = (crop ? crop + ' · ' : '') + (addr || (lat.toFixed(6)+', '+lng.toFixed(6)));
-    var rec = { label:label.slice(0,40), lat:lat, lng:lng, addr:addr, color:color,
-                locked:!!old.locked, surveyKey:entry.surveyKey, surveyApp:entry.app||'', crop:crop };
+    var rec = {
+      /* [v32-1] 기존 핀의 id 를 지키고, latitude/longitude 도 함께 채운다 */
+      id: old.id || undefined,
+      label:label.slice(0,40),
+      lat:lat, lng:lng, latitude:lat, longitude:lng,
+      addr:addr, jibunAddress:addr || old.jibunAddress || '',
+      color:color, locked:!!old.locked,
+      crop:crop || old.crop || '',
+      surveyKey:entry.surveyKey, surveyApp:entry.app||old.surveyApp||'',
+      surveyId:entry.surveyKey, surveyType:entry.app||old.surveyType||'',
+      createdAt: old.createdAt
+    };
     if(dup>=0) favs[dup]=rec; else favs.unshift(rec);
     localStorage.setItem(favKey, JSON.stringify(favs));
     return true;
@@ -2122,6 +2206,8 @@ function _upsertMapFavIfCoord(entry){
 }
 
 function saveCurrentData(){
+  /* [v38] 작물만 필수. 지역은 미선택이어도 저장 허용(사용자 요청) */
+  if(!sC){ _ccNeedSelect('작물'); return; }
   if(window._ccManualSaving) return;
   window._ccManualSaving = true;
   setTimeout(function(){ window._ccManualSaving = false; }, 700);
@@ -2144,6 +2230,7 @@ function saveCurrentData(){
   _ccSetList(list);
   _queueMapSync(key);   /* 지도 자동반영 대기열 등록 */
   _slLastLoadedKey = key; /* v60: 방금 저장한 항목 자동 선택 대상 */
+  _tenarLinkPinToSurvey('chungchi', key);   /* [v28-1] 지도 저장핀과 연결 */
   ccAutoSave();
   _slRenderList();
   var btn=document.getElementById('slSmartSaveBtn');
@@ -2179,6 +2266,7 @@ function overwriteSavedData(key){
   _queueMapSync(key);   /* 지도 자동반영 대기열 등록 */
   _slSelectedKey = null;
   _slLastLoadedKey = key; /* v60: 덮어쓴 항목 자동 선택 유지 */
+  _tenarLinkPinToSurvey('chungchi', key);   /* [v28-1] 지도 저장핀과 연결 */
   _slRenderList();
   _slUpdateSaveBtn();
   var t=document.createElement('div');
@@ -2379,6 +2467,10 @@ function _slRenderList(){
 
 
 /* ── 지도 열기 공통 함수: 모바일/PWA에서 window.open이 기존 탭만 갱신하고 화면 전환이 안 되는 문제 방지 ── */
+/* [v26-6] 지도 파일 경로 — 같은 폴더의 map_libre.html */
+function _tenarMapBase(){
+  try{ return new URL('map_libre.html', location.href).href; }catch(e){ return 'map_libre.html'; }
+}
 function _tenarOpenMapUrl(u){
   try{ sessionStorage.setItem('tenar_last_calc_url', location.href); }catch(e){}
   /* 현장 사용 기준: 새 창이 아니라 현재 화면을 지도 화면으로 확실히 이동 */
@@ -2397,8 +2489,16 @@ function _tenarOpenMapFromAddress(){
       if(savedAddr && (!a || savedAddr === a)){ slOpenMap(linkedKey); return; }
     }catch(e){}
   }
-  var base = 'https://ubaldos00-ship-it.github.io/home/map.html';
-  if(!a){ _tenarOpenMapUrl(base); return; }
+  var base = _tenarMapBase();
+  /* [v36-1] 주소가 없어도(또는 틀려도) 조사위치 저장 모드로 진입해 현재위치를 잡는다.
+     예전에는 주소가 없으면 save 모드 없이 그냥 지도만 열었다. */
+  if(!a){
+    var u0 = base + '?save=1&app=chungchi&color=' + encodeURIComponent(_tenarMapColor || 'blue');
+    if(linkedKey){ u0 += '&surveyKey=' + encodeURIComponent(linkedKey); }
+    var _crop0 = (typeof sC !== 'undefined' && sC) ? sC : '';
+    if(_crop0){ u0 += '&label=' + encodeURIComponent(_crop0); }
+    _tenarOpenMapUrl(u0); return;
+  }
   /* 주소를 지오코딩해 이동 → 핀 저장 → 선택 (save=1). 저장자료면 surveyKey 연결 */
   var u = base + '?q=' + encodeURIComponent(a) + '&save=1&app=chungchi&color=' + encodeURIComponent(_tenarMapColor || 'blue');
   if(linkedKey){ u += '&surveyKey=' + encodeURIComponent(linkedKey); }
@@ -2421,7 +2521,7 @@ function slOpenMap(key){
     var crop = (item && item.crop) ? item.crop : (d.__sC || '');
     var label = (crop?crop+' · ':'') + a;
     var coord = _tenarGetMapCoordFromSaved(d);
-    var u = 'https://ubaldos00-ship-it.github.io/home/map.html'
+    var u = _tenarMapBase()
           + '?q='        + encodeURIComponent(a)
           + '&save=1&app=chungchi&color=' + encodeURIComponent((coord && coord.color) || _tenarGetMapColorFromSaved(d) || 'blue')
           + '&surveyKey=' + encodeURIComponent(key)
@@ -2453,7 +2553,7 @@ function slBulkToMap(){
   if(!confirm('저장된 '+items.length+'곳의 주소를 지도 즐겨찾기에 한꺼번에 반영합니다.\n(작물명도 함께 표시됩니다) 계속할까요?')) return;
   try{ localStorage.setItem('tenar_map_bulk', JSON.stringify(items)); }
   catch(e){ alert('지도반영 준비 실패: '+e.message); return; }
-  _tenarOpenMapUrl('https://ubaldos00-ship-it.github.io/home/map.html?bulk=1');
+  _tenarOpenMapUrl('map_libre.html?bulk=1');
 }
 /* ── JSON 내보내기/가져오기: v3 저장목록 전체 백업/복원 ── */
 function _ccBuildBackupBundle(){
