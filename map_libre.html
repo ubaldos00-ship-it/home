@@ -1,4 +1,5 @@
-<!-- map_v37.html (v37) · 저장: 2026-07-22 14:56 KST · [v37] 즐겨찾기·포구·측정 저장목록 통합 — 즐겨찾기(부모)+요도(자식) 구조. 새 키 tenar_map_items_v1. 포구/면적/길이 저장 시 대표좌표로 부모 즐겨찾기를 찾아(PNU>surveyId>5m좌표는 확인후) 연결·없으면 새로 생성. 옛 키(favs/fieldplot/measure) 보존+1회 마이그레이션(tenar_map_library_migrated_v37). 통합 목록: 부모 카드에 포구·면적·길이 개수, 펼치면 자식별 표시(눈)/잠금/삭제, 부모 전체표시/숨김. JSON version:37(favorites+mapItems, 구버전 호환). 측정도구 목록 버튼→즐겨찾기에서 보기. 조사표 연결(surveyId/recordId) 유지 -->
+<!-- map_v38.html (v38) · 저장: 2026-07-23 17:58 KST · [v38] ①저장핀 이모지 물방울→깃발(핀 색상 유지) ②같은 지번주소면 기존 즐겨찾기에 연결해 핀 중복 생성 방지(findFavForLocation·bulk 모두 주소매칭) ③(계산기)지역 미선택이어도 저장 허용 ④즐겨찾기 자식(요도) 행 레이아웃 정렬·오른쪽 넘침 수정(box-sizing·flex-basis 100 percent·말줄임) -->
+<!-- (이전)  map_v37.html (v37) · 저장: 2026-07-22 14:56 KST · [v37] 즐겨찾기·포구·측정 저장목록 통합 — 즐겨찾기(부모)+요도(자식) 구조. 새 키 tenar_map_items_v1. 포구/면적/길이 저장 시 대표좌표로 부모 즐겨찾기를 찾아(PNU>surveyId>5m좌표는 확인후) 연결·없으면 새로 생성. 옛 키(favs/fieldplot/measure) 보존+1회 마이그레이션(tenar_map_library_migrated_v37). 통합 목록: 부모 카드에 포구·면적·길이 개수, 펼치면 자식별 표시(눈)/잠금/삭제, 부모 전체표시/숨김. JSON version:37(favorites+mapItems, 구버전 호환). 측정도구 목록 버튼→즐겨찾기에서 보기. 조사표 연결(surveyId/recordId) 유지 -->
 <!-- (이전)  map_v36.html (v36) · 저장: 2026-07-22 05:28 KST · [v36] ①조사위치 저장 모드에 주소 없이 들어오면 현재 위치를 잡아 그 자리·전체주소로 채움(권한 없으면 안내) ②저장 모드 화면에서 레이어 이모지 복원 — 레이어·현재위치 둘 다 표시(나머지는 숨김) -->
 <!-- (이전) map_v13.html (v13) · 저장: 2026-07-19 06:03 KST · [v13] 실측모드에서 저장핀(즐겨찾기)을 측정점으로 사용 — 일반 지도모드는 기존대로 저장위치 상세시트를 열고, 면적·길이 측정모드에서는 상세시트 대신 저장핀의 실제 위도·경도를 다음 측정점으로 추가. 중복좌표 방지 / 한 번 터치로 점 두 개 생기지 않게 이벤트 전파차단(suppressNextMapClick) / 실측모드에서 길게 누르면 저장핀 정보 확인 / 측정점 번호가 저장핀에 가리지 않도록 z-index 정리. 저장핀 원본(좌표·색상·작물·잠금)과 즐겨찾기 저장구조·JSON·암호화는 변경 없음 -->
 <!-- (이전) map_v11.html (v11) · 저장: 2026-07-19 · [v11] ①시트 열려도 지도 이동/확대/회전 가능(오버레이 통과)+제목줄까지 내려가는 최소화 스냅+최소화 버튼 ②레이어 초기화 버튼 ③축소 시 핀 크기 축소(좌표 고정, z16↑기본/z13~15 작게/z13↓점) ④선택 필지 안쪽 채움 제거(테두리만) ⑥토지정보 아이콘 📍 ⑦지도출처 ⓘ 중복 제거+주소 표기 ⑧핀 안 이모지→핀 위 작물명, 저장핀 시트 토글 2개 ⑨핀 수정=위치수정/이름수정 선택(좌표 기준 저장) ⑩메모 축소+시트 auto 높이 ⑪누른점 파랑+공유에 화면 캡처 첨부 -->
@@ -1348,6 +1349,15 @@ TenarSecureStore.init('map',
     if (opts.surveyId) {
       for (var k = 0; k < arr.length; k++) if ((arr[k].surveyId || arr[k].surveyKey) === opts.surveyId) return { idx: k, how: 'survey' };
     }
+    /* [v38] ③-b 같은 지번주소(공백 제거 비교) → 같은 필지로 보고 자동 연결.
+       필지주소 핀과 포구/측정 저장이 서로 다른 핀으로 갈리던 문제를 막는다. */
+    if (opts.addr) {
+      var na = String(opts.addr).replace(/\s+/g, '');
+      if (na) for (var a2 = 0; a2 < arr.length; a2++) {
+        var fa = String(arr[a2].jibunAddress || '').replace(/\s+/g, '');
+        if (fa && fa === na) return { idx: a2, how: 'addr' };
+      }
+    }
     /* ④ 좌표 5m 이내 → 후보만 반환(자동병합 금지) */
     if (isFinite(opts.lat) && isFinite(opts.lng)) {
       for (var m = 0; m < arr.length; m++) {
@@ -2338,9 +2348,10 @@ TenarSecureStore.init('map',
     e.className = 'pin';
     e.style.setProperty('--pin-color', hex);
     e.innerHTML =
+      /* [v38] 물방울 → 깃발. 깃대 밑동(12,29)이 좌표에 수직으로 꽂힌다(anchor:bottom). 깃천은 핀 색상. */
       '<svg width="24" height="30" viewBox="0 0 24 30" xmlns="http://www.w3.org/2000/svg">' +
-      '<path d="M12 29.4C12 29.4 21.6 17.6 21.6 11.1A9.6 9.6 0 1 0 2.4 11.1C2.4 17.6 12 29.4 12 29.4Z" ' +
-      'fill="' + hex + '" stroke="#ffffff" stroke-width="2" stroke-linejoin="round"/>' +
+      '<line x1="12" y1="2.5" x2="12" y2="29" stroke="#4a3728" stroke-width="2.2" stroke-linecap="round"/>' +
+      '<path d="M12 3 L23 6.4 L12 9.8 Z" fill="' + hex + '" stroke="#ffffff" stroke-width="1.3" stroke-linejoin="round"/>' +
       '</svg>' +
       (cropName ? '<span class="pin-crop">' + escapeHtml(cropName) + '</span>' : '');
     return e;
@@ -3197,9 +3208,9 @@ TenarSecureStore.init('map',
       /* [v37-9] 연결 요도 펼치기 */
       if (total) {
         var toggle = el('div', 'fav-expand', '▼ 연결된 자료 ' + total + '개');
-        toggle.style.cssText = 'width:100%;margin-top:6px;padding:5px 2px;font-size:12px;font-weight:800;color:#1a5fd0;cursor:pointer;';
+        toggle.style.cssText = 'flex:0 0 100%;width:100%;box-sizing:border-box;margin-top:6px;padding:5px 2px;font-size:12px;font-weight:800;color:#1a5fd0;cursor:pointer;';
         var childBox = el('div', 'fav-children');
-        childBox.style.cssText = 'width:100%;display:none;margin-top:2px;';
+        childBox.style.cssText = 'flex:0 0 100%;width:100%;box-sizing:border-box;display:none;margin-top:2px;overflow:hidden;';
         toggle.addEventListener('click', function (ev) {
           ev.stopPropagation();
           var open = childBox.style.display === 'none';
@@ -3219,15 +3230,15 @@ TenarSecureStore.init('map',
     var icons = { fieldplot: '🚩', area: '▱', distance: '↔' };
     itemsOfFav(favId).forEach(function (it) {
       var row = el('div', 'fav-child-row');
-      row.style.cssText = 'display:flex;align-items:center;gap:6px;padding:5px 6px;border-top:1px solid #f0f0f4;';
+      row.style.cssText = 'display:flex;align-items:center;gap:5px;width:100%;box-sizing:border-box;padding:5px 2px;border-top:1px solid #f0f0f4;';
       var nm = el('div', null, '<span style="font-size:13px;">' + (icons[it.type] || '•') + '</span> <span style="font-size:12.5px;font-weight:700;">' + escapeHtml(it.name || it.type) + '</span>');
-      nm.style.cssText = 'flex:1;min-width:0;cursor:pointer;';
+      nm.style.cssText = 'flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;';
       nm.addEventListener('click', function () {
         closeSheet();
         focusMapItem(it);
       });
       var vis = el('button', 'icon-btn ' + (it.visible === false ? 'lock-off' : 'open-on'), it.visible === false ? '🚫' : '👁');
-      vis.style.cssText = 'width:34px;height:30px;flex:0 0 auto;';
+      vis.style.cssText = 'width:30px;height:28px;padding:0;font-size:14px;flex:0 0 auto;';
       vis.title = '표시/숨김';
       vis.addEventListener('click', function () {
         var arr = getMapItems();
@@ -3238,7 +3249,7 @@ TenarSecureStore.init('map',
         vis.textContent = it.visible === false ? '🚫' : '👁';
       });
       var lk = el('button', 'icon-btn ' + (it.locked ? 'lock-on' : 'lock-off'), it.locked ? '🔒' : '🔓');
-      lk.style.cssText = 'width:34px;height:30px;flex:0 0 auto;';
+      lk.style.cssText = 'width:30px;height:28px;padding:0;font-size:14px;flex:0 0 auto;';
       lk.addEventListener('click', function () {
         var arr = getMapItems();
         for (var k = 0; k < arr.length; k++) if (arr[k].id === it.id) arr[k].locked = !arr[k].locked;
@@ -3247,7 +3258,7 @@ TenarSecureStore.init('map',
         lk.textContent = it.locked ? '🔒' : '🔓';
       });
       var dl = el('button', 'icon-btn del-on', '🗑');
-      dl.style.cssText = 'width:34px;height:30px;flex:0 0 auto;';
+      dl.style.cssText = 'width:30px;height:28px;padding:0;font-size:14px;flex:0 0 auto;';
       dl.addEventListener('click', function () {
         if (it.locked) { showToast('잠긴 요도입니다. 잠금을 풀어주세요.', 3000); return; }
         if (!window.confirm('이 요도를 삭제하시겠습니까? (대표 위치는 유지됩니다)')) return;
@@ -7668,9 +7679,11 @@ TenarSecureStore.init('map',
     function upsert(entry, lat, lng) {
       var idx = -1;
       function near(a, b) { return Math.abs(Number(a) - Number(b)) < 0.00003; }
+      var _ea = String(entry.addr || '').replace(/\s+/g, '');   /* [v38] 같은 지번주소면 같은 핀으로 */
       for (var i = 0; i < arr.length; i++) {
         var f = arr[i]; if (!f) continue;
         if (entry.surveyKey && (f.surveyId === entry.surveyKey || f.surveyKey === entry.surveyKey)) { idx = i; break; }
+        if (_ea && String(f.jibunAddress || '').replace(/\s+/g, '') === _ea) { idx = i; break; }   /* [v38] 주소 일치 */
         var flat = (f.latitude != null ? f.latitude : f.lat), flng = (f.longitude != null ? f.longitude : f.lng);
         if (isFinite(lat) && near(flat, lat) && near(flng, lng)) { idx = i; break; }
       }
@@ -7679,7 +7692,8 @@ TenarSecureStore.init('map',
         id: base.id || undefined,
         name: (entry.crop ? entry.crop + ' · ' : '') + (entry.addr || '조사 위치'),
         jibunAddress: entry.addr || base.jibunAddress || '',
-        latitude: lat, longitude: lng,
+        latitude: (isFinite(lat) ? lat : (base.latitude != null ? base.latitude : base.lat)),
+        longitude: (isFinite(lng) ? lng : (base.longitude != null ? base.longitude : base.lng)),
         color: entry.color || base.color || 'green',
         crop: entry.crop || base.crop || '',
         locked: !!base.locked,

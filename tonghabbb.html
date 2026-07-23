@@ -1,4 +1,6 @@
-<!-- tonghabbb_v36.html (v36) · 저장: 2026-07-22 05:28 KST · [v36] 필지주소 📍 를 주소 없이 눌러도 save=1(조사위치 저장 모드)로 진입 -->
+<!-- tonghabbb_v38.html (v38) · 저장: 2026-07-23 17:58 KST · [v38] 저장 시 지역(생산량 지역) 미선택이어도 저장 허용(작물만 필수). 그 외 변경 없음 -->
+<!-- (이전)  tonghabbb_v37.html (v37) · 저장: 2026-07-22 14:56 KST · [v37] 변경 없음(통합은 지도에서 처리, 기존 조사표 연결·전송 규약 유지) -->
+<!-- (이전)  tonghabbb_v36.html (v36) · 저장: 2026-07-22 05:28 KST · [v36] 필지주소 📍 를 주소 없이 눌러도 save=1(조사위치 저장 모드)로 진입 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -8870,9 +8872,8 @@ function _upsertMapFavIfCoord(entry){
 }
 
 function saveCurrentData(){
-  /* [v34-6] 작물·지역을 고르지 않으면 저장 진행 불가 (팝업 안내) */
+  /* [v38] 작물만 필수. 지역은 미선택이어도 저장 허용(사용자 요청) */
   if(!selectedCrop){ _tenarNeedSelect('작물'); return; }
-  if(typeof _prodRegionSelected==='function' && !_prodRegionSelected()){ _tenarNeedSelect('지역'); return; }
   var d=_slCollect();
   var crop=d['__crop']||'unknown';
   var cropKo=(typeof PROD_CROP_KO!=='undefined'&&PROD_CROP_KO[crop])?PROD_CROP_KO[crop]:crop;

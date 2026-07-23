@@ -1,4 +1,6 @@
-<!-- chungchi_v36.html (v36) · 저장: 2026-07-22 05:28 KST · [v36] 필지주소 📍 를 주소 없이 눌러도 save=1(조사위치 저장 모드)로 진입 -->
+<!-- chungchi_v38.html (v38) · 저장: 2026-07-23 17:58 KST · [v38] 저장 시 지역 미선택이어도 저장 허용(작물만 필수). 그 외 변경 없음 -->
+<!-- (이전)  chungchi_v37.html (v37) · 저장: 2026-07-22 14:56 KST · [v37] 변경 없음(통합은 지도에서 처리, 기존 조사표 연결·전송 규약 유지) -->
+<!-- (이전)  chungchi_v36.html (v36) · 저장: 2026-07-22 05:28 KST · [v36] 필지주소 📍 를 주소 없이 눌러도 save=1(조사위치 저장 모드)로 진입 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -2203,9 +2205,8 @@ function _upsertMapFavIfCoord(entry){
 }
 
 function saveCurrentData(){
-  /* [v34-6] 작물·지역을 고르지 않으면 저장 진행 불가 */
+  /* [v38] 작물만 필수. 지역은 미선택이어도 저장 허용(사용자 요청) */
   if(!sC){ _ccNeedSelect('작물'); return; }
-  if(!sR){ _ccNeedSelect('지역'); return; }
   if(window._ccManualSaving) return;
   window._ccManualSaving = true;
   setTimeout(function(){ window._ccManualSaving = false; }, 700);
