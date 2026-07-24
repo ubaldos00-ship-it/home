@@ -1,4 +1,5 @@
-<!-- map_v47.html (v47) · 저장: 2026-07-25 00:52 KST · [v47] ②포구도구 닫을 때 「조사구역을 선택하세요」 등 임시 UI 완전 제거(clearPortToolTransientUI) ③즐겨찾기·연결자료 삭제 시 지도 도형·마커·편집상태까지 완전 삭제 후 setData+repaint ④저장핀 선택 시 상단 UI·팝업 높이를 뺀 가시영역 42% 위치로 보정(파란창에 안 가림) ⑤저장위치 팝업 초기 높이=핀수정·삭제 줄까지(위로 쓸면 길찾기·조사표·연결자료) ⑥저장위치 팝업에 「연결자료」 버튼+목록 시트(보기·표시숨김·삭제) ⑧작업 중 저장자료 열면 확인 후 임시작업만 정리 -->
+<!-- map_v48.html (v48) · 저장: 2026-07-25 01:06 KST · [v48] v47 미결 2건 마무리 — ①잠금/완료 중에도 다음 필지로 넘어가는 「＋ 새 조사 시작」(측정)·「＋ 새 포구 선정」(포구) 추가. 화면만 비우고 지역·작물·비율·조사표 복귀정보는 유지, 저장 안 했으면 경고 ②면적·길이 자료에 지도 회전각·기울기를 저장하고 불러올 때 함께 복원(옛 자료는 기존대로 범위만 맞춤) -->
+<!-- (이전)  map_v47.html (v47) · 저장: 2026-07-25 00:52 KST · [v47] ②포구도구 닫을 때 「조사구역을 선택하세요」 등 임시 UI 완전 제거(clearPortToolTransientUI) ③즐겨찾기·연결자료 삭제 시 지도 도형·마커·편집상태까지 완전 삭제 후 setData+repaint ④저장핀 선택 시 상단 UI·팝업 높이를 뺀 가시영역 42% 위치로 보정(파란창에 안 가림) ⑤저장위치 팝업 초기 높이=핀수정·삭제 줄까지(위로 쓸면 길찾기·조사표·연결자료) ⑥저장위치 팝업에 「연결자료」 버튼+목록 시트(보기·표시숨김·삭제) ⑧작업 중 저장자료 열면 확인 후 임시작업만 정리 -->
 <!-- (이전)  map_v46.html (v46) · 저장: 2026-07-24 23:22 KST · [v46] v45 미결 3건 마무리 — ⑨⑩측정도구 「완료」→「잠금/잠금 ON」(편집 11개 버튼 잠금·저장/즐겨찾기/조사표전송만 유지·해제 시 확인창·수정모드와 별개 상태) ③포구 저장 폼 팝업 신설(이름·작물·주소·비율 + 새로저장/덮어쓰기/취소)·포구/측정 저장 팝업 높이를 내용 높이까지만 ⑭표시 갱신 공통함수 refreshFavoriteAndMapItems + 레이어 순서 확인 -->
 <!-- (이전)  map_v45.html (v45) · 저장: 2026-07-24 18:12 KST · [v45] ①포구↔측정 전환 시 작업중이면 확인창(닫기/취소) ②주소검색 아래 파란 비율패널은 포구도구 열림 때만 표시 ③포구 저장/불러오기 → [저장][즐겨찾기] 분리 ④측정 「즐겨찾기에서 보기」→「즐겨찾기」·도구별 연결자료 우선정렬 ⑦측정→청취 전송에 조사일·주소 추가 ⑧측정 초기화 시 지역·작물도 초기화(청취 진입시 원본 복원) ⑪부모 표시ON→자식 전체 표시, 자식ON→부모 자동ON ⑫부모 카드 선택 시 연결자료 전부 표시+안내 · (참고) 핀 없이 저장해도 부모 자동생성(기존)·중복 부모/작물 방지(주소·sourceId) 유지 -->
 <!-- (이전)  map_v44.html (v44) · 저장: 2026-07-24 16:13 KST · [v44] 측정도구↔청취 연동 — ⑭측정도구 지역(대구·경북·강원)·작물 선택 추가 ⑮수정 버튼 토글+「핀 수정 모드」배지·센터추가는 활성/수정 모드에서만 ⑯측정 저장·요도에 지역·작물·첫주소 보관+목록 이름에 표시 ⑰측정→청취 전송에 평·지역·작물 추가(호환)·기존 재배면적 있으면 확인창 ⑱청취→지도 진입 시 지역·작물 자동선택 ⑳연결 면적·길이를 누르면 측정도구 편집대상으로 로드(수정 가능) -->
@@ -1219,6 +1220,8 @@ TenarSecureStore.init('map',
       <div class="tp-sec">⑤ 완료</div>
       <button class="tool-btn one-line" type="button" id="fpTFinish" style="width:100%">✓ 완료</button>
 
+      <!-- [v48-1] 완료(잠금) 중에도 다음 필지로 넘어갈 수 있는 버튼 -->
+      <button class="tool-btn one-line" type="button" id="fpTNewSurvey" style="width:100%;margin-top:4px;">＋ 새 포구 선정</button>
       <div class="tp-sec">⑤ 저장 / 즐겨찾기</div>
       <div class="tp-grid">
         <button class="tool-btn one-line" type="button" id="fpSaveBtn2"><span class="em">💾</span>저장</button>
@@ -1265,6 +1268,8 @@ TenarSecureStore.init('map',
         <button class="tool-btn one-line" type="button" id="btnFinish">🔒 잠금</button>
         <button class="tool-btn one-line" type="button" id="btnNew">＋ 새 면적</button>
       </div>
+      <!-- [v48-1] 잠금 중에도 다음 필지로 넘어갈 수 있는 버튼 -->
+      <button class="tool-btn one-line" type="button" id="btnNewSurvey" style="width:100%;margin-top:4px;">＋ 새 조사 시작</button>
       <div class="tp-sec">③ 저장 / 목록</div>
       <div class="tp-grid">
         <button class="tool-btn one-line" type="button" id="btnSaveMeas"><span class="em">💾</span>저장</button>
@@ -3649,6 +3654,13 @@ TenarSecureStore.init('map',
             if (fpToolPanelEl.classList.contains('show')) closeFpTool(false);
             loadMeasure(rec, true);
             surveyMeasureState._editingItemId = it.id;   /* 어느 요도를 편집 중인지 */
+            /* [v48-2] 저장해 둔 지도 회전각·기울기(있으면)까지 되살린다.
+               옛 자료(회전각 없음)는 예전처럼 도형 범위에만 맞춘다. */
+            if (it.mapBearing || it.mapPitch) {
+              setTimeout(function () {
+                try { map.easeTo({ bearing: it.mapBearing || 0, pitch: it.mapPitch || 0, duration: 500 }); } catch (e) {}
+              }, 650);
+            }
             showToast('「' + (it.name || it.type) + '」을(를) 측정도구로 불러왔습니다.\n「수정」을 눌러 점을 옮길 수 있습니다.', 3600, 'info');
           } catch (e) {}
           return;
@@ -5240,6 +5252,58 @@ TenarSecureStore.init('map',
     if (f) { f.textContent = lock ? '🔒 잠금 ON' : '🔒 잠금'; f.classList.toggle('active', lock); }
   }
   /* [v46-9][v46-10] 잠금 토글 — 해제할 때는 확인창 */
+  /* [v48-1] 「＋ 새 조사 시작」 — 잠금을 풀지 않고 다음 필지로 넘어간다.
+     · 화면의 측정만 비우고, 지역·작물과 조사표 복귀 정보는 그대로 둔다.
+     · 저장한 자료는 즐겨찾기에 그대로 남는다. */
+  function startNewSurveyMeasure() {
+    var s = surveyMeasureState;
+    var hasWork = !!(s.fieldPoints.length || s.distancePoints.length || (s.areas && s.areas.length) || (s.lines && s.lines.length));
+    var saved = !!s.editingSaveId;
+    var msg = '새 조사를 시작합니다.\n화면의 측정 내용은 지워집니다.\n';
+    msg += (hasWork && !saved)
+      ? '\n⚠ 아직 저장하지 않은 측정이 있습니다.\n먼저 「저장」을 누르는 것을 권합니다.\n\n그래도 계속할까요?'
+      : '\n(저장한 자료는 즐겨찾기에 그대로 남습니다)\n\n계속할까요?';
+    if (!window.confirm(msg)) return;
+    s.fieldPoints = []; s.fieldPolygon = null; s.fieldAreaM2 = 0; s.fieldPerimeterM = 0;
+    s.distancePoints = []; s.segmentDistances = []; s.totalDistanceM = 0;
+    s.isFieldComplete = false; s.dragging = null;
+    s.areas = []; s.lines = []; s.editingSaveId = null; s._editingItemId = null;
+    s.fieldKind = 'field';
+    s.locked = false;                       /* 새 작업이므로 잠금 해제 */
+    if (typeof clearSelectedParcelHighlight === 'function') clearSelectedParcelHighlight();
+    setSurveyMode('none');
+    updateMeasurementSources();
+    updateNewMeasureBtn();
+    if (typeof geoClearHistory === 'function') geoClearHistory();
+    try { measSyncButtons(); } catch (e) {}
+    showToast('새 조사를 시작합니다.\n지역·작물 설정은 그대로 두었습니다.', 3200, 'success');
+  }
+
+  /* [v48-1] 포구도구용 — 완료(잠금)를 풀지 않고 다음 필지 선정을 시작한다.
+     작물·기준·비율(조사 설정)은 그대로 두어 이어서 바로 잴 수 있다. */
+  function startNewSurveyFp() {
+    var hasWork = !!(fp.ga || fp.na || fpHasShape());
+    var saved = !!fp.editingId;
+    var msg = '새 포구 선정을 시작합니다.\n화면의 필지·가·나·A/B는 지워집니다.\n';
+    msg += (hasWork && !saved)
+      ? '\n⚠ 아직 저장하지 않은 작업이 있습니다.\n먼저 「저장」을 누르는 것을 권합니다.\n\n그래도 계속할까요?'
+      : '\n(저장한 자료는 즐겨찾기에 그대로 남습니다)\n\n계속할까요?';
+    if (!window.confirm(msg)) return;
+    var s = surveyMeasureState;
+    s.fieldPoints = []; s.fieldPolygon = null; s.fieldAreaM2 = 0; s.fieldPerimeterM = 0;
+    s.isFieldComplete = false; s.dragging = null; s.fieldKind = 'field';
+    s.areas = []; s.editingSaveId = null;
+    if (typeof clearSelectedParcelHighlight === 'function') clearSelectedParcelHighlight();
+    fp.editingId = null; fp._libFavId = null; fp._libItemId = null;
+    fp.finished = false;                    /* 새 작업이므로 완료 해제 */
+    fpReset();                              /* 가·나·각도·도형값 초기화 (ctx=작물·비율은 유지) */
+    updateMeasurementSources();
+    updateNewMeasureBtn();
+    if (typeof geoClearHistory === 'function') geoClearHistory();
+    fpSyncButtons();
+    showToast('새 포구 선정을 시작합니다.\n작물·기준·비율 설정은 그대로 두었습니다.\n「필지선택」부터 이어서 하세요.', 4000, 'success');
+  }
+
   function toggleMeasureLock() {
     var s = surveyMeasureState;
     if (s.locked) {
@@ -5582,6 +5646,8 @@ TenarSecureStore.init('map',
         type: 'area', geometry: { type: 'Polygon', coordinates: [closedRing(ar.points)] }, points: ar.points,
         sourceId: 'ms:' + (rec.id || '') + ':a' + ai,   /* [v42-1] 중복 저장 방지 */
         region: rec.region || '', firstPointAddress: rec.jibunAddress || '',   /* [v44-16] */
+        mapCenter: rec.mapCenter || null, mapZoom: rec.zoom || 0,
+        mapBearing: rec.bearing || 0, mapPitch: rec.pitch || 0,   /* [v48-2] 회전각까지 저장 */
         measurementData: { areaM2: ar.areaM2, perimeterM: ar.perimeterM }, crop: rec.crop || ''
       }, loc);
     });
@@ -5591,6 +5657,8 @@ TenarSecureStore.init('map',
         type: 'distance', points: ln.points,
         sourceId: 'ms:' + (rec.id || '') + ':l' + li,   /* [v42-1] 중복 저장 방지 */
         region: rec.region || '', firstPointAddress: rec.jibunAddress || '',   /* [v44-16] */
+        mapCenter: rec.mapCenter || null, mapZoom: rec.zoom || 0,
+        mapBearing: rec.bearing || 0, mapPitch: rec.pitch || 0,   /* [v48-2] 회전각까지 저장 */
         measurementData: { segs: ln.segs, totalM: ln.totalM }, crop: rec.crop || ''
       }, loc);
     });
@@ -6967,6 +7035,7 @@ TenarSecureStore.init('map',
   document.getElementById('btnMeasList').addEventListener('click', function () { openFavSheet('measure'); });   /* [v45-4] 측정 → 즐겨찾기(면적·길이 우선) */
   document.getElementById('btnSendArea').addEventListener('click', sendAreaToSurvey);   /* [v17-10] */
   document.getElementById('btnMeasSetup').addEventListener('click', openMeasSetupSheet);   /* [v44-14] */
+  document.getElementById('btnNewSurvey').addEventListener('click', startNewSurveyMeasure);   /* [v48-1] */
   try { measSyncButtons(); } catch (e) {}   /* [v46-9] 시작 시 잠금 상태 반영 */
   try { measSetupLabel(); } catch (e) {}
   updateNewMeasureBtn();
@@ -9141,7 +9210,8 @@ TenarSecureStore.init('map',
     /* ④ 완료 */
     on('fpTFinish', function () { if (fp.finished) fpUnfinish(); else fpFinish(); });
     /* ⑤ 저장 / 목록 */
-on('fpSaveBtn2', function () { openFpSaveSheet(); });      /* [v46-3] 저장 폼 팝업 */
+on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필지 시작 */
+    on('fpSaveBtn2', function () { openFpSaveSheet(); });      /* [v46-3] 저장 폼 팝업 */
     on('fpFavBtn', function () { openFavSheet('fieldplot'); });   /* [v45-4] 즐겨찾기 목록(포구 우선) */
     /* ⑥ 조사표 전송 */
     on('fpSendBtn', fpSubmit);
