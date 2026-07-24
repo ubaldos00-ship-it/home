@@ -1,4 +1,5 @@
-<!-- map_v41.html (v41) · 저장: 2026-07-24 08:25 KST · [v41] v40 미결 3건 마무리 — ①하단 팝업이 열리면 「추적」 버튼도 함께 숨김 ②포구도구에 「자동회전 켜짐/꺼짐」 스위치 추가(설정 저장) ③즐겨찾기에 「🔗 중복 핀 합치기」 추가 — 같은 지번주소로 갈라진 옛 핀을 하나로 합치고 연결 요도를 옮김(조사표 연결된 핀 우선 보존·잠긴 핀은 그대로 둠) -->
+<!-- map_v42.html (v42) · 저장: 2026-07-24 10:30 KST · [v42] ①연결자료 중복(2개) 저장 수정 — sourceId 같으면 새로 만들지 않고 UPDATE ②즐겨찾기 연결자료 기본 펼침 ③목록 선택 시 저장위치 팝업 없이 지도이동+핀 강조 ④저장위치 팝업 열릴 때 핀이 안 가리게 지도 중심 보정 ⑤선택 핀 강조(확대+파란 Pulse+Glow) ⑥팝업 작물명 중복 제거·복사 버튼 텍스트화 ⑦모든 바텀시트 최대높이=내용높이(빈 공백 제거) ⑧각도조절을 지도 회전 방식으로(세로선 실시간 회전·세로길이 실시간 계산, 기존 ↔드래그도 유지) ⑨세로선 경계 접점에 점·A/B포구 이후 점선 ⑩세로길이에서 「세로」 글자 제거 ⑪A/B 기점·세로값 테두리 30% 축소·배경 40% 반투명 ⑫필지 선택 테두리 초록→파랑(#0078FF) +추천 세로각도 실시간 배지 -->
+<!-- (이전)  map_v41.html (v41) · 저장: 2026-07-24 08:25 KST · [v41] v40 미결 3건 마무리 — ①하단 팝업이 열리면 「추적」 버튼도 함께 숨김 ②포구도구에 「자동회전 켜짐/꺼짐」 스위치 추가(설정 저장) ③즐겨찾기에 「🔗 중복 핀 합치기」 추가 — 같은 지번주소로 갈라진 옛 핀을 하나로 합치고 연결 요도를 옮김(조사표 연결된 핀 우선 보존·잠긴 핀은 그대로 둠) -->
 <!-- (이전)  map_v40.html (v40) · 저장: 2026-07-24 08:08 KST · [v40] ①저장모드에서 토지정보 팝업 안뜸(핀만 저장) ②저장모드 버튼 [저장][취소] · 저장시 자동 조사표 복귀 ④저장핀 깃발→물방울 원복 ⑤이미 저장된 핀 재사용(필지중심 새 핀 생성 안함) ⑥작물 변경시 핀·요도 작물명 자동 동기화 ⑦하단 팝업 열리면 오른쪽 도구버튼 숨김(주소검색·레이어 유지) ⑧토지정보를 지적도와 분리(하위 토글·기본 꺼짐) ⑨레이어 목록 순서 지적도→토지이용→하이브리드 ⑩저장핀 메뉴에 이랑 점 표시 ON/OFF ⑪가/나 버튼 기준 즉시 교체+자동 재계산 ⑫가·나 지정시 자동 회전 + 가-나맞춤·북쪽맞춤 버튼 -->
 <!-- (이전)  map_v39.html (v39) · 저장: 2026-07-23 20:02 KST · [v39] 정식 배포판 링크 정리 — 조사표 파일명을 tonghab.html·chungchi.html(정식)로 변경(SURVEY_FILES·복귀URL). 지도 파일은 map_libre.html로 배포(기존 네이버 map.html은 서버에 그대로 보존). 그 외 기능 v38과 동일 -->
 <!-- (이전)  map_v38.html (v38) · 저장: 2026-07-23 17:58 KST · [v38] ①저장핀 이모지 물방울→깃발(핀 색상 유지) ②같은 지번주소면 기존 즐겨찾기에 연결해 핀 중복 생성 방지(findFavForLocation·bulk 모두 주소매칭) ③(계산기)지역 미선택이어도 저장 허용 ④즐겨찾기 자식(요도) 행 레이아웃 정렬·오른쪽 넘침 수정(box-sizing·flex-basis 100 percent·말줄임) -->
@@ -616,6 +617,23 @@ TenarSecureStore.init('map',
      자리를 차지하면서(세로로 쌓임) 그 위치에서 transform 이 더해져 좌표가 틀어졌다.
      축소할수록 흐름 쌓임이 지배해 핀들이 일자로 늘어서 보였다. */
   .pin { position: absolute; width: 24px; height: 30px; cursor: pointer; z-index: 1; }
+  /* [v42-5] 즐겨찾기 목록에서 고른 핀 강조 — 확대 + 파란 Pulse + Glow */
+  .pin.pin-focus { z-index: 12 !important; animation: pinPop .45s ease-out; }
+  .pin.pin-focus svg { filter: drop-shadow(0 0 6px rgba(0,132,255,.95)) drop-shadow(0 0 14px rgba(0,132,255,.6)); }
+  .pin.pin-focus::after {
+    content: ''; position: absolute; left: 50%; bottom: -6px; width: 16px; height: 16px;
+    margin-left: -8px; border-radius: 50%; border: 3px solid #0078FF;
+    animation: pinPulse 1.25s ease-out infinite; pointer-events: none;
+  }
+  @keyframes pinPulse {
+    0%   { transform: scale(.5); opacity: .95; }
+    100% { transform: scale(3.2); opacity: 0; }
+  }
+  @keyframes pinPop {
+    0%   { transform: scale(1); }
+    45%  { transform: scale(1.35); }
+    100% { transform: scale(1); }
+  }
   /* [v13] 저장핀을 측정점으로 쓰면 같은 자리에 핀과 측정점 번호가 겹친다.
            번호·라벨이 저장핀에 가려지지 않도록 위로 올린다.
            (측정 경계선·측정선은 지도 캔버스에 그려져 항상 마커 아래) */
@@ -704,6 +722,17 @@ TenarSecureStore.init('map',
   #fpPanel { display: none; margin-top: 6px; padding: 7px 8px; border-radius: 8px; background: #f4f7fb; }
   #fpPanel .fp-line { font-size: 11px; line-height: 1.6; color: #16324f; }
   #fpPanel .fp-sub { color: #6b7c93; font-size: 10px; font-weight: 600; }
+  /* [v42-추천] 세로각도 배지 — 각도조절 중에만 화면 위쪽에 뜬다 */
+  #fpAngleBadge {
+    position: fixed; left: 50%; transform: translateX(-50%);
+    top: calc(env(safe-area-inset-top,0px) + 96px);
+    display: none; z-index: 1200; pointer-events: none;
+    padding: 5px 12px; border-radius: 999px;
+    background: rgba(17,24,39,.86); color: #fff;
+    font-size: 13px; font-weight: 900; letter-spacing: .2px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.35);
+  }
+  #fpAngleBadge.show { display: block; }
   #fpAngleRow { display: flex; align-items: center; gap: 6px; margin-top: 5px; font-size: 10.5px; color: #16324f; }
   #fpAngleVal { flex: 1; font-weight: 800; }
 
@@ -796,17 +825,23 @@ TenarSecureStore.init('map',
   /* [v15-6] 가로기점은 점 "아래"에 A / B 표시 */
   /* [v17-4] 기점값 : 흰 배경 + 색 테두리 + 색 글씨 (A 파랑 / B 빨강) */
   /* [v18-6] 가로기점 값 — 글자 키움 */
+  /* [v42-11] 글자크기는 그대로, 테두리·여백만 약 30% 축소하고 배경은 40% 반투명 */
   .fp-base .fp-tag {
     position: absolute; left: 50%; top: 7px; transform: translateX(-50%);
     z-index: 4;
-    white-space: nowrap; padding: 2px 5px; border-radius: 6px;
-    font-size: 11px; font-weight: 900; background: #fff;
-    box-shadow: 0 1px 3px rgba(0,0,0,.35);
+    white-space: nowrap; padding: 1px 3.5px; border-radius: 4px;
+    font-size: 11px; font-weight: 900; background: rgba(255,255,255,.4);
+    box-shadow: 0 1px 2px rgba(0,0,0,.25);
   }
-  .fp-base .fp-tag-a { border: 1.6px solid #1565C0; color: #1565C0; }
-  .fp-base .fp-tag-b { border: 1.6px solid #d0342c; color: #d0342c; }
+  .fp-base .fp-tag-a { border: 1.1px solid #1565C0; color: #1565C0; }
+  .fp-base .fp-tag-b { border: 1.1px solid #d0342c; color: #d0342c; }
   /* [v15-6] 세로 포구지점은 점 "안"에 A(파랑) · B(빨강) */
   /* [v28-6] A/B포구 점은 언제나 가장 위 — 겹쳐서 안 보이면 현장에서 곤란하다 */
+  /* [v42-9] 세로선이 필지 경계에 닿는 지점의 작은 점 */
+  .fp-endpt {
+    position: absolute; left: -3.5px; top: -3.5px; width: 7px; height: 7px; border-radius: 50%;
+    background: #111827; border: 1.5px solid #fff; box-shadow: 0 1px 2px rgba(0,0,0,.45); z-index: 6;
+  }
   .fp-po-wrap { position: absolute; width: 0; height: 0; z-index: 9; }
   .fp-po {
     position: absolute; left: -6px; top: -6px; width: 12px; height: 12px; border-radius: 6px; z-index: 10;
@@ -829,14 +864,15 @@ TenarSecureStore.init('map',
   /* [v17-4] 세로총길이는 세로선 "안쪽 중간"에 */
   .fp-end-wrap { position: absolute; width: 0; height: 0; }
   /* [v18-4][v18-6] 세로 총길이 — 세로선 "끝 바깥"에, 글자 키움 */
+  /* [v42-11] 세로총길이 : 글자크기 유지 · 여백 축소 · 배경 40% 반투명 */
   .fp-endtip {
     position: absolute; left: 50%; top: -9px; transform: translateX(-50%);
-    white-space: nowrap; padding: 2px 6px; border-radius: 6px;
+    white-space: nowrap; padding: 1px 4px; border-radius: 4px;
     font-size: 11px; font-weight: 800; color: #fff;
-    box-shadow: 0 1px 3px rgba(0,0,0,.4);
+    box-shadow: 0 1px 2px rgba(0,0,0,.3);
   }
-  .fp-endtip-a { background: #1565C0; }
-  .fp-endtip-b { background: #d0342c; }
+  .fp-endtip-a { background: rgba(21,101,192,.4); }
+  .fp-endtip-b { background: rgba(208,52,44,.4); }
   /* [v16-4] 각도 조절 손잡이 */
   .fp-po-wrap.fp-drag { cursor: grab; }
   .fp-po-wrap.fp-drag .fp-po { box-shadow: 0 0 0 3px rgba(255,193,7,.85), 0 1px 4px rgba(0,0,0,.45); }
@@ -969,6 +1005,12 @@ TenarSecureStore.init('map',
   .btn-row { display: flex; gap: 7px; margin-bottom: 8px; }
   .btn-row .sheet-btn { flex: 1; }
 
+  /* [v42-6] 복사 : 테두리 없는 작은 텍스트 버튼 */
+  .copy-btn.copy-plain {
+    flex-shrink: 0; border: none !important; background: none !important; box-shadow: none !important;
+    color: #1a5fd0; font-size: 12.5px; font-weight: 800; padding: 2px 4px; min-height: 0 !important;
+    height: auto !important; width: auto !important; text-decoration: underline;
+  }
   .addr-main { font-size: 19px; font-weight: 800; color: #14612f; line-height: 1.4; word-break: keep-all; }
   .addr-label { font-size: 11px; font-weight: 800; color: #888; margin-top: 10px; }
   .addr-value { font-size: 14px; color: #333; }
@@ -1119,6 +1161,9 @@ TenarSecureStore.init('map',
   </div>
 
   <!-- ══ [v17] 포구도구 — A/B포구 선정 전용 ══ -->
+  <!-- [v42-추천] 각도조절 중 세로각도 실시간 배지 -->
+  <div id="fpAngleBadge"><span id="fpAngleBadgeTxt">세로각도 90.0°</span></div>
+
   <div id="fpToolPanel">
     <div id="fpToolHeader"><span>🚩 포구도구</span><button id="fpToolToggle" type="button" aria-label="포구도구 접기/펴기">▼</button></div>
     <div id="fpToolBody">
@@ -1419,12 +1464,32 @@ TenarSecureStore.init('map',
         color: (itemData.color != null) ? itemData.color : nextItemColor(favRec.id, itemData.type),
         crop: itemData.crop || favRec.crop || '',
         surveyType: itemData.surveyType || '', surveyId: itemData.surveyId || '', recordId: itemData.recordId || '',
+        sourceId: itemData.sourceId || '',            /* [v42-1] 원본 저장자료 id */
         addrSnapshot: favRec.jibunAddress || '',
         mapCenter: itemData.mapCenter || null, mapZoom: itemData.mapZoom || 0,
         mapBearing: itemData.mapBearing || 0, mapPitch: itemData.mapPitch || 0,
         createdAt: kstNowStr(), updatedAt: kstNowStr()
       };
-      items.unshift(it); setMapItems(items);
+      /* [v42-1] 같은 원본(sourceId)이 이미 있으면 새로 만들지 않고 그 항목을 갱신한다.
+         저장 → 조사표전송 처럼 같은 자료를 두 번 저장해도 요도는 1개만 남는다. */
+      var repl = -1;
+      if (it.sourceId) {
+        for (var q = 0; q < items.length; q++) {
+          if (items[q] && items[q].sourceId === it.sourceId) { repl = q; break; }
+        }
+      }
+      if (repl >= 0) {
+        it.id = items[repl].id;                       /* id 유지 (조사표 연결 보존) */
+        it.createdAt = items[repl].createdAt || it.createdAt;
+        it.name = items[repl].name || it.name;        /* 사용자가 고친 이름 유지 */
+        it.visible = (items[repl].visible !== false);
+        it.locked = !!items[repl].locked;
+        it.color = (items[repl].color != null) ? items[repl].color : it.color;
+        items[repl] = it;
+      } else {
+        items.unshift(it);
+      }
+      setMapItems(items);
       renderMapItems();
       if (typeof onDone === 'function') onDone(favRec, it, how);
     }
@@ -2268,7 +2333,23 @@ TenarSecureStore.init('map',
     /* [v11-1] 최소화 단계 —— 제목줄(가로바+제목+버튼)만 남는 높이 */
     function minPx() { return (grip.offsetHeight || 20) + (head.offsetHeight || 48); }
     function minPct() { return Math.max(4, minPx() / window.innerHeight * 100); }
-    function snapList() { return [minPct()].concat(SNAPS); }
+    /* [v42-7] 내용 높이(%)를 넘겨서 열지 않는다 — 끝까지 올려도 아래 빈 공간이 안 생긴다 */
+    function contentPct() {
+      try {
+        var body = document.getElementById('sheetBody');
+        var h = (grip.offsetHeight || 20) + (head.offsetHeight || 48) +
+                (body ? body.scrollHeight : 0) + 24;   /* 아래 여백 약간 */
+        return Math.min(90, Math.max(minPct(), h / window.innerHeight * 100));
+      } catch (e) { return 90; }
+    }
+    window._sheetContentPct = contentPct;
+    function snapList() {
+      var cap = contentPct();
+      var list = [minPct()];
+      SNAPS.forEach(function (s) { if (s < cap - 1) list.push(s); });
+      list.push(cap);            /* 마지막 단계 = 내용 높이 (또는 최대 90%) */
+      return list;
+    }
     window._sheetSnapList = snapList;
 
     function down(e) {
@@ -2681,6 +2762,32 @@ TenarSecureStore.init('map',
   var suppressNextMapClick = false;
 
   var favMarkers = [];
+  var _focusFavId = null;   /* [v42-5] 목록에서 고른 핀 */
+  /* [v42-3][v42-5] 목록에서 고른 핀으로 지도를 옮기고, 그 핀만 강조한다 (팝업은 열지 않음) */
+  function focusFavPin(f) {
+    if (!f || !isFinite(f.latitude) || !isFinite(f.longitude)) return;
+    _focusFavId = f.id;
+    map.flyTo({
+      center: [f.longitude, f.latitude],
+      zoom: LOCATION_FOCUS_ZOOM,
+      offset: [0, -Math.round(window.innerHeight * 0.12)],   /* 화면 중앙보다 조금 위 */
+      essential: true
+    });
+    setTimeout(applyFavFocus, 420);
+    showToast('「' + (f.name || f.jibunAddress || '저장 위치') + '」 위치입니다.\n핀을 누르면 상세정보가 열립니다.', 3000, 'info');
+  }
+  /* [v42-5] 강조 클래스 적용 (핀을 다시 그린 뒤에도 유지) */
+  function applyFavFocus() {
+    try {
+      document.querySelectorAll('.pin.pin-focus').forEach(function (p) { p.classList.remove('pin-focus'); });
+      if (!_focusFavId) return;
+      favMarkers.forEach(function (m) {
+        var e = m.getElement && m.getElement();
+        if (e && e.dataset && e.dataset.favId === _focusFavId) e.classList.add('pin-focus');
+      });
+    } catch (e) {}
+  }
+  function clearFavFocus() { _focusFavId = null; applyFavFocus(); }
   function clearFavPins() { favMarkers.forEach(function (m) { m.remove(); }); favMarkers = []; }
   function refreshFavPins() {
     clearFavPins();
@@ -2714,15 +2821,36 @@ TenarSecureStore.init('map',
         _clearLp();
         if (_longPressed) { _longPressed = false; return; }   /* 길게눌러 정보시트를 이미 열었음 */
         if (isSurveyPointInputMode()) { useFavoritePinAsSurveyPoint(f); return; }
+        clearFavFocus();                            /* [v42-5] 팝업이 열리므로 강조는 끈다 */
         openFavPinSheet(f);                         /* 일반 지도모드: 기존 동작 그대로 */
       });
+      e.dataset.favId = f.id;   /* [v42-5] 강조 대상 식별 */
       var mk = new maplibregl.Marker({ element: e, anchor: 'bottom' })
         .setLngLat([f.longitude, f.latitude])
         .addTo(map);
       favMarkers.push(mk);
     });
     applyPinScale();   /* [v11-3] 현재 줌에 맞는 핀 크기 적용 */
+    applyFavFocus();   /* [v42-5] 다시 그려도 강조 유지 */
   }
+  /* [v42-8] 각도조절 중 지도를 돌리면 세로선 방향이 함께 돌고 세로길이도 실시간 계산된다. */
+  map.on('rotate', function () {
+    try {
+      if (typeof fp === 'undefined' || !fp || !fp.angleMode || !fp.ga || !fp.na) return;
+      if (fp._rotBearing0 == null) { fp._rotBearing0 = map.getBearing(); fp._angleA0 = fp.angleA; fp._angleB0 = fp.angleB; }
+      var d = map.getBearing() - fp._rotBearing0;
+      while (d > 180) d -= 360;
+      while (d < -180) d += 360;
+      var cl = function (v) { return Math.max(-75, Math.min(75, Math.round(v))); };
+      if (fp.angleSep) { fp.angleA = cl(fp._angleA0 + d); }
+      else { fp.angleA = cl(fp._angleA0 + d); fp.angleB = cl(fp._angleB0 + d); }
+      fpCompute();
+      fpRenderLinesOnly();
+      fpUpdateAngleLabel();
+      fpUpdatePanel();
+    } catch (e) {}
+  });
+  map.on('rotateend', function () { try { if (fp && fp.angleMode) { fpRender(); fpSyncButtons(); } } catch (e) {} });
   map.on('zoomend', applyPinScale);   /* [v11-3] 줌에 따라 핀 크기 갱신 */
   map.on('zoom', updateBearing);      /* [v12-2] 레벨 실시간 표시 */
   window.refreshFavPins = refreshFavPins;
@@ -2741,12 +2869,11 @@ TenarSecureStore.init('map',
     addrRow.style.marginTop = '0';
     addrRow.appendChild(el('div', 'li-grow',
       '<div class="addr-main" style="font-size:16.5px;">' +
-        '<span class="crop-tag' + (f.crop ? '' : ' crop-none') + '">' + escapeHtml(f.crop || '없음') + '</span>' +
+        '<span class="crop-tag' + (f.crop ? '' : ' crop-none') + '" style="font-size:13px;">' + escapeHtml(f.crop || '없음') + '</span>' +
         escapeHtml(f.name) + '</div>' +
       '<div class="addr-label">전체 지번</div>' +
       '<div class="addr-value">' + escapeHtml(f.jibunAddress || '주소 없음') + '</div>'));
-    var bCopy = el('button', 'copy-btn', '복사');
-    bCopy.style.cssText += 'flex-shrink:0;min-height:36px;';
+    var bCopy = el('button', 'copy-btn copy-plain', '복사');   /* [v42-6] 테두리 없는 작은 텍스트 버튼 */
     bCopy.addEventListener('click', function () { copyText(f.jibunAddress || ''); });
     addrRow.appendChild(bCopy);
     box.appendChild(addrRow);
@@ -2763,8 +2890,8 @@ TenarSecureStore.init('map',
       '위도 ' + f.latitude.toFixed(6) + ' · 경도 ' + f.longitude.toFixed(6)));
 
     /* 작물·메모·저장일시 */
+    /* [v42-6] 작물은 맨 위 제목줄에 이미 있으므로 여기서는 빼서 중복을 없앤다 */
     var extra = '';
-    extra += '<div class="addr-label">작물</div><div class="addr-value">' + escapeHtml(f.crop || '없음') + '</div>';   /* [v14][v30-2] 없으면 「없음」 */
     if (f.memo) extra += '<div class="addr-label">메모</div><div class="addr-value">' + escapeHtml(f.memo) + '</div>';
     if (f.createdAt) extra += '<div class="addr-label">저장일시</div><div class="addr-value" style="font-size:12px;color:#888;">' + escapeHtml(String(f.createdAt).slice(0, 16).replace('T', ' ')) + '</div>';
     if (extra) box.appendChild(el('div', null, extra));
@@ -2804,6 +2931,17 @@ TenarSecureStore.init('map',
 
     box.appendChild(r1); box.appendChild(r2); box.appendChild(bParcel);
     openSheet('저장 위치', box, 'auto');
+    /* [v42-4] 팝업이 핀을 가리지 않도록, 핀이 화면 중앙보다 조금 위에 오게 지도를 옮긴다.
+       (시트 높이가 정해진 뒤에 계산해야 정확하다) */
+    if (!isRestore) {
+      setTimeout(function () {
+        try {
+          var sh = sheetEl ? sheetEl.offsetHeight : 0;
+          var up = Math.round(Math.min(window.innerHeight * 0.34, sh * 0.5 + 40));
+          map.easeTo({ center: [f.longitude, f.latitude], offset: [0, -up], duration: 550 });
+        } catch (e) {}
+      }, 90);
+    }
     sheetIsLandInfo = false;
     if (!isRestore) clearSelectedParcelHighlight();
   }
@@ -3180,10 +3318,11 @@ TenarSecureStore.init('map',
         escapeHtml(f.name) + '</div>' +
         '<div class="fav-addr">' + escapeHtml(f.jibunAddress || f.name || '-') + '</div>' +
         summary);
+      /* [v42-3] 목록에서 고르면 지도만 옮기고 그 핀을 강조한다.
+         저장위치 팝업은 지도에서 핀을 직접 눌렀을 때만 연다. */
       body.addEventListener('click', function () {
         closeSheet();
-        map.flyTo({ center: [f.longitude, f.latitude], zoom: LOCATION_FOCUS_ZOOM, essential: true });
-        setTimeout(function () { openSavedLocationSheet(f); }, 350);
+        focusFavPin(f);
       });
 
       var acts = el('div', 'fav-acts');
@@ -3210,8 +3349,7 @@ TenarSecureStore.init('map',
       load.addEventListener('click', function (ev) {
         ev.stopPropagation();
         closeSheet();
-        map.flyTo({ center: [f.longitude, f.latitude], zoom: LOCATION_FOCUS_ZOOM, essential: true });
-        setTimeout(function () { openSavedLocationSheet(f); }, 350);
+        focusFavPin(f);   /* [v42-3] 지도이동 + 핀 강조 (팝업 없음) */
       });
       /* [v37-21] 삭제 : 연결 요도가 있으면 확인 */
       var del = el('button', 'icon-btn ' + (f.locked ? 'del-off' : 'del-on'), '🗑');
@@ -3237,10 +3375,11 @@ TenarSecureStore.init('map',
 
       /* [v37-9] 연결 요도 펼치기 */
       if (total) {
-        var toggle = el('div', 'fav-expand', '▼ 연결된 자료 ' + total + '개');
+        var toggle = el('div', 'fav-expand', '▲ 연결된 자료 ' + total + '개');   /* [v42-2] 기본 펼침 */
         toggle.style.cssText = 'flex:0 0 100%;width:100%;box-sizing:border-box;margin-top:6px;padding:5px 2px;font-size:12px;font-weight:800;color:#1a5fd0;cursor:pointer;';
         var childBox = el('div', 'fav-children');
-        childBox.style.cssText = 'flex:0 0 100%;width:100%;box-sizing:border-box;display:none;margin-top:2px;overflow:hidden;';
+        childBox.style.cssText = 'flex:0 0 100%;width:100%;box-sizing:border-box;display:block;margin-top:2px;overflow:hidden;';   /* [v42-2] 기본 펼침 */
+        buildFavChildren(childBox, f.id); childBox.dataset.built = '1';   /* [v42-2] 바로 그려 둔다 */
         toggle.addEventListener('click', function (ev) {
           ev.stopPropagation();
           var open = childBox.style.display === 'none';
@@ -4346,7 +4485,8 @@ TenarSecureStore.init('map',
       id: 'survey-field-outline', type: 'line', source: 'survey-field-source',
       filter: ['in', ['get', 'type'], ['literal', ['field', 'field-line']]],
       layout: { 'line-cap': 'round', 'line-join': 'round' },
-      paint: { 'line-color': ['case', ['==', ['coalesce', ['get', 'kind'], 'field'], 'crop'], '#b45309', '#14612f'], 'line-width': 3 }
+      /* [v42-12] 필지 선택 테두리를 작물색(초록)과 헷갈리지 않게 파랑(#0078FF)으로 */
+      paint: { 'line-color': ['case', ['==', ['coalesce', ['get', 'kind'], 'field'], 'crop'], '#b45309', '#0078FF'], 'line-width': 3 }
     });
     /* [v6-6] 구간별로 선을 나눠 1~2구간과 3구간 이후 색을 구분한다 */
     map.addLayer({
@@ -5177,16 +5317,18 @@ TenarSecureStore.init('map',
       crop: rec.crop || '', color: 'green', name: (addr && addr.jibunAddress) || rec.name || '측정 위치'
     };
     /* 면적 요도들 */
-    (rec.areas || []).forEach(function (ar) {
+    (rec.areas || []).forEach(function (ar, ai) {
       saveMapItem({
         type: 'area', geometry: { type: 'Polygon', coordinates: [closedRing(ar.points)] }, points: ar.points,
+        sourceId: 'ms:' + (rec.id || '') + ':a' + ai,   /* [v42-1] 중복 저장 방지 */
         measurementData: { areaM2: ar.areaM2, perimeterM: ar.perimeterM }, crop: rec.crop || ''
       }, loc);
     });
     /* 길이 요도들 */
-    (rec.lines || []).forEach(function (ln) {
+    (rec.lines || []).forEach(function (ln, li) {
       saveMapItem({
         type: 'distance', points: ln.points,
+        sourceId: 'ms:' + (rec.id || '') + ':l' + li,   /* [v42-1] 중복 저장 방지 */
         measurementData: { segs: ln.segs, totalM: ln.totalM }, crop: rec.crop || ''
       }, loc);
     });
@@ -6882,11 +7024,19 @@ TenarSecureStore.init('map',
     if (fp.path && fp.path.length >= 2) {
       fc.features.push({ type: 'Feature', properties: { t: 'gana' }, geometry: { type: 'LineString', coordinates: fp.path } });
     }
-    /* 세로선 */
-    if (fp.aBase && fp.aEnd) fc.features.push({ type: 'Feature', properties: { t: 'va' }, geometry: { type: 'LineString', coordinates: [fp.aBase, fp.aEnd] } });
+    /* [v42-9] 세로선 : 기점→A/B포구 는 실선, A/B포구→반대 경계는 점선 */
+    fpPushVert(fc, 'a', fp.aBase, fp.aPo, fp.aEnd);
     /* [v19-10] 1이랑은 세로선 하나만 그린다 */
-    if (fp.bBase && fp.bEnd && !fpIsOneRidge()) fc.features.push({ type: 'Feature', properties: { t: 'vb' }, geometry: { type: 'LineString', coordinates: [fp.bBase, fp.bEnd] } });
+    if (!fpIsOneRidge()) fpPushVert(fc, 'b', fp.bBase, fp.bPo, fp.bEnd);
     if (map.getSource('fp-source')) map.getSource('fp-source').setData(fc);
+
+    /* [v42-9] 세로선이 필지 경계에 닿는 지점에 작은 점을 찍는다 */
+    if (fp.aBase) fpMark(fp.aBase, '<span class="fp-endpt"></span>', 'fp-base');
+    if (fp.aEnd)  fpMark(fp.aEnd,  '<span class="fp-endpt"></span>', 'fp-base');
+    if (!fpIsOneRidge()) {
+      if (fp.bBase) fpMark(fp.bBase, '<span class="fp-endpt"></span>', 'fp-base');
+      if (fp.bEnd)  fpMark(fp.bEnd,  '<span class="fp-endpt"></span>', 'fp-base');
+    }
 
     /* [v26-1] 이랑 기준일 때 이랑 하나하나를 작은 점으로 찍어 준다.
        (가-나를 이랑수+1 로 나눈 자리 = 가로기점을 잡는 자리와 같은 규칙)
@@ -6934,9 +7084,9 @@ TenarSecureStore.init('map',
       } catch (e) { return end; }
     }
     var oA = outsideOf(fp.aBase, fp.aEnd), oB = outsideOf(fp.bBase, fp.bEnd);
-    if (showVals && oA) fpMark(oA, '<span class="fp-endtip fp-endtip-a' + (tight ? ' fp-shift-up' : '') + '">세로 ' + formatNumber(fp.heightA, 0) + 'cm</span>', 'fp-end-wrap');
+    if (showVals && oA) fpMark(oA, '<span class="fp-endtip fp-endtip-a' + (tight ? ' fp-shift-up' : '') + '">' + formatNumber(fp.heightA, 0) + 'cm</span>', 'fp-end-wrap');
     /* 1이랑은 세로선이 하나이므로 B쪽 라벨을 겹쳐 그리지 않는다 */
-    if (showVals && oB && !fpIsOneRidge()) fpMark(oB, '<span class="fp-endtip fp-endtip-b' + (tight ? ' fp-shift-down' : '') + '">세로 ' + formatNumber(fp.heightB, 0) + 'cm</span>', 'fp-end-wrap');
+    if (showVals && oB && !fpIsOneRidge()) fpMark(oB, '<span class="fp-endtip fp-endtip-b' + (tight ? ' fp-shift-down' : '') + '">' + formatNumber(fp.heightB, 0) + 'cm</span>', 'fp-end-wrap');
 
     /* [v15-6][v16-3] A/B포구 : 점 안에 A(파랑)·B(빨강), 옆에는 "가로기점 → 포구점" 계산값 */
     if (fp.aPo) fpMarkPo('a', fp.aPo, fp.aPoLen);
@@ -6989,11 +7139,16 @@ TenarSecureStore.init('map',
     fpCompute();
     fpUpdatePanel();
     fpUpdateAngleLabel();
-    /* 끄는 중에는 선만 즉시 갱신 (마커 재생성은 dragend 에서) */
+    fpRenderLinesOnly();   /* [v42-8] 끄는 중에는 선만 즉시 갱신 (마커 재생성은 dragend 에서) */
+  }
+
+  /* [v42-8] 선(가-나 · 세로 실선/점선)만 즉시 다시 그린다.
+     각도 드래그 중, 그리고 각도조절 중 지도를 돌릴 때 실시간 갱신에 쓴다. */
+  function fpRenderLinesOnly() {
     var fc = { type: 'FeatureCollection', features: [] };
     if (fp.path && fp.path.length >= 2) fc.features.push({ type: 'Feature', properties: { t: 'gana' }, geometry: { type: 'LineString', coordinates: fp.path } });
-    if (fp.aBase && fp.aEnd) fc.features.push({ type: 'Feature', properties: { t: 'va' }, geometry: { type: 'LineString', coordinates: [fp.aBase, fp.aEnd] } });
-    if (fp.bBase && fp.bEnd) fc.features.push({ type: 'Feature', properties: { t: 'vb' }, geometry: { type: 'LineString', coordinates: [fp.bBase, fp.bEnd] } });
+    fpPushVert(fc, 'a', fp.aBase, fp.aPo, fp.aEnd);
+    fpPushVert(fc, 'b', fp.bBase, fp.bPo, fp.bEnd);
     if (map.getSource('fp-source')) map.getSource('fp-source').setData(fc);
   }
 
@@ -7120,6 +7275,20 @@ TenarSecureStore.init('map',
     if (fp.ga && fp.na) fpAutoRotateToGaNa(true);
   }
 
+  /* [v42-9] 세로선 조각 넣기 : 기점→포구(실선) · 포구→경계(점선).
+     포구가 아직 없으면 예전처럼 기점→경계를 통째로 실선으로 그린다. */
+  function fpPushVert(fc, which, base, po, end) {
+    if (!base || !end) return;
+    var solid = (which === 'a') ? 'va' : 'vb';
+    var dash  = (which === 'a') ? 'vaD' : 'vbD';
+    if (po) {
+      fc.features.push({ type: 'Feature', properties: { t: solid }, geometry: { type: 'LineString', coordinates: [base, po] } });
+      fc.features.push({ type: 'Feature', properties: { t: dash },  geometry: { type: 'LineString', coordinates: [po, end] } });
+    } else {
+      fc.features.push({ type: 'Feature', properties: { t: solid }, geometry: { type: 'LineString', coordinates: [base, end] } });
+    }
+  }
+
   function fpSetPoint(lng, lat) {
     var c = fpSnap(lng, lat);
     /* [v18-1] 꼭짓점이 아니면 지정하지 않는다 (규칙) */
@@ -7192,10 +7361,15 @@ TenarSecureStore.init('map',
   function fpToggleAngleMode() {
     if (!(fp.ga && fp.na)) { showToast('먼저 가·나 지점을 지정해주세요.', 3000, 'info'); return; }
     fp.angleMode = !fp.angleMode;
-    fpRender(); fpSyncButtons();
+    /* [v42-8] 각도조절을 켤 때의 지도 방위·각도를 기준으로 잡아 둔다. */
+    if (fp.angleMode) {
+      fp._rotBearing0 = map.getBearing();
+      fp._angleA0 = fp.angleA; fp._angleB0 = fp.angleB;
+    }
+    fpRender(); fpSyncButtons(); fpUpdateAngleLabel();   /* [v42-추천] 배지 즉시 갱신 */
     showToast(fp.angleMode
-      ? '각도 조절을 켰습니다.\nA·B포구 점(↔)을 좌우로 끌어 각도를 맞추세요.\n가로 A·B 지점은 그대로 있습니다.'
-      : '각도 조절을 껐습니다.', fp.angleMode ? 5000 : 2000, 'info');
+      ? '각도 조절을 켰습니다.\n지도를 두 손가락으로 돌리면 세로선이 따라 돕니다.\n(A·B포구 점 ↔ 을 끌어서 맞출 수도 있습니다)'
+      : '각도 조절을 껐습니다.', fp.angleMode ? 5200 : 2000, 'info');
   }
   function fpSetRatio(n) {
     /* [v26-3] 1번 비율의 A포구가 0이랑이면 1번으로 갈 수 없다 — 이유를 정확히 알린다 */
@@ -7452,6 +7626,7 @@ TenarSecureStore.init('map',
     var itemData = {
       type: 'fieldplot', name: rec.name,
       geometry: rec.polygon ? { type: 'Polygon', coordinates: rec.polygon } : null,
+      sourceId: 'fp:' + (rec.id || rec.linkId || ''),   /* [v42-1] 중복 저장 방지 */
       fieldPlotData: rec, crop: loc.crop, surveyType: 'tonghab', surveyId: rec.surveyKey || '',
       mapCenter: rec.mapCenter, mapZoom: rec.zoom, mapBearing: rec.bearing, mapPitch: rec.pitch
     };
@@ -7679,6 +7854,19 @@ TenarSecureStore.init('map',
     var lbl = document.getElementById('fpAngleVal');
     if (lbl) lbl.textContent = '각도 A ' + (fp.angleA > 0 ? '+' : '') + fp.angleA +
                                '° · B ' + (fp.angleB > 0 ? '+' : '') + fp.angleB + '°';
+    /* [v42-추천] 세로각도 배지 — 가-나 선 기준 직각(90°)에서 얼마나 틀어졌는지 */
+    var bd = document.getElementById('fpAngleBadge');
+    var bt = document.getElementById('fpAngleBadgeTxt');
+    if (bd && bt) {
+      var on = !!(fp.angleMode && fp.ga && fp.na);
+      bd.classList.toggle('show', on);
+      if (on) {
+        var vA = 90 + Number(fp.angleA || 0);
+        var txt = '세로각도 ' + vA.toFixed(1) + '°';
+        if (fp.angleSep) txt += ' (A) · ' + (90 + Number(fp.angleB || 0)).toFixed(1) + '° (B)';
+        bt.textContent = txt;
+      }
+    }
   }
 
   /* [v28-2] 상황 안내 — 조사구역 없음 / 각도조절 / 입력완료 */
@@ -7857,6 +8045,16 @@ TenarSecureStore.init('map',
         paint: {
           'line-color': ['case', ['==', ['get', 't'], 'va'], '#1565C0', '#d0342c'],
           'line-width': 3
+        }
+      });
+      /* [v42-9] A/B포구 이후 반대 경계까지는 점선 */
+      map.addLayer({
+        id: 'fp-vert-dash', type: 'line', source: 'fp-source',
+        filter: ['in', ['get', 't'], ['literal', ['vaD', 'vbD']]],
+        layout: { 'line-cap': 'butt' },
+        paint: {
+          'line-color': ['case', ['==', ['get', 't'], 'vaD'], '#1565C0', '#d0342c'],
+          'line-width': 2.4, 'line-dasharray': [2, 1.6], 'line-opacity': 0.9
         }
       });
     }
