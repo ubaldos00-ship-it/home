@@ -1,4 +1,5 @@
-<!-- chungchi.html (v43) · 저장: 2026-07-24 15:48 KST · [v43] 변경 없음 (측정↔청취 양방향 연동은 다음 단계) -->
+<!-- chungchi.html (v44) · 저장: 2026-07-24 16:13 KST · [v44] 측정 연동 — 지도로 지역·작물·레코드 전달, 지도 측정값 반영 시 기존 재배면적 있으면 확인창 -->
+<!-- (이전)  chungchi.html (v43) · 저장: 2026-07-24 15:48 KST · [v43] 변경 없음 (측정↔청취 양방향 연동은 다음 단계) -->
 <!-- (이전)  chungchi.html (v42) · 저장: 2026-07-24 10:30 KST · [v42] 변경 없음 -->
 <!-- (이전)  chungchi.html (v41) · 저장: 2026-07-24 08:25 KST · [v41] 변경 없음 -->
 <!-- (이전)  chungchi.html (v40) · 저장: 2026-07-24 08:08 KST · [v40] 변경 없음(지도 쪽 개선만 적용) -->
@@ -1177,7 +1178,9 @@ function measRow(b){
   var rows=Array.prototype.slice.call(document.querySelectorAll('#areaRows .ar'));
   var idx=rows.indexOf(b.closest('.ar')); if(idx<0) idx=0;
   var a=(document.getElementById('address')&&document.getElementById('address').value||'').trim();
-  try{ localStorage.setItem('tenar_meas_ctx', JSON.stringify({app:'chungchi', idx:idx, ts:Date.now()})); }catch(e){}
+  try{ localStorage.setItem('tenar_meas_ctx', JSON.stringify({app:'chungchi', idx:idx, ts:Date.now(),
+        region:(typeof sR!=='undefined'?sR:'')||'', crop:(typeof sC!=='undefined'?sC:'')||'',
+        recordId:(_slSelectedKey||_slLastLoadedKey||'') })); }catch(e){}   /* [v44-18] 지역·작물·레코드 전달 */
   try{ localStorage.removeItem('tenar_meas_result'); }catch(e){}
   try{ if(typeof ccAutoSave==='function') ccAutoSave(); }catch(e){}   /* 돌아왔을 때 같은 행이 복원되도록 */
   var base=_tenarMapBase();
@@ -1204,15 +1207,31 @@ function measRow(b){
       try{ res=JSON.parse(localStorage.getItem('tenar_meas_result')||'null'); }catch(e){}
       try{ ctx=JSON.parse(localStorage.getItem('tenar_meas_ctx')||'null'); }catch(e){}
       if(!res||!(res.area>0)||!ctx||ctx.app!=='chungchi'){ return; }
-      _measPending={ area:Math.round(res.area>0?res.area:0), idx:Math.max(ctx.idx||0,0) };   /* v12: 정수 */
+      var _area=Math.round(res.area>0?res.area:0), _idx=Math.max(ctx.idx||0,0);
+      /* [v44-17] 해당 행에 기존 재배면적 값이 있으면 한 번만 확인 후 덮어쓴다 */
+      try{
+        var _rows=document.querySelectorAll('#areaRows .ar');
+        if(_rows.length){
+          var _si=_rows[Math.min(_idx,_rows.length-1)].querySelector('.si');
+          var _cur=_si?numVal(_si.value):0;
+          if(_cur>0 && _cur!==_area){
+            if(!confirm('기존 재배면적 값이 있습니다.\n지도에서 측정한 값('+_area.toLocaleString('ko-KR')+'㎡)으로 변경하시겠습니까?')){
+              try{ localStorage.removeItem('tenar_meas_result'); localStorage.removeItem('tenar_meas_ctx'); }catch(e){}
+              _measPending=undefined; return;   /* 취소 → 기존 값 유지 */
+            }
+          }
+        }
+      }catch(e){}
+      _measPending={ area:_area, idx:_idx };   /* v12: 정수 */
       /* v21: 측정 점(핀)을 이 조사표 데이터로 보관 → 저장/불러오기에 함께 유지, 이모지 재클릭 시 그대로 표시 */
       if(res.pts && res.pts.length){ window.__ccMeasAreaPts = { pts:res.pts, mode:res.mode||'area' }; }
       try{ localStorage.removeItem('tenar_meas_result'); localStorage.removeItem('tenar_meas_ctx'); }catch(e){}
     }
+    if(_measPending===undefined) return;   /* [v44-17] 확인창에서 취소함 */
     _putMeas(true);
   }
   function _putMeas(showUi){
-    if(!_measPending) return;
+    if(!_measPending || _measPending===undefined) return;
     var rows=document.querySelectorAll('#areaRows .ar');
     if(!rows.length) return;
     var idx=Math.min(_measPending.idx, rows.length-1);
