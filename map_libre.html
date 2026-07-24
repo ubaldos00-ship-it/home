@@ -1,4 +1,5 @@
-<!-- map_v44.html (v44) · 저장: 2026-07-24 16:13 KST · [v44] 측정도구↔청취 연동 — ⑭측정도구 지역(대구·경북·강원)·작물 선택 추가 ⑮수정 버튼 토글+「핀 수정 모드」배지·센터추가는 활성/수정 모드에서만 ⑯측정 저장·요도에 지역·작물·첫주소 보관+목록 이름에 표시 ⑰측정→청취 전송에 평·지역·작물 추가(호환)·기존 재배면적 있으면 확인창 ⑱청취→지도 진입 시 지역·작물 자동선택 ⑳연결 면적·길이를 누르면 측정도구 편집대상으로 로드(수정 가능) -->
+<!-- map_v45.html (v45) · 저장: 2026-07-24 18:12 KST · [v45] ①포구↔측정 전환 시 작업중이면 확인창(닫기/취소) ②주소검색 아래 파란 비율패널은 포구도구 열림 때만 표시 ③포구 저장/불러오기 → [저장][즐겨찾기] 분리 ④측정 「즐겨찾기에서 보기」→「즐겨찾기」·도구별 연결자료 우선정렬 ⑦측정→청취 전송에 조사일·주소 추가 ⑧측정 초기화 시 지역·작물도 초기화(청취 진입시 원본 복원) ⑪부모 표시ON→자식 전체 표시, 자식ON→부모 자동ON ⑫부모 카드 선택 시 연결자료 전부 표시+안내 · (참고) 핀 없이 저장해도 부모 자동생성(기존)·중복 부모/작물 방지(주소·sourceId) 유지 -->
+<!-- (이전)  map_v44.html (v44) · 저장: 2026-07-24 16:13 KST · [v44] 측정도구↔청취 연동 — ⑭측정도구 지역(대구·경북·강원)·작물 선택 추가 ⑮수정 버튼 토글+「핀 수정 모드」배지·센터추가는 활성/수정 모드에서만 ⑯측정 저장·요도에 지역·작물·첫주소 보관+목록 이름에 표시 ⑰측정→청취 전송에 평·지역·작물 추가(호환)·기존 재배면적 있으면 확인창 ⑱청취→지도 진입 시 지역·작물 자동선택 ⑳연결 면적·길이를 누르면 측정도구 편집대상으로 로드(수정 가능) -->
 <!-- (이전)  map_v43.html (v43) · 저장: 2026-07-24 15:48 KST · [v43] 포구도구·즐겨찾기 보완 — ②즐겨찾기 삭제 시 지도 강조(핀 focus·필지 외곽선) 정리+연결요도 제거 ③중심핀 저장 버튼 삭제 ④가/나 버튼 다시 누르면 취소(좌표 유지) ⑤가로(가←나→) 방향모드 버튼 삭제 ⑥A/B 라벨 스타일 통일(흰 반투명·색 테두리·색 글씨) ⑦자동회전 버튼 삭제+가·나 완성/변경 시 1회 자동정렬(손회전 유지) ⑧각도따로·직각복원은 각도조절 ON에서만 ⑨완료 시 비율 등 편집 잠금 ⑩완료해제 확인창 ⑪하단 중복 각도 표시 제거 ⑬측정도구 폭=포구도구 폭 ⑯연결자료 이름에 작물·주소 표시 -->
 <!-- (이전)  map_v42.html (v42) · 저장: 2026-07-24 10:30 KST · [v42] ①연결자료 중복(2개) 저장 수정 — sourceId 같으면 새로 만들지 않고 UPDATE ②즐겨찾기 연결자료 기본 펼침 ③목록 선택 시 저장위치 팝업 없이 지도이동+핀 강조 ④저장위치 팝업 열릴 때 핀이 안 가리게 지도 중심 보정 ⑤선택 핀 강조(확대+파란 Pulse+Glow) ⑥팝업 작물명 중복 제거·복사 버튼 텍스트화 ⑦모든 바텀시트 최대높이=내용높이(빈 공백 제거) ⑧각도조절을 지도 회전 방식으로(세로선 실시간 회전·세로길이 실시간 계산, 기존 ↔드래그도 유지) ⑨세로선 경계 접점에 점·A/B포구 이후 점선 ⑩세로길이에서 「세로」 글자 제거 ⑪A/B 기점·세로값 테두리 30% 축소·배경 40% 반투명 ⑫필지 선택 테두리 초록→파랑(#0078FF) +추천 세로각도 실시간 배지 -->
 <!-- (이전)  map_v41.html (v41) · 저장: 2026-07-24 08:25 KST · [v41] v40 미결 3건 마무리 — ①하단 팝업이 열리면 「추적」 버튼도 함께 숨김 ②포구도구에 「자동회전 켜짐/꺼짐」 스위치 추가(설정 저장) ③즐겨찾기에 「🔗 중복 핀 합치기」 추가 — 같은 지번주소로 갈라진 옛 핀을 하나로 합치고 연결 요도를 옮김(조사표 연결된 핀 우선 보존·잠긴 핀은 그대로 둠) -->
@@ -1216,8 +1217,11 @@ TenarSecureStore.init('map',
       <div class="tp-sec">⑤ 완료</div>
       <button class="tool-btn one-line" type="button" id="fpTFinish" style="width:100%">✓ 완료</button>
 
-      <div class="tp-sec">⑤ 저장 / 불러오기</div>
-      <button class="tool-btn one-line" type="button" id="fpSaveBtn" style="width:100%"><span class="em">💾</span>저장 / 불러오기</button>
+      <div class="tp-sec">⑤ 저장 / 즐겨찾기</div>
+      <div class="tp-grid">
+        <button class="tool-btn one-line" type="button" id="fpSaveBtn2"><span class="em">💾</span>저장</button>
+        <button class="tool-btn one-line" type="button" id="fpFavBtn"><span class="em">⭐</span>즐겨찾기</button>
+      </div>
 
       <div class="tp-sec">⑥ 조사표 전송</div>
       <button class="tool-btn one-line" type="button" id="fpSendBtn" style="width:100%"><span class="em">📤</span>조사표 전송</button>
@@ -1262,7 +1266,7 @@ TenarSecureStore.init('map',
       <div class="tp-sec">③ 저장 / 목록</div>
       <div class="tp-grid">
         <button class="tool-btn one-line" type="button" id="btnSaveMeas"><span class="em">💾</span>저장</button>
-        <button class="tool-btn one-line" type="button" id="btnMeasList"><span class="em">⭐</span>즐겨찾기에서 보기</button>
+        <button class="tool-btn one-line" type="button" id="btnMeasList"><span class="em">⭐</span>즐겨찾기</button>
       </div>
       <div class="tp-sec">④ 조사표 전송</div>
       <button class="tool-btn one-line" type="button" id="btnSendArea" style="width:100%"><span class="em">📤</span>조사표 전송</button>
@@ -3255,7 +3259,9 @@ TenarSecureStore.init('map',
   /* ================= 즐겨찾기 목록 ================= */
   /* [v8-16] 화면복귀 —— 즐겨찾기를 열기 직전의 지도 상태로 되돌린다 */
   var favReturnView = null;
-  function openFavSheet() {
+  var _favPriority = '';   /* [v45-4] '', 'fieldplot', 'measure' */
+  function openFavSheet(priority) {
+    _favPriority = (typeof priority === 'string') ? priority : '';
     favReturnView = { center: map.getCenter().toArray(), zoom: map.getZoom(), bearing: map.getBearing(), pitch: map.getPitch() };
 
     var box = el('div');
@@ -3307,6 +3313,17 @@ TenarSecureStore.init('map',
     var list = document.getElementById('favList');
     if (!list) return;
     var favs = getFavs();
+    /* [v45-4] 현재 도구에 맞는 연결자료가 있는 위치를 위로 정렬 (원본 순서는 보존) */
+    if (_favPriority) {
+      var wantTypes = (_favPriority === 'fieldplot') ? ['fieldplot'] : ['area', 'distance'];
+      var score = function (fid) {
+        var c = itemCounts(fid);
+        return wantTypes.reduce(function (n, t) { return n + (c[t] || 0); }, 0);
+      };
+      favs = favs.map(function (f, i) { return { f: f, i: i, s: score(f.id) }; })
+                 .sort(function (a, b) { return (b.s > 0) - (a.s > 0) || a.i - b.i; })
+                 .map(function (x) { return x.f; });
+    }
     list.innerHTML = '';
     if (!favs.length) {
       list.appendChild(el('div', null, '<div style="color:#888;font-size:13px;padding:18px 2px;">저장된 즐겨찾기 목록이 없습니다.</div>'));
@@ -3333,7 +3350,16 @@ TenarSecureStore.init('map',
          저장위치 팝업은 지도에서 핀을 직접 눌렀을 때만 연다. */
       body.addEventListener('click', function () {
         closeSheet();
+        /* [v45-12] 선택하면 그 위치의 연결자료를 모두 켜서 지도에 표시 */
+        var favs = getFavs();
+        for (var k = 0; k < favs.length; k++) if (favs[k].id === f.id) favs[k].childrenVisible = true;
+        setFavs(favs);
+        var its = getMapItems(), n = 0;
+        for (var j = 0; j < its.length; j++) if (its[j].favoriteId === f.id) { its[j].visible = true; n++; }
+        setMapItems(its);
+        renderMapItems();
         focusFavPin(f);
+        if (n > 0) setTimeout(function () { showToast('연결된 지도자료 ' + n + '개를 표시했습니다.', 2600, 'success'); }, 700);
       });
 
       var acts = el('div', 'fav-acts');
@@ -3343,9 +3369,17 @@ TenarSecureStore.init('map',
       eye.style.display = total ? '' : 'none';
       eye.addEventListener('click', function (ev) {
         ev.stopPropagation();
+        var turnOn = (f.childrenVisible === false);   /* 지금 꺼져 있으면 켠다 */
         var arr = getFavs();
-        for (var k = 0; k < arr.length; k++) if (arr[k].id === f.id) { arr[k].childrenVisible = (arr[k].childrenVisible === false); arr[k].updatedAt = kstNowStr(); }
-        setFavs(arr); renderMapItems(); renderFavList();
+        for (var k = 0; k < arr.length; k++) if (arr[k].id === f.id) { arr[k].childrenVisible = turnOn; arr[k].updatedAt = kstNowStr(); }
+        setFavs(arr);
+        /* [v45-11] 부모를 다시 켜면 자식 전체를 표시(visible=true)로 되돌린다 */
+        if (turnOn) {
+          var its = getMapItems();
+          for (var j = 0; j < its.length; j++) if (its[j].favoriteId === f.id) its[j].visible = true;
+          setMapItems(its);
+        }
+        renderMapItems(); renderFavList();
       });
       var lock = el('button', 'icon-btn ' + (f.locked ? 'lock-on' : 'lock-off'), f.locked ? '🔒' : '🔓');
       lock.title = '삭제 방지 잠금';
@@ -3437,10 +3471,17 @@ TenarSecureStore.init('map',
       vis.style.cssText = 'width:30px;height:28px;padding:0;font-size:14px;flex:0 0 auto;';
       vis.title = '표시/숨김';
       vis.addEventListener('click', function () {
+        var turnOn = (it.visible === false);
         var arr = getMapItems();
-        for (var k = 0; k < arr.length; k++) if (arr[k].id === it.id) arr[k].visible = (arr[k].visible === false);
-        setMapItems(arr); renderMapItems();
-        it.visible = (it.visible === false);
+        for (var k = 0; k < arr.length; k++) if (arr[k].id === it.id) arr[k].visible = turnOn;
+        setMapItems(arr);
+        /* [v45-11] 자식을 켜면 부모도 자동으로 표시 ON */
+        if (turnOn) {
+          var favs = getFavs();
+          for (var m = 0; m < favs.length; m++) if (favs[m].id === favId && favs[m].childrenVisible === false) { favs[m].childrenVisible = true; setFavs(favs); renderFavList(); break; }
+        }
+        renderMapItems();
+        it.visible = turnOn;
         vis.className = 'icon-btn ' + (it.visible === false ? 'lock-off' : 'open-on');
         vis.textContent = it.visible === false ? '🚫' : '👁';
       });
@@ -5158,6 +5199,12 @@ TenarSecureStore.init('map',
     s.isFieldComplete = false; s.dragging = null;
     s.areas = []; s.lines = []; s.editingSaveId = null;   /* [v7-9] 연속 측정분까지 모두 정리 */
     s.fieldKind = 'field';                                /* [v14] 기본(필지)으로 복귀 */
+    s._editingItemId = null;                              /* [v45-8] 편집 대상 해제 */
+    /* [v45-8] 지역·작물도 초기화 — 단, 청취조사표에서 진입했으면 그 원본값으로 복원 */
+    var _cc = ccMeasCtx();
+    if (_cc) { s.measRegion = _cc.region || ''; s.measCrop = _cc.crop || ''; }
+    else { s.measRegion = ''; s.measCrop = ''; }
+    try { measSetupLabel(); } catch (e) {}
     if (typeof clearSelectedParcelHighlight === 'function') clearSelectedParcelHighlight();
     setSurveyMode('none');
     updateMeasurementSources();
@@ -5660,13 +5707,21 @@ TenarSecureStore.init('map',
     if (!window.confirm(msg)) return;
     try {
       /* 기존 map.html 이 쓰던 규약 그대로 : { area, pts, mode } */
+      var _ctx = ccMeasCtx() || {};
+      var _today = kstNowStr().slice(0, 10);
+      var _addr = fp.jibunAddress || (function () {
+        var f = pts.length ? findFavForLocation({ lat: pts[0][1], lng: pts[0][0] }) : { idx: -1 };
+        return (f.idx >= 0) ? (getFavs()[f.idx].jibunAddress || '') : '';
+      })();
       localStorage.setItem(CC_MEAS_RESULT_KEY, JSON.stringify({
         area: Math.round(t.totalM2 * 10) / 10,
         pts: pts, mode: 'area', savedAt: kstNowStr(),
-        /* [v44-17] 추가 정보 (구버전 청취조사표는 area/pts 만 읽으므로 호환됨) */
+        /* [v44-17][v45-7] 추가 정보 (구버전 청취조사표는 area/pts 만 읽으므로 호환됨) */
         totalPyeong: Math.round(t.totalPyeong * 10) / 10,
-        region: surveyMeasureState.measRegion || '',
-        crop: surveyMeasureState.measCrop || ''
+        region: surveyMeasureState.measRegion || _ctx.region || '',
+        crop: surveyMeasureState.measCrop || _ctx.crop || '',
+        surveyDate: _ctx.surveyDate || _today,
+        jibunAddress: _addr
       }));
     } catch (e) { showToast('전송 저장에 실패했습니다.', 3500); return; }
     showToast('청취조사표로 면적을 전송했습니다.\n' + formatNumber(t.totalM2, 1) + '㎡', 2600, 'success');
@@ -6533,10 +6588,23 @@ TenarSecureStore.init('map',
   document.getElementById('btnMeasure').addEventListener('click', function () {
     var isOpen = toolPanelEl.classList.contains('show');
     if (!isOpen) {
-      /* [v17-1] 포구도구가 열려 있으면 닫는다 — 두 도구를 섞어 쓰지 않는다 */
-      if (fpToolPanelEl.classList.contains('show')) closeFpTool();
+      /* [v45-1] 포구도구가 열려 있고 작업 중이면 확인 후 전환 */
+      if (fpToolPanelEl.classList.contains('show')) {
+        var self = this;
+        if (hasActivePortWork()) {
+          confirmToolClose('포구선정 작업을 닫으시겠습니까?').then(function (c) {
+            if (c !== 'close') return;
+            closeFpTool(true);
+            toolPanelEl.classList.add('show'); self.classList.add('active');
+            updateFpBannerVisibility();
+          });
+          return;
+        }
+        closeFpTool();
+      }
       toolPanelEl.classList.add('show');
       this.classList.add('active');
+      updateFpBannerVisibility();   /* [v45-2] 측정도구 열면 비율패널 숨김 */
       return;
     }
     if (hasMeasureData()) {
@@ -6737,7 +6805,7 @@ TenarSecureStore.init('map',
   /* [v7-9] 연속 측정 · 저장 · 목록 */
   document.getElementById('btnNew').addEventListener('click', startNewMeasurement);
   document.getElementById('btnSaveMeas').addEventListener('click', openMeasSaveSheet);
-  document.getElementById('btnMeasList').addEventListener('click', openFavSheet);   /* [v37] 측정 목록 → 통합 즐겨찾기 */
+  document.getElementById('btnMeasList').addEventListener('click', function () { openFavSheet('measure'); });   /* [v45-4] 측정 → 즐겨찾기(면적·길이 우선) */
   document.getElementById('btnSendArea').addEventListener('click', sendAreaToSurvey);   /* [v17-10] */
   document.getElementById('btnMeasSetup').addEventListener('click', openMeasSetupSheet);   /* [v44-14] */
   try { measSetupLabel(); } catch (e) {}
@@ -8105,6 +8173,15 @@ TenarSecureStore.init('map',
   }
 
   /* [v17-1] 포구도구 열기/닫기 — 측정도구와 동시에 열리지 않게 한다 */
+  /* [v45-2] 포구 비율패널(fpBanner)은 포구도구가 열려 있을 때만 보인다 */
+  function updateFpBannerVisibility() {
+    var b = document.getElementById('fpBanner');
+    if (!b) return;
+    var show = fpToolPanelEl.classList.contains('show');
+    b.style.display = show ? 'flex' : 'none';
+    b.style.pointerEvents = show ? '' : 'none';
+    if (show) { try { fpRenderBanner(); } catch (e) {} }
+  }
   function openFpTool() {
     fpToolPanelEl.classList.add('show');
     document.getElementById('btnFpTool').classList.add('active');
@@ -8125,6 +8202,39 @@ TenarSecureStore.init('map',
     var s = surveyMeasureState;
     return !!(fp.ga || fp.na || s.fieldPoints.length || s.areas.length);
   }
+  /* [v45-1] 포구/측정 "작업 중" 판정 (전환 확인창용) */
+  function hasActivePortWork() {
+    var s = surveyMeasureState;
+    return !!(fp.ga || fp.na || fp.aPo || fp.bPo || fp.angleA || fp.angleB ||
+              s.fieldPoints.length || (s.areas && s.areas.length) ||
+              (surveyMeasureState.mode === 'parcelPick') || (surveyMeasureState.mode === 'cropBoundary'));
+  }
+  function hasActiveMeasureWork() {
+    var s = surveyMeasureState;
+    return !!(s.fieldPoints.length || s.distancePoints.length ||
+              (s.areas && s.areas.length) || (s.lines && s.lines.length) ||
+              s._editingItemId || s.editingSaveId);
+  }
+  /* [v45-1] 표준 확인창(닫기/취소) */
+  function confirmToolClose(title) {
+    return new Promise(function (resolve) {
+      var ov = document.createElement('div');
+      ov.style.cssText = 'position:fixed;inset:0;z-index:2147483645;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:22px;';
+      var box = document.createElement('div');
+      box.style.cssText = 'background:#fff;border-radius:16px;max-width:340px;width:100%;padding:20px 18px;box-shadow:0 8px 30px rgba(0,0,0,.35);text-align:center;';
+      box.innerHTML = '<div style="font-size:16px;font-weight:800;color:#222;margin-bottom:14px;">' + title + '</div>';
+      var row = document.createElement('div'); row.style.cssText = 'display:flex;gap:8px;';
+      var bC = document.createElement('button'); bC.textContent = '취소';
+      bC.style.cssText = 'flex:1;padding:11px;border:1.5px solid #d0d0d6;border-radius:10px;background:#f5f5f7;font-size:14px;font-weight:800;';
+      var bX = document.createElement('button'); bX.textContent = '닫기';
+      bX.style.cssText = 'flex:1;padding:11px;border:none;border-radius:10px;background:#e2554e;color:#fff;font-size:14px;font-weight:800;';
+      row.appendChild(bC); row.appendChild(bX); box.appendChild(row); ov.appendChild(box); document.body.appendChild(ov);
+      function done(v) { try { document.body.removeChild(ov); } catch (e) {} resolve(v); }
+      bC.addEventListener('click', function () { done('cancel'); });
+      bX.addEventListener('click', function () { done('close'); });
+      ov.addEventListener('click', function (e) { if (e.target === ov) done('cancel'); });
+    });
+  }
   function closeFpTool(clearData) {
     if (clearData) {
       var s = surveyMeasureState;
@@ -8143,6 +8253,7 @@ TenarSecureStore.init('map',
     fp.picking = null; fp.angleMode = false;
     if (surveyMeasureState.mode !== 'none') setSurveyMode('none');
     fpRender(); fpSyncButtons();
+    updateFpBannerVisibility();   /* [v45-2] 닫으면 비율패널 숨김 */
   }
 
   /* [v17-3] 수정 토글 — 지도 상단에 「핀 수정 모드」를 띄운다 */
@@ -8735,7 +8846,19 @@ TenarSecureStore.init('map',
   (function () {
     function on(id, fn) { var el = document.getElementById(id); if (el) el.addEventListener('click', fn); }
     on('btnFpTool', function () {
-      if (!fpToolPanelEl.classList.contains('show')) { openFpTool(); return; }
+      if (!fpToolPanelEl.classList.contains('show')) {
+        /* [v45-1] 측정도구가 열려 있고 작업 중이면 확인 후 전환 */
+        if (toolPanelEl.classList.contains('show') && hasActiveMeasureWork()) {
+          confirmToolClose('현재 측정 작업을 닫으시겠습니까?').then(function (c) {
+            if (c !== 'close') return;
+            closeMeasurePanel(true);
+            openFpTool();
+          });
+          return;
+        }
+        openFpTool();
+        return;
+      }
       /* [v18-9] 작업 중인 자료가 있으면 측정도구와 똑같은 확인창을 띄운다 */
       if (fpHasWork()) {
         askMeasureClose().then(function (choice) {
@@ -8777,7 +8900,8 @@ TenarSecureStore.init('map',
     /* ④ 완료 */
     on('fpTFinish', function () { if (fp.finished) fpUnfinish(); else fpFinish(); });
     /* ⑤ 저장 / 목록 */
-    on('fpSaveBtn', openFpListSheet);   /* [v28-5] 저장·목록을 한 화면으로 */
+on('fpSaveBtn2', function () { fpSavePrompt(); });        /* [v45-3] 저장(덮어쓰기/새로저장) */
+    on('fpFavBtn', function () { openFavSheet('fieldplot'); });   /* [v45-4] 즐겨찾기 목록(포구 우선) */
     /* ⑥ 조사표 전송 */
     on('fpSendBtn', fpSubmit);
     /* [v17-9] 비율 선택 */
