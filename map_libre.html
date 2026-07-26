@@ -1,4 +1,6 @@
-<!-- map_v55.html (v55 · TENAR V1.4) · 저장: 2026-07-27 04:15 KST · [v55] ①NAS 자동연결 강화 — 버튼 없이 앱 로드 시 자동 연결 + 화면 복귀/온라인 복귀 시 자동 재연결 ②토지정보 팝업에 서버 토지특성 반영 — 용도지역(2개)·토지이용상황을 브이월드 토지특성 WFS(dt_d194)로 당겨와 표시(오프라인이면 기존 직접조회값). 농업진흥지역은 용도지역명에서 농업진흥/보호 감지 시 표시(전용 레이어 미확정 → 아니면 해당없음/미확인) ③지도 「농업진흥지역」 레이어를 실제값(LT_C_UO101=상수원 상대/절대보호구역)으로 정확히 재명명 -->
+<!-- map_v57.html (v57 · TENAR V1.4) · 저장: 2026-07-27 07:14 KST · [v57] ①미사용 레이어 5종(개발제한·문화재·수변·자연공원·산림보호) 삭제 ②레이어 순서 지적도→농업진흥지역→토지이용계획→하이브리드→개별공시지가→보호구역→행정경계, 농업진흥·개별공시지가 색상 범례를 토지이용계획처럼 상단 통합 범례 패널(최소화·드래그 이동)에 섹션으로 표시 ③개별공시지가 켜고 확대16↑ 시 필지에 금액(원/㎡) 라벨 표시 — 이미 받은 데이터 재사용(추가 서버요청 없음)·최대 120개 제한 -->
+<!-- (이전)  map_v56.html (v56 · TENAR V1.4) · 저장: 2026-07-27 07:01 KST · [v56] 농업진흥지역 완성 — 브이월드 데이터API 레이어 LT_C_AGRIXUE101(국토부 농업진흥지역도) 확정. ①지도에 「농업진흥지역」 레이어 추가(진흥구역 초록·보호구역 노랑) ②토지정보 팝업에서 필지 지점을 POINT 조회해 농업진흥/보호구역 표시(없으면 해당없음). 데이터 API라 NAS 없이 앱이 직접 조회(CORS 안전). LT_C_UO101 레이어는 상수원 보호구역으로 그대로 둠 -->
+<!-- (이전)  map_v55.html (v55 · TENAR V1.4) · 저장: 2026-07-27 04:15 KST · [v55] ①NAS 자동연결 강화 — 버튼 없이 앱 로드 시 자동 연결 + 화면 복귀/온라인 복귀 시 자동 재연결 ②토지정보 팝업에 서버 토지특성 반영 — 용도지역(2개)·토지이용상황을 브이월드 토지특성 WFS(dt_d194)로 당겨와 표시(오프라인이면 기존 직접조회값). 농업진흥지역은 용도지역명에서 농업진흥/보호 감지 시 표시(전용 레이어 미확정 → 아니면 해당없음/미확인) ③지도 「농업진흥지역」 레이어를 실제값(LT_C_UO101=상수원 상대/절대보호구역)으로 정확히 재명명 -->
 <!-- (이전)  map_v54.html (v54 · TENAR V1.4) · 저장: 2026-07-27 03:37 KST · [v54] NAS 서버 자동연결 — 기본 주소(https://gdpiano.synology.me:5100)를 앱에 내장해 저장값이 없어도 앱 로드 시 자동으로 /health 연결 시도. 레이어 시트에 「기본 서버 연결」 원탭 버튼 + 「끄기」(완전 로컬) 버튼 추가. 다른 서버는 칸에 입력하면 그 값이 우선. 그 외 기능 v53과 동일 -->
 <!-- (이전)  map_v53.html (v53 · TENAR V1.4) · 저장: 2026-07-27 02:10 KST · [v53] 기존 시놀로지 tenar-api 서버 규약에 맞춤 — 앱이 최신 공시지가를 GET /api/vworld/price?pnu= 로 호출(응답 {ok,latest,previous}), 연결확인은 /health 그대로. 별도 도커 프록시 대신 기존 tenar-api 의 routes/vworld-price.js(스텁→실제 WFS 조회)로 통합. 그 외 지도 기능은 v52와 동일 -->
 <!-- (이전)  map_v52.html (v52 · TENAR V1.4) · 저장: 2026-07-27 01:39 KST · [v52] 지도 코드 변경 없음(v51과 동일). 시놀로지 배포 편의를 위해 nas_proxy_server 에 Dockerfile · docker-compose.yml(자동 재시작) · .env.example · 시놀로지_설치안내.txt 추가. server.js 는 VWORLD_KEY/PORT 를 환경변수로 받도록 보완 -->
@@ -596,6 +598,9 @@ TenarSecureStore.init('map',
   .ll-item { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
   .ll-sw { width: 12px; height: 12px; border-radius: 3px; border: 1px solid rgba(0,0,0,.15); flex-shrink: 0; }
   .ll-nm { font-size: 10.5px; color: #444; white-space: nowrap; }
+  .ll-sec { width: 100%; font-size: 10px; font-weight: 800; color: #6b4a12; margin: 2px 0 1px; }
+  .price-label { font-size: 10.5px; font-weight: 800; color: #0b3d91; text-shadow: 0 0 2px #fff, 0 0 2px #fff, 0 1px 2px #fff; white-space: nowrap; pointer-events: none; }
+  .ll-sec:not(:first-child) { margin-top: 6px; }
 
   /* [v10-6] 토지정보 시트 행 배치 */
   .li-row { display: flex; align-items: flex-start; gap: 10px; margin-top: 10px; }
@@ -1294,7 +1299,7 @@ TenarSecureStore.init('map',
   <!-- [v10-1·2] 토지이용 범례 (주소검색창 아래 · 가로형 · 제목 드래그 이동 · 접기) -->
   <div id="landLegend">
     <div id="llHead">
-      <span>토지이용 범례</span>
+      <span id="llTitle">색상 범례</span>
       <button id="llToggle" type="button" aria-label="범례 접기/펼치기">▲</button>
     </div>
     <div id="llBody"></div>
@@ -1998,7 +2003,7 @@ TenarSecureStore.init('map',
 
   var DEFAULT_SETTINGS = {
     baseType: 'satellite',   /* [v49-1] 처음/초기화 기본값 = 항공영상만 켜짐 */
-    overlays: { hybrid: false, cadastral: false, landuse: false, protzone: false, landprice: false, greenbelt: false, heritage: false, waterside: false, natpark: false, forest: false, adsido: false, adsigg: false, ademd: false, adri: false },   /* [v50-2] 신규 레이어 전부 기본 OFF */
+    overlays: { cadastral: false, agripromo: false, landuse: false, hybrid: false, landprice: false, protzone: false, adsido: false, adsigg: false, ademd: false, adri: false },   /* [v50-2] 신규 레이어 전부 기본 OFF */
     cadastralOpacity: 0.65,
     landuseOpacity: 0.45,   /* [v9] 토지이용계획 기본 투명도 45% */
     showFavPins: true,
@@ -2125,15 +2130,11 @@ TenarSecureStore.init('map',
   var OVERLAY_DEFS = [
     /* [v50-2] 요청 순서 : 지적도 → 농업진흥 → 토지이용계획 → 개별공시지가 → 하이브리드 → 개발제한 → 문화재 → 수변 → 자연공원 → 산림보호 (행정경계는 맨 아래) */
     { id: 'cadastral', ko: '지적도',        desc: '연속지적 · 지번 표시 (확대 16↑)', kind: 'data', data: 'LP_PA_CBND_BUBUN', color: '#d92c2c', width: 1.4, minzoom: 16, labels: true },
-    { id: 'protzone',  ko: '보호구역(상수원 등)', desc: 'LT_C_UO101 · 상대/절대보호구역 (확대 13↑)', kind: 'data', data: 'LT_C_UO101', color: '#0891b2', width: 1.0, minzoom: 13, fillByAgri: true },   /* [v55] LT_C_UO101 은 상수원보호구역 — 정확히 재명명(농업진흥 아님) */
+    { id: 'agripromo', ko: '농업진흥지역',  desc: 'LT_C_AGRIXUE101 · 진흥(초록)/보호(노랑) (확대 13↑)', kind: 'data', data: 'LT_C_AGRIXUE101', color: '#16a34a', width: 1.0, minzoom: 13, fillByAgri: true },   /* [v56] 국토부 농업진흥지역도 */
     { id: 'landuse',   ko: '토지이용계획',  desc: '용도지역 색상 표시 (확대 13↑)',    kind: 'data', data: 'LT_C_UQ111', color: '#7c3aed', width: 0.8, minzoom: 13, fillByUse: true },
-    { id: 'landprice', ko: '개별공시지가',  desc: '가격 구간 색상 (확대 15↑)',        kind: 'data', data: 'LP_PA_CBND_BUBUN', color: '#0ea5e9', width: 0.6, minzoom: 15, fillByPrice: true },
     { id: 'hybrid',    ko: '하이브리드',    desc: '지명·도로 겹치기 (WMTS)',         kind: 'wmts', layer: 'Hybrid', ext: 'png' },
-    { id: 'greenbelt', ko: '개발제한구역',  desc: 'LT_C_UD801 (확대 12↑)',           kind: 'data', data: 'LT_C_UD801', color: '#15803d', width: 1.4, minzoom: 12, idCheck: true },
-    { id: 'heritage',  ko: '문화재보호구역', desc: 'LT_C_UO401 (확대 13↑)',          kind: 'data', data: 'LT_C_UO401', color: '#a16207', width: 1.4, minzoom: 13, idCheck: true },
-    { id: 'waterside', ko: '수변구역',      desc: 'LT_C_UO501 (확대 12↑)',           kind: 'data', data: 'LT_C_UO501', color: '#0891b2', width: 1.4, minzoom: 12, idCheck: true },
-    { id: 'natpark',   ko: '자연공원',      desc: 'LT_C_UE101 (확대 11↑)',           kind: 'data', data: 'LT_C_UE101', color: '#166534', width: 1.6, minzoom: 11, idCheck: true },
-    { id: 'forest',    ko: '산림보호구역',  desc: 'LT_C_UF101 (확대 12↑)',           kind: 'data', data: 'LT_C_UF101', color: '#4d7c0f', width: 1.4, minzoom: 12, idCheck: true },
+    { id: 'landprice', ko: '개별공시지가',  desc: '가격 구간 색상 · 금액 표시 (확대 15↑)', kind: 'data', data: 'LP_PA_CBND_BUBUN', color: '#0ea5e9', width: 0.6, minzoom: 15, fillByPrice: true },
+    { id: 'protzone',  ko: '보호구역(상수원 등)', desc: 'LT_C_UO101 · 상대/절대보호구역 (확대 13↑)', kind: 'data', data: 'LT_C_UO101', color: '#0891b2', width: 1.0, minzoom: 13, fillByAgri: true },
     { id: 'adri',      ko: '리 경계',       desc: 'LT_C_ADRI_INFO (확대 12↑)',      kind: 'data', data: 'LT_C_ADRI_INFO', color: '#065f46', width: 1.6, minzoom: 12 },
     { id: 'ademd',     ko: '읍면동 경계',   desc: 'LT_C_ADEMD_INFO (확대 10↑)',     kind: 'data', data: 'LT_C_ADEMD_INFO', color: '#0f766e', width: 1.8, minzoom: 10 },
     { id: 'adsigg',    ko: '시군구 경계',   desc: 'LT_C_ADSIGG_INFO (확대 8↑)',     kind: 'data', data: 'LT_C_ADSIGG_INFO', color: '#b45309', width: 2, minzoom: 8 },
@@ -2261,6 +2262,29 @@ TenarSecureStore.init('map',
   var cadLabelMarkers = [];
   function clearCadLabels() { cadLabelMarkers.forEach(function (m) { m.remove(); }); cadLabelMarkers = []; }
   var CAD_LABEL_MAX = 150;   /* 라벨은 성능을 위해 개수 제한 */
+  /* [v57] 개별공시지가 금액 라벨 (원/㎡). 성능 위해 확대 16↑ + 개수 제한. 추가 서버요청 없음(이미 받은 데이터 사용) */
+  var priceLabelMarkers = [];
+  var PRICE_LABEL_MAX = 120;
+  function clearPriceLabels() { priceLabelMarkers.forEach(function (m) { m.remove(); }); priceLabelMarkers = []; }
+  function renderPriceLabels(fc) {
+    clearPriceLabels();
+    if (!hasTurf) return;
+    if (!(settings.overlays && settings.overlays.landprice)) return;
+    if (map.getZoom() < 16) return;   /* 낮은 줌에서는 라벨 생략(겹침·성능) */
+    var count = 0;
+    for (var i = 0; i < fc.features.length && count < PRICE_LABEL_MAX; i++) {
+      var f = fc.features[i]; var p = f.properties || {};
+      var jiga = Number(p.jiga) || 0;
+      if (jiga <= 0) continue;
+      var c = null;
+      try { c = turf.centerOfMass(f).geometry.coordinates; } catch (e) { continue; }
+      var e2 = document.createElement('div');
+      e2.className = 'price-label';
+      e2.textContent = formatNumber(jiga, 0) + '원';
+      priceLabelMarkers.push(new maplibregl.Marker({ element: e2 }).setLngLat(c).addTo(map));
+      count++;
+    }
+  }
 
   /* [v8-15] 줌에 따라 글씨 크기 보간 (zoom15→10px, 17→13px, 19→16px) */
   function cadLabelSize() {
@@ -2334,6 +2358,7 @@ TenarSecureStore.init('map',
             ft.properties = ft.properties || {};
             ft.properties._fillColor = priceColor(ft.properties.jiga);
           });
+          renderPriceLabels(fc);   /* [v57] 금액 라벨 (확대 16↑·개수 제한) */
         }
         if (d.fillByAgri && fc.features) {    /* [v50-9] */
           fc.features.forEach(function (ft) {
@@ -2374,7 +2399,8 @@ TenarSecureStore.init('map',
       }
       reloadDataOverlays(true);
     }
-    if (id === 'landuse') updateLegendVisibility();   /* [v10-1] 범례 표시 갱신 */
+    if (id === 'landuse' || id === 'agripromo' || id === 'landprice') updateLegendVisibility();   /* [v57] 범례 표시 갱신 */
+    if (id === 'landprice' && !on) clearPriceLabels();   /* [v57] 공시지가 끄면 금액 라벨도 제거 */
   }
   function setCadastralOpacity(v) {
     settings.cadastralOpacity = v;
@@ -2420,14 +2446,26 @@ TenarSecureStore.init('map',
   var llBody = document.getElementById('llBody');
   var llToggle = document.getElementById('llToggle');
 
+  /* [v57] 켜져 있는 레이어들의 색상 범례를 한 패널에 섹션으로 모아 보여준다 */
+  var AGRI_LEGEND = [['농업진흥구역', '#16a34a'], ['농업보호구역', '#eab308']];
+  function _legendSwatches(list, useShort) {
+    list.forEach(function (x) {
+      llBody.appendChild(el('div', 'll-item',
+        '<span class="ll-sw" style="background:' + x[1] + ';"></span>' +
+        '<span class="ll-nm">' + escapeHtml(useShort ? shortUseName(x[0]) : x[0]) + '</span>'));
+    });
+  }
+  function _legendSection(title) { llBody.appendChild(el('div', 'll-sec', title)); }
   function buildLegendBody() {
     llBody.innerHTML = '';
-    LANDUSE_LEGEND.forEach(function (x) {
-      var it = el('div', 'll-item',
-        '<span class="ll-sw" style="background:' + x[1] + ';"></span>' +
-        '<span class="ll-nm">' + escapeHtml(shortUseName(x[0])) + '</span>');
-      llBody.appendChild(it);
-    });
+    var titles = [];
+    var z = map.getZoom();
+    function onAt(id) { var d = defOf(id); return !!(settings.overlays && settings.overlays[id]) && d && z >= d.minzoom; }
+    if (onAt('agripromo')) { _legendSection('농업진흥지역'); _legendSwatches(AGRI_LEGEND, false); titles.push('농업진흥'); }
+    if (onAt('landuse'))   { _legendSection('토지이용계획'); _legendSwatches(LANDUSE_LEGEND, true); titles.push('토지이용'); }
+    if (onAt('landprice')) { _legendSection('개별공시지가 (원/㎡)'); _legendSwatches(PRICE_LEGEND, false); titles.push('공시지가'); }
+    var t = document.getElementById('llTitle');
+    if (t) t.textContent = titles.length ? (titles.join(' · ') + ' 범례') : '색상 범례';
   }
   function applyLegendState() {
     var st = settings.landLegend || {};
@@ -2440,10 +2478,11 @@ TenarSecureStore.init('map',
   }
   /* 토지이용계획이 켜져 있고 확대 수준이 표시 조건을 만족할 때만 보이기 */
   function updateLegendVisibility() {
-    var d = defOf('landuse');
-    var on = !!(settings.overlays && settings.overlays.landuse) && d && map.getZoom() >= d.minzoom;
+    var z = map.getZoom();
+    function onAt(id) { var d = defOf(id); return !!(settings.overlays && settings.overlays[id]) && d && z >= d.minzoom; }
+    var on = onAt('landuse') || onAt('agripromo') || onAt('landprice');
     llEl.classList.toggle('show', !!on);
-    if (on && !llBody.children.length) buildLegendBody();
+    if (on) buildLegendBody();   /* [v57] 켜진 레이어에 맞게 매번 다시 구성 */
   }
   llToggle.addEventListener('click', function (e) {
     e.stopPropagation(); e.preventDefault();
@@ -3125,6 +3164,9 @@ TenarSecureStore.init('map',
   });
   map.on('rotateend', function () { try { if (fp && fp.angleMode) { fpRender(); fpSyncButtons(); } } catch (e) {} });
   map.on('zoomend', applyPinScale);   /* [v11-3] 줌에 따라 핀 크기 갱신 */
+  map.on('zoomend', function () {   /* [v57] 공시지가 금액 라벨은 확대 16 경계에서만 나타나므로 줌 변화 시 재평가 */
+    try { if (settings.overlays && settings.overlays.landprice) { if (map.getZoom() < 16) clearPriceLabels(); else reloadDataOverlays(false); } } catch (e) {}
+  });
   map.on('zoom', updateBearing);      /* [v12-2] 레벨 실시간 표시 */
   window.refreshFavPins = refreshFavPins;
 
@@ -4232,6 +4274,23 @@ TenarSecureStore.init('map',
     });
   }
   /* 좌표로 용도지역명 조회 */
+  /* [v56] 좌표로 농업진흥지역(농업진흥구역/농업보호구역) 조회 — LT_C_AGRIXUE101 */
+  function requestAgriZoneAt(lng, lat) {
+    var cb = '__vwAgri' + (++dataFetchSeq);
+    var url = 'https://api.vworld.kr/req/data?service=data&request=GetFeature&version=2.0' +
+      '&data=LT_C_AGRIXUE101&key=' + encodeURIComponent(VWORLD_API_KEY) + '&domain=' + VWORLD_DOMAIN +
+      '&geomFilter=' + encodeURIComponent('POINT(' + lng + ' ' + lat + ')') +
+      '&crs=EPSG:4326&format=json&size=3&geometry=false&attribute=true&callback=' + cb;
+    return vworldJsonp(url, cb).then(function (d) {
+      var r = d && d.response;
+      if (!r || r.status !== 'OK') return '';
+      var fs = (r.result && r.result.featureCollection && r.result.featureCollection.features) || [];
+      var names = fs.map(function (f) { return (f.properties || {}).uname; }).filter(Boolean);
+      /* 진흥구역이 있으면 우선 표기 */
+      return names.indexOf('농업진흥구역') >= 0 ? '농업진흥구역' : (names[0] || '');
+    }).catch(function () { return ''; });
+  }
+
   function requestLanduseAt(lng, lat) {
     var cb = '__vwUse' + (++dataFetchSeq);
     var url = 'https://api.vworld.kr/req/data?service=data&request=GetFeature&version=2.0' +
@@ -4326,7 +4385,12 @@ TenarSecureStore.init('map',
       return arr;
     }).catch(function () { stage('토지이용정보 조회 실패'); return []; });
 
-    return Promise.all([pAddr, pParcel, pUse]).then(function () {
+    /* [v56] 농업진흥지역 조회 (없으면 빈 값 → 팝업에서 '해당없음') */
+    var pAgri = requestAgriZoneAt(lng, lat).then(function (z) {
+      if (z) data.agriculturalZone = z;
+    }).catch(function () {});
+
+    return Promise.all([pAddr, pParcel, pUse, pAgri]).then(function () {
       if (data.pnu) parcelCache[data.pnu] = { ts: Date.now(), data: data };
       return data;
     });
@@ -4427,9 +4491,9 @@ TenarSecureStore.init('map',
       var si = data._serverLand || {};
       var useZone = si.useZone ? (si.useZone + (si.useZone2 ? ' / ' + si.useZone2 : '')) : (data.zoning ? shortUseName(data.zoning) : '');
       var landUse = si.landUse || data.landUseStatus || '';
-      var agri = si.agriZone || data.agriculturalZone || '';
+      var agri = si.agriZone || data.agriculturalZone || '';   /* [v56] LT_C_AGRIXUE101 결과 */
       rows.push(['용도지역', useZone || '정보 없음']);
-      rows.push(['농업진흥지역', agri || '해당없음/미확인']);
+      rows.push(['농업진흥지역', agri || '해당없음']);
       rows.push(['토지이용상황', landUse || '정보 없음']);
       moreBox.innerHTML = rows.map(function (r) {
         return '<div class="addr-label">' + escapeHtml(r[0]) + '</div><div class="addr-value" style="word-break:break-all;">' + escapeHtml(r[1]) + '</div>';
