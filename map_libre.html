@@ -1,4 +1,6 @@
-<!-- map_v51.html (v51 · TENAR V1.4) · 저장: 2026-07-27 01:19 KST · [v51] 오프라인 우선 구조 — 즐겨찾기·포구·측정·조사표·설정은 이미 브라우저 로컬 저장(NAS 없이 동작). ①NAS(Node) /health 자동감지 → ONLINE/OFFLINE 자동전환(설정 불필요)·서버 상태 배지 ②최근 조회 캐시(PNU·주소·토지정보·공시지가·조회시간) — 오프라인이어도 마지막 조회값+조회일 즉시 표시 ③최신 공시지가는 NAS 프록시로 조회(없으면 캐시/안내), 그 외(주소·지적·항공·토지정보·PNU)는 브이월드 직접조회 ④레이어 시트에 NAS 주소 설정. nas_proxy_server/ 에 Node 프록시 샘플 포함 -->
+<!-- map_v53.html (v53 · TENAR V1.4) · 저장: 2026-07-27 02:10 KST · [v53] 기존 시놀로지 tenar-api 서버 규약에 맞춤 — 앱이 최신 공시지가를 GET /api/vworld/price?pnu= 로 호출(응답 {ok,latest,previous}), 연결확인은 /health 그대로. 별도 도커 프록시 대신 기존 tenar-api 의 routes/vworld-price.js(스텁→실제 WFS 조회)로 통합. 그 외 지도 기능은 v52와 동일 -->
+<!-- (이전)  map_v52.html (v52 · TENAR V1.4) · 저장: 2026-07-27 01:39 KST · [v52] 지도 코드 변경 없음(v51과 동일). 시놀로지 배포 편의를 위해 nas_proxy_server 에 Dockerfile · docker-compose.yml(자동 재시작) · .env.example · 시놀로지_설치안내.txt 추가. server.js 는 VWORLD_KEY/PORT 를 환경변수로 받도록 보완 -->
+<!-- (이전)  map_v51.html (v51 · TENAR V1.4) · 저장: 2026-07-27 01:19 KST · [v51] 오프라인 우선 구조 — 즐겨찾기·포구·측정·조사표·설정은 이미 브라우저 로컬 저장(NAS 없이 동작). ①NAS(Node) /health 자동감지 → ONLINE/OFFLINE 자동전환(설정 불필요)·서버 상태 배지 ②최근 조회 캐시(PNU·주소·토지정보·공시지가·조회시간) — 오프라인이어도 마지막 조회값+조회일 즉시 표시 ③최신 공시지가는 NAS 프록시로 조회(없으면 캐시/안내), 그 외(주소·지적·항공·토지정보·PNU)는 브이월드 직접조회 ④레이어 시트에 NAS 주소 설정. nas_proxy_server/ 에 Node 프록시 샘플 포함 -->
 <!-- (이전)  map_v50.html (v50) · 저장: 2026-07-25 11:23 KST · [v50] 토지정보 대폭 개선 — ②레이어 재정렬(지적도→농업진흥→토지이용→개별공시지가→하이브리드→개발제한→문화재→수변→자연공원→산림보호→행정경계)·항공 기본 ③⑧개별공시지가 지도 색상 시각화(가격 6구간·투명도 35%·확대15↑) ⑦토지정보 팝업에 공시지가 최신/전년/증감(천단위 콤마·원/㎡) ⑨농업진흥 색 구분 ⑫신규 레이어 토글 5종 ⑬같은 bbox 캐시·moveend 디바운스 ⑯오류 안내(인증/네트워크). ※WFS/GML 대신 Safari CORS 안전한 Data API JSONP 사용(기존 WMS 미사용과 동일 이유) -->
 <!-- (이전)  map_v49.html (v49) · 저장: 2026-07-25 02:02 KST · [v49] ①지도 기본값·초기화값을 항공영상만 ON(중첩 레이어 전부 OFF) ②즐겨찾기 삭제 후 지도에 경계가 남던 버그 수정 — 부모가 없어진 요도(고아)를 렌더에서 제외하고 저장소에서도 자동 정리(cleanupOrphanMapItems) ③저장위치 팝업 초기 높이를 「길찾기·조사표·연결자료」 줄까지로 늘려 짤림 제거 + 핀을 팝업 위 가시영역의 가로·세로 가운데로 이동 -->
 <!-- (이전)  map_v48.html (v48) · 저장: 2026-07-25 01:06 KST · [v48] v47 미결 2건 마무리 — ①잠금/완료 중에도 다음 필지로 넘어가는 「＋ 새 조사 시작」(측정)·「＋ 새 포구 선정」(포구) 추가. 화면만 비우고 지역·작물·비율·조사표 복귀정보는 유지, 저장 안 했으면 경고 ②면적·길이 자료에 지도 회전각·기울기를 저장하고 불러올 때 함께 복원(옛 자료는 기존대로 범위만 맞춤) -->
@@ -1421,10 +1423,11 @@ TenarSecureStore.init('map',
     var base = getNasBase();
     if (!pnu) return Promise.resolve(null);
     if (!isOnline() || !base) return Promise.resolve({ offline: true });
-    return fetch(base + '/landprice?pnu=' + encodeURIComponent(pnu), { cache: 'no-store' })
+    /* [v53] tenar-api 규약 : GET /api/vworld/price?pnu= → { ok, latest, previous } */
+    return fetch(base + '/api/vworld/price?pnu=' + encodeURIComponent(pnu), { cache: 'no-store' })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (j) {
-        if (!j) return null;
+        if (!j || j.ok === false) return null;
         /* 서버 응답을 캐시에 갱신 */
         try { var all = _landCacheAll(); if (all[pnu]) { all[pnu].priceServer = j; all[pnu].serverCheckedAt = kstNowStr(); localStorage.setItem(LAND_CACHE_KEY, JSON.stringify(all)); } } catch (e) {}
         return j;
