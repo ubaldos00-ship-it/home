@@ -1,4 +1,5 @@
-<!-- map_v50.html (v50) · 저장: 2026-07-25 11:23 KST · [v50] 토지정보 대폭 개선 — ②레이어 재정렬(지적도→농업진흥→토지이용→개별공시지가→하이브리드→개발제한→문화재→수변→자연공원→산림보호→행정경계)·항공 기본 ③⑧개별공시지가 지도 색상 시각화(가격 6구간·투명도 35%·확대15↑) ⑦토지정보 팝업에 공시지가 최신/전년/증감(천단위 콤마·원/㎡) ⑨농업진흥 색 구분 ⑫신규 레이어 토글 5종 ⑬같은 bbox 캐시·moveend 디바운스 ⑯오류 안내(인증/네트워크). ※WFS/GML 대신 Safari CORS 안전한 Data API JSONP 사용(기존 WMS 미사용과 동일 이유) -->
+<!-- map_v51.html (v51 · TENAR V1.4) · 저장: 2026-07-27 01:19 KST · [v51] 오프라인 우선 구조 — 즐겨찾기·포구·측정·조사표·설정은 이미 브라우저 로컬 저장(NAS 없이 동작). ①NAS(Node) /health 자동감지 → ONLINE/OFFLINE 자동전환(설정 불필요)·서버 상태 배지 ②최근 조회 캐시(PNU·주소·토지정보·공시지가·조회시간) — 오프라인이어도 마지막 조회값+조회일 즉시 표시 ③최신 공시지가는 NAS 프록시로 조회(없으면 캐시/안내), 그 외(주소·지적·항공·토지정보·PNU)는 브이월드 직접조회 ④레이어 시트에 NAS 주소 설정. nas_proxy_server/ 에 Node 프록시 샘플 포함 -->
+<!-- (이전)  map_v50.html (v50) · 저장: 2026-07-25 11:23 KST · [v50] 토지정보 대폭 개선 — ②레이어 재정렬(지적도→농업진흥→토지이용→개별공시지가→하이브리드→개발제한→문화재→수변→자연공원→산림보호→행정경계)·항공 기본 ③⑧개별공시지가 지도 색상 시각화(가격 6구간·투명도 35%·확대15↑) ⑦토지정보 팝업에 공시지가 최신/전년/증감(천단위 콤마·원/㎡) ⑨농업진흥 색 구분 ⑫신규 레이어 토글 5종 ⑬같은 bbox 캐시·moveend 디바운스 ⑯오류 안내(인증/네트워크). ※WFS/GML 대신 Safari CORS 안전한 Data API JSONP 사용(기존 WMS 미사용과 동일 이유) -->
 <!-- (이전)  map_v49.html (v49) · 저장: 2026-07-25 02:02 KST · [v49] ①지도 기본값·초기화값을 항공영상만 ON(중첩 레이어 전부 OFF) ②즐겨찾기 삭제 후 지도에 경계가 남던 버그 수정 — 부모가 없어진 요도(고아)를 렌더에서 제외하고 저장소에서도 자동 정리(cleanupOrphanMapItems) ③저장위치 팝업 초기 높이를 「길찾기·조사표·연결자료」 줄까지로 늘려 짤림 제거 + 핀을 팝업 위 가시영역의 가로·세로 가운데로 이동 -->
 <!-- (이전)  map_v48.html (v48) · 저장: 2026-07-25 01:06 KST · [v48] v47 미결 2건 마무리 — ①잠금/완료 중에도 다음 필지로 넘어가는 「＋ 새 조사 시작」(측정)·「＋ 새 포구 선정」(포구) 추가. 화면만 비우고 지역·작물·비율·조사표 복귀정보는 유지, 저장 안 했으면 경고 ②면적·길이 자료에 지도 회전각·기울기를 저장하고 불러올 때 함께 복원(옛 자료는 기존대로 범위만 맞춤) -->
 <!-- (이전)  map_v47.html (v47) · 저장: 2026-07-25 00:52 KST · [v47] ②포구도구 닫을 때 「조사구역을 선택하세요」 등 임시 UI 완전 제거(clearPortToolTransientUI) ③즐겨찾기·연결자료 삭제 시 지도 도형·마커·편집상태까지 완전 삭제 후 setData+repaint ④저장핀 선택 시 상단 UI·팝업 높이를 뺀 가시영역 42% 위치로 보정(파란창에 안 가림) ⑤저장위치 팝업 초기 높이=핀수정·삭제 줄까지(위로 쓸면 길찾기·조사표·연결자료) ⑥저장위치 팝업에 「연결자료」 버튼+목록 시트(보기·표시숨김·삭제) ⑧작업 중 저장자료 열면 확인 후 임시작업만 정리 -->
@@ -1122,6 +1123,8 @@ TenarSecureStore.init('map',
   </div>
   <!-- [v28-2] 안내 배지 : 파란 안내창 아래 가운데 -->
   <div id="modeBadge"></div>
+  <!-- [v51-3] NAS(서버) 연결 상태 배지 (설정했을 때만 보임) -->
+  <div id="serverBadge" style="display:none;position:absolute;right:8px;bottom:calc(env(safe-area-inset-bottom,0px) + 92px);z-index:12;padding:4px 10px;border-radius:999px;color:#fff;font-size:11px;font-weight:800;box-shadow:0 2px 6px rgba(0,0,0,.3);"></div>
 
   <!-- [v7-4] 레이어 아이콘: 마름모꼴이 겹친 레이어 SVG -->
   <div id="sideBtns">
@@ -1355,6 +1358,79 @@ TenarSecureStore.init('map',
      =================================================================== */
   var VWORLD_API_KEY = '00EB5BC0-22B4-3B7E-89D1-341699F7CE05';
   var VWORLD_DOMAIN  = 'ubaldos00-ship-it.github.io';   /* 호스트만 · 스킴 금지 */
+
+  /* ═══════════════════════════════════════════════════════════════
+     [v51 · TENAR V1.4] 오프라인 우선(Offline First) + NAS(Node) 선택형
+       · 즐겨찾기·포구·측정·조사표·설정은 이미 브라우저 로컬 저장 → NAS 없어도 동작
+       · NAS 는 "최신 공시지가·WFS 프록시·API키 보호·서버 캐시"만 담당(부가기능)
+       · 앱 시작 시 /health 로 자동 감지 → ONLINE / OFFLINE 자동 전환(설정 불필요)
+     ═══════════════════════════════════════════════════════════════ */
+  var NAS_BASE_KEY = 'tenar_nas_base';        /* 예: http://192.168.0.10:3100 */
+  var LAND_CACHE_KEY = 'tenar_land_cache_v1';  /* 최근 조회 캐시(PNU별) */
+  var _serverMode = 'offline';                 /* 'online' | 'offline' */
+  function getNasBase() { try { return (localStorage.getItem(NAS_BASE_KEY) || '').replace(/\/+$/, ''); } catch (e) { return ''; } }
+  function setNasBase(v) { try { localStorage.setItem(NAS_BASE_KEY, (v || '').trim()); } catch (e) {} }
+  function isOnline() { return _serverMode === 'online'; }
+
+  /* [v51-3] NAS 자동 감지 — /health 2초 타임아웃. 실패하면 OFFLINE 유지 */
+  function checkNasHealth() {
+    var base = getNasBase();
+    if (!base) { _serverMode = 'offline'; updateServerBadge(); return Promise.resolve(false); }
+    return new Promise(function (resolve) {
+      var done = false;
+      var t = setTimeout(function () { if (!done) { done = true; _serverMode = 'offline'; updateServerBadge(); resolve(false); } }, 2000);
+      fetch(base + '/health', { method: 'GET', cache: 'no-store' })
+        .then(function (r) { return r.ok; })
+        .then(function (ok) { if (done) return; done = true; clearTimeout(t); _serverMode = ok ? 'online' : 'offline'; updateServerBadge(); resolve(ok); })
+        .catch(function () { if (done) return; done = true; clearTimeout(t); _serverMode = 'offline'; updateServerBadge(); resolve(false); });
+    });
+  }
+  function updateServerBadge() {
+    var b = document.getElementById('serverBadge');
+    if (!b) return;
+    var base = getNasBase();
+    if (!base) { b.style.display = 'none'; return; }
+    b.style.display = 'block';
+    b.textContent = isOnline() ? '🟢 서버 연결됨' : '⚪ 로컬 모드';
+    b.style.background = isOnline() ? 'rgba(22,163,74,.92)' : 'rgba(100,100,110,.9)';
+  }
+
+  /* [v51-6][추천] 최근 조회 캐시 — PNU · 주소 · 토지정보 · 공시지가 · 조회시간 */
+  function _landCacheAll() { try { return JSON.parse(localStorage.getItem(LAND_CACHE_KEY) || '{}') || {}; } catch (e) { return {}; } }
+  function getLandCache(pnu) { if (!pnu) return null; return _landCacheAll()[pnu] || null; }
+  function saveLandCache(data) {
+    try {
+      if (!data || !data.pnu) return;
+      var all = _landCacheAll();
+      var yy = pickPriceYears(data.prices);
+      all[data.pnu] = {
+        pnu: data.pnu, jibunAddress: data.jibunAddress || data.parcelAddr || '',
+        jimok: data.jimok || '', areaM2: data.areaM2 || 0,
+        priceLatest: yy.latest || null, priceServer: (getLandCache(data.pnu) || {}).priceServer || null,
+        checkedAt: kstNowStr()
+      };
+      /* 너무 커지지 않게 최근 300건만 유지 */
+      var keys = Object.keys(all);
+      if (keys.length > 300) { keys.sort(function (a, b) { return (all[a].checkedAt < all[b].checkedAt) ? -1 : 1; }); keys.slice(0, keys.length - 300).forEach(function (k) { delete all[k]; }); }
+      localStorage.setItem(LAND_CACHE_KEY, JSON.stringify(all));
+    } catch (e) {}
+  }
+
+  /* [v51-5] 최신 공시지가 — NAS(프록시)로만 조회. 없으면 캐시/안내 */
+  function fetchLatestLandPrice(pnu) {
+    var base = getNasBase();
+    if (!pnu) return Promise.resolve(null);
+    if (!isOnline() || !base) return Promise.resolve({ offline: true });
+    return fetch(base + '/landprice?pnu=' + encodeURIComponent(pnu), { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        if (!j) return null;
+        /* 서버 응답을 캐시에 갱신 */
+        try { var all = _landCacheAll(); if (all[pnu]) { all[pnu].priceServer = j; all[pnu].serverCheckedAt = kstNowStr(); localStorage.setItem(LAND_CACHE_KEY, JSON.stringify(all)); } } catch (e) {}
+        return j;
+      })
+      .catch(function () { _serverMode = 'offline'; updateServerBadge(); return { offline: true }; });
+  }
 
   var VWORLD_TILE_BASE = 'https://api.vworld.kr/req/wmts/1.0.0/';
   var VWORLD_MAX_DATA_ZOOM = 19;
@@ -4287,6 +4363,11 @@ TenarSecureStore.init('map',
       '<div class="addr-value" id="liPrice" style="font-size:13px;">조회 중…</div>'));
     box.appendChild(areaRow);
 
+    /* [v51-5] 최신 공시지가(NAS 서버) — 온라인이면 서버 조회, 오프라인이면 캐시/안내 */
+    box.appendChild(el('div', null,
+      '<div class="addr-label" style="margin-top:6px;">최신 공시지가 (서버)</div>' +
+      '<div class="addr-value" id="liLatest" style="font-size:13px;">확인 중…</div>'));
+
     /* ④ 좌표 한 줄 */
     box.appendChild(el('div', 'li-coord',
       '위도 ' + data.lat.toFixed(6) + ' · 경도 ' + data.lng.toFixed(6)));
@@ -4409,6 +4490,47 @@ TenarSecureStore.init('map',
         pr.innerHTML = t;
       }
     }
+    /* [v51-6] 조회 결과를 최근조회 캐시에 저장 */
+    try { if (data.pnu) saveLandCache(data); } catch (e) {}
+    /* [v51-5] 최신 공시지가(서버) 표시 갱신 */
+    try { updateLatestPriceField(data); } catch (e) {}
+  }
+
+  /* [v51-5] 최신 공시지가 칸 — 온라인=서버조회 / 오프라인=마지막 조회값(조회일) 또는 안내 */
+  function updateLatestPriceField(data) {
+    var el2 = document.getElementById('liLatest');
+    if (!el2) return;
+    var pnu = data && data.pnu;
+    var cache = pnu ? getLandCache(pnu) : null;
+    function showCache(prefix) {
+      if (cache && cache.priceServer && cache.priceServer.latest) {
+        var L = cache.priceServer.latest;
+        el2.innerHTML = (prefix || '') + (L.year ? L.year + '년 ' : '') + formatNumber(L.price, 0) + '원/㎡' +
+          '<br><span style="font-size:11px;color:#888;">마지막 조회 ' + escapeHtml(String(cache.serverCheckedAt || cache.checkedAt || '').slice(0, 16).replace('T', ' ')) + '</span>';
+      } else if (cache && cache.priceLatest) {
+        el2.innerHTML = (prefix || '') + (cache.priceLatest.year ? cache.priceLatest.year + '년 ' : '') + formatNumber(cache.priceLatest.price, 0) + '원/㎡' +
+          '<br><span style="font-size:11px;color:#888;">마지막 조회 ' + escapeHtml(String(cache.checkedAt || '').slice(0, 16).replace('T', ' ')) + '</span>';
+      } else {
+        el2.innerHTML = '<span style="color:#999;">최신 공시지가는 NAS 연결 후 조회 가능합니다.</span>';
+      }
+    }
+    if (!pnu) { el2.innerHTML = '<span style="color:#999;">PNU가 없어 조회할 수 없습니다.</span>'; return; }
+    if (!isOnline() || !getNasBase()) { showCache('🔌 로컬: '); return; }
+    el2.textContent = '서버에서 조회 중…';
+    fetchLatestLandPrice(pnu).then(function (j) {
+      if (!j || j.offline) { showCache('🔌 로컬: '); return; }
+      /* 서버 응답 형식 예 : { latest:{year,price}, previous:{year,price} } */
+      if (j.latest) {
+        var t = '🟢 ' + (j.latest.year ? j.latest.year + '년 ' : '') + formatNumber(j.latest.price, 0) + '원/㎡';
+        if (j.previous) {
+          t += '<br>' + (j.previous.year ? j.previous.year + '년 ' : '') + formatNumber(j.previous.price, 0) + '원/㎡';
+          var diff = j.latest.price - j.previous.price, pct = j.previous.price ? diff / j.previous.price * 100 : 0;
+          var col = diff > 0 ? '#d0342c' : (diff < 0 ? '#1a5fd0' : '#666'), sign = diff > 0 ? '+' : '';
+          t += '<br><span style="color:' + col + ';font-weight:800;">증감 ' + sign + formatNumber(diff, 0) + '원 (' + sign + pct.toFixed(2) + '%)</span>';
+        }
+        el2.innerHTML = t;
+      } else showCache('');
+    }).catch(function () { showCache('🔌 로컬: '); });
   }
 
   /* 조사표 전달용 정보 (item 13) */
@@ -4694,6 +4816,26 @@ TenarSecureStore.init('map',
         '<span style="font-size:11px;color:#555;vertical-align:middle;">' + escapeHtml(x[0]) + '</span>'));
     });
     box.appendChild(pleg);
+
+    /* [v51-3] NAS(서버) 설정 — 최신 공시지가·WFS 프록시용. 비워 두면 로컬 모드로 동작 */
+    box.appendChild(el('div', 'sec-title', 'NAS 서버 (선택 · 최신 공시지가용)'));
+    var nasWrap = el('div'); nasWrap.style.cssText = 'display:flex;gap:6px;align-items:center;margin-top:4px;';
+    var nasIn = el('input'); nasIn.type = 'text'; nasIn.placeholder = 'http://192.168.0.10:3100';
+    nasIn.value = getNasBase();
+    nasIn.style.cssText = 'flex:1;min-width:0;border:1.5px solid #dcdce4;border-radius:9px;padding:8px 10px;font-size:13px;';
+    var nasBtn = el('button', 'sheet-btn', '연결확인');
+    nasBtn.style.cssText = 'flex:0 0 auto;';
+    var nasStat = el('div', 'lyr-desc', getNasBase() ? (isOnline() ? '🟢 연결됨' : '⚪ 로컬 모드') : '서버 주소를 비워 두면 로컬 모드로 동작합니다.');
+    nasStat.style.marginTop = '4px';
+    nasBtn.addEventListener('click', function () {
+      setNasBase(nasIn.value);
+      nasStat.textContent = '확인 중…';
+      checkNasHealth().then(function (ok) {
+        nasStat.textContent = getNasBase() ? (ok ? '🟢 연결됨 (온라인 모드)' : '⚪ 연결 안 됨 (로컬 모드)') : '서버 주소를 비워 두면 로컬 모드로 동작합니다.';
+      });
+    });
+    nasWrap.appendChild(nasIn); nasWrap.appendChild(nasBtn);
+    box.appendChild(nasWrap); box.appendChild(nasStat);
 
     box.appendChild(el('div', null, '<div class="lyr-desc" style="margin-top:10px;">' +
       '지적도는 확대 16 이상, 지번 라벨은 확대 17 이상, 토지이용계획은 확대 13 이상, 개별공시지가는 확대 15 이상에서 표시됩니다.<br>' +
@@ -9368,6 +9510,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     /* [v37] 옛 저장목록(포구·측정)을 통합 즐겨찾기로 1회 이전 후 요도 렌더 */
     try { setTimeout(function () { migrateMapLibraryV37(); renderMapItems(); }, 400); } catch (e) { console.error('[v37] 통합 이전 오류:', e); }
     try { setTimeout(function () { cleanupOrphanMapItems(false); }, 900); } catch (e) {}   /* [v49-2] 고아 경계 정리 */
+    try { setTimeout(function () { checkNasHealth(); }, 500); } catch (e) {}   /* [v51-3] NAS 자동 감지 → ONLINE/OFFLINE */
   });
 
   /* [v19-4] 면적 라벨은 "화면에서 도형 아래"에 놓이므로 회전하면 다시 계산한다.
