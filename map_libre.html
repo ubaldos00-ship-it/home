@@ -1,4 +1,5 @@
-<!-- map_v57.html (v57 · TENAR V1.4) · 저장: 2026-07-27 07:14 KST · [v57] ①미사용 레이어 5종(개발제한·문화재·수변·자연공원·산림보호) 삭제 ②레이어 순서 지적도→농업진흥지역→토지이용계획→하이브리드→개별공시지가→보호구역→행정경계, 농업진흥·개별공시지가 색상 범례를 토지이용계획처럼 상단 통합 범례 패널(최소화·드래그 이동)에 섹션으로 표시 ③개별공시지가 켜고 확대16↑ 시 필지에 금액(원/㎡) 라벨 표시 — 이미 받은 데이터 재사용(추가 서버요청 없음)·최대 120개 제한 -->
+<!-- map_v58.html (v58 · TENAR V1.4) · 저장: 2026-07-27 10:05 KST · [v58] ①토지이용계획(부모) 아래 자식 「토지이용계획도」(LT_C_LHBLPN · LH 택지개발계획) 추가 — 시트에서 들여쓰기 표시 ②「지형도」(LT_L_N3A0020000 · 도로중심선) 추가 ③레이어 순서 지적도→토지이용계획→토지이용계획도→농업진흥지역→지형도→개별공시지가→리→읍면동→시군구→시도(하이브리드는 맨 끝) ④보호구역(상수원, LT_C_UO101) 삭제 -->
+<!-- (이전)  map_v57.html (v57 · TENAR V1.4) · 저장: 2026-07-27 07:14 KST · [v57] ①미사용 레이어 5종(개발제한·문화재·수변·자연공원·산림보호) 삭제 ②레이어 순서 지적도→농업진흥지역→토지이용계획→하이브리드→개별공시지가→보호구역→행정경계, 농업진흥·개별공시지가 색상 범례를 토지이용계획처럼 상단 통합 범례 패널(최소화·드래그 이동)에 섹션으로 표시 ③개별공시지가 켜고 확대16↑ 시 필지에 금액(원/㎡) 라벨 표시 — 이미 받은 데이터 재사용(추가 서버요청 없음)·최대 120개 제한 -->
 <!-- (이전)  map_v56.html (v56 · TENAR V1.4) · 저장: 2026-07-27 07:01 KST · [v56] 농업진흥지역 완성 — 브이월드 데이터API 레이어 LT_C_AGRIXUE101(국토부 농업진흥지역도) 확정. ①지도에 「농업진흥지역」 레이어 추가(진흥구역 초록·보호구역 노랑) ②토지정보 팝업에서 필지 지점을 POINT 조회해 농업진흥/보호구역 표시(없으면 해당없음). 데이터 API라 NAS 없이 앱이 직접 조회(CORS 안전). LT_C_UO101 레이어는 상수원 보호구역으로 그대로 둠 -->
 <!-- (이전)  map_v55.html (v55 · TENAR V1.4) · 저장: 2026-07-27 04:15 KST · [v55] ①NAS 자동연결 강화 — 버튼 없이 앱 로드 시 자동 연결 + 화면 복귀/온라인 복귀 시 자동 재연결 ②토지정보 팝업에 서버 토지특성 반영 — 용도지역(2개)·토지이용상황을 브이월드 토지특성 WFS(dt_d194)로 당겨와 표시(오프라인이면 기존 직접조회값). 농업진흥지역은 용도지역명에서 농업진흥/보호 감지 시 표시(전용 레이어 미확정 → 아니면 해당없음/미확인) ③지도 「농업진흥지역」 레이어를 실제값(LT_C_UO101=상수원 상대/절대보호구역)으로 정확히 재명명 -->
 <!-- (이전)  map_v54.html (v54 · TENAR V1.4) · 저장: 2026-07-27 03:37 KST · [v54] NAS 서버 자동연결 — 기본 주소(https://gdpiano.synology.me:5100)를 앱에 내장해 저장값이 없어도 앱 로드 시 자동으로 /health 연결 시도. 레이어 시트에 「기본 서버 연결」 원탭 버튼 + 「끄기」(완전 로컬) 버튼 추가. 다른 서버는 칸에 입력하면 그 값이 우선. 그 외 기능 v53과 동일 -->
@@ -2003,7 +2004,7 @@ TenarSecureStore.init('map',
 
   var DEFAULT_SETTINGS = {
     baseType: 'satellite',   /* [v49-1] 처음/초기화 기본값 = 항공영상만 켜짐 */
-    overlays: { cadastral: false, agripromo: false, landuse: false, hybrid: false, landprice: false, protzone: false, adsido: false, adsigg: false, ademd: false, adri: false },   /* [v50-2] 신규 레이어 전부 기본 OFF */
+    overlays: { cadastral: false, landuse: false, lhblpn: false, agripromo: false, terrain: false, landprice: false, hybrid: false, adsido: false, adsigg: false, ademd: false, adri: false },   /* [v50-2] 신규 레이어 전부 기본 OFF */
     cadastralOpacity: 0.65,
     landuseOpacity: 0.45,   /* [v9] 토지이용계획 기본 투명도 45% */
     showFavPins: true,
@@ -2132,9 +2133,10 @@ TenarSecureStore.init('map',
     { id: 'cadastral', ko: '지적도',        desc: '연속지적 · 지번 표시 (확대 16↑)', kind: 'data', data: 'LP_PA_CBND_BUBUN', color: '#d92c2c', width: 1.4, minzoom: 16, labels: true },
     { id: 'agripromo', ko: '농업진흥지역',  desc: 'LT_C_AGRIXUE101 · 진흥(초록)/보호(노랑) (확대 13↑)', kind: 'data', data: 'LT_C_AGRIXUE101', color: '#16a34a', width: 1.0, minzoom: 13, fillByAgri: true },   /* [v56] 국토부 농업진흥지역도 */
     { id: 'landuse',   ko: '토지이용계획',  desc: '용도지역 색상 표시 (확대 13↑)',    kind: 'data', data: 'LT_C_UQ111', color: '#7c3aed', width: 0.8, minzoom: 13, fillByUse: true },
-    { id: 'hybrid',    ko: '하이브리드',    desc: '지명·도로 겹치기 (WMTS)',         kind: 'wmts', layer: 'Hybrid', ext: 'png' },
+    { id: 'lhblpn',    ko: '토지이용계획도', desc: 'LT_C_LHBLPN · LH 택지개발 계획(개발예정) (확대 13↑)', kind: 'data', data: 'LT_C_LHBLPN', color: '#db2777', width: 1.2, minzoom: 13, plainFill: true, parent: 'landuse' },   /* [v58] 토지이용계획 부모의 자식 */
+    { id: 'terrain',   ko: '지형도',        desc: 'LT_L_N3A0020000 · 도로중심선 (확대 15↑)', kind: 'data', data: 'LT_L_N3A0020000', color: '#8b5a2b', width: 1.2, minzoom: 15 },   /* [v58] 지형도(도로중심선) */
     { id: 'landprice', ko: '개별공시지가',  desc: '가격 구간 색상 · 금액 표시 (확대 15↑)', kind: 'data', data: 'LP_PA_CBND_BUBUN', color: '#0ea5e9', width: 0.6, minzoom: 15, fillByPrice: true },
-    { id: 'protzone',  ko: '보호구역(상수원 등)', desc: 'LT_C_UO101 · 상대/절대보호구역 (확대 13↑)', kind: 'data', data: 'LT_C_UO101', color: '#0891b2', width: 1.0, minzoom: 13, fillByAgri: true },
+    { id: 'hybrid',    ko: '하이브리드',    desc: '지명·도로 겹치기 (WMTS)',         kind: 'wmts', layer: 'Hybrid', ext: 'png' },
     { id: 'adri',      ko: '리 경계',       desc: 'LT_C_ADRI_INFO (확대 12↑)',      kind: 'data', data: 'LT_C_ADRI_INFO', color: '#065f46', width: 1.6, minzoom: 12 },
     { id: 'ademd',     ko: '읍면동 경계',   desc: 'LT_C_ADEMD_INFO (확대 10↑)',     kind: 'data', data: 'LT_C_ADEMD_INFO', color: '#0f766e', width: 1.8, minzoom: 10 },
     { id: 'adsigg',    ko: '시군구 경계',   desc: 'LT_C_ADSIGG_INFO (확대 8↑)',     kind: 'data', data: 'LT_C_ADSIGG_INFO', color: '#b45309', width: 2, minzoom: 8 },
@@ -2192,6 +2194,14 @@ TenarSecureStore.init('map',
             id: 'ov-' + d.id + '-fill', type: 'fill', source: srcId,
             layout: { visibility: 'none' },
             paint: { 'fill-color': ['coalesce', ['get', '_fillColor'], '#999999'], 'fill-opacity': 0.35 }
+          });
+        }
+        /* [v58] 토지이용계획도 등 단색 채움 */
+        if (d.plainFill) {
+          map.addLayer({
+            id: 'ov-' + d.id + '-fill', type: 'fill', source: srcId,
+            layout: { visibility: 'none' },
+            paint: { 'fill-color': d.color, 'fill-opacity': 0.18 }
           });
         }
         map.addLayer({
@@ -2388,7 +2398,7 @@ TenarSecureStore.init('map',
     if (id === 'cadastral' && map.getLayer('ov-cadastral-fill')) {
       map.setLayoutProperty('ov-cadastral-fill', 'visibility', on ? 'visible' : 'none');
     }
-    if ((d.fillByUse || d.fillByPrice || d.fillByAgri) && map.getLayer('ov-' + id + '-fill')) {
+    if ((d.fillByUse || d.fillByPrice || d.fillByAgri || d.plainFill) && map.getLayer('ov-' + id + '-fill')) {
       map.setLayoutProperty('ov-' + id + '-fill', 'visibility', on ? 'visible' : 'none');
     }
     settings.overlays[id] = !!on;
@@ -2424,7 +2434,7 @@ TenarSecureStore.init('map',
       if (d.id === 'cadastral' && map.getLayer('ov-cadastral-fill')) {
         map.setLayoutProperty('ov-cadastral-fill', 'visibility', on ? 'visible' : 'none');
       }
-      if (d.fillByUse && map.getLayer('ov-' + d.id + '-fill')) {
+      if ((d.fillByUse || d.fillByPrice || d.fillByAgri || d.plainFill) && map.getLayer('ov-' + d.id + '-fill')) {
         map.setLayoutProperty('ov-' + d.id + '-fill', 'visibility', on ? 'visible' : 'none');
       }
     });
@@ -4829,7 +4839,7 @@ TenarSecureStore.init('map',
     box.appendChild(el('div', 'sec-title', '중첩 레이어 (여러 개 선택)'));
     /* [v40-9] 목록에 보이는 순서 : 지적도 → 토지이용계획 → 하이브리드 → 나머지 경계
        (지도에 그리는 순서(OVERLAY_DEFS)는 겹침 때문에 그대로 둔다) */
-    var LYR_ORDER = ['cadastral', 'landuse', 'hybrid', 'adri', 'ademd', 'adsigg', 'adsido'];
+    var LYR_ORDER = ['cadastral', 'landuse', 'lhblpn', 'agripromo', 'terrain', 'landprice', 'adri', 'ademd', 'adsigg', 'adsido', 'hybrid'];
     var _defs = LYR_ORDER.map(function (id) {
       for (var i = 0; i < OVERLAY_DEFS.length; i++) if (OVERLAY_DEFS[i].id === id) return OVERLAY_DEFS[i];
       return null;
@@ -4838,7 +4848,9 @@ TenarSecureStore.init('map',
 
     _defs.forEach(function (d) {
       var row = el('div', 'lyr-row');
-      row.appendChild(el('div', null, '<div class="lyr-name">' + escapeHtml(d.ko) + '</div><div class="lyr-desc">' + escapeHtml(d.desc) + '</div>'));
+      if (d.parent) { row.style.marginLeft = '16px'; row.style.borderLeft = '2px solid #e5d5f2'; row.style.paddingLeft = '8px'; }   /* [v58] 자식 레이어 들여쓰기 */
+      var nm = d.parent ? ('↳ ' + d.ko) : d.ko;
+      row.appendChild(el('div', null, '<div class="lyr-name">' + escapeHtml(nm) + '</div><div class="lyr-desc">' + escapeHtml(d.desc) + '</div>'));
       var sw = el('div', 'switch' + (settings.overlays[d.id] ? ' on' : ''), '<div class="knob"></div>');
       sw.addEventListener('click', function () {
         var on = !settings.overlays[d.id];
