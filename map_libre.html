@@ -1,4 +1,5 @@
-<!-- map_v59.html (v59 · TENAR V1.4) · 저장: 2026-07-27 17:20 KST · [v59] ①토지이용계획도(LT_C_LHBLPN) 켜면 계획구역명(blocktype)·사업지구(zonename) 라벨 표시 ②색상 범례 팝업 — 구분 제목 없애고 세로 구분선(│)으로 구분(가로로 짧게) ③하단 정보줄에 축척(1:N)+자(눈금 막대, 확대·축소 시 실시간)와 서버 연결 배지를 회전각·레벨 옆으로 이동 ④저장핀 표시에 전체표시 버튼(핀·작물·이랑·면적·A/B 모두 ON, 다시 누르면 이전값) ⑤하단 팝업 열린 상태에서 지도 터치하면 팝업이 닫힘(입력폼 시트는 제외) -->
+<!-- map_v60.html (v60 · TENAR V1.4) · 저장: 2026-07-27 17:57 KST · [v60] ①토지이용계획도 라벨을 필지 용도(공원·공동주택·녹지 등) 대신 지구명(zonename)만, 지구당 1개·화면 최대 3개로 표시(기간은 브이월드 데이터에 없어 생략) ②포구도구·측정도구 패널 z-index를 검색창(15)보다 위(16/17)로 올려 검색창 아래로 안 숨게 ③지도 출처 정보 팝업 하단에 초기화 3종 추가 — 설정 초기화(레이어·저장핀 표시 기본값·저장자료 유지)·즐겨찾기 초기화(저장목록+연결자료 삭제, 🔒잠금 유지)·전체 초기화(둘 다) -->
+<!-- (이전)  map_v59.html (v59 · TENAR V1.4) · 저장: 2026-07-27 17:20 KST · [v59] ①토지이용계획도(LT_C_LHBLPN) 켜면 계획구역명(blocktype)·사업지구(zonename) 라벨 표시 ②색상 범례 팝업 — 구분 제목 없애고 세로 구분선(│)으로 구분(가로로 짧게) ③하단 정보줄에 축척(1:N)+자(눈금 막대, 확대·축소 시 실시간)와 서버 연결 배지를 회전각·레벨 옆으로 이동 ④저장핀 표시에 전체표시 버튼(핀·작물·이랑·면적·A/B 모두 ON, 다시 누르면 이전값) ⑤하단 팝업 열린 상태에서 지도 터치하면 팝업이 닫힘(입력폼 시트는 제외) -->
 <!-- (이전)  map_v58.html (v58 · TENAR V1.4) · 저장: 2026-07-27 10:05 KST · [v58] ①토지이용계획(부모) 아래 자식 「토지이용계획도」(LT_C_LHBLPN · LH 택지개발계획) 추가 — 시트에서 들여쓰기 표시 ②「지형도」(LT_L_N3A0020000 · 도로중심선) 추가 ③레이어 순서 지적도→토지이용계획→토지이용계획도→농업진흥지역→지형도→개별공시지가→리→읍면동→시군구→시도(하이브리드는 맨 끝) ④보호구역(상수원, LT_C_UO101) 삭제 -->
 <!-- (이전)  map_v57.html (v57 · TENAR V1.4) · 저장: 2026-07-27 07:14 KST · [v57] ①미사용 레이어 5종(개발제한·문화재·수변·자연공원·산림보호) 삭제 ②레이어 순서 지적도→농업진흥지역→토지이용계획→하이브리드→개별공시지가→보호구역→행정경계, 농업진흥·개별공시지가 색상 범례를 토지이용계획처럼 상단 통합 범례 패널(최소화·드래그 이동)에 섹션으로 표시 ③개별공시지가 켜고 확대16↑ 시 필지에 금액(원/㎡) 라벨 표시 — 이미 받은 데이터 재사용(추가 서버요청 없음)·최대 120개 제한 -->
 <!-- (이전)  map_v56.html (v56 · TENAR V1.4) · 저장: 2026-07-27 07:01 KST · [v56] 농업진흥지역 완성 — 브이월드 데이터API 레이어 LT_C_AGRIXUE101(국토부 농업진흥지역도) 확정. ①지도에 「농업진흥지역」 레이어 추가(진흥구역 초록·보호구역 노랑) ②토지정보 팝업에서 필지 지점을 POINT 조회해 농업진흥/보호구역 표시(없으면 해당없음). 데이터 API라 NAS 없이 앱이 직접 조회(CORS 안전). LT_C_UO101 레이어는 상수원 보호구역으로 그대로 둠 -->
@@ -470,7 +471,7 @@ TenarSecureStore.init('map',
     position: absolute;
     left: calc(env(safe-area-inset-left, 0px) + 10px);
     top: calc(env(safe-area-inset-top, 0px) + 110px);
-    z-index: 13; width: 112px; display: none; flex-direction: column;   /* [v43-13] 측정도구 폭을 포구도구와 동일하게 */
+    z-index: 16; width: 112px; display: none; flex-direction: column;   /* [v60-2] 검색창(15)보다 위로 */
     max-height: calc(100% - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 190px);
     background: rgba(255,255,255,.96); border-radius: 10px;
     box-shadow: 0 2px 12px rgba(0,0,0,.28); overflow: hidden; touch-action: auto;
@@ -478,7 +479,7 @@ TenarSecureStore.init('map',
   /* [v17] 포구도구는 조금 넓게 (① ② ③ 구획이 들어간다) */
   /* [v22-6] 배너가 아래로 내려간 만큼 포구도구도 처음 위치를 내린다 */
   #fpToolPanel {
-    width: 112px; left: calc(env(safe-area-inset-left, 0px) + 10px); z-index: 14;
+    width: 112px; left: calc(env(safe-area-inset-left, 0px) + 10px); z-index: 17;   /* [v60-2] 검색창 위 */
     top: calc(env(safe-area-inset-top, 0px) + 150px);
   }
   #toolPanel.show, #fpToolPanel.show { display: flex; }
@@ -615,7 +616,7 @@ TenarSecureStore.init('map',
   .ll-nm { font-size: 10.5px; color: #444; white-space: nowrap; }
   .ll-div { width: 1px; align-self: stretch; min-height: 14px; background: #d5d5dc; margin: 0 5px; flex: 0 0 auto; }
   .price-label { font-size: 10.5px; font-weight: 800; color: #0b3d91; text-shadow: 0 0 2px #fff, 0 0 2px #fff, 0 1px 2px #fff; white-space: nowrap; pointer-events: none; }
-  .plan-label { font-size: 10.5px; font-weight: 800; color: #9d174d; text-shadow: 0 0 2px #fff, 0 0 2px #fff, 0 1px 2px #fff; white-space: nowrap; pointer-events: none; }
+  .plan-label { font-size: 13px; font-weight: 900; color: #9d174d; background: rgba(255,255,255,.82); border: 1px solid rgba(157,23,77,.5); border-radius: 8px; padding: 2px 7px; text-shadow: 0 1px 2px #fff; white-space: nowrap; pointer-events: none; box-shadow: 0 1px 4px rgba(0,0,0,.25); }
     /* [v59-2] ll-sec 제거됨 */
 
   /* [v10-6] 토지정보 시트 행 배치 */
@@ -2324,21 +2325,25 @@ TenarSecureStore.init('map',
     clearPlanLabels();
     if (!hasTurf) return;
     if (!(settings.overlays && settings.overlays.lhblpn)) return;
-    var seen = {}, count = 0;
-    for (var i = 0; i < fc.features.length && count < 80; i++) {
-      var f = fc.features[i], p = f.properties || {};
-      var txt = (p.blocktype || '') + (p.zonename ? ' · ' + p.zonename : '');
-      if (!txt.trim()) continue;
+    /* [v60-1] 필지 용도는 표시하지 않고 지구명(zonename)만 그룹당 1개, 화면 최대 3개 */
+    var groups = {};
+    (fc.features || []).forEach(function (f) {
+      var z = ((f.properties || {}).zonename || '').trim();
+      if (!z) return;
       var c = null;
-      try { c = turf.centerOfMass(f).geometry.coordinates; } catch (e) { continue; }
-      var key = txt + '@' + c[0].toFixed(4) + ',' + c[1].toFixed(4);
-      if (seen[key]) continue; seen[key] = true;
+      try { c = turf.centerOfMass(f).geometry.coordinates; } catch (e) { return; }
+      var g = groups[z] || (groups[z] = { n: 0, sx: 0, sy: 0 });
+      g.n++; g.sx += c[0]; g.sy += c[1];
+    });
+    var names = Object.keys(groups);
+    names.sort(function (a, b) { return groups[b].n - groups[a].n; });
+    names.slice(0, 3).forEach(function (z) {
+      var g = groups[z];
       var e2 = document.createElement('div');
       e2.className = 'plan-label';
-      e2.textContent = txt;
-      planLabelMarkers.push(new maplibregl.Marker({ element: e2 }).setLngLat(c).addTo(map));
-      count++;
-    }
+      e2.textContent = z;
+      planLabelMarkers.push(new maplibregl.Marker({ element: e2 }).setLngLat([g.sx / g.n, g.sy / g.n]).addTo(map));
+    });
   }
   function renderPriceLabels(fc) {
     clearPriceLabels();
@@ -7270,9 +7275,72 @@ TenarSecureStore.init('map',
       '<span style="font-size:12px;color:#777;">www.eum.go.kr</span></div>' +
       '<div class="lyr-desc" style="margin-top:10px;">표시되는 지적·공시지가·용도지역 정보는 참고용이며,<br>' +
       '공식 확인은 토지이음에서 하시기 바랍니다.</div>'));
+
+    /* [v60-3] 초기화 버튼 3종 */
+    box.appendChild(el('div', 'sec-title', '초기화'));
+    var bReset1 = el('button', 'sheet-btn', '⚙️ 설정 초기화 (레이어·저장핀 표시)');
+    bReset1.style.cssText = 'width:100%;margin-top:4px;';
+    bReset1.addEventListener('click', function () { resetSettingsOnly(false); });
+    box.appendChild(bReset1);
+    var bReset2 = el('button', 'sheet-btn', '⭐ 즐겨찾기 초기화 (잠금 제외)');
+    bReset2.style.cssText = 'width:100%;margin-top:6px;';
+    bReset2.addEventListener('click', function () { resetFavoritesOnly(false); });
+    box.appendChild(bReset2);
+    var bReset3 = el('button', 'sheet-btn danger', '🗑 전체 초기화');
+    bReset3.style.cssText = 'width:100%;margin-top:6px;';
+    bReset3.addEventListener('click', resetAllData);
+    box.appendChild(bReset3);
+    box.appendChild(el('div', null, '<div class="lyr-desc" style="margin-top:8px;">· 설정 초기화 : 레이어·저장핀 표시를 기본값으로 (저장자료 유지)<br>· 즐겨찾기 초기화 : 저장 위치·연결자료 삭제 (🔒 잠금 유지)<br>· 전체 초기화 : 위 둘 다</div>'));
+
     openSheet('지도 출처 정보', box, 'auto');
     sheetIsLandInfo = false;
   });
+
+  /* [v60-3] 설정만 초기화 — 레이어·저장핀 표시 기본값. 저장자료 유지 */
+  function resetSettingsOnly(silent) {
+    if (!silent && !window.confirm('지도 레이어와 저장핀 표시 설정을 기본값으로 되돌립니다.\n(저장한 즐겨찾기·조사자료는 그대로 유지)\n\n계속할까요?')) return;
+    settings.baseType = DEFAULT_SETTINGS.baseType;
+    Object.keys(settings.overlays).forEach(function (k) { settings.overlays[k] = false; });
+    settings.cadastralOpacity = DEFAULT_SETTINGS.cadastralOpacity;
+    settings.landuseOpacity = DEFAULT_SETTINGS.landuseOpacity;
+    settings.showFavPins = true; settings.showCropName = true;
+    settings.showAreaLabel = true; settings.showFpValues = true; settings.showRidgeDots = true;
+    settings.showLandInfo = false;
+    saveSettings();
+    try { applySettingsToMap(); } catch (e) {}
+    try { refreshFavPins(); } catch (e) {}
+    if (!silent) { closeSheet(); showToast('설정을 기본값으로 초기화했습니다.', 3000, 'success'); }
+  }
+
+  /* [v60-3] 즐겨찾기 초기화 — 잠금 자료 유지, 연결 요도도 함께 삭제 */
+  function resetFavoritesOnly(silent) {
+    var all = getFavs();
+    var locked = all.filter(function (f) { return f.locked; });
+    var unlocked = all.length - locked.length;
+    if (!silent) {
+      if (unlocked === 0) { showToast('삭제할 즐겨찾기가 없습니다.\n(잠금된 자료만 있습니다)', 3500, 'info'); return; }
+      if (!window.confirm('즐겨찾기 ' + unlocked + '개(잠금 제외)와 연결자료를 삭제합니다.\n🔒 잠금 ' + locked.length + '개는 유지.\n\n계속할까요?')) return;
+    }
+    var keepIds = {}; locked.forEach(function (f) { keepIds[f.id] = true; });
+    try { setMapItems(getMapItems().filter(function (x) { return !x.favoriteId || keepIds[x.favoriteId]; })); } catch (e) {}
+    setFavs(locked);
+    try { clearSelectedFavoriteHighlight(null); } catch (e) {}
+    try { refreshFavPins(); } catch (e) {}
+    try { renderMapItems(); } catch (e) {}
+    try { if (typeof renderFavList === 'function') renderFavList(); } catch (e) {}
+    if (!silent) { closeSheet(); showToast('즐겨찾기를 초기화했습니다. (잠금 자료 유지)', 3200, 'success'); }
+  }
+
+  /* [v60-3] 전체 초기화 — 설정 + 즐겨찾기(잠금 제외) */
+  function resetAllData() {
+    var locked = getFavs().filter(function (f) { return f.locked; }).length;
+    if (!window.confirm('전체 초기화합니다.\n· 레이어·저장핀 표시 → 기본값\n· 즐겨찾기 → 삭제 (🔒 잠금 ' + locked + '개 유지)\n\n계속할까요?')) return;
+    resetSettingsOnly(true);
+    resetFavoritesOnly(true);
+    try { map.triggerRepaint(); } catch (e) {}
+    closeSheet();
+    showToast('전체 초기화 완료. (잠금된 즐겨찾기는 유지)', 3600, 'success');
+  }
 
   /* [v7-1] 뒤로가기 — 이전 페이지가 있으면 그쪽으로, 없으면 텐아르 허브로 */
   document.getElementById('backBtn').addEventListener('click', function () {
