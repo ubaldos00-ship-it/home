@@ -1,4 +1,5 @@
-<!-- map_v65.html (v65 · TENAR V1.5) · 저장: 2026-07-29 05:45 KST · [v65] 작물재배조사구 「검색(지도에 표시)」 개선 — 좌표(위도·경도)가 없는 조사구는 저장된 초입주소(주소)로 VWorld 주소→좌표 변환을 즉시 실행해 핀 표시(진행상황 토스트). 조사구 목록에서 개별 조사구를 눌러도 좌표없으면 주소로 변환 후 이동. -->
+<!-- map_v66.html (v66 · TENAR V1.5) · 저장: 2026-07-29 06:42 KST · [v66] 작물재배조사구 대개편 — ①양식에 위도·경도 추가(좌표 우선, 없으면 초입주소로 지오코딩) ②시도 정규화(경북→경상북도·대구→대구광역시 등) ③트리를 시도>시군구>읍면동>조사구로(리동·층 레벨 삭제, 층은 필드로 유지) ④조사구 추가·수정·삭제 + 시도/시군구/읍면동별 삭제 + 전체삭제 ⑤핀=읍면동별 색+동그라미 안 순서번호, 클릭 시 아래 팝업+수정 ⑥JSON 내보내기·가져오기 암호화(PBKDF2/AES-GCM, 기본 2026, 변경가능) ⑦로컬 지속저장 확인+pagehide 보강 -->
+<!-- (이전)  map_v65.html (v65 · TENAR V1.5) · 저장: 2026-07-29 05:45 KST · [v65] 작물재배조사구 「검색(지도에 표시)」 개선 — 좌표(위도·경도)가 없는 조사구는 저장된 초입주소(주소)로 VWorld 주소→좌표 변환을 즉시 실행해 핀 표시(진행상황 토스트). 조사구 목록에서 개별 조사구를 눌러도 좌표없으면 주소로 변환 후 이동. -->
 <!-- (이전)  map_v64.html (v64 · TENAR V1.5) · 저장: 2026-07-28 23:09 KST · [v64] 작물재배조사구(재배면적 조사구) 기능 신규 — ①즐겨찾기 시트에 [기존 즐겨찾기][재배면적] 탭 ②재배면적 탭: 엑셀 양식 다운로드(./nongup_josagu/nongup_area_josagu.xlsx)+엑셀/JSON 가져오기·내보내기 ③시도>시군구>읍면동>리동>층>조사구 계층목록(접기/펼치기)+드롭다운6종+검색 ④층·조사구 별도 필드로 분리 ⑤지도 상단 경로 배지 ⑥엑셀 가져오기 미리보기 팝업(체크박스·전체선택·필터·정상/확인필요/오류)+[추가][교체][취소][×] ⑦추가=기존유지+번호 삽입/연속재정렬, 교체=백업후 전량교체(실패시 복원) ⑧좌표없는 초입주소는 VWorld로 배경 좌표변환 ⑨AES-256-GCM(tenarAreaSurveyPlotsEncrypted) 저장 -->
 <!-- (이전)  map_v63.html (v63 · TENAR V1.4) · 저장: 2026-07-28 22:12 KST · [v63] ①②포구·측정 수정모드에서 이전 저장선을 숨기지 않고 「회색(그레이)」 참조로 표시(보라색→회색) ③즐겨찾기 연결자료를 열면 완료ON 상태로(수정하려면 완료 해제) ④즐겨찾기 시트에서 「＋현재 위치 저장」·「화면복귀」 삭제, 헤더에 「전체보기」 이동 ⑤연결자료 종류별 색(테두리+옅은 배경)으로 은은하게 구분 ⑥부모·연결자료 눈표시(👁) 삭제 ⑦⑧연결자료에 저장일시 작게 추가(포구도 작물·주소·일시 동일형식) ⑨토지정보 서버 「최신」 아래 전년(2025) 줄 삭제(면적 옆에 이미 표시) ⑩지도출처에 「게임 닉네임 초기화」 추가+시트를 「공식 확인…」까지만 열고 쓸어올리면 초기화 표시 -->
 <!-- (이전)  map_v62.html (v62 · TENAR V1.4) · 저장: 2026-07-28 11:03 KST · [v62] ①포구·측정 완료(입력완료/잠금) 시 측정 꼭짓점(핀)·번호를 숨기고, 완료해제 시 다시 표시 ②즐겨찾기 목록 선택 시 그 위치로 이동+저장위치 팝업이 다시 올라오게(불러오기 버튼도) ③면적·길이 연결자료 선택 시에도 포구자료처럼 해당 위치로 지도 이동 ④측정도구에서 저장 요도를 수정할 때 원본(map-items)을 숨겨 「기존선」 잔상 제거, 편집 종료/저장 시 복원 -->
@@ -5280,22 +5281,32 @@ TenarSecureStore.init('map',
     map.addLayer({
       id: 'area-plots-halo', type: 'circle', source: 'area-plots-source',
       filter: ['==', ['get', 'visible'], true],
-      paint: { 'circle-radius': 13, 'circle-color': '#f59e0b', 'circle-opacity': 0.18 }
+      paint: { 'circle-radius': ['case', ['get', 'sel'], 20, 16], 'circle-color': ['coalesce', ['get', 'dotColor'], '#f59e0b'], 'circle-opacity': 0.16 }
     });
     map.addLayer({
       id: 'area-plots-dot', type: 'circle', source: 'area-plots-source',
       filter: ['==', ['get', 'visible'], true],
       paint: {
-        'circle-radius': ['case', ['get', 'sel'], 9, 6.5],
-        'circle-color': ['case', ['get', 'sel'], '#d97706', '#f59e0b'],
-        'circle-stroke-color': '#ffffff', 'circle-stroke-width': 2
+        /* [v66] 읍면동별 색(dotColor) · 동그라미 크게(번호 들어갈 자리) */
+        'circle-radius': ['case', ['get', 'sel'], 15, 12],
+        'circle-color': ['coalesce', ['get', 'dotColor'], '#f59e0b'],
+        'circle-stroke-color': ['case', ['get', 'sel'], '#111827', '#ffffff'], 'circle-stroke-width': ['case', ['get', 'sel'], 3, 2]
       }
+    });
+    map.addLayer({
+      id: 'area-plots-num', type: 'symbol', source: 'area-plots-source',
+      filter: ['==', ['get', 'visible'], true],
+      layout: {
+        /* [v66] 동그라미 "안"에 순서 번호 */
+        'text-field': ['to-string', ['get', 'number']], 'text-size': 12, 'text-allow-overlap': true, 'text-font': ['literal', ['Open Sans Bold', 'Arial Unicode MS Bold']]
+      },
+      paint: { 'text-color': '#ffffff', 'text-halo-color': 'rgba(0,0,0,.35)', 'text-halo-width': 1.0 }
     });
     map.addLayer({
       id: 'area-plots-label', type: 'symbol', source: 'area-plots-source',
       filter: ['==', ['get', 'visible'], true],
       layout: {
-        'text-field': ['get', 'labelText'], 'text-size': 11, 'text-offset': [0, 1.2],
+        'text-field': ['get', 'labelText'], 'text-size': 11, 'text-offset': [0, 1.6],
         'text-anchor': 'top', 'text-allow-overlap': false, 'text-optional': true
       },
       paint: { 'text-color': '#7c2d12', 'text-halo-color': '#ffffff', 'text-halo-width': 1.6 }
@@ -9968,20 +9979,23 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
   map.on('error', function (event) { console.error('지도 오류:', event.error); });
 
   /* ═══════════════════════════════════════════════════════════════
-     [v64] 작물재배조사구 (재배면적 조사구)
-     · 엑셀 양식 다운로드 / 엑셀·JSON 가져오기·내보내기
-     · 시도>시군구>읍면동>리동>층>조사구 계층 목록 + 지도 핀
-     · 층·조사구 별도 필드 · AES-256-GCM(기존 보안저장 계층) 암호화 저장
+     [v66] 작물재배조사구 (재배면적 조사구) — 전면 개편
+     · 좌표(위도·경도) 우선 · 없으면 초입주소로 지오코딩
+     · 시도 정규화(경북→경상북도 등) · 트리 = 시도>시군구>읍면동>(조사구)
+     · 조사구 추가/수정/삭제 · 지역별 삭제 · 전체삭제
+     · 핀 = 읍면동별 색 + 동그라미 안에 순서번호 · 클릭 시 아래 팝업+수정
+     · 엑셀/JSON 내보내기·가져오기(JSON은 암호화, 기본 2026)
+     · AES-256-GCM(기존 보안저장 계층)으로 로컬 지속 저장
      ═══════════════════════════════════════════════════════════════ */
   var AREA_KEY = 'tenarAreaSurveyPlotsEncrypted';
+  var AREA_APP = 'area-plots';
   var AREA_XLSX_URLS = [
     'https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js',
     'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/package/dist/xlsx.full.min.js'
   ];
-  var _areaSel = { sido: '', sigungu: '', eupmyeondong: '', ridong: '', floor: '', josagu: '' };
+  var _areaSel = { sido: '', sigungu: '', eupmyeondong: '' };
   var _areaSelectedId = null;
-  var _areaPopup = null;
-  var _areaImport = null;   /* 가져오기 임시자료 (팝업 닫으면 폐기) */
+  var _areaImport = null;
   var _xlsxPromise = null;
 
   function getAreaPlots() { var a = loadJSON(AREA_KEY, []); return Array.isArray(a) ? a : []; }
@@ -10005,7 +10019,34 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     return _xlsxPromise;
   }
 
-  /* 초입주소에서 리동(4번째 토큰: 시도 시군구 읍면동 [리동] …) 추출 */
+  /* ── 시도 정규화 : 약칭·시 표기를 정식 명칭으로 ── */
+  var SIDO_NORMALIZE = {
+    '서울': '서울특별시', '서울시': '서울특별시', '부산': '부산광역시', '부산시': '부산광역시',
+    '대구': '대구광역시', '대구시': '대구광역시', '대구면': '대구광역시',
+    '인천': '인천광역시', '인천시': '인천광역시', '광주': '광주광역시', '광주시': '광주광역시',
+    '대전': '대전광역시', '대전시': '대전광역시', '울산': '울산광역시', '울산시': '울산광역시',
+    '세종': '세종특별자치시', '세종시': '세종특별자치시',
+    '경기': '경기도', '강원': '강원특별자치도', '강원도': '강원특별자치도',
+    '충북': '충청북도', '충남': '충청남도', '전북': '전북특별자치도', '전라북도': '전북특별자치도',
+    '전남': '전라남도', '경북': '경상북도', '경남': '경상남도', '제주': '제주특별자치도', '제주도': '제주특별자치도'
+  };
+  function normalizeSido(v) {
+    v = String(v == null ? '' : v).trim();
+    if (!v) return v;
+    if (SIDO_NORMALIZE[v]) return SIDO_NORMALIZE[v];
+    var keys = Object.keys(SIDO_NORMALIZE);
+    for (var i = 0; i < keys.length; i++) { if (v.indexOf(keys[i]) === 0) return SIDO_NORMALIZE[keys[i]]; }
+    return v;
+  }
+
+  /* ── 읍면동별 핀 색 ── */
+  var EUP_COLORS = ['#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#6366f1', '#84cc16', '#06b6d4', '#d946ef', '#eab308', '#22c55e'];
+  function eupColor(name) {
+    name = String(name || '');
+    var h = 0; for (var i = 0; i < name.length; i++) { h = (h * 31 + name.charCodeAt(i)) >>> 0; }
+    return EUP_COLORS[h % EUP_COLORS.length];
+  }
+
   function deriveRidong(addr, ridong) {
     if (ridong) return String(ridong).trim();
     if (!addr) return '';
@@ -10013,19 +10054,15 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     return (t.length >= 4) ? t[3] : '';
   }
   function areaRenumber(arr) { arr.forEach(function (p, i) { p.number = i + 1; }); return arr; }
-  /* 대한민국 좌표 범위 검증 — 지오코딩 오류(엉뚱한 위치)로 핀이 흩어지는 것을 방지 */
-  function areaCoordOk(lat, lng) { return isFinite(lat) && isFinite(lng) && lat >= 33 && lat <= 39.5 && lng >= 124 && lng <= 132; }
   function areaFloorLabel(p) { return (p.floor !== '' && p.floor != null) ? (p.floor + '층') : ''; }
   function areaJosaguLabel(p) { return (p.josagu !== '' && p.josagu != null) ? (p.josagu + '조사구') : ''; }
+  function areaCoordOk(lat, lng) { return isFinite(lat) && isFinite(lng) && lat >= 33 && lat <= 39.5 && lng >= 124 && lng <= 132; }
 
-  /* ── 지도 핀 표시/숨김 ── */
+  /* ── 지도 핀 ── */
   function areaMatchesFilter(p) {
     if (_areaSel.sido && p.sido !== _areaSel.sido) return false;
     if (_areaSel.sigungu && p.sigungu !== _areaSel.sigungu) return false;
     if (_areaSel.eupmyeondong && p.eupmyeondong !== _areaSel.eupmyeondong) return false;
-    if (_areaSel.ridong && (p.ridong || '') !== _areaSel.ridong) return false;
-    if (_areaSel.floor && String(p.floor) !== String(_areaSel.floor)) return false;
-    if (_areaSel.josagu && String(p.josagu) !== String(_areaSel.josagu)) return false;
     return true;
   }
   function areaUpdateSource() {
@@ -10037,7 +10074,8 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
       fc.features.push({
         type: 'Feature',
         properties: {
-          plotId: p.id, visible: areaMatchesFilter(p), sel: (p.id === _areaSelectedId),
+          plotId: p.id, number: p.number, visible: areaMatchesFilter(p), sel: (p.id === _areaSelectedId),
+          dotColor: eupColor(p.eupmyeondong),
           labelText: (areaFloorLabel(p) + ' ' + areaJosaguLabel(p)).trim()
         },
         geometry: { type: 'Point', coordinates: [p.longitude, p.latitude] }
@@ -10049,7 +10087,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
 
   function areaFitAllVisible() {
     var pts = getAreaPlots().filter(function (p) { return areaMatchesFilter(p) && areaCoordOk(p.latitude, p.longitude); });
-    if (!pts.length) { showToast('표시할 좌표가 있는 조사구가 없습니다.\n(주소 좌표 변환이 필요할 수 있어요)', 3500, 'info'); return; }
+    if (!pts.length) { showToast('표시할 좌표가 있는 조사구가 없습니다.\n「검색(지도에 표시)」로 주소 좌표변환을 해보세요.', 3500, 'info'); return; }
     try {
       var b = new maplibregl.LngLatBounds();
       pts.forEach(function (p) { b.extend([p.longitude, p.latitude]); });
@@ -10057,23 +10095,22 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     } catch (e) {}
   }
 
-  /* [v65] 검색(지도에 표시) — 좌표가 없는 조사구는 "저장된 초입주소"로 즉시 좌표변환한 뒤 표시 */
+  /* ── 좌표 우선 · 없으면 주소 지오코딩 후 표시 ── */
   var _areaSearching = false;
   function areaSearchAndShow() {
     areaApplyVisibility();
     var need = getAreaPlots().filter(function (p) { return areaMatchesFilter(p) && !areaCoordOk(p.latitude, p.longitude) && p.address1; });
     if (!need.length) { areaFitAllVisible(); return; }
-    if (!(hasApiKey && hasApiKey())) { showToast('주소로 좌표를 변환하려면 브이월드 API 키가 필요합니다.\n레이어 설정에서 키를 확인하세요.', 4500, 'info'); areaFitAllVisible(); return; }
-    if (_areaSearching) { showToast('좌표를 찾는 중입니다. 잠시만요…', 2500, 'info'); return; }
+    if (!(hasApiKey && hasApiKey())) { showToast('주소로 좌표를 변환하려면 브이월드 API 키가 필요합니다.', 4500, 'info'); areaFitAllVisible(); return; }
+    if (_areaSearching) { showToast('좌표를 찾는 중입니다…', 2500, 'info'); return; }
     _areaSearching = true;
     var total = need.length, done = 0, ok = 0, i = 0;
     showToast('저장된 주소로 좌표를 찾는 중… (0/' + total + ')', 0, 'info');
     (function step() {
       if (i >= total) {
         _areaSearching = false;
-        showToast(ok ? ('좌표 변환 완료 · ' + ok + '/' + total + '건 표시') : ('주소로 좌표를 찾지 못했습니다. (0/' + total + ')\n주소를 확인해 주세요.'), 4000, ok ? 'success' : 'info');
-        areaApplyVisibility();
-        try { areaRefreshTree(); } catch (e) {}
+        showToast(ok ? ('좌표 변환 완료 · ' + ok + '/' + total + '건 표시') : ('주소로 좌표를 찾지 못했습니다.\n주소를 확인해 주세요.'), 4000, ok ? 'success' : 'info');
+        areaApplyVisibility(); try { areaRefreshTree(); } catch (e) {}
         if (ok) areaFitAllVisible();
         return;
       }
@@ -10092,16 +10129,15 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     })();
   }
 
+  /* ── 핀 클릭 → 아래 팝업(수정/삭제) ── */
   function areaOnPinClick(plotId) {
     var p = getAreaPlots().filter(function (x) { return x.id === plotId; })[0];
     if (!p) return;
-    _areaSelectedId = plotId;
-    areaUpdateSource();
+    _areaSelectedId = plotId; areaUpdateSource();
     if (areaCoordOk(p.latitude, p.longitude)) {
       map.flyTo({ center: [p.longitude, p.latitude], zoom: Math.max(map.getZoom(), 17), duration: 600 });
-      areaShowPopup(p);
+      areaOpenPlotSheet(p);
     } else if (p.address1 && hasApiKey && hasApiKey()) {
-      /* [v65] 좌표가 없으면 저장된 초입주소로 즉시 좌표변환 후 이동 */
       showToast('저장된 주소로 좌표를 찾는 중…', 0, 'info');
       areaGeocode(p.address1).then(function (c) {
         if (c && areaCoordOk(c.lat, c.lng)) {
@@ -10111,30 +10147,102 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
           var np = getAreaPlots().filter(function (x) { return x.id === p.id; })[0];
           showToast('', 1, 'info');
           map.flyTo({ center: [np.longitude, np.latitude], zoom: Math.max(map.getZoom(), 17), duration: 600 });
-          areaShowPopup(np);
-          try { areaRefreshTree(); } catch (e) {}
-        } else {
-          showToast('이 조사구의 주소로 좌표를 찾지 못했습니다.\n주소를 확인해 주세요.', 4000, 'info');
-        }
+          areaOpenPlotSheet(np);
+        } else { showToast('주소로 좌표를 찾지 못했습니다.', 3500, 'info'); areaOpenPlotSheet(p); }
       });
-    } else {
-      showToast('이 조사구는 좌표가 없습니다.\n「검색(지도에 표시)」로 주소 좌표변환을 실행하세요.', 4000, 'info');
-    }
+    } else { areaOpenPlotSheet(p); }
     areaUpdateBadge();
   }
-  function areaShowPopup(p) {
-    if (!(isFinite(p.longitude) && isFinite(p.latitude))) return;
-    try { if (_areaPopup) _areaPopup.remove(); } catch (e) {}
-    var path = [p.sido, p.sigungu, p.eupmyeondong, p.ridong].filter(Boolean).join(' ');
-    var html = '<div style="font-size:12.5px;line-height:1.6;min-width:180px;">' +
-      '<div style="font-weight:800;color:#b45309;">' + escapeHtml((areaFloorLabel(p) + ' ' + areaJosaguLabel(p)).trim() || '조사구') + '</div>' +
-      '<div style="color:#333;">' + escapeHtml(path) + '</div>' +
-      (p.address1 ? '<div style="color:#555;margin-top:2px;">📍 ' + escapeHtml(p.address1) + '</div>' : '') +
-      (p.note ? '<div style="color:#888;margin-top:2px;">📝 ' + escapeHtml(p.note) + '</div>' : '') +
-      '<div style="color:#aaa;font-size:11px;margin-top:3px;">' + escapeHtml('번호 ' + (p.number || '')) + '</div>' +
-      '</div>';
-    _areaPopup = new maplibregl.Popup({ offset: 14, closeButton: true, maxWidth: '260px' })
-      .setLngLat([p.longitude, p.latitude]).setHTML(html).addTo(map);
+  function areaOpenPlotSheet(p) {
+    var box = el('div');
+    var path = [p.sido, p.sigungu, p.eupmyeondong].filter(Boolean).join(' > ');
+    var head = el('div', null,
+      '<div class="addr-label" style="margin-top:0;">' + escapeHtml(path) + '</div>' +
+      '<div class="addr-value" style="font-weight:800;color:#b45309;">' +
+      escapeHtml(((p.number || '') + '번 · ' + (areaFloorLabel(p) + ' ' + areaJosaguLabel(p)).trim())) + '</div>' +
+      (p.address1 ? '<div class="addr-value">📍 ' + escapeHtml(p.address1) + '</div>' : '') +
+      (p.note ? '<div class="addr-value" style="color:#777;">📝 ' + escapeHtml(p.note) + '</div>' : '') +
+      (areaCoordOk(p.latitude, p.longitude) ? '<div class="addr-value" style="font-size:12px;color:#999;">위도 ' + p.latitude.toFixed(6) + ' · 경도 ' + p.longitude.toFixed(6) + '</div>' : '<div class="addr-value" style="color:#c0392b;font-size:12px;">좌표 없음</div>'));
+    box.appendChild(head);
+    var row = el('div', 'btn-row'); row.style.marginTop = '10px';
+    var bEdit = el('button', 'sheet-btn primary', '✏️ 수정');
+    bEdit.addEventListener('click', function () { areaOpenEditSheet(p.id); });
+    var bDel = el('button', 'sheet-btn danger', '🗑 삭제');
+    bDel.addEventListener('click', function () {
+      if (!window.confirm((p.number || '') + '번 조사구를 삭제하시겠습니까?')) return;
+      var arr = getAreaPlots().filter(function (x) { return x.id !== p.id; });
+      areaRenumber(arr); setAreaPlots(arr);
+      _areaSelectedId = null; closeSheet();
+      areaApplyVisibility(); showToast('삭제했습니다.', 2000, 'success');
+    });
+    row.appendChild(bEdit); row.appendChild(bDel);
+    box.appendChild(row);
+    openSheet('🌾 조사구', box, 'auto');
+  }
+
+  /* ── 조사구 추가/수정 폼 ── */
+  function areaOpenEditSheet(plotId) {
+    var editing = plotId ? getAreaPlots().filter(function (x) { return x.id === plotId; })[0] : null;
+    var box = el('div');
+    function fld(label, val, ph) {
+      var f = el('div', 'fld', '<label>' + label + '</label>');
+      var inp = el('input'); inp.type = 'text'; inp.value = (val == null ? '' : val); if (ph) inp.placeholder = ph;
+      inp.style.cssText = 'width:100%;padding:9px;border:1px solid #d7d7de;border-radius:8px;font-size:14px;box-sizing:border-box;';
+      f.appendChild(inp); box.appendChild(f);
+      return inp;
+    }
+    var iNum = fld('번호', editing ? editing.number : '', '자동');
+    iNum.type = 'number';
+    var iSido = fld('시도', editing ? editing.sido : '', '예: 경상북도(경북도 자동변환)');
+    var iSgg = fld('시군구', editing ? editing.sigungu : '', '예: 경산시');
+    var iEmd = fld('읍면동', editing ? editing.eupmyeondong : '', '예: 자인면');
+    var iFloor = fld('층', editing ? editing.floor : '', '예: 1');
+    var iJosagu = fld('조사구', editing ? editing.josagu : '', '예: 001');
+    var iAddr = fld('초입주소', editing ? editing.address1 : '', '예: 경상북도 경산시 자인면 북사리 359');
+    var iLat = fld('위도(선택)', editing && isFinite(editing.latitude) ? editing.latitude : '', '있으면 우선 사용');
+    var iLng = fld('경도(선택)', editing && isFinite(editing.longitude) ? editing.longitude : '', '있으면 우선 사용');
+    var iNote = fld('비고(선택)', editing ? editing.note : '', '');
+
+    var row = el('div', 'btn-row'); row.style.marginTop = '10px';
+    var bSave = el('button', 'sheet-btn primary', editing ? '저장' : '추가');
+    bSave.addEventListener('click', function () {
+      var sido = normalizeSido(iSido.value);
+      var sgg = iSgg.value.trim(), emd = iEmd.value.trim(), josagu = iJosagu.value.trim(), addr = iAddr.value.trim();
+      if (!sido || !sgg || !emd || !josagu) { showToast('시도·시군구·읍면동·조사구는 꼭 입력해 주세요.', 3500, 'info'); return; }
+      if (!addr && !(iLat.value && iLng.value)) { showToast('초입주소 또는 위도·경도 중 하나는 입력해 주세요.', 3800, 'info'); return; }
+      var latN = Number(iLat.value), lngN = Number(iLng.value);
+      var arr = getAreaPlots();
+      var rec = editing || { id: areaUid(), createdAt: kstNowStr() };
+      rec.number = parseInt(iNum.value, 10) || (editing ? editing.number : (arr.length + 1));
+      rec.sido = sido; rec.sigungu = sgg; rec.eupmyeondong = emd;
+      rec.floor = iFloor.value.trim(); rec.josagu = josagu;
+      rec.address1 = addr; rec.note = iNote.value.trim();
+      rec.ridong = deriveRidong(addr, rec.ridong);
+      rec.latitude = (iLat.value !== '' && areaCoordOk(latN, lngN)) ? latN : (editing ? editing.latitude : NaN);
+      rec.longitude = (iLng.value !== '' && areaCoordOk(latN, lngN)) ? lngN : (editing ? editing.longitude : NaN);
+      rec.updatedAt = kstNowStr();
+      if (!editing) arr.push(rec);
+      setAreaPlots(arr);
+      closeSheet();
+      areaApplyVisibility(); try { areaRefreshTree(); } catch (e) {}
+      showToast(editing ? '수정했습니다.' : '조사구를 추가했습니다.', 2500, 'success');
+      /* 좌표 없고 주소 있으면 즉시 지오코딩 */
+      if (!areaCoordOk(rec.latitude, rec.longitude) && rec.address1 && hasApiKey && hasApiKey()) {
+        areaGeocode(rec.address1).then(function (c) {
+          if (c && areaCoordOk(c.lat, c.lng)) {
+            var cur = getAreaPlots();
+            for (var k = 0; k < cur.length; k++) if (cur[k].id === rec.id) { cur[k].latitude = c.lat; cur[k].longitude = c.lng; cur[k].updatedAt = kstNowStr(); }
+            setAreaPlots(cur); areaApplyVisibility(); try { areaRefreshTree(); } catch (e) {}
+          }
+        });
+      }
+    });
+    var bCancel = el('button', 'sheet-btn', '취소');
+    bCancel.addEventListener('click', function () { editing ? areaOpenPlotSheet(editing) : closeSheet(); });
+    row.appendChild(bSave); row.appendChild(bCancel);
+    box.appendChild(row);
+    openSheet(editing ? '✏️ 조사구 수정' : '＋ 조사구 추가', box, 'auto');
+    sheetHasForm = true;
   }
 
   /* ── 지도 상단 경로 배지 ── */
@@ -10145,37 +10253,27 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     b.id = 'areaPathBadge';
     b.style.cssText = 'position:fixed;top:60px;left:50%;transform:translateX(-50%);max-width:92vw;' +
       'background:rgba(255,255,255,.95);border:1.5px solid #f59e0b;border-radius:12px;padding:6px 12px;' +
-      'font-size:12.5px;font-weight:700;color:#7c2d12;box-shadow:0 3px 12px rgba(0,0,0,.18);z-index:14;' +
-      'display:none;text-align:center;line-height:1.4;';
+      'font-size:12.5px;font-weight:700;color:#7c2d12;box-shadow:0 3px 12px rgba(0,0,0,.18);z-index:14;display:none;text-align:center;';
     b.addEventListener('click', function () { areaClearSelection(); });
     (document.body || document.documentElement).appendChild(b);
-    _areaBadgeEl = b;
-    return b;
+    _areaBadgeEl = b; return b;
   }
   function areaBadgePath() {
-    var lv = function (v, suf) { return v ? (v + (suf || '')) : null; };
-    var top = [lv(_areaSel.sido), lv(_areaSel.sigungu), lv(_areaSel.eupmyeondong)].filter(Boolean);
-    var bot = [_areaSel.ridong || '전체 리동', (_areaSel.floor ? _areaSel.floor + '층' : '전체 층'),
-               (_areaSel.josagu ? _areaSel.josagu + '조사구' : '전체 조사구')];
-    if (!top.length && !_areaSel.ridong && !_areaSel.floor && !_areaSel.josagu) return '';
-    return (top.length ? top.join(' > ') + '<br>' : '') + bot.join(' > ');
+    var top = [_areaSel.sido, _areaSel.sigungu, _areaSel.eupmyeondong].filter(Boolean);
+    return top.length ? top.join(' > ') : '';
   }
   function areaUpdateBadge() {
-    var b = areaEnsureBadge();
-    var t = areaBadgePath();
+    var b = areaEnsureBadge(); var t = areaBadgePath();
     if (!t) { b.style.display = 'none'; return; }
-    b.innerHTML = '🌾 ' + t + ' <span style="color:#aaa;font-weight:600;">✕</span>';
+    b.innerHTML = '🌾 ' + escapeHtml(t) + ' <span style="color:#aaa;font-weight:600;">✕</span>';
     b.style.display = 'block';
   }
   function areaClearSelection() {
-    _areaSel = { sido: '', sigungu: '', eupmyeondong: '', ridong: '', floor: '', josagu: '' };
-    _areaSelectedId = null;
-    try { if (_areaPopup) _areaPopup.remove(); } catch (e) {}
-    areaApplyVisibility();
-    try { areaRefreshTree(); } catch (e) {}
+    _areaSel = { sido: '', sigungu: '', eupmyeondong: '' }; _areaSelectedId = null;
+    areaApplyVisibility(); try { areaRefreshTree(); } catch (e) {}
   }
 
-  /* ── 주소 → 좌표 (VWorld 지번 우선, 실패 시 도로명) ── */
+  /* ── 지오코딩 ── */
   function areaGeocode(addr) {
     if (!addr) return Promise.resolve(null);
     return requestVWorldGeocode(addr, 'PARCEL').then(function (d) {
@@ -10187,23 +10285,16 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
       });
     }).catch(function () { return null; });
   }
-  /* 좌표 없는 조사구를 배경에서 순차 지오코딩 (과호출 방지 300ms 간격) */
   var _areaGeoRunning = false;
   function areaGeocodeMissing() {
     if (_areaGeoRunning) return;
-    if (!hasApiKey || !hasApiKey()) return;
-    var arr = getAreaPlots();
-    var todo = arr.filter(function (p) { return !(isFinite(p.longitude) && isFinite(p.latitude)) && p.address1; });
+    if (!(hasApiKey && hasApiKey())) return;
+    var todo = getAreaPlots().filter(function (p) { return !areaCoordOk(p.latitude, p.longitude) && p.address1; });
     if (!todo.length) return;
     _areaGeoRunning = true;
     var i = 0;
     (function step() {
-      if (i >= todo.length) {
-        _areaGeoRunning = false;
-        showToast('주소 좌표 변환 완료 · 핀 ' + todo.length + '건 갱신', 3000, 'success');
-        try { areaRefreshTree(); } catch (e) {}
-        return;
-      }
+      if (i >= todo.length) { _areaGeoRunning = false; try { areaRefreshTree(); } catch (e) {} areaUpdateSource(); return; }
       var p = todo[i++];
       areaGeocode(p.address1).then(function (c) {
         if (c && areaCoordOk(c.lat, c.lng)) {
@@ -10225,36 +10316,26 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     dl.href = './nongup_josagu/nongup_area_josagu.xlsx';
     dl.setAttribute('download', 'nongup_area_josagu.xlsx');
     dl.textContent = '📥 재배면적 조사구 엑셀 양식 다운로드';
-    dl.style.cssText = 'display:block;text-align:center;padding:11px;margin-bottom:8px;border-radius:10px;' +
-      'background:#e8f6ee;border:1.5px solid #1f8a4c;color:#14612f;font-weight:800;font-size:13.5px;text-decoration:none;';
+    dl.style.cssText = 'display:block;text-align:center;padding:11px;margin-bottom:8px;border-radius:10px;background:#e8f6ee;border:1.5px solid #1f8a4c;color:#14612f;font-weight:800;font-size:13.5px;text-decoration:none;';
     wrap.appendChild(dl);
 
     var r1 = el('div', 'btn-row');
-    [['엑셀 가져오기', function () { areaPickFile('xlsx'); }],
-     ['엑셀 내보내기', areaExportExcel]].forEach(function (x) {
+    [['엑셀 가져오기', function () { areaPickFile('xlsx'); }], ['엑셀 내보내기', areaExportExcel]].forEach(function (x) {
       var b = el('button', 'sheet-btn', x[0]); b.addEventListener('click', x[1]); r1.appendChild(b);
     });
     wrap.appendChild(r1);
     var r2 = el('div', 'btn-row');
-    [['JSON 내보내기', areaExportJSON],
-     ['JSON 가져오기', function () { areaPickFile('json'); }]].forEach(function (x) {
+    [['JSON 내보내기(암호)', areaExportJSON], ['JSON 가져오기', function () { areaPickFile('json'); }]].forEach(function (x) {
       var b = el('button', 'sheet-btn', x[0]); b.addEventListener('click', x[1]); r2.appendChild(b);
     });
     wrap.appendChild(r2);
 
-    /* 경로 요약 */
-    var pathLine = el('div'); pathLine.id = 'areaPathLine';
-    pathLine.style.cssText = 'margin:8px 2px 4px;font-size:12.5px;font-weight:700;color:#7c2d12;';
-    wrap.appendChild(pathLine);
-
-    /* 드롭다운 6종 + 검색 */
+    /* 드롭다운 3종(시도·시군구·읍면동) + 검색 */
     var dds = el('div');
-    dds.style.cssText = 'display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin:4px 0;';
-    var fields = [['sido', '시도'], ['sigungu', '시군구'], ['eupmyeondong', '읍면동'], ['ridong', '리동'], ['floor', '층'], ['josagu', '조사구']];
-    fields.forEach(function (f) {
-      var sel = el('select'); sel.id = 'areaSel_' + f[0];
+    dds.style.cssText = 'display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin:8px 0 4px;';
+    [['sido', '시도'], ['sigungu', '시군구'], ['eupmyeondong', '읍면동']].forEach(function (f) {
+      var sel = el('select'); sel.id = 'areaSel_' + f[0]; sel.dataset.level = f[0]; sel.dataset.label = f[1];
       sel.style.cssText = 'padding:7px 4px;border:1px solid #d7d7de;border-radius:8px;font-size:12.5px;background:#fff;';
-      sel.dataset.level = f[0]; sel.dataset.label = f[1];
       sel.addEventListener('change', function () { areaOnDropdownChange(f[0], sel.value); });
       dds.appendChild(sel);
     });
@@ -10262,32 +10343,45 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
 
     var r3 = el('div', 'btn-row');
     var bSearch = el('button', 'sheet-btn primary', '🔍 검색(지도에 표시)');
-    bSearch.addEventListener('click', function () { areaSearchAndShow(); });   /* [v65] 좌표없으면 주소로 변환 후 표시 */
-    var bClear = el('button', 'sheet-btn', '초기화');
+    bSearch.addEventListener('click', function () { areaSearchAndShow(); });
+    var bClear = el('button', 'sheet-btn', '선택해제');
     bClear.addEventListener('click', areaClearSelection);
     r3.appendChild(bSearch); r3.appendChild(bClear);
     wrap.appendChild(r3);
 
+    var r4 = el('div', 'btn-row');
+    var bAdd = el('button', 'sheet-btn primary', '＋ 조사구 추가');
+    bAdd.addEventListener('click', function () { areaOpenEditSheet(null); });
+    var bDelAll = el('button', 'sheet-btn danger', '전체삭제');
+    bDelAll.addEventListener('click', function () {
+      var n = getAreaPlots().length;
+      if (!n) { showToast('삭제할 조사구가 없습니다.', 2500, 'info'); return; }
+      if (!window.confirm('작물재배조사구 ' + n + '건을 모두 삭제하시겠습니까?')) return;
+      setAreaPlots([]); _areaSelectedId = null;
+      areaApplyVisibility(); areaRefreshTree(); showToast('전체 삭제했습니다.', 2500, 'success');
+    });
+    r4.appendChild(bAdd); r4.appendChild(bDelAll);
+    wrap.appendChild(r4);
+
     var treeHdr = el('div', null, '조사구 목록');
     treeHdr.style.cssText = 'margin:10px 2px 4px;font-size:12.5px;font-weight:800;color:#333;';
     wrap.appendChild(treeHdr);
-    var tree = el('div'); tree.id = 'areaTree';
-    tree.style.cssText = 'border-top:1px solid #eee;';
+    var tree = el('div'); tree.id = 'areaTree'; tree.style.cssText = 'border-top:1px solid #eee;';
     wrap.appendChild(tree);
 
     container.appendChild(wrap);
     areaRefreshTree();
   }
 
-  /* 계층 그룹핑 : sido>sigungu>eupmyeondong>ridong>floor>josagu */
-  var AREA_LEVELS = ['sido', 'sigungu', 'eupmyeondong', 'ridong', 'floor', 'josagu'];
+  /* ── 트리 : 시도 > 시군구 > 읍면동 > (조사구) ── */
+  var AREA_TREE_LEVELS = ['sido', 'sigungu', 'eupmyeondong'];
+  function areaFilteredPlots() { return getAreaPlots().filter(areaMatchesFilter); }
   function areaGroup(plots) {
     var root = {};
     plots.forEach(function (p) {
       var node = root;
-      for (var i = 0; i < AREA_LEVELS.length - 1; i++) {
-        var key = (p[AREA_LEVELS[i]] || '') + '';
-        if (i === 3 && !key) key = '(리동 미입력)';
+      for (var i = 0; i < AREA_TREE_LEVELS.length; i++) {
+        var key = (p[AREA_TREE_LEVELS[i]] || '(미입력)') + '';
         node[key] = node[key] || { _children: {}, _plots: [] };
         node[key]._plots.push(p);
         node = node[key]._children;
@@ -10295,34 +10389,25 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     });
     return root;
   }
-  function areaFilteredPlots() { return getAreaPlots().filter(areaMatchesFilter); }
-
   function areaRefreshTree() {
-    /* 경로 요약 줄 */
-    var pl = document.getElementById('areaPathLine');
-    if (pl) {
-      var t = areaBadgePath();
-      pl.innerHTML = t ? ('🌾 ' + t) : '<span style="color:#aaa;font-weight:600;">전체 조사구</span>';
-    }
     areaSyncDropdowns();
     var tree = document.getElementById('areaTree');
     if (!tree) return;
     tree.innerHTML = '';
+    var all = getAreaPlots();
+    if (!all.length) { tree.innerHTML = '<div style="padding:16px 4px;color:#999;font-size:12.5px;text-align:center;">저장된 조사구가 없습니다.<br>엑셀 양식을 채워 「엑셀 가져오기」 하거나 「＋ 조사구 추가」 하세요.</div>'; areaApplyVisibility(); return; }
     var plots = areaFilteredPlots();
-    if (!getAreaPlots().length) {
-      tree.innerHTML = '<div style="padding:16px 4px;color:#999;font-size:12.5px;text-align:center;">저장된 조사구가 없습니다.<br>엑셀 양식을 채워 「엑셀 가져오기」 하세요.</div>';
-      return;
-    }
-    if (!plots.length) {
-      tree.innerHTML = '<div style="padding:14px 4px;color:#999;font-size:12.5px;text-align:center;">선택한 조건의 조사구가 없습니다.</div>';
-      return;
-    }
-    var grouped = areaGroup(plots);
-    areaBuildTreeNode(tree, grouped, 0);
+    if (!plots.length) { tree.innerHTML = '<div style="padding:14px 4px;color:#999;font-size:12.5px;text-align:center;">선택한 조건의 조사구가 없습니다.</div>'; areaApplyVisibility(); return; }
+    areaBuildTreeNode(tree, areaGroup(plots), 0);
     areaApplyVisibility();
   }
-
-  function areaLevelSuffix(level) { return level === 4 ? '층' : (level === 5 ? '조사구' : ''); }
+  function areaDeletePlots(pred, label) {
+    if (!window.confirm(label + ' 안의 조사구를 모두 삭제하시겠습니까?')) return;
+    var arr = getAreaPlots().filter(function (p) { return !pred(p); });
+    areaRenumber(arr); setAreaPlots(arr);
+    _areaSelectedId = null; areaApplyVisibility(); areaRefreshTree();
+    showToast('삭제했습니다.', 2000, 'success');
+  }
   function areaBuildTreeNode(container, node, level) {
     var keys = Object.keys(node).sort(function (a, b) {
       var na = parseFloat(a), nb = parseFloat(b);
@@ -10331,70 +10416,79 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     });
     keys.forEach(function (key) {
       var entry = node[key];
-      var isLeafGroup = (level === AREA_LEVELS.length - 2);   /* floor 레벨 → 자식이 조사구(잎) */
+      var isLeafGroup = (level === AREA_TREE_LEVELS.length - 1);   /* 읍면동 → 자식이 조사구 */
+      var sample = entry._plots[0] || {};
       var row = el('div');
-      row.style.cssText = 'padding:6px 4px 6px ' + (8 + level * 14) + 'px;border-bottom:1px solid #f2f2f5;' +
-        'font-size:12.5px;cursor:pointer;display:flex;align-items:center;gap:6px;';
-      var caret = el('span', null, '▶'); caret.style.cssText = 'font-size:10px;color:#f59e0b;width:12px;';
-      var label = el('span', null, escapeHtml(key + areaLevelSuffix(level)) +
-        ' <span style="color:#aaa;font-weight:600;">' + entry._plots.length + '건</span>');
-      label.style.cssText = 'flex:1;font-weight:' + (level < 2 ? 800 : 700) + ';color:' + (level < 3 ? '#14612f' : '#555') + ';';
-      row.appendChild(caret); row.appendChild(label);
+      row.style.cssText = 'display:flex;align-items:center;gap:6px;padding:6px 4px 6px ' + (8 + level * 14) + 'px;border-bottom:1px solid #f2f2f5;font-size:12.5px;';
+      var caret = el('span', null, '▼'); caret.style.cssText = 'font-size:10px;color:#f59e0b;width:12px;cursor:pointer;';
+      var label = el('span', null, escapeHtml(key) + ' <span style="color:#aaa;font-weight:600;">' + entry._plots.length + '건</span>');
+      label.style.cssText = 'flex:1;font-weight:' + (level < 1 ? 800 : 700) + ';color:' + (level < 2 ? '#14612f' : '#7c2d12') + ';cursor:pointer;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+      var del = el('button', null, '🗑'); del.style.cssText = 'border:none;background:none;font-size:13px;cursor:pointer;flex:0 0 auto;padding:2px 4px;';
+      del.title = key + ' 삭제';
+      row.appendChild(caret); row.appendChild(label); row.appendChild(del);
       container.appendChild(row);
 
-      var child = el('div'); child.style.display = 'none';
-      container.appendChild(child);
-      var built = false, open = false;
-
-      row.addEventListener('click', function () {
-        open = !open;
-        caret.textContent = open ? '▼' : '▶';
-        child.style.display = open ? 'block' : 'none';
-        /* 이 노드의 지역을 필터로 잡아 지도에 표시 */
-        areaSelectByNode(entry._plots, level, key);
-        if (open && !built) {
-          built = true;
-          if (isLeafGroup) {
-            /* 잎: 조사구 목록 */
-            entry._plots.slice().sort(function (a, b) { return (a.number || 0) - (b.number || 0); }).forEach(function (p) {
-              var leaf = el('div');
-              leaf.style.cssText = 'padding:6px 4px 6px ' + (8 + (level + 1) * 14) + 'px;border-bottom:1px solid #f7f7fa;' +
-                'font-size:12.5px;cursor:pointer;color:#7c2d12;';
-              leaf.innerHTML = '📍 <b>' + escapeHtml((p.number || '') + '번') + '</b> ' + escapeHtml(areaJosaguLabel(p) || '조사구') +
-                (isFinite(p.longitude) ? '' : ' <span style="color:#c0392b;font-size:11px;">(좌표없음)</span>');
-              leaf.addEventListener('click', function (ev) { ev.stopPropagation(); areaOnPinClick(p.id); });
-              child.appendChild(leaf);
+      var child = el('div'); container.appendChild(child);
+      /* 하위 렌더 (기본 펼침) */
+      function renderChild() {
+        child.innerHTML = '';
+        if (isLeafGroup) {
+          entry._plots.slice().sort(function (a, b) { return (a.number || 0) - (b.number || 0); }).forEach(function (p) {
+            var leaf = el('div');
+            leaf.style.cssText = 'display:flex;align-items:center;gap:6px;padding:6px 4px 6px ' + (8 + (level + 1) * 14) + 'px;border-bottom:1px solid #f7f7fa;font-size:12.5px;';
+            var dot = el('span'); dot.style.cssText = 'width:12px;height:12px;border-radius:50%;flex:0 0 auto;background:' + eupColor(p.eupmyeondong) + ';';
+            var t = el('span', null,
+              '<b style="color:#7c2d12;">' + escapeHtml((p.number || '') + '번') + '</b> ' +
+              escapeHtml((areaFloorLabel(p) + ' ' + areaJosaguLabel(p)).trim() || '조사구') +
+              (p.address1 ? ' <span style="color:#999;">· ' + escapeHtml(mapItemShortAddr(p.address1)) + '</span>' : '') +
+              (areaCoordOk(p.latitude, p.longitude) ? '' : ' <span style="color:#c0392b;font-size:11px;">(좌표없음)</span>'));
+            t.style.cssText = 'flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;';
+            t.addEventListener('click', function () { closeSheet(); areaOnPinClick(p.id); });
+            var e2 = el('button', null, '✏️'); e2.style.cssText = 'border:none;background:none;font-size:12px;cursor:pointer;flex:0 0 auto;';
+            e2.addEventListener('click', function (ev) { ev.stopPropagation(); areaOpenEditSheet(p.id); });
+            var d2 = el('button', null, '🗑'); d2.style.cssText = 'border:none;background:none;font-size:12px;cursor:pointer;flex:0 0 auto;';
+            d2.addEventListener('click', function (ev) {
+              ev.stopPropagation();
+              if (!window.confirm((p.number || '') + '번 조사구를 삭제하시겠습니까?')) return;
+              var arr = getAreaPlots().filter(function (x) { return x.id !== p.id; });
+              areaRenumber(arr); setAreaPlots(arr); areaApplyVisibility(); areaRefreshTree();
+              showToast('삭제했습니다.', 1800, 'success');
             });
-          } else {
-            areaBuildTreeNode(child, entry._children, level + 1);
-          }
+            leaf.appendChild(dot); leaf.appendChild(t); leaf.appendChild(e2); leaf.appendChild(d2);
+            child.appendChild(leaf);
+          });
+        } else {
+          areaBuildTreeNode(child, entry._children, level + 1);
         }
+      }
+      renderChild();
+      var open = true;
+      function toggle() { open = !open; caret.textContent = open ? '▼' : '▶'; child.style.display = open ? 'block' : 'none'; }
+      caret.addEventListener('click', toggle);
+      label.addEventListener('click', function () {
+        /* 지역 선택 → 지도 표시 (시도 클릭 시 그 아래 전체 표시) */
+        var ns = { sido: '', sigungu: '', eupmyeondong: '' };
+        for (var i = 0; i <= level; i++) ns[AREA_TREE_LEVELS[i]] = sample[AREA_TREE_LEVELS[i]] || '';
+        _areaSel = ns; _areaSelectedId = null;
+        areaApplyVisibility(); areaSyncDropdowns(); areaFitAllVisible();
+      });
+      del.addEventListener('click', function (ev) {
+        ev.stopPropagation();
+        var path = {}; for (var i = 0; i <= level; i++) path[AREA_TREE_LEVELS[i]] = sample[AREA_TREE_LEVELS[i]] || '';
+        areaDeletePlots(function (p) {
+          for (var i = 0; i <= level; i++) { var lv = AREA_TREE_LEVELS[i]; if ((p[lv] || '(미입력)') !== (path[lv] || '(미입력)')) return false; }
+          return true;
+        }, key);
       });
     });
   }
-  /* 트리 노드를 누르면 그 지역까지의 선택값을 채우고 지도 표시 */
-  function areaSelectByNode(plots, level, key) {
-    var sample = plots[0] || {};
-    var newSel = { sido: '', sigungu: '', eupmyeondong: '', ridong: '', floor: '', josagu: '' };
-    for (var i = 0; i <= level; i++) {
-      var lv = AREA_LEVELS[i];
-      newSel[lv] = (i === level) ? (key === '(리동 미입력)' ? '' : key) : (sample[lv] || '');
-    }
-    _areaSel = newSel;
-    _areaSelectedId = null;
-    areaApplyVisibility();
-    areaSyncDropdowns();
-    var pl = document.getElementById('areaPathLine');
-    if (pl) { var t = areaBadgePath(); pl.innerHTML = t ? ('🌾 ' + t) : '<span style="color:#aaa;font-weight:600;">전체 조사구</span>'; }
-  }
 
-  /* ── 드롭다운 ── */
+  /* ── 드롭다운(시도·시군구·읍면동) ── */
   function areaUniq(list) { var seen = {}, out = []; list.forEach(function (v) { v = (v == null ? '' : v) + ''; if (v && !seen[v]) { seen[v] = 1; out.push(v); } }); return out; }
   function areaOptionsFor(level) {
-    var all = getAreaPlots();
-    var idx = AREA_LEVELS.indexOf(level);
-    var filtered = all.filter(function (p) {
-      for (var i = 0; i < idx; i++) { var lv = AREA_LEVELS[i]; if (_areaSel[lv] && (p[lv] + '') !== _areaSel[lv]) return false; }
+    var idx = AREA_TREE_LEVELS.indexOf(level);
+    var filtered = getAreaPlots().filter(function (p) {
+      for (var i = 0; i < idx; i++) { var lv = AREA_TREE_LEVELS[i]; if (_areaSel[lv] && (p[lv] + '') !== _areaSel[lv]) return false; }
       return true;
     });
     return areaUniq(filtered.map(function (p) { return p[level]; })).sort(function (a, b) {
@@ -10402,30 +10496,25 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     });
   }
   function areaSyncDropdowns() {
-    AREA_LEVELS.forEach(function (lv) {
+    AREA_TREE_LEVELS.forEach(function (lv) {
       var sel = document.getElementById('areaSel_' + lv);
       if (!sel) return;
       var label = sel.dataset.label || lv;
       var opts = areaOptionsFor(lv);
       var cur = _areaSel[lv] || '';
       sel.innerHTML = '';
-      var o0 = new Option('전체 ' + label, ''); sel.appendChild(o0);
-      opts.forEach(function (v) {
-        var suf = (lv === 'floor') ? '층' : (lv === 'josagu') ? '조사구' : '';
-        sel.appendChild(new Option(v + suf, v));
-      });
+      sel.appendChild(new Option('전체 ' + label, ''));
+      opts.forEach(function (v) { sel.appendChild(new Option(v, v)); });
       sel.value = cur;
     });
   }
   function areaOnDropdownChange(level, value) {
     _areaSel[level] = value;
-    /* 하위 레벨 초기화 */
-    var idx = AREA_LEVELS.indexOf(level);
-    for (var i = idx + 1; i < AREA_LEVELS.length; i++) _areaSel[AREA_LEVELS[i]] = '';
+    var idx = AREA_TREE_LEVELS.indexOf(level);
+    for (var i = idx + 1; i < AREA_TREE_LEVELS.length; i++) _areaSel[AREA_TREE_LEVELS[i]] = '';
     _areaSelectedId = null;
-    areaSyncDropdowns();
-    areaApplyVisibility();
-    areaRefreshTree();
+    areaSyncDropdowns(); areaApplyVisibility(); areaRefreshTree();
+    if (value) areaFitAllVisible();   /* 시도 등 선택 시 그 아래 전체를 지도에 표시 */
   }
 
   /* ── 파일 선택 ── */
@@ -10434,8 +10523,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     inp.type = 'file';
     inp.accept = (kind === 'xlsx') ? '.xlsx,.xls' : '.json,application/json';
     inp.addEventListener('change', function () {
-      var f = inp.files && inp.files[0];
-      if (!f) return;
+      var f = inp.files && inp.files[0]; if (!f) return;
       if (kind === 'xlsx') areaReadExcel(f); else areaReadJSON(f);
     });
     inp.click();
@@ -10444,7 +10532,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
   /* ── 엑셀 읽기 → 미리보기 ── */
   var AREA_HEADER_MAP = {
     '번호': 'number', '시도': 'sido', '시군구': 'sigungu', '읍면동': 'eupmyeondong',
-    '리동': 'ridong', '리': 'ridong', '동': 'ridong', '층': 'floor', '조사구': 'josagu',
+    '리동': 'ridong', '층': 'floor', '조사구': 'josagu',
     '초입주소': 'address1', '주소1': 'address1', '주소': 'address1', '비고': 'note',
     '위도': 'latitude', 'lat': 'latitude', 'latitude': 'latitude',
     '경도': 'longitude', 'lng': 'longitude', 'lon': 'longitude', 'longitude': 'longitude'
@@ -10456,8 +10544,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
       reader.onload = function (e) {
         try {
           var wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
-          var ws = wb.Sheets[wb.SheetNames[0]];
-          var aoa = XLSX.utils.sheet_to_json(ws, { header: 1, raw: false, defval: '' });
+          var aoa = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, raw: false, defval: '' });
           var rows = areaParseAOA(aoa);
           showToast('', 1, 'info');
           if (!rows.length) { showToast('읽을 자료가 없습니다.\n양식의 헤더(번호·시도·시군구…)를 확인하세요.', 5000); return; }
@@ -10465,22 +10552,14 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
         } catch (err) { console.error(err); showToast('엑셀을 읽지 못했습니다.\n' + (err.message || ''), 5000); }
       };
       reader.readAsArrayBuffer(file);
-    }).catch(function () {
-      showToast('엑셀 라이브러리를 불러오지 못했습니다.\n인터넷 연결을 확인하세요.', 5000);
-    });
+    }).catch(function () { showToast('엑셀 라이브러리를 불러오지 못했습니다.\n인터넷 연결을 확인하세요.', 5000); });
   }
-  /* 헤더 행 찾기(‘번호’+‘시도’ 포함) 후 열↔필드 매핑 */
   function areaParseAOA(aoa) {
     var hRow = -1, colMap = null;
     for (var r = 0; r < Math.min(aoa.length, 10); r++) {
       var row = aoa[r] || [];
-      var m = {}, hit = 0;
-      row.forEach(function (cell, c) {
-        var key = String(cell || '').trim();
-        if (AREA_HEADER_MAP[key]) { m[AREA_HEADER_MAP[key]] = c; hit++; }
-      });
+      var m = {}; row.forEach(function (cell, c) { var key = String(cell || '').trim(); if (AREA_HEADER_MAP[key] != null) m[AREA_HEADER_MAP[key]] = c; });
       if (m.sido != null && m.josagu != null) { hRow = r; colMap = m; break; }
-      if (hit >= 4 && m.sido != null) { hRow = r; colMap = m; break; }
     }
     if (hRow < 0) return [];
     var out = [];
@@ -10488,23 +10567,24 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
       var row = aoa[i] || [];
       var get = function (field) { var c = colMap[field]; return (c == null) ? '' : String(row[c] == null ? '' : row[c]).trim(); };
       var rec = {
-        number: get('number'), sido: get('sido'), sigungu: get('sigungu'),
-        eupmyeondong: get('eupmyeondong'), ridong: get('ridong'),
-        floor: get('floor'), josagu: get('josagu'), address1: get('address1'),
+        number: get('number'), sido: get('sido'), sigungu: get('sigungu'), eupmyeondong: get('eupmyeondong'),
+        ridong: get('ridong'), floor: get('floor'), josagu: get('josagu'), address1: get('address1'),
         note: get('note'), latitude: get('latitude'), longitude: get('longitude')
       };
-      if (!rec.sido && !rec.sigungu && !rec.eupmyeondong && !rec.josagu && !rec.address1) continue;  /* 빈 행 */
+      if (!rec.sido && !rec.sigungu && !rec.eupmyeondong && !rec.josagu && !rec.address1) continue;
       out.push(rec);
     }
     return out;
   }
 
-  /* ── JSON 읽기 → 미리보기 ── */
+  /* ── JSON 읽기(암호화 자동복호화) → 미리보기 ── */
   function areaReadJSON(file) {
     var reader = new FileReader();
     reader.onload = function (e) {
-      try {
-        var data = JSON.parse(e.target.result);
+      var raw;
+      try { raw = JSON.parse(e.target.result); } catch (err) { showToast('JSON을 읽지 못했습니다.', 4000); return; }
+      var parse = (window._tenarParseImport) ? window._tenarParseImport(raw, AREA_APP) : Promise.resolve(raw);
+      parse.then(function (data) {
         var list = Array.isArray(data) ? data : (data.plots || data.items || []);
         var rows = list.map(function (p) {
           return {
@@ -10516,27 +10596,30 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
         });
         if (!rows.length) { showToast('JSON에 조사구 자료가 없습니다.', 4000); return; }
         areaOpenImportPreview(rows, file.name);
-      } catch (err) { showToast('JSON을 읽지 못했습니다.', 4000); }
+      }).catch(function (er) {
+        if (er && er.code === 'CANCELLED') return;
+        if (er && er.code === 'APP_MISMATCH') { showToast('다른 앱의 암호화 파일입니다. (' + er.app + ')', 4500); return; }
+        showToast('JSON을 읽지 못했습니다. (암호 또는 형식 확인)', 4500);
+      });
     };
     reader.readAsText(file);
   }
 
   /* ── 검증 ── */
   function areaValidate(rec) {
-    var reqOk = rec.sido && rec.sigungu && rec.eupmyeondong && (rec.floor !== '' && rec.floor != null) && (rec.josagu !== '' && rec.josagu != null) && rec.address1;
+    var reqOk = rec.sido && rec.sigungu && rec.eupmyeondong && (rec.josagu !== '' && rec.josagu != null) && (rec.address1 || (rec.latitude !== '' && rec.longitude !== ''));
     var latN = (rec.latitude === '' || rec.latitude == null) ? null : Number(rec.latitude);
     var lngN = (rec.longitude === '' || rec.longitude == null) ? null : Number(rec.longitude);
-    var badCoord = (rec.latitude !== '' && rec.latitude != null && !isFinite(latN)) ||
-                   (rec.longitude !== '' && rec.longitude != null && !isFinite(lngN));
+    var badCoord = (rec.latitude !== '' && rec.latitude != null && !isFinite(latN)) || (rec.longitude !== '' && rec.longitude != null && !isFinite(lngN));
     if (!reqOk || badCoord) return 'error';
-    if (latN != null && lngN != null && isFinite(latN) && isFinite(lngN)) return 'ok';
-    return 'warn';   /* 주소는 있으나 좌표 없음 → 확인필요(가져온 뒤 좌표변환) */
+    if (areaCoordOk(latN, lngN)) return 'ok';
+    return 'warn';
   }
   function areaToPlot(rec) {
     var latN = Number(rec.latitude), lngN = Number(rec.longitude);
     return {
       id: areaUid(), number: parseInt(rec.number, 10) || 0,
-      sido: rec.sido, sigungu: rec.sigungu, eupmyeondong: rec.eupmyeondong,
+      sido: normalizeSido(rec.sido), sigungu: rec.sigungu, eupmyeondong: rec.eupmyeondong,
       ridong: deriveRidong(rec.address1, rec.ridong), floor: rec.floor + '', josagu: rec.josagu + '',
       address1: rec.address1, note: rec.note || '',
       latitude: (rec.latitude !== '' && areaCoordOk(latN, lngN)) ? latN : NaN,
@@ -10548,37 +10631,29 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
   /* ── 가져오기 미리보기 팝업 ── */
   function areaOpenImportPreview(rows, filename) {
     var valid = rows.map(function (r) { return { rec: r, status: areaValidate(r), checked: false }; });
-    valid.forEach(function (v) { v.checked = (v.status !== 'error'); });   /* 기본: 오류 외 선택 */
-    _areaImport = { filename: filename, rows: valid, filter: { sido: '', sigungu: '', eupmyeondong: '', ridong: '', floor: '', josagu: '' } };
+    valid.forEach(function (v) { v.checked = (v.status !== 'error'); });
+    _areaImport = { filename: filename, rows: valid, filter: { sido: '', sigungu: '', eupmyeondong: '' } };
 
-    var ov = document.createElement('div');
-    ov.id = 'areaImportOverlay';
+    var ov = document.createElement('div'); ov.id = 'areaImportOverlay';
     ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2147483000;display:flex;align-items:flex-end;justify-content:center;';
     var modal = document.createElement('div');
     modal.style.cssText = 'background:#fff;width:100%;max-width:640px;max-height:92vh;border-radius:16px 16px 0 0;display:flex;flex-direction:column;overflow:hidden;';
     ov.appendChild(modal);
-    /* 바깥 클릭으로 닫히지 않게 (실수 방지) */
-    ov.addEventListener('click', function (e) { if (e.target === ov) { /* 무시 */ } });
 
-    var cnt = { ok: 0, warn: 0, error: 0 };
-    valid.forEach(function (v) { cnt[v.status]++; });
-
+    var cnt = { ok: 0, warn: 0, error: 0 }; valid.forEach(function (v) { cnt[v.status]++; });
     var head = document.createElement('div');
     head.style.cssText = 'padding:14px 16px 8px;border-bottom:1px solid #eee;position:relative;';
     head.innerHTML =
       '<button id="areaImpX" style="position:absolute;top:10px;right:12px;width:34px;height:34px;border:none;background:#f1f1f4;border-radius:50%;font-size:18px;cursor:pointer;">×</button>' +
       '<div style="font-size:15px;font-weight:800;color:#14612f;">재배면적 조사구 가져오기</div>' +
       '<div style="font-size:12px;color:#888;margin-top:2px;">파일: ' + escapeHtml(filename) + '</div>' +
-      '<div style="font-size:12.5px;margin-top:6px;">전체 <b>' + rows.length + '</b>건 · ' +
-        '<span style="color:#14612f;">정상 ' + cnt.ok + '</span> · ' +
-        '<span style="color:#b8860b;">확인 필요 ' + cnt.warn + '</span> · ' +
-        '<span style="color:#c0392b;">오류 ' + cnt.error + '</span></div>';
+      '<div style="font-size:12.5px;margin-top:6px;">전체 <b>' + rows.length + '</b>건 · <span style="color:#14612f;">정상 ' + cnt.ok + '</span> · <span style="color:#b8860b;">확인 필요 ' + cnt.warn + '</span> · <span style="color:#c0392b;">오류 ' + cnt.error + '</span></div>' +
+      '<div style="font-size:11px;color:#999;margin-top:2px;">확인 필요 = 좌표는 없지만 주소로 지도표시 가능</div>';
     modal.appendChild(head);
 
-    /* 필터 */
     var filterBar = document.createElement('div');
     filterBar.style.cssText = 'display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;padding:8px 12px;border-bottom:1px solid #f0f0f4;';
-    [['sido', '시도'], ['sigungu', '시군구'], ['eupmyeondong', '읍면동'], ['ridong', '리동'], ['floor', '층'], ['josagu', '조사구']].forEach(function (f) {
+    [['sido', '시도'], ['sigungu', '시군구'], ['eupmyeondong', '읍면동']].forEach(function (f) {
       var sel = document.createElement('select'); sel.dataset.level = f[0];
       sel.style.cssText = 'padding:6px 3px;border:1px solid #ddd;border-radius:7px;font-size:12px;background:#fff;';
       sel.addEventListener('change', function () { _areaImport.filter[f[0]] = sel.value; areaImpRenderList(); });
@@ -10586,17 +10661,12 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     });
     modal.appendChild(filterBar);
 
-    /* 선택 요약 + 전체선택 */
     var selBar = document.createElement('div');
     selBar.style.cssText = 'display:flex;align-items:center;gap:8px;padding:8px 14px;border-bottom:1px solid #f0f0f4;font-size:12.5px;';
-    selBar.innerHTML =
-      '<label style="display:flex;align-items:center;gap:6px;font-weight:700;cursor:pointer;">' +
-      '<input type="checkbox" id="areaImpAll" style="width:17px;height:17px;"> 현재 목록 전체 선택</label>' +
-      '<span id="areaImpCounts" style="margin-left:auto;color:#666;"></span>';
+    selBar.innerHTML = '<label style="display:flex;align-items:center;gap:6px;font-weight:700;cursor:pointer;"><input type="checkbox" id="areaImpAll" style="width:17px;height:17px;"> 현재 목록 전체 선택</label><span id="areaImpCounts" style="margin-left:auto;color:#666;"></span>';
     modal.appendChild(selBar);
 
-    var listBox = document.createElement('div');
-    listBox.id = 'areaImpList';
+    var listBox = document.createElement('div'); listBox.id = 'areaImpList';
     listBox.style.cssText = 'flex:1;overflow-y:auto;padding:4px 8px;';
     modal.appendChild(listBox);
 
@@ -10618,12 +10688,9 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     bRep.addEventListener('click', function () { areaDoImport('replace', close); });
 
     document.body.appendChild(ov);
-    areaImpSyncFilterOptions();
-    areaImpRenderList();
-
-    var allBox = document.getElementById('areaImpAll');
-    allBox.addEventListener('change', function () {
-      var shown = areaImpShownRows();
+    areaImpSyncFilterOptions(); areaImpRenderList();
+    document.getElementById('areaImpAll').addEventListener('change', function () {
+      var allBox = this, shown = areaImpShownRows();
       shown.forEach(function (v) { if (v.status !== 'error') v.checked = allBox.checked; });
       areaImpRenderList();
     });
@@ -10633,137 +10700,106 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     var f = _areaImport.filter;
     return _areaImport.rows.filter(function (v) {
       var r = v.rec;
-      if (f.sido && r.sido !== f.sido) return false;
+      if (f.sido && normalizeSido(r.sido) !== f.sido) return false;
       if (f.sigungu && r.sigungu !== f.sigungu) return false;
       if (f.eupmyeondong && r.eupmyeondong !== f.eupmyeondong) return false;
-      if (f.ridong && deriveRidong(r.address1, r.ridong) !== f.ridong) return false;
-      if (f.floor && (r.floor + '') !== f.floor) return false;
-      if (f.josagu && (r.josagu + '') !== f.josagu) return false;
       return true;
     });
   }
   function areaImpSyncFilterOptions() {
     var overlay = document.getElementById('areaImportOverlay'); if (!overlay) return;
-    var levels = ['sido', 'sigungu', 'eupmyeondong', 'ridong', 'floor', 'josagu'];
-    var labels = { sido: '시도', sigungu: '시군구', eupmyeondong: '읍면동', ridong: '리동', floor: '층', josagu: '조사구' };
-    var sels = overlay.querySelectorAll('select[data-level]');
-    sels.forEach(function (sel) {
+    var labels = { sido: '시도', sigungu: '시군구', eupmyeondong: '읍면동' };
+    Array.prototype.forEach.call(overlay.querySelectorAll('select[data-level]'), function (sel) {
       var lv = sel.dataset.level;
-      var vals = areaUniq(_areaImport.rows.map(function (v) {
-        return (lv === 'ridong') ? deriveRidong(v.rec.address1, v.rec.ridong) : v.rec[lv];
-      }));
+      var vals = areaUniq(_areaImport.rows.map(function (v) { return lv === 'sido' ? normalizeSido(v.rec.sido) : v.rec[lv]; }));
       vals.sort(function (a, b) { var na = parseFloat(a), nb = parseFloat(b); if (isFinite(na) && isFinite(nb)) return na - nb; return a < b ? -1 : 1; });
       var cur = _areaImport.filter[lv] || '';
-      sel.innerHTML = '';
-      sel.appendChild(new Option('전체 ' + labels[lv], ''));
+      sel.innerHTML = ''; sel.appendChild(new Option('전체 ' + labels[lv], ''));
       vals.forEach(function (v) { sel.appendChild(new Option(v, v)); });
       sel.value = cur;
     });
   }
   function areaImpRenderList() {
     var box = document.getElementById('areaImpList'); if (!box) return;
-    var shown = areaImpShownRows();
-    box.innerHTML = '';
+    var shown = areaImpShownRows(); box.innerHTML = '';
     shown.forEach(function (v) {
       var r = v.rec;
       var row = document.createElement('label');
       var bg = v.status === 'error' ? '#fdecec' : (v.status === 'warn' ? '#fef8e7' : '#f4faf6');
-      row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:8px 8px;border-radius:8px;margin:3px 0;background:' + bg + ';font-size:12.5px;' + (v.status === 'error' ? 'opacity:.75;' : 'cursor:pointer;');
+      row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:8px;border-radius:8px;margin:3px 0;background:' + bg + ';font-size:12.5px;' + (v.status === 'error' ? 'opacity:.75;' : 'cursor:pointer;');
       var cb = document.createElement('input'); cb.type = 'checkbox'; cb.style.cssText = 'width:17px;height:17px;flex:0 0 auto;';
       cb.checked = v.checked; cb.disabled = (v.status === 'error');
       cb.addEventListener('change', function () { v.checked = cb.checked; areaImpUpdateCounts(); });
-      var badge = v.status === 'error' ? '⚠' : (v.status === 'warn' ? '❓' : '☑');
-      var path = [r.sido, r.sigungu, r.eupmyeondong, deriveRidong(r.address1, r.ridong)].filter(Boolean).join(' ');
+      var path = [normalizeSido(r.sido), r.sigungu, r.eupmyeondong].filter(Boolean).join(' ');
       var txt = document.createElement('div'); txt.style.cssText = 'flex:1;min-width:0;';
-      txt.innerHTML = '<span style="font-weight:700;">' + escapeHtml((r.number || '') + '. ') + escapeHtml(path) + '</span>' +
-        ' <span style="color:#7c2d12;font-weight:700;">' + escapeHtml((r.floor !== '' ? r.floor + '층' : '') + ' ' + (r.josagu !== '' ? r.josagu + '조사구' : '')).trim() + '</span>' +
+      txt.innerHTML = '<span style="font-weight:700;">' + escapeHtml((r.number || '') + '. ') + escapeHtml(path) + '</span> <span style="color:#7c2d12;font-weight:700;">' + escapeHtml(((r.floor !== '' ? r.floor + '층' : '') + ' ' + (r.josagu !== '' ? r.josagu + '조사구' : '')).trim()) + '</span>' +
         (r.address1 ? '<br><span style="color:#888;">' + escapeHtml(r.address1) + '</span>' : '') +
-        (v.status === 'error' ? '<br><span style="color:#c0392b;font-size:11px;">필수값 누락/형식 오류 — 선택 불가</span>' :
-         v.status === 'warn' ? '<br><span style="color:#b8860b;font-size:11px;">좌표 없음 — 가져온 뒤 주소로 좌표 변환</span>' : '');
-      row.appendChild(cb); row.appendChild(txt);
-      box.appendChild(row);
+        (v.status === 'error' ? '<br><span style="color:#c0392b;font-size:11px;">필수값 누락/형식 오류 — 선택 불가</span>' : v.status === 'warn' ? '<br><span style="color:#b8860b;font-size:11px;">좌표 없음 — 주소로 지도표시</span>' : '');
+      row.appendChild(cb); row.appendChild(txt); box.appendChild(row);
     });
     if (!shown.length) box.innerHTML = '<div style="padding:16px;color:#999;text-align:center;font-size:12.5px;">조건에 맞는 자료가 없습니다.</div>';
-    areaImpSyncFilterOptions();
-    areaImpUpdateCounts();
+    areaImpSyncFilterOptions(); areaImpUpdateCounts();
   }
   function areaImpUpdateCounts() {
     if (!_areaImport) return;
-    var total = _areaImport.rows.length;
     var shown = areaImpShownRows();
     var selCount = _areaImport.rows.filter(function (v) { return v.checked; }).length;
     var c = document.getElementById('areaImpCounts');
-    if (c) c.textContent = '전체 ' + total + ' / 표시 ' + shown.length + ' / 선택 ' + selCount;
+    if (c) c.textContent = '전체 ' + _areaImport.rows.length + ' / 표시 ' + shown.length + ' / 선택 ' + selCount;
     var allBox = document.getElementById('areaImpAll');
-    if (allBox) {
-      var selectable = shown.filter(function (v) { return v.status !== 'error'; });
-      var allChecked = selectable.length > 0 && selectable.every(function (v) { return v.checked; });
-      allBox.checked = allChecked;
-    }
+    if (allBox) { var sel = shown.filter(function (v) { return v.status !== 'error'; }); allBox.checked = sel.length > 0 && sel.every(function (v) { return v.checked; }); }
   }
 
-  /* ── 추가 / 교체 실행 ── */
+  /* ── 추가 / 교체 ── */
   function areaDoImport(mode, closeFn) {
     var selected = _areaImport.rows.filter(function (v) { return v.checked && v.status !== 'error'; });
     if (!selected.length) { showToast('추가할 자료를 선택해 주세요.', 3000, 'info'); return; }
     var newPlots = selected.map(function (v) { return areaToPlot(v.rec); });
-
     if (mode === 'add') {
-      /* [v64] 번호 순서로 삽입 — 기존은 정수 키, 가져온 자료는 (목표번호-0.5+파일순서)로
-         기존 같은 번호 "앞"에 들어가게 하고, 같은 목표번호끼리는 파일 순서를 유지한다. */
       var arr = getAreaPlots();
       var merged = arr.map(function (p, i) { return { p: p, key: (i + 1) }; });
       newPlots.forEach(function (p, i) {
-        var target = parseInt(p.number, 10);
-        if (!isFinite(target) || target < 1) target = arr.length + 1;
+        var target = parseInt(p.number, 10); if (!isFinite(target) || target < 1) target = arr.length + 1;
         merged.push({ p: p, key: (target - 0.5) + i * 1e-6 });
       });
       merged.sort(function (a, b) { return a.key - b.key; });
       arr = merged.map(function (m) { return m.p; });
-      areaRenumber(arr);
-      setAreaPlots(arr);
+      areaRenumber(arr); setAreaPlots(arr);
       showToast('조사구 ' + newPlots.length + '건을 추가했습니다. (총 ' + arr.length + '건)', 3500, 'success');
       _afterImport(closeFn);
     } else {
       var prevCount = getAreaPlots().length;
-      if (!window.confirm('기존 작물재배조사구 자료가 모두 삭제되고\n선택한 가져오기 자료(' + newPlots.length + '건)로 교체됩니다.\n\n계속하시겠습니까?')) return;
+      if (!window.confirm('기존 작물재배조사구 자료가 모두 삭제되고\n선택한 자료(' + newPlots.length + '건)로 교체됩니다.\n\n계속하시겠습니까?')) return;
       var backup = getAreaPlots();
       try {
-        areaRenumber(newPlots);
-        setAreaPlots(newPlots);
+        areaRenumber(newPlots); setAreaPlots(newPlots);
         if (getAreaPlots().length !== newPlots.length) throw new Error('save-verify');
-        showToast('작물재배조사구 자료가 교체되었습니다.\n기존 ' + prevCount + '건 → 새 ' + newPlots.length + '건', 4200, 'success');
+        showToast('교체되었습니다.\n기존 ' + prevCount + '건 → 새 ' + newPlots.length + '건', 4200, 'success');
         _afterImport(closeFn);
-      } catch (err) {
-        try { setAreaPlots(backup); } catch (e2) {}
-        showToast('교체 중 오류가 발생해 기존 자료를 복원했습니다.', 5000);
-      }
+      } catch (err) { try { setAreaPlots(backup); } catch (e2) {} showToast('교체 중 오류가 발생해 기존 자료를 복원했습니다.', 5000); }
     }
   }
   function _afterImport(closeFn) {
-    _areaSel = { sido: '', sigungu: '', eupmyeondong: '', ridong: '', floor: '', josagu: '' };
-    _areaSelectedId = null;
+    _areaSel = { sido: '', sigungu: '', eupmyeondong: '' }; _areaSelectedId = null;
     if (closeFn) closeFn();
-    try { areaRefreshTree(); } catch (e) {}
-    areaApplyVisibility();
-    setTimeout(areaGeocodeMissing, 400);   /* 좌표 없는 건 배경 변환 */
+    try { areaRefreshTree(); } catch (e) {} areaApplyVisibility();
+    setTimeout(areaGeocodeMissing, 400);
   }
 
   /* ── 내보내기 ── */
-  var AREA_EXPORT_HEADERS = ['번호', '시도', '시군구', '읍면동', '리동', '층', '조사구', '초입주소', '비고', '위도', '경도'];
+  var AREA_EXPORT_HEADERS = ['번호', '시도', '시군구', '읍면동', '층', '조사구', '초입주소', '위도', '경도', '비고'];
   function areaExportExcel() {
     var arr = getAreaPlots();
     if (!arr.length) { showToast('내보낼 조사구가 없습니다.', 3000, 'info'); return; }
-    showToast('엑셀 만드는 중…', 0, 'info');
+    showToast('엑셀은 열람·편집용으로 암호 없이 저장됩니다.\n(암호가 필요하면 「JSON 내보내기(암호)」를 쓰세요)', 3500, 'info');
     ensureXLSX().then(function (XLSX) {
       var aoa = [['작물재배 조사구'], [], AREA_EXPORT_HEADERS];
       arr.forEach(function (p) {
-        aoa.push([p.number, p.sido, p.sigungu, p.eupmyeondong, p.ridong || '', p.floor, p.josagu, p.address1 || '', p.note || '',
-          isFinite(p.latitude) ? p.latitude : '', isFinite(p.longitude) ? p.longitude : '']);
+        aoa.push([p.number, p.sido, p.sigungu, p.eupmyeondong, p.floor, p.josagu, p.address1 || '',
+          isFinite(p.latitude) ? p.latitude : '', isFinite(p.longitude) ? p.longitude : '', p.note || '']);
       });
       var ws = XLSX.utils.aoa_to_sheet(aoa);
-      var wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, '조사구');
+      var wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, '조사구');
       XLSX.writeFile(wb, 'nongup_area_josagu_export_' + kstNowStr().slice(0, 10) + '.xlsx');
       showToast('엑셀을 내보냈습니다.', 2500, 'success');
     }).catch(function () { showToast('엑셀 라이브러리를 불러오지 못했습니다.', 4500); });
@@ -10771,22 +10807,36 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
   function areaExportJSON() {
     var arr = getAreaPlots();
     if (!arr.length) { showToast('내보낼 조사구가 없습니다.', 3000, 'info'); return; }
-    var blob = new Blob([JSON.stringify({ type: 'tenar-area-plots', version: 64, exportedAt: kstNowStr(), plots: arr }, null, 2)], { type: 'application/json' });
-    var a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'nongup_area_josagu_' + kstNowStr().slice(0, 10) + '.json';
-    a.click();
-    setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
-    showToast('JSON을 내보냈습니다.', 2500, 'success');
+    var dataObj = { type: 'tenar-area-plots', version: 66, exportedAt: kstNowStr(), plots: arr };
+    var build = (window._tenarBuildExport) ? window._tenarBuildExport(dataObj, AREA_APP) : Promise.resolve({ text: JSON.stringify(dataObj, null, 2), encrypted: false });
+    build.then(function (res) {
+      if (!res) return;   /* 취소 */
+      var blob = new Blob([res.text], { type: 'application/json' });
+      var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+      a.download = 'nongup_area_josagu_' + (res.encrypted ? 'enc_' : '') + kstNowStr().slice(0, 10) + '.json';
+      a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+      showToast(res.encrypted ? 'JSON을 암호화해 내보냈습니다.' : 'JSON을 내보냈습니다.', 2800, 'success');
+    });
   }
 
-  /* ── 초기화 ── */
+  /* ── 초기화(마이그레이션) ── */
+  function areaMigrate() {
+    var arr = getAreaPlots(); var changed = false;
+    arr.forEach(function (p) { var ns = normalizeSido(p.sido); if (ns !== p.sido) { p.sido = ns; changed = true; } });
+    if (changed) setAreaPlots(arr);
+  }
   function areaPlotsInit() {
     areaEnsureBadge();
+    areaMigrate();
     areaUpdateSource();
     areaUpdateBadge();
-    var n = getAreaPlots().length;
-    if (n) setTimeout(areaGeocodeMissing, 1500);   /* 앱 시작 시 좌표 없는 건 배경 변환 */
+    /* [v66] 좌표 없는 건 앱 시작 시 배경 좌표변환 */
+    if (getAreaPlots().length) setTimeout(areaGeocodeMissing, 1500);
+    /* [v66] 지속저장 보강 : 화면 이탈 시 저장 재확인(암호화 flush 유도) */
+    try {
+      window.addEventListener('pagehide', function () { try { setAreaPlots(getAreaPlots()); } catch (e) {} });
+      document.addEventListener('visibilitychange', function () { if (document.hidden) { try { setAreaPlots(getAreaPlots()); } catch (e) {} } });
+    } catch (e) {}
   }
 
   /* 디버그/연동용 */
