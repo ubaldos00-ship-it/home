@@ -1,4 +1,5 @@
-<!-- map_v60.html (v60 · TENAR V1.4) · 저장: 2026-07-27 17:57 KST · [v60] ①토지이용계획도 라벨을 필지 용도(공원·공동주택·녹지 등) 대신 지구명(zonename)만, 지구당 1개·화면 최대 3개로 표시(기간은 브이월드 데이터에 없어 생략) ②포구도구·측정도구 패널 z-index를 검색창(15)보다 위(16/17)로 올려 검색창 아래로 안 숨게 ③지도 출처 정보 팝업 하단에 초기화 3종 추가 — 설정 초기화(레이어·저장핀 표시 기본값·저장자료 유지)·즐겨찾기 초기화(저장목록+연결자료 삭제, 🔒잠금 유지)·전체 초기화(둘 다) -->
+<!-- map_v61.html (v61 · TENAR V1.4) · 저장: 2026-07-28 10:26 KST · [v61] 측정도구 개편 — ①필지선택 이모지 삭제+포구도구식 「선택 취소」 버튼 추가 ②면적 버튼은 필지선택 중에도 초록 유지(면적 측정 중 표시) ③잠금→「완료」로 이름변경·「추가측정」과 위치 교환·완료ON시 추가측정도 비활성 ④「새 면적」→「추가측정」 ⑤⑥면적=재배구역(계산 동일) 확인 후 재배구역 버튼 삭제 ⑦「새 조사 시작」을 저장/즐겨찾기 아래로 이동 ⑧측정결과 기본 열림 ⑨포구도구 「완료」를 「새로그리기」(←새 포구 선정) 아래로 이동 -->
+<!-- (이전)  map_v60.html (v60 · TENAR V1.4) · 저장: 2026-07-27 17:57 KST · [v60] ①토지이용계획도 라벨을 필지 용도(공원·공동주택·녹지 등) 대신 지구명(zonename)만, 지구당 1개·화면 최대 3개로 표시(기간은 브이월드 데이터에 없어 생략) ②포구도구·측정도구 패널 z-index를 검색창(15)보다 위(16/17)로 올려 검색창 아래로 안 숨게 ③지도 출처 정보 팝업 하단에 초기화 3종 추가 — 설정 초기화(레이어·저장핀 표시 기본값·저장자료 유지)·즐겨찾기 초기화(저장목록+연결자료 삭제, 🔒잠금 유지)·전체 초기화(둘 다) -->
 <!-- (이전)  map_v59.html (v59 · TENAR V1.4) · 저장: 2026-07-27 17:20 KST · [v59] ①토지이용계획도(LT_C_LHBLPN) 켜면 계획구역명(blocktype)·사업지구(zonename) 라벨 표시 ②색상 범례 팝업 — 구분 제목 없애고 세로 구분선(│)으로 구분(가로로 짧게) ③하단 정보줄에 축척(1:N)+자(눈금 막대, 확대·축소 시 실시간)와 서버 연결 배지를 회전각·레벨 옆으로 이동 ④저장핀 표시에 전체표시 버튼(핀·작물·이랑·면적·A/B 모두 ON, 다시 누르면 이전값) ⑤하단 팝업 열린 상태에서 지도 터치하면 팝업이 닫힘(입력폼 시트는 제외) -->
 <!-- (이전)  map_v58.html (v58 · TENAR V1.4) · 저장: 2026-07-27 10:05 KST · [v58] ①토지이용계획(부모) 아래 자식 「토지이용계획도」(LT_C_LHBLPN · LH 택지개발계획) 추가 — 시트에서 들여쓰기 표시 ②「지형도」(LT_L_N3A0020000 · 도로중심선) 추가 ③레이어 순서 지적도→토지이용계획→토지이용계획도→농업진흥지역→지형도→개별공시지가→리→읍면동→시군구→시도(하이브리드는 맨 끝) ④보호구역(상수원, LT_C_UO101) 삭제 -->
 <!-- (이전)  map_v57.html (v57 · TENAR V1.4) · 저장: 2026-07-27 07:14 KST · [v57] ①미사용 레이어 5종(개발제한·문화재·수변·자연공원·산림보호) 삭제 ②레이어 순서 지적도→농업진흥지역→토지이용계획→하이브리드→개별공시지가→보호구역→행정경계, 농업진흥·개별공시지가 색상 범례를 토지이용계획처럼 상단 통합 범례 패널(최소화·드래그 이동)에 섹션으로 표시 ③개별공시지가 켜고 확대16↑ 시 필지에 금액(원/㎡) 라벨 표시 — 이미 받은 데이터 재사용(추가 서버요청 없음)·최대 120개 제한 -->
@@ -1249,10 +1250,9 @@ TenarSecureStore.init('map',
       </div>
 
       <div class="tp-sec">⑤ 완료</div>
-      <button class="tool-btn one-line" type="button" id="fpTFinish" style="width:100%">✓ 완료</button>
-
-      <!-- [v48-1] 완료(잠금) 중에도 다음 필지로 넘어갈 수 있는 버튼 -->
-      <button class="tool-btn one-line" type="button" id="fpTNewSurvey" style="width:100%;margin-top:4px;">＋ 새 포구 선정</button>
+      <!-- [v61-9] 새로그리기 → 완료 순서 -->
+      <button class="tool-btn one-line" type="button" id="fpTNewSurvey" style="width:100%">＋ 새로그리기</button>
+      <button class="tool-btn one-line" type="button" id="fpTFinish" style="width:100%;margin-top:4px;">✓ 완료</button>
       <div class="tp-sec">⑤ 저장 / 즐겨찾기</div>
       <div class="tp-grid">
         <button class="tool-btn one-line" type="button" id="fpSaveBtn2"><span class="em">💾</span>저장</button>
@@ -1278,13 +1278,13 @@ TenarSecureStore.init('map',
       <button class="tool-btn one-line" type="button" id="btnMeasSetup" style="width:100%">지역·작물 선택</button>
       <div class="tp-sec">① 측정 종류</div>
       <div id="toolBtns">
-        <button class="tool-btn" type="button" id="btnField">▱ 면적</button>
-        <button class="tool-btn" type="button" id="btnDistance">↔ 길이</button>
-        <!-- [v17] 필지선택·재배구역은 포구도구로 옮겼지만, 기존 기능을 지우지 않고
-             측정도구에서도 그대로 쓸 수 있게 남겨 둔다 -->
-        <button class="tool-btn" type="button" id="btnParcelPick">▣ 필지선택</button>
-        <button class="tool-btn" type="button" id="btnCrop">🌾 재배구역</button>
+        <button class="tool-btn" type="button" id="btnField">면적</button>
+        <button class="tool-btn" type="button" id="btnDistance">길이</button>
+        <!-- [v61-5] 재배구역(btnCrop) 삭제 — 면적과 계산이 동일해서 제거 -->
+        <button class="tool-btn" type="button" id="btnParcelPick">필지선택</button>
       </div>
+      <!-- [v61-1] 포구도구처럼 필지선택 취소 -->
+      <button class="tool-btn one-line danger" type="button" id="btnCancelArea" style="width:100%;margin-top:4px;">✕ 선택 취소</button>
       <div class="tp-editbox">
         <div class="tp-cap">편집</div>
         <div class="tp-grid">
@@ -1296,20 +1296,20 @@ TenarSecureStore.init('map',
       </div>
       <div class="tp-sec">② 계속 측정</div>
       <div class="tp-grid">
-        <button class="tool-btn one-line" type="button" id="btnFinish">🔒 잠금</button>
-        <button class="tool-btn one-line" type="button" id="btnNew">＋ 새 면적</button>
+        <button class="tool-btn one-line" type="button" id="btnNew">＋ 추가측정</button>
+        <button class="tool-btn one-line" type="button" id="btnFinish">✓ 완료</button>
       </div>
-      <!-- [v48-1] 잠금 중에도 다음 필지로 넘어갈 수 있는 버튼 -->
-      <button class="tool-btn one-line" type="button" id="btnNewSurvey" style="width:100%;margin-top:4px;">＋ 새 조사 시작</button>
-      <div class="tp-sec">③ 저장 / 목록</div>
+      <div class="tp-sec">③ 저장 / 즐겨찾기</div>
       <div class="tp-grid">
         <button class="tool-btn one-line" type="button" id="btnSaveMeas"><span class="em">💾</span>저장</button>
         <button class="tool-btn one-line" type="button" id="btnMeasList"><span class="em">⭐</span>즐겨찾기</button>
       </div>
+      <!-- [v61-7] 새 조사 시작을 저장/즐겨찾기 아래로 이동 -->
+      <button class="tool-btn one-line" type="button" id="btnNewSurvey" style="width:100%;margin-top:4px;">＋ 새 조사 시작</button>
       <div class="tp-sec">④ 조사표 전송</div>
       <button class="tool-btn one-line" type="button" id="btnSendArea" style="width:100%"><span class="em">📤</span>조사표 전송</button>
       <div id="resultToggle"><span>측정 결과</span><span id="resultArrow">▶</span></div>
-      <div id="resultBox" class="collapsed"><span class="res-empty">측정 결과가 없습니다.</span></div>
+      <div id="resultBox"><span class="res-empty">측정 결과가 없습니다.</span></div>
     </div>
   </div>
 
@@ -5492,13 +5492,13 @@ TenarSecureStore.init('map',
     var s = surveyMeasureState;
     s.mode = mode;
     s.isEditing = (mode === 'edit');
-    document.getElementById('btnField').classList.toggle('active', mode === 'polygon');
+    /* [v61-2] 면적 버튼은 자유그리기(polygon)뿐 아니라 필지선택(parcelPick) 중에도
+       초록 유지 — "면적 측정 중"임을 계속 표시한다 */
+    document.getElementById('btnField').classList.toggle('active', mode === 'polygon' || mode === 'parcelPick');
     document.getElementById('btnDistance').classList.toggle('active', mode === 'distance');
     document.getElementById('btnEdit').classList.toggle('active', mode === 'edit');
-    /* [v14] 새 모드 버튼 활성 표시 */
-    var _bp = document.getElementById('btnParcelPick'), _bc = document.getElementById('btnCrop');
-    if (_bp) { _bp.classList.toggle('active', mode === 'parcelPick'); _bp.textContent = (mode === 'parcelPick') ? '▣ 필지선택 ON' : '▣ 필지선택'; }
-    if (_bc) { _bc.classList.toggle('active', mode === 'cropBoundary'); _bc.textContent = (mode === 'cropBoundary') ? '🌾 재배구역 ON' : '🌾 재배구역'; }
+    var _bp = document.getElementById('btnParcelPick');
+    if (_bp) { _bp.classList.toggle('active', mode === 'parcelPick'); _bp.textContent = (mode === 'parcelPick') ? '필지선택 ON' : '필지선택'; }
     if (typeof fpSyncButtons === 'function') setTimeout(fpSyncButtons, 0);
     /* [v28-3] 수정 모드에서도 센터 십자를 보여 「센터추가」로 점을 찍을 수 있게 */
     crosshairEl.style.display = (mode === 'polygon' || mode === 'distance' ||
@@ -5668,7 +5668,7 @@ TenarSecureStore.init('map',
     s.isFieldComplete = true;
     setSurveyMode('none');
     updateFieldGeometry();
-    showToast((s.fieldKind === 'crop' ? '재배구역' : '필지') + ' 경계가 완성되었습니다.\n「새 면적」을 누르면 계속 측정할 수 있습니다.', 3500, 'success');
+    showToast('필지 경계가 완성되었습니다.\n「추가측정」을 누르면 계속 측정할 수 있습니다.', 3500, 'success');
     updateNewMeasureBtn();
     return true;
   }
@@ -5711,6 +5711,23 @@ TenarSecureStore.init('map',
     s.distancePoints = []; s.segmentDistances = []; s.totalDistanceM = 0;
     return true;
   }
+  /* [v61-1] 측정도구 선택취소 — 필지선택/그린 면적을 취소(완료된 저장 측정은 유지) */
+  function measCancelArea() {
+    var s = surveyMeasureState;
+    if (!s.fieldPoints.length && s.mode !== 'parcelPick') {
+      showToast('취소할 필지선택·그리기가 없습니다.', 2600, 'info'); return;
+    }
+    if (!window.confirm('선택한 필지·그리는 중인 경계를 취소하시겠습니까?\n(이미 완료·저장한 측정과 지역·작물 설정은 그대로 있습니다)')) return;
+    s.fieldPoints = []; s.fieldPolygon = null; s.fieldAreaM2 = 0; s.fieldPerimeterM = 0;
+    s.isFieldComplete = false; s.dragging = null; s.fieldKind = 'field';
+    if (typeof clearSelectedParcelHighlight === 'function') clearSelectedParcelHighlight();
+    setSurveyMode('none');
+    updateMeasurementSources();
+    updateNewMeasureBtn();
+    try { measSyncButtons(); } catch (e) {}
+    showToast('선택을 취소했습니다.', 2400, 'success');
+  }
+
   function startNewMeasurement() {
     var s = surveyMeasureState;
     /* 면적이 완성돼 있으면 새 면적, 거리가 있으면 새 거리로 이어간다 */
@@ -5744,14 +5761,14 @@ TenarSecureStore.init('map',
      잠금 중 사용 가능 : 저장 · 즐겨찾기 · 조사표 전송 · 잠금 ON(해제) */
   function measSyncButtons() {
     var lock = !!surveyMeasureState.locked;
-    ['btnReset', 'btnMeasSetup', 'btnField', 'btnDistance', 'btnParcelPick', 'btnCrop',
+    ['btnReset', 'btnMeasSetup', 'btnField', 'btnDistance', 'btnParcelPick', 'btnCancelArea',
      'btnUndo', 'btnRedo', 'btnEdit', 'btnCenterAdd', 'btnNew'].forEach(function (id) {
       var b = document.getElementById(id);
       if (b) b.disabled = lock;
     });
     if (!lock && typeof updateUndoRedoButtons === 'function') updateUndoRedoButtons();
     var f = document.getElementById('btnFinish');
-    if (f) { f.textContent = lock ? '🔒 잠금 ON' : '🔒 잠금'; f.classList.toggle('active', lock); }
+    if (f) { f.textContent = lock ? '✓ 완료 ON' : '✓ 완료'; f.classList.toggle('active', lock); }
   }
   /* [v46-9][v46-10] 잠금 토글 — 해제할 때는 확인창 */
   /* [v48-1] 「＋ 새 조사 시작」 — 잠금을 풀지 않고 다음 필지로 넘어간다.
@@ -7550,6 +7567,7 @@ TenarSecureStore.init('map',
 
   /* [v5-7] 측정 결과 접기/펴기 (기본 닫힘) */
   var resultArrow = document.getElementById('resultArrow');
+  resultArrow.textContent = '▼';   /* [v61-8] 기본 열림 */
   document.getElementById('resultToggle').addEventListener('click', function () {
     var closed = resultBox.classList.toggle('collapsed');
     resultArrow.textContent = closed ? '▶' : '▼';
@@ -7580,9 +7598,8 @@ TenarSecureStore.init('map',
   document.getElementById('btnParcelPick').addEventListener('click', function () {
     if (surveyMeasureState.mode === 'parcelPick') setSurveyMode('none'); else startParcelPick();
   });
-  document.getElementById('btnCrop').addEventListener('click', function () {
-    if (surveyMeasureState.mode === 'cropBoundary') setSurveyMode('none'); else startCropBoundary();
-  });
+  document.getElementById('btnCancelArea').addEventListener('click', measCancelArea);   /* [v61-1] */
+
   document.getElementById('btnEdit').addEventListener('click', function () {
     /* [v44-15] 수정 토글 — 켜져 있으면 끄고, 아니면 켠다 */
     if (surveyMeasureState.mode === 'edit') { finishMeasurementEdit(); }
