@@ -1,4 +1,5 @@
-<!-- map_v62.html (v62 · TENAR V1.4) · 저장: 2026-07-28 11:03 KST · [v62] ①포구·측정 완료(입력완료/잠금) 시 측정 꼭짓점(핀)·번호를 숨기고, 완료해제 시 다시 표시 ②즐겨찾기 목록 선택 시 그 위치로 이동+저장위치 팝업이 다시 올라오게(불러오기 버튼도) ③면적·길이 연결자료 선택 시에도 포구자료처럼 해당 위치로 지도 이동 ④측정도구에서 저장 요도를 수정할 때 원본(map-items)을 숨겨 「기존선」 잔상 제거, 편집 종료/저장 시 복원 -->
+<!-- map_v63.html (v63 · TENAR V1.4) · 저장: 2026-07-28 22:12 KST · [v63] ①②포구·측정 수정모드에서 이전 저장선을 숨기지 않고 「회색(그레이)」 참조로 표시(보라색→회색) ③즐겨찾기 연결자료를 열면 완료ON 상태로(수정하려면 완료 해제) ④즐겨찾기 시트에서 「＋현재 위치 저장」·「화면복귀」 삭제, 헤더에 「전체보기」 이동 ⑤연결자료 종류별 색(테두리+옅은 배경)으로 은은하게 구분 ⑥부모·연결자료 눈표시(👁) 삭제 ⑦⑧연결자료에 저장일시 작게 추가(포구도 작물·주소·일시 동일형식) ⑨토지정보 서버 「최신」 아래 전년(2025) 줄 삭제(면적 옆에 이미 표시) ⑩지도출처에 「게임 닉네임 초기화」 추가+시트를 「공식 확인…」까지만 열고 쓸어올리면 초기화 표시 -->
+<!-- (이전)  map_v62.html (v62 · TENAR V1.4) · 저장: 2026-07-28 11:03 KST · [v62] ①포구·측정 완료(입력완료/잠금) 시 측정 꼭짓점(핀)·번호를 숨기고, 완료해제 시 다시 표시 ②즐겨찾기 목록 선택 시 그 위치로 이동+저장위치 팝업이 다시 올라오게(불러오기 버튼도) ③면적·길이 연결자료 선택 시에도 포구자료처럼 해당 위치로 지도 이동 ④측정도구에서 저장 요도를 수정할 때 원본(map-items)을 숨겨 「기존선」 잔상 제거, 편집 종료/저장 시 복원 -->
 <!-- (이전)  map_v61.html (v61 · TENAR V1.4) · 저장: 2026-07-28 10:26 KST · [v61] 측정도구 개편 — ①필지선택 이모지 삭제+포구도구식 「선택 취소」 버튼 추가 ②면적 버튼은 필지선택 중에도 초록 유지(면적 측정 중 표시) ③잠금→「완료」로 이름변경·「추가측정」과 위치 교환·완료ON시 추가측정도 비활성 ④「새 면적」→「추가측정」 ⑤⑥면적=재배구역(계산 동일) 확인 후 재배구역 버튼 삭제 ⑦「새 조사 시작」을 저장/즐겨찾기 아래로 이동 ⑧측정결과 기본 열림 ⑨포구도구 「완료」를 「새로그리기」(←새 포구 선정) 아래로 이동 -->
 <!-- (이전)  map_v60.html (v60 · TENAR V1.4) · 저장: 2026-07-27 17:57 KST · [v60] ①토지이용계획도 라벨을 필지 용도(공원·공동주택·녹지 등) 대신 지구명(zonename)만, 지구당 1개·화면 최대 3개로 표시(기간은 브이월드 데이터에 없어 생략) ②포구도구·측정도구 패널 z-index를 검색창(15)보다 위(16/17)로 올려 검색창 아래로 안 숨게 ③지도 출처 정보 팝업 하단에 초기화 3종 추가 — 설정 초기화(레이어·저장핀 표시 기본값·저장자료 유지)·즐겨찾기 초기화(저장목록+연결자료 삭제, 🔒잠금 유지)·전체 초기화(둘 다) -->
 <!-- (이전)  map_v59.html (v59 · TENAR V1.4) · 저장: 2026-07-27 17:20 KST · [v59] ①토지이용계획도(LT_C_LHBLPN) 켜면 계획구역명(blocktype)·사업지구(zonename) 라벨 표시 ②색상 범례 팝업 — 구분 제목 없애고 세로 구분선(│)으로 구분(가로로 짧게) ③하단 정보줄에 축척(1:N)+자(눈금 막대, 확대·축소 시 실시간)와 서버 연결 배지를 회전각·레벨 옆으로 이동 ④저장핀 표시에 전체표시 버튼(핀·작물·이랑·면적·A/B 모두 ON, 다시 누르면 이전값) ⑤하단 팝업 열린 상태에서 지도 터치하면 팝업이 닫힘(입력폼 시트는 제외) -->
@@ -1734,22 +1735,26 @@ TenarSecureStore.init('map',
     if (!map.getSource || !map.getSource('map-items-source')) return;
     var favById = {}; getFavs().forEach(function (f) { favById[f.id] = f; });
     var fc = { type: 'FeatureCollection', features: [] };
-    var _editId = (surveyMeasureState && surveyMeasureState._editingItemId) || null;
+    /* [v63-1·2] 지금 편집 중인 요도(측정 _editingItemId · 포구 fp._editingItemId)는
+       숨기지 않고 "회색(그레이)"으로 참조 표시한다. 편집본은 원래 색으로 위에 그려진다. */
+    var _editId = (surveyMeasureState && surveyMeasureState._editingItemId) ||
+                  (typeof fp !== 'undefined' && fp && fp._editingItemId) || null;
+    var GRAY = '#9ca3af';
     getMapItems().forEach(function (it) {
-      /* [v62-4] 지금 측정도구에서 편집 중인 요도는 원본을 숨긴다(편집본만 보이게). */
-      if (_editId && it.id === _editId) return;
+      var editing = (_editId && it.id === _editId);
       var parent = favById[it.favoriteId];
       /* [v49-2] 부모 즐겨찾기가 삭제된 요도(고아)는 그리지 않는다. */
       if (it.favoriteId && !parent) return;
       var parentOn = !parent || parent.childrenVisible !== false;
       var vis = parentOn && it.visible !== false;
+      if (editing) vis = true;   /* 편집 중이면 항상 참조로 보여준다 */
       var col = it.color || (it.type === 'area' ? '#1f8a4c' : it.type === 'distance' ? '#1a5fd0' : '#111827');
       if (it.type === 'fieldplot' && it.geometry) {
-        fc.features.push({ type: 'Feature', id: it.id, properties: { itemId: it.id, kind: 'poly', visible: vis, color: '#7c3aed' }, geometry: it.geometry.type ? it.geometry : { type: 'Polygon', coordinates: it.geometry } });
+        fc.features.push({ type: 'Feature', id: it.id, properties: { itemId: it.id, kind: 'poly', visible: vis, color: editing ? GRAY : '#7c3aed' }, geometry: it.geometry.type ? it.geometry : { type: 'Polygon', coordinates: it.geometry } });
       } else if (it.type === 'area' && it.geometry) {
-        fc.features.push({ type: 'Feature', id: it.id, properties: { itemId: it.id, kind: 'poly', visible: vis, color: col }, geometry: it.geometry });
+        fc.features.push({ type: 'Feature', id: it.id, properties: { itemId: it.id, kind: 'poly', visible: vis, color: editing ? GRAY : col }, geometry: it.geometry });
       } else if (it.type === 'distance' && it.points && it.points.length >= 2) {
-        fc.features.push({ type: 'Feature', id: it.id, properties: { itemId: it.id, kind: 'line', visible: vis, color: col }, geometry: { type: 'LineString', coordinates: it.points } });
+        fc.features.push({ type: 'Feature', id: it.id, properties: { itemId: it.id, kind: 'line', visible: vis, color: editing ? GRAY : col }, geometry: { type: 'LineString', coordinates: it.points } });
       }
     });
     map.getSource('map-items-source').setData(fc);
@@ -3310,11 +3315,11 @@ TenarSecureStore.init('map',
       ' <span style="font-size:12px;font-weight:600;color:#666;">(🚩 ' + c.fieldplot + ' · ▱ ' + c.area + ' · ↔ ' + c.distance + ')</span></div>'));
     var listBox = el('div');
     listBox.style.cssText = 'margin-top:6px;';
-    buildFavChildren(listBox, f.id);   /* 이름=보기/수정 · 👁=표시숨김 · 🔒 · 🗑 (기존 재사용) */
+    buildFavChildren(listBox, f.id);   /* [v63-6] 이름=보기/수정 · 🔒 · 🗑 */
     box.appendChild(listBox);
     box.appendChild(el('div', null,
       '<div class="lyr-desc" style="margin-top:10px;">이름을 누르면 그 자료를 도구로 불러와 수정할 수 있습니다.<br>' +
-      '👁 로 개별 표시/숨김, 🗑 로 그 자료만 삭제합니다.</div>'));
+      '🔒 로 삭제잠금, 🗑 로 그 자료만 삭제합니다.</div>'));
     openSheet('🗺 연결 지도자료', box, 'auto');
   }
 
@@ -3723,13 +3728,8 @@ TenarSecureStore.init('map',
       : '⚠️ 즐겨찾기 데이터가 암호화되지 않았습니다 <span style="font-weight:600;opacity:.85;">(평문 저장 중)</span>';
     box.appendChild(banner);
 
-    var r1 = el('div', 'btn-row');
-    var bAdd = el('button', 'sheet-btn primary', '＋ 현재 위치 저장');
-    bAdd.addEventListener('click', function () { closeSheet(); goHere(); });
-    var bAll = el('button', 'sheet-btn', '전체보기');
-    bAll.addEventListener('click', favFitBounds);
-    r1.appendChild(bAdd); r1.appendChild(bAll);
-
+    /* [v63-4] 「＋현재 위치 저장」·「화면복귀」 삭제, r1(버튼줄) 제거.
+       「전체보기」는 헤더 액션 자리로 옮긴다(아래 setSheetAction). */
     var r2 = el('div', 'btn-row');
     [['공유', favShare], ['내보내기', favExport], ['불러오기', favImport]].forEach(function (x) {
       var b = el('button', 'sheet-btn', x[0]);
@@ -3748,13 +3748,10 @@ TenarSecureStore.init('map',
 
     var list = el('div');
     list.id = 'favList';
-    box.appendChild(r1); box.appendChild(r2); box.appendChild(r3); box.appendChild(list);   /* [v41-3] */
+    box.appendChild(r2); box.appendChild(r3); box.appendChild(list);   /* [v63-4] r1 제거 */
     openSheet('⭐ 즐겨찾기 목록', box, 66);   /* [v34-4] 2개 이상 보이도록 조금 키움 */
-    /* [v8-16] 헤더 오른쪽에 화면복귀 버튼 (닫기 ✕ 는 그대로) */
-    setSheetAction('↺ 화면복귀', function () {
-      if (favReturnView) map.easeTo({ center: favReturnView.center, zoom: favReturnView.zoom, bearing: favReturnView.bearing, pitch: favReturnView.pitch, duration: 500 });
-      showToast('이전 지도 위치로 돌아왔습니다.', 2000, 'info');
-    });
+    /* [v63-4] 헤더 오른쪽 액션을 「전체보기」로 (화면복귀 삭제) */
+    setSheetAction('⤢ 전체보기', function () { favFitBounds(); });
     renderFavList();
   }
 
@@ -3812,24 +3809,7 @@ TenarSecureStore.init('map',
       });
 
       var acts = el('div', 'fav-acts');
-      /* [v37] 연결요도 전체 표시/숨김 (부모 childrenVisible) */
-      var eye = el('button', 'icon-btn ' + (f.childrenVisible === false ? 'lock-off' : 'open-on'), f.childrenVisible === false ? '🚫' : '👁');
-      eye.title = '연결 요도 전체 표시/숨김';
-      eye.style.display = total ? '' : 'none';
-      eye.addEventListener('click', function (ev) {
-        ev.stopPropagation();
-        var turnOn = (f.childrenVisible === false);   /* 지금 꺼져 있으면 켠다 */
-        var arr = getFavs();
-        for (var k = 0; k < arr.length; k++) if (arr[k].id === f.id) { arr[k].childrenVisible = turnOn; arr[k].updatedAt = kstNowStr(); }
-        setFavs(arr);
-        /* [v45-11] 부모를 다시 켜면 자식 전체를 표시(visible=true)로 되돌린다 */
-        if (turnOn) {
-          var its = getMapItems();
-          for (var j = 0; j < its.length; j++) if (its[j].favoriteId === f.id) its[j].visible = true;
-          setMapItems(its);
-        }
-        refreshFavoriteAndMapItems(); renderFavList();   /* [v46-14] */
-      });
+      /* [v63-6] 부모 표시/숨김(👁) 버튼 삭제 — 연결자료는 항상 표시 */
       var lock = el('button', 'icon-btn ' + (f.locked ? 'lock-on' : 'lock-off'), f.locked ? '🔒' : '🔓');
       lock.title = '삭제 방지 잠금';
       lock.addEventListener('click', function (ev) {
@@ -3862,7 +3842,7 @@ TenarSecureStore.init('map',
         renderFavList();
         showToast('삭제되었습니다.', 2000, 'success');
       });
-      acts.appendChild(eye); acts.appendChild(lock); acts.appendChild(load); acts.appendChild(del);
+      acts.appendChild(lock); acts.appendChild(load); acts.appendChild(del);
 
       card.appendChild(num); card.appendChild(body); card.appendChild(acts);
 
@@ -3898,40 +3878,30 @@ TenarSecureStore.init('map',
     box.innerHTML = '';
     var icons = { fieldplot: '🚩', area: '▱', distance: '↔' };
     itemsOfFav(favId).forEach(function (it) {
+      /* [v63-5] 종류별 색으로 은은하게 구분 (테두리 왼쪽 + 옅은 배경) */
+      var TYPECOL = { fieldplot: '#7c3aed', area: '#1f8a4c', distance: '#1a5fd0' };
+      var TYPEBG  = { fieldplot: '#f5f3ff', area: '#f0faf4', distance: '#eff5ff' };
+      var tcol = TYPECOL[it.type] || '#9ca3af';
       var row = el('div', 'fav-child-row');
-      row.style.cssText = 'display:flex;align-items:center;gap:5px;width:100%;box-sizing:border-box;padding:5px 2px;border-top:1px solid #f0f0f4;';
-      /* [v43-16] 이름 = 종류+순번 · 작물 · 첫지점 주소(리·동 위주로 짧게) */
+      row.style.cssText = 'display:flex;align-items:center;gap:5px;width:100%;box-sizing:border-box;padding:6px 8px;margin-top:4px;border-radius:7px;border-left:3px solid ' + tcol + ';background:' + (TYPEBG[it.type] || '#f7f7fa') + ';';
+      /* [v63-7·8] 이름(종류) · 작물 · 주소 · 저장일시(작게). 포구도 면적/길이와 같은 형식. */
+      var pfav = getFavs().filter(function (f) { return f.id === favId; })[0];
       var meta = [];
       if (it.crop) meta.push(escapeHtml(it.crop));
-      var addr = it.firstPointAddress || it.addrSnapshot || '';
+      var addr = it.firstPointAddress || it.addrSnapshot || (pfav && pfav.addr) || '';
       if (addr) meta.push('<span style="color:#888;">' + escapeHtml(mapItemShortAddr(addr)) + '</span>');
+      var ts = (it.updatedAt || it.createdAt || '').slice(5, 16).replace('T', ' ');   /* MM-DD HH:MM */
       var nm = el('div', null,
         '<span style="font-size:13px;">' + (icons[it.type] || '•') + '</span> ' +
-        '<span style="font-size:12.5px;font-weight:700;">' + escapeHtml(it.name || it.type) + '</span>' +
-        (meta.length ? '<span style="font-size:11.5px;font-weight:600;"> · ' + meta.join(' · ') + '</span>' : ''));
+        '<span style="font-size:12.5px;font-weight:700;color:' + tcol + ';">' + escapeHtml(it.name || it.type) + '</span>' +
+        (meta.length ? '<span style="font-size:11.5px;font-weight:600;color:#333;"> · ' + meta.join(' · ') + '</span>' : '') +
+        (ts ? '<span style="font-size:10.5px;font-weight:500;color:#aaa;"> · ' + escapeHtml(ts) + '</span>' : ''));
       nm.style.cssText = 'flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;';
       nm.addEventListener('click', function () {
         closeSheet();
         focusMapItem(it);
       });
-      var vis = el('button', 'icon-btn ' + (it.visible === false ? 'lock-off' : 'open-on'), it.visible === false ? '🚫' : '👁');
-      vis.style.cssText = 'width:30px;height:28px;padding:0;font-size:14px;flex:0 0 auto;';
-      vis.title = '표시/숨김';
-      vis.addEventListener('click', function () {
-        var turnOn = (it.visible === false);
-        var arr = getMapItems();
-        for (var k = 0; k < arr.length; k++) if (arr[k].id === it.id) arr[k].visible = turnOn;
-        setMapItems(arr);
-        /* [v45-11] 자식을 켜면 부모도 자동으로 표시 ON */
-        if (turnOn) {
-          var favs = getFavs();
-          for (var m = 0; m < favs.length; m++) if (favs[m].id === favId && favs[m].childrenVisible === false) { favs[m].childrenVisible = true; setFavs(favs); renderFavList(); break; }
-        }
-        renderMapItems();
-        it.visible = turnOn;
-        vis.className = 'icon-btn ' + (it.visible === false ? 'lock-off' : 'open-on');
-        vis.textContent = it.visible === false ? '🚫' : '👁';
-      });
+      /* [v63-6] 표시/숨김(👁) 버튼 삭제 — 연결자료는 부모 선택 시 항상 표시 */
       var lk = el('button', 'icon-btn ' + (it.locked ? 'lock-on' : 'lock-off'), it.locked ? '🔒' : '🔓');
       lk.style.cssText = 'width:30px;height:28px;padding:0;font-size:14px;flex:0 0 auto;';
       lk.addEventListener('click', function () {
@@ -3951,7 +3921,7 @@ TenarSecureStore.init('map',
         renderFavList();
         showToast('요도를 삭제했습니다.', 2000, 'success');
       });
-      row.appendChild(nm); row.appendChild(vis); row.appendChild(lk); row.appendChild(dl);
+      row.appendChild(nm); row.appendChild(lk); row.appendChild(dl);
       box.appendChild(row);
     });
   }
@@ -3973,7 +3943,16 @@ TenarSecureStore.init('map',
       }
     } catch (e) {}
     try {
-      if (it.type === 'fieldplot' && it.fieldPlotData) { loadFpSave(it.fieldPlotData); return; }
+      if (it.type === 'fieldplot' && it.fieldPlotData) {
+        try { surveyMeasureState._editingItemId = null; } catch (e) {}   /* [v63-1] 측정쪽 참조 해제 */
+        loadFpSave(it.fieldPlotData);
+        fp._editingItemId = it.id;   /* [v63-1] 편집 중 원본을 회색 참조로 표시 */
+        fp.finished = true;          /* [v63-3] 기존 포구 자료는 완료ON — 수정하려면 완료 해제 */
+        try { fpSyncButtons(); } catch (e) {}
+        try { applyMeasPointsVisibility(); } catch (e) {}
+        try { renderMapItems(); } catch (e) {}
+        return;
+      }
       /* [v44-20] 면적·길이 요도를 누르면 측정도구의 편집 대상으로 올려 지도에 그리고 바로 수정 가능하게 한다 */
       if (it.type === 'area' || it.type === 'distance') {
         var pts = (it.type === 'area')
@@ -3990,8 +3969,12 @@ TenarSecureStore.init('map',
           try {
             if (fpToolPanelEl.classList.contains('show')) closeFpTool(false);
             loadMeasure(rec, true);
+            try { fp._editingItemId = null; } catch (e) {}   /* [v63-2] 포구쪽 참조 해제 */
             surveyMeasureState._editingItemId = it.id;   /* 어느 요도를 편집 중인지 */
-            try { renderMapItems(); } catch (e) {}   /* [v62-4] 편집 중 원본(기존선) 숨김 */
+            surveyMeasureState.locked = true;   /* [v63-3] 기존 자료는 완료ON 으로 — 수정하려면 완료 해제 */
+            try { measSyncButtons(); } catch (e) {}
+            try { applyMeasPointsVisibility(); } catch (e) {}
+            try { renderMapItems(); } catch (e) {}   /* [v63-1·2] 편집 중 원본 회색 표시 */
             /* [v48-2] 저장해 둔 지도 회전각·기울기(있으면)까지 되살린다.
                옛 자료(회전각 없음)는 예전처럼 도형 범위에만 맞춘다. */
             if (it.mapBearing || it.mapPitch) {
@@ -4749,7 +4732,7 @@ TenarSecureStore.init('map',
       if (j.latest) {
         var t = '🟢 ' + (j.latest.year ? j.latest.year + '년 ' : '') + formatNumber(j.latest.price, 0) + '원/㎡';
         if (j.previous) {
-          t += '<br>' + (j.previous.year ? j.previous.year + '년 ' : '') + formatNumber(j.previous.price, 0) + '원/㎡';
+          /* [v63-9] 서버 「최신」 아래 전년(2025) 줄 삭제 — 전년 공시지가는 위쪽 면적 옆에 이미 표시됨. 증감만 유지. */
           var diff = j.latest.price - j.previous.price, pct = j.previous.price ? diff / j.previous.price * 100 : 0;
           var col = diff > 0 ? '#d0342c' : (diff < 0 ? '#1a5fd0' : '#666'), sign = diff > 0 ? '+' : '';
           t += '<br><span style="color:' + col + ';font-weight:800;">증감 ' + sign + formatNumber(diff, 0) + '원 (' + sign + pct.toFixed(2) + '%)</span>';
@@ -5838,7 +5821,7 @@ TenarSecureStore.init('map',
     s.isFieldComplete = false; s.dragging = null; s.fieldKind = 'field';
     s.areas = []; s.editingSaveId = null;
     if (typeof clearSelectedParcelHighlight === 'function') clearSelectedParcelHighlight();
-    fp.editingId = null; fp._libFavId = null; fp._libItemId = null;
+    fp.editingId = null; fp._libFavId = null; fp._libItemId = null; fp._editingItemId = null;
     fp.finished = false;                    /* 새 작업이므로 완료 해제 */
     fpReset();                              /* 가·나·각도·도형값 초기화 (ctx=작물·비율은 유지) */
     updateMeasurementSources();
@@ -7310,7 +7293,7 @@ TenarSecureStore.init('map',
   document.getElementById('mapInfoBtn').addEventListener('click', function (e) {
     e.stopPropagation();
     var box = el('div');
-    box.appendChild(el('div', null,
+    var introBlock = el('div', null,
       '<div class="addr-label" style="margin-top:0;">지도 엔진</div>' +
       '<div class="addr-value">MapLibre GL JS<br>' +
       '<span style="font-size:12px;color:#777;">maplibre.org</span></div>' +
@@ -7321,7 +7304,8 @@ TenarSecureStore.init('map',
       '<div class="addr-value">토지이음<br>' +
       '<span style="font-size:12px;color:#777;">www.eum.go.kr</span></div>' +
       '<div class="lyr-desc" style="margin-top:10px;">표시되는 지적·공시지가·용도지역 정보는 참고용이며,<br>' +
-      '공식 확인은 토지이음에서 하시기 바랍니다.</div>'));
+      '공식 확인은 토지이음에서 하시기 바랍니다.</div>');
+    box.appendChild(introBlock);   /* [v63-10] 접힘 기준점 */
 
     /* [v60-3] 초기화 버튼 3종 */
     box.appendChild(el('div', 'sec-title', '초기화'));
@@ -7339,7 +7323,25 @@ TenarSecureStore.init('map',
     box.appendChild(bReset3);
     box.appendChild(el('div', null, '<div class="lyr-desc" style="margin-top:8px;">· 설정 초기화 : 레이어·저장핀 표시를 기본값으로 (저장자료 유지)<br>· 즐겨찾기 초기화 : 저장 위치·연결자료 삭제 (🔒 잠금 유지)<br>· 전체 초기화 : 위 둘 다</div>'));
 
+    /* [v63-10] 게임 닉네임 초기화 — 누르면 다음 게임 입장 시 닉네임을 다시 설정 */
+    box.appendChild(el('div', 'sec-title', '게임'));
+    var bNick = el('button', 'sheet-btn', '🎮 게임 닉네임 초기화');
+    bNick.style.cssText = 'width:100%;margin-top:4px;';
+    bNick.addEventListener('click', function () {
+      if (!window.confirm('게임 닉네임을 초기화할까요?\n다음에 게임에 들어갈 때 닉네임을 다시 설정합니다.')) return;
+      try { localStorage.removeItem('tenarGameNick'); } catch (e) {}
+      showToast('게임 닉네임을 초기화했습니다.\n다음 게임 입장 시 다시 설정합니다.', 3200, 'success');
+    });
+    box.appendChild(bNick);
+
     openSheet('지도 출처 정보', box, 'auto');
+    /* [v63-10] 처음엔 「공식 확인은 토지이음에서…」까지만 보이고, 쓸어올리면 초기화까지 보이게 */
+    requestAnimationFrame(function () {
+      try {
+        var hh = getSavedLocationCollapsedHeight(sheetEl, introBlock);
+        if (hh > 0) { sheetEl.style.height = hh + 'px'; sheetSnap = Math.round(hh / window.innerHeight * 100); updateBottomBtnsPos(); }
+      } catch (e) {}
+    });
     sheetIsLandInfo = false;
   });
 
@@ -9169,7 +9171,7 @@ TenarSecureStore.init('map',
       s.isFieldComplete = false; s.dragging = null; s.fieldKind = 'field';
       s.areas = []; s.editingSaveId = null;
       if (typeof clearSelectedParcelHighlight === 'function') clearSelectedParcelHighlight();
-      fp.editingId = null;
+      fp.editingId = null; fp._editingItemId = null;   /* [v63-1] 회색 참조 해제 */
       fpReset();
       updateMeasurementSources();
       updateNewMeasureBtn();
