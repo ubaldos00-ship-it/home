@@ -1,4 +1,5 @@
-<!-- chungchi.html (v62) · 저장: 2026-07-28 11:03 KST · [v62] 변경 없음 -->
+<!-- chungchi_v69.html (v69) · 저장: 2026-07-29 13:33 KST · [v69] 맥류(겉보리·쌀보리·밀) 수확단위 선택 — 드럼값 [40,300,500,800,1000], 40kg=포대·그외=톤백 자동전환, 드럼은 목록이동·직접입력은 100kg 반올림(40 예외), 상단/합계(포대·톤백) 단위 갱신, 계산식 수량×단위중량 수정, 저장/불러오기 호환. 기본 톤백500 유지. 다른 작물 무변경 -->
+<!-- (이전)  chungchi.html (v68) · 저장: 2026-07-29 08:27 KST · [v68] 변경 없음 -->
 <!-- (이전)  chungchi.html (v61) · 저장: 2026-07-28 10:26 KST · [v61] 변경 없음 -->
 <!-- (이전)  chungchi.html (v60) · 저장: 2026-07-27 17:57 KST · [v60] 변경 없음 -->
 <!-- (이전)  chungchi.html (v59) · 저장: 2026-07-27 17:20 KST · [v59] 변경 없음 -->
@@ -965,14 +966,28 @@ const WO={
   '참깨':[1.2],
   '고구마':[5,10,15,20],
   '가을감자':[5,10,15,20],
-  '겉보리':[10,20,40,100,500],
-  '쌀보리':[10,20,40,100,500],
-  '밀':[10,20,40,100,500],
+  '겉보리':[40,300,500,800,1000],   /* [v69] 포대40·톤백300/500/800/1000 */
+  '쌀보리':[40,300,500,800,1000],   /* [v69] */
+  '밀':[40,300,500,800,1000],       /* [v69] */
   '노지봄무':[2000,4000,6000,8000,10000],   /* v46: 트럭 단위 기본 8000kg */
   '노지봄배추':[2000,4000,6000,8000,10000], /* v46: 트럭 단위 기본 8000kg */
   '시설봄무':[2000,4000,6000,8000,10000],
   '시설봄배추':[2000,4000,6000,8000,10000]
 };
+/* [v69] 맥류(겉보리·쌀보리·밀) 수확단위 — 40kg=포대, 그 외=톤백 · 드럼 선택값 [40,300,500,800,1000] */
+const BARLEY_STEPS=[40,300,500,800,1000];
+function isBarleyCrop(crop){ return crop==='겉보리'||crop==='쌀보리'||crop==='밀'; }
+function getHarvestUnit(crop,weight){ if(isBarleyCrop(crop)) return Number(weight)===40?'포대':'톤백'; return CU[crop]?CU[crop].u:'단위'; }
+function normalizeGrainWeight(value){ var v=Number(value)||0; if(v<=40) return 40; return Math.max(100,Math.round(v/100)*100); }
+function updateTotalUnitLabel(){
+  var labels=[];
+  document.querySelectorAll('#hRows .hr2').forEach(function(row){ var ul=row.querySelector('.hul'); if(ul&&ul.textContent) labels.push(ul.textContent.trim()); });
+  var uniq=labels.filter(function(v,i){return labels.indexOf(v)===i;});
+  var el=document.getElementById('tULbl'); if(!el) return;
+  if(uniq.length===1) el.textContent=uniq[0];
+  else if(uniq.indexOf('포대')>=0&&uniq.indexOf('톤백')>=0) el.textContent='포대·톤백';
+  else el.textContent=(CU[sC]?CU[sC].u:'단위');
+}
 /* v47: 피해부호 코드 정의 */
 const CC_DMG={
   '01':{name:'정상',  desc:'정상(正常)의 상태'},
@@ -1336,14 +1351,32 @@ function initDrum(box){
   const inp=box.parentNode.querySelector('.drum-inp');
   let lY=0,lT=0,moved=false;
   function setVal(v){
-    v=Math.max(1,Math.round(v)); /* v46: 상한 제거 */
+    if(isBarleyCrop(sC)) v=normalizeGrainWeight(v);   /* [v69] 맥류: 40 또는 100kg 단위 */
+    else v=Math.max(1,Math.round(v)); /* v46: 상한 제거 */
     box.dataset.val=v;
     box.querySelector('.drum-cur').textContent=f(v);   /* v13: 천단위 콤마 (표시만, 값은 dataset.val) */
     if(inp)inp.value=v;
-    const r=box.closest('.hr2');if(r){rRow(r);uHT();}
+    const r=box.closest('.hr2');
+    if(r){
+      if(isBarleyCrop(sC)){
+        const unit=getHarvestUnit(sC,v);
+        const ul=r.querySelector('.hul'); if(ul) ul.textContent=unit;   /* [v69] 40→포대, 그 외→톤백 */
+        const du=document.getElementById('dUnit'); if(du) du.textContent=unit;   /* [v69] 상단 수확단위 */
+        const dw=document.getElementById('dWeight'); if(dw) dw.textContent=f(v)+' kg';   /* [v69] 상단 기본중량 */
+      }
+      rRow(r);uHT();
+    }
   }
   function doStep(dir,dt){
     const cur=parseInt(box.dataset.val)||1;
+    if(isBarleyCrop(sC)){   /* [v69] 맥류: 지정 목록[40,300,500,800,1000] 순서 이동 */
+      const steps=BARLEY_STEPS; let nv;
+      const idx=steps.indexOf(cur);
+      if(idx>=0){ nv=steps[Math.max(0,Math.min(steps.length-1,idx+dir))]; }
+      else if(dir>0){ nv=steps.find(function(s){return s>cur;}); if(nv==null) nv=steps[steps.length-1]; }
+      else { const b=steps.filter(function(s){return s<cur;}); nv=b.length?b[b.length-1]:steps[0]; }
+      setVal(nv); playClick(5); return;
+    }
     const speed=Math.min(15,Math.max(1,Math.round(200/Math.max(dt,20))));
     const inc=speed>=10?10:speed>=6?5:speed>=3?2:1;
     setVal(cur+dir*inc);
@@ -1417,7 +1450,7 @@ function bldHR(){
         <div class="drum-cur">${Number(w).toLocaleString('ko-KR')}</div>
         <div class="drum-arr dn">▼</div>
       </div>
-      <input type="number" inputmode="numeric" min="1" class="drum-inp" value="${w}">
+      <input type="number" inputmode="numeric" min="${isBarleyCrop(crop)?40:1}" step="${isBarleyCrop(crop)?100:1}" class="drum-inp" value="${w}">
     </div>`:
     `<input type="text" inputmode="decimal" class="hw" autocomplete="off" value="${Number(w).toLocaleString('ko-KR')}" oninput="formatDecimalInput(this);this.dataset.m=1;rRow(this.closest('.hr2'));uHT()" style="${hwStyle}">`;
   d.innerHTML=`<input type="text" inputmode="decimal" placeholder="수량" class="hq needs-input" autocomplete="off" enterkeyhint="done" oninput="formatDecimalInput(this);rRow(this.closest('.hr2'));uHT()" style="${hqStyle}">
@@ -1459,6 +1492,7 @@ function uHT(){
   });
   document.getElementById('tHU').textContent=f(r1(tU));
   document.getElementById('tHK').textContent=f(r1(tK));
+  try{ updateTotalUnitLabel(); }catch(e){}   /* [v69] 합계 단위(포대·톤백) */
   uRes();
 }
 
@@ -1627,12 +1661,14 @@ function uRC(){
     if(!rows.length||!kg){fmEl.style.display='none';fmEl.textContent='';return;}
     var parts=[];
     rows.forEach(function(row){
+      var hq=row.querySelector('.hq');
       var db=row.querySelector('.drum-box');
-      var hres=row.querySelector('.hres');
-      var cnt=db?parseInt(db.dataset.val)||0:0;
-      var wkg=hres?parseFloat(String(hres.value).replace(/,/g,''))||0:0;
-      var unit=document.getElementById('dUnit').textContent||'단위';
-      if(cnt>0) parts.push(cnt+unit+'×'+f(wkg/cnt)+'kg');
+      var hw=row.querySelector('.hw');
+      var qty=hq?numVal(hq.value):0;
+      var weight=db?(parseFloat(db.dataset.val)||0):(hw?numVal(hw.value):0);
+      var ul=row.querySelector('.hul');
+      var unit=ul?ul.textContent.trim():(document.getElementById('dUnit').textContent||'단위');
+      if(qty>0&&weight>0) parts.push(f(qty)+unit+'×'+f(weight)+'kg');   /* [v69] 수량 × 단위중량 */
     });
     if(parts.length){
       fmEl.textContent='= '+parts.join(' + ')+' = '+f(kg)+' kg';
@@ -2060,6 +2096,8 @@ function _ccApply(d){
         if(cur) cur.textContent = f(rowData.drumVal);   /* v13: 천단위 콤마 */
         var dinp = newRow.querySelector('.drum-inp');
         if(dinp) dinp.value = rowData.drumVal;
+        var ul2 = newRow.querySelector('.hul');   /* [v69] 맥류: 중량으로 단위명 복원(40=포대, 그 외=톤백) */
+        if(ul2 && isBarleyCrop(sC)) ul2.textContent = getHarvestUnit(sC, rowData.drumVal);
       } else if(hw){
         hw.value = rowData.hw || '';
         hw.dataset.m = '1';
@@ -2067,6 +2105,13 @@ function _ccApply(d){
       if(hres) hres.value = rowData.hres || '';
     });
     uHT();
+    /* [v69] 맥류: 상단 수확단위·기본중량을 첫 행 중량 기준으로 갱신 */
+    if(isBarleyCrop(sC)){
+      var _fb=document.querySelector('#hRows .hr2 .drum-box');
+      if(_fb){ var _fv=parseFloat(_fb.dataset.val)||500;
+        var _du=document.getElementById('dUnit'); if(_du) _du.textContent=getHarvestUnit(sC,_fv);
+        var _dw=document.getElementById('dWeight'); if(_dw) _dw.textContent=f(_fv)+' kg'; }
+    }
   }
 
   // 6. 결과 재계산

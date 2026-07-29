@@ -1,4 +1,5 @@
-<!-- map_v68.html (v68 · TENAR V1.5) · 저장: 2026-07-29 08:27 KST · [v68] 작물재배조사구 — ①조사구 정보 팝업에 「길찾기」 추가(수정·목록·길찾기·삭제 순)·네이버지도/카카오맵/T맵 연결(기존 길찾기와 동일) ②조사구 목록+토지조회 캐시(tenar_land_cache_v1)도 AES-256-GCM 암호화 저장·재배면적 탭에 암호화 상태 표시 ③지도 축소 시 핀을 점처럼 작게(줌 보간)·확대 시 번호 표시, 핀/번호/읍면동·층·조사구 라벨 어느 것을 눌러도 정보 팝업 -->
+<!-- map_v69.html (v69 · TENAR V1.5) · 저장: 2026-07-29 13:33 KST · [v69] ①포구·측정 저장 시 기존자료 있으면 「덮어쓰기」를 앞·기본(primary)으로, 「새로 저장」은 뒤로(측정도구도 덮어쓰기/새로저장 선택 추가) ②즐겨찾기 목록·연결 측정자료 선택 시 팝업을 피해 보이는 영역 한가운데에 표시(줌 보정)+선택 핀 상시 확대 ③작물재배조사구 핀 줌 크기조절 버그 수정(zoom interpolate 최상위) — 축소 시 점처럼 작게 -->
+<!-- (이전)  map_v68.html (v68 · TENAR V1.5) · 저장: 2026-07-29 08:27 KST · [v68] 작물재배조사구 — ①조사구 정보 팝업에 「길찾기」 추가(수정·목록·길찾기·삭제 순)·네이버지도/카카오맵/T맵 연결(기존 길찾기와 동일) ②조사구 목록+토지조회 캐시(tenar_land_cache_v1)도 AES-256-GCM 암호화 저장·재배면적 탭에 암호화 상태 표시 ③지도 축소 시 핀을 점처럼 작게(줌 보간)·확대 시 번호 표시, 핀/번호/읍면동·층·조사구 라벨 어느 것을 눌러도 정보 팝업 -->
 <!-- (이전)  map_v67.html (v67 · TENAR V1.5) · 저장: 2026-07-29 07:49 KST · [v67] 작물재배조사구 — ①번호를 읍면동별 1부터 매김 ②조사구 수정 즉시 반영·시군구 오타(경신시→경산시) 수정 시 자동 병합·번호 수정 시 뒤로 밀림 ③수정모드에서 주소를 고치면 좌표를 다시 찾아 핀 갱신(업로드는 좌표 우선, 없으면 주소) ④핀 라벨에 읍면동 포함(자인면 9층 125조사구) ⑤재배면적 탭에서 수정→저장/취소/닫기 시 탭으로 복귀 ⑥지도 조사구 팝업: 제목=조사구 이름·목록 버튼(닫으면 팝업 복귀)·수정 후 팝업에 반영 ⑦저장핀 표시에 「조사구 표시」 on/off(기본 꺼짐) -->
 <!-- (이전)  map_v66.html (v66 · TENAR V1.5) · 저장: 2026-07-29 06:42 KST · [v66] 작물재배조사구 대개편 — ①양식에 위도·경도 추가(좌표 우선, 없으면 초입주소로 지오코딩) ②시도 정규화(경북→경상북도·대구→대구광역시 등) ③트리를 시도>시군구>읍면동>조사구로(리동·층 레벨 삭제, 층은 필드로 유지) ④조사구 추가·수정·삭제 + 시도/시군구/읍면동별 삭제 + 전체삭제 ⑤핀=읍면동별 색+동그라미 안 순서번호, 클릭 시 아래 팝업+수정 ⑥JSON 내보내기·가져오기 암호화(PBKDF2/AES-GCM, 기본 2026, 변경가능) ⑦로컬 지속저장 확인+pagehide 보강 -->
 <!-- (이전)  map_v65.html (v65 · TENAR V1.5) · 저장: 2026-07-29 05:45 KST · [v65] 작물재배조사구 「검색(지도에 표시)」 개선 — 좌표(위도·경도)가 없는 조사구는 저장된 초입주소(주소)로 VWorld 주소→좌표 변환을 즉시 실행해 핀 표시(진행상황 토스트). 조사구 목록에서 개별 조사구를 눌러도 좌표없으면 주소로 변환 후 이동. -->
@@ -662,7 +663,7 @@ TenarSecureStore.init('map',
   .pin { position: absolute; width: 24px; height: 30px; cursor: pointer; z-index: 1; }
   /* [v42-5] 즐겨찾기 목록에서 고른 핀 강조 — 확대 + 파란 Pulse + Glow */
   .pin.pin-focus { z-index: 12 !important; animation: pinPop .45s ease-out; }
-  .pin.pin-focus svg { filter: drop-shadow(0 0 6px rgba(0,132,255,.95)) drop-shadow(0 0 14px rgba(0,132,255,.6)); }
+  .pin.pin-focus svg { filter: drop-shadow(0 0 6px rgba(0,132,255,.95)) drop-shadow(0 0 14px rgba(0,132,255,.6)); transform: scale(1.28); transform-origin: 50% 100%; }   /* [v69-3] 선택 핀 상시 확대 */
   .pin.pin-focus::after {
     content: ''; position: absolute; left: 50%; bottom: -6px; width: 16px; height: 16px;
     margin-left: -8px; border-radius: 50%; border: 3px solid #0078FF;
@@ -3298,18 +3299,15 @@ TenarSecureStore.init('map',
   }
   function focusPinForSavedLocation(lngLat, sheetHeight) {
     try {
-      var rect = map.getContainer().getBoundingClientRect();
+      /* [v69-3] padding 으로 "상단 UI ~ 팝업" 사이 가시영역의 한가운데에 핀을 놓는다.
+         너무 축소돼 있으면 잘 보이도록 확대(줌 보정)도 함께. */
       var top = getVisibleTopUiHeight();
-      var bottom = rect.height - (sheetHeight || 0);
-      var visH = Math.max(120, bottom - top);
-      /* [v49-3] 팝업 위쪽 가시영역의 "가운데"에 핀을 놓는다 (가로도 화면 중앙) */
-      var desiredY = top + visH * 0.45;
-      var desiredX = rect.width / 2;
-      var cur = map.project(lngLat);
-      var dx = desiredX - cur.x, dy = desiredY - cur.y;
+      var z = map.getZoom();
+      var targetZoom = (z < 15.5) ? 17 : z;
       map.easeTo({
-        center: map.unproject({ x: cur.x - dx, y: cur.y - dy }),
-        duration: 380, essential: true
+        center: lngLat, zoom: targetZoom,
+        padding: { top: top, bottom: (sheetHeight || 0), left: 20, right: 20 },
+        duration: 450, essential: true
       });
     } catch (e) {}
   }
@@ -4031,7 +4029,8 @@ TenarSecureStore.init('map',
               try {
                 var b = new maplibregl.LngLatBounds();
                 pts.forEach(function (c) { b.extend(c); });
-                map.fitBounds(b, { padding: 90, maxZoom: 18, duration: 600 });
+                /* [v69-3] 하단 도구패널을 피해 "보이는 위쪽 중앙"에 도형이 오도록 아래 여백 확보 */
+                map.fitBounds(b, { padding: { top: getVisibleTopUiHeight() + 30, bottom: Math.round(window.innerHeight * 0.42), left: 60, right: 60 }, maxZoom: 18, duration: 600 });
               } catch (e) {}
             }, 120);
             showToast('「' + (it.name || it.type) + '」을(를) 측정도구로 불러왔습니다.\n「수정」을 눌러 점을 옮길 수 있습니다.', 3600, 'info');
@@ -5308,9 +5307,13 @@ TenarSecureStore.init('map',
       id: 'area-plots-halo', type: 'circle', source: 'area-plots-source',
       filter: ['==', ['get', 'visible'], true],
       paint: {
-        'circle-radius': ['*',
-          ['interpolate', ['linear'], ['zoom'], 9, 3.5, 12, 6, 14, 11, 16, 16, 18, 19],
-          ['case', ['get', 'sel'], 1.3, 1]],
+        /* [v69-3] zoom interpolate 는 최상위여야 하므로 각 구간 출력에 sel(case)을 둔다 */
+        'circle-radius': ['interpolate', ['linear'], ['zoom'],
+          9, ['case', ['get', 'sel'], 4.5, 3.5],
+          12, ['case', ['get', 'sel'], 8, 6],
+          14, ['case', ['get', 'sel'], 14, 11],
+          16, ['case', ['get', 'sel'], 21, 16],
+          18, ['case', ['get', 'sel'], 25, 19]],
         'circle-color': ['coalesce', ['get', 'dotColor'], '#f59e0b'], 'circle-opacity': 0.16
       }
     });
@@ -5318,10 +5321,13 @@ TenarSecureStore.init('map',
       id: 'area-plots-dot', type: 'circle', source: 'area-plots-source',
       filter: ['==', ['get', 'visible'], true],
       paint: {
-        /* [v66] 읍면동별 색(dotColor) / [v68-3] 줌에 따라 크기 (축소=점) */
-        'circle-radius': ['*',
-          ['interpolate', ['linear'], ['zoom'], 9, 2.5, 12, 4, 14, 7.5, 16, 11, 18, 13],
-          ['case', ['get', 'sel'], 1.35, 1]],
+        /* [v66] 읍면동별 색(dotColor) / [v69-3] 축소=점, 확대=커짐 · 선택 핀은 조금 크게 */
+        'circle-radius': ['interpolate', ['linear'], ['zoom'],
+          9, ['case', ['get', 'sel'], 3.4, 2.5],
+          12, ['case', ['get', 'sel'], 5.5, 4],
+          14, ['case', ['get', 'sel'], 10, 7.5],
+          16, ['case', ['get', 'sel'], 15, 11],
+          18, ['case', ['get', 'sel'], 17.5, 13]],
         'circle-color': ['coalesce', ['get', 'dotColor'], '#f59e0b'],
         'circle-stroke-color': ['case', ['get', 'sel'], '#111827', '#ffffff'], 'circle-stroke-width': ['case', ['get', 'sel'], 3, 1.6]
       }
@@ -6462,21 +6468,20 @@ TenarSecureStore.init('map',
       });
     }
 
-    var bSave = el('button', 'sheet-btn primary', editing ? '💾 덮어쓰기 저장' : '💾 저장');
-    bSave.style.cssText += 'width:100%;margin-top:12px;';
-    bSave.addEventListener('click', function () {
+    function doMeasSave(forceNew) {
       var arr = getMeasSaves();
       rec.name = inName.value.trim() || (addr.jibunAddress || '측정');
       rec.jibunAddress = addr.jibunAddress || (editing ? editing.jibunAddress : '');
       rec.roadAddress = addr.roadAddress || (editing ? editing.roadAddress : '');
       rec.crop = inCrop.value;
       rec.memo = inMemo.value.trim();
-      if (editing) {
+      if (editing && !forceNew) {
         rec.id = editing.id;
         rec.createdAt = editing.createdAt;
         rec.locked = editing.locked;
         for (var i = 0; i < arr.length; i++) if (arr[i].id === editing.id) { arr[i] = rec; break; }
       } else {
+        if (editing && forceNew) { rec.id = 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); rec.createdAt = kstNowStr(); }
         arr.unshift(rec);
       }
       if (!setMeasSaves(arr)) return;
@@ -6486,11 +6491,24 @@ TenarSecureStore.init('map',
       surveyMeasureState._editingItemId = null;   /* [v62-4] 저장했으니 원본 숨김 해제 */
       try { renderMapItems(); } catch (e) {}
       closeSheet();
-      showToast(editing ? '측정을 덮어썼습니다.' : '측정 결과를 즐겨찾기 위치에 저장했습니다.', 2500, 'success');
-    });
+      showToast((editing && !forceNew) ? '측정을 덮어썼습니다.' : '측정 결과를 즐겨찾기 위치에 저장했습니다.', 2500, 'success');
+    }
+    /* [v69-2] 기존 자료가 있으면 「덮어쓰기」를 앞·기본(primary)으로, 「새로 저장」은 뒤로 */
+    var saveRow = el('div', 'btn-row'); saveRow.style.marginTop = '12px';
+    if (editing) {
+      var bOver = el('button', 'sheet-btn primary', '💾 덮어쓰기');
+      bOver.addEventListener('click', function () { doMeasSave(false); });
+      var bNewM = el('button', 'sheet-btn', '💾 새로 저장');
+      bNewM.addEventListener('click', function () { doMeasSave(true); });
+      saveRow.appendChild(bOver); saveRow.appendChild(bNewM);
+    } else {
+      var bSaveM = el('button', 'sheet-btn primary', '💾 저장');
+      bSaveM.addEventListener('click', function () { doMeasSave(false); });
+      saveRow.appendChild(bSaveM);
+    }
 
     box.appendChild(f1); box.appendChild(addrBox); box.appendChild(f2); box.appendChild(f3);
-    box.appendChild(sum); box.appendChild(bSave);
+    box.appendChild(sum); box.appendChild(saveRow);
     openSheet(editing ? '측정 수정 저장' : '💾 측정 저장', box, 'auto');   /* [v46-3] 내용 높이까지만 */
     sheetHasForm = true;   /* [v10-14] 입력 중 보호 */
     sheetIsLandInfo = false;
@@ -8874,13 +8892,18 @@ TenarSecureStore.init('map',
     }
     var row = el('div', 'btn-row');
     row.style.marginTop = '12px';
-    var bNew = el('button', 'sheet-btn primary', '새로 저장');
-    bNew.addEventListener('click', function () { commit(true); });
-    row.appendChild(bNew);
+    /* [v69-2] 열어 둔 저장자료가 있으면 「덮어쓰기」를 앞·기본(primary)으로, 「새로 저장」은 뒤로 */
     if (prev) {
-      var bOver = el('button', 'sheet-btn', '덮어쓰기');
+      var bOver = el('button', 'sheet-btn primary', '덮어쓰기');
       bOver.addEventListener('click', function () { commit(false); });
       row.appendChild(bOver);
+      var bNew = el('button', 'sheet-btn', '새로 저장');
+      bNew.addEventListener('click', function () { commit(true); });
+      row.appendChild(bNew);
+    } else {
+      var bNew0 = el('button', 'sheet-btn primary', '새로 저장');
+      bNew0.addEventListener('click', function () { commit(true); });
+      row.appendChild(bNew0);
     }
     var bCancel = el('button', 'sheet-btn', '취소');
     bCancel.addEventListener('click', closeSheet);
