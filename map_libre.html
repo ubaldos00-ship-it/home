@@ -1,4 +1,5 @@
-<!-- map_v67.html (v67 · TENAR V1.5) · 저장: 2026-07-29 07:49 KST · [v67] 작물재배조사구 — ①번호를 읍면동별 1부터 매김 ②조사구 수정 즉시 반영·시군구 오타(경신시→경산시) 수정 시 자동 병합·번호 수정 시 뒤로 밀림 ③수정모드에서 주소를 고치면 좌표를 다시 찾아 핀 갱신(업로드는 좌표 우선, 없으면 주소) ④핀 라벨에 읍면동 포함(자인면 9층 125조사구) ⑤재배면적 탭에서 수정→저장/취소/닫기 시 탭으로 복귀 ⑥지도 조사구 팝업: 제목=조사구 이름·목록 버튼(닫으면 팝업 복귀)·수정 후 팝업에 반영 ⑦저장핀 표시에 「조사구 표시」 on/off(기본 꺼짐) -->
+<!-- map_v68.html (v68 · TENAR V1.5) · 저장: 2026-07-29 08:27 KST · [v68] 작물재배조사구 — ①조사구 정보 팝업에 「길찾기」 추가(수정·목록·길찾기·삭제 순)·네이버지도/카카오맵/T맵 연결(기존 길찾기와 동일) ②조사구 목록+토지조회 캐시(tenar_land_cache_v1)도 AES-256-GCM 암호화 저장·재배면적 탭에 암호화 상태 표시 ③지도 축소 시 핀을 점처럼 작게(줌 보간)·확대 시 번호 표시, 핀/번호/읍면동·층·조사구 라벨 어느 것을 눌러도 정보 팝업 -->
+<!-- (이전)  map_v67.html (v67 · TENAR V1.5) · 저장: 2026-07-29 07:49 KST · [v67] 작물재배조사구 — ①번호를 읍면동별 1부터 매김 ②조사구 수정 즉시 반영·시군구 오타(경신시→경산시) 수정 시 자동 병합·번호 수정 시 뒤로 밀림 ③수정모드에서 주소를 고치면 좌표를 다시 찾아 핀 갱신(업로드는 좌표 우선, 없으면 주소) ④핀 라벨에 읍면동 포함(자인면 9층 125조사구) ⑤재배면적 탭에서 수정→저장/취소/닫기 시 탭으로 복귀 ⑥지도 조사구 팝업: 제목=조사구 이름·목록 버튼(닫으면 팝업 복귀)·수정 후 팝업에 반영 ⑦저장핀 표시에 「조사구 표시」 on/off(기본 꺼짐) -->
 <!-- (이전)  map_v66.html (v66 · TENAR V1.5) · 저장: 2026-07-29 06:42 KST · [v66] 작물재배조사구 대개편 — ①양식에 위도·경도 추가(좌표 우선, 없으면 초입주소로 지오코딩) ②시도 정규화(경북→경상북도·대구→대구광역시 등) ③트리를 시도>시군구>읍면동>조사구로(리동·층 레벨 삭제, 층은 필드로 유지) ④조사구 추가·수정·삭제 + 시도/시군구/읍면동별 삭제 + 전체삭제 ⑤핀=읍면동별 색+동그라미 안 순서번호, 클릭 시 아래 팝업+수정 ⑥JSON 내보내기·가져오기 암호화(PBKDF2/AES-GCM, 기본 2026, 변경가능) ⑦로컬 지속저장 확인+pagehide 보강 -->
 <!-- (이전)  map_v65.html (v65 · TENAR V1.5) · 저장: 2026-07-29 05:45 KST · [v65] 작물재배조사구 「검색(지도에 표시)」 개선 — 좌표(위도·경도)가 없는 조사구는 저장된 초입주소(주소)로 VWorld 주소→좌표 변환을 즉시 실행해 핀 표시(진행상황 토스트). 조사구 목록에서 개별 조사구를 눌러도 좌표없으면 주소로 변환 후 이동. -->
 <!-- (이전)  map_v64.html (v64 · TENAR V1.5) · 저장: 2026-07-28 23:09 KST · [v64] 작물재배조사구(재배면적 조사구) 기능 신규 — ①즐겨찾기 시트에 [기존 즐겨찾기][재배면적] 탭 ②재배면적 탭: 엑셀 양식 다운로드(./nongup_josagu/nongup_area_josagu.xlsx)+엑셀/JSON 가져오기·내보내기 ③시도>시군구>읍면동>리동>층>조사구 계층목록(접기/펼치기)+드롭다운6종+검색 ④층·조사구 별도 필드로 분리 ⑤지도 상단 경로 배지 ⑥엑셀 가져오기 미리보기 팝업(체크박스·전체선택·필터·정상/확인필요/오류)+[추가][교체][취소][×] ⑦추가=기존유지+번호 삽입/연속재정렬, 교체=백업후 전량교체(실패시 복원) ⑧좌표없는 초입주소는 VWorld로 배경 좌표변환 ⑨AES-256-GCM(tenarAreaSurveyPlotsEncrypted) 저장 -->
@@ -307,7 +308,7 @@
   window._tenarAppKo=function(app){ return app==='tonghab'?'통합계산기':(app==='chungchi'?'청취계산기':(app==='map'?'지도':app)); };
 })();
 TenarSecureStore.init('map',
-  ['tenar_map_favs_v1','tenar_map_items_v1','tenar_map_bulk','tenar_pending_survey_coord','tenar_meas_ctx','tenar_meas_result','tenar_measure_saves_v1','tenar_fieldplot_saves_v1','tenar_map_last_view_v1','tenar_map_settings_v1','tenarAreaSurveyPlotsEncrypted'],
+  ['tenar_map_favs_v1','tenar_map_items_v1','tenar_map_bulk','tenar_pending_survey_coord','tenar_meas_ctx','tenar_meas_result','tenar_measure_saves_v1','tenar_fieldplot_saves_v1','tenar_map_last_view_v1','tenar_map_settings_v1','tenarAreaSurveyPlotsEncrypted','tenar_land_cache_v1'],
   ['tonghabSave_','chungchiSave_']);
 </script>
 <!-- ═══════════ /TenarCrypto 보안 저장 계층 ═══════════ -->
@@ -5302,33 +5303,44 @@ TenarSecureStore.init('map',
 
     /* [v64] 작물재배조사구(재배면적) 핀 — visible 은 필터로 처리(선택 지역만 표시) */
     map.addSource('area-plots-source', { type: 'geojson', data: emptyFC() });
+    /* [v68-3] 축소하면 점으로 작아지고(기존 작물핀처럼), 확대하면 번호가 들어갈 크기로 커진다 */
     map.addLayer({
       id: 'area-plots-halo', type: 'circle', source: 'area-plots-source',
       filter: ['==', ['get', 'visible'], true],
-      paint: { 'circle-radius': ['case', ['get', 'sel'], 20, 16], 'circle-color': ['coalesce', ['get', 'dotColor'], '#f59e0b'], 'circle-opacity': 0.16 }
+      paint: {
+        'circle-radius': ['*',
+          ['interpolate', ['linear'], ['zoom'], 9, 3.5, 12, 6, 14, 11, 16, 16, 18, 19],
+          ['case', ['get', 'sel'], 1.3, 1]],
+        'circle-color': ['coalesce', ['get', 'dotColor'], '#f59e0b'], 'circle-opacity': 0.16
+      }
     });
     map.addLayer({
       id: 'area-plots-dot', type: 'circle', source: 'area-plots-source',
       filter: ['==', ['get', 'visible'], true],
       paint: {
-        /* [v66] 읍면동별 색(dotColor) · 동그라미 크게(번호 들어갈 자리) */
-        'circle-radius': ['case', ['get', 'sel'], 15, 12],
+        /* [v66] 읍면동별 색(dotColor) / [v68-3] 줌에 따라 크기 (축소=점) */
+        'circle-radius': ['*',
+          ['interpolate', ['linear'], ['zoom'], 9, 2.5, 12, 4, 14, 7.5, 16, 11, 18, 13],
+          ['case', ['get', 'sel'], 1.35, 1]],
         'circle-color': ['coalesce', ['get', 'dotColor'], '#f59e0b'],
-        'circle-stroke-color': ['case', ['get', 'sel'], '#111827', '#ffffff'], 'circle-stroke-width': ['case', ['get', 'sel'], 3, 2]
+        'circle-stroke-color': ['case', ['get', 'sel'], '#111827', '#ffffff'], 'circle-stroke-width': ['case', ['get', 'sel'], 3, 1.6]
       }
     });
     map.addLayer({
       id: 'area-plots-num', type: 'symbol', source: 'area-plots-source',
       filter: ['==', ['get', 'visible'], true],
+      minzoom: 13.5,   /* [v68-3] 충분히 확대됐을 때만 동그라미 안 번호 표시 */
       layout: {
-        /* [v66] 동그라미 "안"에 순서 번호 */
-        'text-field': ['to-string', ['get', 'number']], 'text-size': 12, 'text-allow-overlap': true, 'text-font': ['literal', ['Open Sans Bold', 'Arial Unicode MS Bold']]
+        'text-field': ['to-string', ['get', 'number']],
+        'text-size': ['interpolate', ['linear'], ['zoom'], 13.5, 9, 16, 12, 18, 13],
+        'text-allow-overlap': true, 'text-font': ['literal', ['Open Sans Bold', 'Arial Unicode MS Bold']]
       },
       paint: { 'text-color': '#ffffff', 'text-halo-color': 'rgba(0,0,0,.35)', 'text-halo-width': 1.0 }
     });
     map.addLayer({
       id: 'area-plots-label', type: 'symbol', source: 'area-plots-source',
       filter: ['==', ['get', 'visible'], true],
+      minzoom: 14,   /* [v68-3] 축소 시 라벨 숨김 */
       layout: {
         'text-field': ['get', 'labelText'], 'text-size': 11, 'text-offset': [0, 1.6],
         'text-anchor': 'top', 'text-allow-overlap': false, 'text-optional': true
@@ -5336,11 +5348,15 @@ TenarSecureStore.init('map',
       paint: { 'text-color': '#7c2d12', 'text-halo-color': '#ffffff', 'text-halo-width': 1.6 }
     });
     try {
-      map.on('click', 'area-plots-dot', function (e) {
+      /* [v68-3] 핀·번호·라벨 어느 것을 눌러도 정보 팝업 */
+      var _areaPinTap = function (e) {
         if (e.features && e.features[0]) { try { areaOnPinClick(e.features[0].properties.plotId); } catch (er) {} }
+      };
+      ['area-plots-dot', 'area-plots-num', 'area-plots-label'].forEach(function (lid) {
+        map.on('click', lid, _areaPinTap);
+        map.on('mouseenter', lid, function () { map.getCanvas().style.cursor = 'pointer'; });
+        map.on('mouseleave', lid, function () { map.getCanvas().style.cursor = ''; });
       });
-      map.on('mouseenter', 'area-plots-dot', function () { map.getCanvas().style.cursor = 'pointer'; });
-      map.on('mouseleave', 'area-plots-dot', function () { map.getCanvas().style.cursor = ''; });
     } catch (e) {}
   }
 
@@ -10216,6 +10232,27 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
       /* [v67-6] 목록(즐겨찾기 재배면적)을 닫으면 이 조사구 팝업으로 복귀 */
       window._areaCloseReturn = function () { var np = getAreaPlots().filter(function (x) { return x.id === pid; })[0]; if (np) areaOpenPlotSheet(np); };
     });
+    /* [v68-1] 길찾기 — 네이버/카카오/T맵 (기존 길찾기와 동일) */
+    var bNav = el('button', 'sheet-btn', '🚗 길찾기');
+    bNav.addEventListener('click', function () {
+      var nm = p.address1 || areaPlotName(p);
+      if (areaCoordOk(p.latitude, p.longitude)) {
+        window._areaCloseReturn = null;
+        openNavSheet({ jibunAddress: nm, lat: p.latitude, lng: p.longitude });
+      } else if (p.address1 && hasApiKey && hasApiKey()) {
+        showToast('길찾기용 좌표를 찾는 중…', 0, 'info');
+        areaGeocode(p.address1).then(function (c) {
+          if (c && areaCoordOk(c.lat, c.lng)) {
+            var cur = getAreaPlots();
+            for (var k = 0; k < cur.length; k++) if (cur[k].id === p.id) { cur[k].latitude = c.lat; cur[k].longitude = c.lng; cur[k].updatedAt = kstNowStr(); }
+            setAreaPlots(cur); areaApplyVisibility();
+            showToast('', 1, 'info');
+            window._areaCloseReturn = null;
+            openNavSheet({ jibunAddress: nm, lat: c.lat, lng: c.lng });
+          } else { showToast('좌표를 찾지 못해 길찾기를 열 수 없습니다.\n주소를 확인해 주세요.', 4000, 'info'); }
+        });
+      } else { showToast('좌표가 없어 길찾기를 열 수 없습니다.', 3500, 'info'); }
+    });
     var bDel = el('button', 'sheet-btn danger', '🗑 삭제');
     bDel.addEventListener('click', function () {
       if (!window.confirm((p.number || '') + '번 조사구를 삭제하시겠습니까?')) return;
@@ -10224,7 +10261,8 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
       _areaSelectedId = null; window._areaCloseReturn = null; closeSheet();
       areaApplyVisibility(); showToast('삭제했습니다.', 2000, 'success');
     });
-    row.appendChild(bEdit); row.appendChild(bList); row.appendChild(bDel);
+    /* [v68-1] 순서: 수정 · 목록 · 길찾기 · 삭제 */
+    row.appendChild(bEdit); row.appendChild(bList); row.appendChild(bNav); row.appendChild(bDel);
     box.appendChild(row);
     /* [v67-6] 제목 = 조사구 정보 이름 */
     openSheet('🌾 ' + areaPlotName(p), box, 'auto');
@@ -10398,6 +10436,14 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
   function renderAreaPane(container) {
     container.innerHTML = '';
     var wrap = el('div');
+
+    /* [v68-2] 암호화 저장 상태 표시 (목록·캐시 모두 AES-256-GCM) */
+    var enc = (window.__tenarSecureActive === true);
+    var secBanner = el('div', 'sec-banner ' + (enc ? 'enc' : 'plain'));
+    secBanner.innerHTML = enc
+      ? '🔐 조사구 목록·조회 캐시 암호화 저장 중 <span style="font-weight:600;opacity:.85;">(AES-256-GCM)</span>'
+      : '⚠️ 이 브라우저에서는 암호화가 지원되지 않아 평문으로 저장됩니다';
+    wrap.appendChild(secBanner);
 
     var dl = document.createElement('a');
     dl.href = './nongup_josagu/nongup_area_josagu.xlsx';
