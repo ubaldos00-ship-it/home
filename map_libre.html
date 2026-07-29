@@ -1,4 +1,5 @@
-<!-- map_v70.html (v70 · TENAR V1.5) · 저장: 2026-07-29 19:42 KST · [v70] ①작물재배조사구 핀을 축소(줌11)에서도 보이게 — 동그라미 안 번호와 「읍면동 층 조사구」 카드도 줌11부터 표시(minzoom 13.5/14→10), 저줌 핀 크기 소폭 확대 ②행정경계 레이어(리·읍면동·시군구·시도) 줌11에서 표시(리 minzoom 12→11) ③리·읍면동·시군구 경계선 색을 초록→노랑(리 #fde047·읍면동 #facc15·시군구 #eab308, 굵기로 구분) ④레이어 제목 「행정경계(시도)」→「시도 경계」 -->
+<!-- map_v71.html (v71 · TENAR V1.5) · 저장: 2026-07-29 22:03 KST · [v71] ①리 경계 minzoom 12로 복귀 ②조사구 번호·「읍면동 층 조사구」 카드 겹쳐도 항상 표시(자동 겹침숨김 해제) ③지도출처 시트 초기높이 낮춰 「초기화」 글자 숨김 ④현재위치+실시간추적+방향(나침반) 통합 — 통합 위치버튼(off/북쪽고정/방향추적 3상태)·커스텀 파란 마커(방향화살표·부채꼴)·방향추적 시 지도회전·레이어버튼 아래 나침반버튼(회전 중에만 표시,누르면 북쪽정렬)·핀 탭 시 현재위치 바텀시트(주소·좌표·정확도·방향·시각)·지도 수동조작 시 추적해제·iOS 방향권한·오류 토스트·pagehide 정리. 기존 지도/저장/필지/즐겨찾기 기능 무변경 -->
+<!-- (이전)  map_v70.html (v70 · TENAR V1.5) · 저장: 2026-07-29 19:42 KST · [v70] ①작물재배조사구 핀을 축소(줌11)에서도 보이게 — 동그라미 안 번호와 「읍면동 층 조사구」 카드도 줌11부터 표시(minzoom 13.5/14→10), 저줌 핀 크기 소폭 확대 ②행정경계 레이어(리·읍면동·시군구·시도) 줌11에서 표시(리 minzoom 12→11) ③리·읍면동·시군구 경계선 색을 초록→노랑(리 #fde047·읍면동 #facc15·시군구 #eab308, 굵기로 구분) ④레이어 제목 「행정경계(시도)」→「시도 경계」 -->
 <!-- (이전)  map_v69.html (v69 · TENAR V1.5) · 저장: 2026-07-29 13:33 KST · [v69] ①포구·측정 저장 시 기존자료 있으면 「덮어쓰기」를 앞·기본(primary)으로, 「새로 저장」은 뒤로(측정도구도 덮어쓰기/새로저장 선택 추가) ②즐겨찾기 목록·연결 측정자료 선택 시 팝업을 피해 보이는 영역 한가운데에 표시(줌 보정)+선택 핀 상시 확대 ③작물재배조사구 핀 줌 크기조절 버그 수정(zoom interpolate 최상위) — 축소 시 점처럼 작게 -->
 <!-- (이전)  map_v68.html (v68 · TENAR V1.5) · 저장: 2026-07-29 08:27 KST · [v68] 작물재배조사구 — ①조사구 정보 팝업에 「길찾기」 추가(수정·목록·길찾기·삭제 순)·네이버지도/카카오맵/T맵 연결(기존 길찾기와 동일) ②조사구 목록+토지조회 캐시(tenar_land_cache_v1)도 AES-256-GCM 암호화 저장·재배면적 탭에 암호화 상태 표시 ③지도 축소 시 핀을 점처럼 작게(줌 보간)·확대 시 번호 표시, 핀/번호/읍면동·층·조사구 라벨 어느 것을 눌러도 정보 팝업 -->
 <!-- (이전)  map_v67.html (v67 · TENAR V1.5) · 저장: 2026-07-29 07:49 KST · [v67] 작물재배조사구 — ①번호를 읍면동별 1부터 매김 ②조사구 수정 즉시 반영·시군구 오타(경신시→경산시) 수정 시 자동 병합·번호 수정 시 뒤로 밀림 ③수정모드에서 주소를 고치면 좌표를 다시 찾아 핀 갱신(업로드는 좌표 우선, 없으면 주소) ④핀 라벨에 읍면동 포함(자인면 9층 125조사구) ⑤재배면적 탭에서 수정→저장/취소/닫기 시 탭으로 복귀 ⑥지도 조사구 팝업: 제목=조사구 이름·목록 버튼(닫으면 팝업 복귀)·수정 후 팝업에 반영 ⑦저장핀 표시에 「조사구 표시」 on/off(기본 꺼짐) -->
@@ -430,6 +431,26 @@ TenarSecureStore.init('map',
   }
   .side-btn.active { background: #27500A; color: #fff; }
   .side-btn:active { transform: scale(.94); }
+  /* [v71-4] 통합 위치버튼 활성(파랑) · 나침반 · 현재위치 마커 */
+  #btnLoc.loc-active { background: #1a73e8; color: #fff; }
+  #btnLoc.loc-active svg { color: #fff; }
+  #compassNeedle { transform-origin: 12px 12px; transition: transform .12s linear; }
+  .tloc-marker { position: relative; width: 22px; height: 22px; pointer-events: auto; cursor: pointer; }
+  .tloc-marker .tloc-dot {
+    position: absolute; left: 50%; top: 50%; width: 16px; height: 16px; margin: -8px 0 0 -8px;
+    border-radius: 50%; background: #1a73e8; border: 3px solid #fff; box-shadow: 0 1px 3px rgba(0,0,0,.35); box-sizing: border-box;
+  }
+  .tloc-marker .tloc-arrow {
+    position: absolute; left: 50%; top: 50%; width: 0; height: 0; margin: -21px 0 0 -6px;
+    border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 10px solid #1a73e8;
+    filter: drop-shadow(0 0 1px #fff); display: none;
+  }
+  .tloc-marker .tloc-fan {
+    position: absolute; left: 50%; top: 50%; width: 0; height: 0; margin: -48px 0 0 -24px;
+    border-left: 24px solid transparent; border-right: 24px solid transparent; border-bottom: 46px solid rgba(26,115,232,.20);
+    display: none;
+  }
+  .tloc-marker.has-heading .tloc-arrow, .tloc-marker.has-heading .tloc-fan { display: block; }
   /* [v7-4] SVG 아이콘 버튼 — 활성 시 currentColor가 흰색으로 바뀌어 아이콘도 반전 */
   .side-btn.ico svg { display: block; }
   .side-btn.ico { color: #27500A; }
@@ -848,12 +869,12 @@ TenarSecureStore.init('map',
   /* [v35-3] 위치 저장 화면일 때 오른쪽 버튼은 현재위치만 남긴다 */
   /* [v36-1] 조사위치 저장 화면 — 레이어·현재위치만 남기고 나머지는 숨긴다 */
   body.save-mode #btnPins, body.save-mode #btnFpTool,
-  body.save-mode #btnMeasure, body.save-mode #btnTrack, body.save-mode #btnFav { display: none !important; }
+  body.save-mode #btnMeasure, body.save-mode #btnFav { display: none !important; }   /* [v71-4] 통합 위치버튼(btnLoc)은 저장모드에서도 표시 */
   /* [v40-7] 하단 팝업(시트)이 열려 있는 동안 오른쪽 도구 버튼을 숨긴다.
      (주소검색·레이어는 그대로 두어 지도 종류를 바꾸거나 검색할 수 있게 한다) */
   body.sheet-open #btnHere, body.sheet-open #btnFav, body.sheet-open #btnMeasure,
   body.sheet-open #btnFpTool, body.sheet-open #btnPins,
-  body.sheet-open #btnTrack { display: none !important; }   /* [v41-1] 추적도 함께 숨김 */
+  body.sheet-open #btnLoc { display: none !important; }   /* [v41-1]·[v71-4] 위치버튼도 함께 숨김 */
 
   .fp-gana {
     position: absolute; width: 21px; height: 21px; border-radius: 11px;
@@ -1171,6 +1192,16 @@ TenarSecureStore.init('map',
         <path d="M4.9 15.9 2.6 17.1 12 22l9.4-4.9-2.3-1.2-7.1 3.7-7.1-3.7Z" fill="currentColor"/>
       </svg>
     </button>
+    <!-- [v71-4] 나침반 버튼 : 방향추적으로 지도가 회전 중일 때만 표시 -->
+    <button class="side-btn ico" id="btnCompass" type="button" title="북쪽 정렬" aria-label="북쪽 정렬" style="display:none;">
+      <svg id="compassSvg" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+        <g id="compassNeedle">
+          <path d="M12 3.5 15 12 12 10.2 9 12Z" fill="#e5342a"/>
+          <path d="M12 20.5 9 12 12 13.8 15 12Z" fill="#9aa4b2"/>
+        </g>
+        <text x="12" y="3.2" text-anchor="middle" font-size="4.4" font-weight="800" fill="#111827">N</text>
+      </svg>
+    </button>
   </div>
 
   <!-- [v5-4] 나머지 5개는 오른쪽 최하단 (바텀시트가 열리면 시트 위로 이동) -->
@@ -1185,8 +1216,8 @@ TenarSecureStore.init('map',
       </svg>
     </button>
     <button class="side-btn" id="btnMeasure" type="button" title="측정도구 (면적·길이)">📐</button>
-    <!-- [v7-4] 위치추적 아이콘: 조준(타겟) SVG -->
-    <button class="side-btn ico" id="btnTrack" type="button" title="실시간 위치추적" aria-label="실시간 위치추적">
+    <!-- [v71-4] 현재위치+실시간추적 통합 버튼 (GPS 조준 아이콘) -->
+    <button class="side-btn ico" id="btnLoc" type="button" title="현재 위치 · 실시간 추적" aria-label="현재 위치 · 실시간 추적">
       <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
         <circle cx="12" cy="12" r="7.1" fill="none" stroke="currentColor" stroke-width="1.9"/>
         <circle cx="12" cy="12" r="2.9" fill="currentColor"/>
@@ -1194,7 +1225,6 @@ TenarSecureStore.init('map',
       </svg>
     </button>
     <button class="side-btn" id="btnFav"     type="button" title="즐겨찾기">⭐</button>
-    <button class="side-btn" id="btnHere"    type="button" title="현재 위치">📍</button>
   </div>
 
   <!-- 실측 도구 (헤더 바를 잡고 이동) -->
@@ -2125,7 +2155,7 @@ TenarSecureStore.init('map',
     if (pos && pos.coords) {
       lastTrackedLoc = [pos.coords.longitude, pos.coords.latitude];
       /* 혹시라도 클래스가 풀렸으면 추적 중일 때 다시 활성 상태로 되돌린다 */
-      if (isTrackingLocation) document.getElementById('btnTrack').classList.add('active');
+      if (isTrackingLocation) { var _bt = document.getElementById('btnTrack'); if (_bt) _bt.classList.add('active'); }   /* [v71-4] btnTrack 제거됨 — 널가드 */
       maybeRecenterTracked();   /* [v8-12] 현재 위치가 화면 밖이면 중앙으로 복귀 */
     }
   });
@@ -2195,7 +2225,7 @@ TenarSecureStore.init('map',
     { id: 'terrain',   ko: '지형도',        desc: 'LT_L_N3A0020000 · 도로중심선 (확대 15↑)', kind: 'data', data: 'LT_L_N3A0020000', color: '#8b5a2b', width: 1.2, minzoom: 15 },   /* [v58] 지형도(도로중심선) */
     { id: 'landprice', ko: '개별공시지가',  desc: '가격 구간 색상 · 금액 표시 (확대 15↑)', kind: 'data', data: 'LP_PA_CBND_BUBUN', color: '#0ea5e9', width: 0.6, minzoom: 15, fillByPrice: true },
     { id: 'hybrid',    ko: '하이브리드',    desc: '지명·도로 겹치기 (WMTS)',         kind: 'wmts', layer: 'Hybrid', ext: 'png' },
-    { id: 'adri',      ko: '리 경계',       desc: 'LT_C_ADRI_INFO (확대 11↑)',      kind: 'data', data: 'LT_C_ADRI_INFO', color: '#fde047', width: 1.6, minzoom: 11 },   /* [v70-2] 노랑 · 확대11 */
+    { id: 'adri',      ko: '리 경계',       desc: 'LT_C_ADRI_INFO (확대 12↑)',      kind: 'data', data: 'LT_C_ADRI_INFO', color: '#fde047', width: 1.6, minzoom: 12 },   /* [v70-2] 노랑 / [v71-1] 확대12로 복귀 */
     { id: 'ademd',     ko: '읍면동 경계',   desc: 'LT_C_ADEMD_INFO (확대 11↑)',     kind: 'data', data: 'LT_C_ADEMD_INFO', color: '#facc15', width: 1.9, minzoom: 10 },   /* [v70-2] 노랑 */
     { id: 'adsigg',    ko: '시군구 경계',   desc: 'LT_C_ADSIGG_INFO (확대 11↑)',     kind: 'data', data: 'LT_C_ADSIGG_INFO', color: '#eab308', width: 2.4, minzoom: 8 },   /* [v70-2] 노랑(진하게) */
     { id: 'adsido',    ko: '시도 경계',     desc: 'LT_C_ADSIDO_INFO (확대 11↑)',     kind: 'data', data: 'LT_C_ADSIDO_INFO', color: '#334155', width: 2.4, minzoom: 6 }   /* [v70-3] 제목 「시도 경계」 */
@@ -5158,7 +5188,7 @@ TenarSecureStore.init('map',
   var trackNoticeShown = false;
   function setTrackBtn(on) {
     isTrackingLocation = on;
-    document.getElementById('btnTrack').classList.toggle('active', on);
+    { var _bt2 = document.getElementById('btnTrack'); if (_bt2) _bt2.classList.toggle('active', on); }   /* [v71-4] 널가드 */
   }
 
   /* [v8-12/13] 추적 중 현재 위치가 화면 밖으로 벗어났을 때만 중앙으로 복귀.
@@ -5350,7 +5380,7 @@ TenarSecureStore.init('map',
       minzoom: 10,   /* [v70-1] 축소(줌11)에서도 읍면동·층·조사구 카드 표시 */
       layout: {
         'text-field': ['get', 'labelText'], 'text-size': ['interpolate', ['linear'], ['zoom'], 10, 10, 14, 11], 'text-offset': [0, 1.5],
-        'text-anchor': 'top', 'text-allow-overlap': false, 'text-optional': true
+        'text-anchor': 'top', 'text-allow-overlap': true, 'text-optional': false   /* [v71-2] 겹쳐도 항상 표시 */
       },
       paint: { 'text-color': '#7c2d12', 'text-halo-color': '#ffffff', 'text-halo-width': 1.6 }
     });
@@ -7477,7 +7507,7 @@ TenarSecureStore.init('map',
     /* [v63-10] 처음엔 「공식 확인은 토지이음에서…」까지만 보이고, 쓸어올리면 초기화까지 보이게 */
     requestAnimationFrame(function () {
       try {
-        var hh = getSavedLocationCollapsedHeight(sheetEl, introBlock);
+        var hh = getSavedLocationCollapsedHeight(sheetEl, introBlock) - 30;   /* [v71-3] 초기화 글자가 안 보이도록 조금 더 낮게 */
         if (hh > 0) { sheetEl.style.height = hh + 'px'; sheetSnap = Math.round(hh / window.innerHeight * 100); updateBottomBtnsPos(); }
       } catch (e) {}
     });
@@ -7548,8 +7578,7 @@ TenarSecureStore.init('map',
   document.getElementById('btnLayer').addEventListener('click', openLayerSheet);
   document.getElementById('btnPins').addEventListener('click', openPinsSheet);
   document.getElementById('btnFav').addEventListener('click', openFavSheet);
-  document.getElementById('btnHere').addEventListener('click', goHere);
-  document.getElementById('btnTrack').addEventListener('click', toggleTracking);
+  /* [v71-4] 현재위치·추적은 통합 버튼(btnLoc)+TLoc 매니저로 이관 (아래 TLoc.init에서 배선) */
   /* [v5-5] 측정 버튼 = 열기/닫기 토글.
      닫을 때 측정 중이거나 측정값이 남아 있으면 삭제 여부를 먼저 확인한다. */
   function hasMeasureData() {
@@ -10012,6 +10041,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     try { setTimeout(function () { cleanupOrphanMapItems(false); }, 900); } catch (e) {}   /* [v49-2] 고아 경계 정리 */
     try { setTimeout(function () { checkNasHealth(); }, 500); } catch (e) {}   /* [v51-3] NAS 자동 감지 → ONLINE/OFFLINE */
     try { areaPlotsInit(); } catch (e) { console.error('[v64] 작물재배조사구 init 오류:', e); }   /* [v64] */
+    try { TLoc.init(); } catch (e) { console.error('[v71] 위치추적 init 오류:', e); }   /* [v71-4] */
     /* [v55] 앱으로 돌아오거나 오프라인→온라인 복귀 시 자동으로 다시 연결 시도 (버튼 불필요) */
     try {
       document.addEventListener('visibilitychange', function () {
@@ -10989,6 +11019,214 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
       document.addEventListener('visibilitychange', function () { if (document.hidden) { try { setAreaPlots(getAreaPlots()); } catch (e) {} } });
     } catch (e) {}
   }
+
+  /* ═══════════════════════════════════════════════════════════════
+     [v71-4] 현재위치 + 실시간 위치추적 + 방향(나침반) 통합 (TLoc)
+     · 통합 위치버튼(#btnLoc) 3상태 : off / follow-north / follow-heading
+     · 커스텀 파란 마커(방향화살표·부채꼴) · 방향추적 시 지도 회전
+     · 나침반 버튼(#btnCompass)은 방향추적으로 지도가 돌아갈 때만 표시
+     · 기존 지도/저장/필지/즐겨찾기 기능은 건드리지 않음
+     ═══════════════════════════════════════════════════════════════ */
+  var TLoc = (function () {
+    var mode = 'off';
+    var watchId = null, orientOn = false;
+    var marker = null, markerEl = null;
+    var lastPos = null, heading = null;
+    var programmatic = false;
+    var targetBearing = null, bearingRAF = null;
+    var HEADING_THRESHOLD = 2;
+    var FOCUS_ZOOM = (typeof LOCATION_FOCUS_ZOOM !== 'undefined') ? LOCATION_FOCUS_ZOOM : 17;
+    var btn = null, compassBtn = null, compassNeedle = null;
+
+    function isSaveMode() { try { return document.body.classList.contains('save-mode'); } catch (e) { return false; } }
+
+    function ensureMarker() {
+      if (marker) return;
+      markerEl = document.createElement('div');
+      markerEl.className = 'tloc-marker';
+      markerEl.innerHTML = '<div class="tloc-fan"></div><div class="tloc-arrow"></div><div class="tloc-dot"></div>';
+      marker = new maplibregl.Marker({ element: markerEl, rotationAlignment: 'map', pitchAlignment: 'map', anchor: 'center' });
+      markerEl.addEventListener('click', function (e) { e.stopPropagation(); openLocSheet(); });
+    }
+    function showMarker(lng, lat) {
+      ensureMarker();
+      marker.setLngLat([lng, lat]);
+      if (!marker._map) marker.addTo(map);
+      applyHeadingToMarker();
+    }
+    function applyHeadingToMarker() {
+      if (!marker) return;
+      if (heading == null) { markerEl.classList.remove('has-heading'); marker.setRotation(0); return; }
+      markerEl.classList.add('has-heading');
+      marker.setRotation(heading);   /* rotationAlignment:'map' → 지도 회전과 무관하게 지리적 방향 유지 */
+    }
+
+    /* 지도 회전(방향추적) — 목표 bearing 으로 부드럽게 */
+    function animateBearing() {
+      if (targetBearing == null) { bearingRAF = null; return; }
+      var cur = map.getBearing();
+      var d = ((targetBearing - cur + 540) % 360) - 180;
+      if (Math.abs(d) < 0.5) { setBearingProg(targetBearing); bearingRAF = null; return; }
+      setBearingProg(cur + d * 0.25);
+      bearingRAF = requestAnimationFrame(animateBearing);
+    }
+    function setBearingProg(b) { programmatic = true; try { map.setBearing(b); } catch (e) {} programmatic = false; updateCompass(); }
+    function rotateMapTo(h) { targetBearing = h; if (!bearingRAF) bearingRAF = requestAnimationFrame(animateBearing); }   /* [v71-4] bearing=heading(그 방향이 위) */
+
+    function recenter() {
+      if (!lastPos) return;
+      programmatic = true;
+      try { map.easeTo({ center: [lastPos.lng, lastPos.lat], duration: 350, essential: true }); } catch (e) {}
+      setTimeout(function () { programmatic = false; }, 420);
+    }
+
+    /* ── GPS ── */
+    function onPos(pos) {
+      var c = pos.coords;
+      var prev = lastPos;
+      lastPos = { lat: c.latitude, lng: c.longitude, acc: c.accuracy, ts: pos.timestamp || Date.now(), addr: prev ? prev.addr : '' };
+      showMarker(c.longitude, c.latitude);
+      if (mode !== 'off') {
+        var moved = !prev || Math.abs(prev.lat - lastPos.lat) > 1e-6 || Math.abs(prev.lng - lastPos.lng) > 1e-6;
+        if (moved) recenter();
+      }
+      refreshLocSheet();
+    }
+    function onPosErr(err) {
+      var msg = '현재 위치를 확인할 수 없습니다. 잠시 후 다시 시도해 주세요.';
+      if (err && err.code === 1) msg = '현재 위치 권한이 허용되지 않았습니다.\n브라우저 설정에서 위치 권한을 허용해 주세요.';
+      showToast(msg, 5000);
+      setMode('off');
+    }
+    function startWatch() {
+      if (watchId != null || !navigator.geolocation) return;
+      watchId = navigator.geolocation.watchPosition(onPos, onPosErr, { enableHighAccuracy: true, maximumAge: 1000, timeout: 15000 });
+    }
+    function stopWatch() { if (watchId != null) { try { navigator.geolocation.clearWatch(watchId); } catch (e) {} watchId = null; } }
+
+    /* ── 방향 센서 ── */
+    function onOrient(e) {
+      var h = null;
+      if (typeof e.webkitCompassHeading === 'number' && !isNaN(e.webkitCompassHeading)) h = e.webkitCompassHeading;
+      else if (typeof e.alpha === 'number' && e.alpha != null && e.absolute) h = (360 - e.alpha) % 360;
+      if (h == null || isNaN(h)) return;
+      if (heading != null) { var d = Math.abs(((h - heading + 540) % 360) - 180); if (d < HEADING_THRESHOLD) return; }
+      heading = (h + 360) % 360;
+      applyHeadingToMarker();
+      if (mode === 'follow-heading') rotateMapTo(heading);
+    }
+    function startOrient() {
+      if (orientOn) return; orientOn = true;
+      window.addEventListener('deviceorientationabsolute', onOrient, true);
+      window.addEventListener('deviceorientation', onOrient, true);
+    }
+    function stopOrient() {
+      if (!orientOn) return; orientOn = false;
+      window.removeEventListener('deviceorientationabsolute', onOrient, true);
+      window.removeEventListener('deviceorientation', onOrient, true);
+    }
+    function requestOrientPerm() {
+      try {
+        if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function')
+          return DeviceOrientationEvent.requestPermission().then(function (p) { return p === 'granted'; }).catch(function () { return false; });
+      } catch (e) {}
+      return Promise.resolve(('DeviceOrientationEvent' in window) || ('ondeviceorientationabsolute' in window));
+    }
+
+    /* ── 상태 ── */
+    function setMode(m) {
+      mode = m;
+      if (btn) { btn.classList.toggle('loc-active', m !== 'off'); btn.classList.toggle('loc-heading', m === 'follow-heading'); }
+      updateCompass();
+    }
+    function updateCompass() {
+      if (!compassBtn) return;
+      var b = 0; try { b = map.getBearing(); } catch (e) {}
+      var off0 = Math.abs(((b + 540) % 360) - 180);
+      compassBtn.style.display = ((mode === 'follow-heading') && off0 > 1.5) ? '' : 'none';
+      if (compassNeedle) compassNeedle.style.transform = 'rotate(' + (-b) + 'deg)';
+    }
+
+    /* ── 버튼 ── */
+    function onButton() {
+      if (isSaveMode()) { try { goHere(); } catch (e) {} return; }   /* 저장모드: 예전처럼 1회성 현재위치 채움 */
+      if (!navigator.geolocation) { showToast('이 브라우저는 위치 기능을 지원하지 않습니다.', 4000); return; }
+      if (window.isSecureContext === false) showToast('현재 위치는 HTTPS(또는 localhost)에서만 정상 동작합니다.', 5000);
+      if (mode === 'off') {
+        showToast('현재 위치를 확인하고 있습니다.', 0, 'info');
+        navigator.geolocation.getCurrentPosition(function (pos) {
+          onPos(pos);
+          programmatic = true;
+          try { map.easeTo({ center: [lastPos.lng, lastPos.lat], zoom: Math.max(map.getZoom(), FOCUS_ZOOM), duration: 500, essential: true }); } catch (e) {}
+          setTimeout(function () { programmatic = false; }, 560);
+          showToast('', 1, 'info');
+          startWatch();
+          requestOrientPerm().then(function (ok) {
+            if (ok) { startOrient(); setMode('follow-heading'); if (heading != null) rotateMapTo(heading); }
+            else { setMode('follow-north'); showToast('현재 위치는 표시되지만 방향 센서 권한이 없어 지도 자동 회전은 사용할 수 없습니다.', 5000); }
+          });
+        }, onPosErr, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+      } else if (mode === 'follow-north') {
+        requestOrientPerm().then(function (ok) {
+          if (ok) { startOrient(); setMode('follow-heading'); recenter(); if (heading != null) rotateMapTo(heading); }
+          else { showToast('방향 센서를 사용할 수 없습니다. 현재 위치만 표시합니다.', 4000); recenter(); }
+        });
+      } else { recenter(); }   /* follow-heading → 재중심 */
+    }
+    function onCompass() {
+      targetBearing = 0; if (!bearingRAF) bearingRAF = requestAnimationFrame(animateBearing);
+      if (mode === 'follow-heading') setMode('follow-north');   /* 현재위치 추적은 유지, 북쪽 고정 */
+      setTimeout(updateCompass, 500);
+    }
+
+    /* ── 수동 조작 → 추적 해제 ── */
+    function onUserInteract() { if (programmatic) return; if (mode !== 'off') setMode('off'); }
+
+    /* ── 현재위치 바텀시트 ── */
+    function dirText(h) {
+      if (h == null) return '방향 정보 없음';
+      var dirs = ['북', '북동', '동', '남동', '남', '남서', '서', '북서'];
+      return dirs[Math.round(h / 45) % 8] + '쪽 ' + Math.round(h) + '°';
+    }
+    function renderLocSheet(box) {
+      if (!lastPos) return;
+      var t = new Date(lastPos.ts || Date.now());
+      var timeStr = t.toLocaleTimeString('ko-KR', { hour: 'numeric', minute: '2-digit' });
+      box.innerHTML =
+        '<div class="addr-value" style="font-weight:800;">' + (lastPos.addr ? escapeHtml(lastPos.addr) : '<span style="color:#999;">주소 조회 중… (좌표는 아래에 표시)</span>') + '</div>' +
+        '<div class="addr-value" style="font-size:13px;margin-top:4px;">위도: ' + lastPos.lat.toFixed(6) + '</div>' +
+        '<div class="addr-value" style="font-size:13px;">경도: ' + lastPos.lng.toFixed(6) + '</div>' +
+        '<div class="addr-value" style="font-size:13px;">정확도: 약 ' + (isFinite(lastPos.acc) ? Math.round(lastPos.acc) + 'm' : '알 수 없음') + '</div>' +
+        '<div class="addr-value" style="font-size:13px;">방향: ' + dirText(heading) + '</div>' +
+        '<div class="addr-value" style="font-size:13px;color:#888;">확인 시각: ' + timeStr + '</div>';
+    }
+    function openLocSheet() {
+      if (!lastPos) return;
+      var box = document.createElement('div'); box.id = 'tlocSheetBody';
+      renderLocSheet(box);
+      openSheet('현재 위치', box, 'auto');
+      requestVWorldReverse(lastPos.lng, lastPos.lat).then(function (a) {
+        if (lastPos) lastPos.addr = a.jibunAddress || a.roadAddress || '';
+        var b2 = document.getElementById('tlocSheetBody'); if (b2) renderLocSheet(b2);
+      }).catch(function () {});
+    }
+    function refreshLocSheet() { var b = document.getElementById('tlocSheetBody'); if (b && lastPos) renderLocSheet(b); }
+
+    function teardown() { stopWatch(); stopOrient(); if (bearingRAF) { try { cancelAnimationFrame(bearingRAF); } catch (e) {} bearingRAF = null; } }
+
+    function init() {
+      btn = document.getElementById('btnLoc');
+      compassBtn = document.getElementById('btnCompass');
+      compassNeedle = document.getElementById('compassNeedle');
+      if (btn) btn.addEventListener('click', onButton);
+      if (compassBtn) compassBtn.addEventListener('click', onCompass);
+      ['dragstart', 'zoomstart', 'rotatestart', 'pitchstart'].forEach(function (ev) { map.on(ev, onUserInteract); });
+      map.on('rotate', updateCompass);
+      document.addEventListener('visibilitychange', function () { if (document.hidden) teardown(); });
+      window.addEventListener('pagehide', teardown);
+    }
+    return { init: init };
+  })();
 
   /* 디버그/연동용 */
   window._map = map;
