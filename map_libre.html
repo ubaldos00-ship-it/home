@@ -1,4 +1,5 @@
-<!-- map_v69.html (v69 · TENAR V1.5) · 저장: 2026-07-29 13:33 KST · [v69] ①포구·측정 저장 시 기존자료 있으면 「덮어쓰기」를 앞·기본(primary)으로, 「새로 저장」은 뒤로(측정도구도 덮어쓰기/새로저장 선택 추가) ②즐겨찾기 목록·연결 측정자료 선택 시 팝업을 피해 보이는 영역 한가운데에 표시(줌 보정)+선택 핀 상시 확대 ③작물재배조사구 핀 줌 크기조절 버그 수정(zoom interpolate 최상위) — 축소 시 점처럼 작게 -->
+<!-- map_v70.html (v70 · TENAR V1.5) · 저장: 2026-07-29 19:42 KST · [v70] ①작물재배조사구 핀을 축소(줌11)에서도 보이게 — 동그라미 안 번호와 「읍면동 층 조사구」 카드도 줌11부터 표시(minzoom 13.5/14→10), 저줌 핀 크기 소폭 확대 ②행정경계 레이어(리·읍면동·시군구·시도) 줌11에서 표시(리 minzoom 12→11) ③리·읍면동·시군구 경계선 색을 초록→노랑(리 #fde047·읍면동 #facc15·시군구 #eab308, 굵기로 구분) ④레이어 제목 「행정경계(시도)」→「시도 경계」 -->
+<!-- (이전)  map_v69.html (v69 · TENAR V1.5) · 저장: 2026-07-29 13:33 KST · [v69] ①포구·측정 저장 시 기존자료 있으면 「덮어쓰기」를 앞·기본(primary)으로, 「새로 저장」은 뒤로(측정도구도 덮어쓰기/새로저장 선택 추가) ②즐겨찾기 목록·연결 측정자료 선택 시 팝업을 피해 보이는 영역 한가운데에 표시(줌 보정)+선택 핀 상시 확대 ③작물재배조사구 핀 줌 크기조절 버그 수정(zoom interpolate 최상위) — 축소 시 점처럼 작게 -->
 <!-- (이전)  map_v68.html (v68 · TENAR V1.5) · 저장: 2026-07-29 08:27 KST · [v68] 작물재배조사구 — ①조사구 정보 팝업에 「길찾기」 추가(수정·목록·길찾기·삭제 순)·네이버지도/카카오맵/T맵 연결(기존 길찾기와 동일) ②조사구 목록+토지조회 캐시(tenar_land_cache_v1)도 AES-256-GCM 암호화 저장·재배면적 탭에 암호화 상태 표시 ③지도 축소 시 핀을 점처럼 작게(줌 보간)·확대 시 번호 표시, 핀/번호/읍면동·층·조사구 라벨 어느 것을 눌러도 정보 팝업 -->
 <!-- (이전)  map_v67.html (v67 · TENAR V1.5) · 저장: 2026-07-29 07:49 KST · [v67] 작물재배조사구 — ①번호를 읍면동별 1부터 매김 ②조사구 수정 즉시 반영·시군구 오타(경신시→경산시) 수정 시 자동 병합·번호 수정 시 뒤로 밀림 ③수정모드에서 주소를 고치면 좌표를 다시 찾아 핀 갱신(업로드는 좌표 우선, 없으면 주소) ④핀 라벨에 읍면동 포함(자인면 9층 125조사구) ⑤재배면적 탭에서 수정→저장/취소/닫기 시 탭으로 복귀 ⑥지도 조사구 팝업: 제목=조사구 이름·목록 버튼(닫으면 팝업 복귀)·수정 후 팝업에 반영 ⑦저장핀 표시에 「조사구 표시」 on/off(기본 꺼짐) -->
 <!-- (이전)  map_v66.html (v66 · TENAR V1.5) · 저장: 2026-07-29 06:42 KST · [v66] 작물재배조사구 대개편 — ①양식에 위도·경도 추가(좌표 우선, 없으면 초입주소로 지오코딩) ②시도 정규화(경북→경상북도·대구→대구광역시 등) ③트리를 시도>시군구>읍면동>조사구로(리동·층 레벨 삭제, 층은 필드로 유지) ④조사구 추가·수정·삭제 + 시도/시군구/읍면동별 삭제 + 전체삭제 ⑤핀=읍면동별 색+동그라미 안 순서번호, 클릭 시 아래 팝업+수정 ⑥JSON 내보내기·가져오기 암호화(PBKDF2/AES-GCM, 기본 2026, 변경가능) ⑦로컬 지속저장 확인+pagehide 보강 -->
@@ -2194,10 +2195,10 @@ TenarSecureStore.init('map',
     { id: 'terrain',   ko: '지형도',        desc: 'LT_L_N3A0020000 · 도로중심선 (확대 15↑)', kind: 'data', data: 'LT_L_N3A0020000', color: '#8b5a2b', width: 1.2, minzoom: 15 },   /* [v58] 지형도(도로중심선) */
     { id: 'landprice', ko: '개별공시지가',  desc: '가격 구간 색상 · 금액 표시 (확대 15↑)', kind: 'data', data: 'LP_PA_CBND_BUBUN', color: '#0ea5e9', width: 0.6, minzoom: 15, fillByPrice: true },
     { id: 'hybrid',    ko: '하이브리드',    desc: '지명·도로 겹치기 (WMTS)',         kind: 'wmts', layer: 'Hybrid', ext: 'png' },
-    { id: 'adri',      ko: '리 경계',       desc: 'LT_C_ADRI_INFO (확대 12↑)',      kind: 'data', data: 'LT_C_ADRI_INFO', color: '#065f46', width: 1.6, minzoom: 12 },
-    { id: 'ademd',     ko: '읍면동 경계',   desc: 'LT_C_ADEMD_INFO (확대 10↑)',     kind: 'data', data: 'LT_C_ADEMD_INFO', color: '#0f766e', width: 1.8, minzoom: 10 },
-    { id: 'adsigg',    ko: '시군구 경계',   desc: 'LT_C_ADSIGG_INFO (확대 8↑)',     kind: 'data', data: 'LT_C_ADSIGG_INFO', color: '#b45309', width: 2, minzoom: 8 },
-    { id: 'adsido',    ko: '행정경계(시도)', desc: 'LT_C_ADSIDO_INFO (확대 6↑)',     kind: 'data', data: 'LT_C_ADSIDO_INFO', color: '#334155', width: 2.2, minzoom: 6 }
+    { id: 'adri',      ko: '리 경계',       desc: 'LT_C_ADRI_INFO (확대 11↑)',      kind: 'data', data: 'LT_C_ADRI_INFO', color: '#fde047', width: 1.6, minzoom: 11 },   /* [v70-2] 노랑 · 확대11 */
+    { id: 'ademd',     ko: '읍면동 경계',   desc: 'LT_C_ADEMD_INFO (확대 11↑)',     kind: 'data', data: 'LT_C_ADEMD_INFO', color: '#facc15', width: 1.9, minzoom: 10 },   /* [v70-2] 노랑 */
+    { id: 'adsigg',    ko: '시군구 경계',   desc: 'LT_C_ADSIGG_INFO (확대 11↑)',     kind: 'data', data: 'LT_C_ADSIGG_INFO', color: '#eab308', width: 2.4, minzoom: 8 },   /* [v70-2] 노랑(진하게) */
+    { id: 'adsido',    ko: '시도 경계',     desc: 'LT_C_ADSIDO_INFO (확대 11↑)',     kind: 'data', data: 'LT_C_ADSIDO_INFO', color: '#334155', width: 2.4, minzoom: 6 }   /* [v70-3] 제목 「시도 경계」 */
   ];
   /* ※ 건물(LT_C_SPBD)·도로(LT_L_SPRD)는 이번 버전 목록에서 제외했습니다.
        필요하면 위 배열에 kind:'data'로 한 줄 추가하면 그대로 동작합니다. */
@@ -5309,9 +5310,9 @@ TenarSecureStore.init('map',
       paint: {
         /* [v69-3] zoom interpolate 는 최상위여야 하므로 각 구간 출력에 sel(case)을 둔다 */
         'circle-radius': ['interpolate', ['linear'], ['zoom'],
-          9, ['case', ['get', 'sel'], 4.5, 3.5],
-          12, ['case', ['get', 'sel'], 8, 6],
-          14, ['case', ['get', 'sel'], 14, 11],
+          8, ['case', ['get', 'sel'], 8, 7],
+          11, ['case', ['get', 'sel'], 12, 10],
+          14, ['case', ['get', 'sel'], 16, 13],
           16, ['case', ['get', 'sel'], 21, 16],
           18, ['case', ['get', 'sel'], 25, 19]],
         'circle-color': ['coalesce', ['get', 'dotColor'], '#f59e0b'], 'circle-opacity': 0.16
@@ -5321,11 +5322,11 @@ TenarSecureStore.init('map',
       id: 'area-plots-dot', type: 'circle', source: 'area-plots-source',
       filter: ['==', ['get', 'visible'], true],
       paint: {
-        /* [v66] 읍면동별 색(dotColor) / [v69-3] 축소=점, 확대=커짐 · 선택 핀은 조금 크게 */
+        /* [v70-1] 축소(줌11)에서도 번호가 보이도록 최소 크기 확보 · 확대할수록 커짐 · 선택 핀은 조금 크게 */
         'circle-radius': ['interpolate', ['linear'], ['zoom'],
-          9, ['case', ['get', 'sel'], 3.4, 2.5],
-          12, ['case', ['get', 'sel'], 5.5, 4],
-          14, ['case', ['get', 'sel'], 10, 7.5],
+          8, ['case', ['get', 'sel'], 6.5, 5.5],
+          11, ['case', ['get', 'sel'], 10, 8.5],
+          14, ['case', ['get', 'sel'], 12, 9.5],
           16, ['case', ['get', 'sel'], 15, 11],
           18, ['case', ['get', 'sel'], 17.5, 13]],
         'circle-color': ['coalesce', ['get', 'dotColor'], '#f59e0b'],
@@ -5335,10 +5336,10 @@ TenarSecureStore.init('map',
     map.addLayer({
       id: 'area-plots-num', type: 'symbol', source: 'area-plots-source',
       filter: ['==', ['get', 'visible'], true],
-      minzoom: 13.5,   /* [v68-3] 충분히 확대됐을 때만 동그라미 안 번호 표시 */
+      minzoom: 10,   /* [v70-1] 축소(줌11)에서도 동그라미 안 번호 표시 */
       layout: {
         'text-field': ['to-string', ['get', 'number']],
-        'text-size': ['interpolate', ['linear'], ['zoom'], 13.5, 9, 16, 12, 18, 13],
+        'text-size': ['interpolate', ['linear'], ['zoom'], 10, 9, 13, 10, 16, 12, 18, 13],
         'text-allow-overlap': true, 'text-font': ['literal', ['Open Sans Bold', 'Arial Unicode MS Bold']]
       },
       paint: { 'text-color': '#ffffff', 'text-halo-color': 'rgba(0,0,0,.35)', 'text-halo-width': 1.0 }
@@ -5346,9 +5347,9 @@ TenarSecureStore.init('map',
     map.addLayer({
       id: 'area-plots-label', type: 'symbol', source: 'area-plots-source',
       filter: ['==', ['get', 'visible'], true],
-      minzoom: 14,   /* [v68-3] 축소 시 라벨 숨김 */
+      minzoom: 10,   /* [v70-1] 축소(줌11)에서도 읍면동·층·조사구 카드 표시 */
       layout: {
-        'text-field': ['get', 'labelText'], 'text-size': 11, 'text-offset': [0, 1.6],
+        'text-field': ['get', 'labelText'], 'text-size': ['interpolate', ['linear'], ['zoom'], 10, 10, 14, 11], 'text-offset': [0, 1.5],
         'text-anchor': 'top', 'text-allow-overlap': false, 'text-optional': true
       },
       paint: { 'text-color': '#7c2d12', 'text-halo-color': '#ffffff', 'text-halo-width': 1.6 }
