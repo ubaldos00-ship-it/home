@@ -1,4 +1,5 @@
-<!-- map_v76.html (v76 · TENAR V1.5) · 저장: 2026-07-30 17:00 KST · [v76] ②재배면적 탭 저장·불러오기/검색/조사구추가 버튼 흰색으로·엑셀양식 다운로드 버튼 작게 ③조사구 트리 맨 위에 「전체」(필터해제+전체표시) ④저장·불러오기: 저장본에 「덮어쓰기」·상단 「전체삭제」(암호화 저장) ⑤조사구 수정 = 「지도에서 위치수정(중심 십자에 맞춰 저장→핀·주소전체·좌표 갱신)」 또는 「입력창에서 수정」 선택, 입력창 선택 시 전체선택 -->
+<!-- map_v77.html (v77 · TENAR V1.5) · 저장: 2026-07-30 21:47 KST · [v77] ①재배면적 탭: 시도·시군구·읍면동 드롭다운을 「조사구 추가·전체삭제」 아래로 이동 ②조사구 저장·불러오기: 저장본을 누르면 선택(하이라이트)되고 상단 버튼이 「덮어쓰기」로 바뀜(선택 없으면 「＋현재 조사구 저장」) ③행별 「덮어쓰기」 버튼 삭제 -->
+<!-- (이전)  map_v76.html (v76 · TENAR V1.5) · 저장: 2026-07-30 17:00 KST · [v76] ②재배면적 탭 저장·불러오기/검색/조사구추가 버튼 흰색으로·엑셀양식 다운로드 버튼 작게 ③조사구 트리 맨 위에 「전체」(필터해제+전체표시) ④저장·불러오기: 저장본에 「덮어쓰기」·상단 「전체삭제」(암호화 저장) ⑤조사구 수정 = 「지도에서 위치수정(중심 십자에 맞춰 저장→핀·주소전체·좌표 갱신)」 또는 「입력창에서 수정」 선택, 입력창 선택 시 전체선택 -->
 <!-- (이전)  map_v75.html (v75 · TENAR V1.5) · 저장: 2026-07-30 15:55 KST · [v75] ①즐겨찾기 연결자료(포구·면적·거리) 선택 시 화면 정중앙에 표시 ②즐겨찾기 목록 핀 선택도 화면 정중앙으로 이동 ③오른쪽에 재배면적 조사구 탭 바로가기 버튼(🌾) 추가(즐겨찾기 버튼 아래) ④재배면적 탭에 「저장·불러오기」(저장/불러오기/삭제/잠금, 암호화)와 「파일(엑셀·JSON)」 팝업 분리 — 엑셀 가져오기/내보내기·JSON 내보내기/가져오기 -->
 <!-- (이전)  map_v74.html (v74 · TENAR V1.5) · 저장: 2026-07-30 09:01 KST · [v74] ①리 이름 글자 찐노랑(#facc15)+찐그레이 테두리로 가독성↑ ②행정지역명을 이름별 1개만 표시(섬처럼 조각난 폴리곤은 가장 큰 조각 중심에 · DOM 마커 중복제거) ③위치버튼 순서 복원 — 1번 현재위치(북쪽·중앙), 2번 위치추적(진행방향이 화면 위로 지도회전·파란 나침반 아이콘·나침반 버튼) ④방향 부채꼴을 핀 중심 진하고 바깥으로 옅어지는 그라데이션으로 -->
 <!-- (이전)  map_v73.html (v73 · TENAR V1.5) · 저장: 2026-07-30 08:00 KST · [v73] ①경계색 — 리 노랑·읍면동 주황·시군구 오렌지·시도 보라, 4단계 행정지역명(시도6↑·시군구8↑·읍면동11↑·리12↑)을 경계색과 같은 색+흰 테두리로 경계 중앙 표시 ②현재위치·추적위치 개편 — 지도 회전 없음(다음/카카오식), 추적=핀 상단·현재위치=중앙, 확대해도 항상 재중심(팬 드래그만 추적해제), 부채꼴·정확도 원 투명도 낮춤(더 진하게), 나침반 버튼 숨김 -->
@@ -10612,6 +10613,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
   /* ── 재배면적 탭 UI ── */
   /* ── [v75-4] 조사구 저장·불러오기 (스냅샷) ── */
   var AREA_SAVELIST_KEY = 'tenarAreaSaveList';
+  var _areaSelectedSaveKey = null;   /* [v77-2] 저장·불러오기에서 선택한 저장본 */
   var AREA_SAVE_PREFIX = 'tenarAreaSave_';
   function getAreaSaveList() { var a = loadJSON(AREA_SAVELIST_KEY, []); return Array.isArray(a) ? a : []; }
   function setAreaSaveList(a) { saveJSON(AREA_SAVELIST_KEY, Array.isArray(a) ? a : []); }
@@ -10660,14 +10662,24 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
   function openAreaSaveLoadSheet() {
     var box = el('div');
     var top = el('div', 'btn-row');
-    var bSave = el('button', 'sheet-btn primary', '＋ 현재 조사구 저장');
+    /* [v77-2·3] 저장본을 선택하면 상단 버튼이 「덮어쓰기」로, 선택 없으면 「＋현재 조사구 저장」 */
+    var _selSv = getAreaSaveList().filter(function (x) { return x.key === _areaSelectedSaveKey; })[0] || null;
+    var bSave = el('button', 'sheet-btn primary', _selSv ? ('💾 덮어쓰기 · ' + _selSv.name) : '＋ 현재 조사구 저장');
     bSave.addEventListener('click', function () {
       var n = getAreaPlots().length;
-      if (!n) { showToast('저장할 조사구가 없습니다.', 3000, 'info'); return; }
-      var nm = window.prompt('저장 이름을 입력하세요.', '조사구 ' + kstNowStr().slice(5, 16).replace('T', ' '));
-      if (nm === null) return;
-      areaSaveCurrentPlots(nm.trim() || ('조사구 ' + kstNowStr().slice(5, 16).replace('T', ' ')));
-      openAreaSaveLoadSheet();
+      if (_selSv) {
+        if (_selSv.locked) { showToast('잠긴 저장본입니다. 잠금을 먼저 풀어주세요.', 3000, 'info'); return; }
+        if (!n) { showToast('덮어쓸 조사구가 없습니다.', 3000, 'info'); return; }
+        if (!window.confirm('「' + _selSv.name + '」을(를) 현재 조사구 ' + n + '건으로 덮어쓸까요?')) return;
+        areaOverwriteSnapshot(_selSv.key, _selSv.name);
+        openAreaSaveLoadSheet();
+      } else {
+        if (!n) { showToast('저장할 조사구가 없습니다.', 3000, 'info'); return; }
+        var nm = window.prompt('저장 이름을 입력하세요.', '조사구 ' + kstNowStr().slice(5, 16).replace('T', ' '));
+        if (nm === null) return;
+        areaSaveCurrentPlots(nm.trim() || ('조사구 ' + kstNowStr().slice(5, 16).replace('T', ' ')));
+        openAreaSaveLoadSheet();
+      }
     });
     /* [v76-4] 상단 전체삭제 */
     var bDelAllSv = el('button', 'sheet-btn danger', '전체삭제');
@@ -10683,30 +10695,23 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     });
     top.appendChild(bSave); top.appendChild(bDelAllSv);
     box.appendChild(top);
-    box.appendChild(el('div', 'lyr-desc', '지금 화면의 조사구 목록을 통째로 저장하고, 나중에 다시 불러올 수 있습니다. (암호화 저장)'));
+    box.appendChild(el('div', 'lyr-desc', '저장본을 누르면 선택됩니다(위 버튼이 「덮어쓰기」로 바뀜). 다시 누르면 선택 해제. (암호화 저장)'));
     var list = el('div'); list.style.cssText = 'margin-top:6px;border-top:1px solid #eee;';
     var saves = getAreaSaveList();
     if (!saves.length) { list.innerHTML = '<div style="padding:16px 4px;color:#999;text-align:center;font-size:12.5px;">저장된 목록이 없습니다.</div>'; }
     else saves.forEach(function (sv) {
-      var row = el('div'); row.style.cssText = 'display:flex;align-items:center;gap:5px;padding:8px 2px;border-bottom:1px solid #f2f2f5;font-size:12.5px;';
-      var info = el('div', null, '<b>' + escapeHtml(sv.name) + '</b> <span style="color:#aaa;font-weight:600;">' + sv.count + '건 · ' + escapeHtml((sv.ts || '').slice(5, 16).replace('T', ' ')) + '</span>');
-      info.style.cssText = 'flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+      var selected = (sv.key === _areaSelectedSaveKey);
+      var row = el('div'); row.style.cssText = 'display:flex;align-items:center;gap:5px;padding:8px 6px;border-bottom:1px solid #f2f2f5;font-size:12.5px;border-radius:8px;' + (selected ? 'background:#e8f6ee;box-shadow:inset 0 0 0 1.5px #1f8a4c;' : '');
+      var info = el('div', null, (selected ? '✅ ' : '') + '<b>' + escapeHtml(sv.name) + '</b> <span style="color:#aaa;font-weight:600;">' + sv.count + '건 · ' + escapeHtml((sv.ts || '').slice(5, 16).replace('T', ' ')) + '</span>');
+      info.style.cssText = 'flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;';
+      info.addEventListener('click', function () { _areaSelectedSaveKey = selected ? null : sv.key; openAreaSaveLoadSheet(); });
       var bLoad = el('button', 'sheet-btn', '불러오기'); bLoad.style.cssText = 'flex:0 0 auto;padding:6px 8px;font-size:11.5px;';
       bLoad.addEventListener('click', function () { areaLoadSnapshot(sv.key); });
-      /* [v76-4] 선택한 저장본에 현재 조사구로 덮어쓰기 */
-      var bOver = el('button', 'sheet-btn', '덮어쓰기'); bOver.style.cssText = 'flex:0 0 auto;padding:6px 8px;font-size:11.5px;';
-      if (sv.locked) bOver.disabled = true;
-      bOver.addEventListener('click', function () {
-        if (sv.locked) { showToast('잠긴 저장본입니다.', 2500, 'info'); return; }
-        var n = getAreaPlots().length;
-        if (!window.confirm('「' + sv.name + '」을(를) 현재 조사구 ' + n + '건으로 덮어쓸까요?')) return;
-        areaOverwriteSnapshot(sv.key, sv.name); openAreaSaveLoadSheet();
-      });
       var bLock = el('button', 'icon-btn ' + (sv.locked ? 'lock-on' : 'lock-off'), sv.locked ? '🔒' : '🔓'); bLock.style.cssText = 'width:28px;height:28px;flex:0 0 auto;';
       bLock.addEventListener('click', function () { areaToggleLockSnapshot(sv.key); openAreaSaveLoadSheet(); });
       var bDel = el('button', 'icon-btn del-on', '🗑'); bDel.style.cssText = 'width:28px;height:28px;flex:0 0 auto;';
-      bDel.addEventListener('click', function () { areaDeleteSnapshot(sv.key); openAreaSaveLoadSheet(); });
-      row.appendChild(info); row.appendChild(bLoad); row.appendChild(bOver); row.appendChild(bLock); row.appendChild(bDel);
+      bDel.addEventListener('click', function () { areaDeleteSnapshot(sv.key); if (_areaSelectedSaveKey === sv.key) _areaSelectedSaveKey = null; openAreaSaveLoadSheet(); });
+      row.appendChild(info); row.appendChild(bLoad); row.appendChild(bLock); row.appendChild(bDel);
       list.appendChild(row);
     });
     box.appendChild(list);
@@ -10759,7 +10764,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     /* [v75-4] 저장·불러오기 / 파일(엑셀·JSON)은 별도 팝업으로 */
     var rSL = el('div', 'btn-row');
     var bSL = el('button', 'sheet-btn', '💾 저장·불러오기');   /* [v76-2] 흰색 */
-    bSL.addEventListener('click', openAreaSaveLoadSheet);
+    bSL.addEventListener('click', function () { _areaSelectedSaveKey = null; openAreaSaveLoadSheet(); });
     var bFile = el('button', 'sheet-btn', '📂 파일 (엑셀·JSON)');
     bFile.addEventListener('click', openAreaFileSheet);
     rSL.appendChild(bSL); rSL.appendChild(bFile);
@@ -10797,6 +10802,8 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     });
     r4.appendChild(bAdd); r4.appendChild(bDelAll);
     wrap.appendChild(r4);
+    /* [v77-1] 드롭다운(시도·시군구·읍면동)+검색을 「조사구 추가·전체삭제」 아래로 이동 */
+    wrap.appendChild(dds); wrap.appendChild(r3);
 
     var treeHdr = el('div', null, '조사구 목록');
     treeHdr.style.cssText = 'margin:10px 2px 4px;font-size:12.5px;font-weight:800;color:#333;';
