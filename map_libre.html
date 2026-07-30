@@ -1,4 +1,5 @@
-<!-- map_v73.html (v73 · TENAR V1.5) · 저장: 2026-07-30 08:00 KST · [v73] ①경계색 — 리 노랑·읍면동 주황·시군구 오렌지·시도 보라, 4단계 행정지역명(시도6↑·시군구8↑·읍면동11↑·리12↑)을 경계색과 같은 색+흰 테두리로 경계 중앙 표시 ②현재위치·추적위치 개편 — 지도 회전 없음(다음/카카오식), 추적=핀 상단·현재위치=중앙, 확대해도 항상 재중심(팬 드래그만 추적해제), 부채꼴·정확도 원 투명도 낮춤(더 진하게), 나침반 버튼 숨김 -->
+<!-- map_v74.html (v74 · TENAR V1.5) · 저장: 2026-07-30 09:01 KST · [v74] ①리 이름 글자 찐노랑(#facc15)+찐그레이 테두리로 가독성↑ ②행정지역명을 이름별 1개만 표시(섬처럼 조각난 폴리곤은 가장 큰 조각 중심에 · DOM 마커 중복제거) ③위치버튼 순서 복원 — 1번 현재위치(북쪽·중앙), 2번 위치추적(진행방향이 화면 위로 지도회전·파란 나침반 아이콘·나침반 버튼) ④방향 부채꼴을 핀 중심 진하고 바깥으로 옅어지는 그라데이션으로 -->
+<!-- (이전)  map_v73.html (v73 · TENAR V1.5) · 저장: 2026-07-30 08:00 KST · [v73] ①경계색 — 리 노랑·읍면동 주황·시군구 오렌지·시도 보라, 4단계 행정지역명(시도6↑·시군구8↑·읍면동11↑·리12↑)을 경계색과 같은 색+흰 테두리로 경계 중앙 표시 ②현재위치·추적위치 개편 — 지도 회전 없음(다음/카카오식), 추적=핀 상단·현재위치=중앙, 확대해도 항상 재중심(팬 드래그만 추적해제), 부채꼴·정확도 원 투명도 낮춤(더 진하게), 나침반 버튼 숨김 -->
 <!-- (이전)  map_v72.html (v72 · TENAR V1.5) · 저장: 2026-07-30 06:20 KST · [v72] ①위치버튼 2단계 토글(방향추적↔현재위치+GPS정확도 깜빡임) ②추적 시 파란 나침반 아이콘 ③방향 부채꼴 방향 수정(꼭지점=핀중심) ④나침반 N·바늘 크게 ⑤버튼순서(저장핀·포구·측정·즐겨찾기·위치) ⑥읍면동 경계 주황·리 노랑 ⑦읍면동명(레벨11)·리명(레벨12) 경계중앙 표시 ⑧레이어에 행정지역명 토글(시도경계 아래) ⑨레이어시트 색상범례 삭제 ⑩NAS 주소창·연결확인 숨김 ⑪⑫연결자료 선택 시 화면 센터보다 약간 위로 ⑬저장시 작물 표시만(변경불가) ⑭완료 시 새로그리기/추가측정 비활성 ⑮측정 수정해제 시 면적 활성 ⑯포구 재배구역→그리기·수정해제 시 활성 ⑰지도출처 시트 높이 조정 -->
 <!-- (이전)  map_v71.html (v71 · TENAR V1.5) · 저장: 2026-07-29 22:03 KST · [v71] ①리 경계 minzoom 12로 복귀 ②조사구 번호·「읍면동 층 조사구」 카드 겹쳐도 항상 표시(자동 겹침숨김 해제) ③지도출처 시트 초기높이 낮춰 「초기화」 글자 숨김 ④현재위치+실시간추적+방향(나침반) 통합 — 통합 위치버튼(off/북쪽고정/방향추적 3상태)·커스텀 파란 마커(방향화살표·부채꼴)·방향추적 시 지도회전·레이어버튼 아래 나침반버튼(회전 중에만 표시,누르면 북쪽정렬)·핀 탭 시 현재위치 바텀시트(주소·좌표·정확도·방향·시각)·지도 수동조작 시 추적해제·iOS 방향권한·오류 토스트·pagehide 정리. 기존 지도/저장/필지/즐겨찾기 기능 무변경 -->
 <!-- (이전)  map_v70.html (v70 · TENAR V1.5) · 저장: 2026-07-29 19:42 KST · [v70] ①작물재배조사구 핀을 축소(줌11)에서도 보이게 — 동그라미 안 번호와 「읍면동 층 조사구」 카드도 줌11부터 표시(minzoom 13.5/14→10), 저줌 핀 크기 소폭 확대 ②행정경계 레이어(리·읍면동·시군구·시도) 줌11에서 표시(리 minzoom 12→11) ③리·읍면동·시군구 경계선 색을 초록→노랑(리 #fde047·읍면동 #facc15·시군구 #eab308, 굵기로 구분) ④레이어 제목 「행정경계(시도)」→「시도 경계」 -->
@@ -459,9 +460,11 @@ TenarSecureStore.init('map',
     border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 10px solid #1a73e8;
     filter: drop-shadow(0 0 1px #fff); display: none;
   }
+  /* [v74-4] 부채꼴 : 핀 중심은 진하고 바깥으로 갈수록 옅어지는 그라데이션 */
   .tloc-marker .tloc-fan {
-    position: absolute; left: 50%; top: 50%; width: 0; height: 0; margin: -56px 0 0 -32px;
-    border-left: 32px solid transparent; border-right: 32px solid transparent; border-top: 56px solid rgba(26,115,232,.34);
+    position: absolute; left: 50%; top: 50%; width: 66px; height: 58px; margin: -58px 0 0 -33px;
+    background: linear-gradient(to top, rgba(26,115,232,.60), rgba(26,115,232,.02));
+    -webkit-clip-path: polygon(50% 100%, 0% 0%, 100% 0%); clip-path: polygon(50% 100%, 0% 0%, 100% 0%);
     display: none;
   }
   .tloc-marker.has-heading .tloc-arrow, .tloc-marker.has-heading .tloc-fan { display: block; }
@@ -2317,28 +2320,46 @@ TenarSecureStore.init('map',
         });
       }
     });
-    /* [v72-7·8][v73-1] 행정지역명 라벨 : 색=경계색, 흰 테두리. 시도(6↑)·시군구(8↑)·읍면동(11↑)·리(12↑) */
-    function addAdLabel(id, src, mz, key, color, szMin, szMax) {
-      if (map.getSource(src) && !map.getLayer(id)) {
-        map.addLayer({
-          id: id, type: 'symbol', source: src, minzoom: mz,
-          layout: { visibility: 'none', 'text-field': ['coalesce', ['get', key], ['get', 'full_nm']],
-            'text-size': ['interpolate', ['linear'], ['zoom'], mz, szMin, mz + 3, szMax], 'symbol-placement': 'point', 'text-allow-overlap': false, 'text-font': ['literal', ['Open Sans Bold', 'Arial Unicode MS Bold']] },
-          paint: { 'text-color': color, 'text-halo-color': '#ffffff', 'text-halo-width': 2.4 }
-        });
-      }
-    }
-    addAdLabel('ov-adsido-label', 'ov-adsido-source', 6, 'ctp_kor_nm', '#7c3aed', 14, 20);
-    addAdLabel('ov-adsigg-label', 'ov-adsigg-source', 8, 'sig_kor_nm', '#ea580c', 13, 17);
-    addAdLabel('ov-ademd-label', 'ov-ademd-source', 11, 'emd_kor_nm', '#f97316', 12, 15);
-    addAdLabel('ov-adri-label', 'ov-adri-source', 12, 'li_kor_nm', '#fde047', 11, 14);
   }
-  /* [v72-8][v73-1] 행정지역명 라벨 on/off (시도·시군구·읍면동·리) */
-  function applyAdNameVisibility() {
-    var on = !!(settings.overlays && settings.overlays.adname);
-    ['ov-adsido-label', 'ov-adsigg-label', 'ov-ademd-label', 'ov-adri-label'].forEach(function (lid) {
-      if (map.getLayer(lid)) map.setLayoutProperty(lid, 'visibility', on ? 'visible' : 'none');
+  /* [v74-1·2] 행정지역명 라벨 — 이름별 1개만(섬처럼 조각난 폴리곤은 가장 큰 조각 중심에).
+     색=경계색, 리는 찐노랑 글자 + 찐그레이 테두리로 가독성 확보. DOM 마커로 렌더(이름 중복 제거). */
+  var AD_LABEL_CFG = {
+    adsido: { key: 'ctp_kor_nm', color: '#7c3aed', halo: '#ffffff', size: 17, mz: 6 },
+    adsigg: { key: 'sig_kor_nm', color: '#ea580c', halo: '#ffffff', size: 14, mz: 8 },
+    ademd:  { key: 'emd_kor_nm', color: '#f97316', halo: '#ffffff', size: 13, mz: 11 },
+    adri:   { key: 'li_kor_nm',  color: '#facc15', halo: '#374151', size: 12.5, mz: 12 }
+  };
+  var _adLabelMarkers = { adsido: [], adsigg: [], ademd: [], adri: [] };
+  function _adHalo(c) { return '-1px -1px 0 ' + c + ',1px -1px 0 ' + c + ',-1px 1px 0 ' + c + ',1px 1px 0 ' + c + ',0 0 2px ' + c + ',0 0 3px ' + c; }
+  function clearAdLabels(id) { (_adLabelMarkers[id] || []).forEach(function (m) { try { m.remove(); } catch (e) {} }); _adLabelMarkers[id] = []; }
+  function clearAllAdLabels() { Object.keys(_adLabelMarkers).forEach(clearAdLabels); }
+  function renderAdBoundaryLabels(id, fc) {
+    clearAdLabels(id);
+    if (!(settings.overlays && settings.overlays.adname)) return;
+    var cfg = AD_LABEL_CFG[id]; if (!cfg) return;
+    if (map.getZoom() < cfg.mz) return;
+    if (!hasTurf) return;
+    var groups = {};
+    (fc.features || []).forEach(function (f) {
+      var pr = f.properties || {};
+      var nm = pr[cfg.key] || pr.full_nm; if (!nm) return;
+      var area = 0; try { area = turf.area(f); } catch (e) {}
+      var g = groups[nm];
+      if (!g || area > g.area) {
+        var c = null; try { c = turf.centerOfMass(f).geometry.coordinates; } catch (e) {}
+        if (c) groups[nm] = { area: area, c: c };
+      }
     });
+    Object.keys(groups).forEach(function (nm) {
+      var e2 = document.createElement('div');
+      e2.textContent = nm;
+      e2.style.cssText = 'color:' + cfg.color + ';font-size:' + cfg.size + 'px;font-weight:800;white-space:nowrap;pointer-events:none;letter-spacing:-.02em;text-shadow:' + _adHalo(cfg.halo) + ';';
+      _adLabelMarkers[id].push(new maplibregl.Marker({ element: e2 }).setLngLat(groups[nm].c).addTo(map));
+    });
+  }
+  /* [v72-8] 행정지역명 on/off — 끄면 라벨 제거(켜지면 reloadDataOverlays 가 각 경계 데이터 로드 후 렌더) */
+  function applyAdNameVisibility() {
+    if (!(settings.overlays && settings.overlays.adname)) { clearAllAdLabels(); return; }
   }
 
   function setMapType(type) {
@@ -2492,11 +2513,12 @@ TenarSecureStore.init('map',
       if (!src) return;
       var _need = !!settings.overlays[d.id];
       if ((d.id === 'ademd' || d.id === 'adri' || d.id === 'adsigg' || d.id === 'adsido') && settings.overlays.adname) _need = true;   /* [v73-1] 행정지역명용 데이터(4종) */
-      if (!_need) { src.setData(emptyFC0()); if (d.labels) clearCadLabels(); if (d.id === 'lhblpn') clearPlanLabels(); return; }
+      if (!_need) { src.setData(emptyFC0()); if (d.labels) clearCadLabels(); if (d.id === 'lhblpn') clearPlanLabels(); if (AD_LABEL_CFG[d.id]) clearAdLabels(d.id); return; }
       if (map.getZoom() < d.minzoom) {
         src.setData(emptyFC0());
         if (d.labels) clearCadLabels();
         if (d.id === 'lhblpn') clearPlanLabels();
+        if (AD_LABEL_CFG[d.id]) clearAdLabels(d.id);
         /* [v50-5] 개별공시지가는 확대가 낮으면 자료가 많아 조회하지 않고 안내 */
         if (d.id === 'landprice' && !reloadDataOverlays._priceZoomWarned) {
           reloadDataOverlays._priceZoomWarned = true;
@@ -2533,6 +2555,7 @@ TenarSecureStore.init('map',
         src.setData(fc);
         if (d.labels) renderCadLabels(fc);
         if (d.id === 'lhblpn') renderPlanLabels(fc);   /* [v59-1] 토지이용계획도 계획명 라벨 */
+        if (AD_LABEL_CFG[d.id] && settings.overlays.adname) renderAdBoundaryLabels(d.id, fc);   /* [v74-2] 이름 중복제거 라벨 */
       }).catch(function (e) {
         dataLoading[d.id] = false;
         console.warn('데이터 로딩 실패(' + d.data + ')', e);
@@ -11138,13 +11161,15 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     function setBearingProg(b) { programmatic = true; try { map.setBearing(b); } catch (e) {} programmatic = false; updateCompass(); }
     /* [v73-2] 지도 회전 없음 — 방향은 마커 부채꼴로만 표시(다음/카카오 위치추적과 동일) */
     function ensureNorth() { if (Math.abs(map.getBearing()) > 0.1) { targetBearing = 0; if (!bearingRAF) bearingRAF = requestAnimationFrame(animateBearing); } }
-    /* [v73-2] 추적(heading)=핀을 화면 상단쪽에, 현재위치(still)=화면 중앙에. 확대해도 항상 보이게 재중심 */
+    /* [v74-3] 지도 회전(방향추적) 복원 — 목표 bearing(=heading)으로 부드럽게 */
+    function rotateMapTo(h) { targetBearing = h; if (!bearingRAF) bearingRAF = requestAnimationFrame(animateBearing); }
+    /* [v74-3] 현재위치=화면 중앙, 위치추적=진행방향(위)이 더 보이게 핀을 아래쪽-중앙. 확대해도 항상 재중심 */
     function recenter() {
       if (!lastPos) return;
       programmatic = true;
-      var pad = (mode === 'heading')
-        ? { top: getVisibleTopUiHeight() + 20, bottom: Math.round(window.innerHeight * 0.44), left: 20, right: 20 }   /* 핀을 위쪽으로 */
-        : { top: 0, bottom: 0, left: 0, right: 0 };                                                                   /* 화면 중앙 */
+      var pad = (mode === 'track')
+        ? { top: Math.round(window.innerHeight * 0.34), bottom: 20, left: 20, right: 20 }
+        : { top: 0, bottom: 0, left: 0, right: 0 };
       try { map.easeTo({ center: [lastPos.lng, lastPos.lat], padding: pad, duration: 350, essential: true }); } catch (e) {}
       setTimeout(function () { programmatic = false; }, 460);
     }
@@ -11183,7 +11208,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
       if (heading != null) { var d = Math.abs(((h - heading + 540) % 360) - 180); if (d < HEADING_THRESHOLD) return; }
       heading = (h + 360) % 360;
       applyHeadingToMarker();
-      /* [v73-2] 지도는 회전하지 않음 — 부채꼴(마커)만 방향 표시 */
+      if (mode === 'track') rotateMapTo(heading);   /* [v74-3] 위치추적: 진행방향이 화면 위로(지도 회전) */
     }
     function startOrient() {
       if (orientOn) return; orientOn = true;
@@ -11206,17 +11231,21 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     /* ── 상태 ── */
     function setMode(m) {
       mode = m;
-      if (btn) btn.classList.toggle('loc-active', m !== 'off');   /* [v73-2] 추적·현재위치 모두 활성(파랑) */
-      if (btnIcon) btnIcon.innerHTML = ICON_CROSS;                /* [v73-2] 회전 없음 → 항상 조준 아이콘 */
-      if (markerEl) markerEl.classList.toggle('acc-on', m !== 'off');   /* [v73-2] 두 상태 모두 정확도 원 표시 */
-      if (m !== 'off') ensureNorth();                             /* [v73-2] 항상 북쪽 고정 */
+      if (btn) btn.classList.toggle('loc-active', m !== 'off');
+      if (btnIcon) btnIcon.innerHTML = (m === 'track') ? ICON_COMPASS : ICON_CROSS;   /* [v74-3] 추적=파란 나침반 아이콘 */
+      if (markerEl) markerEl.classList.toggle('acc-on', m !== 'off');
+      if (m === 'current') ensureNorth();                          /* [v74-3] 현재위치=북쪽 고정 */
+      else if (m === 'track') { if (heading != null) rotateMapTo(heading); }   /* [v74-3] 추적=진행방향 위 */
       else targetBearing = null;
       updateAccCircle();
       updateCompass();
     }
     function updateCompass() {
       if (!compassBtn) return;
-      compassBtn.style.display = 'none';   /* [v73-2] 지도 회전을 쓰지 않으므로 나침반 버튼 숨김 */
+      var b = 0; try { b = map.getBearing(); } catch (e) {}
+      var off0 = Math.abs(((b + 540) % 360) - 180);
+      compassBtn.style.display = ((mode === 'track') && off0 > 1.5) ? '' : 'none';   /* [v74-3] 추적 회전 중에만 나침반 */
+      if (compassNeedle) compassNeedle.style.transform = 'rotate(' + (-b) + 'deg)';
     }
 
     /* ── 버튼 ── */
@@ -11225,35 +11254,32 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
       if (!navigator.geolocation) { showToast('이 브라우저는 위치 기능을 지원하지 않습니다.', 4000); return; }
       if (window.isSecureContext === false) showToast('현재 위치는 HTTPS(또는 localhost)에서만 정상 동작합니다.', 5000);
       if (mode === 'off') {
-        /* 첫 선택 : 현재위치 잡고 방향추적(지도회전) 시작 */
+        /* 1번 : 현재위치(북쪽·중앙) */
         showToast('현재 위치를 확인하고 있습니다.', 0, 'info');
         navigator.geolocation.getCurrentPosition(function (pos) {
           onPos(pos);
           programmatic = true;
-          try { map.easeTo({ center: [lastPos.lng, lastPos.lat], zoom: Math.max(map.getZoom(), FOCUS_ZOOM), duration: 500, essential: true }); } catch (e) {}
+          try { map.easeTo({ center: [lastPos.lng, lastPos.lat], zoom: Math.max(map.getZoom(), FOCUS_ZOOM), bearing: 0, duration: 500, essential: true }); } catch (e) {}
           setTimeout(function () { programmatic = false; }, 560);
           showToast('', 1, 'info');
           startWatch();
-          requestOrientPerm().then(function (ok) {
-            if (ok) { startOrient(); setMode('heading'); ensureNorth(); }
-            else { setMode('still'); showToast('방향 센서 권한이 없어 지도 자동 회전은 사용할 수 없습니다.\n현재 위치·방향은 표시됩니다.', 5000); }
-          });
+          requestOrientPerm().then(function (ok) { if (ok) startOrient(); });   /* 부채꼴 방향 표시용 */
+          setMode('current');
         }, onPosErr, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
-      } else if (mode === 'heading') {
-        /* 두번째 선택 : 회전 해제 → 현재위치 다시 잡고 방향(부채꼴)·정확도 원만 표시 */
-        setMode('still'); recenter();
-        if (navigator.geolocation) navigator.geolocation.getCurrentPosition(onPos, function () {}, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
-      } else {
-        /* still → 다시 방향추적(지도회전) */
+      } else if (mode === 'current') {
+        /* 2번 : 위치추적 — 진행방향이 화면 위로(지도 회전) */
         requestOrientPerm().then(function (ok) {
-          if (ok) { startOrient(); setMode('heading'); recenter(); ensureNorth(); }
-          else { showToast('방향 센서를 사용할 수 없습니다. 현재 위치만 표시합니다.', 4000); recenter(); }
+          if (ok) { startOrient(); setMode('track'); recenter(); if (heading != null) rotateMapTo(heading); }
+          else { showToast('방향 센서를 사용할 수 없어 진행방향(지도 회전)을 쓸 수 없습니다.\n현재 위치만 표시합니다.', 5000); }
         });
+      } else {
+        /* 위치추적 → 현재위치(북쪽 고정) */
+        setMode('current'); recenter();
       }
     }
     function onCompass() {
-      if (mode === 'heading') setMode('still');   /* setMode('still') 이 북쪽 정렬(bearing 0) 수행 */
-      else { targetBearing = 0; if (!bearingRAF) bearingRAF = requestAnimationFrame(animateBearing); }
+      setMode('current');   /* 북쪽 정렬 + 현재위치 상태 */
+      recenter();
       setTimeout(updateCompass, 500);
     }
 
