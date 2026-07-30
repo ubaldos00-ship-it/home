@@ -1,4 +1,5 @@
-<!-- map_v78.html (v78 · TENAR V1.5) · 저장: 2026-07-31 02:52 KST · [v78] ①암호화 배너 통합(즐겨찾기+조사구) ②재배면적 탭 엑셀양식 링크 삭제(파일팝업에만) ③조사구 추가·수정 시 초입주소로 시도·시군구·읍면동 자동입력 ④조사구 선택 줌 17→14·팝업안뜸 ⑤파일팝업 기본비번(2026) 표시삭제 ⑥저장·불러오기 캐시삭제 주의·JSON백업 안내 ⑦위치추적 나침반 아이콘 확대 ⑧위치추적 핀 화면중앙 고정(움직이면 지도이동) ⑨저장본 개수·용량 안내 · [v78 수정] 초입주소 변경/지도위치수정 시 시도·시군구·읍면동 자동 재적용(기존값 덮어씀) -->
+<!-- map_v79.html (v79 · TENAR V1.5) · 저장: 2026-07-31 05:38 KST · [v79] ①재배면적 조사구 탭의 「✏️수정」 버튼도 「🗺 지도에서 위치 수정 / ✏️ 입력창에서 수정 / 취소」 선택 팝업을 먼저 띄우도록(지도팝업과 동일) -->
+<!-- (이전)  map_v78.html (v78 · TENAR V1.5) · 저장: 2026-07-31 02:52 KST · [v78] ①암호화 배너 통합(즐겨찾기+조사구) ②재배면적 탭 엑셀양식 링크 삭제(파일팝업에만) ③조사구 추가·수정 시 초입주소로 시도·시군구·읍면동 자동입력 ④조사구 선택 줌 17→14·팝업안뜸 ⑤파일팝업 기본비번(2026) 표시삭제 ⑥저장·불러오기 캐시삭제 주의·JSON백업 안내 ⑦위치추적 나침반 아이콘 확대 ⑧위치추적 핀 화면중앙 고정(움직이면 지도이동) ⑨저장본 개수·용량 안내 · [v78 수정] 초입주소 변경/지도위치수정 시 시도·시군구·읍면동 자동 재적용(기존값 덮어씀) -->
 <!-- (이전)  map_v76.html (v76 · TENAR V1.5) · 저장: 2026-07-30 17:00 KST · [v76] ②재배면적 탭 저장·불러오기/검색/조사구추가 버튼 흰색으로·엑셀양식 다운로드 버튼 작게 ③조사구 트리 맨 위에 「전체」(필터해제+전체표시) ④저장·불러오기: 저장본에 「덮어쓰기」·상단 「전체삭제」(암호화 저장) ⑤조사구 수정 = 「지도에서 위치수정(중심 십자에 맞춰 저장→핀·주소전체·좌표 갱신)」 또는 「입력창에서 수정」 선택, 입력창 선택 시 전체선택 -->
 <!-- (이전)  map_v75.html (v75 · TENAR V1.5) · 저장: 2026-07-30 15:55 KST · [v75] ①즐겨찾기 연결자료(포구·면적·거리) 선택 시 화면 정중앙에 표시 ②즐겨찾기 목록 핀 선택도 화면 정중앙으로 이동 ③오른쪽에 재배면적 조사구 탭 바로가기 버튼(🌾) 추가(즐겨찾기 버튼 아래) ④재배면적 탭에 「저장·불러오기」(저장/불러오기/삭제/잠금, 암호화)와 「파일(엑셀·JSON)」 팝업 분리 — 엑셀 가져오기/내보내기·JSON 내보내기/가져오기 -->
 <!-- (이전)  map_v74.html (v74 · TENAR V1.5) · 저장: 2026-07-30 09:01 KST · [v74] ①리 이름 글자 찐노랑(#facc15)+찐그레이 테두리로 가독성↑ ②행정지역명을 이름별 1개만 표시(섬처럼 조각난 폴리곤은 가장 큰 조각 중심에 · DOM 마커 중복제거) ③위치버튼 순서 복원 — 1번 현재위치(북쪽·중앙), 2번 위치추적(진행방향이 화면 위로 지도회전·파란 나침반 아이콘·나침반 버튼) ④방향 부채꼴을 핀 중심 진하고 바깥으로 옅어지는 그라데이션으로 -->
@@ -10353,20 +10354,23 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     areaUpdateBadge();
   }
   /* [v76-5] 수정 방식 선택 : 지도에서 위치수정 · 입력창에서 수정 */
-  function areaOpenEditChoice(p) {
+  function areaOpenEditChoice(p, opts) {
+    opts = opts || {};
+    var returnTo = opts.returnTo || { type: 'plot', id: p.id };
+    var back = opts.back || function () { areaOpenPlotSheet(p); };
     var box = el('div');
     box.appendChild(el('div', 'lyr-desc', '어떻게 수정할까요?'));
     var g = el('div'); g.style.cssText = 'display:flex;flex-direction:column;gap:8px;margin-top:8px;';
     var b1 = el('button', 'sheet-btn primary', '🗺 지도에서 위치 수정');
     b1.addEventListener('click', function () { areaMapEditStart(p); });
     var b2 = el('button', 'sheet-btn', '✏️ 입력창에서 수정');
-    b2.addEventListener('click', function () { areaOpenEditSheet(p.id, { type: 'plot', id: p.id }); });
+    b2.addEventListener('click', function () { areaOpenEditSheet(p.id, returnTo); });
     var c = el('button', 'sheet-btn', '취소');
-    c.addEventListener('click', function () { areaOpenPlotSheet(p); });
+    c.addEventListener('click', function () { back(); });
     g.appendChild(b1); g.appendChild(b2); g.appendChild(c);
     box.appendChild(g);
     openSheet('✏️ 조사구 수정', box, 'auto');
-    window._areaCloseReturn = function () { areaOpenPlotSheet(p); };
+    window._areaCloseReturn = back;
   }
   /* [v76-5] 지도에서 위치 수정 : 중심 십자(+)에 맞춰 저장하면 핀·주소·좌표 갱신 */
   var _areaMapEditActive = false;
@@ -10923,7 +10927,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
             t.style.cssText = 'flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;';
             t.addEventListener('click', function () { window._areaCloseReturn = null; areaOnPinClick(p.id, { zoom: 14, noPopup: true }); });   /* [v78-4] 레벨14·팝업없음 */
             var e2 = el('button', null, '✏️'); e2.style.cssText = 'border:none;background:none;font-size:12px;cursor:pointer;flex:0 0 auto;';
-            e2.addEventListener('click', function (ev) { ev.stopPropagation(); areaOpenEditSheet(p.id, { type: 'tab' }); });
+            e2.addEventListener('click', function (ev) { ev.stopPropagation(); areaOpenEditChoice(p, { returnTo: { type: 'tab' }, back: function () { openFavSheet('area'); } }); });   /* [v79-1] 탭 수정도 지도/입력창 선택 팝업 */
             var d2 = el('button', null, '🗑'); d2.style.cssText = 'border:none;background:none;font-size:12px;cursor:pointer;flex:0 0 auto;';
             d2.addEventListener('click', function (ev) {
               ev.stopPropagation();
