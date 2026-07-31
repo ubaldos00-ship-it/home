@@ -1,4 +1,5 @@
-<!-- map_v82.html (v82 · TENAR V1.5) · 저장: 2026-07-31 09:38 KST · [v82] ①입력창 수정 시 초입주소만 바꿔도(부분주소 「평천리 992」·도로명 「남상주로 504」 포함) 지오코딩+역지오코딩으로 지번 전체주소를 찾아 시도·시군구·읍면동 자동 갱신 ②「좌표조회」 이모지 삭제(한 줄) ③암호화 배너의 (AES-256-GCM…)를 아랫줄로 ④조사구 목록에서 선택 시 트리에 선택 표시 ⑤저장·불러오기 잠금·휴지통 이모지 센터 정렬 ⑥콤보에서 특정 시도·시군구·읍면동 선택 시 초록색 강조 ⑦「좌표조회」 진행 중 다시 누르면 중단 -->
+<!-- map_v83.html (v83 · TENAR V1.5) · 저장: 2026-07-31 11:24 KST · [v83] ①측정→청취 전송 시 작물을 측정도구 작물(measCrop) 우선 사용(포구 컨텍스트 작물 오용 수정) ②작물 편집 반영(측정 지역·작물/저장폼) ③포구도구 작물 = 마늘·양파·감자·논벼·콩·배추·무·총각무(실측 8종)만 ④측정도구 작물 = 사과·배·고추·참깨·고구마·가을감자·겉보리·쌀보리·밀·노지봄무·시설봄무·노지봄배추·시설봄배추(13종)만 ⑤작물재배조사구 열면 포구도구·측정도구 자동 해지 ⑥(개선)조사구 편집창에 「주소 확인」 버튼(부분/도로명 주소도 조회해 시도·시군구·읍면동 채움) · 라우팅 유지: 포구→실측(tonghab)·측정→청취(chungchi) -->
+<!-- (이전)  map_v82.html (v82 · TENAR V1.5) · 저장: 2026-07-31 09:38 KST · [v82] ①입력창 수정 시 초입주소만 바꿔도(부분주소 「평천리 992」·도로명 「남상주로 504」 포함) 지오코딩+역지오코딩으로 지번 전체주소를 찾아 시도·시군구·읍면동 자동 갱신 ②「좌표조회」 이모지 삭제(한 줄) ③암호화 배너의 (AES-256-GCM…)를 아랫줄로 ④조사구 목록에서 선택 시 트리에 선택 표시 ⑤저장·불러오기 잠금·휴지통 이모지 센터 정렬 ⑥콤보에서 특정 시도·시군구·읍면동 선택 시 초록색 강조 ⑦「좌표조회」 진행 중 다시 누르면 중단 -->
 <!-- (이전)  map_v81.html (v81 · TENAR V1.5) · 저장: 2026-07-31 06:50 KST · [v81] ①구글 애널리틱스(gtag.js · G-B8ELP4S5PR) 추가 — index·tonghab·chungchi와 동일하게 접속자 카운트 ②좌표조회 진행률 토스트(0/N → 완료 N/N)·조사구 팝업 다시 열 때 마지막 필터(시도·시군구·읍면동) 기억(데이터 바뀌면 자동 정리)·콤보에서 시군구/읍면동만 골라도 상위(시도 등) 자동 채움 -->
 <!-- (이전)  map_v80.html (v80 · TENAR V1.5) · 저장: 2026-07-31 06:35 KST · [v80] ①작물재배조사구를 즐겨찾기와 분리 — 🌾 버튼이 조사구 전용 팝업(openAreaSheet)을 열고, 즐겨찾기 팝업의 [재배면적] 탭 제거 ②③⑤조사구/즐겨찾기 팝업의 「파일(엑셀·JSON)」 버튼 삭제 ④파일 기능(엑셀 양식·엑셀 가져오기/내보내기·JSON 내보내기/가져오기)을 「저장·불러오기」 팝업 하단으로 통합 ⑥맨위 저장·불러오기 → 전체시도·시군구·읍면동 콤보 → 조사구추가·전체삭제·좌표조회·선택해제(한 줄) ⑦좌표없는 목록은 회색 표시(선택돼도 회색)·「좌표없음」 뱃지가 잘리지 않도록 분리 ⑧하위 팝업에서 닫기(✕)/← 하면 직전 팝업으로 복귀 -->
 <!-- (이전)  map_v79.html (v79 · TENAR V1.5) · 저장: 2026-07-31 05:38 KST · [v79] ①재배면적 조사구 탭의 「✏️수정」 버튼도 「🗺 지도에서 위치 수정 / ✏️ 입력창에서 수정 / 취소」 선택 팝업을 먼저 띄우도록(지도팝업과 동일) -->
@@ -6399,10 +6400,12 @@ TenarSecureStore.init('map',
 
   /* [v44-14] 측정도구 지역·작물 목록 (요청 사양) */
   var MEAS_REGIONS = ['대구', '경북', '강원'];
+  /* [v83-4] 측정도구 작물 — 사과·배 …(13종)만 */
   var MEAS_CROPS = [
-    ['사과','배','고추','참깨','고구마','가을감자','겉보리','쌀보리','밀','노지봄무','시설봄무','노지봄배추','시설봄배추'],
-    ['마늘','양파','감자','논벼','콩','배추','무']
+    ['사과','배','고추','참깨','고구마','가을감자','겉보리','쌀보리','밀','노지봄무','시설봄무','노지봄배추','시설봄배추']
   ];
+  /* [v83-3] 포구도구(실측) 작물 — 마늘·양파·감자·논벼·콩·배추·무·총각무만 */
+  var FP_CROP_NAMES = ['마늘','양파','감자','논벼','콩','배추','무','총각무'];
   function measSetupLabel() {
     var s = surveyMeasureState;
     var t = document.getElementById('btnMeasSetup');
@@ -6512,9 +6515,10 @@ TenarSecureStore.init('map',
     var f2 = el('div', 'fld', '<label>작물</label>');
     var inCrop = el('select');
     inCrop.appendChild(new Option('선택 안 함', ''));
-    CROPS.forEach(function (c) { inCrop.appendChild(new Option(c.name, c.name)); });   /* [v12-4] 한글만 */
-    if (editing && editing.crop) inCrop.value = editing.crop;
-    else if (s.measCrop) { if (!Array.prototype.some.call(inCrop.options, function (o) { return o.value === s.measCrop; })) inCrop.appendChild(new Option(s.measCrop, s.measCrop)); inCrop.value = s.measCrop; }   /* [v44-16] 측정도구 작물 기본 반영 */
+    MEAS_CROPS[0].forEach(function (n) { inCrop.appendChild(new Option(n, n)); });   /* [v83-4] 측정도구 작물만 */
+    function _ensureCropOpt(v) { if (v && !Array.prototype.some.call(inCrop.options, function (o) { return o.value === v; })) inCrop.appendChild(new Option(v, v)); }
+    if (editing && editing.crop) { _ensureCropOpt(editing.crop); inCrop.value = editing.crop; }
+    else if (s.measCrop) { _ensureCropOpt(s.measCrop); inCrop.value = s.measCrop; }   /* [v44-16] 측정도구 작물 기본 반영 */
     inCrop.disabled = true; inCrop.style.opacity = '.85'; inCrop.title = '작물은 위 도구에서 정합니다 (여기서는 표시만)';   /* [v72-13] 표시만·변경 불가 */
     f2.appendChild(inCrop);
     f2.appendChild(el('div', 'lyr-desc', '작물은 위 도구에서 선택한 값이며 여기서는 바꿀 수 없습니다.'));
@@ -6722,7 +6726,7 @@ TenarSecureStore.init('map',
       currentM2: Math.round(t.currentM2 * 10) / 10,
       totalM2: Math.round(t.totalM2 * 10) / 10,
       totalPyeong: Math.round(t.totalPyeong * 10) / 10,
-      crop: (fp.ctx && fp.ctx.crop) || '',
+      crop: surveyMeasureState.measCrop || (fp.ctx && fp.ctx.crop) || '',   /* [v83-1] 측정도구 작물 우선 */
       savedAt: kstNowStr()
     };
     try { saveJSON(MEAS_AREA_RESULT_KEY, rec); } catch (e) { showToast('전송 저장에 실패했습니다.', 3500); return; }
@@ -9064,8 +9068,8 @@ TenarSecureStore.init('map',
     var f1 = el('div', 'fld', '<label>작물</label>');
     var inCrop = el('select');
     inCrop.appendChild(new Option('선택 안 함', ''));
-    CROPS.forEach(function (x) { inCrop.appendChild(new Option(x.name, x.name)); });
-    if (c.crop) inCrop.value = c.crop;
+    FP_CROP_NAMES.forEach(function (n) { inCrop.appendChild(new Option(n, n)); });   /* [v83-3] 실측 작물만 */
+    if (c.crop) { if (!Array.prototype.some.call(inCrop.options, function (o) { return o.value === c.crop; })) inCrop.appendChild(new Option(c.crop, c.crop)); inCrop.value = c.crop; }
     f1.appendChild(inCrop);
 
     /* [v19-8] 기준은 작물이 정한다 — 논벼는 길이, 그 밖은 이랑. 직접 못 고친다 */
@@ -10497,6 +10501,31 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     /* [v78-3f] 주소를 고치면 시도·시군구·읍면동을 (이미 값이 있어도) 다시 채움 */
     iAddr.addEventListener('blur', function () { autoFillAdmin(true); });
     iAddr.addEventListener('change', function () { autoFillAdmin(true); });
+    /* [v83-6] (추가 개선) 저장 전 「주소 확인」 — 부분/도로명 주소도 조회해 시도·시군구·읍면동 미리 채움 */
+    (function () {
+      var bChk = el('button', 'sheet-btn', '🔎 주소 확인(시도·시군구·읍면동 채우기)');
+      bChk.style.cssText = 'width:100%;margin:-4px 0 8px;font-size:12.5px;padding:8px;';
+      bChk.addEventListener('click', function () {
+        var addr = (iAddr.value || '').trim();
+        if (!addr) { showToast('먼저 초입주소를 입력해 주세요.', 2800, 'info'); return; }
+        autoFillAdmin(true);   /* 우선 문자 그대로 파싱 */
+        if (!(hasApiKey && hasApiKey())) { showToast('주소 조회 서버(API) 준비 전입니다. (문자만 반영)', 3200, 'info'); return; }
+        showToast('주소로 시도·시군구·읍면동을 찾는 중…', 0, 'info');
+        areaGeocodeSmart(addr, { sido: normalizeSido(iSido.value), sigungu: iSgg.value.trim(), eupmyeondong: iEmd.value.trim() }).then(function (c) {
+          if (!(c && areaCoordOk(c.lat, c.lng))) { showToast('주소로 좌표를 찾지 못했습니다. 주소를 확인해 주세요.', 3500, 'info'); return; }
+          areaResolveAdminByCoord(c.lng, c.lat).then(function (ad) {
+            if (ad && ad.jibun) {
+              if (ad.sido) iSido.value = ad.sido;
+              if (ad.sigungu) iSgg.value = ad.sigungu;
+              if (ad.eupmyeondong) iEmd.value = ad.eupmyeondong;
+              iAddr.value = ad.jibun; iLat.value = c.lat; iLng.value = c.lng;
+              showToast('시도 ' + (ad.sido || '-') + ' · 시군구 ' + (ad.sigungu || '-') + ' · 읍면동 ' + (ad.eupmyeondong || '-') + ' 로 채웠습니다.', 3200, 'success');
+            } else { iLat.value = c.lat; iLng.value = c.lng; showToast('좌표만 찾았습니다. (주소 상세 조회 실패)', 3000, 'info'); }
+          });
+        });
+      });
+      box.appendChild(bChk);
+    })();
     var iLat = fld('위도(선택)', editing && isFinite(editing.latitude) ? editing.latitude : '', '비워두면 주소로 자동');
     var iLng = fld('경도(선택)', editing && isFinite(editing.longitude) ? editing.longitude : '', '비워두면 주소로 자동');
     var iNote = fld('비고(선택)', editing ? editing.note : '', '');
@@ -10839,6 +10868,9 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
 
   /* [v80] 작물재배조사구 전용 팝업 (즐겨찾기와 분리) */
   function openAreaSheet() {
+    /* [v83-5] 작물재배조사구를 열면 선택돼 있던 포구도구·측정도구를 해지한다 */
+    try { if (typeof toolPanelEl !== 'undefined' && toolPanelEl.classList.contains('show')) closeMeasurePanel(false); } catch (e) {}
+    try { if (typeof fpToolPanelEl !== 'undefined' && fpToolPanelEl.classList.contains('show')) closeFpTool(); } catch (e) {}
     favReturnView = { center: map.getCenter().toArray(), zoom: map.getZoom(), bearing: map.getBearing(), pitch: map.getPitch() };
     var box = el('div');
     /* 조사구 데이터 암호화 상태 배너 */
