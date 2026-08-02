@@ -1,4 +1,5 @@
-<!-- map_v88.html (v88 · TENAR V1.5) · 저장: 2026-08-03 05:41 KST · [v88] ①조사구 선택 시 그 시도·시군구·읍면동도 네모 선택표시(다른 읍면동 조사구 선택 시 갱신) ②시도·시군구·읍면동·조사구 선택해도 지도엔 전체 핀 표시(선택은 이동만) ③조사구 팝업(핀선택)에 메모내용 표시 + 완료(현재회차)·메모 버튼 ④완료·메모를 저장/불러오기·JSON·엑셀 내보내기/가져오기에 포함 ⑤순서안내 정렬옵션(지역·번호 순↔현재위치 가까운 순, 기본 유지) ⑥회차별 완료 진행률 표시(N회 X/Y·%) -->
+<!-- map_v89.html (v89 · TENAR V1.5) · 저장: 2026-08-03 06:15 KST · [v89] ①완료된 조사구는 지도 핀 위에 초록 체크(✔) 표시 ②조사구 목록의 메모(📝)를 누르면 그 조사구 팝업 열림(완료·메모·수정·목록·길찾기·삭제)·선택 핀을 검색창과 팝업 사이로 올림 ③목록 보기 필터(전체/완료/미완료/메모) 버튼 · [개선]메모 회차별 관리·회차버튼에 완료수 미리보기·「가까운 순」에서 완료(방문)한 곳은 뒤로 정렬 -->
+<!-- (이전)  map_v88.html (v88 · TENAR V1.5) · 저장: 2026-08-03 05:41 KST · [v88] ①조사구 선택 시 그 시도·시군구·읍면동도 네모 선택표시(다른 읍면동 조사구 선택 시 갱신) ②시도·시군구·읍면동·조사구 선택해도 지도엔 전체 핀 표시(선택은 이동만) ③조사구 팝업(핀선택)에 메모내용 표시 + 완료(현재회차)·메모 버튼 ④완료·메모를 저장/불러오기·JSON·엑셀 내보내기/가져오기에 포함 ⑤순서안내 정렬옵션(지역·번호 순↔현재위치 가까운 순, 기본 유지) ⑥회차별 완료 진행률 표시(N회 X/Y·%) -->
 <!-- (이전)  map_v87.html (v87 · TENAR V1.5) · 저장: 2026-08-03 01:36 KST · [v87] ①순서안내를 목록에서 선택된 조사구부터 시작 ②목록에서 시도·시군구·읍면동 선택 시 네모(박스) 선택표시 ③명칭검색 결과 여러 개면 현재위치 가까운 순 목록에서 고르기 ④조사 회차(1~5회) 선택 + 회차별 완료 체크 + 메모 작성/표시 + 이번 회차 완료 초기화(메모·다른 회차 유지) -->
 <!-- (이전)  map_v86.html (v86 · TENAR V1.5) · 저장: 2026-08-03 00:38 KST · [v86] ①검색창 아래 경로배지(🌾) 표시 안 함(팝업과 겹치고 안 닫히던 문제) ②검색 위치의 시도·시군구·읍면동으로 조사구 트리 이동·강조(그룹 스크롤) ③「실측조사/청취조사」 버튼 이모지·녹색테두리 제거+더 작게 · 명칭검색(경산시청·자인면주민센터 등 VWorld 장소검색 폴백) · 조사구 순서 네비게이션(🧭 순서안내: 시도>시군구>읍면동>번호 순 이동+네이버/카카오/T맵 길찾기) -->
 <!-- (이전)  map_v85.html (v85 · TENAR V1.5) · 저장: 2026-08-03 00:03 KST · [v85] ②면적라벨 작물=측정도구 작물(measCrop) 우선(참깨가 총각무로 보이던 버그 수정) ③검색창 아래 「실측조사/면접청취조사 실행」 타원버튼(팝업 열리면 숨김) ⑥왼쪽하단 줌(+/-)·나침반 컨트롤 삭제 ⑨통합계산기 길이측정(📏) 버튼(가-나·동5·동6)→지도 측정도구 길이모드 자동활성 ⑩허브 「작물재배조사구 위치찾기」(?open=area) ⑪조사구 배너 (AES...) 삭제 ⑫조사구 선택 시 핀을 팝업 위로 올림 ⑬조사구 트리는 항상 전체계층 표시(드롭다운으로 안 가려짐)·조사구 선택은 지도이동만 · (확인)④위치추적 핀 중앙고정·지도이동 정상 -->
@@ -5516,6 +5517,17 @@ TenarSecureStore.init('map',
       },
       paint: { 'text-color': '#ffffff', 'text-halo-color': 'rgba(0,0,0,.35)', 'text-halo-width': 1.0 }
     });
+    /* [v89-1] 완료된 조사구는 핀 위에 초록 체크 표시 */
+    map.addLayer({
+      id: 'area-plots-done', type: 'symbol', source: 'area-plots-source',
+      filter: ['all', ['==', ['get', 'visible'], true], ['==', ['get', 'done'], true]],
+      minzoom: 9,
+      layout: {
+        'text-field': '✔', 'text-size': ['interpolate', ['linear'], ['zoom'], 9, 12, 14, 16, 18, 20],
+        'text-offset': [0, -1.5], 'text-anchor': 'bottom', 'text-allow-overlap': true
+      },
+      paint: { 'text-color': '#0a7d34', 'text-halo-color': '#ffffff', 'text-halo-width': 2.2 }
+    });
     map.addLayer({
       id: 'area-plots-label', type: 'symbol', source: 'area-plots-source',
       filter: ['==', ['get', 'visible'], true],
@@ -10281,6 +10293,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
   ];
   var _areaSel = { sido: '', sigungu: '', eupmyeondong: '' };
   var _areaScrollTarget = null;   /* [v86-2] 검색 후 트리에서 이동·강조할 대상 경로 */
+  var _areaListFilter = '';       /* [v89-3] '', 'done', 'undone', 'memo' */
   var _areaSelectedId = null;
   /* [v81-2b] 마지막 필터(시도·시군구·읍면동) 기억 */
   var AREA_FILTER_KEY = 'tenarAreaFilter';
@@ -10320,9 +10333,21 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     }
     setAreaPlots(arr);
   }
-  function areaSetMemo(plotId, memo) {
+  /* [v89] 메모를 회차별로 관리 (legacy p.memo 는 init에서 memoRounds['1']로 이관) */
+  function areaGetMemo(p, round) {
+    round = round || areaGetRound();
+    if (p && p.memoRounds && p.memoRounds[String(round)]) return p.memoRounds[String(round)];
+    return '';
+  }
+  function areaSetMemo(plotId, round, memo) {
+    if (typeof memo === 'undefined') { memo = round; round = areaGetRound(); }   /* 하위호환 */
+    round = round || areaGetRound();
     var arr = getAreaPlots();
-    for (var i = 0; i < arr.length; i++) if (arr[i].id === plotId) { arr[i].memo = memo || ''; arr[i].updatedAt = kstNowStr(); }
+    for (var i = 0; i < arr.length; i++) if (arr[i].id === plotId) {
+      arr[i].memoRounds = arr[i].memoRounds || {};
+      if (memo && String(memo).trim()) arr[i].memoRounds[String(round)] = String(memo).trim(); else delete arr[i].memoRounds[String(round)];
+      arr[i].updatedAt = kstNowStr();
+    }
     setAreaPlots(arr);
   }
   function areaDoneToStr(dr) { if (!dr) return ''; var a = []; for (var k = 1; k <= 5; k++) if (dr[String(k)]) a.push(k); return a.join(','); }
@@ -10435,6 +10460,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
           plotId: p.id, number: p.number,
           visible: (settings.showAreaPins === true),   /* [v88-2] 필터와 무관하게 전체 표시(선택은 이동만) */
           sel: (p.id === _areaSelectedId),
+          done: areaIsDone(p, areaGetRound()),   /* [v89-1] 현재 회차 완료 여부 */
           dotColor: eupColor(p.eupmyeondong),
           labelText: areaPlotName(p)   /* [v67-4] 읍면동 층 조사구 */
         },
@@ -10507,7 +10533,9 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     var zoomTo = function (lng, lat) {
       var z = (opts.zoom != null) ? opts.zoom : Math.max(map.getZoom(), 17);
       /* [v85-12] 목록에서 선택 시 팝업(약 2/3)에 가리지 않게 핀을 화면 위쪽 가시영역으로 올린다 */
-      var off = opts.aboveSheet ? [0, -Math.round(window.innerHeight * 0.28)] : [0, 0];
+      /* [v89-2] 팝업(정보/목록)이 뜰 때 핀을 검색창과 팝업 사이(가시영역) 가운데로 올린다 */
+      var off = opts.aboveSheet ? [0, -Math.round(window.innerHeight * 0.30)]
+              : (opts.noPopup ? [0, 0] : [0, -Math.round(window.innerHeight * 0.26)]);
       map.flyTo({ center: [lng, lat], zoom: z, offset: off, duration: 600 });
     };
     var showPop = function (pp) { if (!opts.noPopup) areaOpenPlotSheet(pp); };
@@ -10600,8 +10628,9 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
       (areaCoordOk(p.latitude, p.longitude) ? '<div class="addr-value" style="font-size:12px;color:#999;">위도 ' + p.latitude.toFixed(6) + ' · 경도 ' + p.longitude.toFixed(6) + '</div>' : '<div class="addr-value" style="color:#c0392b;font-size:12px;">좌표 없음</div>'));
     box.appendChild(head);
     /* [v88-3] 메모 내용 표시(핀 선택 시) */
-    if (p.memo && String(p.memo).trim()) {
-      var memoBox = el('div', null, '📝 ' + escapeHtml(p.memo));
+    var _pmemo = areaGetMemo(p, areaGetRound());
+    if (_pmemo) {
+      var memoBox = el('div', null, '📝 (' + areaGetRound() + '회) ' + escapeHtml(_pmemo));
       memoBox.style.cssText = 'margin-top:8px;padding:8px 10px;background:#fffbe8;border:1px solid #f0e3b3;border-radius:8px;font-size:12.5px;color:#7a5b00;white-space:pre-wrap;';
       box.appendChild(memoBox);
     }
@@ -10613,9 +10642,9 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     bDone.addEventListener('click', function () { areaSetDone(p.id, _round, !_done); try { areaRefreshTree(); } catch (e) {} areaUpdateSource(); areaOpenPlotSheet(getAreaPlots().filter(function (x) { return x.id === p.id; })[0] || p); });
     var bMemo = el('button', 'sheet-btn', '📝 메모');
     bMemo.addEventListener('click', function () {
-      var m = window.prompt((p.number || '') + '번 조사구 메모', p.memo || '');
+      var m = window.prompt((p.number || '') + '번 조사구 ' + areaGetRound() + '회 메모', areaGetMemo(p, areaGetRound()));
       if (m === null) return;
-      areaSetMemo(p.id, m.trim()); try { areaRefreshTree(); } catch (e) {} areaOpenPlotSheet(getAreaPlots().filter(function (x) { return x.id === p.id; })[0] || p);
+      areaSetMemo(p.id, areaGetRound(), m); try { areaRefreshTree(); } catch (e) {} areaOpenPlotSheet(getAreaPlots().filter(function (x) { return x.id === p.id; })[0] || p);
     });
     rDM.appendChild(bDone); rDM.appendChild(bMemo);
     box.appendChild(rDM);
@@ -11079,7 +11108,11 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     var base = areaNavOrderList();
     if (!_areaNavByDist) return base;   /* 기존 순서 유지 */
     var ref = _areaNavRef || (function () { var c = map.getCenter(); return { lat: c.lat, lng: c.lng }; })();
+    var rd = areaGetRound();
     return base.slice().sort(function (a, b) {
+      /* [v89 개선] 이번 회차 완료(방문)한 조사구는 뒤로 */
+      var da = areaIsDone(a, rd) ? 1 : 0, db = areaIsDone(b, rd) ? 1 : 0;
+      if (da !== db) return da - db;
       function d2(p) { var dx = (p.longitude - ref.lng) * Math.cos(ref.lat * Math.PI / 180); var dy = (p.latitude - ref.lat); return dx * dx + dy * dy; }
       return d2(a) - d2(b);
     });
@@ -11131,8 +11164,9 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
       '<div style="font-size:13px;color:#333;">' + escapeHtml(((p.number || '') + '번 · ' + (areaFloorLabel(p) + ' ' + areaJosaguLabel(p)).trim()).trim()) + '</div>' +
       (p.address1 ? '<div style="font-size:12px;color:#888;margin-top:2px;">' + escapeHtml(p.address1) + '</div>' : '')));
     /* [v87] 메모 표시 */
-    if (p.memo && String(p.memo).trim()) {
-      var memoView = el('div', null, '📝 ' + escapeHtml(p.memo));
+    var _nmemo = areaGetMemo(p, round);
+    if (_nmemo) {
+      var memoView = el('div', null, '📝 (' + round + '회) ' + escapeHtml(_nmemo));
       memoView.style.cssText = 'margin-top:6px;padding:7px 9px;background:#fffbe8;border:1px solid #f0e3b3;border-radius:8px;font-size:12px;color:#7a5b00;white-space:pre-wrap;';
       box.appendChild(memoView);
     }
@@ -11142,9 +11176,9 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     bDone.addEventListener('click', function () { areaSetDone(p.id, round, !done); areaRefreshTree(); areaOpenNavStep(); });
     var bMemo = el('button', 'sheet-btn', '📝 메모');
     bMemo.addEventListener('click', function () {
-      var m = window.prompt((p.number || '') + '번 조사구 메모', p.memo || '');
+      var m = window.prompt((p.number || '') + '번 조사구 ' + round + '회 메모', areaGetMemo(p, round));
       if (m === null) return;
-      areaSetMemo(p.id, m.trim()); areaRefreshTree(); areaOpenNavStep();
+      areaSetMemo(p.id, round, m); areaRefreshTree(); areaOpenNavStep();
     });
     act.appendChild(bDone); act.appendChild(bMemo);
     box.appendChild(act);
@@ -11245,10 +11279,12 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     var rLab = el('span', null, '조사 회차'); rLab.style.cssText = 'font-size:12px;font-weight:800;color:#333;flex:0 0 auto;';
     rRound.appendChild(rLab);
     var curRound = areaGetRound();
+    var _plotsAll = getAreaPlots();
     for (var _r = 1; _r <= 5; _r++) (function (n) {
-      var b = el('button', 'sheet-btn', n + '회');
+      var dn = _plotsAll.filter(function (p) { return areaIsDone(p, n); }).length;   /* [v89 개선] 회차별 진행 미리보기 */
+      var b = el('button', 'sheet-btn', n + '회' + (dn ? ' <span style="font-size:9.5px;opacity:.85;">' + dn + '</span>' : ''));
       var on = (curRound === n);
-      b.style.cssText = 'flex:0 0 auto;padding:6px 9px;font-size:12px;' + (on ? 'background:#1f8a4c;color:#fff;border-color:#1f8a4c;font-weight:800;' : '');
+      b.style.cssText = 'flex:0 0 auto;padding:6px 8px;font-size:12px;' + (on ? 'background:#1f8a4c;color:#fff;border-color:#1f8a4c;font-weight:800;' : '');
       b.addEventListener('click', function () { areaSetRound(n); renderAreaPane(container); });
       rRound.appendChild(b);
     })(_r);
@@ -11263,6 +11299,20 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     });
     rRound.appendChild(bResetDone);
     wrap.appendChild(rRound);
+
+    /* [v89-3] 목록 보기 필터 : 전체 / 완료 / 미완료 / 메모 */
+    var rFilt = el('div'); rFilt.style.cssText = 'display:flex;gap:5px;margin-top:6px;';
+    var _cDone = _plotsAll.filter(function (p) { return areaIsDone(p, curRound); }).length;
+    var _cUndone = _plotsAll.length - _cDone;
+    var _cMemo = _plotsAll.filter(function (p) { return areaGetMemo(p, curRound); }).length;
+    [['', '전체 ' + _plotsAll.length], ['done', '✓완료 ' + _cDone], ['undone', '미완료 ' + _cUndone], ['memo', '📝메모 ' + _cMemo]].forEach(function (f) {
+      var on = (_areaListFilter === f[0]);
+      var b = el('button', 'sheet-btn', f[1]);
+      b.style.cssText = 'flex:1;padding:6px 2px;font-size:11px;white-space:nowrap;' + (on ? 'background:#1f8a4c;color:#fff;border-color:#1f8a4c;font-weight:800;' : '');
+      b.addEventListener('click', function () { _areaListFilter = (_areaListFilter === f[0]) ? '' : f[0]; renderAreaPane(container); });
+      rFilt.appendChild(b);
+    });
+    wrap.appendChild(rFilt);
 
     /* [v88-6] 회차별 완료 진행률 */
     var _allPlots = getAreaPlots();
@@ -11312,6 +11362,17 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     /* [v85-13] 트리는 항상 전체 계층(시도>시군구>읍면동>조사구)을 보여준다.
        (드롭다운으로 다른 곳이 사라져 헷갈리던 문제 해결 — 조사구를 누르면 지도만 이동) */
     var plots = getAreaPlots();
+    /* [v89-3] 목록 보기 필터(완료/미완료/메모) */
+    if (_areaListFilter) {
+      var _rd = areaGetRound();
+      plots = plots.filter(function (p) {
+        if (_areaListFilter === 'done') return areaIsDone(p, _rd);
+        if (_areaListFilter === 'undone') return !areaIsDone(p, _rd);
+        if (_areaListFilter === 'memo') return !!areaGetMemo(p, _rd);
+        return true;
+      });
+      if (!plots.length) { tree.appendChild(el('div', null, '<div style="padding:16px 4px;color:#999;font-size:12.5px;text-align:center;">' + (_areaListFilter === 'done' ? '완료된' : _areaListFilter === 'undone' ? '미완료' : '메모 있는') + ' 조사구가 없습니다.</div>')); areaApplyVisibility(); return; }
+    }
     var treeBody = el('div'); tree.appendChild(treeBody);
     areaBuildTreeNode(treeBody, areaGroup(plots), 0, []);
     /* [v86-2] 검색으로 지정된 시도·시군구·읍면동 그룹으로 스크롤 + 강조 */
@@ -11391,8 +11452,12 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
             /* [v87] 완료(현재 회차)·메모 표시 */
             var doneBadge = areaIsDone(p, areaGetRound()) ? el('span', null, '✓') : null;
             if (doneBadge) doneBadge.style.cssText = 'flex:0 0 auto;color:#0a7d34;font-weight:900;font-size:13px;';
-            var memoBadge = (p.memo && String(p.memo).trim()) ? el('span', null, '📝') : null;
-            if (memoBadge) { memoBadge.style.cssText = 'flex:0 0 auto;font-size:12px;cursor:pointer;'; memoBadge.title = p.memo; }
+            var memoBadge = areaGetMemo(p, areaGetRound()) ? el('span', null, '📝') : null;
+            if (memoBadge) {
+              memoBadge.style.cssText = 'flex:0 0 auto;font-size:13px;cursor:pointer;';
+              memoBadge.title = '메모 보기 · 조사구 열기';
+              memoBadge.addEventListener('click', function (ev) { ev.stopPropagation(); window._areaCloseReturn = null; areaOnPinClick(p.id); });   /* [v89-2] 메모 누르면 조사구 팝업 */
+            }
             var e2 = el('button', null, '✏️'); e2.style.cssText = 'border:none;background:none;font-size:12px;cursor:pointer;flex:0 0 auto;';
             e2.addEventListener('click', function (ev) { ev.stopPropagation(); areaOpenEditChoice(p, { returnTo: { type: 'tab' }, back: function () { openAreaSheet(); } }); });   /* [v79-1] 탭 수정도 지도/입력창 선택 팝업 */
             var d2 = el('button', null, '🗑'); d2.style.cssText = 'border:none;background:none;font-size:12px;cursor:pointer;flex:0 0 auto;';
@@ -11567,7 +11632,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
             ridong: p.ridong || '', floor: (p.floor == null ? '' : p.floor), josagu: (p.josagu == null ? '' : p.josagu),
             address1: p.address1 || p.초입주소 || '', note: p.note || '',
             latitude: (p.latitude == null ? '' : p.latitude), longitude: (p.longitude == null ? '' : p.longitude),
-            memo: p.memo || '', doneRounds: p.doneRounds || null, doneStr: areaDoneToStr(p.doneRounds)
+            memoRounds: p.memoRounds || (p.memo ? { '1': p.memo } : null), doneRounds: p.doneRounds || null, doneStr: areaDoneToStr(p.doneRounds)
           };
         });
         if (!rows.length) { showToast('JSON에 조사구 자료가 없습니다.', 4000); return; }
@@ -11598,7 +11663,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
       sido: normalizeSido(rec.sido), sigungu: rec.sigungu, eupmyeondong: rec.eupmyeondong,
       ridong: deriveRidong(rec.address1, rec.ridong), floor: rec.floor + '', josagu: rec.josagu + '',
       address1: rec.address1, note: rec.note || '',
-      memo: rec.memo || '',
+      memoRounds: rec.memoRounds || (rec.memo ? { '1': String(rec.memo).trim() } : {}),
       doneRounds: rec.doneRounds || (rec.doneStr ? areaStrToDone(rec.doneStr) : {}),
       latitude: (rec.latitude !== '' && areaCoordOk(latN, lngN)) ? latN : NaN,
       longitude: (rec.longitude !== '' && areaCoordOk(latN, lngN)) ? lngN : NaN,
@@ -11769,7 +11834,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
       arr.forEach(function (p) {
         aoa.push([p.number, p.sido, p.sigungu, p.eupmyeondong, p.floor, p.josagu, p.address1 || '',
           isFinite(p.latitude) ? p.latitude : '', isFinite(p.longitude) ? p.longitude : '', p.note || '',
-          p.memo || '', areaDoneToStr(p.doneRounds)]);
+          areaGetMemo(p, areaGetRound()) || (p.memoRounds ? (Object.keys(p.memoRounds).map(function(k){return k+'회:'+p.memoRounds[k];}).join(' | ')) : ''), areaDoneToStr(p.doneRounds)]);
       });
       var ws = XLSX.utils.aoa_to_sheet(aoa);
       var wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, '조사구');
@@ -11795,7 +11860,11 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
   /* ── 초기화(마이그레이션) ── */
   function areaMigrate() {
     var arr = getAreaPlots(); var changed = false;
-    arr.forEach(function (p) { var ns = normalizeSido(p.sido); if (ns !== p.sido) { p.sido = ns; changed = true; } });
+    arr.forEach(function (p) {
+      var ns = normalizeSido(p.sido); if (ns !== p.sido) { p.sido = ns; changed = true; }
+      /* [v89] 예전 단일 메모 → 1회 메모로 이관 */
+      if (p.memo && !p.memoRounds) { p.memoRounds = { '1': p.memo }; delete p.memo; changed = true; }
+    });
     if (changed) setAreaPlots(arr);
   }
   function areaPlotsInit() {
