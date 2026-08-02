@@ -1,4 +1,5 @@
-<!-- map_v84.html (v84 · TENAR V1.5) · 저장: 2026-07-31 11:39 KST · [v84] ①(개선)도구별 작물 목록을 상단 단일 상수 TOOL_CROPS(fp=포구도구 8종·meas=측정도구 13종)로 통합 관리 — MEAS_CROPS·FP_CROP_NAMES는 TOOL_CROPS를 참조(중복 정의 제거). 기능 동작 동일 -->
+<!-- map_v85.html (v85 · TENAR V1.5) · 저장: 2026-08-03 00:03 KST · [v85] ②면적라벨 작물=측정도구 작물(measCrop) 우선(참깨가 총각무로 보이던 버그 수정) ③검색창 아래 「실측조사/면접청취조사 실행」 타원버튼(팝업 열리면 숨김) ⑥왼쪽하단 줌(+/-)·나침반 컨트롤 삭제 ⑨통합계산기 길이측정(📏) 버튼(가-나·동5·동6)→지도 측정도구 길이모드 자동활성 ⑩허브 「작물재배조사구 위치찾기」(?open=area) ⑪조사구 배너 (AES...) 삭제 ⑫조사구 선택 시 핀을 팝업 위로 올림 ⑬조사구 트리는 항상 전체계층 표시(드롭다운으로 안 가려짐)·조사구 선택은 지도이동만 · (확인)④위치추적 핀 중앙고정·지도이동 정상 -->
+<!-- (이전)  map_v84.html (v84 · TENAR V1.5) · 저장: 2026-07-31 11:39 KST · [v84] ①(개선)도구별 작물 목록을 상단 단일 상수 TOOL_CROPS(fp=포구도구 8종·meas=측정도구 13종)로 통합 관리 — MEAS_CROPS·FP_CROP_NAMES는 TOOL_CROPS를 참조(중복 정의 제거). 기능 동작 동일 -->
 <!-- (이전)  map_v83.html (v83 · TENAR V1.5) · 저장: 2026-07-31 11:24 KST · [v83] ①측정→청취 전송 시 작물을 측정도구 작물(measCrop) 우선 사용(포구 컨텍스트 작물 오용 수정) ②작물 편집 반영(측정 지역·작물/저장폼) ③포구도구 작물 = 마늘·양파·감자·논벼·콩·배추·무·총각무(실측 8종)만 ④측정도구 작물 = 사과·배·고추·참깨·고구마·가을감자·겉보리·쌀보리·밀·노지봄무·시설봄무·노지봄배추·시설봄배추(13종)만 ⑤작물재배조사구 열면 포구도구·측정도구 자동 해지 ⑥(개선)조사구 편집창에 「주소 확인」 버튼(부분/도로명 주소도 조회해 시도·시군구·읍면동 채움) · 라우팅 유지: 포구→실측(tonghab)·측정→청취(chungchi) -->
 <!-- (이전)  map_v82.html (v82 · TENAR V1.5) · 저장: 2026-07-31 09:38 KST · [v82] ①입력창 수정 시 초입주소만 바꿔도(부분주소 「평천리 992」·도로명 「남상주로 504」 포함) 지오코딩+역지오코딩으로 지번 전체주소를 찾아 시도·시군구·읍면동 자동 갱신 ②「좌표조회」 이모지 삭제(한 줄) ③암호화 배너의 (AES-256-GCM…)를 아랫줄로 ④조사구 목록에서 선택 시 트리에 선택 표시 ⑤저장·불러오기 잠금·휴지통 이모지 센터 정렬 ⑥콤보에서 특정 시도·시군구·읍면동 선택 시 초록색 강조 ⑦「좌표조회」 진행 중 다시 누르면 중단 -->
 <!-- (이전)  map_v81.html (v81 · TENAR V1.5) · 저장: 2026-07-31 06:50 KST · [v81] ①구글 애널리틱스(gtag.js · G-B8ELP4S5PR) 추가 — index·tonghab·chungchi와 동일하게 접속자 카운트 ②좌표조회 진행률 토스트(0/N → 완료 N/N)·조사구 팝업 다시 열 때 마지막 필터(시도·시군구·읍면동) 기억(데이터 바뀌면 자동 정리)·콤보에서 시군구/읍면동만 골라도 상위(시도 등) 자동 채움 -->
@@ -906,6 +907,18 @@ TenarSecureStore.init('map',
   body.save-mode #btnMeasure, body.save-mode #btnFav { display: none !important; }   /* [v71-4] 통합 위치버튼(btnLoc)은 저장모드에서도 표시 */
   /* [v40-7] 하단 팝업(시트)이 열려 있는 동안 오른쪽 도구 버튼을 숨긴다.
      (주소검색·레이어는 그대로 두어 지도 종류를 바꾸거나 검색할 수 있게 한다) */
+  /* [v85-3] 조사 실행 바로가기 버튼(타원) */
+  #quickSurvey { display:flex; gap:8px; justify-content:center; margin-top:8px; pointer-events:auto; }
+  #quickSurvey .qs-btn {
+    flex:0 1 auto; text-decoration:none; font-family:inherit; font-size:13px; font-weight:800;
+    color:#14612f; background:rgba(255,255,255,.96); border:1.5px solid #1f8a4c;
+    border-radius:999px; padding:9px 16px; box-shadow:0 2px 8px rgba(0,0,0,.18);
+    white-space:nowrap; -webkit-tap-highlight-color:transparent;
+  }
+  #quickSurvey .qs-btn:active { background:#e8f6ee; }
+  /* 팝업(바텀시트·도구패널)이 열리면 숨김 */
+  body.sheet-open #quickSurvey, body.tool-open #quickSurvey { display:none !important; }
+
   body.sheet-open #btnHere, body.sheet-open #btnFav, body.sheet-open #btnMeasure,
   body.sheet-open #btnFpTool, body.sheet-open #btnPins,
   body.sheet-open #btnLoc { display: none !important; }   /* [v41-1]·[v71-4] 위치버튼도 함께 숨김 */
@@ -1209,6 +1222,11 @@ TenarSecureStore.init('map',
              enterkeyhint="search" placeholder="주소 또는 지번을 입력하세요">
       <button id="clearBtn" type="button" aria-label="입력 지우기">✕</button>
       <button id="searchBtn" type="button">검색</button>
+    </div>
+    <!-- [v85-3] 조사 실행 바로가기 (팝업이 하나도 없을 때만 표시) -->
+    <div id="quickSurvey">
+      <a class="qs-btn" href="tonghab.html">📐 실측조사 실행</a>
+      <a class="qs-btn" href="chungchi.html">🎧 면접청취조사 실행</a>
     </div>
 <!-- [v7-2] 「두 손가락 회전 · 확대 가능」 안내문 삭제 -->
   </div>
@@ -2161,7 +2179,7 @@ TenarSecureStore.init('map',
   map.touchPitch.enable();
 
   /* [v5-3] 확대·축소·나침반(각도 정위치)은 왼쪽 최하단(회전각 위)으로 이동 */
-  map.addControl(new maplibregl.NavigationControl({ showCompass: true, showZoom: true, visualizePitch: true }), 'bottom-left');
+  /* [v85-6] 왼쪽하단 줌(+/-)·나침반 컨트롤 삭제(요청) — 두 손가락으로 확대/축소·회전 그대로 가능 */
 
   var geolocateControl = new maplibregl.GeolocateControl({
     positionOptions: { enableHighAccuracy: true, timeout: 10000 },
@@ -5581,8 +5599,8 @@ TenarSecureStore.init('map',
     } catch (e) {}
     var e2 = document.createElement('div');
     e2.className = 'area-label';
-    /* 작물명은 포구도구로 넘어온 작물을 우선 사용한다 */
-    var crop = (fp.ctx && fp.ctx.crop) ? String(fp.ctx.crop) : '';
+    /* [v85-2] 작물명은 측정도구 작물(measCrop)을 우선 — 청취조사 참깨가 총각무로 보이던 버그 수정 */
+    var crop = String((surveyMeasureState && surveyMeasureState.measCrop) || (fp.ctx && fp.ctx.crop) || '');
     e2.innerHTML = (crop ? '<span class="area-crop">' + escapeHtml(crop) + '</span><br>' : '') +
                    formatNumber(areaM2, 1) + '㎡<br>' + formatNumber(areaM2 / 3.305785, 1) + '평';
     /* [v18-5] A/B포구 세로선·점이 가장 중요하므로 면적 라벨은 아래로 내려 겹치지 않게 한다 */
@@ -7722,6 +7740,20 @@ TenarSecureStore.init('map',
   var toolToggle = document.getElementById('toolToggle');
   var toolPanelEl = document.getElementById('toolPanel');
   var fpToolPanelEl = document.getElementById('fpToolPanel');
+  /* [v85-3] 포구/측정 도구 패널이 열리면 body.tool-open 을 켜서 「조사 실행」 바로가기 버튼을 숨긴다 */
+  (function () {
+    function syncToolOpen() {
+      var on = (toolPanelEl && toolPanelEl.classList.contains('show')) ||
+               (fpToolPanelEl && fpToolPanelEl.classList.contains('show'));
+      document.body.classList.toggle('tool-open', !!on);
+    }
+    try {
+      var mo = new MutationObserver(syncToolOpen);
+      if (toolPanelEl) mo.observe(toolPanelEl, { attributes: true, attributeFilter: ['class'] });
+      if (fpToolPanelEl) mo.observe(fpToolPanelEl, { attributes: true, attributeFilter: ['class'] });
+      syncToolOpen();
+    } catch (e) {}
+  })();
 
   /* [v17] 헤더 잡고 이동 + 눌러서 접기 — 두 패널이 같은 코드를 쓴다 */
   function makeToolPanel(panel, headId, toggleId, bodyId) {
@@ -10010,6 +10042,23 @@ TenarSecureStore.init('map',
     showToast('청취조사표 면적측정입니다.\n① 면적을 그린 뒤 ④ 「조사표 전송」을 눌러주세요.', 6000, 'info');
   }
 
+  /* [v85-9] 통합계산기(실측) → 지도 길이측정 진입 : 「가-나 총이랑수·동그라미5·6」 옆 📏 버튼
+     (?measure=1&app=tonghab&mtype=length&field=...) → 측정도구 자동 열고 「길이」 모드 활성화 */
+  function tonghabMeasInit() {
+    var qs = new URLSearchParams(location.search);
+    if (qs.get('measure') !== '1' || qs.get('app') !== 'tonghab') return;
+    if (fpToolPanelEl.classList.contains('show')) closeFpTool(false);
+    toolPanelEl.classList.add('show');
+    document.getElementById('btnMeasure').classList.add('active');
+    try { startDistanceMeasurement(); } catch (e) {}   /* 길이 모드 활성화 */
+    var q = qs.get('q');
+    setTimeout(function () {
+      if (q) { var si = document.getElementById('searchInput'); if (si) { si.value = q; searchAddress(); } }
+      else { try { goHere(); } catch (e) {} }
+    }, 700);
+    showToast('실측조사표 길이측정입니다.\n① 두 점으로 길이를 잰 뒤 ④ 「조사표 전송」을 눌러주세요.', 6000, 'info');
+  }
+
   /* [v17] 포구도구 · 측정도구 버튼 바인딩 */
   (function () {
     function on(id, fn) { var el = document.getElementById(id); if (el) el.addEventListener('click', fn); }
@@ -10094,10 +10143,14 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     updateMeasurementResultPanel();
     console.log('실측 측정 레이어 등록 완료');
 
+    /* [v85-10] 허브의 「작물재배조사구 위치찾기」(?open=area)로 들어오면 조사구 팝업 자동 열기 */
+    try { if (new URLSearchParams(location.search).get('open') === 'area') { setTimeout(function () { try { openAreaSheet(); } catch (e) {} }, 900); } } catch (e) {}
+
     mapLoaded = true;
     restoreWhenBothReady();
     try { fpInit(); } catch (e) { console.error('[v15] fieldplot init 오류:', e); }   /* [v15] */
     try { ccMeasInit(); } catch (e) { console.error('[v26] 청취 면적측정 init 오류:', e); }   /* [v26-6] */
+    try { tonghabMeasInit(); } catch (e) { console.error('[v85-9] 실측 길이측정 init 오류:', e); }   /* [v85-9] */
     try { saveModeInit(); } catch (e) { console.error('[v29] 위치저장 init 오류:', e); }        /* [v29-1] */
     try { bulkSyncInit(); } catch (e) { console.error('[v30] bulk init 오류:', e); }              /* [v30-4] */
     try { setTimeout(cleanupBadFavs, 300); } catch (e) {}                                          /* [v33] 0,0 핀 정리 */
@@ -10342,7 +10395,12 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     areaEnsurePinsOn();
     _areaSelectedId = plotId; areaUpdateSource();
     try { areaRefreshTree(); } catch (e) {}   /* [v82-4] 목록에서 선택하면 트리에 선택 표시 */
-    var zoomTo = function (lng, lat) { var z = (opts.zoom != null) ? opts.zoom : Math.max(map.getZoom(), 17); map.flyTo({ center: [lng, lat], zoom: z, duration: 600 }); };
+    var zoomTo = function (lng, lat) {
+      var z = (opts.zoom != null) ? opts.zoom : Math.max(map.getZoom(), 17);
+      /* [v85-12] 목록에서 선택 시 팝업(약 2/3)에 가리지 않게 핀을 화면 위쪽 가시영역으로 올린다 */
+      var off = opts.aboveSheet ? [0, -Math.round(window.innerHeight * 0.28)] : [0, 0];
+      map.flyTo({ center: [lng, lat], zoom: z, offset: off, duration: 600 });
+    };
     var showPop = function (pp) { if (!opts.noPopup) areaOpenPlotSheet(pp); };
     if (areaCoordOk(p.latitude, p.longitude)) {
       zoomTo(p.longitude, p.latitude); showPop(p);
@@ -10886,7 +10944,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     var enc = (window.__tenarSecureActive === true);
     var banner = el('div', 'sec-banner ' + (enc ? 'enc' : 'plain'));
     banner.innerHTML = enc
-      ? '🔐 조사구 데이터 암호화 저장 중 <span style="display:block;font-weight:600;opacity:.85;margin-top:2px;">(AES-256-GCM · 내보내기 파일도 암호 필요)</span>'
+      ? '🔐 조사구 데이터 암호화 저장 중'
       : '⚠️ 조사구 데이터가 암호화되지 않았습니다 <span style="display:block;font-weight:600;opacity:.85;margin-top:2px;">(평문 저장 중)</span>';
     box.appendChild(banner);
     var pane = el('div'); box.appendChild(pane);
@@ -10984,8 +11042,9 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     allRow.innerHTML = '🗺 전체 <span style="color:#aaa;font-weight:600;">' + all.length + '건</span>';
     allRow.addEventListener('click', function () { areaClearSelection(); areaFitAllVisible(); });
     tree.appendChild(allRow);
-    var plots = areaFilteredPlots();
-    if (!plots.length) { tree.appendChild(el('div', null, '<div style="padding:14px 4px;color:#999;font-size:12.5px;text-align:center;">선택한 조건의 조사구가 없습니다.</div>')); areaApplyVisibility(); return; }
+    /* [v85-13] 트리는 항상 전체 계층(시도>시군구>읍면동>조사구)을 보여준다.
+       (드롭다운으로 다른 곳이 사라져 헷갈리던 문제 해결 — 조사구를 누르면 지도만 이동) */
+    var plots = getAreaPlots();
     var treeBody = el('div'); tree.appendChild(treeBody);
     areaBuildTreeNode(treeBody, areaGroup(plots), 0);
     areaApplyVisibility();
@@ -11035,7 +11094,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
               '<span style="color:' + (noCoord ? '#9aa0a6' : 'inherit') + ';">' + escapeHtml((areaFloorLabel(p) + ' ' + areaJosaguLabel(p)).trim() || '조사구') + '</span>' +
               (p.address1 ? ' <span style="color:' + (noCoord ? '#aab0b6' : '#999') + ';">· ' + escapeHtml(mapItemShortAddr(p.address1)) + '</span>' : ''));
             t.style.cssText = 'flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;';
-            t.addEventListener('click', function () { window._areaCloseReturn = null; areaOnPinClick(p.id, { zoom: 14, noPopup: true }); });   /* [v78-4] 레벨14·팝업없음 */
+            t.addEventListener('click', function () { window._areaCloseReturn = null; areaOnPinClick(p.id, { zoom: 14, noPopup: true, aboveSheet: true }); });   /* [v85-12] 핀 위로 */   /* [v78-4] 레벨14·팝업없음 */
             var noBadge = noCoord ? el('span', null, '좌표없음') : null;
             if (noBadge) noBadge.style.cssText = 'flex:0 0 auto;color:#c0392b;font-size:10.5px;font-weight:700;background:#fdecea;border:1px solid #f3c6c0;border-radius:6px;padding:1px 5px;';
             var e2 = el('button', null, '✏️'); e2.style.cssText = 'border:none;background:none;font-size:12px;cursor:pointer;flex:0 0 auto;';
