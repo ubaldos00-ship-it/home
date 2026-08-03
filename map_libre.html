@@ -1,4 +1,5 @@
-<!-- map_v90.html (v90 · TENAR V1.5) · 저장: 2026-08-03 15:27 KST · [v90] 엑셀 가져오기 개선 — 「리·본지번·부지번」(또는 「지번」) 열을 인식해 초입주소를 자동 조합. 예) 경상북도·상주시·공성면·평천리·0995·0002 → 「경상북도 상주시 공성면 평천리 995-2」로 조회. 앞의 0 제거·부지번 0이면 본번만·산번지 지원. 초입주소 열이 이미 있으면 그대로 사용 -->
+<!-- map_v91.html (v91 · TENAR V1.5) · 저장: 2026-08-04 00:20 KST · [v91] 작물재배조사구 단순화 — ①②조사회차·완료·미완료·완료초기화·회차완료 모두 삭제(필터는 전체/메모만) · 메모 입력창 크게(textarea) ③조사구 수정: 저장·취소를 제목 아래·번호 위로 이동+메모칸 추가, 핀 팝업 닫으면 조사구 목록 열림 ④조사구 팝업·순서안내의 회 완료 버튼 삭제 ⑤팝업 열리면 🌾 조사구 버튼도 숨김 ⑥위치버튼 3상태(현재위치→동작방향→취소) ⑦방향 부채꼴 더 투명하게 -->
+<!-- (이전)  map_v90.html (v90 · TENAR V1.5) · 저장: 2026-08-03 15:27 KST · [v90] 엑셀 가져오기 개선 — 「리·본지번·부지번」(또는 「지번」) 열을 인식해 초입주소를 자동 조합. 예) 경상북도·상주시·공성면·평천리·0995·0002 → 「경상북도 상주시 공성면 평천리 995-2」로 조회. 앞의 0 제거·부지번 0이면 본번만·산번지 지원. 초입주소 열이 이미 있으면 그대로 사용 -->
 <!-- (이전)  map_v89.html (v89 · TENAR V1.5) · 저장: 2026-08-03 06:15 KST · [v89] ①완료된 조사구는 지도 핀 위에 초록 체크(✔) 표시 ②조사구 목록의 메모(📝)를 누르면 그 조사구 팝업 열림(완료·메모·수정·목록·길찾기·삭제)·선택 핀을 검색창과 팝업 사이로 올림 ③목록 보기 필터(전체/완료/미완료/메모) 버튼 · [개선]메모 회차별 관리·회차버튼에 완료수 미리보기·「가까운 순」에서 완료(방문)한 곳은 뒤로 정렬 -->
 <!-- (이전)  map_v88.html (v88 · TENAR V1.5) · 저장: 2026-08-03 05:41 KST · [v88] ①조사구 선택 시 그 시도·시군구·읍면동도 네모 선택표시(다른 읍면동 조사구 선택 시 갱신) ②시도·시군구·읍면동·조사구 선택해도 지도엔 전체 핀 표시(선택은 이동만) ③조사구 팝업(핀선택)에 메모내용 표시 + 완료(현재회차)·메모 버튼 ④완료·메모를 저장/불러오기·JSON·엑셀 내보내기/가져오기에 포함 ⑤순서안내 정렬옵션(지역·번호 순↔현재위치 가까운 순, 기본 유지) ⑥회차별 완료 진행률 표시(N회 X/Y·%) -->
 <!-- (이전)  map_v87.html (v87 · TENAR V1.5) · 저장: 2026-08-03 01:36 KST · [v87] ①순서안내를 목록에서 선택된 조사구부터 시작 ②목록에서 시도·시군구·읍면동 선택 시 네모(박스) 선택표시 ③명칭검색 결과 여러 개면 현재위치 가까운 순 목록에서 고르기 ④조사 회차(1~5회) 선택 + 회차별 완료 체크 + 메모 작성/표시 + 이번 회차 완료 초기화(메모·다른 회차 유지) -->
@@ -486,7 +487,7 @@ TenarSecureStore.init('map',
   /* [v74-4] 부채꼴 : 핀 중심은 진하고 바깥으로 갈수록 옅어지는 그라데이션 */
   .tloc-marker .tloc-fan {
     position: absolute; left: 50%; top: 50%; width: 66px; height: 58px; margin: -58px 0 0 -33px;
-    background: linear-gradient(to top, rgba(26,115,232,.60), rgba(26,115,232,.02));
+    background: linear-gradient(to top, rgba(26,115,232,.28), rgba(26,115,232,.01));   /* [v91-7] 부채꼴 더 투명하게 */
     -webkit-clip-path: polygon(50% 100%, 0% 0%, 100% 0%); clip-path: polygon(50% 100%, 0% 0%, 100% 0%);
     display: none;
   }
@@ -926,8 +927,8 @@ TenarSecureStore.init('map',
   body.sheet-open #quickSurvey, body.tool-open #quickSurvey { display:none !important; }
 
   body.sheet-open #btnHere, body.sheet-open #btnFav, body.sheet-open #btnMeasure,
-  body.sheet-open #btnFpTool, body.sheet-open #btnPins,
-  body.sheet-open #btnLoc { display: none !important; }   /* [v41-1]·[v71-4] 위치버튼도 함께 숨김 */
+  body.sheet-open #btnFpTool, body.sheet-open #btnPins, body.sheet-open #btnAreaShort,
+  body.sheet-open #btnLoc { display: none !important; }   /* [v41-1]·[v71-4] 위치버튼·[v91-5] 조사구버튼도 숨김 */
 
   .fp-gana {
     position: absolute; width: 21px; height: 21px; border-radius: 11px;
@@ -5517,17 +5518,6 @@ TenarSecureStore.init('map',
         'text-allow-overlap': true, 'text-font': ['literal', ['Open Sans Bold', 'Arial Unicode MS Bold']]
       },
       paint: { 'text-color': '#ffffff', 'text-halo-color': 'rgba(0,0,0,.35)', 'text-halo-width': 1.0 }
-    });
-    /* [v89-1] 완료된 조사구는 핀 위에 초록 체크 표시 */
-    map.addLayer({
-      id: 'area-plots-done', type: 'symbol', source: 'area-plots-source',
-      filter: ['all', ['==', ['get', 'visible'], true], ['==', ['get', 'done'], true]],
-      minzoom: 9,
-      layout: {
-        'text-field': '✔', 'text-size': ['interpolate', ['linear'], ['zoom'], 9, 12, 14, 16, 18, 20],
-        'text-offset': [0, -1.5], 'text-anchor': 'bottom', 'text-allow-overlap': true
-      },
-      paint: { 'text-color': '#0a7d34', 'text-halo-color': '#ffffff', 'text-halo-width': 2.2 }
     });
     map.addLayer({
       id: 'area-plots-label', type: 'symbol', source: 'area-plots-source',
@@ -10319,45 +10309,45 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
   function setAreaPlots(arr) { saveJSON(AREA_KEY, Array.isArray(arr) ? arr : []); }
   function areaUid() { return 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
 
-  /* [v87] 조사 회차(1~5회) · 회차별 완료 체크 · 메모 */
-  var AREA_ROUND_KEY = 'tenarAreaRound';
-  function areaGetRound() { var n = parseInt(localStorage.getItem(AREA_ROUND_KEY) || '1', 10); return (n >= 1 && n <= 5) ? n : 1; }
-  function areaSetRound(n) { n = (n >= 1 && n <= 5) ? n : 1; try { localStorage.setItem(AREA_ROUND_KEY, String(n)); } catch (e) {} }
-  function areaIsDone(p, round) { return !!(p && p.doneRounds && p.doneRounds[String(round || areaGetRound())]); }
-  function areaSetDone(plotId, round, val) {
-    round = round || areaGetRound();
-    var arr = getAreaPlots();
-    for (var i = 0; i < arr.length; i++) if (arr[i].id === plotId) {
-      arr[i].doneRounds = arr[i].doneRounds || {};
-      if (val) arr[i].doneRounds[String(round)] = true; else delete arr[i].doneRounds[String(round)];
-      arr[i].updatedAt = kstNowStr();
-    }
-    setAreaPlots(arr);
-  }
-  /* [v89] 메모를 회차별로 관리 (legacy p.memo 는 init에서 memoRounds['1']로 이관) */
-  function areaGetMemo(p, round) {
-    round = round || areaGetRound();
-    if (p && p.memoRounds && p.memoRounds[String(round)]) return p.memoRounds[String(round)];
+  /* [v91] 단순화 : 회차·완료 기능 제거, 메모는 조사구당 1개 */
+  function areaGetMemo(p) {
+    if (!p) return '';
+    if (p.memo) return p.memo;
+    if (p.memoRounds) { for (var k in p.memoRounds) { if (p.memoRounds[k]) return p.memoRounds[k]; } }
     return '';
   }
-  function areaSetMemo(plotId, round, memo) {
-    if (typeof memo === 'undefined') { memo = round; round = areaGetRound(); }   /* 하위호환 */
-    round = round || areaGetRound();
+  function areaSetMemo(plotId, a, b) {
+    var memo = (typeof b === 'undefined') ? a : b;   /* (id,memo) 또는 (id,round,memo) 모두 허용 */
     var arr = getAreaPlots();
     for (var i = 0; i < arr.length; i++) if (arr[i].id === plotId) {
-      arr[i].memoRounds = arr[i].memoRounds || {};
-      if (memo && String(memo).trim()) arr[i].memoRounds[String(round)] = String(memo).trim(); else delete arr[i].memoRounds[String(round)];
+      arr[i].memo = (memo == null ? '' : String(memo).trim());
+      if (arr[i].memoRounds) delete arr[i].memoRounds;
       arr[i].updatedAt = kstNowStr();
     }
     setAreaPlots(arr);
   }
-  function areaDoneToStr(dr) { if (!dr) return ''; var a = []; for (var k = 1; k <= 5; k++) if (dr[String(k)]) a.push(k); return a.join(','); }
-  function areaStrToDone(str) { var o = {}; String(str || '').split(/[,\s]+/).forEach(function (t) { var n = parseInt(t, 10); if (n >= 1 && n <= 5) o[String(n)] = true; }); return o; }
-  function areaResetRoundDone(round) {
-    round = round || areaGetRound();
-    var arr = getAreaPlots(); var n = 0;
-    arr.forEach(function (p) { if (p.doneRounds && p.doneRounds[String(round)]) { delete p.doneRounds[String(round)]; n++; } });
-    setAreaPlots(arr); return n;
+  /* [v91] 큰 메모 입력창 (기존 작은 prompt 대체) */
+  function areaOpenMemoSheet(plotId, back) {
+    var p = getAreaPlots().filter(function (x) { return x.id === plotId; })[0];
+    if (!p) return;
+    var box = el('div');
+    box.appendChild(el('div', 'lyr-desc', (p.number || '') + '번 · ' + areaPlotName(p) + ' 메모'));
+    var ta = document.createElement('textarea');
+    ta.value = areaGetMemo(p) || '';
+    ta.placeholder = '조사 내용·특이사항을 자유롭게 적으세요.';
+    ta.style.cssText = 'width:100%;min-height:180px;margin-top:8px;padding:12px;border:1.5px solid #d7d7de;border-radius:10px;font-size:15px;line-height:1.6;box-sizing:border-box;font-family:inherit;resize:vertical;';
+    box.appendChild(ta);
+    var row = el('div', 'btn-row'); row.style.marginTop = '10px';
+    var bSave = el('button', 'sheet-btn primary', '💾 메모 저장');
+    bSave.addEventListener('click', function () { areaSetMemo(plotId, ta.value); try { areaRefreshTree(); } catch (e) {} showToast('메모를 저장했습니다.', 2000, 'success'); if (back) back(); else openAreaSheet(); });
+    var bCancel = el('button', 'sheet-btn', '취소');
+    bCancel.addEventListener('click', function () { if (back) back(); else openAreaSheet(); });
+    row.appendChild(bSave); row.appendChild(bCancel);
+    box.appendChild(row);
+    openSheet('📝 메모', box, 'auto');
+    sheetHasForm = true;
+    window._areaCloseReturn = back || function () { openAreaSheet(); };
+    setTimeout(function () { try { ta.focus(); } catch (e) {} }, 100);
   }
 
   function ensureXLSX() {
@@ -10461,7 +10451,6 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
           plotId: p.id, number: p.number,
           visible: (settings.showAreaPins === true),   /* [v88-2] 필터와 무관하게 전체 표시(선택은 이동만) */
           sel: (p.id === _areaSelectedId),
-          done: areaIsDone(p, areaGetRound()),   /* [v89-1] 현재 회차 완료 여부 */
           dotColor: eupColor(p.eupmyeondong),
           labelText: areaPlotName(p)   /* [v67-4] 읍면동 층 조사구 */
         },
@@ -10629,25 +10618,18 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
       (areaCoordOk(p.latitude, p.longitude) ? '<div class="addr-value" style="font-size:12px;color:#999;">위도 ' + p.latitude.toFixed(6) + ' · 경도 ' + p.longitude.toFixed(6) + '</div>' : '<div class="addr-value" style="color:#c0392b;font-size:12px;">좌표 없음</div>'));
     box.appendChild(head);
     /* [v88-3] 메모 내용 표시(핀 선택 시) */
-    var _pmemo = areaGetMemo(p, areaGetRound());
+    var _pmemo = areaGetMemo(p);
     if (_pmemo) {
-      var memoBox = el('div', null, '📝 (' + areaGetRound() + '회) ' + escapeHtml(_pmemo));
+      var memoBox = el('div', null, '📝 ' + escapeHtml(_pmemo));
       memoBox.style.cssText = 'margin-top:8px;padding:8px 10px;background:#fffbe8;border:1px solid #f0e3b3;border-radius:8px;font-size:12.5px;color:#7a5b00;white-space:pre-wrap;';
       box.appendChild(memoBox);
     }
-    /* [v88-3] 완료(현재 회차) · 메모 작성 */
-    var _round = areaGetRound();
-    var _done = areaIsDone(p, _round);
-    var rDM = el('div'); rDM.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px;';
-    var bDone = el('button', 'sheet-btn' + (_done ? ' primary' : ''), _done ? '✓ ' + _round + '회 완료됨' : '☐ ' + _round + '회 완료');
-    bDone.addEventListener('click', function () { areaSetDone(p.id, _round, !_done); try { areaRefreshTree(); } catch (e) {} areaUpdateSource(); areaOpenPlotSheet(getAreaPlots().filter(function (x) { return x.id === p.id; })[0] || p); });
-    var bMemo = el('button', 'sheet-btn', '📝 메모');
-    bMemo.addEventListener('click', function () {
-      var m = window.prompt((p.number || '') + '번 조사구 ' + areaGetRound() + '회 메모', areaGetMemo(p, areaGetRound()));
-      if (m === null) return;
-      areaSetMemo(p.id, areaGetRound(), m); try { areaRefreshTree(); } catch (e) {} areaOpenPlotSheet(getAreaPlots().filter(function (x) { return x.id === p.id; })[0] || p);
-    });
-    rDM.appendChild(bDone); rDM.appendChild(bMemo);
+    /* [v91-4] 완료 버튼 삭제 · 메모는 큰 입력창으로 */
+    var rDM = el('div'); rDM.style.cssText = 'margin-top:10px;';
+    var bMemo = el('button', 'sheet-btn', _pmemo ? '📝 메모 보기·수정' : '📝 메모 작성');
+    bMemo.style.cssText = 'width:100%;';
+    bMemo.addEventListener('click', function () { var pid = p.id; areaOpenMemoSheet(pid, function () { areaOpenPlotSheet(getAreaPlots().filter(function (x) { return x.id === pid; })[0] || p); }); });
+    rDM.appendChild(bMemo);
     box.appendChild(rDM);
     var row = el('div', 'btn-row'); row.style.marginTop = '8px';
     var bEdit = el('button', 'sheet-btn primary', '✏️ 수정');
@@ -10693,6 +10675,8 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     box.appendChild(row);
     /* [v67-6] 제목 = 조사구 정보 이름 */
     openSheet('🌾 ' + areaPlotName(p), box, 'auto');
+    /* [v91-3] 조사구 팝업을 닫으면 작물재배조사구 목록이 열리게 */
+    window._areaCloseReturn = function () { openAreaSheet(); };
   }
 
   /* ── 조사구 추가/수정 폼 ── */
@@ -10755,6 +10739,16 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     var iLat = fld('위도(선택)', editing && isFinite(editing.latitude) ? editing.latitude : '', '비워두면 주소로 자동');
     var iLng = fld('경도(선택)', editing && isFinite(editing.longitude) ? editing.longitude : '', '비워두면 주소로 자동');
     var iNote = fld('비고(선택)', editing ? editing.note : '', '');
+    /* [v91-1] 큰 메모 입력칸 */
+    var iMemo;
+    (function () {
+      var f = el('div', 'fld', '<label>메모(선택)</label>');
+      iMemo = document.createElement('textarea');
+      iMemo.value = editing ? (areaGetMemo(editing) || '') : '';
+      iMemo.placeholder = '조사 내용·특이사항을 크게 적을 수 있어요.';
+      iMemo.style.cssText = 'width:100%;min-height:120px;padding:11px;border:1px solid #d7d7de;border-radius:8px;font-size:14px;line-height:1.55;box-sizing:border-box;font-family:inherit;resize:vertical;';
+      f.appendChild(iMemo); box.appendChild(f);
+    })();
 
     function goBack() {
       if (returnTo.type === 'plot') {
@@ -10782,6 +10776,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
       rec.sido = sido; rec.sigungu = sgg; rec.eupmyeondong = emd;
       rec.floor = iFloor.value.trim(); rec.josagu = josagu;
       rec.address1 = addr; rec.note = iNote.value.trim();
+      rec.memo = iMemo.value.trim(); if (rec.memoRounds) delete rec.memoRounds;   /* [v91-1] 메모 저장 */
       rec.ridong = deriveRidong(addr, rec.ridong);
       if (explicitCoord) { rec.latitude = Number(latStr); rec.longitude = Number(lngStr); }
       rec.updatedAt = kstNowStr();
@@ -10840,7 +10835,8 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     var bCancel = el('button', 'sheet-btn', '취소');
     bCancel.addEventListener('click', function () { window._areaCloseReturn = null; goBack(); });
     row.appendChild(bSave); row.appendChild(bCancel);
-    box.appendChild(row);
+    row.style.margin = '2px 0 10px';
+    box.insertBefore(row, box.firstChild);   /* [v91-3] 저장·취소를 제목 아래·번호 위로 */
     openSheet(editing ? '✏️ 조사구 수정' : '＋ 조사구 추가', box, 'auto');
     sheetHasForm = true;
     /* [v67-5·6] ✕(창닫기)로 닫아도 이전 화면(목록 또는 조사구 팝업)으로 복귀 */
@@ -11109,11 +11105,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     var base = areaNavOrderList();
     if (!_areaNavByDist) return base;   /* 기존 순서 유지 */
     var ref = _areaNavRef || (function () { var c = map.getCenter(); return { lat: c.lat, lng: c.lng }; })();
-    var rd = areaGetRound();
     return base.slice().sort(function (a, b) {
-      /* [v89 개선] 이번 회차 완료(방문)한 조사구는 뒤로 */
-      var da = areaIsDone(a, rd) ? 1 : 0, db = areaIsDone(b, rd) ? 1 : 0;
-      if (da !== db) return da - db;
       function d2(p) { var dx = (p.longitude - ref.lng) * Math.cos(ref.lat * Math.PI / 180); var dy = (p.latitude - ref.lat); return dx * dx + dy * dy; }
       return d2(a) - d2(b);
     });
@@ -11127,10 +11119,8 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     _areaSelectedId = p.id; try { areaEnsurePinsOn(); areaUpdateSource(); } catch (e) {}
     try { map.flyTo({ center: [p.longitude, p.latitude], zoom: Math.max(map.getZoom(), 15), offset: [0, -Math.round(window.innerHeight * 0.24)], duration: 600 }); } catch (e) {}
     var region = [p.sido, p.sigungu, p.eupmyeondong].filter(Boolean).join(' ');
-    var round = areaGetRound();
-    var done = areaIsDone(p, round);
     var box = el('div');
-    box.appendChild(el('div', 'lyr-desc', '순서 안내 · ' + (_areaNavIdx + 1) + ' / ' + list.length + ' · ' + round + '회 조사'));
+    box.appendChild(el('div', 'lyr-desc', '순서 안내 · ' + (_areaNavIdx + 1) + ' / ' + list.length));
     /* [v88-5] 정렬 옵션 : 지역·번호 순(기본) ↔ 현재위치 가까운 순 */
     (function () {
       var sortRow = el('div'); sortRow.style.cssText = 'display:flex;gap:5px;margin:2px 0 2px;';
@@ -11161,27 +11151,22 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
       box.appendChild(sortRow);
     })();
     box.appendChild(el('div', null,
-      '<div style="font-weight:800;font-size:14px;color:#14612f;margin:4px 0 2px;">' + escapeHtml(region || '(지역 미입력)') + (done ? ' <span style="color:#0a7d34;">✓ 완료</span>' : '') + '</div>' +
+      '<div style="font-weight:800;font-size:14px;color:#14612f;margin:4px 0 2px;">' + escapeHtml(region || '(지역 미입력)') + '</div>' +
       '<div style="font-size:13px;color:#333;">' + escapeHtml(((p.number || '') + '번 · ' + (areaFloorLabel(p) + ' ' + areaJosaguLabel(p)).trim()).trim()) + '</div>' +
       (p.address1 ? '<div style="font-size:12px;color:#888;margin-top:2px;">' + escapeHtml(p.address1) + '</div>' : '')));
-    /* [v87] 메모 표시 */
-    var _nmemo = areaGetMemo(p, round);
+    /* [v91] 메모 표시 */
+    var _nmemo = areaGetMemo(p);
     if (_nmemo) {
-      var memoView = el('div', null, '📝 (' + round + '회) ' + escapeHtml(_nmemo));
+      var memoView = el('div', null, '📝 ' + escapeHtml(_nmemo));
       memoView.style.cssText = 'margin-top:6px;padding:7px 9px;background:#fffbe8;border:1px solid #f0e3b3;border-radius:8px;font-size:12px;color:#7a5b00;white-space:pre-wrap;';
       box.appendChild(memoView);
     }
-    /* [v87] 완료 체크(현재 회차) · 메모 작성 */
-    var act = el('div'); act.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px;';
-    var bDone = el('button', 'sheet-btn' + (done ? ' primary' : ''), done ? '✓ ' + round + '회 완료됨' : '☐ ' + round + '회 완료');
-    bDone.addEventListener('click', function () { areaSetDone(p.id, round, !done); areaRefreshTree(); areaOpenNavStep(); });
-    var bMemo = el('button', 'sheet-btn', '📝 메모');
-    bMemo.addEventListener('click', function () {
-      var m = window.prompt((p.number || '') + '번 조사구 ' + round + '회 메모', areaGetMemo(p, round));
-      if (m === null) return;
-      areaSetMemo(p.id, round, m); areaRefreshTree(); areaOpenNavStep();
-    });
-    act.appendChild(bDone); act.appendChild(bMemo);
+    /* [v91-4] 완료 버튼 삭제 · 메모(큰 입력창) */
+    var act = el('div'); act.style.cssText = 'margin-top:10px;';
+    var bMemo = el('button', 'sheet-btn', _nmemo ? '📝 메모 보기·수정' : '📝 메모 작성');
+    bMemo.style.cssText = 'width:100%;';
+    bMemo.addEventListener('click', function () { areaOpenMemoSheet(p.id, function () { areaOpenNavStep(); }); });
+    act.appendChild(bMemo);
     box.appendChild(act);
     var nav = el('div'); nav.style.cssText = 'display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:6px;margin-top:6px;';
     var bPrev = el('button', 'sheet-btn', '◀ 이전'); if (_areaNavIdx <= 0) bPrev.disabled = true;
@@ -11275,52 +11260,20 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     r4.appendChild(bAdd); r4.appendChild(bDelAll); r4.appendChild(bGeo); r4.appendChild(bClear);
     wrap.appendChild(r4);
 
-    /* [v87] ④ 조사 회차(1~5회) 선택 + 이번 회차 완료 초기화 */
-    var rRound = el('div'); rRound.style.cssText = 'display:flex;align-items:center;gap:5px;margin-top:8px;flex-wrap:wrap;';
-    var rLab = el('span', null, '조사 회차'); rLab.style.cssText = 'font-size:12px;font-weight:800;color:#333;flex:0 0 auto;';
-    rRound.appendChild(rLab);
-    var curRound = areaGetRound();
+    /* [v91-2] 목록 보기 필터 : 전체 / 메모 (회차·완료·미완료 삭제) */
     var _plotsAll = getAreaPlots();
-    for (var _r = 1; _r <= 5; _r++) (function (n) {
-      var dn = _plotsAll.filter(function (p) { return areaIsDone(p, n); }).length;   /* [v89 개선] 회차별 진행 미리보기 */
-      var b = el('button', 'sheet-btn', n + '회' + (dn ? ' <span style="font-size:9.5px;opacity:.85;">' + dn + '</span>' : ''));
-      var on = (curRound === n);
-      b.style.cssText = 'flex:0 0 auto;padding:6px 8px;font-size:12px;' + (on ? 'background:#1f8a4c;color:#fff;border-color:#1f8a4c;font-weight:800;' : '');
-      b.addEventListener('click', function () { areaSetRound(n); renderAreaPane(container); });
-      rRound.appendChild(b);
-    })(_r);
-    var bResetDone = el('button', 'sheet-btn', '완료 초기화');
-    bResetDone.style.cssText = 'flex:0 0 auto;padding:6px 9px;font-size:12px;margin-left:auto;color:#b45309;';
-    bResetDone.addEventListener('click', function () {
-      var n = getAreaPlots().filter(function (p) { return areaIsDone(p, curRound); }).length;
-      if (!n) { showToast(curRound + '회 완료 표시가 없습니다.', 2500, 'info'); return; }
-      if (!window.confirm(curRound + '회 완료 체크 ' + n + '건을 모두 초기화할까요?\n(다른 회차·메모는 그대로 유지됩니다)')) return;
-      var d = areaResetRoundDone(curRound);
-      areaRefreshTree(); showToast(curRound + '회 완료 ' + d + '건을 초기화했습니다.', 2800, 'success');
-    });
-    rRound.appendChild(bResetDone);
-    wrap.appendChild(rRound);
-
-    /* [v89-3] 목록 보기 필터 : 전체 / 완료 / 미완료 / 메모 */
-    var rFilt = el('div'); rFilt.style.cssText = 'display:flex;gap:5px;margin-top:6px;';
-    var _cDone = _plotsAll.filter(function (p) { return areaIsDone(p, curRound); }).length;
-    var _cUndone = _plotsAll.length - _cDone;
-    var _cMemo = _plotsAll.filter(function (p) { return areaGetMemo(p, curRound); }).length;
-    [['', '전체 ' + _plotsAll.length], ['done', '✓완료 ' + _cDone], ['undone', '미완료 ' + _cUndone], ['memo', '📝메모 ' + _cMemo]].forEach(function (f) {
+    var rFilt = el('div'); rFilt.style.cssText = 'display:flex;gap:5px;margin-top:8px;';
+    var _cMemo = _plotsAll.filter(function (p) { return areaGetMemo(p); }).length;
+    [['', '전체 ' + _plotsAll.length], ['memo', '📝 메모 ' + _cMemo]].forEach(function (f) {
       var on = (_areaListFilter === f[0]);
       var b = el('button', 'sheet-btn', f[1]);
-      b.style.cssText = 'flex:1;padding:6px 2px;font-size:11px;white-space:nowrap;' + (on ? 'background:#1f8a4c;color:#fff;border-color:#1f8a4c;font-weight:800;' : '');
+      b.style.cssText = 'flex:1;padding:7px 4px;font-size:12px;white-space:nowrap;' + (on ? 'background:#1f8a4c;color:#fff;border-color:#1f8a4c;font-weight:800;' : '');
       b.addEventListener('click', function () { _areaListFilter = (_areaListFilter === f[0]) ? '' : f[0]; renderAreaPane(container); });
       rFilt.appendChild(b);
     });
     wrap.appendChild(rFilt);
 
-    /* [v88-6] 회차별 완료 진행률 */
-    var _allPlots = getAreaPlots();
-    var _doneN = _allPlots.filter(function (p) { return areaIsDone(p, curRound); }).length;
-    var _totN = _allPlots.length;
-    var _pct = _totN ? Math.round(_doneN / _totN * 100) : 0;
-    var treeHdr = el('div', null, '조사구 목록 <span style="color:#0a7d34;font-weight:700;">(' + curRound + '회 · ' + _doneN + '/' + _totN + ' 완료 · ' + _pct + '%)</span>');
+    var treeHdr = el('div', null, '조사구 목록 <span style="color:#999;font-weight:600;">(' + _plotsAll.length + '건)</span>');
     treeHdr.style.cssText = 'margin:10px 2px 4px;font-size:12.5px;font-weight:800;color:#333;';
     wrap.appendChild(treeHdr);
     var tree = el('div'); tree.id = 'areaTree'; tree.style.cssText = 'border-top:1px solid #eee;';
@@ -11365,14 +11318,11 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     var plots = getAreaPlots();
     /* [v89-3] 목록 보기 필터(완료/미완료/메모) */
     if (_areaListFilter) {
-      var _rd = areaGetRound();
       plots = plots.filter(function (p) {
-        if (_areaListFilter === 'done') return areaIsDone(p, _rd);
-        if (_areaListFilter === 'undone') return !areaIsDone(p, _rd);
-        if (_areaListFilter === 'memo') return !!areaGetMemo(p, _rd);
+        if (_areaListFilter === 'memo') return !!areaGetMemo(p);
         return true;
       });
-      if (!plots.length) { tree.appendChild(el('div', null, '<div style="padding:16px 4px;color:#999;font-size:12.5px;text-align:center;">' + (_areaListFilter === 'done' ? '완료된' : _areaListFilter === 'undone' ? '미완료' : '메모 있는') + ' 조사구가 없습니다.</div>')); areaApplyVisibility(); return; }
+      if (!plots.length) { tree.appendChild(el('div', null, '<div style="padding:16px 4px;color:#999;font-size:12.5px;text-align:center;">메모 있는 조사구가 없습니다.</div>')); areaApplyVisibility(); return; }
     }
     var treeBody = el('div'); tree.appendChild(treeBody);
     areaBuildTreeNode(treeBody, areaGroup(plots), 0, []);
@@ -11451,9 +11401,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
             var noBadge = noCoord ? el('span', null, '좌표없음') : null;
             if (noBadge) noBadge.style.cssText = 'flex:0 0 auto;color:#c0392b;font-size:10.5px;font-weight:700;background:#fdecea;border:1px solid #f3c6c0;border-radius:6px;padding:1px 5px;';
             /* [v87] 완료(현재 회차)·메모 표시 */
-            var doneBadge = areaIsDone(p, areaGetRound()) ? el('span', null, '✓') : null;
-            if (doneBadge) doneBadge.style.cssText = 'flex:0 0 auto;color:#0a7d34;font-weight:900;font-size:13px;';
-            var memoBadge = areaGetMemo(p, areaGetRound()) ? el('span', null, '📝') : null;
+            var memoBadge = areaGetMemo(p) ? el('span', null, '📝') : null;
             if (memoBadge) {
               memoBadge.style.cssText = 'flex:0 0 auto;font-size:13px;cursor:pointer;';
               memoBadge.title = '메모 보기 · 조사구 열기';
@@ -11469,7 +11417,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
               areaRenumber(arr); setAreaPlots(arr); areaApplyVisibility(); areaRefreshTree();
               showToast('삭제했습니다.', 1800, 'success');
             });
-            leaf.appendChild(dot); if (doneBadge) leaf.appendChild(doneBadge); leaf.appendChild(t); if (memoBadge) leaf.appendChild(memoBadge); if (noBadge) leaf.appendChild(noBadge); leaf.appendChild(e2); leaf.appendChild(d2);
+            leaf.appendChild(dot); leaf.appendChild(t); if (memoBadge) leaf.appendChild(memoBadge); if (noBadge) leaf.appendChild(noBadge); leaf.appendChild(e2); leaf.appendChild(d2);
             child.appendChild(leaf);
           });
         } else {
@@ -11659,7 +11607,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
             ridong: p.ridong || '', floor: (p.floor == null ? '' : p.floor), josagu: (p.josagu == null ? '' : p.josagu),
             address1: p.address1 || p.초입주소 || '', note: p.note || '',
             latitude: (p.latitude == null ? '' : p.latitude), longitude: (p.longitude == null ? '' : p.longitude),
-            memoRounds: p.memoRounds || (p.memo ? { '1': p.memo } : null), doneRounds: p.doneRounds || null, doneStr: areaDoneToStr(p.doneRounds)
+            memo: p.memo || (p.memoRounds ? (p.memoRounds['1'] || '') : '')
           };
         });
         if (!rows.length) { showToast('JSON에 조사구 자료가 없습니다.', 4000); return; }
@@ -11690,8 +11638,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
       sido: normalizeSido(rec.sido), sigungu: rec.sigungu, eupmyeondong: rec.eupmyeondong,
       ridong: deriveRidong(rec.address1, rec.ridong), floor: rec.floor + '', josagu: rec.josagu + '',
       address1: rec.address1, note: rec.note || '',
-      memoRounds: rec.memoRounds || (rec.memo ? { '1': String(rec.memo).trim() } : {}),
-      doneRounds: rec.doneRounds || (rec.doneStr ? areaStrToDone(rec.doneStr) : {}),
+      memo: rec.memo ? String(rec.memo).trim() : '',
       latitude: (rec.latitude !== '' && areaCoordOk(latN, lngN)) ? latN : NaN,
       longitude: (rec.longitude !== '' && areaCoordOk(latN, lngN)) ? lngN : NaN,
       createdAt: kstNowStr(), updatedAt: kstNowStr()
@@ -11861,7 +11808,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
       arr.forEach(function (p) {
         aoa.push([p.number, p.sido, p.sigungu, p.eupmyeondong, p.floor, p.josagu, p.address1 || '',
           isFinite(p.latitude) ? p.latitude : '', isFinite(p.longitude) ? p.longitude : '', p.note || '',
-          areaGetMemo(p, areaGetRound()) || (p.memoRounds ? (Object.keys(p.memoRounds).map(function(k){return k+'회:'+p.memoRounds[k];}).join(' | ')) : ''), areaDoneToStr(p.doneRounds)]);
+          areaGetMemo(p), '']);
       });
       var ws = XLSX.utils.aoa_to_sheet(aoa);
       var wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, '조사구');
@@ -11890,7 +11837,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     arr.forEach(function (p) {
       var ns = normalizeSido(p.sido); if (ns !== p.sido) { p.sido = ns; changed = true; }
       /* [v89] 예전 단일 메모 → 1회 메모로 이관 */
-      if (p.memo && !p.memoRounds) { p.memoRounds = { '1': p.memo }; delete p.memo; changed = true; }
+      if (p.memoRounds && !p.memo) { for (var mk in p.memoRounds) { if (p.memoRounds[mk]) { p.memo = p.memoRounds[mk]; break; } } delete p.memoRounds; changed = true; }   /* [v91] 회차메모→단일메모 */
     });
     if (changed) setAreaPlots(arr);
   }
@@ -12087,8 +12034,11 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
           else { showToast('방향 센서를 사용할 수 없어 진행방향(지도 회전)을 쓸 수 없습니다.\n현재 위치만 표시합니다.', 5000); }
         });
       } else {
-        /* 위치추적 → 현재위치(북쪽 고정) */
-        setMode('current'); recenter();
+        /* [v91-6] 3번 : 취소 — 위치추적 완전 종료(핀 제거·북쪽) */
+        stopWatch(); stopOrient(); setMode('off');
+        try { if (marker) marker.remove(); } catch (e) {}
+        try { ensureNorth(); } catch (e) {}
+        showToast('위치추적을 껐습니다.', 1800, 'info');
       }
     }
     function onCompass() {
