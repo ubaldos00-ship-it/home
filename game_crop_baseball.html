@@ -1,4 +1,4 @@
-<!-- game_crop_baseball.html · v3.3 · 저장: 2026-08-04 04:51 KST · 타자 배트 어깨뒤로·롱프레스 선택차단 -->
+<!-- game_crop_baseball.html · v3.4 · 저장: 2026-08-04 05:35 KST · 배트 위로 쳐올림·스윙속도↑ -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -339,7 +339,7 @@
 
   function loop(ts){
     const dt=Math.min(50, ts-(lastTs||ts)); lastTs=ts;
-    if(batSwing>0) batSwing=Math.max(0, batSwing - dt/180);
+    if(batSwing>0) batSwing=Math.max(0, batSwing - dt/85);
     if(state==='pitch' && ball){
       if(ball.state==='pitch'){
         const prog=(ts-pitchStartMs)/pitchDur;      // 0~1+
@@ -411,9 +411,11 @@
     // 다리
     ctx.strokeStyle='#2b3a24'; ctx.lineWidth=6;
     ctx.beginPath(); ctx.moveTo(b.x, b.y+16); ctx.lineTo(b.x-11, b.y+34); ctx.moveTo(b.x, b.y+16); ctx.lineTo(b.x+11, b.y+34); ctx.stroke();
-    // 배트: 대기 시 어깨 뒤(위-오른쪽)로 세워 들고, 스윙하면 앞쪽(위-왼쪽)으로 팔로스루
-    const rest=-0.9, swingEnd=-2.7;                       // rest=어깨뒤, swingEnd=앞쪽
-    const ang = batSwing>0 ? (rest + (1-batSwing)*(swingEnd-rest)) : rest;   // batSwing 1→0: rest→swingEnd
+    // 배트: 대기 시 어깨 뒤(위-오른쪽)로 세워 들고, 스윙하면 앞쪽 위(위-왼쪽)로 쳐올려 팔로스루
+    const rest=-0.8, swingEnd=-2.0;                       // rest=어깨뒤(높이33), swingEnd=앞쪽위(높이42) → 위로 쳐올림
+    const p = batSwing>0 ? (1-batSwing) : 0;
+    const ease = p*(2-p);                                 // easeOut: 초반 빠르게(스윙 스피드 체감↑)
+    const ang = batSwing>0 ? (rest + ease*(swingEnd-rest)) : rest;   // batSwing 1→0: rest→swingEnd
     const hx=b.x-2, hy=b.y-10;
     ctx.strokeStyle='#a9712f'; ctx.lineWidth=6; ctx.lineCap='round';
     ctx.beginPath(); ctx.moveTo(hx,hy);

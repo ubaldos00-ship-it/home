@@ -1,4 +1,4 @@
-<!-- game_crop_galaga.html · v2 · 저장: 2026-08-04 04:51 KST · 좌우버튼 제거·드래그이동·반투명 발사FAB·롱프레스 선택차단 -->
+<!-- game_crop_galaga.html · v3 · 저장: 2026-08-04 05:35 KST · 우주선(화면)눌러 발사·시작멘트·발사FAB유지 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -379,16 +379,17 @@
     $('btnFire').addEventListener('pointerdown', e=>{ e.preventDefault(); input.firing=true; if(game.fireMode==='manual') tryShoot(true); });
     $('btnFire').addEventListener('pointerup', ()=> input.firing=false);
     $('btnFire').addEventListener('pointerleave', ()=> input.firing=false);
-    // 드래그 이동 (캔버스 어디든 손가락을 좌우로) — 엄지로 우주선 이동
+    // 드래그 이동 + 화면(우주선)을 누르면 발사 — 엄지로 잡고 움직이며 누르면 미사일
     function dragMove(clientX){ input.dragX = clientX - canvas.getBoundingClientRect().left; if($('dragHint')) $('dragHint').style.display='none'; }
-    canvas.addEventListener('touchstart', e=>{ if(e.touches[0]) dragMove(e.touches[0].clientX); }, {passive:true});
+    function pressFire(){ if(game.fireMode==='manual' && game.running && game.stageState!=='over'){ input.firing=true; tryShoot(true); } }
+    canvas.addEventListener('touchstart', e=>{ if(e.touches[0]){ dragMove(e.touches[0].clientX); pressFire(); } }, {passive:true});
     canvas.addEventListener('touchmove', e=>{ if(e.touches[0]){ dragMove(e.touches[0].clientX); e.preventDefault(); } }, {passive:false});
-    canvas.addEventListener('touchend', ()=>{ input.dragX=null; }, {passive:true});
+    canvas.addEventListener('touchend', ()=>{ input.dragX=null; input.firing=false; }, {passive:true});
     // 마우스 드래그(PC 보조)
     let mDown=false;
-    canvas.addEventListener('mousedown', e=>{ mDown=true; dragMove(e.clientX); });
+    canvas.addEventListener('mousedown', e=>{ mDown=true; dragMove(e.clientX); pressFire(); });
     window.addEventListener('mousemove', e=>{ if(mDown) dragMove(e.clientX); });
-    window.addEventListener('mouseup', ()=>{ mDown=false; input.dragX=null; });
+    window.addEventListener('mouseup', ()=>{ mDown=false; input.dragX=null; input.firing=false; });
     window.addEventListener('keydown', e=>{
       if(e.code==='ArrowLeft'||e.code==='KeyA') input.left=true;
       else if(e.code==='ArrowRight'||e.code==='KeyD') input.right=true;
@@ -466,7 +467,10 @@
     if(game.running && !game.ended) return;
     showScreen('game'); resize();
     $('btnFire').style.display = game.fireMode==='manual' ? '' : 'none';
-    if($('dragHint')) $('dragHint').style.display='';
+    if($('dragHint')){ $('dragHint').style.display='';
+      $('dragHint').innerHTML = game.fireMode==='manual'
+        ? '👆 우주선을 잡고 좌우로 움직이고, 우주선을 누르면 미사일 발사!'
+        : '👆 우주선을 잡고 좌우로 움직이세요 (자동발사)'; }
     newGame();
     game.running=true; game.paused=false;
     hidePause();
