@@ -1,4 +1,4 @@
-<!-- ladder_v7.html · 저장: 2026-07-07 06:44 KST · 시작 모드선택(배정/1등맞추기)·승률 소수점·결과 도착시공개·게임센터버튼·더블탭줌 제거 -->
+<!-- ladder_v8.html · 저장: 2026-08-04 04:51 KST · 1등맞추기 기본2명·닉네임 자동등록·목적지 표시 제거·롱프레스 선택차단 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -48,7 +48,9 @@
     --header-h: 64px;
   }
 
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent;
+      -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+  input, textarea { -webkit-user-select: text; user-select: text; }
 
   html { background-color: var(--header-bg); }
 
@@ -446,6 +448,9 @@ function funName() {
     [pool[i], pool[j]] = [pool[j], pool[i]];
   }
   for (let i = 0; i < count; i++) names[i] = pool[i % pool.length];
+  // 1등 맞추기 모드면 1번 참여자에 게임센터 닉네임 자동 등록
+  const gcNick = (localStorage.getItem('tenarGameNick') || '').trim();
+  if (guessMode && gcNick) names[0] = gcNick;
   buildInputs(); save();
 }
 
@@ -650,7 +655,7 @@ function drawChips(activeStart, activeEnd) {
     for (let i = 0; i < n; i++) {
       const showDone = revealed && Object.values(revealed).includes(i);
       const rtxt = (guessMode && !showDone) ? '?' : (results[i] || `${i+1}`);
-      drawChipV(xs[i], rtxt, null, false, fs, true, i === activeEnd, showDone);
+      drawChipV(xs[i], rtxt, null, false, fs, true, (!guessMode && i === activeEnd), showDone);
     }
     // 도착한 참여자 이름 (결과 아래)
     for (let i = 0; i < n; i++) {
@@ -668,7 +673,7 @@ function drawChips(activeStart, activeEnd) {
   for (let i = 0; i < n; i++) {
     const showDone = revealed && Object.values(revealed).includes(i);
     const rtxt = (guessMode && !showDone) ? '?' : (results[i] || `${i+1}`);
-    drawChip(xs[i], yBottom + 26, rtxt, 'var', false, fs, true, i === activeEnd, showDone);
+    drawChip(xs[i], yBottom + 26, rtxt, 'var', false, fs, true, (!guessMode && i === activeEnd), showDone);
   }
   // 도착한 참여자 이름 (결과 아래)
   for (let i = 0; i < n; i++) {
@@ -908,6 +913,15 @@ function chooseMode(isGuess) {
   guessMode = !!isGuess; guessDone = false;
   try { localStorage.setItem('ladderModeGuess', isGuess ? '1' : '0'); } catch(e){}
   $('modeModal').classList.remove('show');
+  if (isGuess) {
+    // 1등 맞추기: 기본 2명 + 1번 참여자에 게임센터 닉네임 자동 등록, 결과는 순위 자동
+    setCount(2);
+    const gcNick = (localStorage.getItem('tenarGameNick') || '').trim();
+    if (gcNick) names[0] = gcNick;
+    if (!names[1] || !names[1].trim()) { const p = FUN_NAMES[Math.floor(Math.random()*FUN_NAMES.length)]; names[1] = p; }
+    for (let i = 0; i < count; i++) results[i] = (i + 1) + '등';
+    buildInputs(); save();
+  }
   updateGuessUI(); if (ladder && geom) drawBase(null);
 }
 function showModeModal() { $('modeModal').classList.add('show'); }

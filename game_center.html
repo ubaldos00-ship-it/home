@@ -1,4 +1,4 @@
-<!-- game_center_v6.html · 저장: 2026-08-04 04:05 KST · '돌아온 작물갤러그'(game_crop_galaga) 목록 추가 -->
+<!-- game_center_v7.html · 저장: 2026-08-04 04:51 KST · 명예의 전당(게임별 챔피언+전체 레벨·누적점수·플레이수 1위)·롱프레스 선택차단 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -42,7 +42,9 @@
     --radius-lg: 20px;
     --header-h: 96px;
   }
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent;
+      -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+  input, textarea { -webkit-user-select: text; user-select: text; }
   html { background-color: #27500A; }
   html, body {
     margin: 0; padding: 0;
@@ -324,7 +326,8 @@
 
   <!-- 챔피언 -->
   <section class="section">
-    <h2 class="section-title"><span class="icon">🏆</span>게임별 챔피언</h2>
+    <h2 class="section-title"><span class="icon">🏆</span>명예의 전당</h2>
+    <div id="hofList"></div>
     <div id="champList"><div class="loading">랭킹 불러오는 중…</div></div>
   </section>
 
@@ -563,6 +566,37 @@
     }
   }
 
+  /* 명예의 전당: 전체 레벨(총XP)·누적점수·플레이수 1위 (같은 사람이면 한 줄로) */
+  async function renderHallOfFame() {
+    const wrap = document.getElementById('hofList'); if (!wrap) return; wrap.innerHTML = '';
+    const cats = [
+      { key: 'xp',             emoji: '⭐', label: '총 XP·레벨 1위', valFn: d => { const lv = levelFromXp(d.xp || 0); return 'LV.' + lv.lv + ' · ' + fmt(d.xp || 0) + ' XP'; } },
+      { key: 'totalScore',     emoji: '💰', label: '누적점수 1위',   valFn: d => fmt(d.totalScore || 0) + '점' },
+      { key: 'totalPlayCount', emoji: '🎮', label: '플레이 수 1위',  valFn: d => fmt(d.totalPlayCount || 0) + '회' }
+    ];
+    const winners = [];
+    for (const c of cats) {
+      try {
+        const qs = await withTimeout(getDocs(query(collection(db, 'users'), orderBy(c.key, 'desc'), limit(1))));
+        if (qs.empty) continue;
+        const d = qs.docs[0].data(), uid = qs.docs[0].id;
+        const ex = winners.find(w => w.userId === uid);
+        if (ex) { ex.cats.push(c.label); }              // 같은 사람이면 1개만(라벨 합침)
+        else winners.push({ userId: uid, nickname: d.nickname || '익명', cats: [c.label], val: c.valFn(d), emoji: c.emoji });
+      } catch (e) {}
+    }
+    if (!winners.length) return;
+    winners.forEach(w => {
+      const mine = CURRENT_USER && w.userId === CURRENT_USER.userId;
+      const row = document.createElement('div');
+      row.className = 'champ-row';
+      row.innerHTML = `<span class="champ-medal">${w.emoji}</span>
+        <div class="champ-game">${escapeHtml(w.nickname)}${mine ? '<small style="color:#2e7a4e;font-weight:800;">나</small>' : ''}<small>${w.cats.join(' · ')}</small></div>
+        <span class="champ-score">${w.val}</span>`;
+      wrap.appendChild(row);
+    });
+  }
+
   /* 게임별 "이번 주 1위" + 클릭 시 누적 주간 챔피언 모달 */
   async function renderChampions() {
     const wrap = document.getElementById('champList');
@@ -686,6 +720,7 @@
     // 1) 화면을 먼저 그린다 (Firestore 응답을 기다리지 않음)
     renderUser(u, { xp: 0, totalScore: 0, totalPlayCount: 0, level: 1 });
     renderGames(u);
+    renderHallOfFame();
     renderChampions();
     renderNotices();
     // 2) 사용자 실데이터는 비동기로 로드해 덮어쓴다

@@ -1,4 +1,4 @@
-<!-- game_crop_galaga.html · v1 · 저장: 2026-08-04 04:05 KST · 돌아온 작물갤러그(갤러그식 슈팅) · Web Audio 음악/효과음 자체생성 · Firestore 주간랭킹 -->
+<!-- game_crop_galaga.html · v2 · 저장: 2026-08-04 04:51 KST · 좌우버튼 제거·드래그이동·반투명 발사FAB·롱프레스 선택차단 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -11,7 +11,9 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <style>
   :root{ --green:#1f5132; --green-light:#2e7a4e; --green-dark:#143820; --gold:#c9962b; --gold-light:#e6b955; --space:#0a0e1a; --space2:#111a30; }
-  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; margin:0; touch-action:manipulation; }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; margin:0; touch-action:manipulation;
+     -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
+  input,textarea{ -webkit-user-select:text; user-select:text; }
   html,body{ height:100%; }
   body{ background:var(--space); color:#eaf0ff; overflow:hidden;
     font-family:'Pretendard Variable',Pretendard,-apple-system,system-ui,sans-serif; -webkit-font-smoothing:antialiased; }
@@ -49,11 +51,14 @@
   .top-btns{ position:absolute; top:calc(6px + env(safe-area-inset-top)); left:50%; transform:translateX(-50%); z-index:4; display:flex; gap:8px; }
   .icobtn{ width:38px; height:38px; border-radius:11px; border:1px solid #2b3d63; background:rgba(10,14,26,.75); color:#fff; font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
   .icobtn:active{ background:rgba(46,122,78,.45); }
-  /* 하단 컨트롤 */
-  .controls{ position:absolute; left:0; right:0; bottom:0; z-index:3; display:flex; gap:10px; padding:10px 12px calc(12px + env(safe-area-inset-bottom)); }
-  .ctrl{ flex:1; min-height:62px; border-radius:16px; border:1px solid #2b3d63; background:rgba(17,26,48,.82); color:#dfe8ff; font-size:22px; font-weight:900; cursor:pointer; user-select:none; touch-action:none; display:flex; align-items:center; justify-content:center; }
-  .ctrl:active{ background:rgba(46,122,78,.5); }
-  .ctrl.fire{ background:linear-gradient(135deg,var(--gold),var(--gold-light)); color:#241800; }
+  /* 반투명 발사 버튼 (오른손 엄지용 · 우주선보다 약간 위, 오른쪽 끝) */
+  #btnFire{ position:absolute; right:16px; bottom:calc(96px + env(safe-area-inset-bottom)); z-index:4;
+    width:74px; height:74px; border-radius:50%; border:2px solid rgba(230,185,85,.6);
+    background:rgba(201,150,43,.42); color:#fff; font-size:28px; cursor:pointer; touch-action:none;
+    display:flex; align-items:center; justify-content:center; backdrop-filter:blur(2px); box-shadow:0 4px 14px rgba(0,0,0,.35); }
+  #btnFire:active{ background:rgba(230,185,85,.62); }
+  .drag-hint{ position:absolute; left:0; right:0; bottom:calc(14px + env(safe-area-inset-bottom)); z-index:3;
+    text-align:center; font-size:12px; color:rgba(200,215,255,.55); pointer-events:none; }
   /* 오버레이(일시정지/스테이지) */
   .overlay{ position:absolute; inset:0; z-index:8; background:rgba(6,9,18,.78); display:none; align-items:center; justify-content:center; padding:24px; }
   .overlay.show{ display:flex; }
@@ -127,11 +132,8 @@
       <button class="icobtn" id="musicBtn" aria-label="음악">🎵</button>
       <button class="icobtn" id="pauseBtn" aria-label="일시정지">⏸</button>
     </div>
-    <div class="controls" id="controls">
-      <button class="ctrl" id="btnLeft" aria-label="왼쪽">◀</button>
-      <button class="ctrl fire" id="btnFire" aria-label="발사">🔥</button>
-      <button class="ctrl" id="btnRight" aria-label="오른쪽">▶</button>
-    </div>
+    <button id="btnFire" aria-label="발사">🔥</button>
+    <div class="drag-hint" id="dragHint">👆 화면을 좌우로 밀어 우주선 이동</div>
   </div>
 
   <!-- 결과 화면 -->
@@ -373,19 +375,20 @@
 
   /* ===== 6. 입력 ===== */
   function bindInput(){
-    $('btnLeft').addEventListener('pointerdown', e=>{ e.preventDefault(); input.left=true; });
-    $('btnLeft').addEventListener('pointerup', ()=> input.left=false);
-    $('btnLeft').addEventListener('pointerleave', ()=> input.left=false);
-    $('btnRight').addEventListener('pointerdown', e=>{ e.preventDefault(); input.right=true; });
-    $('btnRight').addEventListener('pointerup', ()=> input.right=false);
-    $('btnRight').addEventListener('pointerleave', ()=> input.right=false);
+    // 발사 버튼(반투명 FAB) — 엄지로 누르면 발사
     $('btnFire').addEventListener('pointerdown', e=>{ e.preventDefault(); input.firing=true; if(game.fireMode==='manual') tryShoot(true); });
     $('btnFire').addEventListener('pointerup', ()=> input.firing=false);
     $('btnFire').addEventListener('pointerleave', ()=> input.firing=false);
-    // 드래그 이동 (캔버스)
-    canvas.addEventListener('touchstart', e=>{ if(e.touches[0]){ input.dragX=e.touches[0].clientX - canvas.getBoundingClientRect().left; } }, {passive:true});
-    canvas.addEventListener('touchmove', e=>{ if(e.touches[0]){ input.dragX=e.touches[0].clientX - canvas.getBoundingClientRect().left; e.preventDefault(); } }, {passive:false});
+    // 드래그 이동 (캔버스 어디든 손가락을 좌우로) — 엄지로 우주선 이동
+    function dragMove(clientX){ input.dragX = clientX - canvas.getBoundingClientRect().left; if($('dragHint')) $('dragHint').style.display='none'; }
+    canvas.addEventListener('touchstart', e=>{ if(e.touches[0]) dragMove(e.touches[0].clientX); }, {passive:true});
+    canvas.addEventListener('touchmove', e=>{ if(e.touches[0]){ dragMove(e.touches[0].clientX); e.preventDefault(); } }, {passive:false});
     canvas.addEventListener('touchend', ()=>{ input.dragX=null; }, {passive:true});
+    // 마우스 드래그(PC 보조)
+    let mDown=false;
+    canvas.addEventListener('mousedown', e=>{ mDown=true; dragMove(e.clientX); });
+    window.addEventListener('mousemove', e=>{ if(mDown) dragMove(e.clientX); });
+    window.addEventListener('mouseup', ()=>{ mDown=false; input.dragX=null; });
     window.addEventListener('keydown', e=>{
       if(e.code==='ArrowLeft'||e.code==='KeyA') input.left=true;
       else if(e.code==='ArrowRight'||e.code==='KeyD') input.right=true;
@@ -463,6 +466,7 @@
     if(game.running && !game.ended) return;
     showScreen('game'); resize();
     $('btnFire').style.display = game.fireMode==='manual' ? '' : 'none';
+    if($('dragHint')) $('dragHint').style.display='';
     newGame();
     game.running=true; game.paused=false;
     hidePause();
