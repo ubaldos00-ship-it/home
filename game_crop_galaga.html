@@ -1,0 +1,853 @@
+<!-- game_crop_galaga.html · v1 · 저장: 2026-08-04 04:05 KST · 돌아온 작물갤러그(갤러그식 슈팅) · Web Audio 음악/효과음 자체생성 · Firestore 주간랭킹 -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#0a0e1a" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<title>돌아온 작물갤러그 · 텐아르 게임센터</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<style>
+  :root{ --green:#1f5132; --green-light:#2e7a4e; --green-dark:#143820; --gold:#c9962b; --gold-light:#e6b955; --space:#0a0e1a; --space2:#111a30; }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; margin:0; touch-action:manipulation; }
+  html,body{ height:100%; }
+  body{ background:var(--space); color:#eaf0ff; overflow:hidden;
+    font-family:'Pretendard Variable',Pretendard,-apple-system,system-ui,sans-serif; -webkit-font-smoothing:antialiased; }
+  .wrap{ max-width:520px; margin:0 auto; height:100%; position:relative; background:var(--space); display:flex; flex-direction:column; }
+  .hidden{ display:none !important; }
+  .screen{ position:absolute; inset:0; display:flex; flex-direction:column; padding:18px 16px calc(18px + env(safe-area-inset-bottom)); overflow-y:auto; z-index:5; }
+  #gameScreen{ padding:0; z-index:1; }
+  .card{ background:rgba(17,26,48,.92); border:1px solid #24406e; border-radius:20px; padding:22px 18px; text-align:center; box-shadow:0 12px 34px rgba(0,0,0,.5); }
+  h1{ font-size:24px; font-weight:900; letter-spacing:-.02em;
+    background:linear-gradient(90deg,#8fd0ff,#c9962b); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .sub{ font-size:13px; color:#a9b6d6; line-height:1.6; margin-top:9px; }
+  .nick{ margin-top:13px; display:inline-block; font-size:13px; font-weight:800; color:#dfe8ff; background:rgba(46,122,78,.35); border:1px solid #2e7a4e; border-radius:999px; padding:7px 14px; }
+  .myrec{ margin-top:9px; font-size:12.5px; color:#8fa0c8; }
+  .fire-row{ display:flex; gap:10px; margin-top:16px; }
+  .fire-opt{ flex:1; background:rgba(10,14,26,.7); border:2px solid #2b3d63; border-radius:15px; padding:13px 8px; cursor:pointer; font-family:inherit; color:#dfe8ff; }
+  .fire-opt .fi{ font-size:24px; } .fire-opt .ft{ font-size:14px; font-weight:800; margin-top:4px; } .fire-opt .fd{ font-size:10.5px; color:#93a2c8; margin-top:3px; line-height:1.4; }
+  .fire-opt.sel{ border-color:var(--gold); background:rgba(201,150,43,.16); box-shadow:0 0 0 2px rgba(201,150,43,.25); }
+  .toggle-row{ display:flex; gap:10px; margin-top:14px; }
+  .tg{ flex:1; background:rgba(10,14,26,.7); border:1.5px solid #2b3d63; border-radius:12px; padding:10px; font-size:13px; font-weight:700; color:#dfe8ff; cursor:pointer; font-family:inherit; }
+  .tg.off{ opacity:.5; }
+  .btn{ display:flex; align-items:center; justify-content:center; gap:7px; width:100%; min-height:54px; border:none; border-radius:15px; font-size:16px; font-weight:800; font-family:inherit; cursor:pointer; }
+  .btn:active{ transform:scale(.97); }
+  .btn-main{ background:linear-gradient(135deg,#2e7a4e,#37a06a); color:#fff; box-shadow:0 6px 16px rgba(46,122,78,.4); }
+  .btn-gold{ background:linear-gradient(135deg,var(--gold),var(--gold-light)); color:#241800; }
+  .btn-ghost{ background:rgba(255,255,255,.08); color:#cdd7f2; border:1px solid #2b3d63; }
+  .btn-sm{ min-height:46px; font-size:14px; border-radius:12px; }
+  .btn-row{ display:flex; gap:9px; margin-top:10px; } .mt{ margin-top:12px; }
+  /* 게임 화면 */
+  #gameCanvas{ position:absolute; inset:0; width:100%; height:100%; display:block; z-index:1; }
+  .hud{ position:absolute; top:0; left:0; right:0; z-index:3; display:flex; justify-content:space-between; align-items:flex-start;
+    padding:calc(8px + env(safe-area-inset-top)) 12px 8px; font-size:12px; font-weight:800; color:#dfe8ff; pointer-events:none; text-shadow:0 1px 3px #000; }
+  .hud .l{ color:#8fa0c8; font-weight:700; font-size:9.5px; }
+  .hud b{ color:#ffd24a; font-variant-numeric:tabular-nums; }
+  .hud .col div{ line-height:1.15; }
+  .top-btns{ position:absolute; top:calc(6px + env(safe-area-inset-top)); left:50%; transform:translateX(-50%); z-index:4; display:flex; gap:8px; }
+  .icobtn{ width:38px; height:38px; border-radius:11px; border:1px solid #2b3d63; background:rgba(10,14,26,.75); color:#fff; font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .icobtn:active{ background:rgba(46,122,78,.45); }
+  /* 하단 컨트롤 */
+  .controls{ position:absolute; left:0; right:0; bottom:0; z-index:3; display:flex; gap:10px; padding:10px 12px calc(12px + env(safe-area-inset-bottom)); }
+  .ctrl{ flex:1; min-height:62px; border-radius:16px; border:1px solid #2b3d63; background:rgba(17,26,48,.82); color:#dfe8ff; font-size:22px; font-weight:900; cursor:pointer; user-select:none; touch-action:none; display:flex; align-items:center; justify-content:center; }
+  .ctrl:active{ background:rgba(46,122,78,.5); }
+  .ctrl.fire{ background:linear-gradient(135deg,var(--gold),var(--gold-light)); color:#241800; }
+  /* 오버레이(일시정지/스테이지) */
+  .overlay{ position:absolute; inset:0; z-index:8; background:rgba(6,9,18,.78); display:none; align-items:center; justify-content:center; padding:24px; }
+  .overlay.show{ display:flex; }
+  .ov-box{ background:rgba(17,26,48,.96); border:1px solid #24406e; border-radius:20px; padding:22px 18px; width:100%; max-width:330px; text-align:center; }
+  .ov-box h3{ font-size:20px; font-weight:900; color:#fff; margin-bottom:14px; }
+  /* 결과 */
+  .big-score{ font-size:38px; font-weight:900; color:#ffd24a; line-height:1; }
+  .newbest{ margin-top:8px; font-size:16px; font-weight:900; color:#69f0ae; display:none; }
+  .newbest.show{ display:block; animation:nb .5s ease; } @keyframes nb{ from{transform:scale(.6);opacity:0;} }
+  .rstats{ display:flex; flex-wrap:wrap; gap:7px; margin-top:14px; }
+  .rstat{ flex:1 1 45%; background:rgba(10,14,26,.6); border:1px solid #24406e; border-radius:12px; padding:8px 4px; }
+  .rstat .v{ font-size:16px; font-weight:900; color:#cdd7f2; } .rstat .l{ font-size:10px; color:#8fa0c8; margin-top:2px; }
+  .savemsg{ margin-top:9px; font-size:11.5px; color:#8fa0c8; min-height:15px; line-height:1.5; }
+  /* 랭킹 */
+  .modal{ position:absolute; inset:0; z-index:20; background:rgba(0,0,0,.6); display:none; align-items:center; justify-content:center; padding:22px; }
+  .modal.show{ display:flex; }
+  .modal-box{ background:rgba(17,26,48,.98); border:1px solid #24406e; border-radius:20px; width:100%; max-width:400px; overflow:hidden; }
+  .modal-head{ background:linear-gradient(135deg,#1f5132,#2e7a4e); color:#fff; padding:14px 16px; font-size:16px; font-weight:900; display:flex; justify-content:space-between; align-items:center; }
+  .modal-head button{ background:rgba(255,255,255,.2); border:none; color:#fff; width:30px; height:30px; border-radius:8px; font-size:16px; cursor:pointer; }
+  .modal-body{ padding:12px 14px 16px; max-height:60vh; overflow-y:auto; }
+  .rank-row{ display:flex; align-items:center; gap:10px; padding:9px 6px; border-bottom:1px solid #1e2c4a; }
+  .rank-row.me{ background:rgba(46,122,78,.28); border-radius:10px; }
+  .rank-pos{ width:30px; text-align:center; font-weight:900; color:#8fa0c8; } .rank-pos.top{ font-size:20px; }
+  .rank-nick{ flex:1; font-weight:800; color:#eaf0ff; } .rank-nick small{ font-size:11px; color:var(--gold-light); margin-left:5px; }
+  .rank-sc{ font-weight:900; color:#8fd0ff; }
+  .empty{ text-align:center; color:#7f8db0; font-size:13px; padding:22px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <!-- 시작 화면 -->
+  <div id="startScreen" class="screen">
+    <div style="flex:1;display:flex;align-items:center;">
+      <div class="card" style="width:100%;">
+        <div style="font-size:44px;">🚀</div>
+        <h1>돌아온 작물갤러그</h1>
+        <div class="sub">우주선을 움직여 몰려오는 작물을 격파하세요!<br>우주선 3대를 모두 잃으면 게임오버입니다.</div>
+        <div class="nick" id="nickBox">준비 완료</div>
+        <div class="myrec" id="myRecord">내 최고점 –</div>
+        <div class="fire-row">
+          <button class="fire-opt" id="fireAuto"><div class="fi">🔄</div><div class="ft">자동발사</div><div class="fd">이동에 집중, 총알 자동발사</div></button>
+          <button class="fire-opt" id="fireManual"><div class="fi">🔥</div><div class="ft">버튼발사</div><div class="fd">발사 버튼/스페이스로 발사</div></button>
+        </div>
+        <div class="toggle-row">
+          <button class="tg" id="musicToggle">🎵 음악 켜짐</button>
+          <button class="tg" id="soundToggle">🔊 소리 켜짐</button>
+        </div>
+        <button class="btn btn-main mt" id="startBtn">🚀 게임 시작</button>
+        <div class="btn-row">
+          <button class="btn btn-gold btn-sm" id="rankBtn">🏆 주간랭킹</button>
+          <button class="btn btn-ghost btn-sm" id="homeBtn">🎮 게임센터</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 게임 화면 -->
+  <div id="gameScreen" class="screen hidden">
+    <canvas id="gameCanvas"></canvas>
+    <div class="hud">
+      <div class="col">
+        <div class="l">SCORE</div><div><b id="hScore">0</b></div>
+        <div class="l" style="margin-top:3px;">BEST</div><div id="hBest" style="color:#a9b6d6">0</div>
+      </div>
+      <div class="col" style="text-align:right;">
+        <div class="l">STAGE</div><div><b id="hStage">1</b></div>
+        <div class="l" style="margin-top:3px;">LIFE</div><div id="hLife" style="font-size:14px;">🚀🚀🚀</div>
+      </div>
+    </div>
+    <div class="top-btns">
+      <button class="icobtn" id="musicBtn" aria-label="음악">🎵</button>
+      <button class="icobtn" id="pauseBtn" aria-label="일시정지">⏸</button>
+    </div>
+    <div class="controls" id="controls">
+      <button class="ctrl" id="btnLeft" aria-label="왼쪽">◀</button>
+      <button class="ctrl fire" id="btnFire" aria-label="발사">🔥</button>
+      <button class="ctrl" id="btnRight" aria-label="오른쪽">▶</button>
+    </div>
+  </div>
+
+  <!-- 결과 화면 -->
+  <div id="resultScreen" class="screen hidden">
+    <div style="flex:1;display:flex;align-items:center;">
+      <div class="card" style="width:100%;">
+        <div style="font-size:13px;font-weight:800;color:#8fa0c8;">GAME OVER</div>
+        <div class="big-score" id="rScore">0</div>
+        <div style="font-size:12px;color:#8fa0c8;">점</div>
+        <div class="newbest" id="rNewBest">🎉 NEW BEST!</div>
+        <div class="rstats">
+          <div class="rstat"><div class="v" id="rStage">1</div><div class="l">도달 스테이지</div></div>
+          <div class="rstat"><div class="v" id="rKills">0</div><div class="l">격파 작물</div></div>
+          <div class="rstat"><div class="v" id="rCombo">0</div><div class="l">최대 콤보</div></div>
+          <div class="rstat"><div class="v" id="rTime">0:00</div><div class="l">플레이 시간</div></div>
+        </div>
+        <div class="savemsg" id="saveMsg"></div>
+        <button class="btn btn-main mt" id="retryBtn">🔁 다시 도전</button>
+        <div class="btn-row">
+          <button class="btn btn-gold btn-sm" id="resultRankBtn">🏆 랭킹</button>
+          <button class="btn btn-ghost btn-sm" id="shareBtn">🔗 공유</button>
+        </div>
+        <div class="btn-row"><button class="btn btn-ghost btn-sm" id="resultHomeBtn">🎮 게임센터</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 일시정지 오버레이 -->
+  <div class="overlay" id="pauseOverlay">
+    <div class="ov-box">
+      <h3>⏸ 일시정지</h3>
+      <button class="btn btn-main" id="resumeBtn">▶ 계속하기</button>
+      <button class="btn btn-ghost btn-sm mt" id="restartBtn">🔁 처음부터 다시</button>
+      <button class="btn btn-ghost btn-sm mt" id="pauseHomeBtn">🎮 게임센터로 나가기</button>
+    </div>
+  </div>
+
+  <!-- 랭킹 모달 -->
+  <div class="modal" id="rankModal">
+    <div class="modal-box">
+      <div class="modal-head"><span>🏆 이번 주 작물갤러그 랭킹</span><button id="rankCloseBtn">✕</button></div>
+      <div class="modal-body" id="rankList"></div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+  import {
+    getFirestore, doc, getDoc, setDoc, updateDoc, increment,
+    collection, getDocs, query, orderBy, limit, where, serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+
+  /* ===== 1. Firebase 초기화 (기존 게임센터와 동일) ===== */
+  const firebaseConfig = {
+    apiKey: "AIzaSyAcU8iZR-B5HdvX1FOh4APCm0hXsz1u_X8",
+    authDomain: "tenar-chat-1674c.firebaseapp.com",
+    databaseURL: "https://tenar-chat-1674c-default-rtdb.firebaseio.com",
+    projectId: "tenar-chat-1674c",
+    storageBucket: "tenar-chat-1674c.firebasestorage.app",
+    messagingSenderId: "662688468209",
+    appId: "1:662688468209:web:0f37484e26943d79946d50"
+  };
+  const db = getFirestore(initializeApp(firebaseConfig));
+  const GAME_ID = 'crop_galaga';
+  const GAME_NAME = '돌아온 작물갤러그';
+
+  function withTimeout(p, ms=4500){ return Promise.race([p, new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),ms))]); }
+  function currentWeekKey(now=new Date()){
+    const kst=new Date(now.getTime()+9*3600*1000); const dsm=(kst.getUTCDay()+6)%7;
+    const mid=Date.UTC(kst.getUTCFullYear(),kst.getUTCMonth(),kst.getUTCDate());
+    let b=mid-dsm*86400000+9*3600*1000; if(kst.getTime()<b) b-=7*86400000;
+    const d=new Date(b); return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;
+  }
+  const WEEK = currentWeekKey();
+  const weeklyCol = () => collection(db,'rankings',GAME_ID,'wk_'+WEEK);
+  const weeklyDoc = (uid) => doc(db,'rankings',GAME_ID,'wk_'+WEEK,uid);
+
+  /* ===== 2. 상수/설정 ===== */
+  const $ = id => document.getElementById(id);
+  const fmt = n => Math.round(n||0).toLocaleString('ko-KR');
+  const escapeHtml = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const safeGet=(k,f='')=>{try{return localStorage.getItem(k)??f;}catch(e){return f;}};
+  const safeSet=(k,v)=>{try{localStorage.setItem(k,String(v));}catch(e){}};
+  const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
+  const rand=(a,b)=>a+Math.random()*(b-a);
+
+  const CROPS = [
+    {e:'🌾',c:'#e6c64d',pts:100,hp:1},{e:'🌽',c:'#ffd54f',pts:120,hp:1},{e:'🌶️',c:'#e74c3c',pts:150,hp:1},
+    {e:'🥔',c:'#c79a63',pts:180,hp:1},{e:'🍠',c:'#b5651d',pts:200,hp:1},{e:'🍅',c:'#ff6b57',pts:220,hp:1},
+    {e:'🥬',c:'#8fd07f',pts:250,hp:2},{e:'🥕',c:'#ff9f45',pts:280,hp:1},{e:'🍉',c:'#66bb6a',pts:350,hp:2},{e:'🍎',c:'#ff5252',pts:400,hp:2}
+  ];
+  const BOSSES=[{e:'🍉',c:'#e0533a',name:'거대 수박'},{e:'🎃',c:'#e8871e',name:'거대 호박'},{e:'🥬',c:'#4a9d4a',name:'거대 배추'}];
+  const NOTES={ C3:130.81,D3:146.83,E3:164.81,F3:174.61,G3:196.00,A3:220.00,B3:246.94,C4:261.63,D4:293.66,E4:329.63,F4:349.23,G4:392.00,A4:440.00,B4:493.88,C5:523.25,D5:587.33,E5:659.25,G5:783.99 };
+
+  const AUDIO_VOLUME={ master:0.75, music:0.18, sfx:0.32 };
+  const SFX_COOLDOWN={ shoot:70, explosion:35, playerHit:300, powerUp:200 };
+
+  /* ===== 오디오 매니저 (Web Audio 자체 생성) ===== */
+  const AudioManager = {
+    context:null, masterGain:null, musicGain:null, sfxGain:null,
+    musicEnabled: safeGet('cropGalagaMusic','on')!=='off',
+    soundEnabled: safeGet('cropGalagaSound','on')!=='off',
+    currentMusic:null,      // {type:'start'|'stage'|'boss', stage}
+    musicTimer:null, activeMusicNodes:[], _step:0, _bassStep:0, _sfxLast:{},
+    init(){
+      if(this.context) return;
+      try{
+        const AC = window.AudioContext || window.webkitAudioContext;
+        this.context = new AC();
+        this.masterGain = this.context.createGain(); this.masterGain.gain.value = AUDIO_VOLUME.master;
+        this.musicGain = this.context.createGain(); this.musicGain.gain.value = this.musicEnabled?AUDIO_VOLUME.music:0;
+        this.sfxGain = this.context.createGain(); this.sfxGain.gain.value = this.soundEnabled?AUDIO_VOLUME.sfx:0;
+        this.musicGain.connect(this.masterGain); this.sfxGain.connect(this.masterGain); this.masterGain.connect(this.context.destination);
+      }catch(e){ this.context=null; }
+    },
+    async resume(){ if(this.context && this.context.state==='suspended'){ try{ await this.context.resume(); }catch(e){} } },
+    _tone(freq,dur,type,gainNode,vol,when){
+      if(!this.context) return null;
+      const now = when || this.context.currentTime;
+      const osc = this.context.createOscillator(); const g = this.context.createGain();
+      osc.type=type; osc.frequency.setValueAtTime(freq, now);
+      g.gain.setValueAtTime(0, now);
+      g.gain.linearRampToValueAtTime(vol, now+0.02);
+      g.gain.linearRampToValueAtTime(0.0001, now+dur);
+      osc.connect(g); g.connect(gainNode);
+      osc.start(now); osc.stop(now+dur+0.02);
+      return osc;
+    },
+    _noise(dur,vol,filterFreq){
+      if(!this.context) return;
+      const now=this.context.currentTime; const len=Math.floor(this.context.sampleRate*dur);
+      const buf=this.context.createBuffer(1,len,this.context.sampleRate); const d=buf.getChannelData(0);
+      for(let i=0;i<len;i++) d[i]=(Math.random()*2-1);
+      const src=this.context.createBufferSource(); src.buffer=buf;
+      const bp=this.context.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=filterFreq||1200;
+      const g=this.context.createGain(); g.gain.setValueAtTime(vol,now); g.gain.linearRampToValueAtTime(0.0001,now+dur);
+      src.connect(bp); bp.connect(g); g.connect(this.sfxGain); src.start(now); src.stop(now+dur);
+    },
+    // ── 음악 스케줄러 ──
+    _melodies:{
+      start:{ notes:[NOTES.C4,NOTES.E4,NOTES.G4,NOTES.A4,NOTES.G4,NOTES.E4,NOTES.D4,NOTES.G4], bass:[NOTES.C3,NOTES.C3,NOTES.G3,NOTES.G3], wave:'triangle', bassWave:'triangle' },
+      stage:{ notes:[NOTES.A4,NOTES.C5,NOTES.B4,NOTES.G4,NOTES.A4,NOTES.E4,NOTES.G4,NOTES.A4,NOTES.C5,NOTES.D5,NOTES.C5,NOTES.A4], bass:[NOTES.A3,NOTES.A3,NOTES.E3,NOTES.G3], wave:'square', bassWave:'triangle' },
+      boss:{ notes:[NOTES.D4,NOTES.D4,NOTES.F4,NOTES.E4,NOTES.D4,NOTES.C4,NOTES.D4,NOTES.A3], bass:[NOTES.D3,NOTES.D3,NOTES.C3,NOTES.C3], wave:'sawtooth', bassWave:'sawtooth' }
+    },
+    stopMusic(){
+      if(this.musicTimer){ clearTimeout(this.musicTimer); this.musicTimer=null; }
+      this.activeMusicNodes.forEach(n=>{ try{ n.stop(); }catch(e){} }); this.activeMusicNodes=[];
+      this.currentMusic=null; this._step=0; this._bassStep=0;
+    },
+    pauseMusic(){ if(this.musicTimer){ clearTimeout(this.musicTimer); this.musicTimer=null; } },
+    _bpmFor(){
+      if(!this.currentMusic) return 124;
+      if(this.currentMusic.type==='boss') return Math.min(175, 145 + Math.floor((this.currentMusic.stage||1)/5)*4 + (this.currentMusic.rage?12:0));
+      if(this.currentMusic.type==='start') return 108;
+      return Math.min(160, 124 + ((this.currentMusic.stage||1)-1)*3);
+    },
+    _loop(){
+      if(!this.context || !this.currentMusic || !this.musicEnabled) return;
+      const m = this._melodies[this.currentMusic.type] || this._melodies.stage;
+      const beatMs = 60000 / this._bpmFor() / 2;   // 8분음표
+      const dur = beatMs/1000 * 0.9;
+      const f = m.notes[this._step % m.notes.length];
+      const o1=this._tone(f, dur, m.wave, this.musicGain, 0.9, this.context.currentTime); if(o1) this.activeMusicNodes.push(o1);
+      if(this._step % 2 === 0){
+        const bf = m.bass[this._bassStep % m.bass.length];
+        const o2=this._tone(bf, dur*1.6, m.bassWave, this.musicGain, 0.7, this.context.currentTime); if(o2) this.activeMusicNodes.push(o2);
+        this._bassStep++;
+      }
+      if(this._step % 4 === 0) this._noise(0.04, 0.10, 2200);  // 하이햇 느낌
+      if(this.activeMusicNodes.length>40) this.activeMusicNodes.splice(0,this.activeMusicNodes.length-40);
+      this._step++;
+      this.musicTimer = setTimeout(()=>this._loop(), beatMs);
+    },
+    _startLoop(type,stage,rage){
+      this.stopMusic();
+      if(!this.context || !this.musicEnabled) return;
+      this.currentMusic={type, stage:stage||1, rage:!!rage}; this._step=0; this._bassStep=0;
+      this._loop();
+    },
+    playStartMusic(){ this._startLoop('start',1); },
+    playStageMusic(stage){ this._startLoop('stage',stage); },
+    playBossMusic(stage){ this._startLoop('boss',stage); },
+    setBossRage(on){ if(this.currentMusic && this.currentMusic.type==='boss'){ this.currentMusic.rage=on; } },
+    resumeCurrentMusic(){ if(this.currentMusic){ const c=this.currentMusic; this._startLoop(c.type,c.stage,c.rage); } },
+    // ── 원샷 징글 ──
+    _jingle(seq){
+      if(!this.context) return; let t=this.context.currentTime;
+      seq.forEach(s=>{ this._tone(s.f, s.d, s.w||'triangle', this.musicGain.gain.value>0?this.musicGain:this.sfxGain, 0.9, t); t+=s.d*0.9; });
+    },
+    playStageClear(){ this.pauseMusic(); this._jingle([{f:NOTES.C4,d:0.11},{f:NOTES.E4,d:0.11},{f:NOTES.G4,d:0.11},{f:NOTES.C5,d:0.22}]); },
+    playGameOver(){ this.stopMusic(); this._jingle([{f:NOTES.G4,d:0.16,w:'sawtooth'},{f:NOTES.E4,d:0.16,w:'sawtooth'},{f:NOTES.D4,d:0.16,w:'sawtooth'},{f:NOTES.C4,d:0.36,w:'sawtooth'}]); },
+    playNewBest(){ this._jingle([{f:NOTES.C5,d:0.12},{f:NOTES.E5,d:0.12},{f:NOTES.G5,d:0.12},{f:NOTES.C5,d:0.12},{f:NOTES.G5,d:0.28}]); },
+    // ── 효과음 ──
+    _sfxOk(k){ const now=performance.now(); if(this._sfxLast[k] && now-this._sfxLast[k]<(SFX_COOLDOWN[k]||0)) return false; this._sfxLast[k]=now; return this.soundEnabled && this.context; },
+    playShoot(){ if(!this._sfxOk('shoot')) return; this._tone(880,0.05,'square',this.sfxGain,0.5,this.context.currentTime); this._tone(1320,0.04,'square',this.sfxGain,0.3,this.context.currentTime+0.005); },
+    playExplosion(){ if(!this._sfxOk('explosion')) return; this._noise(0.18,0.5,700); this._tone(160,0.16,'sawtooth',this.sfxGain,0.5,this.context.currentTime); },
+    playPlayerHit(){ if(!this._sfxOk('playerHit')) return; this._noise(0.3,0.6,400); this._tone(110,0.3,'sawtooth',this.sfxGain,0.7,this.context.currentTime); },
+    playPowerUp(){ if(!this._sfxOk('powerUp')) return; this._jingleSfx([{f:NOTES.C5,d:0.07},{f:NOTES.E5,d:0.07},{f:NOTES.G5,d:0.1}]); },
+    playBossHit(){ if(!this.soundEnabled||!this.context) return; this._tone(240,0.08,'square',this.sfxGain,0.35,this.context.currentTime); },
+    _jingleSfx(seq){ if(!this.context) return; let t=this.context.currentTime; seq.forEach(s=>{ this._tone(s.f,s.d,'triangle',this.sfxGain,0.5,t); t+=s.d*0.9; }); },
+    setMusicEnabled(on){ this.musicEnabled=on; safeSet('cropGalagaMusic', on?'on':'off');
+      if(this.musicGain) this.musicGain.gain.setTargetAtTime(on?AUDIO_VOLUME.music:0, this.context?this.context.currentTime:0, 0.05);
+      if(!on) this.pauseMusic(); },
+    setSoundEnabled(on){ this.soundEnabled=on; safeSet('cropGalagaSound', on?'on':'off');
+      if(this.sfxGain) this.sfxGain.gain.setTargetAtTime(on?AUDIO_VOLUME.sfx:0, this.context?this.context.currentTime:0, 0.05); },
+    destroy(){ this.stopMusic(); try{ this.context && this.context.close(); }catch(e){} this.context=null; }
+  };
+  async function ensureAudioStarted(){ AudioManager.init(); await AudioManager.resume(); }
+
+  /* ===== 4. 사용자 ===== */
+  const USER = { userId: localStorage.getItem('tenarGameUserId'), nickname: localStorage.getItem('tenarGameNick') };
+  if(!USER.userId || !USER.nickname) location.replace('game_center.html');
+
+  /* ===== 5. Canvas ===== */
+  const canvas=$('gameCanvas'), ctx=canvas.getContext('2d');
+  let W=0,H=0,DPR=1;
+  function resize(){
+    const r=canvas.getBoundingClientRect();
+    DPR=Math.min(2.5, window.devicePixelRatio||1);
+    W=r.width; H=r.height;
+    canvas.width=Math.floor(W*DPR); canvas.height=Math.floor(H*DPR);
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    if(game.player) game.player.y = H - 74;
+  }
+  window.addEventListener('resize', ()=>{ if(W) resize(); });
+
+  /* ===== 게임 상태 ===== */
+  const game = {
+    running:false, paused:false, ended:false, saveStarted:false, gameEnded:false,
+    fireMode: safeGet('cropGalagaFireMode','auto')==='manual'?'manual':'auto',
+    score:0, bestScore:parseInt(safeGet('cropGalagaBestScore','0'),10)||0, stage:1, lives:3, kills:0,
+    combo:0, maxCombo:0, comboTimer:0, playSeconds:0, startMs:0,
+    player:null, enemies:[], playerBullets:[], enemyBullets:[], powerUps:[], particles:[], stars:[],
+    boss:null, invUntil:0, autoFireAcc:0, shootPow:{until:0}, tri:{until:0}, shield:false, rapid:{until:0},
+    stageState:'play', stageMsg:'', stageMsgUntil:0, shake:0, hitFlash:0, autoShootIdx:0
+  };
+  const input = { left:false, right:false, firing:false, dragX:null };
+
+  /* ===== 6. 입력 ===== */
+  function bindInput(){
+    $('btnLeft').addEventListener('pointerdown', e=>{ e.preventDefault(); input.left=true; });
+    $('btnLeft').addEventListener('pointerup', ()=> input.left=false);
+    $('btnLeft').addEventListener('pointerleave', ()=> input.left=false);
+    $('btnRight').addEventListener('pointerdown', e=>{ e.preventDefault(); input.right=true; });
+    $('btnRight').addEventListener('pointerup', ()=> input.right=false);
+    $('btnRight').addEventListener('pointerleave', ()=> input.right=false);
+    $('btnFire').addEventListener('pointerdown', e=>{ e.preventDefault(); input.firing=true; if(game.fireMode==='manual') tryShoot(true); });
+    $('btnFire').addEventListener('pointerup', ()=> input.firing=false);
+    $('btnFire').addEventListener('pointerleave', ()=> input.firing=false);
+    // 드래그 이동 (캔버스)
+    canvas.addEventListener('touchstart', e=>{ if(e.touches[0]){ input.dragX=e.touches[0].clientX - canvas.getBoundingClientRect().left; } }, {passive:true});
+    canvas.addEventListener('touchmove', e=>{ if(e.touches[0]){ input.dragX=e.touches[0].clientX - canvas.getBoundingClientRect().left; e.preventDefault(); } }, {passive:false});
+    canvas.addEventListener('touchend', ()=>{ input.dragX=null; }, {passive:true});
+    window.addEventListener('keydown', e=>{
+      if(e.code==='ArrowLeft'||e.code==='KeyA') input.left=true;
+      else if(e.code==='ArrowRight'||e.code==='KeyD') input.right=true;
+      else if(e.code==='Space'){ if(game.fireMode==='manual'){ tryShoot(true); } e.preventDefault(); }
+      else if(e.code==='KeyP'){ togglePause(); }
+    });
+    window.addEventListener('keyup', e=>{
+      if(e.code==='ArrowLeft'||e.code==='KeyA') input.left=false;
+      else if(e.code==='ArrowRight'||e.code==='KeyD') input.right=false;
+    });
+  }
+
+  /* ===== 스테이지 생성 ===== */
+  function isBossStage(s){ return s%5===0; }
+  function buildStage(){
+    game.enemies=[]; game.enemyBullets=[]; game.boss=null; game.powerUps=[];
+    game.stageState='intro'; game.stageMsg = isBossStage(game.stage)?('STAGE '+game.stage+' · BOSS'):('STAGE '+game.stage);
+    game.stageMsgUntil = performance.now()+1300;
+    if(isBossStage(game.stage)){
+      const b=BOSSES[(game.stage/5-1)%BOSSES.length];
+      const maxHp = 40 + Math.floor(game.stage/5)*22;
+      game.boss={ x:W/2, y:96, r:44, dir:1, hp:maxHp, maxHp, kind:b, shootAcc:0, phase:0, rage:false };
+    } else {
+      const cols=Math.min(8, 5+Math.floor(game.stage/3)), rows=4;
+      const gapX=Math.min(52, (W-40)/cols), startX=(W-(cols-1)*gapX)/2, startY=64;
+      const cropMax=Math.min(CROPS.length, 3+game.stage);
+      for(let r=0;r<rows;r++) for(let c=0;c<cols;c++){
+        const type=CROPS[Math.min(cropMax-1, r + (Math.random()<0.3?1:0))]||CROPS[0];
+        const hp = (game.stage>=3 && Math.random()<Math.min(0.4, 0.1+game.stage*0.03))?2:type.hp;
+        game.enemies.push({ hx:startX+c*gapX, hy:startY+r*40, x:startX+c*gapX, y:startY+r*40,
+          type, hp, maxHp:hp, r:16, state:'formation', t:0, dive:null, shootAcc:rand(0,3000) });
+      }
+    }
+    setTimeout(()=>{ if(game.running && !game.ended){ game.stageState='play'; startStageMusic(); } }, 1300);
+  }
+  function startStageMusic(){
+    if(isBossStage(game.stage)) AudioManager.playBossMusic(game.stage);
+    else AudioManager.playStageMusic(game.stage);
+  }
+
+  /* ===== 발사 ===== */
+  function tryShoot(force){
+    if(game.stageState!=='play'||game.paused||game.ended||!game.player) return;
+    const now=performance.now();
+    if(!force){ return; }
+    const p=game.player, ny=p.y-18;
+    const tri = now<game.tri.until, dbl = now<game.shootPow.until;
+    function bl(dx,vx){ game.playerBullets.push({x:p.x+dx, y:ny, vx:vx||0, vy:-560, r:3.5}); }
+    if(tri){ bl(0,0); bl(-8,-140); bl(8,140); }
+    else if(dbl){ bl(-7,0); bl(7,0); }
+    else bl(0,0);
+    if(game.playerBullets.length>60) game.playerBullets.splice(0, game.playerBullets.length-60);
+    // 자동발사는 2발당 1회만 발사음(피로 방지)
+    game.autoShootIdx=(game.autoShootIdx+1)%2;
+    if(game.fireMode==='manual' || game.autoShootIdx===0) AudioManager.playShoot();
+  }
+
+  /* ===== 게임 시작 ===== */
+  function newGame(){
+    game.score=0; game.stage=1; game.lives=3; game.kills=0; game.combo=0; game.maxCombo=0; game.comboTimer=0;
+    game.playSeconds=0; game.startMs=performance.now(); game.ended=false; game.gameEnded=false; game.saveStarted=false;
+    game.playerBullets=[]; game.enemyBullets=[]; game.powerUps=[]; game.particles=[]; game.boss=null;
+    game.invUntil=performance.now()+1200; game.autoFireAcc=0; game.shootPow={until:0}; game.tri={until:0}; game.shield=false; game.rapid={until:0};
+    game.shake=0; game.hitFlash=0; game.bestScore=parseInt(safeGet('cropGalagaBestScore','0'),10)||0;
+    game.player={ x:W/2, y:H-74, r:15, targetX:W/2 };
+    initStars();
+    updateHud();
+  }
+  function initStars(){
+    game.stars=[]; const n=Math.min(70, Math.floor(W*H/9000));
+    for(let i=0;i<n;i++) game.stars.push({x:rand(0,W), y:rand(0,H), s:rand(0.6,2.2), v:rand(18,60)});
+  }
+
+  function startGame(){
+    if(game.running && !game.ended) return;
+    showScreen('game'); resize();
+    $('btnFire').style.display = game.fireMode==='manual' ? '' : 'none';
+    newGame();
+    game.running=true; game.paused=false;
+    hidePause();
+    buildStage();
+    if(rafId) cancelAnimationFrame(rafId);   /* 기존 루프 정리 후 단일 루프 시작 */
+    lastTs=0; rafId=requestAnimationFrame(loop);
+  }
+  function startStageMusicDelayed(){ /* buildStage 인트로 후 음악 시작 */ }
+
+  /* ===== 충돌 ===== */
+  function hit(a,b,pad){ const dx=a.x-b.x, dy=a.y-b.y, rr=(a.r+b.r+(pad||0)); return dx*dx+dy*dy < rr*rr; }
+
+  /* ===== 점수/콤보 ===== */
+  function addKill(e, x, y){
+    game.kills++; game.combo++; game.maxCombo=Math.max(game.maxCombo,game.combo); game.comboTimer=2000;
+    const bonus=Math.min(game.combo*10,500);
+    const gain=(e.pts||100)+bonus;
+    game.score+=gain;
+    spawnExplosion(x,y,e.color||'#ffd24a');
+    game.particles.push({txt:'+'+gain, x, y, vy:-40, life:900, max:900, kind:'text'});
+    if(game.combo>=3) game.particles.push({txt:game.combo+' COMBO!', x:W/2, y:H*0.42, vy:-14, life:700, max:700, kind:'combo'});
+    AudioManager.playExplosion();
+    updateHud();
+  }
+  function spawnExplosion(x,y,color){
+    const n=10; for(let i=0;i<n;i++){ const a=Math.PI*2*i/n+rand(-0.3,0.3), s=rand(40,150);
+      game.particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:rand(300,600),max:600,r:rand(1.5,3.5),color,kind:'spark'}); }
+    if(game.particles.length>200) game.particles.splice(0,game.particles.length-200);
+  }
+
+  /* ===== 생명 감소 ===== */
+  function playerHitBy(){
+    const now=performance.now();
+    if(now<game.invUntil || game.ended) return;
+    if(game.shield){ game.shield=false; game.invUntil=now+700; AudioManager.playPowerUp(); return; }
+    game.lives--; game.combo=0; game.hitFlash=1; game.shake=Math.max(game.shake,10);
+    AudioManager.playPlayerHit(); updateHud();
+    if(game.lives<=0){ endGame(); return; }
+    game.invUntil=now+1500; game.player.x=W/2; game.player.targetX=W/2;
+  }
+
+  /* ===== 파워업 ===== */
+  function maybeDropPowerUp(x,y){
+    if(Math.random()<0.09){
+      const kinds=['dbl','tri','shield','rapid'], k=kinds[(Math.random()*kinds.length)|0];
+      game.powerUps.push({x,y,vy:70,r:13,kind:k});
+    }
+  }
+  function applyPowerUp(k){
+    const now=performance.now();
+    if(k==='dbl') game.shootPow.until=now+8000;
+    else if(k==='tri') game.tri.until=now+8000;
+    else if(k==='shield') game.shield=true;
+    else if(k==='rapid') game.rapid.until=now+8000;
+    AudioManager.playPowerUp();
+  }
+
+  /* ===== 업데이트 ===== */
+  function update(dt){
+    const now=performance.now();
+    game.playSeconds=(now-game.startMs)/1000;
+    // 별
+    const starV=1+game.stage*0.05;
+    for(const s of game.stars){ s.y+=s.v*starV*dt; if(s.y>H){ s.y=0; s.x=rand(0,W); } }
+    if(game.stageState!=='play'){ game.shake*=0.9; return; }
+    // 콤보 타이머
+    if(game.comboTimer>0){ game.comboTimer-=dt*1000; if(game.comboTimer<=0){ game.combo=0; updateHud(); } }
+    // 플레이어 이동
+    const p=game.player; const spd=300;
+    if(input.dragX!=null){ p.targetX = clamp(input.dragX, p.r, W-p.r); }
+    else { if(input.left) p.targetX-=spd*dt; if(input.right) p.targetX+=spd*dt; p.targetX=clamp(p.targetX,p.r,W-p.r); }
+    p.x += (p.targetX-p.x)*Math.min(1, dt*14);
+    // 자동발사
+    if(game.fireMode==='auto'){
+      let interval = now<game.rapid.until?150:280;
+      game.autoFireAcc+=dt*1000; if(game.autoFireAcc>=interval){ game.autoFireAcc=0; tryShoot(true); }
+    } else if(input.firing){
+      let interval = now<game.rapid.until?110:200;
+      game.autoFireAcc+=dt*1000; if(game.autoFireAcc>=interval){ game.autoFireAcc=0; tryShoot(true); }
+    }
+    // 플레이어 총알
+    for(let i=game.playerBullets.length-1;i>=0;i--){ const b=game.playerBullets[i]; b.x+=b.vx*dt; b.y+=b.vy*dt; if(b.y<-10||b.x<-10||b.x>W+10) game.playerBullets.splice(i,1); }
+    // 적/보스
+    if(game.boss) updateBoss(dt,now); else updateEnemies(dt,now);
+    // 적 총알
+    for(let i=game.enemyBullets.length-1;i>=0;i--){ const b=game.enemyBullets[i]; b.x+=b.vx*dt; b.y+=b.vy*dt;
+      if(b.y>H+10||b.x<-10||b.x>W+10){ game.enemyBullets.splice(i,1); continue; }
+      if(hit(b,p,-3)){ game.enemyBullets.splice(i,1); playerHitBy(); }
+    }
+    // 파워업 낙하
+    for(let i=game.powerUps.length-1;i>=0;i--){ const u=game.powerUps[i]; u.y+=u.vy*dt;
+      if(u.y>H+20){ game.powerUps.splice(i,1); continue; }
+      if(hit(u,p,4)){ applyPowerUp(u.kind); game.powerUps.splice(i,1); } }
+    // 파티클
+    for(let i=game.particles.length-1;i>=0;i--){ const pt=game.particles[i]; pt.life-=dt*1000;
+      if(pt.life<=0){ game.particles.splice(i,1); continue; }
+      pt.x+=(pt.vx||0)*dt; pt.y+=(pt.vy||0)*dt; if(pt.vy!=null && pt.kind==='spark') pt.vy+=120*dt; }
+    // 스테이지 클리어 판정
+    if(!game.boss && game.enemies.length===0 && game.stageState==='play') stageClear();
+    game.shake*=0.9; game.hitFlash*=0.86;
+  }
+
+  function updateEnemies(dt,now){
+    const sway=Math.sin(now/900)*Math.min(60,20+game.stage*4);
+    const diveChance=Math.min(0.02, 0.003+game.stage*0.0008);
+    const maxDiving=Math.min(6, 1+Math.floor(game.stage/2));
+    let diving=game.enemies.filter(e=>e.state==='diving').length;
+    for(const e of game.enemies){
+      if(e.state==='formation'){
+        e.x=e.hx+sway; e.y=e.hy;
+        if(diving<maxDiving && Math.random()<diveChance*dt*60){ e.state='diving'; e.t=0; e.sx=e.x; e.sy=e.y; e.tx=game.player?game.player.x:W/2; diving++; }
+        e.shootAcc-=dt*1000; if(e.shootAcc<=0){ e.shootAcc=rand(2600,6000)/(1+game.stage*0.1); enemyShoot(e); }
+      } else {
+        e.t+=dt; const prog=e.t/2.2;
+        if(prog>=1){ // 화면 아래로 → 위 편대 복귀
+          e.state='formation'; e.x=e.hx; e.y=e.hy; continue;
+        }
+        const speed=(1+game.stage*0.05);
+        e.y = e.sy + prog*(H+40-e.sy)*speed*0.9;
+        e.x = e.sx + Math.sin(prog*Math.PI*1.6)*( (e.tx-e.sx)*0.9 ) ;
+        if(e.y>H+30){ e.state='formation'; e.x=e.hx; e.y=e.hy; }
+        if(Math.random()<0.01) enemyShoot(e);
+      }
+      // 충돌: 적 vs 플레이어
+      if(game.player && hit(e,game.player,-2)) playerHitBy();
+    }
+    // 플레이어 총알 vs 적
+    for(let bi=game.playerBullets.length-1;bi>=0;bi--){ const b=game.playerBullets[bi];
+      for(let ei=game.enemies.length-1;ei>=0;ei--){ const e=game.enemies[ei];
+        if(hit(b,e)){ game.playerBullets.splice(bi,1); e.hp--;
+          if(e.hp<=0){ addKill(e.type,e.x,e.y); maybeDropPowerUp(e.x,e.y); game.enemies.splice(ei,1); }
+          break;
+        }
+      }
+    }
+  }
+  function enemyShoot(e){
+    if(!game.player) return;
+    const dx=game.player.x-e.x, dy=game.player.y-e.y, d=Math.hypot(dx,dy)||1, sp=140+game.stage*6;
+    game.enemyBullets.push({x:e.x, y:e.y+e.r, vx:dx/d*sp, vy:dy/d*sp, r:5});
+    if(game.enemyBullets.length>50) game.enemyBullets.splice(0,game.enemyBullets.length-50);
+  }
+
+  function updateBoss(dt,now){
+    const b=game.boss; b.x+=b.dir*(60+game.stage*3)*dt; if(b.x<b.r+8){b.x=b.r+8;b.dir=1;} if(b.x>W-b.r-8){b.x=W-b.r-8;b.dir=-1;}
+    b.shootAcc-=dt*1000;
+    const rage = b.hp <= b.maxHp*0.35;
+    if(rage && !b.rage){ b.rage=true; AudioManager.setBossRage(true); }
+    if(b.shootAcc<=0){ b.shootAcc = rage?750:1250;
+      const n=rage?5:3; for(let i=0;i<n;i++){ const a=Math.PI/2 + (i-(n-1)/2)*0.4; const sp=120+game.stage*5;
+        game.enemyBullets.push({x:b.x,y:b.y+b.r,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,r:5}); } }
+    if(game.player && hit(b,game.player,-6)) playerHitBy();
+    for(let bi=game.playerBullets.length-1;bi>=0;bi--){ const bl=game.playerBullets[bi];
+      if(hit(bl,b)){ game.playerBullets.splice(bi,1); b.hp--; AudioManager.playBossHit(); spawnExplosion(bl.x,bl.y,'#ffd24a');
+        if(b.hp<=0){ bossDefeated(); return; } } }
+  }
+  function bossDefeated(){
+    const b=game.boss; game.score+=2000+game.stage*100; game.kills++;
+    for(let i=0;i<3;i++) setTimeout(()=>spawnExplosion(b.x+rand(-30,30),b.y+rand(-30,30),b.kind.c),i*120);
+    game.shake=22; game.boss=null; updateHud();
+    stageClear();
+  }
+
+  /* ===== 스테이지 클리어 ===== */
+  function stageClear(){
+    if(game.stageState!=='play') return;
+    game.stageState='clear';
+    let bonus=game.stage*500; game.score+=bonus;
+    let perfect = game.lives>=3;
+    if(perfect){ game.score+=1000; }
+    game.stageMsg = 'STAGE CLEAR! +'+fmt(bonus)+(perfect?' · PERFECT +1,000':'');
+    game.stageMsgUntil=performance.now()+1500;
+    AudioManager.playStageClear();
+    updateHud();
+    setTimeout(()=>{ if(game.running && !game.ended){ game.stage++; buildStage(); } }, 1600);
+  }
+
+  /* ===== HUD ===== */
+  function updateHud(){
+    $('hScore').textContent=fmt(game.score); $('hBest').textContent=fmt(Math.max(game.bestScore,game.score));
+    $('hStage').textContent=game.stage; $('hLife').textContent='🚀'.repeat(Math.max(0,game.lives))||'—';
+  }
+
+  /* ===== 렌더 ===== */
+  function draw(){
+    ctx.save();
+    if(game.shake>0.5){ ctx.translate(rand(-game.shake,game.shake)*0.4, rand(-game.shake,game.shake)*0.4); }
+    // 배경
+    ctx.fillStyle='#0a0e1a'; ctx.fillRect(-20,-20,W+40,H+40);
+    for(const s of game.stars){ ctx.globalAlpha=clamp(s.s/2.2,0.3,1); ctx.fillStyle='#cfe0ff'; ctx.fillRect(s.x,s.y,s.s,s.s); }
+    ctx.globalAlpha=1;
+    // 파워업
+    for(const u of game.powerUps){ drawPowerUp(u); }
+    // 적/보스
+    if(game.boss) drawBoss(game.boss); else for(const e of game.enemies) drawEnemy(e);
+    // 적 총알(씨앗)
+    ctx.fillStyle='#e59b3c'; for(const b of game.enemyBullets){ ctx.beginPath(); ctx.ellipse(b.x,b.y,b.r*0.7,b.r,0,0,7); ctx.fill(); }
+    // 플레이어 총알
+    ctx.fillStyle='#8fd0ff'; for(const b of game.playerBullets){ ctx.fillRect(b.x-b.r*0.5,b.y-b.r*1.6,b.r,b.r*3.2); }
+    // 플레이어
+    if(game.player && game.lives>0) drawPlayer();
+    // 파티클
+    for(const pt of game.particles) drawParticle(pt);
+    // 스테이지 메시지
+    if(performance.now()<game.stageMsgUntil && game.stageMsg){
+      ctx.fillStyle='#ffd24a'; ctx.font='900 20px Pretendard,sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.shadowColor='#000'; ctx.shadowBlur=8; ctx.fillText(game.stageMsg, W/2, H*0.32); ctx.shadowBlur=0;
+    }
+    ctx.restore();
+    // 피격 붉은 플래시
+    if(game.hitFlash>0.02){ ctx.fillStyle='rgba(255,40,40,'+(game.hitFlash*0.4)+')'; ctx.fillRect(0,0,W,H); }
+  }
+  function drawPlayer(){
+    const p=game.player, blink = performance.now()<game.invUntil && (Math.floor(performance.now()/90)%2===0);
+    if(blink) return;
+    ctx.save(); ctx.translate(p.x,p.y);
+    if(game.shield){ ctx.strokeStyle='rgba(120,200,255,.8)'; ctx.lineWidth=2.5; ctx.beginPath(); ctx.arc(0,0,p.r+8,0,7); ctx.stroke(); }
+    ctx.fillStyle='#37a06a'; ctx.beginPath(); ctx.moveTo(0,-p.r); ctx.lineTo(p.r*0.9,p.r*0.8); ctx.lineTo(0,p.r*0.4); ctx.lineTo(-p.r*0.9,p.r*0.8); ctx.closePath(); ctx.fill();
+    ctx.fillStyle='#c9962b'; ctx.beginPath(); ctx.arc(0,-2,4,0,7); ctx.fill();
+    ctx.fillStyle='#ff9f45'; ctx.beginPath(); ctx.moveTo(-4,p.r*0.7); ctx.lineTo(0,p.r*1.2); ctx.lineTo(4,p.r*0.7); ctx.closePath(); ctx.fill();
+    ctx.restore();
+  }
+  function drawEnemy(e){
+    ctx.font=(e.r*1.7|0)+'px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(e.type.e, e.x, e.y);
+    if(e.maxHp>1 && e.hp<e.maxHp){ ctx.fillStyle='#e74c3c'; ctx.fillRect(e.x-10, e.y-e.r-5, 20*(e.hp/e.maxHp), 3); }
+  }
+  function drawBoss(b){
+    ctx.save(); ctx.translate(b.x,b.y);
+    ctx.fillStyle=b.kind.c; ctx.beginPath(); ctx.arc(0,0,b.r,0,7); ctx.fill();
+    ctx.strokeStyle='rgba(0,0,0,.25)'; ctx.lineWidth=2; for(let i=-2;i<=2;i++){ ctx.beginPath(); ctx.arc(0,0,b.r,Math.PI*0.5+i*0.32-0.15,Math.PI*0.5+i*0.32+0.15); ctx.stroke(); }
+    ctx.fillStyle='#2e7a4e'; ctx.beginPath(); ctx.ellipse(0,-b.r,10,5,0,0,7); ctx.fill();
+    ctx.restore();
+    // 체력바
+    ctx.fillStyle='rgba(0,0,0,.5)'; ctx.fillRect(W/2-70, 40, 140, 8);
+    ctx.fillStyle= b.rage?'#ff5252':'#69f0ae'; ctx.fillRect(W/2-70, 40, 140*(b.hp/b.maxHp), 8);
+    ctx.fillStyle='#fff'; ctx.font='800 11px Pretendard'; ctx.textAlign='center'; ctx.fillText(b.kind.name, W/2, 36);
+  }
+  function drawPowerUp(u){
+    const map={dbl:'Ⅱ',tri:'Ⅲ',shield:'🛡️',rapid:'⚡'}; ctx.font='18px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillStyle='rgba(201,150,43,.9)'; ctx.beginPath(); ctx.arc(u.x,u.y,u.r,0,7); ctx.fill();
+    ctx.fillStyle='#fff'; if(u.kind==='shield'||u.kind==='rapid') ctx.fillText(map[u.kind],u.x,u.y); else { ctx.font='900 14px Pretendard'; ctx.fillText(map[u.kind],u.x,u.y); }
+  }
+  function drawParticle(pt){
+    if(pt.kind==='spark'){ ctx.globalAlpha=clamp(pt.life/pt.max,0,1); ctx.fillStyle=pt.color; ctx.beginPath(); ctx.arc(pt.x,pt.y,pt.r,0,7); ctx.fill(); ctx.globalAlpha=1; }
+    else if(pt.kind==='text'){ ctx.globalAlpha=clamp(pt.life/pt.max,0,1); ctx.fillStyle='#ffd24a'; ctx.font='800 13px Pretendard'; ctx.textAlign='center'; ctx.fillText(pt.txt,pt.x,pt.y); ctx.globalAlpha=1; }
+    else if(pt.kind==='combo'){ ctx.globalAlpha=clamp(pt.life/pt.max,0,1); ctx.fillStyle='#69f0ae'; ctx.font='900 18px Pretendard'; ctx.textAlign='center'; ctx.fillText(pt.txt,pt.x,pt.y); ctx.globalAlpha=1; }
+  }
+
+  /* ===== 루프 ===== */
+  let lastTs=0, rafId=null;
+  function loop(ts){
+    if(!game.running){ rafId=null; return; }   /* 게임 종료 시 루프 정지(재시작 시 중복 방지) */
+    let dt=(ts-(lastTs||ts))/1000; lastTs=ts; dt=Math.min(dt,0.05);
+    if(!game.paused && !game.ended){ update(dt); }
+    draw();
+    rafId=requestAnimationFrame(loop);
+  }
+
+  /* ===== 일시정지 ===== */
+  function togglePause(){ if(!game.running||game.ended) return; if(game.paused) resumeGame(); else pauseGame(); }
+  function pauseGame(){ if(!game.running||game.ended||game.paused) return; game.paused=true; AudioManager.pauseMusic(); $('pauseOverlay').classList.add('show'); }
+  function resumeGame(){ if(!game.paused) return; game.paused=false; hidePause(); lastTs=0;
+    if(game.stageState==='play') AudioManager.resumeCurrentMusic(); }
+  function hidePause(){ $('pauseOverlay').classList.remove('show'); }
+
+  document.addEventListener('visibilitychange', ()=>{ if(document.hidden && game.running && !game.ended && !game.paused) pauseGame(); });
+
+  /* ===== 게임오버 ===== */
+  function endGame(){
+    if(game.ended) return; game.ended=true; game.running=false; game.gameEnded=true;
+    AudioManager.playGameOver();
+    game.playSeconds=(performance.now()-game.startMs)/1000;
+    const prevBest=parseInt(safeGet('cropGalagaBestScore','0'),10)||0;
+    const isNewBest = game.score>prevBest;
+    if(isNewBest) safeSet('cropGalagaBestScore', game.score);
+    // 결과 표시
+    $('rScore').textContent=fmt(game.score);
+    $('rStage').textContent=game.stage; $('rKills').textContent=game.kills;
+    $('rCombo').textContent=game.maxCombo; $('rTime').textContent=mmss(game.playSeconds);
+    $('rNewBest').classList.toggle('show', isNewBest);
+    $('saveMsg').textContent='기록 저장 중…';
+    setTimeout(()=>showScreen('result'), 700);
+    if(isNewBest) setTimeout(()=>AudioManager.playNewBest(), 900);
+    submitScore();
+  }
+  function mmss(s){ s=Math.floor(s); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
+
+  /* ===== Firebase 저장 ===== */
+  function xpForScore(score, stage){ const scoreXp=Math.floor(score/1000)*5; const stageXp=Math.max(0,stage-1)*3; return Math.min(150, 10+scoreXp+stageXp); }
+  async function submitScore(){
+    if(game.saveStarted) return; game.saveStarted=true;
+    const score=game.score, xpGain=xpForScore(score,game.stage);
+    safeSet('cropGalagaPlayCount', (parseInt(safeGet('cropGalagaPlayCount','0'),10)||0)+1);
+    try{
+      const allRef=doc(db,'rankings',GAME_ID,'scores',USER.userId);
+      let prev=0; try{ const p=await withTimeout(getDoc(allRef)); prev=p.exists()?(p.data().score||0):0; }catch(e){}
+      if(score>prev) await withTimeout(setDoc(allRef,{ userId:USER.userId, nickname:USER.nickname, score, stage:game.stage, kills:game.kills, maxCombo:game.maxCombo, fireMode:game.fireMode, playedAt:serverTimestamp() }));
+      const wkRef=weeklyDoc(USER.userId); let wkPrev=0; try{ const w=await withTimeout(getDoc(wkRef)); wkPrev=w.exists()?(w.data().score||0):0; }catch(e){}
+      if(score>wkPrev) await withTimeout(setDoc(wkRef,{ userId:USER.userId, nickname:USER.nickname, score, stage:game.stage, kills:game.kills, maxCombo:game.maxCombo, fireMode:game.fireMode, weekKey:WEEK, playedAt:serverTimestamp() }));
+      withTimeout(setDoc(doc(collection(db,'playLogs')),{ gameId:GAME_ID, userId:USER.userId, nickname:USER.nickname, score, stage:game.stage, kills:game.kills, maxCombo:game.maxCombo, fireMode:game.fireMode, playSeconds:Math.floor(game.playSeconds), playedAt:serverTimestamp() })).catch(()=>{});
+      withTimeout(updateDoc(doc(db,'users',USER.userId),{ totalPlayCount:increment(1), totalScore:increment(score), xp:increment(xpGain), lastLogin:serverTimestamp() })).catch(()=>{});
+      let rankTxt='';
+      try{ const higher=await withTimeout(getDocs(query(weeklyCol(), where('score','>',Math.max(wkPrev,score))))); rankTxt=' · 이번 주 '+(higher.size+1)+'위'; }catch(e){}
+      $('saveMsg').textContent='+'+xpGain+' XP · 기록 저장 완료'+rankTxt;
+    }catch(e){
+      $('saveMsg').textContent='점수는 기기에 저장되었습니다.\n온라인 랭킹 저장은 다음 접속 때 다시 확인해 주세요.';
+    }
+  }
+
+  /* ===== 랭킹 ===== */
+  async function openRanking(){
+    $('rankModal').classList.add('show'); const list=$('rankList'); list.innerHTML='<div class="empty">불러오는 중…</div>';
+    try{
+      const qs=await withTimeout(getDocs(query(weeklyCol(), orderBy('score','desc'), limit(10))));
+      if(qs.empty){ list.innerHTML='<div class="empty">이번 주 첫 번째 도전자가 되어보세요!</div>'; return; }
+      const medals=['🥇','🥈','🥉']; let html='',pos=0;
+      qs.forEach(d=>{ pos++; const r=d.data(); const mine=r.userId===USER.userId;
+        const pc=pos<=3?`<div class="rank-pos top">${medals[pos-1]}</div>`:`<div class="rank-pos">${pos}</div>`;
+        html+=`<div class="rank-row ${mine?'me':''}">${pc}<div class="rank-nick">${escapeHtml(r.nickname||'익명')}${mine?'<small>나</small>':''}</div><div class="rank-sc">${fmt(r.score)}점</div></div>`; });
+      list.innerHTML=html;
+    }catch(e){ list.innerHTML='<div class="empty">랭킹을 불러오지 못했습니다.<br>내 최고점 '+fmt(parseInt(safeGet('cropGalagaBestScore','0'),10)||0)+'점</div>'; }
+  }
+
+  /* ===== 공유 ===== */
+  async function shareResult(){
+    const text=`[텐아르 돌아온 작물갤러그]\n\n닉네임: ${USER.nickname}\n점수: ${fmt(game.score)}점\n도달 스테이지: ${game.stage}\n격파 작물: ${game.kills}\n최대 콤보: ${game.maxCombo}\n발사방식: ${game.fireMode==='auto'?'자동발사':'버튼발사'}\n\n나도 작물갤러그에 도전!`;
+    try{ if(navigator.share){ await navigator.share({title:GAME_NAME, text}); return; } }catch(e){ return; }
+    try{ if(navigator.clipboard) await navigator.clipboard.writeText(text); $('saveMsg').textContent='결과가 복사되었습니다.'; }catch(e){}
+  }
+
+  /* ===== 화면 전환/이벤트 ===== */
+  function showScreen(name){ ['start','game','result'].forEach(s=>$(s+'Screen').classList.toggle('hidden', s!==name)); }
+  function goCenter(confirmFirst){
+    if(confirmFirst && game.running && !game.ended){ if(!confirm('현재 게임을 종료하고 게임센터로 이동할까요?')) return; }
+    AudioManager.destroy(); location.href='game_center.html';
+  }
+  function setFireMode(m){ game.fireMode=m; safeSet('cropGalagaFireMode',m);
+    $('fireAuto').classList.toggle('sel', m==='auto'); $('fireManual').classList.toggle('sel', m==='manual'); }
+  function updateAudioToggles(){
+    $('musicToggle').textContent = AudioManager.musicEnabled?'🎵 음악 켜짐':'🔇 음악 꺼짐';
+    $('musicToggle').classList.toggle('off', !AudioManager.musicEnabled);
+    $('soundToggle').textContent = AudioManager.soundEnabled?'🔊 소리 켜짐':'🔕 소리 꺼짐';
+    $('soundToggle').classList.toggle('off', !AudioManager.soundEnabled);
+    $('musicBtn').textContent = AudioManager.musicEnabled?'🎵':'🔇';
+  }
+
+  async function loadMyRecord(){
+    const localBest=parseInt(safeGet('cropGalagaBestScore','0'),10)||0;
+    $('myRecord').textContent=`내 최고점 ${fmt(localBest)}점`;
+    try{ const snap=await withTimeout(getDoc(doc(db,'rankings',GAME_ID,'scores',USER.userId)));
+      if(snap.exists()){ const best=Math.max(localBest,snap.data().score||0); safeSet('cropGalagaBestScore',best); $('myRecord').textContent=`내 최고점 ${fmt(best)}점`; } }catch(e){}
+  }
+
+  function init(){
+    $('nickBox').textContent=`${USER.nickname}님, 우주선 준비 완료!`;
+    setFireMode(game.fireMode); updateAudioToggles(); loadMyRecord();
+    resize(); bindInput();
+    $('fireAuto').addEventListener('click', ()=>setFireMode('auto'));
+    $('fireManual').addEventListener('click', ()=>setFireMode('manual'));
+    $('musicToggle').addEventListener('click', async ()=>{ await ensureAudioStarted(); AudioManager.setMusicEnabled(!AudioManager.musicEnabled); if(AudioManager.musicEnabled && !game.running) AudioManager.playStartMusic(); updateAudioToggles(); });
+    $('soundToggle').addEventListener('click', async ()=>{ await ensureAudioStarted(); AudioManager.setSoundEnabled(!AudioManager.soundEnabled); updateAudioToggles(); });
+    $('startBtn').addEventListener('click', async ()=>{ await ensureAudioStarted(); startGame(); });
+    $('retryBtn').addEventListener('click', async ()=>{ await ensureAudioStarted(); startGame(); });
+    $('rankBtn').addEventListener('click', openRanking);
+    $('resultRankBtn').addEventListener('click', openRanking);
+    $('rankCloseBtn').addEventListener('click', ()=>$('rankModal').classList.remove('show'));
+    $('rankModal').addEventListener('click', e=>{ if(e.target===$('rankModal')) $('rankModal').classList.remove('show'); });
+    $('shareBtn').addEventListener('click', shareResult);
+    $('homeBtn').addEventListener('click', ()=>goCenter(false));
+    $('resultHomeBtn').addEventListener('click', ()=>goCenter(false));
+    $('pauseHomeBtn').addEventListener('click', ()=>goCenter(false));
+    $('pauseBtn').addEventListener('click', pauseGame);
+    $('resumeBtn').addEventListener('click', resumeGame);
+    $('restartBtn').addEventListener('click', async ()=>{ hidePause(); await ensureAudioStarted(); startGame(); });
+    $('musicBtn').addEventListener('click', ()=>{ AudioManager.setMusicEnabled(!AudioManager.musicEnabled); updateAudioToggles();
+      if(AudioManager.musicEnabled && game.running && !game.paused && game.stageState==='play') AudioManager.resumeCurrentMusic(); });
+    // 시작화면 음악은 첫 시작 버튼 이후에만(정책). 시작화면 진입 시 음악 켜짐이면 첫 상호작용에서 재생.
+  }
+  init();
+</script>
+<script>
+  /* 더블탭 확대/제스처 줌 방지 */
+  document.addEventListener('gesturestart', e=>e.preventDefault(), {passive:false});
+  (function(){ let last=0; document.addEventListener('touchend', e=>{ const n=Date.now(); if(n-last<=320) e.preventDefault(); last=n; }, {passive:false}); })();
+</script>
+</body>
+</html>
