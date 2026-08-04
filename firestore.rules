@@ -1,0 +1,55 @@
+// 텐아르 게임센터 · Firestore 보안 규칙
+// Firebase 콘솔 > Firestore Database > 규칙(Rules) 탭에 붙여넣고 게시(Publish)하세요.
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 관리자 판별 (Google 로그인된 ubaldos00@gmail.com)
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email == 'ubaldos00@gmail.com';
+    }
+
+    // 사용자 프로필
+    match /users/{userId} {
+      allow read: if true;
+      allow create, update: if true;
+      allow delete: if isAdmin();
+    }
+
+    // 게임별 랭킹 점수 (통산 scores · 주간 wk_YYYY-MM-DD 서브컬렉션 모두 허용)
+    match /rankings/{gameId}/{sub}/{userId} {
+      allow read: if true;
+      allow create, update: if request.resource.data.score is number
+                            && request.resource.data.score >= 0;
+      allow delete: if isAdmin();
+    }
+
+    // 누적 주간 챔피언 집계 (winners 우승횟수 · finalized 마감기록)
+    // 클라이언트(첫 접속자)가 지난 주 1위를 자동 집계하므로 쓰기를 허용한다.
+    match /champions/{gameId}/{sub}/{docId} {
+      allow read: if true;
+      allow create, update: if true;
+      allow delete: if isAdmin();
+    }
+
+    // 플레이 로그
+    match /playLogs/{logId} {
+      allow read: if isAdmin();
+      allow create: if true;
+      allow update, delete: if false;
+    }
+
+    // 공지사항: 관리자만 쓰기
+    match /notices/{noticeId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // 차단 닉네임: 관리자만 쓰기
+    match /blockedNames/{name} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}
