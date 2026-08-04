@@ -1,4 +1,4 @@
-<!-- game_eagle_eye.html · 저장: 2026-06-22 01:01 KST -->
+<!-- game_eagle_eye.html · v2 · 저장: 2026-08-04 10:35 KST · 큰 글꼴/고레벨에서 오른쪽 짤림 수정(셀 min-width:0+이모지 비례크기) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -68,7 +68,9 @@
         .cell {
             background: white; border-radius: 8px; display: flex;
             justify-content: center; align-items: center; cursor: pointer;
-            font-size: 2rem; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: transform 0.1s;
+            min-width: 0; overflow: hidden;                     /* 큰 글꼴에서도 열이 보드 밖으로 안 넘치게 */
+            font-size: 1em;                                     /* 실제 크기는 render()에서 셀 크기에 비례해 지정 */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: transform 0.1s;
         }
         .cell:active { transform: scale(0.9); }
         .result-card {
@@ -350,6 +352,10 @@
                 cell.addEventListener('touchstart', handleTouch, { passive: false });
                 this.board.appendChild(cell);
             }
+            // 이모지 크기를 실제 셀 크기에 비례해 지정(안드로이드 큰 글꼴에도 오른쪽 짤림 방지)
+            const inner = this.board.clientWidth - 20;                 // 좌우 padding 10+10
+            const cellW = (inner - (size - 1) * 8) / size;             // gap 8
+            this.board.style.fontSize = Math.max(11, Math.floor(cellW * 0.6)) + 'px';
         },
         nextLevel() {
             this.level++;
