@@ -1,4 +1,4 @@
-<!-- game_center_v7.html · 저장: 2026-08-04 04:51 KST · 명예의 전당(게임별 챔피언+전체 레벨·누적점수·플레이수 1위)·롱프레스 선택차단 -->
+<!-- game_center.html · v8 · 저장: 2026-08-04 05:35 KST · 명예의 전당 플레이수 숨김·제목5번터치→레벨/누적점수/플레이수 상위20 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -189,6 +189,17 @@
   .champ-row.clickable { cursor: pointer; border-radius: 8px; }
   .champ-row.clickable:active { background: #f0ecdc; }
   .champ-week { font-size: 9.5px; color: var(--color-accent); font-weight: 700; }
+  /* 명예의 전당 숨김 상세순위(제목 5번 터치) */
+  #hofSecret { margin: 6px 0 4px; }
+  .hof-rank-group { margin-bottom: 12px; }
+  .hof-rank-title { font-size: 12.5px; font-weight: 800; color: var(--color-accent); padding: 4px 2px 6px; }
+  .hof-rank-row { display: flex; align-items: center; gap: 8px; padding: 5px 6px; font-size: 12.5px; border-bottom: 1px solid #efe9d8; }
+  .hof-rank-row:last-child { border-bottom: none; }
+  .hof-rank-row.mine { background: #f3f9f0; border-radius: 7px; }
+  .hof-rank-no { width: 26px; text-align: center; font-weight: 800; color: var(--color-text-soft); flex-shrink: 0; }
+  .hof-rank-name { flex: 1; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .hof-rank-name b { color: #2e7a4e; }
+  .hof-rank-val { font-weight: 800; color: var(--color-accent); font-variant-numeric: tabular-nums; flex-shrink: 0; }
   .champ-arrow { font-size: 13px; color: var(--color-primary); opacity: 0.6; flex-shrink: 0; margin-left: 2px; }
 
   /* 누적 주간 챔피언 모달 */
@@ -326,8 +337,9 @@
 
   <!-- 챔피언 -->
   <section class="section">
-    <h2 class="section-title"><span class="icon">🏆</span>명예의 전당</h2>
+    <h2 class="section-title" id="hofTitle"><span class="icon">🏆</span>명예의 전당</h2>
     <div id="hofList"></div>
+    <div id="hofSecret" style="display:none;"></div>
     <div id="champList"><div class="loading">랭킹 불러오는 중…</div></div>
   </section>
 
@@ -569,10 +581,9 @@
   /* 명예의 전당: 전체 레벨(총XP)·누적점수·플레이수 1위 (같은 사람이면 한 줄로) */
   async function renderHallOfFame() {
     const wrap = document.getElementById('hofList'); if (!wrap) return; wrap.innerHTML = '';
-    const cats = [
+    const cats = [   // 플레이수는 숨김(제목 5번 터치 시 상세 순위에서만 노출)
       { key: 'xp',             emoji: '⭐', label: '총 XP·레벨 1위', valFn: d => { const lv = levelFromXp(d.xp || 0); return 'LV.' + lv.lv + ' · ' + fmt(d.xp || 0) + ' XP'; } },
-      { key: 'totalScore',     emoji: '💰', label: '누적점수 1위',   valFn: d => fmt(d.totalScore || 0) + '점' },
-      { key: 'totalPlayCount', emoji: '🎮', label: '플레이 수 1위',  valFn: d => fmt(d.totalPlayCount || 0) + '회' }
+      { key: 'totalScore',     emoji: '💰', label: '누적점수 1위',   valFn: d => fmt(d.totalScore || 0) + '점' }
     ];
     const winners = [];
     for (const c of cats) {
@@ -595,6 +606,53 @@
         <span class="champ-score">${w.val}</span>`;
       wrap.appendChild(row);
     });
+  }
+
+  /* 명예의 전당 제목 5번 터치 → 레벨·누적점수·플레이수 상위 20명 숨김 패널 토글 */
+  let _hofTaps = 0, _hofTapTimer = null, _hofSecretShown = false;
+  function bindHofSecret() {
+    const t = document.getElementById('hofTitle'); if (!t) return;
+    t.style.cursor = 'pointer';
+    t.addEventListener('click', () => {
+      _hofTaps++;
+      clearTimeout(_hofTapTimer);
+      _hofTapTimer = setTimeout(() => { _hofTaps = 0; }, 1200);
+      if (_hofTaps >= 5) {
+        _hofTaps = 0;
+        const box = document.getElementById('hofSecret');
+        _hofSecretShown = !_hofSecretShown;
+        box.style.display = _hofSecretShown ? '' : 'none';
+        if (_hofSecretShown) renderHofSecret();
+      }
+    });
+  }
+  async function renderHofSecret() {
+    const box = document.getElementById('hofSecret'); if (!box) return;
+    box.innerHTML = '<div class="loading">순위 불러오는 중…</div>';
+    const groups = [
+      { key: 'xp',             title: '⭐ 레벨·총XP 순위',  valFn: d => 'LV.' + levelFromXp(d.xp || 0).lv + ' · ' + fmt(d.xp || 0) + ' XP' },
+      { key: 'totalScore',     title: '💰 누적점수 순위',   valFn: d => fmt(d.totalScore || 0) + '점' },
+      { key: 'totalPlayCount', title: '🎮 플레이수 순위',   valFn: d => fmt(d.totalPlayCount || 0) + '회' }
+    ];
+    let html = '';
+    for (const g of groups) {
+      let rows = '';
+      try {
+        const qs = await withTimeout(getDocs(query(collection(db, 'users'), orderBy(g.key, 'desc'), limit(20))));
+        let rank = 0;
+        qs.forEach(docu => {
+          const d = docu.data(); rank++;
+          const mine = CURRENT_USER && docu.id === CURRENT_USER.userId;
+          const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
+          rows += `<div class="hof-rank-row${mine ? ' mine' : ''}"><span class="hof-rank-no">${medal}</span>`
+                + `<span class="hof-rank-name">${escapeHtml(d.nickname || '익명')}${mine ? ' <b>나</b>' : ''}</span>`
+                + `<span class="hof-rank-val">${g.valFn(d)}</span></div>`;
+        });
+      } catch (e) {}
+      if (!rows) rows = '<div class="hof-rank-row" style="opacity:.6;">기록 없음</div>';
+      html += `<div class="hof-rank-group"><div class="hof-rank-title">${g.title}</div>${rows}</div>`;
+    }
+    box.innerHTML = html;
   }
 
   /* 게임별 "이번 주 1위" + 클릭 시 누적 주간 챔피언 모달 */
@@ -721,6 +779,7 @@
     renderUser(u, { xp: 0, totalScore: 0, totalPlayCount: 0, level: 1 });
     renderGames(u);
     renderHallOfFame();
+    bindHofSecret();
     renderChampions();
     renderNotices();
     // 2) 사용자 실데이터는 비동기로 로드해 덮어쓴다
