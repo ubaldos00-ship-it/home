@@ -1,4 +1,4 @@
-<!-- game_crop_bubble.html · v2 · 저장: 2026-08-05 07:10 KST · 정통 뽀글뽀글화(사다리제거·수직랩·방울 테두리내 가둠·방울타기·과일드롭·이벤트8종) -->
+<!-- game_crop_bubble.html · v3 · 저장: 2026-08-05 07:40 KST · 확대방지·조작부개편(좌 스와이프 축소+우측 방울/점프 세로버튼) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -28,12 +28,13 @@
   #centerMsg.show{ opacity:1; }
   #centerMsg small{ display:block; font-size:14px; font-weight:700; margin-top:4px; color:#ffe08a; }
   #controls{ flex-shrink:0; background:#0b1a10; padding:8px 10px calc(6px + var(--safe-b)); }
-  .btn-row{ display:flex; gap:12px; margin-bottom:8px; }
-  .act-btn{ flex:1; height:58px; border:none; border-radius:16px; font-size:17px; font-weight:900; color:#0d1f12; display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer; transition:transform .06s, filter .06s; }
+  .ctrl-row{ display:flex; gap:10px; align-items:stretch; margin-bottom:6px; }
+  .rcol{ width:150px; flex-shrink:0; display:flex; flex-direction:column; gap:8px; }
+  .act-btn{ flex:1; width:100%; min-height:56px; border:none; border-radius:16px; font-size:17px; font-weight:900; color:#0d1f12; display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer; touch-action:none; transition:transform .06s, filter .06s; }
   .act-btn:active,.act-btn.press{ transform:scale(.95); filter:brightness(1.12); }
   #btnJump{ background:linear-gradient(135deg,#8fd07f,#4a9d4a); box-shadow:0 4px 10px rgba(74,157,74,.4); }
   #btnBubble{ background:linear-gradient(135deg,#8fd6ff,#4aa3e0); box-shadow:0 4px 10px rgba(74,163,224,.4); }
-  #swipe{ position:relative; height:72px; min-height:68px; border-radius:16px; background:linear-gradient(180deg,rgba(30,74,44,.85),rgba(18,48,28,.92)); border:2px solid rgba(120,200,140,.35); overflow:hidden; touch-action:none; display:flex; align-items:center; justify-content:center; }
+  #swipe{ position:relative; flex:1; height:124px; min-height:112px; border-radius:16px; background:linear-gradient(180deg,rgba(30,74,44,.85),rgba(18,48,28,.92)); border:2px solid rgba(120,200,140,.35); overflow:hidden; touch-action:none; display:flex; align-items:center; justify-content:center; }
   #swipe.active{ border-color:rgba(160,240,180,.75); background:linear-gradient(180deg,rgba(40,96,58,.92),rgba(26,64,38,.96)); }
   #swipe .arrow{ position:absolute; top:50%; transform:translateY(-50%); font-size:22px; color:rgba(200,255,210,.55); font-weight:900; }
   #swipe .arrow.l{ left:12px; } #swipe .arrow.r{ right:12px; }
@@ -98,16 +99,18 @@
   </header>
   <div id="stage"><canvas id="game"></canvas><div id="centerMsg"></div></div>
   <div id="controls">
-    <div class="btn-row">
-      <button class="act-btn" id="btnJump">⬆ 점프</button>
-      <button class="act-btn" id="btnBubble">🫧 방울</button>
+    <div class="ctrl-row">
+      <div id="swipe">
+        <span class="arrow l">◀</span><span class="label">손가락을 좌우로 밀어 이동</span><span class="arrow r">▶</span>
+        <span class="dot dot0" id="swDot0"></span><span class="link" id="swLink"></span><span class="dot" id="swDot"></span>
+        <span class="gauge"><i id="swGauge"></i></span>
+      </div>
+      <div class="rcol">
+        <button class="act-btn" id="btnBubble">🫧 방울</button>
+        <button class="act-btn" id="btnJump">⬆ 점프</button>
+      </div>
     </div>
-    <div id="swipe">
-      <span class="arrow l">◀</span><span class="label">손가락을 좌우로 움직여 이동</span><span class="arrow r">▶</span>
-      <span class="dot dot0" id="swDot0"></span><span class="link" id="swLink"></span><span class="dot" id="swDot"></span>
-      <span class="gauge"><i id="swGauge"></i></span>
-    </div>
-    <div id="kbdHint">PC: ← → 이동 · Space 점프 · Z/X 방울 · P 일시정지</div>
+    <div id="kbdHint">왼손: 좌우 이동 · 오른손: 🫧방울/⬆점프 · PC: ←→ Space Z/X P</div>
   </div>
 
   <div class="overlay" id="startScreen">
@@ -786,6 +789,14 @@
     resize(); setTimeout(resize,60);
   }
   window.addEventListener('pagehide', ()=>AudioManager.pauseMusic());
+  /* 화면 확대 방지(더블탭·핀치·제스처) */
+  document.addEventListener('gesturestart', e=>e.preventDefault(), {passive:false});
+  document.addEventListener('gesturechange', e=>e.preventDefault(), {passive:false});
+  document.addEventListener('gestureend', e=>e.preventDefault(), {passive:false});
+  document.addEventListener('dblclick', e=>e.preventDefault(), {passive:false});
+  let _lastTouchEnd=0;
+  document.addEventListener('touchend', e=>{ const t=Date.now(); if(t-_lastTouchEnd<=350){ e.preventDefault(); } _lastTouchEnd=t; }, {passive:false});
+  document.addEventListener('touchmove', e=>{ if(e.touches.length>1) e.preventDefault(); }, {passive:false});
   initUI();
 </script>
 </body>
