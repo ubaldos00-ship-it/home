@@ -1,4 +1,5 @@
-<!-- map_v91.html (v91 · TENAR V1.5) · 저장: 2026-08-04 00:20 KST · [v91] 작물재배조사구 단순화 — ①②조사회차·완료·미완료·완료초기화·회차완료 모두 삭제(필터는 전체/메모만) · 메모 입력창 크게(textarea) ③조사구 수정: 저장·취소를 제목 아래·번호 위로 이동+메모칸 추가, 핀 팝업 닫으면 조사구 목록 열림 ④조사구 팝업·순서안내의 회 완료 버튼 삭제 ⑤팝업 열리면 🌾 조사구 버튼도 숨김 ⑥위치버튼 3상태(현재위치→동작방향→취소) ⑦방향 부채꼴 더 투명하게 -->
+<!-- map_v92.html (v92 · TENAR V1.5) · 저장: 2026-08-05 17:31 KST · [v92] ①위치추적 지도멈춤 수정 — GPS 지터로 매 업데이트마다 재중심되던 것을 실제 4m↑ 이동 시만 재중심·드래그하면 즉시 추적해제 ②방향 부채꼴·GPS정확도 원 더 진하게(잘 보이게) ③포구도구 가/나 선택 중 수정 누르면 선택 해제 ④포구/측정 작업 중 🌾조사구 누르면 「닫으시겠습니까?」 확인창 ⑤검색창 아래 버튼 추가(10a생산량·이삭수계산기·면적환산) + 가로 스크롤 -->
+<!-- (이전)  map_v91.html (v91 · TENAR V1.5) · 저장: 2026-08-04 00:20 KST · [v91] 작물재배조사구 단순화 — ①②조사회차·완료·미완료·완료초기화·회차완료 모두 삭제(필터는 전체/메모만) · 메모 입력창 크게(textarea) ③조사구 수정: 저장·취소를 제목 아래·번호 위로 이동+메모칸 추가, 핀 팝업 닫으면 조사구 목록 열림 ④조사구 팝업·순서안내의 회 완료 버튼 삭제 ⑤팝업 열리면 🌾 조사구 버튼도 숨김 ⑥위치버튼 3상태(현재위치→동작방향→취소) ⑦방향 부채꼴 더 투명하게 -->
 <!-- (이전)  map_v90.html (v90 · TENAR V1.5) · 저장: 2026-08-03 15:27 KST · [v90] 엑셀 가져오기 개선 — 「리·본지번·부지번」(또는 「지번」) 열을 인식해 초입주소를 자동 조합. 예) 경상북도·상주시·공성면·평천리·0995·0002 → 「경상북도 상주시 공성면 평천리 995-2」로 조회. 앞의 0 제거·부지번 0이면 본번만·산번지 지원. 초입주소 열이 이미 있으면 그대로 사용 -->
 <!-- (이전)  map_v89.html (v89 · TENAR V1.5) · 저장: 2026-08-03 06:15 KST · [v89] ①완료된 조사구는 지도 핀 위에 초록 체크(✔) 표시 ②조사구 목록의 메모(📝)를 누르면 그 조사구 팝업 열림(완료·메모·수정·목록·길찾기·삭제)·선택 핀을 검색창과 팝업 사이로 올림 ③목록 보기 필터(전체/완료/미완료/메모) 버튼 · [개선]메모 회차별 관리·회차버튼에 완료수 미리보기·「가까운 순」에서 완료(방문)한 곳은 뒤로 정렬 -->
 <!-- (이전)  map_v88.html (v88 · TENAR V1.5) · 저장: 2026-08-03 05:41 KST · [v88] ①조사구 선택 시 그 시도·시군구·읍면동도 네모 선택표시(다른 읍면동 조사구 선택 시 갱신) ②시도·시군구·읍면동·조사구 선택해도 지도엔 전체 핀 표시(선택은 이동만) ③조사구 팝업(핀선택)에 메모내용 표시 + 완료(현재회차)·메모 버튼 ④완료·메모를 저장/불러오기·JSON·엑셀 내보내기/가져오기에 포함 ⑤순서안내 정렬옵션(지역·번호 순↔현재위치 가까운 순, 기본 유지) ⑥회차별 완료 진행률 표시(N회 X/Y·%) -->
@@ -469,7 +470,7 @@ TenarSecureStore.init('map',
   /* [v72-1·3] GPS 정확도 반투명 원(깜빡임) — 핀 중심, 크기는 JS가 정확도에 맞춰 조정 */
   .tloc-marker .tloc-acc {
     position: absolute; left: 50%; top: 50%; width: 0; height: 0; transform: translate(-50%, -50%);
-    border-radius: 50%; background: rgba(26,115,232,.30); border: 1.5px solid rgba(26,115,232,.55);
+    border-radius: 50%; background: rgba(26,115,232,.42); border: 2px solid rgba(26,115,232,.75);   /* [v92-2] 정확도 원 더 진하게 */
     display: none; pointer-events: none;
   }
   .tloc-marker.acc-on .tloc-acc { display: block; animation: tlocPulse 1.9s ease-in-out infinite; }
@@ -487,7 +488,7 @@ TenarSecureStore.init('map',
   /* [v74-4] 부채꼴 : 핀 중심은 진하고 바깥으로 갈수록 옅어지는 그라데이션 */
   .tloc-marker .tloc-fan {
     position: absolute; left: 50%; top: 50%; width: 66px; height: 58px; margin: -58px 0 0 -33px;
-    background: linear-gradient(to top, rgba(26,115,232,.28), rgba(26,115,232,.01));   /* [v91-7] 부채꼴 더 투명하게 */
+    background: linear-gradient(to top, rgba(26,115,232,.66), rgba(26,115,232,.06));   /* [v92-2] 부채꼴 더 진하게(잘 보이게) */
     -webkit-clip-path: polygon(50% 100%, 0% 0%, 100% 0%); clip-path: polygon(50% 100%, 0% 0%, 100% 0%);
     display: none;
   }
@@ -914,11 +915,12 @@ TenarSecureStore.init('map',
   /* [v40-7] 하단 팝업(시트)이 열려 있는 동안 오른쪽 도구 버튼을 숨긴다.
      (주소검색·레이어는 그대로 두어 지도 종류를 바꾸거나 검색할 수 있게 한다) */
   /* [v85-3] 조사 실행 바로가기 버튼(타원) */
-  /* [v86-3] 더 작게·이모지 제거·녹색 테두리 제거(지도 가림 최소화) */
-  #quickSurvey { display:flex; gap:6px; justify-content:center; margin-top:6px; pointer-events:auto; }
+  /* [v86-3]·[v92-5] 작게 · 가로 스크롤(한 줄에 안 들어가면 오른쪽으로) */
+  #quickSurvey { display:flex; gap:6px; margin-top:6px; pointer-events:auto; overflow-x:auto; -webkit-overflow-scrolling:touch; padding:2px 2px 3px; scrollbar-width:none; }
+  #quickSurvey::-webkit-scrollbar { display:none; }
   #quickSurvey .qs-btn {
-    flex:0 1 auto; text-decoration:none; font-family:inherit; font-size:11px; font-weight:700;
-    color:#14612f; background:rgba(255,255,255,.9); border:none;
+    flex:0 0 auto; text-decoration:none; font-family:inherit; font-size:11px; font-weight:700;
+    color:#14612f; background:rgba(255,255,255,.92); border:none;
     border-radius:999px; padding:5px 12px; box-shadow:0 1px 4px rgba(0,0,0,.15);
     white-space:nowrap; -webkit-tap-highlight-color:transparent;
   }
@@ -1234,6 +1236,9 @@ TenarSecureStore.init('map',
     <div id="quickSurvey">
       <a class="qs-btn" href="tonghab.html">실측조사</a>
       <a class="qs-btn" href="chungchi.html">청취조사</a>
+      <a class="qs-btn" href="graph.html">10a생산량</a>
+      <a class="qs-btn" href="jusu.html">이삭수계산기</a>
+      <a class="qs-btn" href="area.html">면적환산</a>
     </div>
 <!-- [v7-2] 「두 손가락 회전 · 확대 가능」 안내문 삭제 -->
   </div>
@@ -7732,7 +7737,20 @@ TenarSecureStore.init('map',
   document.getElementById('btnPins').addEventListener('click', openPinsSheet);
   document.getElementById('btnFav').addEventListener('click', openFavSheet);
   /* [v75-3] 재배면적 조사구 탭 바로가기 */
-  (function () { var b = document.getElementById('btnAreaShort'); if (b) b.addEventListener('click', function () { openAreaSheet(); }); })();
+  (function () {
+    var b = document.getElementById('btnAreaShort'); if (!b) return;
+    b.addEventListener('click', function () {
+      /* [v92-4] 포구/측정 도구에서 작업 중이면 넘어가기 전에 확인 */
+      var fpBusy = fpToolPanelEl.classList.contains('show') && hasActivePortWork();
+      var measBusy = toolPanelEl.classList.contains('show') && hasActiveMeasureWork();
+      if (fpBusy || measBusy) {
+        var title = fpBusy ? '포구 선정 작업을 닫으시겠습니까?' : '측정 작업을 닫으시겠습니까?';
+        confirmToolClose(title).then(function (c) { if (c === 'close') openAreaSheet(); });
+      } else {
+        openAreaSheet();
+      }
+    });
+  })();
   /* [v71-4] 현재위치·추적은 통합 버튼(btnLoc)+TLoc 매니저로 이관 (아래 TLoc.init에서 배선) */
   /* [v5-5] 측정 버튼 = 열기/닫기 토글.
      닫을 때 측정 중이거나 측정값이 남아 있으면 삭제 여부를 먼저 확인한다. */
@@ -9532,12 +9550,14 @@ TenarSecureStore.init('map',
 
   /* [v17-3] 수정 토글 — 지도 상단에 「핀 수정 모드」를 띄운다 */
   function fpToggleEdit() {
+    /* [v92-3] 가/나 지점 대기(선택) 중에 수정을 누르면 그 선택부터 해제한다 */
+    if (fp.picking) { fp.picking = null; if (surveyMeasureState.mode === 'fieldplot') setSurveyMode('none'); }
     if (surveyMeasureState.mode === 'edit') {
       setSurveyMode('none');
       fp.finished = false;   /* [v72-16] 수정 해제 시 완료 풀어 「그리기」 버튼 활성화 */
     }
     else {
-      if (!fpHasShape()) { showToast('먼저 필지선택 또는 그리기를 완료해주세요.', 3500, 'info'); return; }
+      if (!fpHasShape()) { fpSyncButtons(); showToast('먼저 필지선택 또는 그리기를 완료해주세요.', 3500, 'info'); return; }
       startMeasurementEdit();
       showToast('핀 수정 모드입니다.\n꼭짓점을 끌어 옮기면 계산이 바로 다시 됩니다.\n지도 중앙 십자에 「센터추가」도 쓸 수 있습니다.', 5200, 'info');
     }
@@ -11927,6 +11947,11 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     /* [v74-3] 지도 회전(방향추적) 복원 — 목표 bearing(=heading)으로 부드럽게 */
     function rotateMapTo(h) { targetBearing = h; if (!bearingRAF) bearingRAF = requestAnimationFrame(animateBearing); }
     /* [v74-3] 현재위치=화면 중앙, 위치추적=진행방향(위)이 더 보이게 핀을 아래쪽-중앙. 확대해도 항상 재중심 */
+    function _tlocDistM(la1, lo1, la2, lo2) {
+      var R = 6371000, dLa = (la2 - la1) * Math.PI / 180, dLo = (lo2 - lo1) * Math.PI / 180;
+      var a = Math.sin(dLa / 2) * Math.sin(dLa / 2) + Math.cos(la1 * Math.PI / 180) * Math.cos(la2 * Math.PI / 180) * Math.sin(dLo / 2) * Math.sin(dLo / 2);
+      return 2 * R * Math.asin(Math.min(1, Math.sqrt(a)));
+    }
     function recenter() {
       if (!lastPos) return;
       programmatic = true;
@@ -11943,8 +11968,10 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
       showMarker(c.longitude, c.latitude);
       updateAccCircle();
       if (mode !== 'off') {
-        var moved = !prev || Math.abs(prev.lat - lastPos.lat) > 1e-6 || Math.abs(prev.lng - lastPos.lng) > 1e-6;
-        if (moved) recenter();
+        /* [v92-1] GPS 지터(제자리 미세변동)로 매 업데이트마다 재중심→easeTo가 계속 돌아
+           지도가 멈춘 것처럼 보이던 문제. 실제로 약 4m 이상 이동했을 때만 재중심한다. */
+        var movedM = prev ? _tlocDistM(prev.lat, prev.lng, lastPos.lat, lastPos.lng) : 9999;
+        if (movedM > 4) recenter();
       }
       refreshLocSheet();
     }
@@ -12048,7 +12075,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     }
 
     /* ── 수동 조작 → 추적 해제 ── */
-    function onUserInteract() { if (programmatic) return; if (mode !== 'off') setMode('off'); }
+    function onUserInteract() { if (mode !== 'off') setMode('off'); }   /* [v92-1] 손으로 드래그하면 즉시 추적 해제 → 지도 자유 이동 */
 
     /* ── 현재위치 바텀시트 ── */
     function dirText(h) {
