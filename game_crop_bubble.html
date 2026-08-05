@@ -1,4 +1,4 @@
-<!-- game_crop_bubble.html · v3 · 저장: 2026-08-05 07:40 KST · 확대방지·조작부개편(좌 스와이프 축소+우측 방울/점프 세로버튼) -->
+<!-- game_crop_bubble.html · v4 · 저장: 2026-08-05 08:00 KST · 왼쪽시작(빈칸 가운데)·낙하속도↓·보너스판 조기종료 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -224,7 +224,7 @@
 
   const WORLD_W=420, WORLD_H=560;
   const BOX={ left:12, right:408, top:38, bottom:522 };     // 물방울/플레이 사각 테두리
-  const PHYSICS={ gravity:1500, moveSpeed:205, acceleration:1100, friction:1300, jumpVelocity:-540, maxFallSpeed:720 };
+  const PHYSICS={ gravity:1050, moveSpeed:205, acceleration:1100, friction:1300, jumpVelocity:-520, maxFallSpeed:400 };
   const DIFF={
     easy:  { time:120, enemySpeed:0.75, trapTime:8500, mult:0.9, itemRate:0.30, atk:0.6 },
     normal:{ time:90,  enemySpeed:1.0,  trapTime:6500, mult:1.0, itemRate:0.22, atk:1.0 },
@@ -254,17 +254,19 @@
   const FRUITS=[ {e:'🍓',pts:500}, {e:'🍎',pts:700}, {e:'🍊',pts:600}, {e:'🍉',pts:1000}, {e:'🍇',pts:800}, {e:'🌾',pts:1500} ];
 
   /* ===== 3. 맵 (뽀글뽀글 스타일: 사다리 없음, 바닥 양끝 빈칸=수직랩) ===== */
+  // 바닥: 왼쪽은 항상 solid(시작·부활 지점), 빈칸(수직 랩)은 가운데~오른쪽에 둔다. 시작은 왼쪽.
+  const START={x:45,y:500};
   const MAP_BANK=[
-    { floor:[{x:70,y:504,w:280,h:16}], plats:[ {x:12,y:410,w:120}, {x:288,y:410,w:120}, {x:150,y:410,w:120}, {x:12,y:320,w:120}, {x:288,y:320,w:120}, {x:150,y:236,w:120}, {x:70,y:150,w:90}, {x:260,y:150,w:90} ],
-      start:{x:200,y:470}, spawns:[{x:60,y:130},{x:320,y:130},{x:60,y:300},{x:320,y:300},{x:200,y:216}] },
-    { floor:[{x:60,y:504,w:120},{x:240,y:504,w:120}], plats:[ {x:140,y:430,w:140}, {x:12,y:350,w:110}, {x:298,y:350,w:110}, {x:150,y:270,w:120}, {x:60,y:180,w:110}, {x:250,y:180,w:110} ],
-      start:{x:200,y:470}, spawns:[{x:80,y:160},{x:300,y:160},{x:200,y:250},{x:60,y:330},{x:320,y:330}] },
-    { floor:[{x:80,y:504,w:260,h:16}], plats:[ {x:12,y:430,w:100}, {x:308,y:430,w:100}, {x:150,y:360,w:120}, {x:12,y:270,w:130}, {x:278,y:270,w:130}, {x:150,y:180,w:120}, {x:60,y:110,w:90}, {x:270,y:110,w:90} ],
-      start:{x:200,y:470}, spawns:[{x:60,y:90},{x:320,y:90},{x:200,y:160},{x:60,y:250},{x:320,y:250}] },
-    { floor:[{x:50,y:504,w:110},{x:260,y:504,w:110}], plats:[ {x:130,y:440,w:160}, {x:40,y:360,w:120}, {x:260,y:360,w:120}, {x:150,y:280,w:120}, {x:40,y:200,w:120}, {x:260,y:200,w:120}, {x:150,y:120,w:120} ],
-      start:{x:200,y:470}, spawns:[{x:200,y:100},{x:80,y:180},{x:320,y:180},{x:80,y:340},{x:320,y:340}] },
-    { floor:[{x:70,y:504,w:280,h:16}], plats:[ {x:12,y:420,w:130}, {x:278,y:420,w:130}, {x:150,y:340,w:120}, {x:12,y:250,w:110}, {x:150,y:250,w:120}, {x:298,y:250,w:110}, {x:110,y:160,w:200} ],
-      start:{x:200,y:470}, spawns:[{x:60,y:230},{x:200,y:140},{x:340,y:230},{x:120,y:400},{x:290,y:400}] }
+    { floor:[{x:12,y:504,w:205,h:16},{x:268,y:504,w:140,h:16}], plats:[ {x:12,y:410,w:120}, {x:288,y:410,w:120}, {x:150,y:410,w:120}, {x:12,y:320,w:120}, {x:288,y:320,w:120}, {x:150,y:236,w:120}, {x:70,y:150,w:90}, {x:260,y:150,w:90} ],
+      start:START, spawns:[{x:60,y:130},{x:320,y:130},{x:60,y:300},{x:320,y:300},{x:200,y:216}] },
+    { floor:[{x:12,y:504,w:190,h:16},{x:258,y:504,w:150,h:16}], plats:[ {x:140,y:430,w:140}, {x:12,y:350,w:110}, {x:298,y:350,w:110}, {x:150,y:270,w:120}, {x:60,y:180,w:110}, {x:250,y:180,w:110} ],
+      start:START, spawns:[{x:80,y:160},{x:300,y:160},{x:200,y:250},{x:60,y:330},{x:320,y:330}] },
+    { floor:[{x:12,y:504,w:200,h:16},{x:262,y:504,w:146,h:16}], plats:[ {x:12,y:430,w:100}, {x:308,y:430,w:100}, {x:150,y:360,w:120}, {x:12,y:270,w:130}, {x:278,y:270,w:130}, {x:150,y:180,w:120}, {x:60,y:110,w:90}, {x:270,y:110,w:90} ],
+      start:START, spawns:[{x:60,y:90},{x:320,y:90},{x:200,y:160},{x:60,y:250},{x:320,y:250}] },
+    { floor:[{x:12,y:504,w:210,h:16},{x:280,y:504,w:128,h:16}], plats:[ {x:130,y:440,w:160}, {x:40,y:360,w:120}, {x:260,y:360,w:120}, {x:150,y:280,w:120}, {x:40,y:200,w:120}, {x:260,y:200,w:120}, {x:150,y:120,w:120} ],
+      start:START, spawns:[{x:200,y:100},{x:80,y:180},{x:320,y:180},{x:80,y:340},{x:320,y:340}] },
+    { floor:[{x:12,y:504,w:195,h:16},{x:258,y:504,w:150,h:16}], plats:[ {x:12,y:420,w:130}, {x:278,y:420,w:130}, {x:150,y:340,w:120}, {x:12,y:250,w:110}, {x:150,y:250,w:120}, {x:298,y:250,w:110}, {x:110,y:160,w:200} ],
+      start:START, spawns:[{x:60,y:230},{x:200,y:140},{x:340,y:230},{x:120,y:400},{x:290,y:400}] }
   ];
   function themeForStage(s){ if(s%5===0) return 'boss'; if(s<=4) return 'field'; if(s<=9) return 'rice'; if(s<=14) return 'orchard'; return 'highland'; }
 
@@ -585,7 +587,7 @@
   function isBonusStage(s){ return s===3||s===8||s===13||s===18; }
   function spawnBoss(){ const bt=BOSS_TYPES[Math.floor(game.stage/5-1)%BOSS_TYPES.length]; const hp=bt.hp+Math.floor(game.stage/5)*2;
     game.boss={ def:bt, x:WORLD_W/2-26, y:90, w:52, h:52, hp, maxHp:hp, vx:70, phase:0, downed:false, dead:false }; }
-  function startBonusStage(){ game.mode='bonusFruit'; game.timeLeft=20; game.enemies=[]; AudioManager.playBonusMusic(); showCenter('BONUS!','과일방울을 터뜨리세요');
+  function startBonusStage(){ game.mode='bonusFruit'; game.timeLeft=20; game.enemies=[]; game._bonusEndT=0; AudioManager.playBonusMusic(); showCenter('BONUS!','과일방울을 터뜨리세요');
     for(let i=0;i<10;i++){ game.bubbles.push(new Bubble(rand(BOX.left+30,BOX.right-30), rand(120,460), 0, {golden:true, state:'rise', life:20000})); } }
 
   /* ===== 18. 랜덤 이벤트 8종 ===== */
@@ -672,6 +674,8 @@
     if(game.eventName==='사탕 상자' && game.eventBox && game.eventBox.hits>=3){ const bx=game.eventBox; dropCandy(bx.x,bx.y); completeEvent(); }
     if(game.mode==='battle' && !game.boss && game.enemies.length===0){ stageClear(); }
     if(game.mode==='battle' && game.boss && game.boss.dead){ addScore(5000+game.stage*500); if(game.stageNoMiss){ addScore(3000); floatText(WORLD_W/2,160,'BOSS PERFECT +3,000','#ffd24a'); } game.boss=null; setTimeout(stageClear,300); }
+    // 보너스판: 풍선을 다 터뜨리면 시간 다 안 기다리고 잠깐 뒤 종료
+    if(game.mode==='bonusFruit'){ if(game.bubbles.length===0){ if(!game._bonusEndT) game._bonusEndT=now(); else if(now()-game._bonusEndT>900){ game._bonusEndT=0; showCenter('보너스 완료!',''); game.mode='clear'; setTimeout(nextStage,700); } } else { game._bonusEndT=0; } }
     updateHUD();
   }
   function onTimeUp(){ if(game.mode==='bonusFruit'){ nextStage(); return; }
