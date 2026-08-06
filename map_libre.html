@@ -1,4 +1,5 @@
-<!-- map_v93.html (v93 · TENAR V1.5) · 저장: 2026-08-05 17:51 KST · [v93] ①주소창 아래 빠른버튼 잘림 보완 — 버튼 크기 축소(글자 11→10px)·양끝 여백·가로 스크롤로 마지막(면적환산)까지 볼 수 있게 ②레이어 시트 「화면 표시 → 빠른 버튼」 on/off 토글 추가(설정 저장) -->
+<!-- map_v94.html (v94 · TENAR V1.5) · 저장: 2026-08-06 14:55 KST · [v94] 즐겨찾기 불러오기(JSON 가져오기)를 작물재배조사구처럼 「목록에서 골라 추가/교체」 방식으로 변경(체크박스·전체선택·선택한 것만 불러오기, 연결 요도 함께). 계산식·다른 기능 무변경 -->
+<!-- (이전)  map_v93.html (v93 · TENAR V1.5) · 저장: 2026-08-05 17:51 KST · [v93] ①주소창 아래 빠른버튼 잘림 보완 — 버튼 크기 축소(글자 11→10px)·양끝 여백·가로 스크롤로 마지막(면적환산)까지 볼 수 있게 ②레이어 시트 「화면 표시 → 빠른 버튼」 on/off 토글 추가(설정 저장) -->
 <!-- (이전)  map_v92.html (v92 · TENAR V1.5) · 저장: 2026-08-05 17:31 KST · [v92] ①위치추적 지도멈춤 수정 — GPS 지터로 매 업데이트마다 재중심되던 것을 실제 4m↑ 이동 시만 재중심·드래그하면 즉시 추적해제 ②방향 부채꼴·GPS정확도 원 더 진하게(잘 보이게) ③포구도구 가/나 선택 중 수정 누르면 선택 해제 ④포구/측정 작업 중 🌾조사구 누르면 「닫으시겠습니까?」 확인창 ⑤검색창 아래 버튼 추가(10a생산량·이삭수계산기·면적환산) + 가로 스크롤 -->
 <!-- (이전)  map_v91.html (v91 · TENAR V1.5) · 저장: 2026-08-04 00:20 KST · [v91] 작물재배조사구 단순화 — ①②조사회차·완료·미완료·완료초기화·회차완료 모두 삭제(필터는 전체/메모만) · 메모 입력창 크게(textarea) ③조사구 수정: 저장·취소를 제목 아래·번호 위로 이동+메모칸 추가, 핀 팝업 닫으면 조사구 목록 열림 ④조사구 팝업·순서안내의 회 완료 버튼 삭제 ⑤팝업 열리면 🌾 조사구 버튼도 숨김 ⑥위치버튼 3상태(현재위치→동작방향→취소) ⑦방향 부채꼴 더 투명하게 -->
 <!-- (이전)  map_v90.html (v90 · TENAR V1.5) · 저장: 2026-08-03 15:27 KST · [v90] 엑셀 가져오기 개선 — 「리·본지번·부지번」(또는 「지번」) 열을 인식해 초입주소를 자동 조합. 예) 경상북도·상주시·공성면·평천리·0995·0002 → 「경상북도 상주시 공성면 평천리 995-2」로 조회. 앞의 0 제거·부지번 0이면 본번만·산번지 지원. 초입주소 열이 이미 있으면 그대로 사용 -->
@@ -4284,6 +4285,77 @@ TenarSecureStore.init('map',
         showToast('내보내기 파일을 저장했습니다.' + (out.encrypted ? '\n(암호화됨)' : ''), 3500, 'success');
       });
   }
+  /* [v94] 공용 「가져오기 미리보기」 — 목록(체크박스)에서 골라 추가/교체 (작물재배조사구 방식) */
+  function openPickImport(opts) {
+    /* opts = { title, filename, items:[{label, sub, data, disabled}], onApply(mode, selectedData[]) } */
+    var items = opts.items || [];
+    items.forEach(function (it) { it._checked = !it.disabled; });
+    var ov = document.createElement('div');
+    ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2147483000;display:flex;align-items:flex-end;justify-content:center;';
+    var modal = document.createElement('div');
+    modal.style.cssText = 'background:#fff;width:100%;max-width:640px;max-height:92vh;border-radius:16px 16px 0 0;display:flex;flex-direction:column;overflow:hidden;';
+    ov.appendChild(modal);
+    var head = document.createElement('div');
+    head.style.cssText = 'padding:14px 16px 8px;border-bottom:1px solid #eee;position:relative;';
+    head.innerHTML =
+      '<button class="pikX" style="position:absolute;top:10px;right:12px;width:34px;height:34px;border:none;background:#f1f1f4;border-radius:50%;font-size:18px;cursor:pointer;">×</button>' +
+      '<div style="font-size:15px;font-weight:800;color:#14612f;">' + escapeHtml(opts.title || '가져오기') + '</div>' +
+      (opts.filename ? '<div style="font-size:12px;color:#888;margin-top:2px;">파일: ' + escapeHtml(opts.filename) + '</div>' : '') +
+      '<div style="font-size:12.5px;margin-top:6px;">불러올 항목 <b>' + items.length + '</b>개 · 아래에서 골라 추가하거나 교체하세요.</div>';
+    modal.appendChild(head);
+    var selBar = document.createElement('div');
+    selBar.style.cssText = 'display:flex;align-items:center;gap:8px;padding:8px 14px;border-bottom:1px solid #f0f0f4;font-size:12.5px;';
+    selBar.innerHTML = '<label style="display:flex;align-items:center;gap:6px;font-weight:700;cursor:pointer;"><input type="checkbox" class="pikAll" style="width:17px;height:17px;"> 전체 선택</label><span class="pikCnt" style="margin-left:auto;color:#666;"></span>';
+    modal.appendChild(selBar);
+    var listBox = document.createElement('div');
+    listBox.style.cssText = 'flex:1;overflow-y:auto;padding:4px 8px;';
+    modal.appendChild(listBox);
+    var footer = document.createElement('div');
+    footer.style.cssText = 'display:flex;gap:8px;padding:12px 14px;border-top:1px solid #eee;';
+    function mkBtn(label, css) { var b = document.createElement('button'); b.textContent = label; b.style.cssText = css; return b; }
+    var bAdd = mkBtn('추가', 'flex:1;padding:12px;border:none;border-radius:10px;background:#1f8a4c;color:#fff;font-weight:800;font-size:14px;cursor:pointer;');
+    var bRep = mkBtn('교체', 'flex:1;padding:12px;border:1.5px solid #c0392b;border-radius:10px;background:#fff;color:#c0392b;font-weight:800;font-size:14px;cursor:pointer;');
+    var bCancel = mkBtn('취소', 'flex:1;padding:12px;border:1.5px solid #ddd;border-radius:10px;background:#fff;color:#555;font-weight:700;font-size:14px;cursor:pointer;');
+    footer.appendChild(bAdd); footer.appendChild(bRep); footer.appendChild(bCancel);
+    modal.appendChild(footer);
+    function close() { try { document.body.removeChild(ov); } catch (e) {} }
+    function updateCnt() {
+      var n = items.filter(function (it) { return it._checked; }).length;
+      selBar.querySelector('.pikCnt').textContent = '전체 ' + items.length + ' / 선택 ' + n;
+      var enable = items.filter(function (it) { return !it.disabled; });
+      selBar.querySelector('.pikAll').checked = enable.length > 0 && enable.every(function (it) { return it._checked; });
+    }
+    function render() {
+      listBox.innerHTML = '';
+      items.forEach(function (it) {
+        var row = document.createElement('label');
+        row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:8px;border-radius:8px;margin:3px 0;background:' + (it.disabled ? '#fdecec' : '#f4faf6') + ';font-size:12.5px;' + (it.disabled ? 'opacity:.7;' : 'cursor:pointer;');
+        var cb = document.createElement('input'); cb.type = 'checkbox'; cb.style.cssText = 'width:17px;height:17px;flex:0 0 auto;';
+        cb.checked = it._checked; cb.disabled = !!it.disabled;
+        cb.addEventListener('change', function () { it._checked = cb.checked; updateCnt(); });
+        var txt = document.createElement('div'); txt.style.cssText = 'flex:1;min-width:0;';
+        txt.innerHTML = '<span style="font-weight:700;">' + escapeHtml(it.label || '') + '</span>' + (it.sub ? '<br><span style="color:#888;">' + escapeHtml(it.sub) + '</span>' : '');
+        row.appendChild(cb); row.appendChild(txt); listBox.appendChild(row);
+      });
+      if (!items.length) listBox.innerHTML = '<div style="padding:16px;color:#999;text-align:center;font-size:12.5px;">불러올 항목이 없습니다.</div>';
+      updateCnt();
+    }
+    head.querySelector('.pikX').addEventListener('click', close);
+    bCancel.addEventListener('click', close);
+    selBar.querySelector('.pikAll').addEventListener('change', function () {
+      var on = this.checked; items.forEach(function (it) { if (!it.disabled) it._checked = on; }); render();
+    });
+    function apply(mode) {
+      var sel = items.filter(function (it) { return it._checked; }).map(function (it) { return it.data; });
+      if (!sel.length) { showToast('선택된 항목이 없습니다.', 2800, 'info'); return; }
+      close(); opts.onApply(mode, sel);
+    }
+    bAdd.addEventListener('click', function () { apply('add'); });
+    bRep.addEventListener('click', function () { apply('replace'); });
+    document.body.appendChild(ov);
+    render();
+  }
+
   function favImport() {
     var inp = document.createElement('input');
     inp.type = 'file'; inp.accept = 'application/json,.json';
@@ -4297,25 +4369,33 @@ TenarSecureStore.init('map',
         window._tenarParseImport(obj, 'map').then(function (data) {
           var incoming = (data && data.favorites) || (Array.isArray(data) ? data : null);
           if (!incoming || !incoming.length) { showToast('불러올 즐겨찾기가 없습니다.', 4000); return; }
-          return window._tenarChoice3({
-            title: '즐겨찾기 불러오기',
-            message: '불러올 위치 ' + incoming.length + '개\n\n기존 목록에 추가하거나 교체할 수 있습니다.',
-            addLabel: '추가', replaceLabel: '교체', cancelLabel: '취소'
-          }).then(function (choice) {
-            if (choice === 'cancel') return;
-            var cur = getFavs();
-            var next = (choice === 'replace') ? incoming.map(normalizeFav)
-                                              : incoming.map(normalizeFav).concat(cur);
-            setFavs(next);
-            /* [v37] 요도(map items)도 함께 불러온다 (있을 때만) */
-            var inItems = (data && data.mapItems && data.mapItems.length) ? data.mapItems : null;
-            if (inItems) {
-              var curItems = getMapItems();
-              setMapItems((choice === 'replace') ? inItems.slice() : inItems.concat(curItems));
-              renderMapItems();
+          var inItems = (data && data.mapItems && data.mapItems.length) ? data.mapItems : [];
+          /* [v94-2] 목록에서 골라 추가/교체 (작물재배조사구 방식) */
+          openPickImport({
+            title: '즐겨찾기 불러오기 (' + incoming.length + '개)',
+            filename: file.name,
+            items: incoming.map(function (f) {
+              return {
+                label: (f.crop ? '[' + f.crop + '] ' : '') + (f.name || f.label || f.jibunAddress || '저장 위치'),
+                sub: f.jibunAddress || f.roadAddress || '',
+                data: f
+              };
+            }),
+            onApply: function (mode, selFavs) {
+              var selIds = {};
+              var normSel = selFavs.map(function (f) { var nf = normalizeFav(f); selIds[nf.id] = 1; if (f.id) selIds[f.id] = 1; return nf; });
+              var cur = getFavs();
+              setFavs((mode === 'replace') ? normSel : normSel.concat(cur));
+              /* 선택한 즐겨찾기에 연결된 요도(map items)만 함께 */
+              var selItems = inItems.filter(function (it) { return it && selIds[it.favoriteId]; });
+              if (selItems.length || mode === 'replace') {
+                var curItems = getMapItems();
+                setMapItems((mode === 'replace') ? selItems.slice() : selItems.concat(curItems));
+                renderMapItems();
+              }
+              renderFavList();
+              showToast('즐겨찾기 ' + normSel.length + '개' + (selItems.length ? (' · 요도 ' + selItems.length + '개') : '') + '를 불러왔습니다.', 3000, 'success');
             }
-            renderFavList();
-            showToast('즐겨찾기 ' + incoming.length + '개' + (inItems ? (' · 요도 ' + inItems.length + '개') : '') + '를 불러왔습니다.', 3000, 'success');
           });
         }).catch(function (e) {
           if (e && e.code === 'CANCELLED') return;
