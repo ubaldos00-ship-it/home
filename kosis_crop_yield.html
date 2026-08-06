@@ -1,0 +1,1754 @@
+<!-- kosis_crop_yield_v3.html · 저장: 2026-08-06 14:20 KST
+     v3 변경점:
+       (3) KOSIS 코드 일부 등록(검증분): orgId=101(국가데이터처 기관코드), 수록주기 연간(Y), 지역 제공단계 시도.
+           · ⚠ 농작물생산조사는 KOSIS 에서 '시도 단위'까지만 제공됩니다(시군구별 생산량 없음).
+           · 통계표 ID(tblId)·작물/지역 분류 파라미터·항목코드(itmId)·작물별 코드는
+             KOSIS 통계표가 로그인/화면(JS) 뒤에 있어 자동 확인이 불가하여 비워 두었습니다(임의생성 금지).
+             후보 통계표: 식량작물 생산량(정곡) = DT_1ET 계열. KOSIS 'OpenAPI URL 생성'에서 확정 후 등록하세요.
+     v2 변경점:
+       (1) 작물 분류 버튼(식량작물·채소작물·과수작물·특용작물) 추가 — 분류별 필터
+       (2) 중계 서버 없이 KOSIS OpenAPI 직접 호출 모드(USE_DIRECT_KOSIS) 추가
+           · 인증키를 브라우저에서 사용(공개 노출됨) · 아래 KOSIS_API_KEY_B64 주의문 참고
+           · KOSIS 가 브라우저 교차출처(CORS)를 막으면 직접호출은 실패할 수 있음 → 중계서버(server.js) 사용 -->
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>국가통계 작물 생산량 조회</title>
+<style>
+  :root {
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --background: #f4f7fb;
+    --card: #ffffff;
+    --text: #172033;
+    --muted: #6b7280;
+    --border: #dbe3ee;
+    --success: #15803d;
+    --danger: #b91c1c;
+    --warning: #b45309;
+    --radius: 14px;
+    --shadow: 0 1px 3px rgba(23, 32, 51, 0.08), 0 4px 16px rgba(23, 32, 51, 0.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --background: #0f141c;
+      --card: #1a212e;
+      --text: #e8edf5;
+      --muted: #9aa5b5;
+      --border: #2b3446;
+      --primary: #3b82f6;
+      --primary-dark: #60a5fa;
+      --success: #4ade80;
+      --danger: #f87171;
+      --warning: #fbbf24;
+      --shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--background); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", "Segoe UI", Roboto, sans-serif;
+    font-size: 16px; line-height: 1.5; -webkit-text-size-adjust: 100%;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 12px 14px calc(48px + env(safe-area-inset-bottom)); }
+
+  header.app-header { display: flex; align-items: center; gap: 10px; padding: 8px 2px 14px; }
+  .home-btn {
+    display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px;
+    border: 1px solid var(--border); border-radius: 10px; background: var(--card); color: var(--text);
+    text-decoration: none; font-size: 15px; font-weight: 600; flex: none;
+  }
+  header.app-header .titles { flex: 1; min-width: 0; }
+  header.app-header h1 { margin: 0; font-size: 19px; font-weight: 800; letter-spacing: -0.02em; }
+  header.app-header .subtitle { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
+
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 16px; margin-bottom: 14px;
+  }
+  .card h2 { margin: 0 0 12px; font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .card h2 .num {
+    display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px;
+    border-radius: 6px; background: var(--primary); color: #fff; font-size: 12px; font-weight: 700; flex: none;
+  }
+
+  label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+  .field { margin-bottom: 14px; }
+  .field:last-child { margin-bottom: 0; }
+
+  input[type="text"], input[type="search"], input[type="number"], select {
+    width: 100%; min-height: 44px; padding: 10px 12px; font-size: 16px; color: var(--text);
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    appearance: none; -webkit-appearance: none;
+  }
+  input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); }
+
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 380px) { .row2 { grid-template-columns: 1fr; } }
+
+  .cat-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+  .cat-btn {
+    min-height: 40px; padding: 0 12px; font-size: 14px; font-weight: 600;
+    border: 1px solid var(--border); border-radius: 999px; background: var(--card); color: var(--text);
+    cursor: pointer; user-select: none;
+  }
+  .cat-btn[aria-pressed="true"] {
+    border-color: var(--primary); background: rgba(37,99,235,0.10); color: var(--primary-dark);
+  }
+
+  .crop-list {
+    max-height: 220px; overflow-y: auto; border: 1px solid var(--border); border-radius: 10px; padding: 6px;
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 6px;
+  }
+  .crop-chip {
+    min-height: 44px; display: flex; align-items: center; justify-content: center; text-align: center;
+    padding: 4px 6px; font-size: 14px; border: 1px solid var(--border); border-radius: 9px;
+    background: var(--card); color: var(--text); cursor: pointer; user-select: none;
+  }
+  .crop-chip[aria-selected="true"] {
+    border-color: var(--primary); background: rgba(37, 99, 235, 0.10); color: var(--primary-dark); font-weight: 700;
+  }
+  .crop-chip .warn-mark { color: var(--warning); margin-left: 2px; }
+  .crop-empty { grid-column: 1 / -1; text-align: center; color: var(--muted); font-size: 14px; padding: 10px; }
+
+  .survey-box {
+    margin-top: 12px; padding: 12px; border: 1px solid var(--border); border-radius: 10px;
+    background: var(--background); font-size: 14px;
+  }
+  .survey-badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+  .survey-badge.sample { background: rgba(21,128,61,0.12); color: var(--success); }
+  .survey-badge.administrative { background: rgba(180,83,9,0.14); color: var(--warning); }
+  .survey-badge.unknown { background: rgba(107,114,128,0.16); color: var(--muted); }
+  .survey-desc { color: var(--muted); font-size: 13px; margin-top: 4px; white-space: pre-line; }
+  .source-line { color: var(--muted); font-size: 13px; margin-top: 8px; line-height: 1.7; }
+
+  .checks { display: flex; flex-wrap: wrap; gap: 8px; }
+  .check-item {
+    display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px;
+    border: 1px solid var(--border); border-radius: 10px; font-size: 15px; cursor: pointer; background: var(--card);
+  }
+  .check-item input { width: 20px; height: 20px; flex: none; }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 16px;
+    font-size: 16px; font-weight: 700; border-radius: 12px; border: 1px solid transparent; cursor: pointer;
+    background: var(--primary); color: #fff; width: 100%;
+  }
+  .btn:disabled { opacity: 0.6; cursor: default; }
+  .btn.secondary { background: var(--card); color: var(--text); border-color: var(--border); }
+  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn-row .btn { width: auto; flex: 1 1 auto; }
+
+  .spinner {
+    width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.5); border-top-color: #fff;
+    border-radius: 50%; animation: spin 0.8s linear infinite; display: none;
+  }
+  .btn.loading .spinner { display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .hint { font-size: 13px; color: var(--muted); margin-top: 6px; }
+
+  .msg {
+    padding: 14px; border-radius: 12px; font-size: 14px; border: 1px solid; display: none;
+    white-space: pre-line; margin-bottom: 10px;
+  }
+  .msg:last-child { margin-bottom: 0; }
+  .msg.show { display: block; }
+  .msg.error { background: rgba(185,28,28,0.08); border-color: var(--danger); color: var(--danger); }
+  .msg.warn  { background: rgba(180,83,9,0.08); border-color: var(--warning); color: var(--warning); }
+  .msg.info  { background: rgba(37,99,235,0.08); border-color: var(--primary); color: var(--primary-dark); }
+
+  .dev-flag {
+    display: inline-block; padding: 3px 10px; border-radius: 999px; background: rgba(180,83,9,0.14);
+    color: var(--warning); font-size: 12px; font-weight: 700; margin-bottom: 10px;
+  }
+
+  .summary-grid { display: grid; gap: 6px; font-size: 15px; }
+  .summary-grid .line { display: flex; gap: 8px; }
+  .summary-grid .line .k { min-width: 76px; flex: none; color: var(--muted); font-size: 14px; }
+  .summary-grid .line .v { font-weight: 600; }
+
+  .recent-year { font-size: 14px; color: var(--muted); }
+  .recent-value { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; margin: 4px 0; }
+  .delta { font-size: 15px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; }
+  .delta.up { color: var(--success); }
+  .delta.down { color: var(--danger); }
+  .delta.flat { color: var(--muted); }
+  .delta .arrow { font-size: 16px; }
+  .delta-line { margin-top: 4px; }
+  .delta-line > div { margin-top: 2px; }
+
+  .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 10px; border: 1px solid var(--border); }
+  table.stat { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 420px; }
+  table.stat th, table.stat td { padding: 10px 12px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--border); }
+  table.stat th { background: var(--background); font-weight: 700; }
+  table.stat td.year, table.stat th.year { text-align: left; position: sticky; left: 0; background: var(--card); z-index: 1; }
+  table.stat th.year { background: var(--background); z-index: 2; }
+  table.stat td.na { color: var(--muted); font-style: italic; }
+  table.stat .up { color: var(--success); font-weight: 700; }
+  table.stat .down { color: var(--danger); font-weight: 700; }
+
+  .chart-wrap { position: relative; width: 100%; height: 300px; }
+
+  .footer-source { text-align: center; color: var(--muted); font-size: 13px; padding: 18px 0 6px; line-height: 1.8; }
+
+  .hidden { display: none !important; }
+
+  #adminCard textarea {
+    width: 100%; min-height: 120px; font-size: 13px; font-family: ui-monospace, Menlo, monospace;
+    border: 1px solid var(--border); border-radius: 10px; padding: 10px; background: var(--card); color: var(--text);
+  }
+  #adminCard pre {
+    background: var(--background); border: 1px solid var(--border); border-radius: 10px; padding: 10px;
+    font-size: 12px; overflow-x: auto; max-height: 260px; white-space: pre-wrap; word-break: break-all;
+  }
+  .admin-note { font-size: 12px; color: var(--danger); font-weight: 600; margin: 0 0 12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="app-header">
+    <a class="home-btn" id="homeBtn" href="#">← 홈</a>
+    <div class="titles">
+      <h1>국가통계 작물 생산량 조회</h1>
+      <p class="subtitle">지역별·연도별 10a당 생산량 조회</p>
+    </div>
+  </header>
+
+  <section class="card hidden" id="adminCard" aria-label="관리자 설정">
+    <h2><span class="num">A</span> 관리자 설정</h2>
+    <p class="admin-note">이 화면에는 KOSIS 인증키를 입력하거나 표시하지 않습니다. 직접 호출 모드에서는 인증키가 페이지 스크립트에, 중계 모드에서는 NAS 환경변수에 저장됩니다. 여기서는 orgId·tblId·분류 파라미터·코드만 등록합니다.</p>
+    <div class="field">
+      <label for="adminTable">통계표 설정 (JSON · 텐아르 내부값)</label>
+      <textarea id="adminTable" spellcheck="false"></textarea>
+      <p class="hint">기관코드 orgId · 통계표 ID tblId · 작물/지역/항목 분류 파라미터와 코드 · 10a당 생산량/재배면적/총생산량 항목코드 · 수록주기 · 지역 제공단계 · 조사구분을 등록합니다. 확실하지 않은 값은 빈 문자열 또는 TODO로 둡니다.</p>
+    </div>
+    <div class="btn-row" style="margin-bottom:10px">
+      <button class="btn secondary" id="adminSaveBtn" type="button">설정 저장</button>
+      <button class="btn secondary" id="adminResetBtn" type="button">설정 초기화</button>
+      <button class="btn secondary" id="adminTestBtn" type="button">테스트 호출</button>
+    </div>
+    <div class="btn-row" style="margin-bottom:10px">
+      <button class="btn secondary" id="adminRawBtn" type="button">KOSIS 원본 응답 보기</button>
+      <button class="btn secondary" id="adminNormBtn" type="button">정규화 응답 보기</button>
+    </div>
+    <pre id="adminOut" class="hidden"></pre>
+  </section>
+
+  <section class="card" aria-label="조회조건">
+    <h2><span class="num">1</span> 조회조건</h2>
+
+    <div class="field">
+      <label for="cropSearch">작물</label>
+      <div class="cat-row" id="catRow" role="group" aria-label="작물 분류"></div>
+      <input type="search" id="cropSearch" placeholder="작물명 검색" autocomplete="off" aria-label="작물명 검색" />
+      <div class="crop-list" id="cropList" role="listbox" aria-label="작물 목록"></div>
+      <div class="survey-box" id="surveyBox" aria-live="polite">
+        <div class="survey-badge unknown" id="surveyBadge">작물 미선택</div>
+        <div class="survey-desc" id="surveyDesc">작물을 선택하면 조사구분이 표시됩니다.</div>
+        <div class="source-line" id="surveySource"></div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="sidoSel">지역</label>
+      <div class="row2">
+        <select id="sidoSel" aria-label="시도 선택"><option value="">시도 선택</option></select>
+        <select id="sigunguSel" aria-label="시군구 선택" disabled><option value="">시군구 선택</option></select>
+      </div>
+      <p class="hint" id="regionHint"></p>
+    </div>
+
+    <div class="field">
+      <label>조회기간</label>
+      <div class="row2">
+        <select id="startYear" aria-label="시작연도"></select>
+        <select id="endYear" aria-label="종료연도"></select>
+      </div>
+      <p class="hint" id="yearHint"></p>
+    </div>
+
+    <div class="field">
+      <label>조회항목</label>
+      <div class="checks" id="itemChecks"></div>
+      <p class="hint">최소 한 개 항목을 선택해 주세요.</p>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn secondary" id="resetBtn" type="button" style="flex:0 0 auto">조건 초기화</button>
+    </div>
+  </section>
+
+  <button class="btn" id="queryBtn" type="button">
+    <span class="spinner" aria-hidden="true"></span>
+    <span id="queryBtnLabel">통계 조회</span>
+  </button>
+
+  <div class="msg error" id="validateMsg" role="alert" style="margin-top:12px"></div>
+
+  <section class="card hidden" id="errorCard" aria-live="assertive">
+    <div class="msg error show" id="errorMsg" role="alert"></div>
+  </section>
+
+  <section class="card hidden" id="summaryCard" aria-live="polite">
+    <h2><span class="num">2</span> 조회 결과 요약</h2>
+    <div class="dev-flag hidden" id="devFlag">개발용 예시자료</div>
+    <div class="msg info" id="cachedMsg"></div>
+    <div class="msg warn" id="staleMsg"></div>
+    <div class="summary-grid" id="summaryGrid"></div>
+    <div class="source-line" id="summarySource" style="margin-top:12px"></div>
+  </section>
+
+  <section class="card hidden" id="recentCard">
+    <h2><span class="num">3</span> 최근 공표자료</h2>
+    <div class="recent-year" id="recentYear"></div>
+    <div class="recent-value" id="recentValue"></div>
+    <div class="delta-line" id="recentDelta"></div>
+  </section>
+
+  <section class="card hidden" id="chartCard">
+    <h2><span class="num">4</span> 연도별 10a당 생산량 추이</h2>
+    <div class="chart-wrap"><canvas id="yieldChart"></canvas></div>
+    <div class="msg warn" id="chartFailMsg"></div>
+  </section>
+
+  <section class="card hidden" id="tableCard">
+    <h2><span class="num">5</span> 연도별 통계표</h2>
+    <div class="table-scroll">
+      <table class="stat" id="statTable">
+        <thead><tr id="statHead"></tr></thead>
+        <tbody id="statBody"></tbody>
+      </table>
+    </div>
+    <p class="hint" id="unitHint"></p>
+  </section>
+
+  <section class="card hidden" id="shareCard">
+    <h2><span class="num">6</span> 저장 및 공유</h2>
+    <div class="btn-row">
+      <button class="btn secondary" id="csvBtn" type="button">CSV 저장</button>
+      <button class="btn secondary" id="jsonBtn" type="button">JSON 저장</button>
+      <button class="btn secondary" id="imgBtn" type="button">이미지 저장</button>
+      <button class="btn secondary" id="shareBtn" type="button">공유</button>
+    </div>
+  </section>
+
+  <div class="footer-source" id="footerSource"></div>
+
+</div>
+
+<!-- Chart.js (로딩 실패해도 표는 정상 동작) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
+
+<script>
+"use strict";
+/* =====================================================================
+   국가통계 작물 생산량 조회 · 프론트엔드
+   - KOSIS 인증키는 이 파일 어디에도 포함하지 않습니다.
+   - 브라우저는 텐아르 내부 식별값(key)만 NAS 중계 API로 전달합니다.
+   - orgId / tblId / itmId / 작물·지역 실제 코드는 NAS 에서만 관리합니다.
+   ===================================================================== */
+
+/* ---------- 설정값 ---------- */
+var HOME_URL = "../index.html";
+
+/* 운영 NAS 중계 API 주소 (TODO: 실제 도메인으로 교체) */
+var API_BASE_URL = "https://your-nas-domain.example/api";
+
+var DATA_SOURCE = {
+  agencyName: "국가데이터처",
+  serviceName: "국가통계포털(KOSIS)",
+  apiName: "KOSIS OpenAPI"
+};
+
+var CURRENT_YEAR = new Date().getFullYear();
+var MIN_YEAR = 2000;
+var MAX_QUERY_YEAR_RANGE = 30;
+var REQUEST_TIMEOUT_MS = 20000;
+
+/* 개발용 예시자료 사용 여부. 운영 배포 시 반드시 false. */
+var USE_DEV_SAMPLE = false;
+
+/* =====================================================================
+   KOSIS 직접 호출 모드 (v2 · 요구사항 2·3)
+   - true  : 중계 서버 없이 브라우저에서 KOSIS OpenAPI 를 직접 호출합니다.
+   - false : NAS 중계 API(server.js)를 사용합니다(인증키 미노출).
+
+   ⚠ 보안 주의: USE_DIRECT_KOSIS=true 이면 아래 인증키가 브라우저에 노출됩니다.
+     GitHub Pages 등 공개 페이지에 올리면 누구나 이 키를 볼 수 있습니다.
+     무료 KOSIS 키이므로 노출되면 국가통계포털에서 재발급할 수 있으나,
+     키 노출을 원치 않으면 이 값을 false 로 두고 중계 서버를 쓰세요.
+   ⚠ 브라우저 보안정책(CORS)으로 KOSIS 직접 호출이 차단될 수 있습니다.
+     차단되면 "연결 불가"로 표시되며, 이때는 중계 서버(server.js)가 필요합니다.
+
+   인증키는 base64 로 저장 후 실행 시 atob 로 디코딩합니다(가벼운 가림막일 뿐 암호화 아님). */
+var USE_DIRECT_KOSIS = true;
+var KOSIS_ENDPOINT = "https://kosis.kr/openapi/Param/statisticsParameterData.do";
+var KOSIS_API_KEY_B64 = "YzYwZTQ1Njg3MmNhNTYxYmUyMzhkMGI5ZjcyODExODg=";
+function getKosisApiKey() { try { return atob(KOSIS_API_KEY_B64); } catch (e) { return ""; } }
+
+var ADMIN_CONFIG_STORAGE_KEY = "tenar_kosis_crop_config_v2";
+var LAST_QUERY_STORAGE_KEY   = "tenar_kosis_crop_last_query_v2";
+var RECENT_QUERY_LIST_KEY    = "tenar_kosis_crop_recent_queries_v2";
+var RECENT_QUERY_MAX = 10;
+
+var TABLE_KEY = "cropProduction";
+
+var SURVEY_TYPE_INFO = {
+  sample:         { name: "표본조사",      description: "표본으로 선정된 조사대상을 기준으로 작성한 통계입니다." },
+  administrative: { name: "행정자료 집계", description: "관계기관과 지방자치단체의 행정자료를 활용해 작성한 통계입니다." },
+  unknown:        { name: "확인 필요",      description: "해당 작물의 조사구분 설정을 확인해 주세요." }
+};
+
+var SURVEY_TYPE_LONG = {
+  sample:         "표본조사:\n표본으로 선정된 조사대상을 기준으로 생산량을 조사한 자료입니다.",
+  administrative: "행정자료 집계:\n관계기관과 지방자치단체에서 집계한 행정자료를 활용한 통계입니다.",
+  unknown:        "조사구분 설정을 확인해 주세요."
+};
+
+/* 작물 분류 (요구사항 v2-1) — 버튼으로 분류별 필터 */
+var CROP_CATEGORIES = [
+  ["food",      "식량작물"],
+  ["vegetable", "채소작물"],
+  ["fruit",     "과수작물"],
+  ["special",   "특용작물"]
+];
+var CROP_CATEGORY_NAME = {};
+CROP_CATEGORIES.forEach(function (c) { CROP_CATEGORY_NAME[c[0]] = c[1]; });
+
+/* 작물 설정 — 화면 표시명 name, 텐아르 내부 key, KOSIS 코드 kosisCode(비움), 조사구분, 분류.
+   실제 KOSIS 코드는 넣지 않습니다(요구사항 33). 확정되지 않은 조사구분은 "unknown".
+   [key, name, surveyType, category] 순서의 배열로 정의합니다.
+   category: food(식량) · vegetable(채소) · fruit(과수) · special(특용) */
+var CROP_LIST = [
+  ["ricePaddy",     "논벼",   "sample",         "food"],
+  ["upRice",        "밭벼",   "unknown",        "food"],
+  ["hullBarley",    "겉보리", "unknown",        "food"],
+  ["riceBarley",    "쌀보리", "unknown",        "food"],
+  ["beerBarley",    "맥주보리","unknown",       "food"],
+  ["wheat",         "밀",     "unknown",        "food"],
+  ["soybean",       "콩",     "sample",         "food"],
+  ["redbean",       "팥",     "unknown",        "food"],
+  ["mungbean",      "녹두",   "unknown",        "food"],
+  ["potato",        "감자",   "unknown",        "food"],
+  ["sweetPotato",   "고구마", "unknown",        "food"],
+  ["corn",          "옥수수", "unknown",        "food"],
+  ["buckwheat",     "메밀",   "unknown",        "food"],
+  ["sesame",        "참깨",   "unknown",        "special"],
+  ["perilla",       "들깨",   "unknown",        "special"],
+  ["peanut",        "땅콩",   "unknown",        "special"],
+  ["garlic",        "마늘",   "sample",         "vegetable"],
+  ["onion",         "양파",   "sample",         "vegetable"],
+  ["redPepper",     "고추",   "unknown",        "vegetable"],
+  ["napaCabbage",   "배추",   "unknown",        "vegetable"],
+  ["radish",        "무",     "unknown",        "vegetable"],
+  ["greenOnion",    "대파",   "unknown",        "vegetable"],
+  ["watermelon",    "수박",   "administrative", "vegetable"],
+  ["orientalMelon", "참외",   "administrative", "vegetable"],
+  ["cucumber",      "오이",   "administrative", "vegetable"],
+  ["pumpkin",       "호박",   "administrative", "vegetable"],
+  ["tomato",        "토마토", "administrative", "vegetable"],
+  ["strawberry",    "딸기",   "administrative", "vegetable"],
+  ["apple",         "사과",   "unknown",        "fruit"],
+  ["pear",          "배",     "unknown",        "fruit"],
+  ["peach",         "복숭아", "unknown",        "fruit"],
+  ["grape",         "포도",   "unknown",        "fruit"],
+  ["citrus",        "감귤",   "unknown",        "fruit"],
+  ["sweetPersimmon","단감",   "unknown",        "fruit"],
+  ["persimmon",     "감",     "unknown",        "fruit"],
+  ["plum",          "매실",   "unknown",        "fruit"]
+];
+
+/* CROP_LIST -> CROP_CONFIG (kosisCode 는 항상 빈 문자열) */
+var CROP_CONFIG = {};
+CROP_LIST.forEach(function (c) {
+  var st = c[2];
+  CROP_CONFIG[c[0]] = {
+    name: c[1],
+    kosisCode: "",
+    surveyType: st,
+    surveyTypeName: (SURVEY_TYPE_INFO[st] || SURVEY_TYPE_INFO.unknown).name,
+    category: c[3] || ""
+  };
+});
+
+/* 지역 설정 — 지역명과 KOSIS 분류코드 분리. code 는 비웁니다.
+   [시도, [시군구...]] 형태. 실제 통계표 지역코드는 NAS 설정에서 관리합니다. */
+var REGION_LIST = [
+  ["경상북도", ["경산시", "영천시", "청도군", "성주군", "칠곡군"]],
+  ["대구광역시", ["달성군", "군위군"]]
+];
+
+var REGION_CONFIG = {};
+REGION_LIST.forEach(function (r) {
+  var children = {};
+  r[1].forEach(function (name) { children[name] = ""; });
+  REGION_CONFIG[r[0]] = { code: "", children: children };
+});
+
+/* 조회항목 설정 — 표시명/내부키/KOSIS 항목코드(비움)/기본단위 */
+var ITEM_CONFIG = {
+  yield10a:   { name: "10a당 생산량", kosisCode: "", defaultUnit: "kg/10a" },
+  area:       { name: "재배면적",     kosisCode: "", defaultUnit: "ha" },
+  production: { name: "총생산량",     kosisCode: "", defaultUnit: "톤" }
+};
+var ITEM_ORDER = ["yield10a", "area", "production"];
+
+/* ---------- 전역 상태 ---------- */
+var state = {
+  crop: null,        // 작물 key
+  category: "",      // 작물 분류 필터 ("" = 전체)
+  sido: "",
+  sigungu: "",
+  items: ["yield10a"],
+  lastResult: null   // 정규화 응답 저장(공유/저장용)
+};
+
+var chartInstance = null;
+var _lastRaw = null; // 직접 호출 시 KOSIS 원본 응답(관리자 보기용)
+
+/* ---------- DOM 헬퍼 ---------- */
+function $(id) { return document.getElementById(id); }
+function show(el) { if (el) el.classList.remove("hidden"); }
+function hide(el) { if (el) el.classList.add("hidden"); }
+function fmt(n) {
+  if (n === null || n === undefined) return "자료 없음";
+  return new Intl.NumberFormat("ko-KR").format(n);
+}
+function srcTwoLine() {
+  return "데이터 출처: " + DATA_SOURCE.agencyName + "\n자료 제공: " + DATA_SOURCE.serviceName;
+}
+
+/* =====================================================================
+   결측값 처리 (요구사항 16)
+   ===================================================================== */
+function parseKosisNumber(value) {
+  if (value === null || value === undefined) return null;
+  var text = String(value).trim();
+  var missingValues = ["", "-", "…", "...", "X", "NA", "N/A"];
+  if (missingValues.indexOf(text.toUpperCase()) !== -1) return null;
+  var number = Number(text.replace(/,/g, ""));
+  return Number.isFinite(number) ? number : null;
+}
+
+/* =====================================================================
+   KOSIS 직접 호출 — 설정/필드매핑/정규화 (v2)
+   실제 orgId/tblId/작물·지역·항목 코드는 관리자 설정(?kosisAdmin=1)에서
+   localStorage(ADMIN_CONFIG_STORAGE_KEY)에 등록합니다. 코드가 비어 있으면
+   호출을 막고 안내합니다(임의 코드 금지 · 요구사항 33).
+   ===================================================================== */
+function deepMerge(base, over) {
+  if (over === null || over === undefined) return base;
+  if (typeof base !== "object" || typeof over !== "object" || Array.isArray(base) || Array.isArray(over)) {
+    return over;
+  }
+  var out = {};
+  Object.keys(base).forEach(function (k) { out[k] = base[k]; });
+  Object.keys(over).forEach(function (k) {
+    out[k] = (k in base) ? deepMerge(base[k], over[k]) : over[k];
+  });
+  return out;
+}
+
+function directDefaultConfig() {
+  var cropCodes = {}; CROP_LIST.forEach(function (c) { cropCodes[c[0]] = ""; });
+  var regionCodes = {};
+  REGION_LIST.forEach(function (r) {
+    regionCodes[r[0]] = "";
+    r[1].forEach(function (n) { regionCodes[r[0] + "|" + n] = ""; });
+  });
+  return {
+    name: "농작물생산조사",
+    orgId: "101",          // ✔ 검증: 국가데이터처(구 통계청) KOSIS 기관코드
+    tblId: "",             // ⓘ TODO: 작물군별 통계표 ID. 후보=식량작물 생산량(정곡) DT_1ET 계열.
+                           //         KOSIS 'OpenAPI URL 생성'에서 확정 후 입력(임의생성 금지).
+    periodType: "Y",       // ✔ 검증: 연간
+    regionLevel: "sido",   // ✔ 검증: 농작물생산조사는 시도 단위까지만 제공(시군구 없음)
+    dimensions: {
+      // ⓘ TODO: 아래 parameter 는 KOSIS URL 생성 결과에 맞춰 입력(작물/지역이 objL1·objL2 중 무엇인지 통계표마다 다름).
+      crop:   { parameter: "", codes: cropCodes },   // 작물 분류 파라미터/코드
+      region: { parameter: "", codes: regionCodes }  // 지역(시도) 분류 파라미터/코드(대개 objL1)
+    },
+    items: {
+      // ⓘ TODO: itmId(항목코드)는 KOSIS URL 생성에서 확인 후 입력.
+      yield10a:   { code: "", unit: "kg/10a" },
+      area:       { code: "", unit: "ha" },
+      production: { code: "", unit: "톤" }
+    }
+  };
+}
+
+function getDirectTableConfig() {
+  var cfg = directDefaultConfig();
+  try {
+    var raw = localStorage.getItem(ADMIN_CONFIG_STORAGE_KEY);
+    if (raw) { cfg = deepMerge(cfg, JSON.parse(raw)); }
+  } catch (e) { /* 무시하고 기본값 사용 */ }
+  return cfg;
+}
+
+/* KOSIS 응답 필드 후보 (요구사항 17) */
+function kosisYear(row) {
+  var raw = row.PRD_DE != null ? row.PRD_DE : (row.PRD != null ? row.PRD : row.year);
+  if (raw == null) return null;
+  var y = parseInt(String(raw).slice(0, 4), 10);
+  return Number.isFinite(y) ? y : null;
+}
+function kosisValue(row) {
+  var raw = row.DT != null ? row.DT : (row.VALUE != null ? row.VALUE : row.value);
+  return parseKosisNumber(raw);
+}
+function kosisItemCode(row) {
+  return row.ITM_ID != null ? row.ITM_ID : (row.itemCode != null ? row.itemCode : null);
+}
+
+function normalizeDirect(rawRows, cfg, payload) {
+  var itemDefs = cfg.items || {};
+  var codeToItem = {};
+  Object.keys(itemDefs).forEach(function (it) {
+    var c = itemDefs[it].code; if (c) codeToItem[String(c)] = it;
+  });
+
+  var byYear = {};
+  for (var y = payload.startYear; y <= payload.endYear; y++) {
+    byYear[y] = { year: y, yield10a: null, area: null, production: null };
+  }
+  rawRows.forEach(function (row) {
+    var year = kosisYear(row);
+    if (year == null || !byYear[year]) return;
+    var itmCode = kosisItemCode(row);
+    var itemKey = itmCode != null ? codeToItem[String(itmCode)] : null;
+    if (!itemKey) return;
+    if (payload.items.indexOf(itemKey) === -1) return;
+    byYear[year][itemKey] = kosisValue(row);
+  });
+
+  var data = Object.keys(byYear).map(function (y) { return byYear[y]; })
+    .sort(function (a, b) { return a.year - b.year; });
+
+  var unit = {
+    yield10a: (itemDefs.yield10a && itemDefs.yield10a.unit) || "kg/10a",
+    area: (itemDefs.area && itemDefs.area.unit) || "ha",
+    production: (itemDefs.production && itemDefs.production.unit) || "톤"
+  };
+
+  var cropConf = CROP_CONFIG[payload.crop] || { name: payload.crop, surveyType: "unknown", surveyTypeName: "확인 필요" };
+
+  return {
+    success: true,
+    source: DATA_SOURCE,
+    table: { orgId: cfg.orgId, tblId: cfg.tblId, name: cfg.name || "농작물생산조사" },
+    query: {
+      cropKey: payload.crop, cropName: cropConf.name,
+      surveyType: cropConf.surveyType, surveyTypeName: cropConf.surveyTypeName,
+      sido: payload.sido, sigungu: payload.sigungu || "",
+      startYear: payload.startYear, endYear: payload.endYear
+    },
+    unit: unit,
+    data: data,
+    meta: { fetchedAt: new Date().toISOString(), cached: false, stale: false, cacheAgeSeconds: 0 }
+  };
+}
+
+/* 직접 호출 조건 검증 (코드는 관리자 설정에서 확인) */
+function validateDirect() {
+  if (!state.crop) return "작물을 선택해 주세요.";
+  if (!state.sido) return "지역(시도)을 선택해 주세요.";
+  var sy = parseInt($("startYear").value, 10);
+  var ey = parseInt($("endYear").value, 10);
+  if (!Number.isFinite(sy) || !Number.isFinite(ey)) return "조회연도를 확인해 주세요.";
+  if (sy > ey) return "시작연도는 종료연도보다 늦을 수 없습니다.";
+  if (ey - sy + 1 > MAX_QUERY_YEAR_RANGE) return "한 번에 조회할 수 있는 기간은 최대 " + MAX_QUERY_YEAR_RANGE + "년입니다.";
+  if (state.items.length === 0) return "조회할 통계항목을 하나 이상 선택해 주세요.";
+
+  if (!getKosisApiKey()) return "KOSIS 인증키가 설정되지 않았습니다.";
+
+  var cfg = getDirectTableConfig();
+  if (!cfg.orgId || !cfg.tblId) {
+    return "KOSIS 통계표 설정(기관코드 orgId·통계표 ID tblId)이 완료되지 않았습니다.\n관리자 설정(주소 뒤에 ?kosisAdmin=1)에서 등록해 주세요.";
+  }
+  if (!cfg.dimensions.crop.parameter) return "작물 분류 파라미터가 등록되지 않았습니다.\n관리자 설정에서 등록해 주세요.";
+  if (!cfg.dimensions.crop.codes[state.crop]) return "선택한 작물의 KOSIS 분류코드가 등록되지 않았습니다.\n관리자 설정에서 작물코드를 등록해 주세요.";
+  if (!cfg.dimensions.region.parameter) return "지역 분류 파라미터가 등록되지 않았습니다.\n관리자 설정에서 등록해 주세요.";
+  var rk = state.sigungu ? state.sido + "|" + state.sigungu : state.sido;
+  if (!cfg.dimensions.region.codes[rk]) return "선택한 지역의 KOSIS 분류코드가 등록되지 않았습니다.\n관리자 설정에서 지역코드를 등록해 주세요.";
+  var anyItem = state.items.some(function (k) { return cfg.items[k] && cfg.items[k].code; });
+  if (!anyItem) return "조회 항목코드가 등록되지 않았습니다.\n관리자 설정에서 항목코드를 등록해 주세요.";
+  return null;
+}
+
+/* KOSIS OpenAPI 직접 호출 */
+function directKosisFetch(payload) {
+  var cfg = getDirectTableConfig();
+  var apiKey = getKosisApiKey();
+
+  var params = new URLSearchParams();
+  params.set("method", "getList");
+  params.set("apiKey", apiKey);
+  params.set("orgId", cfg.orgId);
+  params.set("tblId", cfg.tblId);
+  var itemCodes = payload.items
+    .map(function (it) { return cfg.items[it] ? cfg.items[it].code : ""; })
+    .filter(Boolean);
+  itemCodes.forEach(function (code) { params.append("itmId", code); });
+  params.set("prdSe", cfg.periodType || "Y");
+  params.set("startPrdDe", String(payload.startYear));
+  params.set("endPrdDe", String(payload.endYear));
+  params.set("format", "json");
+  params.set("jsonVD", "Y");
+
+  var cropParam = cfg.dimensions.crop.parameter;
+  var cropCode = cfg.dimensions.crop.codes[payload.crop];
+  var rk = payload.sigungu ? payload.sido + "|" + payload.sigungu : payload.sido;
+  var regionParam = cfg.dimensions.region.parameter;
+  var regionCode = cfg.dimensions.region.codes[rk];
+  if (cropParam && cropCode) params.set(cropParam, cropCode);
+  if (regionParam && regionCode) params.set(regionParam, regionCode);
+
+  var url = KOSIS_ENDPOINT + "?" + params.toString();
+
+  var controller = new AbortController();
+  var timer = setTimeout(function () { controller.abort(); }, REQUEST_TIMEOUT_MS);
+
+  return fetch(url, { method: "GET", signal: controller.signal })
+    .then(function (res) { clearTimeout(timer); return res.json(); },
+          function (e) {
+            clearTimeout(timer);
+            if (e && e.name === "AbortError") throw { code: "TIMEOUT" };
+            throw { code: "KOSIS_DIRECT_UNREACHABLE" }; // CORS/네트워크
+          })
+    .then(function (json) {
+      _lastRaw = json;
+      if (!Array.isArray(json)) {
+        var em = String((json && (json.errMsg || json.err)) || "");
+        if (/인증|apiKey|key/i.test(em) || (json && String(json.err) === "20")) throw { code: "AUTH" };
+        if (/자료.?없|no data/i.test(em)) throw { code: "NO_DATA_SRV" };
+        throw { code: "BAD_RESPONSE" };
+      }
+      return { httpStatus: 200, body: normalizeDirect(json, cfg, payload) };
+    });
+}
+
+/* =====================================================================
+   초기화
+   ===================================================================== */
+document.addEventListener("DOMContentLoaded", function () {
+  $("homeBtn").setAttribute("href", HOME_URL);
+  renderFooterSource();
+  buildCatButtons();
+  buildCropList("");
+  buildRegionSelects();
+  buildYearSelects();
+  buildItemChecks();
+  wireEvents();
+  maybeShowAdmin();
+  restoreLastQuery();
+});
+
+function renderFooterSource() {
+  $("footerSource").textContent = srcTwoLine();
+}
+
+/* ---------- 작물 분류 버튼 ---------- */
+function buildCatButtons() {
+  var row = $("catRow");
+  row.innerHTML = "";
+  var cats = [["", "전체"]].concat(CROP_CATEGORIES);
+  cats.forEach(function (c) {
+    var key = c[0], name = c[1];
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "cat-btn";
+    b.textContent = name;
+    b.dataset.cat = key;
+    b.setAttribute("aria-pressed", state.category === key ? "true" : "false");
+    b.addEventListener("click", function () { selectCategory(key); });
+    row.appendChild(b);
+  });
+}
+
+function selectCategory(cat) {
+  state.category = cat;
+  $("catRow").querySelectorAll(".cat-btn").forEach(function (b) {
+    b.setAttribute("aria-pressed", b.dataset.cat === cat ? "true" : "false");
+  });
+  buildCropList($("cropSearch").value);
+}
+
+/* ---------- 작물 목록 ---------- */
+function buildCropList(filter) {
+  var list = $("cropList");
+  list.innerHTML = "";
+  var f = (filter || "").trim();
+  var matched = 0;
+  CROP_LIST.forEach(function (c) {
+    var key = c[0], name = c[1], cat = c[3] || "";
+    if (state.category && cat !== state.category) return;   // 분류 필터
+    if (f && name.indexOf(f) === -1) return;                // 검색어 필터
+    matched++;
+    var chip = document.createElement("div");
+    chip.className = "crop-chip";
+    chip.setAttribute("role", "option");
+    chip.setAttribute("tabindex", "0");
+    chip.dataset.key = key;
+    chip.setAttribute("aria-selected", state.crop === key ? "true" : "false");
+    chip.textContent = name;
+    if (!CROP_CONFIG[key].kosisCode) {
+      var w = document.createElement("span");
+      w.className = "warn-mark";
+      w.textContent = "⚠";
+      w.title = "KOSIS 분류코드 미등록";
+      chip.appendChild(w);
+    }
+    chip.addEventListener("click", function () { selectCrop(key); });
+    chip.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); selectCrop(key); }
+    });
+    list.appendChild(chip);
+  });
+  if (matched === 0) {
+    var empty = document.createElement("div");
+    empty.className = "crop-empty";
+    empty.textContent = "검색 결과가 없습니다.";
+    list.appendChild(empty);
+  }
+}
+
+function selectCrop(key) {
+  state.crop = key;
+  var chips = $("cropList").querySelectorAll(".crop-chip");
+  chips.forEach(function (ch) {
+    ch.setAttribute("aria-selected", ch.dataset.key === key ? "true" : "false");
+  });
+  renderSurvey(key);
+}
+
+function renderSurvey(key) {
+  var badge = $("surveyBadge"), desc = $("surveyDesc"), src = $("surveySource");
+  if (!key || !CROP_CONFIG[key]) {
+    badge.className = "survey-badge unknown";
+    badge.textContent = "작물 미선택";
+    desc.textContent = "작물을 선택하면 조사구분이 표시됩니다.";
+    src.textContent = "";
+    return;
+  }
+  var conf = CROP_CONFIG[key];
+  var st = conf.surveyType || "unknown";
+  var info = SURVEY_TYPE_INFO[st] || SURVEY_TYPE_INFO.unknown;
+  badge.className = "survey-badge " + st;
+  badge.textContent = "조사구분: " + info.name;
+  desc.textContent = SURVEY_TYPE_LONG[st] || info.description;
+  src.textContent = srcTwoLine();
+}
+
+/* ---------- 지역 ---------- */
+function buildRegionSelects() {
+  var sido = $("sidoSel");
+  REGION_LIST.forEach(function (r) {
+    var opt = document.createElement("option");
+    opt.value = r[0]; opt.textContent = r[0];
+    sido.appendChild(opt);
+  });
+}
+
+function onSidoChange() {
+  var sido = $("sidoSel").value;
+  state.sido = sido;
+  state.sigungu = "";
+  var sig = $("sigunguSel");
+  sig.innerHTML = '<option value="">시군구 선택</option>';
+  var hint = $("regionHint");
+  hint.textContent = "";
+  if (!sido) { sig.disabled = true; return; }
+
+  var conf = REGION_CONFIG[sido];
+  // 시도 코드 미등록 안내
+  if (conf && !conf.code) {
+    hint.textContent = "선택한 지역의 KOSIS 분류코드가 등록되지 않았습니다.";
+  }
+  var children = conf ? conf.children : {};
+  var names = Object.keys(children);
+  if (names.length === 0) {
+    // 시도 단위까지만 제공되는 통계표로 간주
+    sig.disabled = true;
+    hint.textContent = "이 통계표는 시도 단위까지만 제공합니다.";
+    return;
+  }
+  sig.disabled = false;
+  names.forEach(function (name) {
+    var opt = document.createElement("option");
+    opt.value = name; opt.textContent = name;
+    sig.appendChild(opt);
+  });
+}
+
+function onSigunguChange() {
+  state.sigungu = $("sigunguSel").value;
+}
+
+/* ---------- 연도 ---------- */
+function buildYearSelects() {
+  var startSel = $("startYear"), endSel = $("endYear");
+  for (var y = CURRENT_YEAR; y >= MIN_YEAR; y--) {
+    var o1 = document.createElement("option"); o1.value = String(y); o1.textContent = y + "년"; startSel.appendChild(o1);
+    var o2 = document.createElement("option"); o2.value = String(y); o2.textContent = y + "년"; endSel.appendChild(o2);
+  }
+  var defStart = Math.max(MIN_YEAR, CURRENT_YEAR - 5);
+  startSel.value = String(defStart);
+  endSel.value = String(CURRENT_YEAR);
+}
+
+/* ---------- 조회항목 ---------- */
+function buildItemChecks() {
+  var box = $("itemChecks");
+  box.innerHTML = "";
+  ITEM_ORDER.forEach(function (key) {
+    var conf = ITEM_CONFIG[key];
+    var lbl = document.createElement("label");
+    lbl.className = "check-item";
+    var cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.value = key;
+    cb.checked = state.items.indexOf(key) !== -1;
+    cb.addEventListener("change", onItemChange);
+    lbl.appendChild(cb);
+    lbl.appendChild(document.createTextNode(conf.name));
+    box.appendChild(lbl);
+  });
+}
+
+function onItemChange() {
+  var checks = $("itemChecks").querySelectorAll("input[type=checkbox]");
+  var sel = [];
+  checks.forEach(function (cb) { if (cb.checked) sel.push(cb.value); });
+  // 표시 순서 유지
+  state.items = ITEM_ORDER.filter(function (k) { return sel.indexOf(k) !== -1; });
+}
+
+/* ---------- 이벤트 배선 ---------- */
+function wireEvents() {
+  $("cropSearch").addEventListener("input", function (e) { buildCropList(e.target.value); });
+  $("sidoSel").addEventListener("change", onSidoChange);
+  $("sigunguSel").addEventListener("change", onSigunguChange);
+  $("resetBtn").addEventListener("click", resetConditions);
+  $("queryBtn").addEventListener("click", function () { runQuery(); });
+
+  $("csvBtn").addEventListener("click", saveCSV);
+  $("jsonBtn").addEventListener("click", saveJSON);
+  $("imgBtn").addEventListener("click", saveImage);
+  $("shareBtn").addEventListener("click", shareResult);
+
+  // 관리자 버튼
+  $("adminSaveBtn").addEventListener("click", adminSave);
+  $("adminResetBtn").addEventListener("click", adminReset);
+  $("adminTestBtn").addEventListener("click", function () { runQuery(true); });
+  $("adminRawBtn").addEventListener("click", function () { adminShowRaw("raw"); });
+  $("adminNormBtn").addEventListener("click", function () { adminShowRaw("normalized"); });
+}
+
+/* =====================================================================
+   조건 검증
+   ===================================================================== */
+function clearValidate() {
+  var v = $("validateMsg");
+  v.textContent = ""; v.classList.remove("show");
+}
+function showValidate(msg) {
+  var v = $("validateMsg");
+  v.textContent = msg; v.classList.add("show");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function validateConditions() {
+  if (!state.crop) return "작물을 선택해 주세요.";
+  var cropConf = CROP_CONFIG[state.crop];
+  if (!cropConf.kosisCode) {
+    return "선택한 작물의 KOSIS 분류코드가 등록되지 않았습니다.\n관리자 설정에서 작물코드를 등록해 주세요.";
+  }
+  if (!state.sido) return "지역(시도)을 선택해 주세요.";
+  var regionConf = REGION_CONFIG[state.sido];
+  if (regionConf && !regionConf.code) {
+    return "선택한 지역의 KOSIS 분류코드가 등록되지 않았습니다.";
+  }
+  var sy = parseInt($("startYear").value, 10);
+  var ey = parseInt($("endYear").value, 10);
+  if (!Number.isFinite(sy) || !Number.isFinite(ey)) return "조회연도를 확인해 주세요.";
+  if (sy > ey) return "시작연도는 종료연도보다 늦을 수 없습니다.";
+  if (ey - sy + 1 > MAX_QUERY_YEAR_RANGE) return "한 번에 조회할 수 있는 기간은 최대 " + MAX_QUERY_YEAR_RANGE + "년입니다.";
+  if (state.items.length === 0) return "조회할 통계항목을 하나 이상 선택해 주세요.";
+  return null;
+}
+
+/* =====================================================================
+   조회 실행
+   ===================================================================== */
+function setLoading(on) {
+  var btn = $("queryBtn"), label = $("queryBtnLabel");
+  if (on) {
+    btn.classList.add("loading"); btn.disabled = true;
+    label.textContent = "국가통계 조회 중…";
+  } else {
+    btn.classList.remove("loading"); btn.disabled = false;
+    label.textContent = "통계 조회";
+  }
+}
+
+function runQuery(isAdminTest) {
+  clearValidate();
+  hide($("errorCard"));
+
+  // 개발용 예시자료 모드
+  if (USE_DEV_SAMPLE && isAdminTest !== true) {
+    var msg = validateConditionsForSample();
+    if (msg) { showValidate(msg); return; }
+    setLoading(true);
+    setTimeout(function () {
+      setLoading(false);
+      renderResult(buildDevSample(), true);
+      saveLastQuery();
+    }, 400);
+    return;
+  }
+
+  var err = USE_DIRECT_KOSIS ? validateDirect() : validateConditions();
+  if (err) { showValidate(err); return; }
+
+  var sy = parseInt($("startYear").value, 10);
+  var ey = parseInt($("endYear").value, 10);
+
+  var payload = {
+    table: TABLE_KEY,
+    crop: state.crop,
+    sido: state.sido,
+    sigungu: state.sigungu || undefined,
+    startYear: sy,
+    endYear: ey,
+    items: state.items.slice()
+  };
+
+  setLoading(true);
+  var request = USE_DIRECT_KOSIS ? directKosisFetch(payload) : fetchCropYield(payload);
+  request
+    .then(function (resp) {
+      setLoading(false);
+      handleResponse(resp);
+      saveLastQuery();
+    })
+    .catch(function (e) {
+      setLoading(false);
+      showError(mapClientError(e));
+    });
+}
+
+// 개발 샘플에서는 코드 등록을 요구하지 않음(작물·지역 선택만 검증)
+function validateConditionsForSample() {
+  if (!state.crop) return "작물을 선택해 주세요.";
+  if (!state.sido) return "지역(시도)을 선택해 주세요.";
+  var sy = parseInt($("startYear").value, 10);
+  var ey = parseInt($("endYear").value, 10);
+  if (sy > ey) return "시작연도는 종료연도보다 늦을 수 없습니다.";
+  if (ey - sy + 1 > MAX_QUERY_YEAR_RANGE) return "한 번에 조회할 수 있는 기간은 최대 " + MAX_QUERY_YEAR_RANGE + "년입니다.";
+  if (state.items.length === 0) return "조회할 통계항목을 하나 이상 선택해 주세요.";
+  return null;
+}
+
+/* NAS 중계 API 호출 (텐아르 내부 식별값만 전달) */
+function fetchCropYield(payload) {
+  var params = new URLSearchParams();
+  params.set("table", payload.table);
+  params.set("crop", payload.crop);
+  params.set("sido", payload.sido);
+  if (payload.sigungu) params.set("sigungu", payload.sigungu);
+  params.set("startYear", String(payload.startYear));
+  params.set("endYear", String(payload.endYear));
+  params.set("items", payload.items.join(","));
+
+  var url = API_BASE_URL + "/kosis/crop-yield?" + params.toString();
+
+  var controller = new AbortController();
+  var timer = setTimeout(function () { controller.abort(); }, REQUEST_TIMEOUT_MS);
+
+  return fetch(url, { method: "GET", headers: { "Accept": "application/json" }, signal: controller.signal })
+    .then(function (res) {
+      clearTimeout(timer);
+      return res.json().catch(function () {
+        throw { code: "BAD_RESPONSE" };
+      }).then(function (json) {
+        return { httpStatus: res.status, body: json };
+      });
+    }, function (e) {
+      clearTimeout(timer);
+      if (e && e.name === "AbortError") throw { code: "TIMEOUT" };
+      throw { code: "NAS_UNREACHABLE" };
+    });
+}
+
+/* 서버 응답 처리 */
+function handleResponse(resp) {
+  var body = resp.body || {};
+  if (body.success === false) {
+    showError(mapServerError(body));
+    return;
+  }
+  if (!body.data || !Array.isArray(body.data)) {
+    showError("KOSIS 응답 형식을 확인할 수 없습니다.\n관리자 설정과 통계표 코드를 확인해 주세요.");
+    return;
+  }
+  var hasAny = body.data.some(function (row) {
+    return ITEM_ORDER.some(function (k) { return row[k] !== null && row[k] !== undefined; });
+  });
+  if (!hasAny) {
+    showError("선택한 조건에 해당하는 통계자료가 없습니다.\n\n작물, 지역 또는 조회연도를 변경해 다시 조회해 주세요.");
+    return;
+  }
+  renderResult(body, false);
+}
+
+function mapServerError(body) {
+  var code = body.code || "";
+  switch (code) {
+    case "KOSIS_AUTH_ERROR":
+      return "KOSIS 인증정보를 확인할 수 없습니다.\nNAS 서버의 인증키 설정을 확인해 주세요.";
+    case "KOSIS_CONFIG_INCOMPLETE":
+      return "통계표 설정이 완료되지 않았습니다.\n기관코드와 통계표 ID를 등록해 주세요.";
+    case "CROP_CODE_MISSING":
+      return "선택한 작물의 KOSIS 분류코드가 등록되지 않았습니다.";
+    case "REGION_CODE_MISSING":
+      return "선택한 지역의 KOSIS 분류코드가 등록되지 않았습니다.";
+    case "NO_DATA":
+      return "선택한 조건에 해당하는 통계자료가 없습니다.\n\n작물, 지역 또는 조회연도를 변경해 다시 조회해 주세요.";
+    case "KOSIS_TIMEOUT":
+      return "통계 조회시간이 초과되었습니다.\n잠시 후 다시 시도해 주세요.";
+    case "BAD_RESPONSE":
+      return "KOSIS 응답 형식을 확인할 수 없습니다.\n관리자 설정과 통계표 코드를 확인해 주세요.";
+    case "RATE_LIMITED":
+      return "요청이 많습니다.\n잠시 후 다시 시도해 주세요.";
+    default:
+      return (body.message || "통계 조회 중 오류가 발생했습니다.");
+  }
+}
+
+function mapClientError(e) {
+  var code = (e && e.code) || "";
+  if (code === "TIMEOUT") return "통계 조회시간이 초과되었습니다.\n잠시 후 다시 시도해 주세요.";
+  if (code === "BAD_RESPONSE") return "KOSIS 응답 형식을 확인할 수 없습니다.\n관리자 설정과 통계표 코드를 확인해 주세요.";
+  if (code === "AUTH") return "KOSIS 인증정보를 확인할 수 없습니다.\n인증키 설정을 확인해 주세요.";
+  if (code === "NO_DATA_SRV") return "선택한 조건에 해당하는 통계자료가 없습니다.\n\n작물, 지역 또는 조회연도를 변경해 다시 조회해 주세요.";
+  if (code === "KOSIS_DIRECT_UNREACHABLE") {
+    return "국가통계(KOSIS) 서버에 직접 연결할 수 없습니다.\n\n" +
+           "브라우저 보안정책(CORS)으로 직접 호출이 차단되었을 수 있습니다.\n" +
+           "이 경우 중계 서버(server.js)를 사용해 주세요.";
+  }
+  return "NAS 통계서버에 연결할 수 없습니다.\n\n인터넷 연결과 NAS 서버 상태를 확인해 주세요.";
+}
+
+function showError(msg) {
+  $("errorMsg").textContent = msg;
+  show($("errorCard"));
+  hide($("summaryCard")); hide($("recentCard")); hide($("chartCard"));
+  hide($("tableCard")); hide($("shareCard"));
+  $("errorCard").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+/* =====================================================================
+   결과 렌더링
+   ===================================================================== */
+function renderResult(resp, isDev) {
+  state.lastResult = resp;
+  hide($("errorCard"));
+
+  renderSummary(resp, isDev);
+  renderRecent(resp);
+  renderTable(resp);
+  renderChart(resp);
+
+  show($("summaryCard")); show($("recentCard"));
+  show($("chartCard")); show($("tableCard")); show($("shareCard"));
+
+  $("summaryCard").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function surveyName(resp) {
+  var st = (resp.query && resp.query.surveyType) || "unknown";
+  var info = SURVEY_TYPE_INFO[st] || SURVEY_TYPE_INFO.unknown;
+  return info.name;
+}
+
+function regionText(resp) {
+  var q = resp.query || {};
+  return q.sido + (q.sigungu ? " " + q.sigungu : "");
+}
+
+function renderSummary(resp, isDev) {
+  var q = resp.query || {};
+  if (isDev) show($("devFlag")); else hide($("devFlag"));
+
+  var meta = resp.meta || {};
+  var cached = $("cachedMsg"), stale = $("staleMsg");
+  cached.classList.remove("show"); stale.classList.remove("show");
+  if (meta.cached) { cached.textContent = "NAS에 저장된 통계자료입니다."; cached.classList.add("show"); }
+  if (meta.stale)  { stale.textContent = "현재 KOSIS 연결이 원활하지 않아 이전에 저장한 자료를 표시합니다."; stale.classList.add("show"); }
+
+  var lines = [
+    ["작물", q.cropName || (CROP_CONFIG[q.cropKey] ? CROP_CONFIG[q.cropKey].name : q.cropKey)],
+    ["지역", regionText(resp)],
+    ["조회기간", q.startYear + "년~" + q.endYear + "년"],
+    ["조사구분", surveyName(resp)],
+    ["통계표", (resp.table && resp.table.name) || "농작물생산조사"],
+    ["조회일시", formatDateTime(meta.fetchedAt)]
+  ];
+  var grid = $("summaryGrid");
+  grid.innerHTML = "";
+  lines.forEach(function (row) {
+    var div = document.createElement("div");
+    div.className = "line";
+    var k = document.createElement("span"); k.className = "k"; k.textContent = row[0];
+    var v = document.createElement("span"); v.className = "v"; v.textContent = row[1];
+    div.appendChild(k); div.appendChild(v);
+    grid.appendChild(div);
+  });
+  $("summarySource").textContent =
+    srcTwoLine() + "\n통계표: " + ((resp.table && resp.table.name) || "농작물생산조사");
+}
+
+function formatDateTime(iso) {
+  var d = iso ? new Date(iso) : new Date();
+  if (isNaN(d.getTime())) d = new Date();
+  return d.toLocaleString("ko-KR", {
+    year: "numeric", month: "numeric", day: "numeric",
+    hour: "numeric", minute: "2-digit"
+  });
+}
+
+/* 최근 공표자료 — 값이 있는 가장 최근 연도(요구사항 19) */
+function renderRecent(resp) {
+  var data = resp.data || [];
+  var unit = (resp.unit && resp.unit.yield10a) || ITEM_CONFIG.yield10a.defaultUnit;
+
+  // 연도 오름차순 정렬본
+  var sorted = data.slice().sort(function (a, b) { return a.year - b.year; });
+
+  var latestIdx = -1;
+  for (var i = sorted.length - 1; i >= 0; i--) {
+    if (sorted[i].yield10a !== null && sorted[i].yield10a !== undefined) { latestIdx = i; break; }
+  }
+  var yearEl = $("recentYear"), valEl = $("recentValue"), deltaEl = $("recentDelta");
+
+  if (latestIdx === -1) {
+    yearEl.textContent = "";
+    valEl.textContent = "자료 없음";
+    deltaEl.textContent = "";
+    return;
+  }
+  var cur = sorted[latestIdx];
+  yearEl.textContent = cur.year + "년";
+  valEl.textContent = "10a당 생산량 " + fmt(cur.yield10a) + unit;
+
+  // 직전(전년) 값 찾기: 바로 이전 연도
+  var prev = null;
+  for (var j = latestIdx - 1; j >= 0; j--) {
+    if (sorted[j].year === cur.year - 1) { prev = sorted[j]; break; }
+    if (sorted[j].year < cur.year - 1) break;
+  }
+
+  if (!prev || prev.yield10a === null || prev.yield10a === undefined) {
+    deltaEl.innerHTML = '<span class="delta flat">전년 비교자료 없음</span>';
+    return;
+  }
+  var diff = cur.yield10a - prev.yield10a;
+  var rate = (prev.yield10a !== 0) ? (diff / prev.yield10a) * 100 : null;
+
+  if (diff === 0) {
+    deltaEl.innerHTML = '<span class="delta flat">전년 대비 변동 없음</span>';
+    return;
+  }
+  var up = diff > 0;
+  var arrow = up ? "▲" : "▼";
+  var word = up ? "증가" : "감소";
+  var cls = up ? "up" : "down";
+  var abs = Math.abs(diff);
+  var amtUnit = unit.replace("/10a", ""); // "kg/10a" -> "kg"
+  var amtLine =
+    '<div><span class="delta ' + cls + '"><span class="arrow">' + arrow + '</span> 전년 대비 ' +
+      fmt(abs) + amtUnit + " " + word + "</span></div>";
+  var rateLine = (rate === null) ? "" :
+    ('<div><span class="delta ' + cls + '"><span class="arrow">' + arrow + '</span> 전년 대비 ' +
+      (Math.round(Math.abs(rate) * 10) / 10) + "% " + word + "</span></div>");
+  deltaEl.innerHTML = amtLine + rateLine;
+}
+
+/* 연도별 통계표 (요구사항 20) */
+function renderTable(resp) {
+  var data = (resp.data || []).slice().sort(function (a, b) { return a.year - b.year; });
+  var unit = resp.unit || {};
+  var items = state.items;
+
+  var head = $("statHead");
+  head.innerHTML = "";
+  var cols = [{ key: "year", label: "연도", cls: "year" }];
+  items.forEach(function (k) {
+    var u = unit[k] || ITEM_CONFIG[k].defaultUnit;
+    cols.push({ key: k, label: ITEM_CONFIG[k].name + " (" + u + ")" });
+  });
+  cols.push({ key: "_diff", label: "전년 증감" });
+  cols.push({ key: "_rate", label: "증감률" });
+
+  cols.forEach(function (c) {
+    var th = document.createElement("th");
+    if (c.cls) th.className = c.cls;
+    th.textContent = c.label;
+    head.appendChild(th);
+  });
+
+  var body = $("statBody");
+  body.innerHTML = "";
+  var prevYieldByYear = {};
+  data.forEach(function (row) { prevYieldByYear[row.year] = row.yield10a; });
+
+  data.forEach(function (row) {
+    var tr = document.createElement("tr");
+
+    var tdY = document.createElement("td");
+    tdY.className = "year"; tdY.textContent = row.year + "년";
+    tr.appendChild(tdY);
+
+    items.forEach(function (k) {
+      var td = document.createElement("td");
+      var val = row[k];
+      if (val === null || val === undefined) { td.className = "na"; td.textContent = "자료 없음"; }
+      else td.textContent = fmt(val);
+      tr.appendChild(td);
+    });
+
+    // 전년 증감 / 증감률 (기준: 10a당 생산량)
+    var prevVal = prevYieldByYear.hasOwnProperty(row.year - 1) ? prevYieldByYear[row.year - 1] : undefined;
+    var tdDiff = document.createElement("td");
+    var tdRate = document.createElement("td");
+    if (row.yield10a === null || row.yield10a === undefined || prevVal === null || prevVal === undefined) {
+      tdDiff.className = "na"; tdDiff.textContent = "—";
+      tdRate.className = "na"; tdRate.textContent = "—";
+    } else {
+      var d = row.yield10a - prevVal;
+      var r = (prevVal !== 0) ? (d / prevVal) * 100 : null;
+      var sign = d > 0 ? "▲ " : (d < 0 ? "▼ " : "");
+      var cls = d > 0 ? "up" : (d < 0 ? "down" : "");
+      tdDiff.className = cls; tdDiff.textContent = sign + fmt(Math.abs(d));
+      tdRate.className = cls;
+      tdRate.textContent = (r === null) ? "—" : (sign + (Math.round(Math.abs(r) * 10) / 10) + "%");
+    }
+    tr.appendChild(tdDiff);
+    tr.appendChild(tdRate);
+    body.appendChild(tr);
+  });
+
+  // 단위 안내
+  var unitParts = items.map(function (k) {
+    return ITEM_CONFIG[k].name + ": " + (unit[k] || ITEM_CONFIG[k].defaultUnit);
+  });
+  $("unitHint").textContent = "단위 — " + unitParts.join(" · ");
+}
+
+/* 연도별 그래프 (요구사항 21) */
+function renderChart(resp) {
+  var canvas = $("yieldChart");
+  var failMsg = $("chartFailMsg");
+  failMsg.classList.remove("show");
+
+  if (typeof Chart === "undefined") {
+    failMsg.textContent = "그래프를 불러오지 못했습니다.\n연도별 통계표는 정상적으로 이용할 수 있습니다.";
+    failMsg.classList.add("show");
+    return;
+  }
+
+  var data = (resp.data || []).slice().sort(function (a, b) { return a.year - b.year; });
+  var unit = (resp.unit && resp.unit.yield10a) || ITEM_CONFIG.yield10a.defaultUnit;
+  var labels = data.map(function (r) { return r.year + "년"; });
+  // 결측은 null 로 두어 선을 끊음 (spanGaps: false)
+  var values = data.map(function (r) {
+    return (r.yield10a === null || r.yield10a === undefined) ? null : r.yield10a;
+  });
+
+  if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+
+  try {
+    chartInstance = new Chart(canvas.getContext("2d"), {
+      type: "line",
+      data: {
+        labels: labels,
+        datasets: [{
+          label: "10a당 생산량 (" + unit + ")",
+          data: values,
+          borderColor: "#2563eb",
+          backgroundColor: "rgba(37,99,235,0.12)",
+          spanGaps: false,
+          tension: 0.2,
+          pointRadius: 3,
+          pointHoverRadius: 5,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 300 },
+        interaction: { mode: "index", intersect: false },
+        plugins: {
+          legend: { display: true },
+          tooltip: {
+            callbacks: {
+              label: function (ctx) {
+                var v = ctx.parsed.y;
+                if (v === null || v === undefined) return "자료 없음";
+                return ctx.label + " · " + fmt(v) + " " + unit;
+              }
+            }
+          }
+        },
+        scales: {
+          x: { title: { display: true, text: "연도" } },
+          y: { title: { display: true, text: "10a당 생산량 (" + unit + ")" }, beginAtZero: false }
+        }
+      }
+    });
+  } catch (e) {
+    failMsg.textContent = "그래프를 불러오지 못했습니다.\n연도별 통계표는 정상적으로 이용할 수 있습니다.";
+    failMsg.classList.add("show");
+  }
+}
+
+/* =====================================================================
+   저장 및 공유
+   ===================================================================== */
+function currentFileBase() {
+  var r = state.lastResult; if (!r) return "KOSIS_작물생산량";
+  var q = r.query || {};
+  var cropName = q.cropName || (CROP_CONFIG[q.cropKey] ? CROP_CONFIG[q.cropKey].name : q.cropKey);
+  var region = (q.sido || "") + (q.sigungu ? "_" + q.sigungu : "");
+  return "KOSIS_" + cropName + "_" + region + "_10a당생산량_" + q.startYear + "-" + q.endYear;
+}
+
+function saveCSV() {
+  var r = state.lastResult; if (!r) return;
+  var q = r.query || {};
+  var unit = r.unit || {};
+  var cropName = q.cropName || (CROP_CONFIG[q.cropKey] ? CROP_CONFIG[q.cropKey].name : q.cropKey);
+  var survey = surveyName(r);
+
+  var header = ["연도", "작물", "시도", "시군구", "조사구분", "10a당 생산량", "단위(10a당 생산량)", "재배면적", "총생산량", "데이터 출처"];
+  var rows = [header];
+  (r.data || []).slice().sort(function (a, b) { return a.year - b.year; }).forEach(function (d) {
+    rows.push([
+      d.year, cropName, q.sido || "", q.sigungu || "", survey,
+      csvNum(d.yield10a), unit.yield10a || ITEM_CONFIG.yield10a.defaultUnit,
+      csvNum(d.area), csvNum(d.production), DATA_SOURCE.agencyName
+    ]);
+  });
+
+  var csv = rows.map(function (row) {
+    return row.map(csvCell).join(",");
+  }).join("\r\n");
+
+  var blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+  downloadBlob(blob, currentFileBase() + ".csv");
+}
+
+function csvNum(v) { return (v === null || v === undefined) ? "자료 없음" : v; }
+function csvCell(v) {
+  var s = String(v);
+  if (/[",\r\n]/.test(s)) s = '"' + s.replace(/"/g, '""') + '"';
+  return s;
+}
+
+function saveJSON() {
+  var r = state.lastResult; if (!r) return;
+  // NAS 가 정규화한 응답을 그대로 저장(인증키/서버 내부정보는 애초에 포함되지 않음)
+  var blob = new Blob([JSON.stringify(r, null, 2)], { type: "application/json;charset=utf-8;" });
+  downloadBlob(blob, currentFileBase() + ".json");
+}
+
+function saveImage() {
+  var r = state.lastResult; if (!r) return;
+  // 외부 라이브러리 없이 그래프 canvas 를 이미지로 저장(폴백).
+  // 요약~출처 전체 캡처가 필요하면 화면 캡처를 이용합니다.
+  try {
+    var chartCanvas = $("yieldChart");
+    if (chartInstance && chartCanvas) {
+      chartCanvas.toBlob(function (blob) {
+        if (blob) downloadBlob(blob, currentFileBase() + "_그래프.png");
+        else alert("이미지 저장을 지원하지 않는 환경입니다. 화면 캡처를 이용해 주세요.");
+      });
+    } else {
+      alert("그래프가 없어 이미지로 저장할 수 없습니다. 화면 캡처를 이용해 주세요.");
+    }
+  } catch (e) {
+    alert("이미지 저장 중 문제가 발생했습니다. 화면 캡처를 이용해 주세요.");
+  }
+}
+
+function downloadBlob(blob, filename) {
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+}
+
+function shareResult() {
+  var r = state.lastResult; if (!r) return;
+  var q = r.query || {};
+  var cropName = q.cropName || (CROP_CONFIG[q.cropKey] ? CROP_CONFIG[q.cropKey].name : q.cropKey);
+  var survey = surveyName(r);
+  var unit = (r.unit && r.unit.yield10a) || ITEM_CONFIG.yield10a.defaultUnit;
+
+  // 최근 공표 yield10a
+  var sorted = (r.data || []).slice().sort(function (a, b) { return a.year - b.year; });
+  var recent = null;
+  for (var i = sorted.length - 1; i >= 0; i--) {
+    if (sorted[i].yield10a !== null && sorted[i].yield10a !== undefined) { recent = sorted[i]; break; }
+  }
+  var recentText = recent ? (fmt(recent.yield10a) + unit) : "자료 없음";
+
+  var text =
+    "[국가통계 작물 생산량]\n\n" +
+    "작물: " + cropName + "\n" +
+    "지역: " + regionText(r) + "\n" +
+    "기간: " + q.startYear + "년~" + q.endYear + "년\n" +
+    "조사구분: " + survey + "\n" +
+    "최근 10a당 생산량: " + recentText + "\n\n" +
+    srcTwoLine();
+
+  if (navigator.share) {
+    navigator.share({ title: "국가통계 작물 생산량", text: text }).catch(function () {});
+  } else if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function () {
+      alert("클립보드에 복사되었습니다.");
+    }, function () {
+      fallbackCopy(text);
+    });
+  } else {
+    fallbackCopy(text);
+  }
+}
+
+function fallbackCopy(text) {
+  var ta = document.createElement("textarea");
+  ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand("copy"); alert("클립보드에 복사되었습니다."); }
+  catch (e) { alert("복사에 실패했습니다."); }
+  document.body.removeChild(ta);
+}
+
+/* =====================================================================
+   초기화 기능 (요구사항 27)
+   ===================================================================== */
+function resetConditions() {
+  state.crop = null;
+  state.category = "";
+  state.sido = ""; state.sigungu = "";
+  state.items = ["yield10a"];
+
+  $("cropSearch").value = "";
+  buildCatButtons();
+  buildCropList("");
+  renderSurvey(null);
+
+  $("sidoSel").value = "";
+  var sig = $("sigunguSel");
+  sig.innerHTML = '<option value="">시군구 선택</option>';
+  sig.disabled = true;
+  $("regionHint").textContent = "";
+
+  var defStart = Math.max(MIN_YEAR, CURRENT_YEAR - 5);
+  $("startYear").value = String(defStart);
+  $("endYear").value = String(CURRENT_YEAR);
+  $("yearHint").textContent = "";
+
+  buildItemChecks();
+
+  // 결과/그래프/오류 제거
+  if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+  state.lastResult = null;
+  hide($("summaryCard")); hide($("recentCard")); hide($("chartCard"));
+  hide($("tableCard")); hide($("shareCard")); hide($("errorCard"));
+  clearValidate();
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+/* =====================================================================
+   최근 조회조건 저장/복원 (요구사항 26)
+   ===================================================================== */
+function saveLastQuery() {
+  var sy = parseInt($("startYear").value, 10);
+  var ey = parseInt($("endYear").value, 10);
+  var q = {
+    crop: state.crop, sido: state.sido, sigungu: state.sigungu,
+    startYear: sy, endYear: ey, items: state.items.slice()
+  };
+  try {
+    localStorage.setItem(LAST_QUERY_STORAGE_KEY, JSON.stringify(q));
+    // 최근 조회목록 최대 10개
+    var list = [];
+    try { list = JSON.parse(localStorage.getItem(RECENT_QUERY_LIST_KEY) || "[]"); } catch (e) { list = []; }
+    list.unshift(Object.assign({ ts: Date.now() }, q));
+    if (list.length > RECENT_QUERY_MAX) list = list.slice(0, RECENT_QUERY_MAX);
+    localStorage.setItem(RECENT_QUERY_LIST_KEY, JSON.stringify(list));
+  } catch (e) { /* 저장 실패 무시 */ }
+}
+
+function restoreLastQuery() {
+  var raw = null;
+  try { raw = localStorage.getItem(LAST_QUERY_STORAGE_KEY); } catch (e) { return; }
+  if (!raw) return;
+  var q;
+  try { q = JSON.parse(raw); } catch (e) { return; }
+  if (!q) return;
+
+  if (q.crop && CROP_CONFIG[q.crop]) { selectCrop(q.crop); }
+  if (q.sido && REGION_CONFIG[q.sido]) {
+    $("sidoSel").value = q.sido;
+    onSidoChange();
+    if (q.sigungu) {
+      var sig = $("sigunguSel");
+      var has = Array.prototype.some.call(sig.options, function (o) { return o.value === q.sigungu; });
+      if (has) { sig.value = q.sigungu; state.sigungu = q.sigungu; }
+    }
+  }
+  if (Number.isFinite(q.startYear) && q.startYear >= MIN_YEAR && q.startYear <= CURRENT_YEAR) {
+    $("startYear").value = String(q.startYear);
+  }
+  if (Number.isFinite(q.endYear) && q.endYear >= MIN_YEAR && q.endYear <= CURRENT_YEAR) {
+    $("endYear").value = String(q.endYear);
+  }
+  if (Array.isArray(q.items) && q.items.length) {
+    state.items = ITEM_ORDER.filter(function (k) { return q.items.indexOf(k) !== -1; });
+    if (state.items.length === 0) state.items = ["yield10a"];
+    buildItemChecks();
+  }
+}
+
+/* =====================================================================
+   관리자 설정 (요구사항 14)
+   ===================================================================== */
+function maybeShowAdmin() {
+  var params = new URLSearchParams(location.search);
+  if (params.get("kosisAdmin") === "1") {
+    show($("adminCard"));
+    loadAdminConfig();
+  }
+}
+
+function loadAdminConfig() {
+  var raw = null;
+  try { raw = localStorage.getItem(ADMIN_CONFIG_STORAGE_KEY); } catch (e) {}
+  if (raw) { $("adminTable").value = raw; }
+  else { $("adminTable").value = adminDefaultTemplate(); }
+}
+
+function adminDefaultTemplate() {
+  // 인증키는 포함하지 않음. 확실하지 않은 값은 빈 문자열.
+  return JSON.stringify({
+    table: TABLE_KEY,
+    name: "농작물생산조사",
+    agencyName: DATA_SOURCE.agencyName,
+    serviceName: DATA_SOURCE.serviceName,
+    orgId: "101",
+    tblId: "",
+    periodType: "Y",
+    regionLevel: "sido",
+    dimensions: {
+      crop:   { parameter: "", codes: { ricePaddy: "", garlic: "", orientalMelon: "", tomato: "" } },
+      region: { parameter: "", codes: { "경상북도": "", "경상북도|경산시": "", "대구광역시": "" } }
+    },
+    items: {
+      yield10a:   { name: "10a당 생산량", code: "", unit: "kg/10a" },
+      area:       { name: "재배면적",     code: "", unit: "ha" },
+      production: { name: "총생산량",     code: "", unit: "톤" }
+    }
+  }, null, 2);
+}
+
+function adminSave() {
+  var text = $("adminTable").value;
+  try {
+    JSON.parse(text); // 유효성만 검사
+    localStorage.setItem(ADMIN_CONFIG_STORAGE_KEY, text);
+    adminOut("설정을 저장했습니다. (브라우저 로컬 임시 저장 · 운영값은 NAS 설정 파일에서 관리)");
+  } catch (e) {
+    adminOut("JSON 형식이 올바르지 않습니다: " + e.message);
+  }
+}
+
+function adminReset() {
+  try { localStorage.removeItem(ADMIN_CONFIG_STORAGE_KEY); } catch (e) {}
+  $("adminTable").value = adminDefaultTemplate();
+  adminOut("관리자 설정을 초기화했습니다.");
+}
+
+function adminShowRaw(kind) {
+  if (kind === "raw") {
+    if (_lastRaw != null) {
+      adminOut(JSON.stringify(_lastRaw, null, 2));
+    } else if (USE_DIRECT_KOSIS) {
+      adminOut("KOSIS 원본 응답이 없습니다. 먼저 '테스트 호출' 또는 조회를 실행해 주세요.");
+    } else {
+      adminOut("중계 모드에서는 브라우저에 KOSIS 원본이 직접 전달되지 않습니다.\n(NAS 관리자 엔드포인트에서 제공될 때만 표시됩니다.)");
+    }
+  } else {
+    adminOut(state.lastResult ? JSON.stringify(state.lastResult, null, 2)
+      : "정규화 응답이 없습니다. 먼저 조회를 실행해 주세요.");
+  }
+}
+
+function adminOut(text) {
+  var pre = $("adminOut");
+  pre.textContent = text;
+  pre.classList.remove("hidden");
+}
+
+/* =====================================================================
+   개발용 예시자료 (요구사항 32 · 2단계)
+   USE_DEV_SAMPLE=true 일 때만 사용. 화면에 "개발용 예시자료" 표시.
+   실제 통계값이 아님.
+   ===================================================================== */
+function buildDevSample() {
+  var sy = parseInt($("startYear").value, 10);
+  var ey = parseInt($("endYear").value, 10);
+  var cropConf = CROP_CONFIG[state.crop] || { name: state.crop, surveyType: "unknown", surveyTypeName: "확인 필요" };
+  var data = [];
+  var base = 1200;
+  for (var y = sy; y <= ey; y++) {
+    // 마지막(현재) 연도는 미공표 가정 -> null
+    var isPublished = (y < CURRENT_YEAR);
+    data.push({
+      year: y,
+      yield10a: isPublished ? base + (y - sy) * 20 : null,
+      area: isPublished ? 120 - (y - sy) : null,
+      production: isPublished ? Math.round((base + (y - sy) * 20) * (120 - (y - sy)) / 10) : null
+    });
+  }
+  return {
+    success: true,
+    source: DATA_SOURCE,
+    table: { orgId: "", tblId: "", name: "농작물생산조사" },
+    query: {
+      cropKey: state.crop, cropName: cropConf.name,
+      surveyType: cropConf.surveyType, surveyTypeName: cropConf.surveyTypeName,
+      sido: state.sido, sigungu: state.sigungu,
+      startYear: sy, endYear: ey
+    },
+    unit: { yield10a: "kg/10a", area: "ha", production: "톤" },
+    data: data,
+    meta: { fetchedAt: new Date().toISOString(), cached: false, stale: false, cacheAgeSeconds: 0 }
+  };
+}
+</script>
+</body>
+</html>
