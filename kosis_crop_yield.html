@@ -1,4 +1,8 @@
-<!-- kosis_crop_yield_v3.html · 저장: 2026-08-06 14:20 KST
+<!-- kosis_crop_yield_v4.html · 저장: 2026-08-06 22:38 KST
+     v4 변경점:
+       (4) 홈버튼 주소를 절대 URL(https://ubaldos00-ship-it.github.io/home/)로 수정.
+       (5) NAS 중계 모드로 전환: USE_DIRECT_KOSIS=false, API_BASE_URL=https://gdpiano.synology.me/api
+           · 인증키를 브라우저에서 제거(KOSIS_API_KEY_B64 비움) → 키는 NAS server.js(.env)에서만 사용(비노출).
      v3 변경점:
        (3) KOSIS 코드 일부 등록(검증분): orgId=101(국가데이터처 기관코드), 수록주기 연간(Y), 지역 제공단계 시도.
            · ⚠ 농작물생산조사는 KOSIS 에서 '시도 단위'까지만 제공됩니다(시군구별 생산량 없음).
@@ -355,10 +359,10 @@
    ===================================================================== */
 
 /* ---------- 설정값 ---------- */
-var HOME_URL = "../index.html";
+var HOME_URL = "https://ubaldos00-ship-it.github.io/home/";
 
-/* 운영 NAS 중계 API 주소 (TODO: 실제 도메인으로 교체) */
-var API_BASE_URL = "https://your-nas-domain.example/api";
+/* 운영 NAS 중계 API 주소 */
+var API_BASE_URL = "https://gdpiano.synology.me/api";
 
 var DATA_SOURCE = {
   agencyName: "국가데이터처",
@@ -387,9 +391,11 @@ var USE_DEV_SAMPLE = false;
      차단되면 "연결 불가"로 표시되며, 이때는 중계 서버(server.js)가 필요합니다.
 
    인증키는 base64 로 저장 후 실행 시 atob 로 디코딩합니다(가벼운 가림막일 뿐 암호화 아님). */
-var USE_DIRECT_KOSIS = true;
+/* v4: NAS 중계 모드. 브라우저는 인증키를 갖지 않습니다(키는 NAS server.js .env 에서만 사용).
+   직접 호출로 되돌리려면 USE_DIRECT_KOSIS=true 로 바꾸고 KOSIS_API_KEY_B64 에 base64 키를 넣으세요. */
+var USE_DIRECT_KOSIS = false;
 var KOSIS_ENDPOINT = "https://kosis.kr/openapi/Param/statisticsParameterData.do";
-var KOSIS_API_KEY_B64 = "YzYwZTQ1Njg3MmNhNTYxYmUyMzhkMGI5ZjcyODExODg=";
+var KOSIS_API_KEY_B64 = ""; // 중계 모드에서는 비움 — 인증키 브라우저 미노출
 function getKosisApiKey() { try { return atob(KOSIS_API_KEY_B64); } catch (e) { return ""; } }
 
 var ADMIN_CONFIG_STORAGE_KEY = "tenar_kosis_crop_config_v2";
@@ -1015,7 +1021,8 @@ function runQuery(isAdminTest) {
     return;
   }
 
-  var err = USE_DIRECT_KOSIS ? validateDirect() : validateConditions();
+  // 직접 모드: 브라우저가 코드까지 검증. 중계 모드: 기본값만 검증하고 코드 검증은 NAS 가 수행.
+  var err = USE_DIRECT_KOSIS ? validateDirect() : validateRelay();
   if (err) { showValidate(err); return; }
 
   var sy = parseInt($("startYear").value, 10);
@@ -1051,6 +1058,21 @@ function validateConditionsForSample() {
   if (!state.sido) return "지역(시도)을 선택해 주세요.";
   var sy = parseInt($("startYear").value, 10);
   var ey = parseInt($("endYear").value, 10);
+  if (sy > ey) return "시작연도는 종료연도보다 늦을 수 없습니다.";
+  if (ey - sy + 1 > MAX_QUERY_YEAR_RANGE) return "한 번에 조회할 수 있는 기간은 최대 " + MAX_QUERY_YEAR_RANGE + "년입니다.";
+  if (state.items.length === 0) return "조회할 통계항목을 하나 이상 선택해 주세요.";
+  return null;
+}
+
+/* 중계 모드 기본 검증 — 작물·지역·연도·항목만 확인.
+   실제 KOSIS 코드(orgId·tblId·작물/지역/항목 코드) 검증은 NAS server.js 가 수행하고,
+   미등록 시 CROP_CODE_MISSING 등 오류코드로 응답합니다(handleResponse 에서 안내). */
+function validateRelay() {
+  if (!state.crop) return "작물을 선택해 주세요.";
+  if (!state.sido) return "지역(시도)을 선택해 주세요.";
+  var sy = parseInt($("startYear").value, 10);
+  var ey = parseInt($("endYear").value, 10);
+  if (!Number.isFinite(sy) || !Number.isFinite(ey)) return "조회연도를 확인해 주세요.";
   if (sy > ey) return "시작연도는 종료연도보다 늦을 수 없습니다.";
   if (ey - sy + 1 > MAX_QUERY_YEAR_RANGE) return "한 번에 조회할 수 있는 기간은 최대 " + MAX_QUERY_YEAR_RANGE + "년입니다.";
   if (state.items.length === 0) return "조회할 통계항목을 하나 이상 선택해 주세요.";
