@@ -1,4 +1,9 @@
-<!-- kosis_crop_yield_v5.html · 저장: 2026-08-07 00:32 KST
+<!-- kosis_crop_yield_v6.html · 저장: 2026-08-07 00:54 KST
+     v6 변경점:
+       (7) AbortController 미지원 브라우저(구형 사파리 등)에서 "AbortController is not defined"로
+           조회가 멈추던 문제 수정 → fetchWithTimeout 으로 안전 처리(있으면 abort, 없으면 타임아웃 무시).
+     v5 기준 -->
+<!-- (구) kosis_crop_yield_v5.html · 저장: 2026-08-07 00:32 KST
      v5 변경점:
        (6) 지역 선택을 전국+17개 시도로 확장(시군구는 KOSIS 미제공이라 자동 비활성).
            시도명은 NAS config 의 regions 키와 일치. 실제 조회 동작 확인(논벼·밭벼, 미곡표 DT_1ET0221).
@@ -740,14 +745,10 @@ function directKosisFetch(payload) {
 
   var url = KOSIS_ENDPOINT + "?" + params.toString();
 
-  var controller = new AbortController();
-  var timer = setTimeout(function () { controller.abort(); }, REQUEST_TIMEOUT_MS);
-
-  return fetch(url, { method: "GET", signal: controller.signal })
-    .then(function (res) { clearTimeout(timer); return res.json(); },
+  return fetchWithTimeout(url, { method: "GET" }, REQUEST_TIMEOUT_MS)
+    .then(function (res) { return res.json(); },
           function (e) {
-            clearTimeout(timer);
-            if (e && e.name === "AbortError") throw { code: "TIMEOUT" };
+            if (e && e.code === "TIMEOUT") throw { code: "TIMEOUT" };
             throw { code: "KOSIS_DIRECT_UNREACHABLE" }; // CORS/네트워크
           })
     .then(function (json) {
@@ -1102,6 +1103,30 @@ function validateRelay() {
 }
 
 /* NAS 중계 API 호출 (텐아르 내부 식별값만 전달) */
+/* AbortController 미지원 브라우저(구형 사파리 등)에서도 동작하는 타임아웃 fetch.
+   AbortController 가 있으면 실제로 abort, 없으면 타임아웃 시 응답을 무시합니다. */
+function fetchWithTimeout(url, opts, ms) {
+  opts = opts || {};
+  var hasAC = (typeof AbortController !== "undefined");
+  var controller = hasAC ? new AbortController() : null;
+  if (controller) opts.signal = controller.signal;
+  return new Promise(function (resolve, reject) {
+    var done = false;
+    var timer = setTimeout(function () {
+      if (done) return; done = true;
+      if (controller) { try { controller.abort(); } catch (e) {} }
+      reject({ code: "TIMEOUT" });
+    }, ms);
+    fetch(url, opts).then(function (res) {
+      if (done) return; done = true; clearTimeout(timer); resolve(res);
+    }, function (e) {
+      if (done) return; done = true; clearTimeout(timer);
+      if (e && e.name === "AbortError") reject({ code: "TIMEOUT" });
+      else reject({ code: "NETWORK" });
+    });
+  });
+}
+
 function fetchCropYield(payload) {
   var params = new URLSearchParams();
   params.set("table", payload.table);
@@ -1114,20 +1139,15 @@ function fetchCropYield(payload) {
 
   var url = API_BASE_URL + "/kosis/crop-yield?" + params.toString();
 
-  var controller = new AbortController();
-  var timer = setTimeout(function () { controller.abort(); }, REQUEST_TIMEOUT_MS);
-
-  return fetch(url, { method: "GET", headers: { "Accept": "application/json" }, signal: controller.signal })
+  return fetchWithTimeout(url, { method: "GET", headers: { "Accept": "application/json" } }, REQUEST_TIMEOUT_MS)
     .then(function (res) {
-      clearTimeout(timer);
-      return res.json().catch(function () {
-        throw { code: "BAD_RESPONSE" };
-      }).then(function (json) {
+      return res.json().then(function (json) {
         return { httpStatus: res.status, body: json };
+      }, function () {
+        throw { code: "BAD_RESPONSE" };
       });
     }, function (e) {
-      clearTimeout(timer);
-      if (e && e.name === "AbortError") throw { code: "TIMEOUT" };
+      if (e && (e.code === "TIMEOUT" || e.code === "BAD_RESPONSE")) throw e;
       throw { code: "NAS_UNREACHABLE" };
     });
 }
