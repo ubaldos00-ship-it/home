@@ -1,4 +1,13 @@
-<!-- kosis_crop_yield_v9.html · 저장: 2026-08-07 KST
+<!-- kosis_crop_yield_v11.html · 저장: 2026-08-07 KST
+     v11 변경점:
+       (13) 지역 비교(권역) 기능 추가: 작물 선택 시 '지역 비교' 카드 표시.
+            권역 버튼(전국·경인청·충청청·동북청·동남청·호남청)으로 소속 시도 자동선택,
+            시도 칩 다중선택(최대 8), 다중 라인 그래프 + 지역×연도 표(+평균) + 평년/전년 대비.
+            NAS /api/kosis/regions (objL1=ALL 한 번 호출)로 전 시도 데이터를 받아 비교.
+     v10 변경점:
+       (11) 감·매실 추가 → 작물 36종 전부 등록 완료.
+       (12) '실측·청취 값과 비교' 카드 추가: 내 10a당 생산량을 입력하면 KOSIS 지역평균과
+            편차·편차%·지수 비교(필지 vs 지역평균 참고 비교).
      v9 변경점:
        (8) 주요 작물 34종 등록 완료(NAS config). 작물 선택 시 실제 KOSIS 데이터 조회.
        (9) 논벼 시군 조회: 논벼 선택 + 경상북도/강원도 선택 시 시군 드롭다운 활성화(그 외 작물·시도는 시도만).
@@ -308,6 +317,24 @@
 
   <div class="msg error" id="validateMsg" role="alert" style="margin-top:12px"></div>
 
+  <!-- 지역 비교(권역) -->
+  <section class="card hidden" id="regionCompareCard">
+    <h2><span class="num">◆</span> 지역 비교 (최대 8개)</h2>
+    <p class="hint" id="rcCropInfo" style="margin-top:0"></p>
+    <div class="cat-row" id="gwonRow" role="group" aria-label="권역 선택"></div>
+    <div class="cat-row" id="sidoChips" role="group" aria-label="시도 선택" style="margin-top:2px"></div>
+    <div class="hint" style="margin-bottom:10px">선택: <b id="rcSelCount">0</b>개 지역</div>
+    <div class="chart-wrap" style="height:320px"><canvas id="regionChart"></canvas></div>
+    <div class="msg warn" id="rcMsg"></div>
+    <div class="table-scroll" id="rcTableWrap" style="margin-top:12px">
+      <table class="stat" id="regionTable">
+        <thead><tr id="rcHead"></tr></thead>
+        <tbody id="rcBody"></tbody>
+      </table>
+    </div>
+    <div id="rcDeltas" style="margin-top:12px; display:grid; grid-template-columns:1fr 1fr; gap:10px"></div>
+  </section>
+
   <section class="card hidden" id="errorCard" aria-live="assertive">
     <div class="msg error show" id="errorMsg" role="alert"></div>
   </section>
@@ -328,14 +355,26 @@
     <div class="delta-line" id="recentDelta"></div>
   </section>
 
+  <!-- 실측/청취 비교 -->
+  <section class="card hidden" id="compareCard">
+    <h2><span class="num">4</span> 실측·청취 값과 비교</h2>
+    <p class="hint" id="compareBaseline" style="margin-top:0"></p>
+    <div class="field" style="margin-bottom:10px">
+      <label for="myYield">내 실측/청취 10a당 생산량 (kg/10a)</label>
+      <input type="number" id="myYield" inputmode="decimal" placeholder="예: 560" />
+      <p class="hint">실측조사·청취조사 계산기에서 나온 10a당 생산량을 입력하면 KOSIS 지역값과 비교합니다.</p>
+    </div>
+    <div class="msg info" id="compareOut"></div>
+  </section>
+
   <section class="card hidden" id="chartCard">
-    <h2><span class="num">4</span> 연도별 10a당 생산량 추이</h2>
+    <h2><span class="num">5</span> 연도별 10a당 생산량 추이</h2>
     <div class="chart-wrap"><canvas id="yieldChart"></canvas></div>
     <div class="msg warn" id="chartFailMsg"></div>
   </section>
 
   <section class="card hidden" id="tableCard">
-    <h2><span class="num">5</span> 연도별 통계표</h2>
+    <h2><span class="num">6</span> 연도별 통계표</h2>
     <div class="table-scroll">
       <table class="stat" id="statTable">
         <thead><tr id="statHead"></tr></thead>
@@ -346,7 +385,7 @@
   </section>
 
   <section class="card hidden" id="shareCard">
-    <h2><span class="num">6</span> 저장 및 공유</h2>
+    <h2><span class="num">7</span> 저장 및 공유</h2>
     <div class="btn-row">
       <button class="btn secondary" id="csvBtn" type="button">CSV 저장</button>
       <button class="btn secondary" id="jsonBtn" type="button">JSON 저장</button>
@@ -792,6 +831,8 @@ document.addEventListener("DOMContentLoaded", function () {
   buildYearSelects();
   buildItemChecks();
   wireEvents();
+  buildGwonButtons();
+  buildSidoChips();
   maybeShowAdmin();
   restoreLastQuery();
 });
@@ -873,6 +914,7 @@ function selectCrop(key) {
   });
   renderSurvey(key);
   updateSigunguOptions();   // 작물 바뀌면 시군 가능 여부 갱신 (논벼만 시군)
+  updateRegionCompareCard(); // 작물 바뀌면 지역비교 카드 노출·갱신
   scheduleAutoQuery();
 }
 
@@ -995,15 +1037,254 @@ function scheduleAutoQuery() {
   }, 350);
 }
 
+/* =====================================================================
+   지역 비교 (권역) — 한 작물의 10a당 생산량을 전 시도 한 번에 받아 비교
+   ===================================================================== */
+var GWON_GROUPS = [
+  ["전국",   ["전국"]],
+  ["경인청", ["서울특별시", "인천광역시", "경기도"]],
+  ["충청청", ["대전광역시", "세종특별자치시", "충청북도", "충청남도"]],
+  ["동북청", ["대구광역시", "경상북도", "강원도"]],
+  ["동남청", ["부산광역시", "울산광역시", "경상남도"]],
+  ["호남청", ["광주광역시", "전라북도", "전라남도", "제주도"]]
+];
+var ALL_SIDO = ["전국","서울특별시","부산광역시","대구광역시","인천광역시","광주광역시","대전광역시","울산광역시",
+  "세종특별자치시","경기도","강원도","충청북도","충청남도","전라북도","전라남도","경상북도","경상남도","제주도"];
+var RC_COLORS = ["#15803d","#b91c1c","#2563eb","#b45309","#7c3aed","#0891b2","#be185d","#65a30d"];
+var RC_MAX = 8;
+
+var rcState = { regions: [], data: null, loadingKey: null };
+var regionChartInstance = null;
+var _rcTimer = null;
+
+function buildGwonButtons() {
+  var row = $("gwonRow");
+  row.innerHTML = "";
+  GWON_GROUPS.forEach(function (g) {
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "cat-btn"; b.textContent = g[0];
+    b.addEventListener("click", function () { selGwon(g[1]); });
+    row.appendChild(b);
+  });
+  var clr = document.createElement("button");
+  clr.type = "button"; clr.className = "cat-btn"; clr.textContent = "초기화";
+  clr.addEventListener("click", clearCompare);
+  row.appendChild(clr);
+}
+
+function buildSidoChips() {
+  var row = $("sidoChips");
+  row.innerHTML = "";
+  ALL_SIDO.forEach(function (name) {
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "cat-btn"; b.dataset.sido = name; b.textContent = name;
+    b.addEventListener("click", function () { toggleSido(name); });
+    row.appendChild(b);
+  });
+  refreshSidoChips();
+}
+
+function refreshSidoChips() {
+  $("sidoChips").querySelectorAll(".cat-btn").forEach(function (b) {
+    b.setAttribute("aria-pressed", rcState.regions.indexOf(b.dataset.sido) !== -1 ? "true" : "false");
+  });
+  $("rcSelCount").textContent = rcState.regions.length;
+}
+
+function selGwon(list) {
+  list.forEach(function (r) {
+    if (rcState.regions.indexOf(r) === -1 && rcState.regions.length < RC_MAX) rcState.regions.push(r);
+  });
+  refreshSidoChips();
+  scheduleRegionCompare();
+}
+function toggleSido(name) {
+  var i = rcState.regions.indexOf(name);
+  if (i >= 0) rcState.regions.splice(i, 1);
+  else {
+    if (rcState.regions.length >= RC_MAX) { alert("최대 " + RC_MAX + "개 지역까지 선택할 수 있습니다."); return; }
+    rcState.regions.push(name);
+  }
+  refreshSidoChips();
+  scheduleRegionCompare();
+}
+function clearCompare() {
+  rcState.regions = [];
+  refreshSidoChips();
+  renderRegionCompare();
+}
+
+/* 작물/연도 변경 시 지역비교 카드 노출·갱신 */
+function updateRegionCompareCard() {
+  if (state.crop) {
+    show($("regionCompareCard"));
+    $("rcCropInfo").textContent = "작물: " + (CROP_CONFIG[state.crop] ? CROP_CONFIG[state.crop].name : state.crop) +
+      " · 10a당 생산량(kg/10a) 기준 · 시도 비교";
+    scheduleRegionCompare();
+  } else {
+    hide($("regionCompareCard"));
+  }
+}
+
+function scheduleRegionCompare() {
+  if (_rcTimer) clearTimeout(_rcTimer);
+  _rcTimer = setTimeout(fetchAndRenderRegions, 300);
+}
+
+function fetchAndRenderRegions() {
+  if (!state.crop) return;
+  var sy = parseInt($("startYear").value, 10);
+  var ey = parseInt($("endYear").value, 10);
+  if (!Number.isFinite(sy) || !Number.isFinite(ey) || sy > ey) return;
+  var key = state.crop + "_" + sy + "_" + ey;
+  // 같은 작물·연도면 캐시 데이터로 바로 렌더
+  if (rcState.data && rcState.data._key === key) { renderRegionCompare(); return; }
+  if (rcState.loadingKey === key) return;
+  rcState.loadingKey = key;
+  $("rcMsg").textContent = "지역 데이터를 불러오는 중…"; $("rcMsg").className = "msg info show";
+
+  var url = API_BASE_URL + "/kosis/regions?table=" + encodeURIComponent(TABLE_KEY) +
+    "&crop=" + encodeURIComponent(state.crop) + "&item=yield10a" +
+    "&startYear=" + sy + "&endYear=" + ey;
+
+  fetchWithTimeout(url, { method: "GET", headers: { "Accept": "application/json" } }, REQUEST_TIMEOUT_MS)
+    .then(function (res) { return res.json(); })
+    .then(function (json) {
+      rcState.loadingKey = null;
+      if (!json || json.success === false || !json.regions) {
+        $("rcMsg").textContent = (json && json.message) || "지역 데이터를 불러오지 못했습니다."; $("rcMsg").className = "msg warn show";
+        return;
+      }
+      json._key = key;
+      rcState.data = json;
+      $("rcMsg").classList.remove("show");
+      renderRegionCompare();
+    })
+    .catch(function () {
+      rcState.loadingKey = null;
+      $("rcMsg").textContent = "지역 데이터를 불러오지 못했습니다. (NAS 연결 확인)"; $("rcMsg").className = "msg warn show";
+    });
+}
+
+function renderRegionCompare() {
+  var d = rcState.data;
+  if (!d) return;
+  var years = d.years || [];
+  var unit = d.unit || "kg/10a";
+  var picks = rcState.regions.slice(0, RC_MAX);
+
+  // 차트
+  renderRegionChart(picks, years, unit);
+
+  // 표
+  var head = $("rcHead"); head.innerHTML = "";
+  var cols = ["지역"].concat(years.map(function (y) { return y + ""; })).concat(["평균"]);
+  cols.forEach(function (c, i) {
+    var th = document.createElement("th"); if (i === 0) th.className = "year"; th.textContent = c; head.appendChild(th);
+  });
+  var body = $("rcBody"); body.innerHTML = "";
+  var deltas = $("rcDeltas"); deltas.innerHTML = "";
+
+  picks.forEach(function (name, idx) {
+    var vals = (d.regions[name] || []).slice();
+    var tr = document.createElement("tr");
+    var tdN = document.createElement("td"); tdN.className = "year";
+    tdN.innerHTML = '<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:' + RC_COLORS[idx % RC_COLORS.length] + ';margin-right:6px"></span>' + name;
+    tr.appendChild(tdN);
+    var nums = [];
+    vals.forEach(function (v) {
+      var td = document.createElement("td");
+      if (v === null || v === undefined) { td.className = "na"; td.textContent = "-"; }
+      else { td.textContent = fmt(Math.round(v)); nums.push(v); }
+      tr.appendChild(td);
+    });
+    var avg = nums.length ? nums.reduce(function (a, b) { return a + b; }, 0) / nums.length : null;
+    var tdA = document.createElement("td"); tdA.style.fontWeight = "700";
+    tdA.textContent = avg === null ? "-" : fmt(Math.round(avg));
+    tr.appendChild(tdA);
+    body.appendChild(tr);
+
+    // 평년대비/전년대비 (최신값 기준)
+    deltas.appendChild(buildDeltaBox(name, vals, avg, years, RC_COLORS[idx % RC_COLORS.length], unit));
+  });
+
+  if (picks.length === 0) {
+    var tr0 = document.createElement("tr");
+    var td0 = document.createElement("td"); td0.colSpan = cols.length; td0.className = "na";
+    td0.style.textAlign = "center"; td0.textContent = "위에서 지역(또는 권역)을 선택해 주세요.";
+    tr0.appendChild(td0); body.appendChild(tr0);
+  }
+}
+
+function buildDeltaBox(name, vals, avg, years, color, unit) {
+  // 최신(값 있는) 연도와 그 전년
+  var latestIdx = -1;
+  for (var i = vals.length - 1; i >= 0; i--) { if (vals[i] !== null && vals[i] !== undefined) { latestIdx = i; break; } }
+  var box = document.createElement("div");
+  box.style.cssText = "border-left:4px solid " + color + ";padding:8px 10px;border:1px solid var(--border);border-left-width:4px;border-radius:8px;font-size:13px";
+  var latest = latestIdx >= 0 ? vals[latestIdx] : null;
+  var prev = (latestIdx > 0) ? vals[latestIdx - 1] : null;
+  function pct(cur, base) {
+    if (cur === null || base === null || base === undefined || base === 0) return null;
+    return (cur - base) / base * 100;
+  }
+  function line(label, rate) {
+    if (rate === null) return label + ' <span style="color:var(--muted)">자료없음</span>';
+    var up = rate > 0, flat = Math.abs(rate) < 0.05;
+    var arrow = flat ? "―" : (up ? "▲" : "▼");
+    var col = flat ? "var(--muted)" : (up ? "var(--danger)" : "var(--primary-dark)");
+    return label + ' <b style="color:' + col + '">' + arrow + (Math.round(Math.abs(rate) * 10) / 10) + "%</b>";
+  }
+  var rateAvg = pct(latest, avg);       // 평년(기간평균) 대비
+  var ratePrev = pct(latest, prev);     // 전년 대비
+  box.innerHTML = '<div style="font-weight:700;margin-bottom:4px">' + name +
+    (latestIdx >= 0 ? ' <span style="color:var(--muted);font-weight:400">' + years[latestIdx] + '년 ' + fmt(Math.round(latest)) + unit + '</span>' : '') + '</div>' +
+    '<div>' + line("평년대비", rateAvg) + '</div>' +
+    '<div>' + line("전년대비", ratePrev) + '</div>';
+  return box;
+}
+
+function renderRegionChart(picks, years, unit) {
+  var canvas = $("regionChart");
+  if (typeof Chart === "undefined") return;
+  var datasets = picks.map(function (name, idx) {
+    var vals = (rcState.data.regions[name] || []).map(function (v) { return (v === null || v === undefined) ? null : v; });
+    var color = RC_COLORS[idx % RC_COLORS.length];
+    return {
+      label: name, data: vals, borderColor: color, backgroundColor: color,
+      spanGaps: false, tension: 0.3, pointRadius: 3, pointHoverRadius: 5, borderWidth: 2, fill: false
+    };
+  });
+  if (regionChartInstance) { regionChartInstance.destroy(); regionChartInstance = null; }
+  try {
+    regionChartInstance = new Chart(canvas.getContext("2d"), {
+      type: "line",
+      data: { labels: years.map(function (y) { return y + "년"; }), datasets: datasets },
+      options: {
+        responsive: true, maintainAspectRatio: false, animation: { duration: 250 },
+        interaction: { mode: "index", intersect: false },
+        plugins: {
+          legend: { display: true, position: "bottom" },
+          tooltip: { callbacks: { label: function (ctx) {
+            var v = ctx.parsed.y; return ctx.dataset.label + ": " + (v == null ? "자료없음" : fmt(Math.round(v)) + " " + unit);
+          } } }
+        },
+        scales: { y: { title: { display: true, text: "10a당 생산량 (" + unit + ")" } } }
+      }
+    });
+  } catch (e) { /* 차트 실패해도 표는 표시됨 */ }
+}
+
 /* ---------- 이벤트 배선 ---------- */
 function wireEvents() {
   $("cropSearch").addEventListener("input", function (e) { buildCropList(e.target.value); });
   $("sidoSel").addEventListener("change", onSidoChange);
   $("sigunguSel").addEventListener("change", onSigunguChange);
-  $("startYear").addEventListener("change", scheduleAutoQuery);
-  $("endYear").addEventListener("change", scheduleAutoQuery);
+  $("startYear").addEventListener("change", function () { scheduleAutoQuery(); scheduleRegionCompare(); });
+  $("endYear").addEventListener("change", function () { scheduleAutoQuery(); scheduleRegionCompare(); });
   $("resetBtn").addEventListener("click", resetConditions);
   $("queryBtn").addEventListener("click", function () { runQuery(); });
+  $("myYield").addEventListener("input", computeCompare);
 
   $("csvBtn").addEventListener("click", saveCSV);
   $("jsonBtn").addEventListener("click", saveJSON);
@@ -1252,7 +1533,7 @@ function mapClientError(e) {
 function showError(msg) {
   $("errorMsg").textContent = msg;
   show($("errorCard"));
-  hide($("summaryCard")); hide($("recentCard")); hide($("chartCard"));
+  hide($("summaryCard")); hide($("recentCard")); hide($("compareCard")); hide($("chartCard"));
   hide($("tableCard")); hide($("shareCard"));
   $("errorCard").scrollIntoView({ behavior: "smooth", block: "start" });
 }
@@ -1266,13 +1547,67 @@ function renderResult(resp, isDev) {
 
   renderSummary(resp, isDev);
   renderRecent(resp);
+  renderCompare(resp);
   renderTable(resp);
   renderChart(resp);
 
-  show($("summaryCard")); show($("recentCard"));
+  show($("summaryCard")); show($("recentCard")); show($("compareCard"));
   show($("chartCard")); show($("tableCard")); show($("shareCard"));
 
   $("summaryCard").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+/* 실측/청취 비교: KOSIS 최근 공표 10a당을 기준으로, 사용자가 입력한 실측값과 비교 */
+var _compareBaseline = null;   // { value, year, unit, region, crop }
+function renderCompare(resp) {
+  var data = (resp.data || []).slice().sort(function (a, b) { return a.year - b.year; });
+  var unit = (resp.unit && resp.unit.yield10a) || "kg/10a";
+  var q = resp.query || {};
+  var latest = null;
+  for (var i = data.length - 1; i >= 0; i--) {
+    if (data[i].yield10a !== null && data[i].yield10a !== undefined) { latest = data[i]; break; }
+  }
+  if (!latest) {
+    _compareBaseline = null;
+    $("compareBaseline").textContent = "비교 기준으로 쓸 KOSIS 10a당 생산량이 없습니다.";
+    $("compareOut").classList.remove("show");
+    return;
+  }
+  _compareBaseline = {
+    value: latest.yield10a, year: latest.year, unit: unit,
+    region: regionText(resp), crop: q.cropName || q.cropKey
+  };
+  $("compareBaseline").textContent =
+    "KOSIS 기준: " + _compareBaseline.crop + " · " + _compareBaseline.region + " · " +
+    _compareBaseline.year + "년 10a당 " + fmt(_compareBaseline.value) + unit + " (최근 공표)";
+  // 이전 입력이 있으면 즉시 재계산
+  computeCompare();
+}
+
+function computeCompare() {
+  var out = $("compareOut");
+  if (!_compareBaseline) { out.classList.remove("show"); return; }
+  var raw = ($("myYield").value || "").trim();
+  if (raw === "") { out.classList.remove("show"); return; }
+  var mine = Number(raw.replace(/,/g, ""));
+  if (!Number.isFinite(mine)) { out.classList.remove("show"); return; }
+
+  var base = _compareBaseline.value;
+  var unit = _compareBaseline.unit;
+  var diff = mine - base;
+  var rate = base !== 0 ? (diff / base) * 100 : null;
+  var index = base !== 0 ? (mine / base) * 100 : null;
+  var arrow = diff > 0 ? "▲" : (diff < 0 ? "▼" : "―");
+  var word = diff > 0 ? "높음" : (diff < 0 ? "낮음" : "동일");
+
+  out.className = "msg " + (diff > 0 ? "info" : (diff < 0 ? "warn" : "info")) + " show";
+  out.textContent =
+    "내 실측/청취: " + fmt(mine) + unit + "\n" +
+    "KOSIS 지역평균(" + _compareBaseline.year + "년): " + fmt(base) + unit + "\n" +
+    arrow + " 편차 " + fmt(Math.abs(Math.round(diff * 10) / 10)) + unit.replace("/10a", "") +
+      (rate === null ? "" : " (" + (Math.round(Math.abs(rate) * 10) / 10) + "%)") + " " + word + "\n" +
+    (index === null ? "" : "지수(KOSIS=100 기준): " + (Math.round(index * 10) / 10)) + "\n" +
+    "※ 실측은 필지 단위, KOSIS는 지역 평균이라 참고 비교입니다.";
 }
 
 function surveyName(resp) {
@@ -1677,8 +2012,11 @@ function resetConditions() {
   // 결과/그래프/오류 제거
   if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
   state.lastResult = null;
-  hide($("summaryCard")); hide($("recentCard")); hide($("chartCard"));
+  hide($("summaryCard")); hide($("recentCard")); hide($("compareCard")); hide($("chartCard"));
   hide($("tableCard")); hide($("shareCard")); hide($("errorCard"));
+  hide($("regionCompareCard"));
+  rcState.regions = []; rcState.data = null; refreshSidoChips();
+  if (regionChartInstance) { regionChartInstance.destroy(); regionChartInstance = null; }
   clearValidate();
 
   window.scrollTo({ top: 0, behavior: "smooth" });
