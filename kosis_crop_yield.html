@@ -1,7 +1,10 @@
-<!-- kosis_crop_yield_v6.html · 저장: 2026-08-07 00:54 KST
+<!-- kosis_crop_yield_v9.html · 저장: 2026-08-07 KST
+     v9 변경점:
+       (8) 주요 작물 34종 등록 완료(NAS config). 작물 선택 시 실제 KOSIS 데이터 조회.
+       (9) 논벼 시군 조회: 논벼 선택 + 경상북도/강원도 선택 시 시군 드롭다운 활성화(그 외 작물·시도는 시도만).
+       (10) 자동 조회: '통계 조회' 버튼 없이도 작물·지역·연도·항목을 바꾸면 자동으로 조회(디바운스 350ms). 버튼도 유지.
      v6 변경점:
-       (7) AbortController 미지원 브라우저(구형 사파리 등)에서 "AbortController is not defined"로
-           조회가 멈추던 문제 수정 → fetchWithTimeout 으로 안전 처리(있으면 abort, 없으면 타임아웃 무시).
+       (7) AbortController 미지원 브라우저에서 조회가 멈추던 문제 수정(fetchWithTimeout).
      v5 기준 -->
 <!-- (구) kosis_crop_yield_v5.html · 저장: 2026-08-07 00:32 KST
      v5 변경점:
@@ -524,6 +527,20 @@ REGION_LIST.forEach(function (r) {
   REGION_CONFIG[r[0]] = { code: "", children: children };
 });
 
+/* 시군 조회 지원 작물(현재 논벼만) 및 시도별 시군 목록.
+   KOSIS 는 논벼만 시군 단위(DT_1ET0034)를 제공. 대구는 시군 자료 없음(시도만).
+   여기 시군명은 NAS config 의 crops.ricePaddy.sigungu.regions 키와 일치해야 함. */
+var SIGUNGU_CROPS = { ricePaddy: true };
+var SIGUNGU_BY_SIDO = {
+  "경상북도": ["포항시","경주시","김천시","안동시","구미시","영주시","영천시","상주시","문경시","경산시",
+              "의성군","청송군","영양군","영덕군","청도군","고령군","성주군","칠곡군","예천군","봉화군","울진군"],
+  "강원도": ["춘천시","원주시","강릉시","동해시","속초시","삼척시","홍천군","횡성군","영월군","평창군",
+            "정선군","철원군","화천군","양구군","인제군","고성군","양양군"]
+};
+function cropSupportsSigungu(cropKey, sido) {
+  return !!(cropKey && SIGUNGU_CROPS[cropKey] && sido && SIGUNGU_BY_SIDO[sido]);
+}
+
 /* 조회항목 설정 — 표시명/내부키/KOSIS 항목코드(비움)/기본단위 */
 var ITEM_CONFIG = {
   yield10a:   { name: "10a당 생산량", kosisCode: "", defaultUnit: "kg/10a" },
@@ -855,6 +872,8 @@ function selectCrop(key) {
     ch.setAttribute("aria-selected", ch.dataset.key === key ? "true" : "false");
   });
   renderSurvey(key);
+  updateSigunguOptions();   // 작물 바뀌면 시군 가능 여부 갱신 (논벼만 시군)
+  scheduleAutoQuery();
 }
 
 function renderSurvey(key) {
@@ -886,38 +905,39 @@ function buildRegionSelects() {
 }
 
 function onSidoChange() {
-  var sido = $("sidoSel").value;
-  state.sido = sido;
+  state.sido = $("sidoSel").value;
   state.sigungu = "";
-  var sig = $("sigunguSel");
-  sig.innerHTML = '<option value="">시군구 선택</option>';
-  var hint = $("regionHint");
-  hint.textContent = "";
-  if (!sido) { sig.disabled = true; return; }
+  updateSigunguOptions();
+  scheduleAutoQuery();
+}
 
-  var conf = REGION_CONFIG[sido];
-  // 시도 코드 미등록 안내
-  if (conf && !conf.code) {
-    hint.textContent = "선택한 지역의 KOSIS 분류코드가 등록되지 않았습니다.";
-  }
-  var children = conf ? conf.children : {};
-  var names = Object.keys(children);
-  if (names.length === 0) {
-    // 시도 단위까지만 제공되는 통계표로 간주
+/* 작물+시도에 맞춰 시군 드롭다운을 구성. 논벼(경북·강원)만 시군 제공. */
+function updateSigunguOptions() {
+  var sig = $("sigunguSel");
+  var hint = $("regionHint");
+  sig.innerHTML = '<option value="">시군 선택(선택 안 하면 시도 전체)</option>';
+  hint.textContent = "";
+  state.sigungu = "";
+
+  if (!state.sido) { sig.disabled = true; return; }
+
+  if (cropSupportsSigungu(state.crop, state.sido)) {
+    sig.disabled = false;
+    SIGUNGU_BY_SIDO[state.sido].forEach(function (name) {
+      var opt = document.createElement("option");
+      opt.value = name; opt.textContent = name;
+      sig.appendChild(opt);
+    });
+    hint.textContent = "논벼는 시군 단위 조회가 가능합니다. (시군을 선택하지 않으면 시도 전체)";
+  } else {
     sig.disabled = true;
-    hint.textContent = "이 통계표는 시도 단위까지만 제공합니다.";
-    return;
+    if (state.crop) hint.textContent = "이 통계표는 시도 단위까지만 제공합니다. (논벼만 시군 조회 가능)";
   }
-  sig.disabled = false;
-  names.forEach(function (name) {
-    var opt = document.createElement("option");
-    opt.value = name; opt.textContent = name;
-    sig.appendChild(opt);
-  });
 }
 
 function onSigunguChange() {
   state.sigungu = $("sigunguSel").value;
+  scheduleAutoQuery();
 }
 
 /* ---------- 연도 ---------- */
@@ -957,6 +977,22 @@ function onItemChange() {
   checks.forEach(function (cb) { if (cb.checked) sel.push(cb.value); });
   // 표시 순서 유지
   state.items = ITEM_ORDER.filter(function (k) { return sel.indexOf(k) !== -1; });
+  scheduleAutoQuery();
+}
+
+/* 자동 조회: 작물·지역·항목이 갖춰지면 버튼 없이 자동으로 조회(디바운스). */
+var AUTO_QUERY = true;
+var _autoTimer = null;
+function scheduleAutoQuery() {
+  if (!AUTO_QUERY) return;
+  if (_autoTimer) clearTimeout(_autoTimer);
+  _autoTimer = setTimeout(function () {
+    _autoTimer = null;
+    // 최소 조건: 작물 + 시도 + 항목 1개 이상
+    if (state.crop && state.sido && state.items.length > 0) {
+      runQuery();
+    }
+  }, 350);
 }
 
 /* ---------- 이벤트 배선 ---------- */
@@ -964,6 +1000,8 @@ function wireEvents() {
   $("cropSearch").addEventListener("input", function (e) { buildCropList(e.target.value); });
   $("sidoSel").addEventListener("change", onSidoChange);
   $("sigunguSel").addEventListener("change", onSigunguChange);
+  $("startYear").addEventListener("change", scheduleAutoQuery);
+  $("endYear").addEventListener("change", scheduleAutoQuery);
   $("resetBtn").addEventListener("click", resetConditions);
   $("queryBtn").addEventListener("click", function () { runQuery(); });
 
