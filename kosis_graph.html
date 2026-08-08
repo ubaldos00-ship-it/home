@@ -1,4 +1,9 @@
-<!-- kosis_graph_v4.html · 저장: 2026-08-08 KST · 다듬기(4단계)
+<!-- kosis_graph_v5.html · 저장: 2026-08-08 KST · 다듬기(5단계)
+     (1)과채류(수박·참외·오이·호박·토마토·딸기) 추가·제주 서귀포시 논벼 시군 추가
+     (2)항목 토글(10a당/재배면적/총생산량)·통계표 역순(최근 위)
+     (3)CSV/JSON/이미지/공유 버튼·출처+조회일 소표기
+     (5)서울경기도권→서울경기권
+     ─ 이전 ─ 다듬기(4단계)
      (1)작물카드 '전체 초기화' (2)청 버튼에 전국 항상 포함 (3)논벼 시도보기도 청 버튼(전국 자동)
      (4)시군 권역버튼 줄바꿈(flex-wrap)·서울경기도권 명칭 (5)시군 최대 40개
      (6)시군별보기 칩에 권역 소속 시도(대구/경북, 강원, 서울/인천/경기 …) 함께 표시
@@ -185,6 +190,9 @@
     margin-bottom: 10px; padding-bottom: 2px;
   }
   .quick-btns::-webkit-scrollbar { display: none; }
+  .dl-btn { flex:1 1 auto; min-height:40px; padding:0 12px; font-size:13px; font-weight:700;
+    border:1.5px solid #d1d5db; border-radius:10px; background:#fff; color:#374151; cursor:pointer; }
+  .dl-btn:active { background:#f3f4f6; }
   .qb {
     font-size: 11.5px; font-weight: 700;
     background: #f3f4f6; color: #374151;
@@ -553,6 +561,12 @@
       <select id="yearEnd" style="min-height:40px;padding:6px 10px;font-size:15px;border:1.5px solid #d1d5db;border-radius:10px;background:#fff"></select>
       <span style="font-size:12px;color:#6b7280">기본: 최근 5년 (늘리면 그만큼 조회)</span>
     </div>
+    <div style="margin-top:10px;font-size:12px;color:#6b7280;margin-bottom:4px">조회 항목</div>
+    <div class="quick-btns" id="itemToggle">
+      <button class="qb on" data-item="yield10a" onclick="setItem('yield10a')">10a당 생산량</button>
+      <button class="qb" data-item="area" onclick="setItem('area')">재배면적</button>
+      <button class="qb" data-item="production" onclick="setItem('production')">총생산량</button>
+    </div>
   </div>
 
   <div class="card" id="card-step3">
@@ -627,11 +641,21 @@ var LIVE_CROP_MAP = {
   "고랭지배추":"고랭지배추","노지가을배추":"노지가을배추","시설배추":"시설배추",
   "노지무":"노지무","노지봄무":"노지봄무","일반봄무":"일반봄무","노지가을무":"노지가을무",
   "가을총각무":"가을총각무","노지겨울무":"노지겨울무","시설무":"시설무",
-  "감":"감전체","자두":"자두"
+  "감":"감전체","자두":"자두",
+  "수박":"watermelon","참외":"orientalMelon","오이":"cucumber","호박":"pumpkin","토마토":"tomato","딸기":"strawberry"
 };
 var _liveLoaded = {}; // 작물별 라이브 로드 완료 여부(중복 호출 방지)
 var QUERY_START = 2021, QUERY_END = 2025; // 기본 최근 5년 (사용자 콤보박스로 변경)
 var EMBEDDED_YEARS = (DB.years || []).slice(); // 내장자료의 연도(폴백 시 정렬 기준)
+
+/* 조회 항목 (10a당 생산량 / 재배면적 / 총생산량) */
+var ITEM_INFO = {
+  yield10a:   { name: "10a당 생산량", unit: "kg/10a" },
+  area:       { name: "재배면적",     unit: "ha" },
+  production: { name: "총생산량",     unit: "톤" }
+};
+var currentItem = "yield10a";
+var LAST_FETCH_AT = null; // 마지막 조회 시각(출처 표기용)
 
 /* 자료 출처 표시: 'live'=KOSIS 실시간, 'embedded'=내장 참고자료 */
 function setDataSource(kind) {
@@ -649,11 +673,12 @@ function setDataSource(kind) {
 
 function loadLiveThen(cropName, done) {
   var key = LIVE_CROP_MAP[cropName];
+  var lk = cropName + '|' + currentItem;               // 작물+항목별 캐시 키
   if (!key) { setDataSource('embedded'); done(); return; }        // 매핑 없음 → 내장자료
-  if (_liveLoaded[cropName]) { setDataSource('live'); done(); return; } // 이미 라이브 로드됨
+  if (_liveLoaded[lk]) { setDataSource('live'); done(); return; } // 이미 라이브 로드됨
   var sy = QUERY_START, ey = QUERY_END;
   var url = API_BASE_URL + "/kosis/regions?crop=" + encodeURIComponent(key) +
-            "&item=yield10a&startYear=" + sy + "&endYear=" + ey;
+            "&item=" + currentItem + "&startYear=" + sy + "&endYear=" + ey;
   var ac = (typeof AbortController !== "undefined") ? new AbortController() : null;
   var t = setTimeout(function(){ if (ac) try{ac.abort();}catch(e){} }, 12000);
   fetch(url, ac ? { signal: ac.signal } : {})
@@ -663,7 +688,8 @@ function loadLiveThen(cropName, done) {
       if (j && j.success && j.regions) {
         DB.data[cropName] = j.regions;          // 최신 KOSIS 값으로 갱신
         if (j.years && j.years.length) DB.years = j.years;
-        _liveLoaded[cropName] = true;
+        _liveLoaded[lk] = true;
+        LAST_FETCH_AT = new Date();
         setDataSource('live');
       } else {
         DB.years = EMBEDDED_YEARS.slice();   // 폴백: 내장 연도로 정렬(가짜연도 방지)
@@ -672,6 +698,68 @@ function loadLiveThen(cropName, done) {
       done();
     })
     .catch(function(){ clearTimeout(t); DB.years = EMBEDDED_YEARS.slice(); setDataSource('embedded'); done(); });
+}
+
+/* 조회 항목 전환 (10a당/재배면적/총생산량) */
+function setItem(it) {
+  if (currentItem === it) return;
+  currentItem = it;
+  document.querySelectorAll('#itemToggle .qb').forEach(function(b){ b.classList.toggle('on', b.dataset.item === it); });
+  if (currentCrop === '논벼' && isRiceSigunMode) {
+    _riceSigunLoaded = false; _liveLoaded = {};
+    loadLiveSigun(function(){ buildChips(); render(); });
+  } else if (currentCrop) {
+    loadLiveThen(currentCrop, function(){ buildChips(); render(); });
+  }
+}
+
+/* ===== 내보내기 / 공유 ===== */
+function currentSeries() {
+  return selectedRegions.map(function(r){ return { region: r, values: getSeries(r) }; }).filter(function(s){ return s.values; });
+}
+function exportBaseName() {
+  var unit = (ITEM_INFO[currentItem]||{}).name || '';
+  return 'KOSIS_' + (currentLabel||currentCrop||'작물') + '_' + unit + '_' + QUERY_START + '-' + QUERY_END;
+}
+function downloadBlob(blob, filename) {
+  var url = URL.createObjectURL(blob); var a = document.createElement('a');
+  a.href = url; a.download = filename; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+}
+function exportCSV() {
+  var s = currentSeries(); if (!s.length) { alert('먼저 지역을 선택하세요.'); return; }
+  var unit = (ITEM_INFO[currentItem]||{}).unit || '';
+  var rows = [['지역'].concat(DB.years.map(String)).concat(['평균','작물','항목','단위','데이터출처'])];
+  s.forEach(function(x){
+    rows.push([x.region].concat(x.values.map(function(v){ return (v==null)?'':v; }))
+      .concat([avgOf(x.values)!=null?Math.round(avgOf(x.values)):'', currentLabel, (ITEM_INFO[currentItem]||{}).name, unit, '국가데이터처']));
+  });
+  var csv = rows.map(function(r){ return r.map(function(c){ var t=String(c); return /[",\n]/.test(t)?('"'+t.replace(/"/g,'""')+'"'):t; }).join(','); }).join('\r\n');
+  downloadBlob(new Blob(['﻿'+csv], {type:'text/csv;charset=utf-8;'}), exportBaseName()+'.csv');
+}
+function exportJSON() {
+  var s = currentSeries(); if (!s.length) { alert('먼저 지역을 선택하세요.'); return; }
+  var out = { source:{agencyName:'국가데이터처',serviceName:'국가통계포털(KOSIS)',survey:'농작물생산조사'},
+    crop: currentLabel, item: (ITEM_INFO[currentItem]||{}).name, unit:(ITEM_INFO[currentItem]||{}).unit,
+    years: DB.years, fetchedAt: LAST_FETCH_AT ? LAST_FETCH_AT.toISOString() : null,
+    regions: {} };
+  s.forEach(function(x){ out.regions[x.region] = x.values; });
+  downloadBlob(new Blob([JSON.stringify(out,null,2)], {type:'application/json;charset=utf-8;'}), exportBaseName()+'.json');
+}
+function exportImage() {
+  var canvas = document.getElementById('line-chart');
+  if (!canvas) { alert('그래프가 없습니다.'); return; }
+  try { canvas.toBlob(function(b){ if(b) downloadBlob(b, exportBaseName()+'.png'); else alert('이미지 저장 미지원 환경입니다. 화면 캡처를 이용하세요.'); }); }
+  catch(e){ alert('이미지 저장 중 문제가 발생했습니다.'); }
+}
+function shareResult() {
+  var s = currentSeries();
+  var text = '[KOSIS 생산량 조회]\n작물: ' + (currentLabel||'') + '\n항목: ' + ((ITEM_INFO[currentItem]||{}).name||'') +
+    '\n기간: ' + QUERY_START + '~' + QUERY_END + '\n지역: ' + selectedRegions.join(', ') +
+    '\n\n데이터 출처: 국가데이터처\n자료 제공: 국가통계포털(KOSIS)';
+  if (navigator.share) { navigator.share({ title:'KOSIS 생산량 조회', text:text }).catch(function(){}); }
+  else if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(function(){ alert('클립보드에 복사되었습니다.'); }, function(){ alert('복사 실패'); }); }
+  else { alert('공유를 지원하지 않는 환경입니다.'); }
 }
 
 const CROP_GROUPS = {
@@ -691,7 +779,13 @@ const CROP_GROUPS = {
     { label: '무(시설)', crop: '시설무' },
     { label: '건고추', crop: '건고추' },
     { label: '양파', crop: '양파' },
-    { label: '마늘', crop: '마늘' }
+    { label: '마늘', crop: '마늘' },
+    { label: '수박', crop: '수박' },
+    { label: '참외', crop: '참외' },
+    { label: '오이', crop: '오이' },
+    { label: '호박', crop: '호박' },
+    { label: '토마토', crop: '토마토' },
+    { label: '딸기', crop: '딸기' }
   ],
   '과수작물': [ { label: '사과', crop: '사과' }, { label: '배', crop: '배' }, { label: '복숭아', crop: '복숭아' }, { label: '포도', crop: '포도' }, { label: '감귤', crop: '감귤' }, { label: '단감', crop: '단감' }, { label: '떫은감', crop: '떫은감' }, { label: '자두', crop: '자두' }, { label: '매실', crop: '매실' } ],
   '특용작물': [ { label: '참깨', crop: '참깨' } ],
@@ -854,9 +948,9 @@ function onYearChange() {
 var SIGUN_BY_GWON = {
   "대구경북권": ["전국","대구광역시","경상북도","포항시","경주시","김천시","안동시","구미시","영주시","영천시","상주시","문경시","경산시","의성군","청송군","영양군","영덕군","청도군","고령군","성주군","칠곡군","예천군","봉화군","울진군"],
   "강원권": ["전국","강원도","춘천시","원주시","강릉시","동해시","속초시","삼척시","홍천군","횡성군","영월군","평창군","정선군","철원군","화천군","양구군","인제군","고성군","양양군"],
-  "서울경기도권": ["전국","서울특별시","인천광역시","경기도","수원시","성남시","의정부시","부천시","광명시","평택시","동두천시","안산시","고양시","과천시","남양주시","오산시","시흥시","군포시","의왕시","하남시","용인시","파주시","이천시","안성시","김포시","화성시","경기광주시","양주시","포천시","여주시","연천군","가평군","양평군"],
+  "서울경기권": ["전국","서울특별시","인천광역시","경기도","수원시","성남시","의정부시","부천시","광명시","평택시","동두천시","안산시","고양시","과천시","남양주시","오산시","시흥시","군포시","의왕시","하남시","용인시","파주시","이천시","안성시","김포시","화성시","경기광주시","양주시","포천시","여주시","연천군","가평군","양평군"],
   "대전충청권": ["전국","대전광역시","세종특별자치시","충청북도","충청남도","청주시","충주시","제천시","보은군","옥천군","영동군","진천군","괴산군","음성군","단양군","증평군","천안시","공주시","보령시","아산시","서산시","논산시","계룡시","금산군","부여군","서천군","청양군","홍성군","예산군","태안군","당진시"],
-  "광주호남권": ["전국","광주광역시","전라북도","전라남도","제주도","전주시","군산시","익산시","정읍시","남원시","김제시","완주군","진안군","무주군","장수군","임실군","순창군","고창군","부안군","목포시","여수시","순천시","나주시","광양시","담양군","곡성군","구례군","고흥군","보성군","화순군","장흥군","강진군","해남군","영암군","무안군","함평군","영광군","장성군","완도군","진도군","신안군"],
+  "광주호남권": ["전국","광주광역시","전라북도","전라남도","제주도","서귀포시","전주시","군산시","익산시","정읍시","남원시","김제시","완주군","진안군","무주군","장수군","임실군","순창군","고창군","부안군","목포시","여수시","순천시","나주시","광양시","담양군","곡성군","구례군","고흥군","보성군","화순군","장흥군","강진군","해남군","영암군","무안군","함평군","영광군","장성군","완도군","진도군","신안군"],
   "부산경남권": ["전국","부산광역시","울산광역시","경상남도","창원시","진주시","통영시","사천시","김해시","밀양시","거제시","양산시","의령군","함안군","창녕군","경남고성군","남해군","하동군","산청군","함양군","거창군","합천군"]
 };
 var SIDO_ALL = ["전국","서울특별시","부산광역시","대구광역시","인천광역시","광주광역시","대전광역시","울산광역시","세종특별자치시","경기도","강원도","충청북도","충청남도","전라북도","전라남도","경상북도","경상남도","제주도"];
@@ -892,7 +986,7 @@ function loadLiveSigun(done) {
 }
 function loadLiveSigunInner(done) {
   if (_riceSigunLoaded) { done(); return; }
-  var url = API_BASE_URL + "/kosis/regions?crop=ricePaddy&level=sigungu&item=yield10a&startYear=" + QUERY_START + "&endYear=" + QUERY_END;
+  var url = API_BASE_URL + "/kosis/regions?crop=ricePaddy&level=sigungu&item=" + currentItem + "&startYear=" + QUERY_START + "&endYear=" + QUERY_END;
   fetch(url).then(function(r){ return r.json(); }).then(function(j){
     if (j && j.success && j.regions) {
       SIGUN_LIVE = j.regions;                 // 라이브 시군 값
@@ -1055,9 +1149,12 @@ let chartInstance = null;
 
 function render() {
   if (!currentCrop) return;
-  
+  var UNIT = (ITEM_INFO[currentItem] || {}).unit || 'kg/10a';
+  var ITEMNM = (ITEM_INFO[currentItem] || {}).name || '10a당 생산량';
+  var isYield = (currentItem === 'yield10a');
+
   // 8. 동적 타이틀 부여
-  step3Title.textContent = `${currentLabel} 5년 추이 분석`;
+  step3Title.textContent = `${currentLabel} · ${ITEMNM} 추이`;
   updateHeaderTags();
 
   if (selectedRegions.length === 0) {
@@ -1102,11 +1199,7 @@ function render() {
       const fmtPy  = v => (v != null && v > 0) ? (v / PY).toFixed(2) : '-';
       const fmt200 = v => (v != null && v > 0) ? Math.round(v * 200 / PY).toLocaleString('ko-KR') : '-';
       const prevYearVal = prev;
-      statsHtml += `
-        <div class="stat-block" style="border-left: 3px solid ${color};">
-          <b style="color:${color}">${s.region}</b>
-          <div class="sp-r cmp">평년대비 <span>${fmtDiff(avgRatio)}</span></div>
-          <div class="sp-r cmp">전년대비 <span>${fmtDiff(yoy)}</span></div>
+      const pyeongBox = isYield ? `
           <div class="stat-pyeong">
             <div class="sp-h">200평 생산량</div>
             <div class="sp-r">평년 <span>${fmt200(avg5)} kg</span></div>
@@ -1114,7 +1207,18 @@ function render() {
             <div class="sp-h">1평 생산량</div>
             <div class="sp-r">평년 <span>${fmtPy(avg5)} kg/평</span></div>
             <div class="sp-r">전년 <span>${fmtPy(prevYearVal)} kg/평</span></div>
-          </div>
+          </div>` : `
+          <div class="stat-pyeong">
+            <div class="sp-h">${ITEMNM}</div>
+            <div class="sp-r">최근 <span>${fmt(latest)} ${UNIT}</span></div>
+            <div class="sp-r">평년 <span>${avg5!=null?fmt(avg5):'-'} ${UNIT}</span></div>
+          </div>`;
+      statsHtml += `
+        <div class="stat-block" style="border-left: 3px solid ${color};">
+          <b style="color:${color}">${s.region}</b>
+          <div class="sp-r cmp">평년대비 <span>${fmtDiff(avgRatio)}</span></div>
+          <div class="sp-r cmp">전년대비 <span>${fmtDiff(yoy)}</span></div>
+          ${pyeongBox}
         </div>
       `;
     }
@@ -1131,7 +1235,7 @@ function render() {
         <thead>
           <tr>
             <th class="region">지역</th>
-            ${DB.years.map(y => `<th>${y}</th>`).join('')}
+            ${DB.years.slice().reverse().map(y => `<th>${y}</th>`).join('')}
             <th>평균</th>
           </tr>
         </thead>
@@ -1139,7 +1243,7 @@ function render() {
           ${series.map((s, i) => `
             <tr ${s.region === '전국' ? 'class="total"' : ''}>
               <td class="region"><span class="lg-dot" style="background:${getRegionColor(s.region, i)};"></span>${s.region}</td>
-              ${s.values.map(v => v===null||v===undefined ? '<td class="null">-</td>' : `<td>${fmt(v)}</td>`).join('')}
+              ${s.values.slice().reverse().map(v => v===null||v===undefined ? '<td class="null">-</td>' : `<td>${fmt(v)}</td>`).join('')}
               <td><b>${fmt(avgOf(s.values))}</b></td>
             </tr>
           `).join('')}
@@ -1147,11 +1251,17 @@ function render() {
       </table>
     </div>
     ` + statsHtml + `
+    <div class="dl-btns" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px">
+      <button class="dl-btn" onclick="exportCSV()">📄 CSV</button>
+      <button class="dl-btn" onclick="exportJSON()">🧾 JSON</button>
+      <button class="dl-btn" onclick="exportImage()">🖼 이미지</button>
+      <button class="dl-btn" onclick="shareResult()">🔗 공유</button>
+    </div>
     <div class="note">
-      📌 <b>${currentLabel}</b> · 단위: kg/10a (10a = 1,000㎡)<br>
-      ${currentCrop === '논벼' ? '※ 논벼 정곡 기준. 시군별 자료는 강원·경북 한정.<br>' : ''}${['겉보리','쌀보리','밀'].includes(currentCrop) ? '※ 맥류(겉보리·쌀보리·밀)는 조곡 기준입니다.<br>' : ''}
+      📌 <b>${currentLabel}</b> · ${ITEMNM} · 단위: ${UNIT}${isYield ? ' (10a = 1,000㎡)' : ''}<br>
+      ${currentCrop === '논벼' ? '※ 논벼 정곡 기준.<br>' : ''}${['겉보리','쌀보리','밀'].includes(currentCrop) ? '※ 맥류(겉보리·쌀보리·밀)는 조곡 기준입니다.<br>' : ''}
       값이 <b>"-"</b>로 표시된 항목은 미공표 또는 결측 데이터입니다.<br>
-      <span style="color:#9ca3af;">출처: KOSIS 농작물생산조사(2021~2025)</span>
+      <span style="font-size:10px;color:#9ca3af;">데이터 출처: 국가데이터처 · 자료 제공: 국가통계포털(KOSIS) 농작물생산조사 · 조회일 ${new Date().toLocaleDateString('ko-KR')}</span>
     </div>
   `;
   resultArea.innerHTML = html;
