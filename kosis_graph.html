@@ -1,4 +1,9 @@
-<!-- kosis_graph_v6.html · 저장: 2026-08-08 KST · 다듬기(6단계)
+<!-- kosis_graph_v7.html · 저장: 2026-08-08 KST · 다듬기(7단계)
+     (1)그래프 데이터라벨 항상표시(겹쳐도 숨김 안함)·위아래 오프셋·불투명 배경/테두리·Y축 단위라벨
+        추가정보 표 CSV 저장·즐겨찾기(마지막 선택 자동 복원)
+     (2)시도보기 청 버튼 토글(선택표시/재선택 해제)
+     (3)시군별 보기 '전체 선택'·'전체 해제' 버튼
+     ─ 이전 ─ 다듬기(6단계)
      (1)조회기간 카드의 '조회 항목' 토글 제거(기본 10a당 고정)·통계표 원복(과거 앞·최신 뒤)
      (2)하단 '추가 정보'(기본 닫힘) 추가: 선택 지역 버튼 → 그 지역의 10a당·재배면적·총생산량을
         연도별(과거 위·최신 아래)로 표기 + 최신 공표자료 별도 표시
@@ -826,8 +831,18 @@ function showAddInfoDetail(region) {
     }).join('');
     box.innerHTML =
       `<div style="font-weight:800;margin:10px 0 2px">${region} — ${currentLabel}</div>` + latest +
-      `<div class="table-box"><table><thead><tr><th class="region">연도</th><th>10a당(kg/10a)</th><th>재배면적(ha)</th><th>총생산량(톤)</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+      `<div class="table-box"><table><thead><tr><th class="region">연도</th><th>10a당(kg/10a)</th><th>재배면적(ha)</th><th>총생산량(톤)</th></tr></thead><tbody>${rows}</tbody></table></div>
+       <div class="dl-btns" style="margin-top:8px"><button class="dl-btn" onclick="exportAddInfoCSV('${region}')">📄 이 지역 CSV</button></div>`;
   });
+}
+function exportAddInfoCSV(region) {
+  if (!ADDINFO) return;
+  var yrs = ADDINFO.years || [];
+  var y10 = ADDINFO.yield10a[region]||[], ar = ADDINFO.area[region]||[], pr = ADDINFO.production[region]||[];
+  var rows = [['연도','10a당 생산량(kg/10a)','재배면적(ha)','총생산량(톤)','작물','지역','데이터출처']];
+  yrs.forEach(function(y,i){ rows.push([y, y10[i]==null?'':y10[i], ar[i]==null?'':ar[i], pr[i]==null?'':pr[i], currentLabel, region, '국가데이터처']); });
+  var csv = rows.map(function(r){ return r.map(function(c){ var t=String(c); return /[",\n]/.test(t)?('"'+t.replace(/"/g,'""')+'"'):t; }).join(','); }).join('\r\n');
+  downloadBlob(new Blob(['﻿'+csv], {type:'text/csv;charset=utf-8;'}), 'KOSIS_'+currentLabel+'_'+region+'_'+QUERY_START+'-'+QUERY_END+'.csv');
 }
 
 const CROP_GROUPS = {
@@ -1068,20 +1083,39 @@ function loadLiveSigunInner(done) {
 
 function selGroup(arr) {
   const list = getRegionList();
-  // 선택 가능한 지역만 필터링하여 추가
-  arr.forEach(r => {
-    if (list.includes(r) && !selectedRegions.includes(r)) {
-      if (selectedRegions.length < (currentCrop === '논벼' ? 40 : 8)) {
-        selectedRegions.push(r);
-      }
-    }
-  });
+  const max = (currentCrop === '논벼' ? 40 : 8);
+  const sel = arr.filter(r => list.includes(r));
+  // 토글: 그룹의 선택가능 지역이 모두 이미 선택돼 있으면 → 해제, 아니면 → 추가 (#2)
+  const allOn = sel.length > 0 && sel.every(r => selectedRegions.includes(r));
+  if (allOn) {
+    selectedRegions = selectedRegions.filter(r => sel.indexOf(r) === -1);
+  } else {
+    sel.forEach(r => {
+      if (!selectedRegions.includes(r) && selectedRegions.length < max) selectedRegions.push(r);
+    });
+  }
+  renderRegionControls();  // 청 버튼 선택표시 갱신
   buildChips();
   render();
+}
+/* 청(권역)이 모두 선택돼 있는지 */
+function isChungOn(members) {
+  const list = getRegionList();
+  const sel = members.filter(r => list.includes(r));
+  return sel.length > 0 && sel.every(r => selectedRegions.includes(r));
 }
 
 function clearRegions() {
   selectedRegions = [];
+  buildChips();
+  render();
+}
+
+/* 시군별 보기: 현재 권역의 시도·시군 전체 선택 (최대 40개) */
+function selectAllSigun() {
+  const list = getRegionList();
+  selectedRegions = list.slice(0, 40);
+  if (list.length > 40) alert('최대 40개까지 선택되어 앞 40개만 선택했습니다.');
   buildChips();
   render();
 }
@@ -1105,7 +1139,8 @@ function renderRegionControls() {
         <div class="quick-btns">
           ${Object.keys(SIGUN_BY_GWON).map(g => `<button class="qb ${currentSigunGwon===g?'on':''}" onclick="selSigunGwon('${g}')">${g}</button>`).join('')}
         </div>
-        <div class="selected-info" style="margin-top:6px">${currentSigunGwon ? currentSigunGwon+' 시군에서 선택하세요 (최대 40개)' : '권역을 먼저 선택하세요'}</div>
+        ${currentSigunGwon ? `<div class="quick-btns" style="margin-top:4px"><button class="qb" onclick="selectAllSigun()">＋ 전체 선택</button><button class="qb" onclick="clearRegions()">전체 해제</button></div>` : ''}
+        <div class="selected-info" style="margin-top:6px">${currentSigunGwon ? currentSigunGwon+' 시도·시군에서 선택하세요 (최대 40개)' : '권역을 먼저 선택하세요'}</div>
       ` : chungButtonsHTML()}
     `;
   } else {
@@ -1126,7 +1161,7 @@ var CHUNG_GROUPS = {
 function chungButtonsHTML() {
   return '<div class="quick-btns">' +
     Object.keys(CHUNG_GROUPS).map(function(g){
-      return `<button class="qb" onclick='selGroup(${JSON.stringify(CHUNG_GROUPS[g])})'>${g}</button>`;
+      return `<button class="qb ${isChungOn(CHUNG_GROUPS[g])?'on':''}" onclick='selGroup(${JSON.stringify(CHUNG_GROUPS[g])})'>${g}</button>`;
     }).join('') + '</div>';
 }
 
@@ -1348,6 +1383,8 @@ function render() {
   // 추가정보 패널이 열려 있으면 지역 버튼 동기화
   var aib = document.getElementById('addInfoBody');
   if (aib && aib.style.display === 'block') renderAddInfoRegions();
+
+  saveState(); // 즐겨찾기(마지막 선택) 저장
 }
 
 function drawChart(series) {
@@ -1389,17 +1426,23 @@ function drawChart(series) {
           external: _extTip
         },
         datalabels: {
-          display: 'auto',
+          display: true,   /* 겹쳐도 숨기지 않고 항상 표시 (#1) */
+          /* 데이터셋마다 라벨을 위/아래로 번갈아 배치해 겹침 최소화 */
           align: (ctx) => (ctx.datasetIndex % 2 === 0 ? 'top' : 'bottom'),
+          offset: (ctx) => 4 + (ctx.datasetIndex % 3) * 3,   /* 세로로 조금씩 더 벌림 */
+          clamp: true, clip: false,
           color: (ctx) => ctx.dataset.borderColor,
-          font: { size: 10, weight: '700' },
+          font: { size: 10, weight: '800' },
           formatter: (v) => v ? Math.round(v).toLocaleString() : '',
-          backgroundColor: 'rgba(255,255,255,0.7)', borderRadius: 3, padding: 2
+          backgroundColor: 'rgba(255,255,255,1)',   /* 불투명 배경 (#1) */
+          borderColor: (ctx) => ctx.dataset.borderColor, borderWidth: 1,
+          borderRadius: 3, padding: 2
         }
       },
       scales: {
         x: { grid: { display: false }, ticks: { font: { weight: '700' } } },
-        y: { min: ny.min, max: ny.max, ticks: { stepSize: ny.stepSize, font: { size: 10 } } }
+        y: { min: ny.min, max: ny.max, ticks: { stepSize: ny.stepSize, font: { size: 10 } },
+             title: { display: true, text: (ITEM_INFO[currentItem]||{}).unit || 'kg/10a', font: { size: 11, weight: '700' }, color: '#6b7280' } }
       },
       layout: { padding: { top: 15, bottom: 5, right: 10 } }
     }
@@ -1578,6 +1621,36 @@ async function modalShare() {
 }
 
 /* ============== 초기 실행 & 검증 ============== */
+/* ===== 즐겨찾기: 마지막 선택 자동 저장/복원 ===== */
+function saveState() {
+  try {
+    localStorage.setItem('kosisGraphLast', JSON.stringify({
+      crop: currentCrop, label: currentLabel, cat: currentCat,
+      regions: selectedRegions, sig: isRiceSigunMode, gwon: currentSigunGwon,
+      ys: QUERY_START, ye: QUERY_END
+    }));
+  } catch (e) {}
+}
+function restoreState(cb) {
+  var raw = null; try { raw = localStorage.getItem('kosisGraphLast'); } catch (e) {}
+  if (!raw) { cb(false); return; }
+  var st = null; try { st = JSON.parse(raw); } catch (e) {}
+  if (!st || !st.crop) { cb(false); return; }
+  currentCat = st.cat || '전체'; currentCrop = st.crop; currentLabel = st.label || st.crop;
+  QUERY_START = st.ys || QUERY_START; QUERY_END = st.ye || QUERY_END;
+  isRiceSigunMode = !!st.sig; currentSigunGwon = st.gwon || null;
+  var ys = document.getElementById('yearStart'), ye = document.getElementById('yearEnd');
+  if (ys) ys.value = QUERY_START; if (ye) ye.value = QUERY_END;
+  renderCatChips(); renderCropChips(); renderRegionControls();
+  var loader = isRiceSigunMode ? function(d){ loadLiveSigun(d); } : function(d){ loadLiveThen(currentCrop, d); };
+  loader(function(){
+    var list = getRegionList();
+    selectedRegions = (st.regions || []).filter(function(r){ return list.indexOf(r) !== -1; });
+    buildChips(); render(); updateHeaderTags();
+    cb(true);
+  });
+}
+
 function verifyAndInit() {
   const allOk = !!DB.data && Array.isArray(DB.years);
   console.log(allOk ? '✓ 시스템 검증 완료' : '⚠ 데이터 점검 필요');
@@ -1587,8 +1660,13 @@ function verifyAndInit() {
   renderCropChips();
   renderRegionControls();
 
-  // 초기값: 전국, 대구, 경북, 강원
-  selGroup(['전국', '대구광역시', '경상북도', '강원도']);
+  // 마지막 선택 복원(즐겨찾기), 없으면 기본값
+  restoreState(function(ok){
+    if (!ok) {
+      renderRegionControls();
+      selGroup(['전국', '대구광역시', '경상북도', '강원도']); // 초기값
+    }
+  });
 
   // 모달 버튼 바인딩
   document.getElementById('modalSaveBtn').addEventListener('click', modalDownload);
