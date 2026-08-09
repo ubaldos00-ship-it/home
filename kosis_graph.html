@@ -1,4 +1,7 @@
-<!-- kosis_graph_v7.html · 저장: 2026-08-08 KST · 다듬기(7단계)
+<!-- kosis_graph_v8.html · 저장: 2026-08-09 KST · Cloudflare 연결
+     API_BASE_URL 을 Cloudflare Worker(https://tenar-kosis.ubaldos.workers.dev/api)로 연결.
+     NAS(gdpiano.synology.me)는 백업 — 되돌리려면 API_BASE_URL 한 줄만 교체.
+     ─ 이전 ─ 다듬기(7단계)
      (1)그래프 데이터라벨 항상표시(겹쳐도 숨김 안함)·위아래 오프셋·불투명 배경/테두리·Y축 단위라벨
         추가정보 표 CSV 저장·즐겨찾기(마지막 선택 자동 복원)
      (2)시도보기 청 버튼 토글(선택표시/재선택 해제)
@@ -644,7 +647,9 @@ const DB = JSON.parse(document.getElementById('cropDB').textContent);
    작물 선택 시 NAS(/api/kosis/regions)에서 그 작물의 시도별 10a당 생산량을 받아
    DB.data[작물] 을 최신값으로 덮어씁니다. 매핑 안 된 세분작물은 기존 내장 데이터 사용(폴백).
    (다음 단계에서 세분작물 config 등록 + 논벼 시군 라이브 + 200평/1평 예정) */
-var API_BASE_URL = "https://gdpiano.synology.me/api";
+var API_BASE_URL = "https://tenar-kosis.ubaldos.workers.dev/api";  // Cloudflare Workers(상시가동)
+// 백업(NAS)로 되돌리려면 위 줄을 아래로 교체:
+// var API_BASE_URL = "https://gdpiano.synology.me/api";
 // graph 작물 표시명(한글) → NAS config 작물 key (이름이 일치하는 것만 라이브)
 var LIVE_CROP_MAP = {
   "논벼":"ricePaddy","콩":"soybean","겉보리":"hullBarley","쌀보리":"riceBarley","밀":"wheat",
