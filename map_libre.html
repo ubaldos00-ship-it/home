@@ -1,4 +1,5 @@
-<!-- map_v94.html (v94 · TENAR V1.5) · 저장: 2026-08-06 14:55 KST · [v94] 즐겨찾기 불러오기(JSON 가져오기)를 작물재배조사구처럼 「목록에서 골라 추가/교체」 방식으로 변경(체크박스·전체선택·선택한 것만 불러오기, 연결 요도 함께). 계산식·다른 기능 무변경 -->
+<!-- map_v97.html (v97 · TENAR V1.5) · 저장: 2026-08-10 17:13 KST · [v97] 카카오 지오코딩 보강 — 주소·지번 검색/좌표조회 좌표를 카카오와 동일하게(브이월드 항공영상·지적 정합오차로 핀이 한 필지 어긋나 보이던 지역 보완). ①KAKAO_JS_KEY 한 곳에서 관리 ②카카오 우선 → 실패/자료없음/키없음이면 브이월드로 자동 폴백 ③검색·작물재배조사구(추가/수정/좌표조회)·조사표 대량반영 모두 동일 적용. ※v96(공시지가 NAS→Cloudflare Worker)은 미포함 — v95 지도 계보(공시지가=NAS 유지). -->
+<!-- (이전)  map_v95.html (v95 · TENAR V1.5) · 저장: 2026-08-08 16:56 KST · [v95] 변경 없음 -->
 <!-- (이전)  map_v93.html (v93 · TENAR V1.5) · 저장: 2026-08-05 17:51 KST · [v93] ①주소창 아래 빠른버튼 잘림 보완 — 버튼 크기 축소(글자 11→10px)·양끝 여백·가로 스크롤로 마지막(면적환산)까지 볼 수 있게 ②레이어 시트 「화면 표시 → 빠른 버튼」 on/off 토글 추가(설정 저장) -->
 <!-- (이전)  map_v92.html (v92 · TENAR V1.5) · 저장: 2026-08-05 17:31 KST · [v92] ①위치추적 지도멈춤 수정 — GPS 지터로 매 업데이트마다 재중심되던 것을 실제 4m↑ 이동 시만 재중심·드래그하면 즉시 추적해제 ②방향 부채꼴·GPS정확도 원 더 진하게(잘 보이게) ③포구도구 가/나 선택 중 수정 누르면 선택 해제 ④포구/측정 작업 중 🌾조사구 누르면 「닫으시겠습니까?」 확인창 ⑤검색창 아래 버튼 추가(10a생산량·이삭수계산기·면적환산) + 가로 스크롤 -->
 <!-- (이전)  map_v91.html (v91 · TENAR V1.5) · 저장: 2026-08-04 00:20 KST · [v91] 작물재배조사구 단순화 — ①②조사회차·완료·미완료·완료초기화·회차완료 모두 삭제(필터는 전체/메모만) · 메모 입력창 크게(textarea) ③조사구 수정: 저장·취소를 제목 아래·번호 위로 이동+메모칸 추가, 핀 팝업 닫으면 조사구 목록 열림 ④조사구 팝업·순서안내의 회 완료 버튼 삭제 ⑤팝업 열리면 🌾 조사구 버튼도 숨김 ⑥위치버튼 3상태(현재위치→동작방향→취소) ⑦방향 부채꼴 더 투명하게 -->
@@ -1497,6 +1498,16 @@ TenarSecureStore.init('map',
      =================================================================== */
   var VWORLD_API_KEY = '00EB5BC0-22B4-3B7E-89D1-341699F7CE05';
   var VWORLD_DOMAIN  = 'ubaldos00-ship-it.github.io';   /* 호스트만 · 스킴 금지 */
+
+  /* [v97] 카카오 지오코딩 보강 —— 주소·지번 검색 좌표를 카카오와 동일하게 맞춘다.
+     · 브이월드 항공영상/지적 정합오차로 핀이 한 필지 어긋나 보이던 지역 보완.
+     · 아래에 카카오 「JavaScript 키」를 넣으면 검색·좌표조회가 카카오 우선으로 동작
+       (실패·자료없음·키없음이면 자동으로 기존 브이월드 조회로 폴백).
+     · 발급: https://developers.kakao.com → 내 애플리케이션 → 앱 키 → JavaScript 키
+     · 반드시 [앱 설정 > 플랫폼 > Web] 에 아래 도메인을 등록해야 동작합니다.
+         https://ubaldos00-ship-it.github.io
+     · JavaScript 키는 도메인 제한으로 보호되므로 HTML 노출이 정상입니다. */
+  var KAKAO_JS_KEY = 'd714e9625ae9e816526288f6cde536a9';
 
   /* ═══════════════════════════════════════════════════════════════
      [v51 · TENAR V1.4] 오프라인 우선(Offline First) + NAS(Node) 선택형
@@ -3177,6 +3188,73 @@ TenarSecureStore.init('map',
     return /KEY|key|DOMAIN|domain|INVALID|권한|인증/.test((err.text || '') + ' ' + (err.code || ''));
   }
 
+  /* ================= [v97] 카카오 지오코더 (JS SDK · services) =================
+     주소·지번을 카카오와 동일한 좌표로 변환한다. 키가 없거나 실패/자료없음이면
+     null 을 돌려주고, 호출부는 브이월드 조회로 자동 폴백한다. */
+  function kakaoKeyReady() {
+    return !!(KAKAO_JS_KEY && !/여기에_카카오/.test(KAKAO_JS_KEY));
+  }
+  var _kakaoSdk = null;
+  function ensureKakaoSdk() {
+    if (_kakaoSdk) return _kakaoSdk;
+    _kakaoSdk = new Promise(function (resolve) {
+      if (!kakaoKeyReady()) { resolve(false); return; }
+      if (window.kakao && window.kakao.maps && window.kakao.maps.services) { resolve(true); return; }
+      var loaded = false, s = document.createElement('script');
+      var to = setTimeout(function () { if (!loaded) { loaded = true; resolve(false); } }, 8000);
+      s.src = 'https://dapi.kakao.com/v2/maps/sdk.js?autoload=false&libraries=services&appkey=' + encodeURIComponent(KAKAO_JS_KEY);
+      s.onload = function () {
+        try { window.kakao.maps.load(function () { if (!loaded) { loaded = true; clearTimeout(to); resolve(!!(window.kakao && kakao.maps && kakao.maps.services)); } }); }
+        catch (e) { if (!loaded) { loaded = true; clearTimeout(to); resolve(false); } }
+      };
+      s.onerror = function () { if (!loaded) { loaded = true; clearTimeout(to); resolve(false); } };
+      document.head.appendChild(s);
+    });
+    return _kakaoSdk;
+  }
+  /* 카카오 주소·지번 지오코딩 (지번·도로명 모두 지원). 성공 시 {lng,lat,parcel,road}, 실패 시 null */
+  function requestKakaoGeocode(query) {
+    query = (query || '').trim();
+    if (!query) return Promise.resolve(null);
+    return ensureKakaoSdk().then(function (ok) {
+      if (!ok) return null;
+      return new Promise(function (resolve) {
+        var done = false;
+        var to = setTimeout(function () { if (!done) { done = true; resolve(null); } }, 6000);
+        try {
+          var geocoder = new kakao.maps.services.Geocoder();
+          geocoder.addressSearch(query, function (result, status) {
+            if (done) return; done = true; clearTimeout(to);
+            if (status === kakao.maps.services.Status.OK && result && result.length) {
+              var r = result[0];
+              var lng = parseFloat(r.x), lat = parseFloat(r.y);
+              if (!isFinite(lng) || !isFinite(lat)) { resolve(null); return; }
+              var parcel = (r.address && r.address.address_name) || r.address_name || '';
+              var road = (r.road_address && r.road_address.address_name) || '';
+              resolve({ lng: lng, lat: lat, parcel: parcel, road: road });
+            } else resolve(null);
+          });
+        } catch (e) { if (!done) { done = true; clearTimeout(to); resolve(null); } }
+      });
+    }).catch(function () { return null; });
+  }
+  /* [v97] 통합 지오코딩 — 카카오 우선 → 브이월드(PARCEL→ROAD) 폴백. hit{lng,lat,parcel,road} 또는 null.
+     브이월드 인증오류는 throw 'apikey' 로 전달(호출부 안내용). */
+  function geocodeBest(query) {
+    return requestKakaoGeocode(query).then(function (k) {
+      if (k) return k;
+      return requestVWorldGeocode(query, 'PARCEL').then(function (d) {
+        if (isKeyError(d)) throw new Error('apikey');
+        var h = parseGeocode(d, 'PARCEL');
+        if (h) return h;
+        return requestVWorldGeocode(query, 'ROAD').then(function (d2) {
+          if (isKeyError(d2)) throw new Error('apikey');
+          return parseGeocode(d2, 'ROAD');
+        });
+      });
+    });
+  }
+
   /* ================= 주소·지번 검색 ================= */
   var searchInput = document.getElementById('searchInput');
   var clearBtn = document.getElementById('clearBtn');
@@ -3190,24 +3268,17 @@ TenarSecureStore.init('map',
     searching = true;
     showToast('주소를 검색하고 있습니다.', 0, 'info');
 
-    requestVWorldGeocode(query, 'PARCEL')
-      .then(function (data) {
-        var hit = parseGeocode(data, 'PARCEL');
+    /* [v97] 카카오 우선(geocodeBest) → 실패 시 브이월드 명칭(장소·기관) 검색 폴백 */
+    geocodeBest(query)
+      .then(function (hit) {
         if (hit) return hit;
-        if (isKeyError(data)) throw new Error('apikey');
-        return requestVWorldGeocode(query, 'ROAD').then(function (d2) {
-          if (isKeyError(d2)) throw new Error('apikey');
-          var h2 = parseGeocode(d2, 'ROAD');
-          if (h2) return h2;
-          /* [v86] 주소·지번이 아니면 명칭(장소·기관)으로 검색 */
-          return requestVWorldPlaceSearch(query).then(function (pd) {
-            if (isKeyError(pd)) throw new Error('apikey');
-            var arr = parsePlaceSearchAll(pd);
-            if (!arr.length) return null;
-            if (arr.length === 1) return arr[0];
-            areaOpenPlacePicker(arr, query);   /* [v87-3] 여러 개 → 가까운 순 목록 */
-            return { picker: true };
-          });
+        return requestVWorldPlaceSearch(query).then(function (pd) {
+          if (isKeyError(pd)) throw new Error('apikey');
+          var arr = parsePlaceSearchAll(pd);
+          if (!arr.length) return null;
+          if (arr.length === 1) return arr[0];
+          areaOpenPlacePicker(arr, query);   /* [v87-3] 여러 개 → 가까운 순 목록 */
+          return { picker: true };
         });
       })
       .then(function (hit) {
@@ -9910,12 +9981,7 @@ TenarSecureStore.init('map',
     (function next() {
       if (gi >= geocodeJobs.length) { finish(); return; }
       var entry = geocodeJobs[gi++];
-      requestVWorldGeocode(entry.addr, 'PARCEL')
-        .then(function (data) {
-          var hit = parseGeocode(data, 'PARCEL');
-          if (hit) return hit;
-          return requestVWorldGeocode(entry.addr, 'ROAD').then(function (d2) { return parseGeocode(d2, 'ROAD'); });
-        })
+      geocodeBest(entry.addr)   /* [v97] 카카오 우선 → 브이월드 폴백 */
         .then(function (hit) { if (hit) upsert(entry, hit.lat, hit.lng); })
         .catch(function () {})
         .then(function () { setTimeout(next, 120); });
@@ -10994,15 +11060,11 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
   }
 
   /* ── 지오코딩 ── */
+  /* [v97] 카카오 우선(geocodeBest) → 브이월드 폴백. 좌표만 필요하므로 {lng,lat}로 정규화. */
   function areaGeocode(addr) {
     if (!addr) return Promise.resolve(null);
-    return requestVWorldGeocode(addr, 'PARCEL').then(function (d) {
-      var h = parseGeocode(d, 'PARCEL');
-      if (h) return { lng: h.lng, lat: h.lat };
-      return requestVWorldGeocode(addr, 'ROAD').then(function (d2) {
-        var h2 = parseGeocode(d2, 'ROAD');
-        return h2 ? { lng: h2.lng, lat: h2.lat } : null;
-      });
+    return geocodeBest(addr).then(function (h) {
+      return (h && isFinite(h.lng) && isFinite(h.lat)) ? { lng: h.lng, lat: h.lat } : null;
     }).catch(function () { return null; });
   }
   /* [v82-1] 부분 지번(예: 평천리 992)·도로명(예: 남상주로 504)도 조회되도록
