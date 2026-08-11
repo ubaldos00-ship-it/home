@@ -1,4 +1,5 @@
-<!-- index.html (v94) · 저장: 2026-08-06 14:55 KST · [v94] 변경 없음 -->
+<!-- index.html (v98) · 저장: 2026-08-12 06:10 KST · [v98] 개별 조사도구 바로가기에 「QR코드 공유」 추가 — 클릭 시 화면에 QR(QRCODE.png)+주소(https://m.site.naver.com/26ZBJ) 표시, 「주소 복사」 지원. 그 외 변경 없음. -->
+<!-- (이전)  index.html (v94) · 저장: 2026-08-06 14:55 KST · [v94] 변경 없음 -->
 <!-- (이전)  index.html (v61) · 저장: 2026-07-28 10:26 KST · [v61] 변경 없음 -->
 <!-- (이전)  index.html (v60) · 저장: 2026-07-27 17:57 KST · [v60] 변경 없음 -->
 <!-- (이전)  index.html (v59) · 저장: 2026-07-27 17:20 KST · [v59] 변경 없음 -->
@@ -1293,6 +1294,15 @@
       </span>
     </h2>
     <div class="menu-grid" id="toolsMenuGrid" style="display:none;margin-top:13px;">
+      <!-- [v98] QR코드 공유 — 클릭 시 화면에 QR + 주소 표시(공유용) -->
+      <a class="menu-item" id="qrShareItem" data-tool-key="qrshare" href="#" role="button">
+        <span class="menu-emoji">📲</span>
+        <span class="menu-text">
+          <span class="menu-label">QR코드 공유</span>
+          <span class="menu-desc">이 앱을 QR·주소로 공유하기</span>
+        </span>
+        <span class="menu-arrow">›</span>
+      </a>
       <!-- KOSIS 생산량 조회 (밝은 그래프 조회기) — 맨 위 -->
       <a class="menu-item" data-tool-key="kosisgraph" href="https://ubaldos00-ship-it.github.io/home/kosis_graph.html" target="_blank" rel="noopener">
         <span class="menu-emoji">📈</span>
@@ -2794,6 +2804,53 @@ if(window.wcs) {
     if(btn) btn.addEventListener('click', function(){
       board.classList.add('led-hidden');
       try{ sessionStorage.setItem('tenarLedClosed','1'); }catch(e){}
+    });
+  })();
+</script>
+
+<!-- [v98] QR코드 공유 모달 -->
+<div id="qrModal" style="display:none;position:fixed;inset:0;z-index:2147483000;background:rgba(0,0,0,.55);align-items:center;justify-content:center;padding:20px;">
+  <div id="qrCard" style="background:#fff;border-radius:18px;max-width:340px;width:100%;padding:22px 20px 18px;box-shadow:0 12px 40px rgba(0,0,0,.35);text-align:center;">
+    <div style="font-size:17px;font-weight:800;color:#1f5132;margin-bottom:4px;">텐아르 QR 공유</div>
+    <div style="font-size:12.5px;color:#777;margin-bottom:14px;">QR을 찍거나 아래 주소를 공유하세요</div>
+    <img src="QRCODE.png" alt="텐아르 QR코드" style="width:220px;height:220px;max-width:80%;display:block;margin:0 auto 14px;border:1px solid #eee;border-radius:12px;" />
+    <a id="qrUrlLink" href="https://m.site.naver.com/26ZBJ" target="_blank" rel="noopener"
+       style="display:block;font-size:14px;font-weight:700;color:#2563eb;word-break:break-all;text-decoration:none;margin-bottom:14px;">
+      https://m.site.naver.com/26ZBJ
+    </a>
+    <div style="display:flex;gap:8px;">
+      <button id="qrCopyBtn" type="button" style="flex:1;padding:11px 0;border:0;border-radius:11px;background:#1f5132;color:#fff;font-size:14px;font-weight:800;cursor:pointer;">주소 복사</button>
+      <button id="qrCloseBtn" type="button" style="flex:1;padding:11px 0;border:1.5px solid #cbd5cf;border-radius:11px;background:#fff;color:#444;font-size:14px;font-weight:800;cursor:pointer;">닫기</button>
+    </div>
+  </div>
+</div>
+<script>
+  /* [v98] QR코드 공유 모달 열기/닫기/복사 */
+  (function(){
+    var QR_URL = 'https://m.site.naver.com/26ZBJ';
+    var modal = document.getElementById('qrModal');
+    var item  = document.getElementById('qrShareItem');
+    var card  = document.getElementById('qrCard');
+    var copyBtn = document.getElementById('qrCopyBtn');
+    var closeBtn = document.getElementById('qrCloseBtn');
+    if(!modal || !item) return;
+    function open(e){ if(e){ e.preventDefault(); e.stopPropagation(); } modal.style.display='flex'; }
+    function close(){ modal.style.display='none'; }
+    item.addEventListener('click', open);
+    closeBtn && closeBtn.addEventListener('click', close);
+    /* 카드 바깥(배경) 클릭 시 닫기 */
+    modal.addEventListener('click', function(e){ if(e.target === modal) close(); });
+    card && card.addEventListener('click', function(e){ e.stopPropagation(); });
+    /* 주소 복사 */
+    copyBtn && copyBtn.addEventListener('click', function(){
+      function ok(){ copyBtn.textContent='복사됨 ✓'; setTimeout(function(){ copyBtn.textContent='주소 복사'; }, 1500); }
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(QR_URL).then(ok).catch(fallback);
+      } else fallback();
+      function fallback(){
+        try{ var t=document.createElement('textarea'); t.value=QR_URL; t.style.position='fixed'; t.style.opacity='0'; document.body.appendChild(t); t.select(); document.execCommand('copy'); document.body.removeChild(t); ok(); }
+        catch(err){ window.prompt('주소를 복사하세요', QR_URL); }
+      }
     });
   })();
 </script>
