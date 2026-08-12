@@ -1,4 +1,5 @@
-<!-- map_v98.html (v98 · TENAR V1.5) · 저장: 2026-08-12 06:10 KST · [v98] 길찾기 복귀 문제 수정 — 네이버/카카오/T맵 길찾기를 열 때 현재 「지도화면(페이지)」을 절대 이동시키지 않고 앱·웹을 새 탭으로 연다. 앱에 다녀와도 이전 지도화면이 그대로 유지되어 "페이지를 찾을 수 없습니다"가 안 뜸(기존엔 웹 폴백 타이머가 뒤에서 현재 페이지를 이동시켜 지도가 사라졌음). openAppOrWeb 만 변경, 다른 기능·카카오 지오코딩(v97) 그대로. -->
+<!-- map_v99.html (v99 · TENAR V1.5) · 저장: 2026-08-12 23:16 KST · [v99] ①위치추적 먹통 대폭 개선 — GPS 일시오류(신호약함·타임아웃)에 추적을 끄지 않고 유지(권한거부만 종료)·방향센서 10Hz 스로틀+지도회전 8° 데드밴드로 「핀만 돌고 지도 멈춤」 해결·앱전환 복귀 시 watch 자동 재시작 ②GPS 연결상태 배지(검색중/양호/보통/약함·정확도) ③작물재배조사구 「전체보기」 한 번에 전체표시(필터 자동해제) ④콤보에 「전체 층」 추가+시도·시군구·읍면동·층 선택 시 조사구 목록을 해당 조건만 표시. -->
+<!-- (이전)  map_v98.html (v98 · TENAR V1.5) · 저장: 2026-08-12 06:10 KST · [v98] 길찾기 복귀 문제 수정 — 네이버/카카오/T맵 길찾기를 열 때 현재 「지도화면(페이지)」을 절대 이동시키지 않고 앱·웹을 새 탭으로 연다. 앱에 다녀와도 이전 지도화면이 그대로 유지되어 "페이지를 찾을 수 없습니다"가 안 뜸(기존엔 웹 폴백 타이머가 뒤에서 현재 페이지를 이동시켜 지도가 사라졌음). openAppOrWeb 만 변경, 다른 기능·카카오 지오코딩(v97) 그대로. -->
 <!-- (이전)  map_v97.html (v97 · TENAR V1.5) · 저장: 2026-08-10 17:13 KST · [v97] 카카오 지오코딩 보강 — 주소·지번 검색/좌표조회 좌표를 카카오와 동일하게(브이월드 항공영상·지적 정합오차로 핀이 한 필지 어긋나 보이던 지역 보완). ①KAKAO_JS_KEY 한 곳에서 관리 ②카카오 우선 → 실패/자료없음/키없음이면 브이월드로 자동 폴백 ③검색·작물재배조사구(추가/수정/좌표조회)·조사표 대량반영 모두 동일 적용. ※v96(공시지가 NAS→Cloudflare Worker)은 미포함 — v95 지도 계보(공시지가=NAS 유지). -->
 <!-- (이전)  map_v95.html (v95 · TENAR V1.5) · 저장: 2026-08-08 16:56 KST · [v95] 변경 없음 -->
 <!-- (이전)  map_v93.html (v93 · TENAR V1.5) · 저장: 2026-08-05 17:51 KST · [v93] ①주소창 아래 빠른버튼 잘림 보완 — 버튼 크기 축소(글자 11→10px)·양끝 여백·가로 스크롤로 마지막(면적환산)까지 볼 수 있게 ②레이어 시트 「화면 표시 → 빠른 버튼」 on/off 토글 추가(설정 저장) -->
@@ -938,6 +939,7 @@ TenarSecureStore.init('map',
   body.sheet-open #btnHere, body.sheet-open #btnFav, body.sheet-open #btnMeasure,
   body.sheet-open #btnFpTool, body.sheet-open #btnPins, body.sheet-open #btnAreaShort,
   body.sheet-open #btnLoc { display: none !important; }   /* [v41-1]·[v71-4] 위치버튼·[v91-5] 조사구버튼도 숨김 */
+  body.sheet-open #gpsStatus { display: none !important; }   /* [v99] 시트 열리면 GPS 배지 숨김 */
 
   .fp-gana {
     position: absolute; width: 21px; height: 21px; border-radius: 11px;
@@ -1298,6 +1300,9 @@ TenarSecureStore.init('map',
       </svg>
     </button>
   </div>
+
+  <!-- [v99] GPS 연결상태 배지 (위치 기능 켜졌을 때만 표시) -->
+  <div id="gpsStatus" style="display:none;position:fixed;left:50%;bottom:74px;transform:translateX(-50%);z-index:16;padding:5px 12px;border-radius:14px;font-size:12px;font-weight:800;color:#fff;background:#6b7280;box-shadow:0 2px 9px rgba(0,0,0,.3);pointer-events:none;white-space:nowrap;letter-spacing:-.2px;"></div>
 
   <!-- 실측 도구 (헤더 바를 잡고 이동) -->
   <!-- [v15-3] A/B포구 선정 모드 상단 배너 (선택된 비율 표시) -->
@@ -10486,7 +10491,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     'https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js',
     'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/package/dist/xlsx.full.min.js'
   ];
-  var _areaSel = { sido: '', sigungu: '', eupmyeondong: '' };
+  var _areaSel = { sido: '', sigungu: '', eupmyeondong: '', floor: '' };
   var _areaScrollTarget = null;   /* [v86-2] 검색 후 트리에서 이동·강조할 대상 경로 */
   var _areaListFilter = '';       /* [v89-3] '', 'done', 'undone', 'memo' */
   var _areaSelectedId = null;
@@ -10497,9 +10502,9 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     try {
       var f = JSON.parse(localStorage.getItem(AREA_FILTER_KEY) || 'null');
       if (f && typeof f === 'object') {
-        var cand = { sido: f.sido || '', sigungu: f.sigungu || '', eupmyeondong: f.eupmyeondong || '' };
+        var cand = { sido: f.sido || '', sigungu: f.sigungu || '', eupmyeondong: f.eupmyeondong || '', floor: (f.floor != null ? f.floor + '' : '') };
         var plots = getAreaPlots();   /* 남아있는 값만 유지(데이터 바뀌었을 때 stale 방지) */
-        ['sido', 'sigungu', 'eupmyeondong'].forEach(function (lv) {
+        ['sido', 'sigungu', 'eupmyeondong', 'floor'].forEach(function (lv) {
           if (cand[lv] && !plots.some(function (p) { return (p[lv] + '') === cand[lv]; })) cand[lv] = '';
         });
         _areaSel = cand;
@@ -10609,7 +10614,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
   function areaGroupKey(p) { return [p.sido || '', p.sigungu || '', p.eupmyeondong || ''].join('|'); }
   /* [v78-3] 초입주소에서 시도·시군구·읍면동 자동 추출 */
   function parseAdminFromAddr(addr) {
-    var out = { sido: '', sigungu: '', eupmyeondong: '' };
+    var out = { sido: '', sigungu: '', eupmyeondong: '', floor: '' };
     if (!addr) return out;
     var t = String(addr).trim().split(/\s+/);
     if (!t.length) return out;
@@ -10641,6 +10646,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     if (_areaSel.sido && p.sido !== _areaSel.sido) return false;
     if (_areaSel.sigungu && p.sigungu !== _areaSel.sigungu) return false;
     if (_areaSel.eupmyeondong && p.eupmyeondong !== _areaSel.eupmyeondong) return false;
+    if (_areaSel.floor && ((p.floor == null ? '' : p.floor) + '') !== _areaSel.floor) return false;   /* [v99] 층 필터 */
     return true;
   }
   function areaUpdateSource() {
@@ -10719,7 +10725,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     areaEnsurePinsOn();
     _areaSelectedId = plotId;
     /* [v88-1] 선택한 조사구의 시도·시군구·읍면동도 함께 선택표시(네모) */
-    _areaSel = { sido: p.sido || '', sigungu: p.sigungu || '', eupmyeondong: p.eupmyeondong || '' };
+    _areaSel = { sido: p.sido || '', sigungu: p.sigungu || '', eupmyeondong: p.eupmyeondong || '', floor: '' };   /* [v99] 층은 비움(읍면동 단위 강조) */
     try { areaPersistFilter(); } catch (e) {}
     areaUpdateSource();
     try { areaSyncDropdowns(); } catch (e) {}
@@ -11069,7 +11075,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     try { var b = areaEnsureBadge(); if (b) b.style.display = 'none'; } catch (e) {}
   }
   function areaClearSelection() {
-    _areaSel = { sido: '', sigungu: '', eupmyeondong: '' }; _areaSelectedId = null;
+    _areaSel = { sido: '', sigungu: '', eupmyeondong: '', floor: '' }; _areaSelectedId = null;
     areaPersistFilter();   /* [v81-2b] */
     areaApplyVisibility(); try { areaRefreshTree(); } catch (e) {}
   }
@@ -11167,7 +11173,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     var cur = getAreaPlots().length;
     if (cur && !window.confirm('현재 조사구 ' + cur + '건을 지우고 저장본(' + plots.length + '건)으로 바꿉니다.\n계속할까요?')) return;
     areaRenumber(plots); setAreaPlots(plots);
-    _areaSel = { sido: '', sigungu: '', eupmyeondong: '' }; _areaSelectedId = null;
+    _areaSel = { sido: '', sigungu: '', eupmyeondong: '', floor: '' }; _areaSelectedId = null;
     showToast('불러왔습니다. (' + plots.length + '건)', 3000, 'success');
     openAreaSheet();
     setTimeout(areaGeocodeMissing, 400);
@@ -11400,7 +11406,8 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     var pane = el('div'); box.appendChild(pane);
     try { areaRestoreFilter(); } catch (e) {}   /* [v81-2b] 마지막 필터 복원 */
     openSheet('🌾 작물재배조사구', box, 66);
-    setSheetAction('⤢ 전체보기', function () { areaFitAllVisible(); });
+    /* [v99] 전체보기 = 필터 해제 후 전체를 한 번에 맞춤(예전엔 필터가 남아 두 번 눌러야 했음) */
+    setSheetAction('⤢ 전체보기', function () { areaClearSelection(); areaFitAllVisible(); });
     try { renderAreaPane(pane); } catch (e) { console.error(e); }
   }
 
@@ -11423,15 +11430,19 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     rSL.appendChild(bSL); rSL.appendChild(bNav);
     wrap.appendChild(rSL);
 
-    /* [v80-6] ② 전체시도·전체시군구·전체읍면동 콤보 */
+    /* [v80-6·v99] ② 전체시도·전체시군구·전체읍면동·전체 층 콤보 */
     var dds = el('div');
-    dds.style.cssText = 'display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin:8px 0 4px;';
+    dds.style.cssText = 'display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:4px;margin:8px 0 4px;';
     [['sido', '시도'], ['sigungu', '시군구'], ['eupmyeondong', '읍면동']].forEach(function (f) {
       var sel = el('select'); sel.id = 'areaSel_' + f[0]; sel.dataset.level = f[0]; sel.dataset.label = f[1];
-      sel.style.cssText = 'padding:7px 4px;border:1px solid #d7d7de;border-radius:8px;font-size:12.5px;background:#fff;';
+      sel.style.cssText = 'padding:7px 3px;border:1px solid #d7d7de;border-radius:8px;font-size:12px;background:#fff;';
       sel.addEventListener('change', function () { areaOnDropdownChange(f[0], sel.value); });
       dds.appendChild(sel);
     });
+    var fsel = el('select'); fsel.id = 'areaSel_floor'; fsel.dataset.label = '층';   /* [v99] 층 콤보 */
+    fsel.style.cssText = 'padding:7px 3px;border:1px solid #d7d7de;border-radius:8px;font-size:12px;background:#fff;';
+    fsel.addEventListener('change', function () { areaOnFloorChange(fsel.value); });
+    dds.appendChild(fsel);
     wrap.appendChild(dds);
 
     /* [v80-6] ③ 조사구 추가 · 전체삭제 · 좌표조회 · 선택해제 (한 줄) */
@@ -11515,8 +11526,13 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     tree.appendChild(allRow);
     /* [v85-13] 트리는 항상 전체 계층(시도>시군구>읍면동>조사구)을 보여준다.
        (드롭다운으로 다른 곳이 사라져 헷갈리던 문제 해결 — 조사구를 누르면 지도만 이동) */
-    var plots = getAreaPlots();
-    /* [v89-3] 목록 보기 필터(완료/미완료/메모) */
+    /* [v99] 콤보(시도·시군구·읍면동·층) 선택 시 「해당 목록만」 표시 */
+    var plots = getAreaPlots().filter(areaMatchesFilter);
+    if (!plots.length) {
+      tree.appendChild(el('div', null, '<div style="padding:16px 4px;color:#999;font-size:12.5px;text-align:center;">선택한 조건(시도·시군구·읍면동·층)에 해당하는 조사구가 없습니다.<br>위 「🗺 전체」를 누르면 모두 표시됩니다.</div>'));
+      areaApplyVisibility(); return;
+    }
+    /* [v89-3] 목록 보기 필터(메모) */
     if (_areaListFilter) {
       plots = plots.filter(function (p) {
         if (_areaListFilter === 'memo') return !!areaGetMemo(p);
@@ -11630,7 +11646,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
       caret.addEventListener('click', toggle);
       label.addEventListener('click', function () {
         /* 지역 선택 → 지도 표시 (시도 클릭 시 그 아래 전체 표시) */
-        var ns = { sido: '', sigungu: '', eupmyeondong: '' };
+        var ns = { sido: '', sigungu: '', eupmyeondong: '', floor: '' };
         for (var i = 0; i <= level; i++) ns[AREA_TREE_LEVELS[i]] = sample[AREA_TREE_LEVELS[i]] || '';
         _areaSel = ns; _areaSelectedId = null;
         try { areaPersistFilter(); } catch (e) {}
@@ -11664,7 +11680,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     if (!addr) return;
     var ad = parseAdminFromAddr(addr);
     if (!ad.sido) return;
-    _areaSel = { sido: ad.sido, sigungu: ad.sigungu || '', eupmyeondong: ad.eupmyeondong || '' };
+    _areaSel = { sido: ad.sido, sigungu: ad.sigungu || '', eupmyeondong: ad.eupmyeondong || '', floor: '' };
     try { areaPersistFilter(); } catch (e) {}
     _areaScrollTarget = { sido: _areaSel.sido, sigungu: _areaSel.sigungu, eupmyeondong: _areaSel.eupmyeondong };
     if (document.getElementById('areaTree')) { try { areaRefreshTree(); } catch (e) {} }   /* 조사구 팝업 열려 있으면 즉시 반영 */
@@ -11684,11 +11700,43 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
       if (cur) { sel.style.borderColor = '#1f8a4c'; sel.style.background = '#e8f6ee'; sel.style.color = '#14612f'; sel.style.fontWeight = '800'; }
       else { sel.style.borderColor = '#d7d7de'; sel.style.background = '#fff'; sel.style.color = '#333'; sel.style.fontWeight = '400'; }
     });
+    /* [v99] 층 콤보 동기화 (현재 시도·시군구·읍면동 범위 안의 층들) */
+    var fsel = document.getElementById('areaSel_floor');
+    if (fsel) {
+      var fopts = areaFloorOptions();
+      var fcur = _areaSel.floor || '';
+      if (fcur && fopts.indexOf(fcur) < 0) { _areaSel.floor = ''; fcur = ''; }   /* 상위가 바뀌어 없어진 층은 해제 */
+      fsel.innerHTML = '';
+      fsel.appendChild(new Option('전체 층', ''));
+      fopts.forEach(function (v) { fsel.appendChild(new Option(v + '층', v)); });
+      fsel.value = fcur;
+      if (fcur) { fsel.style.borderColor = '#1f8a4c'; fsel.style.background = '#e8f6ee'; fsel.style.color = '#14612f'; fsel.style.fontWeight = '800'; }
+      else { fsel.style.borderColor = '#d7d7de'; fsel.style.background = '#fff'; fsel.style.color = '#333'; fsel.style.fontWeight = '400'; }
+    }
+  }
+  /* [v99] 현재 시도·시군구·읍면동 범위의 층 목록 */
+  function areaFloorOptions() {
+    var plots = getAreaPlots().filter(function (p) {
+      if (_areaSel.sido && (p.sido + '') !== _areaSel.sido) return false;
+      if (_areaSel.sigungu && (p.sigungu + '') !== _areaSel.sigungu) return false;
+      if (_areaSel.eupmyeondong && (p.eupmyeondong + '') !== _areaSel.eupmyeondong) return false;
+      return true;
+    });
+    return areaUniq(plots.map(function (p) { return (p.floor == null ? '' : p.floor) + ''; }).filter(function (v) { return v !== ''; }))
+      .sort(function (a, b) { var na = parseFloat(a), nb = parseFloat(b); if (isFinite(na) && isFinite(nb)) return na - nb; return a < b ? -1 : 1; });
+  }
+  /* [v99] 층 콤보 변경 */
+  function areaOnFloorChange(value) {
+    _areaSel.floor = value; _areaSelectedId = null;
+    areaSyncDropdowns(); areaApplyVisibility(); areaRefreshTree();
+    if (value) areaFitAllVisible();
+    areaPersistFilter();
   }
   function areaOnDropdownChange(level, value) {
     _areaSel[level] = value;
     var idx = AREA_TREE_LEVELS.indexOf(level);
     for (var i = idx + 1; i < AREA_TREE_LEVELS.length; i++) _areaSel[AREA_TREE_LEVELS[i]] = '';
+    _areaSel.floor = '';   /* [v99] 상위(시도·시군구·읍면동) 바뀌면 층도 초기화 */
     /* [v81-2c] 하위(시군구·읍면동)만 골라도 상위(시도 등)를 대표 조사구에서 자동 채움 */
     if (value) {
       var repP = getAreaPlots().filter(function (p) {
@@ -11849,7 +11897,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
   function areaOpenImportPreview(rows, filename) {
     var valid = rows.map(function (r) { return { rec: r, status: areaValidate(r), checked: false }; });
     valid.forEach(function (v) { v.checked = (v.status !== 'error'); });
-    _areaImport = { filename: filename, rows: valid, filter: { sido: '', sigungu: '', eupmyeondong: '' } };
+    _areaImport = { filename: filename, rows: valid, filter: { sido: '', sigungu: '', eupmyeondong: '', floor: '' } };
 
     var ov = document.createElement('div'); ov.id = 'areaImportOverlay';
     ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2147483000;display:flex;align-items:flex-end;justify-content:center;';
@@ -11991,7 +12039,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     }
   }
   function _afterImport(closeFn) {
-    _areaSel = { sido: '', sigungu: '', eupmyeondong: '' }; _areaSelectedId = null;
+    _areaSel = { sido: '', sigungu: '', eupmyeondong: '', floor: '' }; _areaSelectedId = null;
     if (closeFn) closeFn();
     try { areaRefreshTree(); } catch (e) {} areaApplyVisibility();
     setTimeout(areaGeocodeMissing, 400);
@@ -12140,43 +12188,99 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
       setTimeout(function () { programmatic = false; }, 460);
     }
 
+    /* ── [v99] GPS 연결상태 ── */
+    var gpsEl = null, lastFixTs = 0, pendingCenterOnce = false, permDenied = false;
+    function gpsState() {
+      if (mode === 'off') return { key: 'off' };
+      var stale = !lastFixTs || (Date.now() - lastFixTs > 12000);
+      if (!lastPos || stale) return { key: 'acq' };
+      var acc = isFinite(lastPos.acc) ? Math.round(lastPos.acc) : null;
+      if (acc == null) return { key: 'acq' };
+      if (acc <= 15) return { key: 'good', acc: acc };
+      if (acc <= 40) return { key: 'ok', acc: acc };
+      return { key: 'weak', acc: acc };
+    }
+    function updateGpsStatus() {
+      if (!gpsEl) gpsEl = document.getElementById('gpsStatus');
+      if (!gpsEl) return;
+      var s = gpsState();
+      if (s.key === 'off') { gpsEl.style.display = 'none'; return; }
+      var T = {
+        acq:  { t: 'GPS 검색 중…',              bg: '#6b7280' },
+        good: { t: 'GPS 양호 · ±' + s.acc + 'm', bg: '#16a34a' },
+        ok:   { t: 'GPS 보통 · ±' + s.acc + 'm', bg: '#ca8a04' },
+        weak: { t: 'GPS 약함 · ±' + s.acc + 'm', bg: '#ea580c' }
+      }[s.key];
+      gpsEl.textContent = '📡 ' + T.t;
+      gpsEl.style.background = T.bg;
+      gpsEl.style.display = 'block';   /* 시트 열림 시 CSS(body.sheet-open)로 숨김 */
+    }
+
     /* ── GPS ── */
     function onPos(pos) {
       var c = pos.coords;
       var prev = lastPos;
+      lastFixTs = Date.now();
       lastPos = { lat: c.latitude, lng: c.longitude, acc: c.accuracy, ts: pos.timestamp || Date.now(), addr: prev ? prev.addr : '' };
       showMarker(c.longitude, c.latitude);
       updateAccCircle();
-      if (mode !== 'off') {
-        /* [v92-1] GPS 지터(제자리 미세변동)로 매 업데이트마다 재중심→easeTo가 계속 돌아
-           지도가 멈춘 것처럼 보이던 문제. 실제로 약 4m 이상 이동했을 때만 재중심한다. */
+      if (pendingCenterOnce) {
+        /* 첫 위치 : 화면 중앙+확대(북쪽). 이후엔 이동분만 재중심 */
+        pendingCenterOnce = false;
+        programmatic = true;
+        try { map.easeTo({ center: [lastPos.lng, lastPos.lat], zoom: Math.max(map.getZoom(), FOCUS_ZOOM), bearing: 0, duration: 500, essential: true }); } catch (e) {}
+        setTimeout(function () { programmatic = false; }, 560);
+        showToast('', 1, 'info');
+      } else if (mode !== 'off') {
+        /* [v92-1] GPS 지터로 매 업데이트마다 재중심되어 멈춘 듯 보이던 문제 → 4m 이상 이동 시만 */
         var movedM = prev ? _tlocDistM(prev.lat, prev.lng, lastPos.lat, lastPos.lng) : 9999;
         if (movedM > 4) recenter();
       }
+      updateGpsStatus();
       refreshLocSheet();
     }
+    /* [v99] GPS 오류가 「일시적(신호약함·타임아웃)」이면 추적을 끄지 않는다 — 현장 먹통 방지.
+       watchPosition 은 오류 후에도 계속 시도하므로, 권한거부(code 1)만 완전 종료한다. */
     function onPosErr(err) {
-      var msg = '현재 위치를 확인할 수 없습니다. 잠시 후 다시 시도해 주세요.';
-      if (err && err.code === 1) msg = '현재 위치 권한이 허용되지 않았습니다.\n브라우저 설정에서 위치 권한을 허용해 주세요.';
-      showToast(msg, 5000);
-      setMode('off');
+      if (err && err.code === 1) {           /* PERMISSION_DENIED */
+        permDenied = true;
+        showToast('현재 위치 권한이 허용되지 않았습니다.\n브라우저 설정에서 위치 권한을 허용해 주세요.', 5000);
+        stopWatch(); stopOrient(); setMode('off');
+        try { if (marker) marker.remove(); } catch (e) {}
+        updateGpsStatus();
+        return;
+      }
+      updateGpsStatus();                     /* code 2·3 → '검색 중/약함' 표시만, watch 유지(자동 복구) */
     }
     function startWatch() {
       if (watchId != null || !navigator.geolocation) return;
-      watchId = navigator.geolocation.watchPosition(onPos, onPosErr, { enableHighAccuracy: true, maximumAge: 1000, timeout: 15000 });
+      watchId = navigator.geolocation.watchPosition(onPos, onPosErr, { enableHighAccuracy: true, maximumAge: 2000, timeout: 20000 });
     }
     function stopWatch() { if (watchId != null) { try { navigator.geolocation.clearWatch(watchId); } catch (e) {} watchId = null; } }
 
-    /* ── 방향 센서 ── */
+    /* ── 방향 센서 ([v99] throttle·데드밴드로 먹통/버벅임 방지) ── */
+    var MAP_ROT_DEADBAND = 8;   /* 지도 회전은 8° 이상 바뀔 때만(나침반 지터 무시) */
+    var _orientPending = null, _orientTimer = null, _orientLast = 0, _mapBearTarget = null;
+    function applyOrient() {
+      _orientTimer = null; _orientLast = Date.now();
+      var h2 = _orientPending; if (h2 == null) return;
+      if (heading == null || Math.abs(((h2 - heading + 540) % 360) - 180) >= HEADING_THRESHOLD) {
+        heading = h2;
+        applyHeadingToMarker();
+        /* 지도 회전(track)은 크게 바뀔 때만 → setBearing 폭주 방지(지도 멈춤 현상 해결) */
+        if (mode === 'track' && (_mapBearTarget == null || Math.abs(((heading - _mapBearTarget + 540) % 360) - 180) >= MAP_ROT_DEADBAND)) {
+          _mapBearTarget = heading; rotateMapTo(heading);
+        }
+      }
+    }
     function onOrient(e) {
       var h = null;
       if (typeof e.webkitCompassHeading === 'number' && !isNaN(e.webkitCompassHeading)) h = e.webkitCompassHeading;
       else if (typeof e.alpha === 'number' && e.alpha != null && e.absolute) h = (360 - e.alpha) % 360;
       if (h == null || isNaN(h)) return;
-      if (heading != null) { var d = Math.abs(((h - heading + 540) % 360) - 180); if (d < HEADING_THRESHOLD) return; }
-      heading = (h + 360) % 360;
-      applyHeadingToMarker();
-      if (mode === 'track') rotateMapTo(heading);   /* [v74-3] 위치추적: 진행방향이 화면 위로(지도 회전) */
+      _orientPending = (h + 360) % 360;
+      if (_orientTimer) return;                       /* 센서 폭주를 최대 ~10Hz 로 제한 */
+      _orientTimer = setTimeout(applyOrient, Math.max(0, 100 - (Date.now() - _orientLast)));
     }
     function startOrient() {
       if (orientOn) return; orientOn = true;
@@ -12185,6 +12289,8 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     }
     function stopOrient() {
       if (!orientOn) return; orientOn = false;
+      if (_orientTimer) { clearTimeout(_orientTimer); _orientTimer = null; }
+      _orientPending = null; _mapBearTarget = null;
       window.removeEventListener('deviceorientationabsolute', onOrient, true);
       window.removeEventListener('deviceorientation', onOrient, true);
     }
@@ -12207,6 +12313,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
       else targetBearing = null;
       updateAccCircle();
       updateCompass();
+      updateGpsStatus();
     }
     function updateCompass() {
       if (!compassBtn) return;
@@ -12222,18 +12329,14 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
       if (!navigator.geolocation) { showToast('이 브라우저는 위치 기능을 지원하지 않습니다.', 4000); return; }
       if (window.isSecureContext === false) showToast('현재 위치는 HTTPS(또는 localhost)에서만 정상 동작합니다.', 5000);
       if (mode === 'off') {
-        /* 1번 : 현재위치(북쪽·중앙) */
+        /* [v99] 1번 : 현재위치 — watch 로 바로 시작(첫 fix 는 onPos 에서 중앙정렬).
+           단발 getCurrentPosition 에 의존하지 않아 신호가 약해도 계속 재시도(먹통 방지). */
+        permDenied = false;
         showToast('현재 위치를 확인하고 있습니다.', 0, 'info');
-        navigator.geolocation.getCurrentPosition(function (pos) {
-          onPos(pos);
-          programmatic = true;
-          try { map.easeTo({ center: [lastPos.lng, lastPos.lat], zoom: Math.max(map.getZoom(), FOCUS_ZOOM), bearing: 0, duration: 500, essential: true }); } catch (e) {}
-          setTimeout(function () { programmatic = false; }, 560);
-          showToast('', 1, 'info');
-          startWatch();
-          requestOrientPerm().then(function (ok) { if (ok) startOrient(); });   /* 부채꼴 방향 표시용 */
-          setMode('current');
-        }, onPosErr, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+        setMode('current');
+        pendingCenterOnce = true;
+        startWatch();
+        requestOrientPerm().then(function (ok) { if (ok) startOrient(); });   /* 부채꼴 방향 표시용 */
       } else if (mode === 'current') {
         /* 2번 : 위치추적 — 진행방향이 화면 위로(지도 회전) */
         requestOrientPerm().then(function (ok) {
@@ -12294,11 +12397,22 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
       btnIcon = document.getElementById('btnLocIcon');
       compassBtn = document.getElementById('btnCompass');
       compassNeedle = document.getElementById('compassNeedle');
+      gpsEl = document.getElementById('gpsStatus');
       if (btn) btn.addEventListener('click', onButton);
       if (compassBtn) compassBtn.addEventListener('click', onCompass);
       map.on('dragstart', onUserInteract);   /* [v73-2] 팬(드래그)만 추적 해제 — 확대/축소는 유지 */
       map.on('zoomend', function () { if (mode !== 'off') recenter(); });   /* [v73-2] 확대해도 핀이 화면에 보이도록 재중심 */
-      document.addEventListener('visibilitychange', function () { if (document.hidden) teardown(); });
+      /* [v99] 화면 껐다 켜면(앱전환 복귀) watch 가 죽어 먹통되던 것 → 복귀 시 자동 재시작 */
+      document.addEventListener('visibilitychange', function () {
+        if (document.hidden) { teardown(); }
+        else if (mode !== 'off' && !permDenied) {
+          startWatch();
+          requestOrientPerm().then(function (ok) { if (ok) startOrient(); });
+          updateGpsStatus();
+        }
+      });
+      /* [v99] 신호 끊김(오래된 fix)을 배지에 반영하는 워치독 */
+      setInterval(function () { if (mode !== 'off') updateGpsStatus(); }, 3000);
       window.addEventListener('pagehide', teardown);
     }
     return { init: init };
