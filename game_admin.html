@@ -1,4 +1,4 @@
-<!-- game_admin.html · 저장: 2026-06-22 11:05 KST -->
+<!-- game_admin.html · v3 · 저장: 2026-08-05 08:55 KST · 초기화는 주간(wk_*)만·통산/명예의전당 유지 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -207,13 +207,15 @@
 
     <!-- 게임별 랭킹 초기화 -->
     <section class="section">
-      <h2 class="section-h">🏆 랭킹 관리</h2>
+      <h2 class="section-h">🏆 주간 랭킹 관리 <span style="font-size:12px;font-weight:600;color:#888;">(통산·명예의 전당은 유지)</span></h2>
       <div class="action-grid">
-        <button class="action-btn danger" onclick="resetRanking('eagle_eye','매의 눈')">👁️ 매의 눈 초기화</button>
-        <button class="action-btn danger" onclick="resetRanking('crop_quiz','작물퀴즈')">🌱 작물퀴즈 초기화</button>
-        <button class="action-btn danger" onclick="resetRanking('production_challenge','생산량')">📊 생산량 초기화</button>
-        <button class="action-btn danger" onclick="resetRanking('survey_quiz','조사원퀴즈')">📝 조사원퀴즈 초기화</button>
-        <button class="action-btn danger" onclick="resetAllRankings()" style="grid-column:1/-1;">⚠️ 전체 랭킹 초기화</button>
+        <button class="action-btn danger" onclick="resetRanking('eagle_eye','매의 눈')">👁️ 매의 눈 주간초기화</button>
+        <button class="action-btn danger" onclick="resetRanking('crop_quiz','작물퀴즈')">🌱 작물퀴즈 주간초기화</button>
+        <button class="action-btn danger" onclick="resetRanking('ladder','사다리게임')">🪜 사다리 주간초기화</button>
+        <button class="action-btn danger" onclick="resetRanking('crop_baseball','작물 홈런왕')">⚾ 홈런왕 주간초기화</button>
+        <button class="action-btn danger" onclick="resetRanking('crop_galaga','작물갤러그')">🚀 갤러그 주간초기화</button>
+        <button class="action-btn danger" onclick="resetRanking('crop_bubble','작물버블버블')">🫧 버블버블 주간초기화</button>
+        <button class="action-btn danger" onclick="resetAllRankings()" style="grid-column:1/-1;">⚠️ 전체 주간 랭킹 초기화</button>
       </div>
     </section>
 
@@ -486,30 +488,38 @@
     }
   };
 
-  // ─── 랭킹 초기화 ───
-  async function deleteAllScores(gameId) {
-    const qs = await withTimeout(getDocs(query(collection(db, 'rankings', gameId, 'scores'))));
-    for (const d of qs.docs) await deleteDoc(d.ref);
-    return qs.size;
+  // ─── 랭킹 초기화 (통산 scores + 주간 wk_* + 챔피언 winners 모두 삭제) ───
+  const ALL_GAMES = ['eagle_eye','crop_quiz','ladder','crop_baseball','crop_galaga','crop_bubble','production_challenge','survey_quiz'];
+  // 게임과 동일한 주(월 09:00 KST) 경계로 주간 키 계산
+  function weekKeyOf(nw){ const kst=new Date(nw.getTime()+9*3600*1000); const dsm=(kst.getUTCDay()+6)%7;
+    const mid=Date.UTC(kst.getUTCFullYear(),kst.getUTCMonth(),kst.getUTCDate()); let b=mid-dsm*86400000+9*3600*1000; if(kst.getTime()<b) b-=7*86400000;
+    const d=new Date(b); return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`; }
+  // 클라이언트는 서브컬렉션 목록을 못 얻으므로, 최근 여러 주(과거 40주~미래 2주)의 wk_ 키를 훑어 삭제
+  function weekKeyList(back=40, fwd=2){ const set=new Set(); for(let n=-fwd;n<=back;n++) set.add(weekKeyOf(new Date(Date.now()-n*7*86400000))); return [...set]; }
+  async function deleteColl(...segs){ let cnt=0; try{ const qs=await withTimeout(getDocs(collection(db, ...segs))); for(const d of qs.docs){ await deleteDoc(d.ref); cnt++; } }catch(e){} return cnt; }
+  // 주간(wk_*)만 삭제 — 통산(scores)과 명예의 전당(champions/winners)은 그대로 유지
+  async function deleteWeeklyOnly(gameId){
+    let cnt=0;
+    for(const wk of weekKeyList()) cnt += await deleteColl('rankings', gameId, 'wk_'+wk);
+    return cnt;
   }
 
   window.resetRanking = async (gameId, label) => {
-    if (!confirm(`"${label}" 랭킹을 초기화할까요?\n이 작업은 되돌릴 수 없습니다.`)) return;
+    if (!confirm(`"${label}" 주간 랭킹을 초기화할까요?\n통산 점수와 명예의 전당(챔피언)은 그대로 유지됩니다.\n이 작업은 되돌릴 수 없습니다.`)) return;
     try {
-      const cnt = await deleteAllScores(gameId);
-      alert(`${label} 랭킹 초기화 완료 (${cnt}건 삭제)`);
+      const cnt = await deleteWeeklyOnly(gameId);
+      alert(`${label} 주간 랭킹 초기화 완료 (${cnt}건 삭제)\n(통산·명예의 전당은 유지)`);
     } catch (e) {
       alert('초기화 실패: ' + e.message);
     }
   };
 
   window.resetAllRankings = async () => {
-    if (!confirm('전체 랭킹을 초기화할까요?\n이 작업은 되돌릴 수 없습니다.')) return;
-    const games = ['eagle_eye', 'crop_quiz', 'production_challenge', 'survey_quiz'];
+    if (!confirm('전체 게임의 주간 랭킹을 초기화할까요?\n통산 점수와 명예의 전당(챔피언)은 그대로 유지됩니다.\n이 작업은 되돌릴 수 없습니다.')) return;
     try {
       let total = 0;
-      for (const g of games) total += await deleteAllScores(g);
-      alert(`전체 랭킹 초기화 완료 (${total}건 삭제)`);
+      for (const g of ALL_GAMES) total += await deleteWeeklyOnly(g);
+      alert(`전체 주간 랭킹 초기화 완료 (${total}건 삭제)\n(통산·명예의 전당은 유지)`);
     } catch (e) {
       alert('초기화 실패: ' + e.message);
     }
