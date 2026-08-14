@@ -1,4 +1,5 @@
-<!-- map_v99.html (v99 · TENAR V1.5) · 저장: 2026-08-12 23:16 KST · [v99] ①위치추적 먹통 대폭 개선 — GPS 일시오류(신호약함·타임아웃)에 추적을 끄지 않고 유지(권한거부만 종료)·방향센서 10Hz 스로틀+지도회전 8° 데드밴드로 「핀만 돌고 지도 멈춤」 해결·앱전환 복귀 시 watch 자동 재시작 ②GPS 연결상태 배지(검색중/양호/보통/약함·정확도) ③작물재배조사구 「전체보기」 한 번에 전체표시(필터 자동해제) ④콤보에 「전체 층」 추가+시도·시군구·읍면동·층 선택 시 조사구 목록을 해당 조건만 표시. -->
+<!-- map_v100.html (v100 · TENAR V1.5) · 저장: 2026-08-15 07:05 KST · [v100] 공시지가·토지특성 조회를 NAS → AWS Lambda(서울 ap-northeast-2)로 이전. 브이월드 NED API가 해외IP엔 자료를 안 줘 Cloudflare는 불가 → 서울 리전 Lambda(한국IP)로 대체. LAND_API_BASE 한 곳 관리·fetchLatestLandPrice/fetchServerLandInfo가 Lambda 호출·NAS 온라인 게이트 제거 → NAS 전원 꺼도 공시지가 정상. 응답구조 동일이라 그 외 로직 무변경. -->
+<!-- (이전)  map_v99.html (v99 · TENAR V1.5) · 저장: 2026-08-12 23:16 KST · [v99] ①위치추적 먹통 대폭 개선 — GPS 일시오류(신호약함·타임아웃)에 추적을 끄지 않고 유지(권한거부만 종료)·방향센서 10Hz 스로틀+지도회전 8° 데드밴드로 「핀만 돌고 지도 멈춤」 해결·앱전환 복귀 시 watch 자동 재시작 ②GPS 연결상태 배지(검색중/양호/보통/약함·정확도) ③작물재배조사구 「전체보기」 한 번에 전체표시(필터 자동해제) ④콤보에 「전체 층」 추가+시도·시군구·읍면동·층 선택 시 조사구 목록을 해당 조건만 표시. -->
 <!-- (이전)  map_v98.html (v98 · TENAR V1.5) · 저장: 2026-08-12 06:10 KST · [v98] 길찾기 복귀 문제 수정 — 네이버/카카오/T맵 길찾기를 열 때 현재 「지도화면(페이지)」을 절대 이동시키지 않고 앱·웹을 새 탭으로 연다. 앱에 다녀와도 이전 지도화면이 그대로 유지되어 "페이지를 찾을 수 없습니다"가 안 뜸(기존엔 웹 폴백 타이머가 뒤에서 현재 페이지를 이동시켜 지도가 사라졌음). openAppOrWeb 만 변경, 다른 기능·카카오 지오코딩(v97) 그대로. -->
 <!-- (이전)  map_v97.html (v97 · TENAR V1.5) · 저장: 2026-08-10 17:13 KST · [v97] 카카오 지오코딩 보강 — 주소·지번 검색/좌표조회 좌표를 카카오와 동일하게(브이월드 항공영상·지적 정합오차로 핀이 한 필지 어긋나 보이던 지역 보완). ①KAKAO_JS_KEY 한 곳에서 관리 ②카카오 우선 → 실패/자료없음/키없음이면 브이월드로 자동 폴백 ③검색·작물재배조사구(추가/수정/좌표조회)·조사표 대량반영 모두 동일 적용. ※v96(공시지가 NAS→Cloudflare Worker)은 미포함 — v95 지도 계보(공시지가=NAS 유지). -->
 <!-- (이전)  map_v95.html (v95 · TENAR V1.5) · 저장: 2026-08-08 16:56 KST · [v95] 변경 없음 -->
@@ -1528,6 +1529,10 @@ TenarSecureStore.init('map',
   var NAS_OFF_KEY = 'tenar_nas_off';          /* '1' 이면 기본 자동연결도 끔(완전 로컬) */
   var LAND_CACHE_KEY = 'tenar_land_cache_v1';  /* 최근 조회 캐시(PNU별) */
   var _serverMode = 'offline';                 /* 'online' | 'offline' */
+  /* [v100] 공시지가·토지특성 중계 = AWS Lambda(서울 ap-northeast-2, 한국 IP).
+     브이월드 NED API가 해외 IP엔 자료를 안 줘서 Cloudflare는 불가 → 서울 Lambda 로 대체.
+     NAS 전원과 무관하게 항상 조회됨. 나중에 커스텀 도메인 붙이면 이 한 줄만 교체. */
+  var LAND_API_BASE = 'https://5jaef3cekfhle24kj3ajewdq3y0boqsb.lambda-url.ap-northeast-2.on.aws';
   function getNasBase() {
     try {
       if (localStorage.getItem(NAS_OFF_KEY) === '1') return '';   /* 사용자가 「끄기」 선택 */
@@ -1589,22 +1594,22 @@ TenarSecureStore.init('map',
     } catch (e) {}
   }
 
-  /* [v55] 서버(NAS)에서 토지특성(용도지역·토지이용상황·지목·면적·농업진흥) 조회 */
+  /* [v55·v100] 서버에서 토지특성(용도지역·토지이용상황·지목·면적·농업진흥) 조회 — Lambda(서울) */
   function fetchServerLandInfo(pnu) {
-    var base = getNasBase();
-    if (!pnu || !isOnline() || !base) return Promise.resolve(null);
+    var base = LAND_API_BASE;
+    if (!pnu || !base) return Promise.resolve(null);   /* [v100] NAS 온라인 게이트 제거 → NAS 꺼도 조회 */
     return fetch(base + '/api/vworld/landinfo?pnu=' + encodeURIComponent(pnu), { cache: 'no-store' })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (j) { return (j && j.ok !== false) ? j : null; })
       .catch(function () { return null; });
   }
 
-  /* [v51-5] 최신 공시지가 — NAS(프록시)로만 조회. 없으면 캐시/안내 */
+  /* [v51-5·v100] 최신 공시지가 — Lambda(서울)로 조회. 없으면 캐시/안내 */
   function fetchLatestLandPrice(pnu) {
-    var base = getNasBase();
+    var base = LAND_API_BASE;
     if (!pnu) return Promise.resolve(null);
-    if (!isOnline() || !base) return Promise.resolve({ offline: true });
-    /* [v53] tenar-api 규약 : GET /api/vworld/price?pnu= → { ok, latest, previous } */
+    if (!base) return Promise.resolve({ offline: true });   /* [v100] NAS 온라인 게이트 제거 */
+    /* GET /api/vworld/price?pnu= → { ok, latest, previous } (NAS/Worker/Lambda 응답 동일) */
     return fetch(base + '/api/vworld/price?pnu=' + encodeURIComponent(pnu), { cache: 'no-store' })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (j) {
@@ -5148,7 +5153,7 @@ TenarSecureStore.init('map',
       }
     }
     if (!pnu) { el2.innerHTML = '<span style="color:#999;">PNU가 없어 조회할 수 없습니다.</span>'; return; }
-    if (!isOnline() || !getNasBase()) { showCache('🔌 로컬: '); return; }
+    if (!LAND_API_BASE) { showCache('🔌 로컬: '); return; }   /* [v100] NAS 아닌 Lambda 기준 → NAS 꺼도 조회 */
     el2.textContent = '서버에서 조회 중…';
     fetchLatestLandPrice(pnu).then(function (j) {
       if (!j || j.offline) { showCache('🔌 로컬: '); return; }
