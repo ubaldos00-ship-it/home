@@ -1,4 +1,4 @@
-<!-- game_eagle_eye.html · v2 · 저장: 2026-08-04 10:35 KST · 큰 글꼴/고레벨에서 오른쪽 짤림 수정(셀 min-width:0+이모지 비례크기) -->
+<!-- game_eagle_eye.html · v3 · 저장: 2026-08-05 10:20 KST · 최대 그리드 8→7·사과+토마토 조합 제거(사과+바나나) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -293,7 +293,7 @@
         timerInterval: null,
         isPlaying: false,
         stageData: [
-            ['🍎', '🍅'], ['🥬', '🥦'], ['🥔', '🍠'], ['🍇', '🫐'],
+            ['🍎', '🍌'], ['🥬', '🥦'], ['🥔', '🍠'], ['🍇', '🫐'],
             ['🧅', '🧄'], ['🍊', '🍋'], ['🌽', '🌾'], ['🍄', '🪵'],
             ['🍒', '🍓'], ['🍐', '🍏'], ['🍉', '🎃'], ['🥕', '🥖'],
             ['🌵', '🌳'], ['🌻', '🌼'], ['🍆', '🥒'], ['🥨', '🥐']
@@ -331,7 +331,7 @@
             this.levelText.innerText = this.level;
             this.board.innerHTML = '';
             let size = 2 + Math.floor(this.level / 3);
-            if (size > 8) size = 8;
+            if (size > 7) size = 7;   // 최대 7x7 (8x8은 너무 작아짐)
             this.board.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
             const pairIndex = Math.floor(Math.random() * this.stageData.length);
             let [normal, spy] = this.stageData[pairIndex];
