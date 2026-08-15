@@ -1,4 +1,4 @@
-<!-- game_crop_galaga.html · v3 · 저장: 2026-08-04 05:35 KST · 우주선(화면)눌러 발사·시작멘트·발사FAB유지 -->
+<!-- game_crop_galaga.html · v4 · 저장: 2026-08-05 09:50 KST · 하단 좌우 스와이프 이동바 추가(버블버블 방식)·캔버스탭=발사 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -42,7 +42,20 @@
   .btn-sm{ min-height:46px; font-size:14px; border-radius:12px; }
   .btn-row{ display:flex; gap:9px; margin-top:10px; } .mt{ margin-top:12px; }
   /* 게임 화면 */
-  #gameCanvas{ position:absolute; inset:0; width:100%; height:100%; display:block; z-index:1; }
+  #gameCanvas{ flex:1; width:100%; min-height:0; display:block; z-index:1; }
+  /* 하단 스와이프 이동 바 (작물버블버블과 동일한 방식) */
+  #galagaCtrl{ flex-shrink:0; z-index:6; background:#070b16; padding:8px 12px calc(8px + env(safe-area-inset-bottom)); }
+  #gswipe{ position:relative; height:66px; border-radius:14px; background:linear-gradient(180deg,rgba(22,32,64,.92),rgba(10,16,32,.96));
+    border:2px solid rgba(90,120,200,.42); overflow:hidden; touch-action:none; display:flex; align-items:center; justify-content:center; }
+  #gswipe.active{ border-color:rgba(150,185,255,.8); background:linear-gradient(180deg,rgba(32,46,86,.95),rgba(16,24,48,.97)); }
+  #gswipe .ga{ position:absolute; top:50%; transform:translateY(-50%); font-size:20px; color:rgba(160,190,255,.5); font-weight:900; }
+  #gswipe .ga.l{ left:14px; } #gswipe .ga.r{ right:14px; }
+  #gswipe .glabel{ font-size:12px; font-weight:800; color:rgba(195,215,255,.72); pointer-events:none; }
+  #gswipe .gdot{ position:absolute; top:50%; width:24px; height:24px; margin:-12px 0 0 -12px; border-radius:50%; background:rgba(150,190,255,.85); box-shadow:0 0 10px rgba(120,170,255,.6); opacity:0; transition:opacity .12s; }
+  #gswipe .gdot0{ width:16px; height:16px; margin:-8px 0 0 -8px; background:rgba(255,255,255,.25); box-shadow:none; }
+  #gswipe .glink{ position:absolute; top:50%; height:3px; background:rgba(150,190,255,.5); transform:translateY(-50%); transform-origin:left center; opacity:0; }
+  #gswipe .ggauge{ position:absolute; left:50%; bottom:6px; width:60%; height:4px; transform:translateX(-50%); background:rgba(255,255,255,.14); border-radius:2px; overflow:hidden; }
+  #gswipe .ggauge i{ position:absolute; top:0; left:50%; height:100%; width:0; background:#8fbfff; }
   .hud{ position:absolute; top:0; left:0; right:0; z-index:3; display:flex; justify-content:space-between; align-items:flex-start;
     padding:calc(8px + env(safe-area-inset-top)) 12px 8px; font-size:12px; font-weight:800; color:#dfe8ff; pointer-events:none; text-shadow:0 1px 3px #000; }
   .hud .l{ color:#8fa0c8; font-weight:700; font-size:9.5px; }
@@ -52,13 +65,12 @@
   .icobtn{ width:38px; height:38px; border-radius:11px; border:1px solid #2b3d63; background:rgba(10,14,26,.75); color:#fff; font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
   .icobtn:active{ background:rgba(46,122,78,.45); }
   /* 반투명 발사 버튼 (오른손 엄지용 · 우주선보다 약간 위, 오른쪽 끝) */
-  #btnFire{ position:absolute; right:16px; bottom:calc(96px + env(safe-area-inset-bottom)); z-index:4;
+  #btnFire{ position:absolute; right:16px; bottom:calc(104px + env(safe-area-inset-bottom)); z-index:7;
     width:74px; height:74px; border-radius:50%; border:2px solid rgba(230,185,85,.6);
     background:rgba(201,150,43,.42); color:#fff; font-size:28px; cursor:pointer; touch-action:none;
     display:flex; align-items:center; justify-content:center; backdrop-filter:blur(2px); box-shadow:0 4px 14px rgba(0,0,0,.35); }
   #btnFire:active{ background:rgba(230,185,85,.62); }
-  .drag-hint{ position:absolute; left:0; right:0; bottom:calc(14px + env(safe-area-inset-bottom)); z-index:3;
-    text-align:center; font-size:12px; color:rgba(200,215,255,.55); pointer-events:none; }
+  .drag-hint{ display:none; }
   /* 오버레이(일시정지/스테이지) */
   .overlay{ position:absolute; inset:0; z-index:8; background:rgba(6,9,18,.78); display:none; align-items:center; justify-content:center; padding:24px; }
   .overlay.show{ display:flex; }
@@ -133,7 +145,13 @@
       <button class="icobtn" id="pauseBtn" aria-label="일시정지">⏸</button>
     </div>
     <button id="btnFire" aria-label="발사">🔥</button>
-    <div class="drag-hint" id="dragHint">👆 화면을 좌우로 밀어 우주선 이동</div>
+    <div id="galagaCtrl">
+      <div id="gswipe">
+        <span class="ga l">◀</span><span class="glabel">손가락을 좌우로 밀어 우주선 이동</span><span class="ga r">▶</span>
+        <span class="gdot gdot0" id="gDot0"></span><span class="glink" id="gLink"></span><span class="gdot" id="gDot"></span>
+        <span class="ggauge"><i id="gGauge"></i></span>
+      </div>
+    </div>
   </div>
 
   <!-- 결과 화면 -->
@@ -371,7 +389,7 @@
     boss:null, invUntil:0, autoFireAcc:0, shootPow:{until:0}, tri:{until:0}, shield:false, rapid:{until:0},
     stageState:'play', stageMsg:'', stageMsgUntil:0, shake:0, hitFlash:0, autoShootIdx:0
   };
-  const input = { left:false, right:false, firing:false, dragX:null };
+  const input = { left:false, right:false, firing:false, dragX:null, moveDir:0 };
 
   /* ===== 6. 입력 ===== */
   function bindInput(){
@@ -379,17 +397,25 @@
     $('btnFire').addEventListener('pointerdown', e=>{ e.preventDefault(); input.firing=true; if(game.fireMode==='manual') tryShoot(true); });
     $('btnFire').addEventListener('pointerup', ()=> input.firing=false);
     $('btnFire').addEventListener('pointerleave', ()=> input.firing=false);
-    // 드래그 이동 + 화면(우주선)을 누르면 발사 — 엄지로 잡고 움직이며 누르면 미사일
-    function dragMove(clientX){ input.dragX = clientX - canvas.getBoundingClientRect().left; if($('dragHint')) $('dragHint').style.display='none'; }
+    // 캔버스 탭 = 발사(버튼발사 모드). 이동은 하단 스와이프 바에서만 한다.
     function pressFire(){ if(game.fireMode==='manual' && game.running && game.stageState!=='over'){ input.firing=true; tryShoot(true); } }
-    canvas.addEventListener('touchstart', e=>{ if(e.touches[0]){ dragMove(e.touches[0].clientX); pressFire(); } }, {passive:true});
-    canvas.addEventListener('touchmove', e=>{ if(e.touches[0]){ dragMove(e.touches[0].clientX); e.preventDefault(); } }, {passive:false});
-    canvas.addEventListener('touchend', ()=>{ input.dragX=null; input.firing=false; }, {passive:true});
-    // 마우스 드래그(PC 보조)
-    let mDown=false;
-    canvas.addEventListener('mousedown', e=>{ mDown=true; dragMove(e.clientX); pressFire(); });
-    window.addEventListener('mousemove', e=>{ if(mDown) dragMove(e.clientX); });
-    window.addEventListener('mouseup', ()=>{ mDown=false; input.dragX=null; input.firing=false; });
+    canvas.addEventListener('touchstart', e=>{ pressFire(); }, {passive:true});
+    canvas.addEventListener('touchend', ()=>{ input.firing=false; }, {passive:true});
+    canvas.addEventListener('mousedown', e=>{ pressFire(); });
+    window.addEventListener('mouseup', ()=>{ input.firing=false; });
+    // 하단 스와이프 이동 바 (조이스틱: 상대이동 — 손가락 민 정도에 따라 속도)
+    const gsw=$('gswipe'); let gPid=null, gStartX=0; const GDEAD=8, GMAX=60;
+    function gStart(id,x){ gPid=id; gStartX=x; gsw.classList.add('active'); const rc=gsw.getBoundingClientRect(), lx=x-rc.left;
+      $('gDot0').style.left=lx+'px'; $('gDot0').style.opacity='1'; $('gDot').style.left=lx+'px'; $('gDot').style.opacity='1'; }
+    function gMove(x){ const dx=x-gStartX; let n=0; const ad=Math.abs(dx); if(ad>GDEAD) n=clamp((dx>0?1:-1)*(ad-GDEAD)/(GMAX-GDEAD),-1,1); input.moveDir=n;
+      const rc=gsw.getBoundingClientRect(), c0=gStartX-rc.left, c=x-rc.left; $('gDot0').style.left=c0+'px'; $('gDot').style.left=c+'px';
+      const lk=$('gLink'), len=Math.abs(c-c0); lk.style.left=Math.min(c0,c)+'px'; lk.style.width=len+'px'; lk.style.opacity=len>2?'1':'0';
+      $('gGauge').style.width=(Math.abs(n)*50)+'%'; $('gGauge').style.left=n>=0?'50%':(50+n*50)+'%'; }
+    function gEnd(){ gPid=null; input.moveDir=0; gsw.classList.remove('active'); $('gDot').style.opacity='0'; $('gDot0').style.opacity='0'; $('gLink').style.opacity='0'; $('gGauge').style.width='0'; }
+    gsw.addEventListener('pointerdown', e=>{ if(gPid!==null) return; e.preventDefault(); try{ gsw.setPointerCapture(e.pointerId); }catch(_){} gStart(e.pointerId, e.clientX); });
+    gsw.addEventListener('pointermove', e=>{ if(e.pointerId!==gPid) return; e.preventDefault(); gMove(e.clientX); });
+    gsw.addEventListener('pointerup', e=>{ if(e.pointerId===gPid) gEnd(); });
+    gsw.addEventListener('pointercancel', e=>{ if(e.pointerId===gPid) gEnd(); });
     window.addEventListener('keydown', e=>{
       if(e.code==='ArrowLeft'||e.code==='KeyA') input.left=true;
       else if(e.code==='ArrowRight'||e.code==='KeyD') input.right=true;
@@ -539,10 +565,11 @@
     // 콤보 타이머
     if(game.comboTimer>0){ game.comboTimer-=dt*1000; if(game.comboTimer<=0){ game.combo=0; updateHud(); } }
     // 플레이어 이동
-    const p=game.player; const spd=300;
-    if(input.dragX!=null){ p.targetX = clamp(input.dragX, p.r, W-p.r); }
-    else { if(input.left) p.targetX-=spd*dt; if(input.right) p.targetX+=spd*dt; p.targetX=clamp(p.targetX,p.r,W-p.r); }
-    p.x += (p.targetX-p.x)*Math.min(1, dt*14);
+    const p=game.player; const spd=300, swipeSpd=470;
+    if(input.moveDir){ p.targetX += input.moveDir*swipeSpd*dt; }        // 하단 스와이프 바(상대이동)
+    if(input.left) p.targetX-=spd*dt; if(input.right) p.targetX+=spd*dt; // 키보드
+    p.targetX=clamp(p.targetX,p.r,W-p.r);
+    p.x += (p.targetX-p.x)*Math.min(1, dt*16);
     // 자동발사
     if(game.fireMode==='auto'){
       let interval = now<game.rapid.until?150:280;

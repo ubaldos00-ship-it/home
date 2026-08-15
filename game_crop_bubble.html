@@ -1,4 +1,4 @@
-<!-- game_crop_bubble.html · v4 · 저장: 2026-08-05 08:00 KST · 왼쪽시작(빈칸 가운데)·낙하속도↓·보너스판 조기종료 -->
+<!-- game_crop_bubble.html · v5 · 저장: 2026-08-05 09:50 KST · 배경 밝게(해충 대비↑)+해충 후광/그림자 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -451,7 +451,14 @@
     }
     landOn(){ let landed=false; for(const p of game.platforms){ if(this.x+this.w<=p.x||this.x>=p.x+p.w) continue; if(this.vy>=0 && this.y+this.h>=p.y && this.y+this.h<=p.y+18){ this.y=p.y-this.h; this.vy=0; this.onP=p; landed=true; } } return landed; }
     edgeTurn(){ if(!this.onP||game.eventName==='작물을 지켜라') return; const p=this.onP; if(this.x<p.x-2) this.vx=Math.abs(this.vx); else if(this.x+this.w>p.x+p.w+2) this.vx=-Math.abs(this.vx); }
-    draw(){ ctx.font=this.w+'px serif'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(this.def.e, this.x+this.w/2, this.y+this.h/2); }
+    draw(){ const cx=this.x+this.w/2, cy=this.y+this.h/2;
+      ctx.save();
+      // 밝은 흰 후광 + 그림자로 배경과 대비 강화
+      ctx.beginPath(); ctx.arc(cx, cy, this.w*0.56, 0, 7); ctx.fillStyle='rgba(255,255,255,0.5)'; ctx.fill();
+      ctx.font=this.w+'px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.shadowColor='rgba(0,0,0,0.45)'; ctx.shadowBlur=3; ctx.shadowOffsetY=1;
+      ctx.fillText(this.def.e, cx, cy);
+      ctx.restore(); }
   }
 
   /* ===== 13. 방울 (테두리 안에서만 튕김) ===== */
@@ -711,8 +718,8 @@
     game.particles.forEach(p=>p.draw()); game.floats.forEach(f=>f.draw());
     if(game.boss && !game.boss.downed){ const w=200,x=(WORLD_W-w)/2,y=BOX.top+6; ctx.fillStyle='rgba(0,0,0,0.4)'; roundRect(x,y,w,10,5); ctx.fill(); ctx.fillStyle='#e0533a'; roundRect(x,y,w*Math.max(0,game.boss.hp/game.boss.maxHp),10,5); ctx.fill(); ctx.fillStyle='#fff'; ctx.font='900 10px sans-serif'; ctx.textAlign='center'; ctx.fillText('BOSS '+game.boss.def.name, WORLD_W/2, y-3); }
   }
-  function drawBackground(){ const theme=themeForStage(game.stage); let top='#2a5a8a', bot='#8fbf6a';
-    if(theme==='rice'){ top='#3a6a9a'; bot='#a0c060'; } else if(theme==='orchard'){ top='#e0a060'; bot='#7ab04a'; } else if(theme==='highland'){ top='#2a4a6a'; bot='#6a9a5a'; } else if(theme==='boss'){ top='#2a1a3a'; bot='#4a2a2a'; }
+  function drawBackground(){ const theme=themeForStage(game.stage); let top='#bfe6ff', bot='#eaf6d6';  // 밝은 배경(해충과 대비↑)
+    if(theme==='rice'){ top='#c3e8ff'; bot='#f0f6d8'; } else if(theme==='orchard'){ top='#ffe6c6'; bot='#fdf1d6'; } else if(theme==='highland'){ top='#d4ecff'; bot='#e8f2e0'; } else if(theme==='boss'){ top='#5a4a7a'; bot='#7a5a6a'; }
     const g=ctx.createLinearGradient(0,0,0,ch); g.addColorStop(0,top); g.addColorStop(1,bot); ctx.fillStyle=g; ctx.fillRect(0,0,cw,ch);
     ctx.fillStyle='rgba(255,255,255,0.22)'; const t=now()/4000; for(let i=0;i<3;i++){ const x=((t*30+i*160)%(cw+120))-60, y=oy+22+i*20; ctx.beginPath(); ctx.ellipse(x,y,24,11,0,0,7); ctx.ellipse(x+18,y+4,18,9,0,0,7); ctx.fill(); } }
 
