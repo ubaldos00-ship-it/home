@@ -1,4 +1,4 @@
-<!-- game_crop_galaga.html · v4 · 저장: 2026-08-05 09:50 KST · 하단 좌우 스와이프 이동바 추가(버블버블 방식)·캔버스탭=발사 -->
+<!-- game_crop_galaga.html · v5 · 저장: 2026-08-05 11:05 KST · 하단 바=우주선 절대위치 1:1 매칭(즉시 이동) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -403,15 +403,14 @@
     canvas.addEventListener('touchend', ()=>{ input.firing=false; }, {passive:true});
     canvas.addEventListener('mousedown', e=>{ pressFire(); });
     window.addEventListener('mouseup', ()=>{ input.firing=false; });
-    // 하단 스와이프 이동 바 (조이스틱: 상대이동 — 손가락 민 정도에 따라 속도)
-    const gsw=$('gswipe'); let gPid=null, gStartX=0; const GDEAD=8, GMAX=60;
-    function gStart(id,x){ gPid=id; gStartX=x; gsw.classList.add('active'); const rc=gsw.getBoundingClientRect(), lx=x-rc.left;
-      $('gDot0').style.left=lx+'px'; $('gDot0').style.opacity='1'; $('gDot').style.left=lx+'px'; $('gDot').style.opacity='1'; }
-    function gMove(x){ const dx=x-gStartX; let n=0; const ad=Math.abs(dx); if(ad>GDEAD) n=clamp((dx>0?1:-1)*(ad-GDEAD)/(GMAX-GDEAD),-1,1); input.moveDir=n;
-      const rc=gsw.getBoundingClientRect(), c0=gStartX-rc.left, c=x-rc.left; $('gDot0').style.left=c0+'px'; $('gDot').style.left=c+'px';
-      const lk=$('gLink'), len=Math.abs(c-c0); lk.style.left=Math.min(c0,c)+'px'; lk.style.width=len+'px'; lk.style.opacity=len>2?'1':'0';
-      $('gGauge').style.width=(Math.abs(n)*50)+'%'; $('gGauge').style.left=n>=0?'50%':(50+n*50)+'%'; }
-    function gEnd(){ gPid=null; input.moveDir=0; gsw.classList.remove('active'); $('gDot').style.opacity='0'; $('gDot0').style.opacity='0'; $('gLink').style.opacity='0'; $('gGauge').style.width='0'; }
+    // 하단 스와이프 이동 바 (절대위치 매칭 — 손가락 위치 = 우주선 위치, 1:1 즉시 이동)
+    const gsw=$('gswipe'); let gPid=null;
+    function gSet(x){ const rc=gsw.getBoundingClientRect(); let frac=(x-rc.left)/rc.width; frac=clamp(frac,0,1); input.dragX=frac*W;
+      const lx=frac*rc.width; $('gDot').style.left=lx+'px'; $('gDot').style.opacity='1';
+      $('gGauge').style.left=(frac>=0.5?'50%':(frac*100)+'%'); $('gGauge').style.width=(Math.abs(frac-0.5)*100)+'%'; }
+    function gStart(id,x){ gPid=id; gsw.classList.add('active'); gSet(x); }
+    function gMove(x){ gSet(x); }
+    function gEnd(){ gPid=null; input.dragX=null; gsw.classList.remove('active'); $('gDot').style.opacity='0'; $('gGauge').style.width='0'; }
     gsw.addEventListener('pointerdown', e=>{ if(gPid!==null) return; e.preventDefault(); try{ gsw.setPointerCapture(e.pointerId); }catch(_){} gStart(e.pointerId, e.clientX); });
     gsw.addEventListener('pointermove', e=>{ if(e.pointerId!==gPid) return; e.preventDefault(); gMove(e.clientX); });
     gsw.addEventListener('pointerup', e=>{ if(e.pointerId===gPid) gEnd(); });
@@ -565,11 +564,10 @@
     // 콤보 타이머
     if(game.comboTimer>0){ game.comboTimer-=dt*1000; if(game.comboTimer<=0){ game.combo=0; updateHud(); } }
     // 플레이어 이동
-    const p=game.player; const spd=300, swipeSpd=470;
-    if(input.moveDir){ p.targetX += input.moveDir*swipeSpd*dt; }        // 하단 스와이프 바(상대이동)
-    if(input.left) p.targetX-=spd*dt; if(input.right) p.targetX+=spd*dt; // 키보드
-    p.targetX=clamp(p.targetX,p.r,W-p.r);
-    p.x += (p.targetX-p.x)*Math.min(1, dt*16);
+    const p=game.player; const spd=300;
+    if(input.dragX!=null){ p.targetX = clamp(input.dragX, p.r, W-p.r); p.x = p.targetX; }  // 하단 바 = 우주선 위치 1:1 즉시
+    else { if(input.left) p.targetX-=spd*dt; if(input.right) p.targetX+=spd*dt;             // 키보드
+      p.targetX=clamp(p.targetX,p.r,W-p.r); p.x += (p.targetX-p.x)*Math.min(1, dt*18); }
     // 자동발사
     if(game.fireMode==='auto'){
       let interval = now<game.rapid.until?150:280;
