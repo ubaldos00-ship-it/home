@@ -1,4 +1,4 @@
-<!-- game_eagle_eye.html · v3 · 저장: 2026-08-05 10:20 KST · 최대 그리드 8→7·사과+토마토 조합 제거(사과+바나나) -->
+<!-- game_eagle_eye.html · v4 · 저장: 2026-08-05 10:45 KST · 토마토 짝 복원(토마토+옥수수)·게임 효과음(정답/오답/게임오버) 추가 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -296,7 +296,8 @@
             ['🍎', '🍌'], ['🥬', '🥦'], ['🥔', '🍠'], ['🍇', '🫐'],
             ['🧅', '🧄'], ['🍊', '🍋'], ['🌽', '🌾'], ['🍄', '🪵'],
             ['🍒', '🍓'], ['🍐', '🍏'], ['🍉', '🎃'], ['🥕', '🥖'],
-            ['🌵', '🌳'], ['🌻', '🌼'], ['🍆', '🥒'], ['🥨', '🥐']
+            ['🌵', '🌳'], ['🌻', '🌼'], ['🍆', '🥒'], ['🥨', '🥐'],
+            ['🍅', '🌽']
         ],
         init() {
             this.board = document.getElementById('game-board');
@@ -359,11 +360,13 @@
         },
         nextLevel() {
             this.level++;
+            sfxCorrect(this.level);   // 정답 효과음
             const bonus = Math.max(10, 20 - Math.floor(this.level / 2));
             this.time = Math.min(100, this.time + bonus);
             this.updateTimerBar(); this.render();
         },
         wrongChoice(cell) {
+            sfxWrong();                // 오답 효과음
             this.time -= 12; this.updateTimerBar();
             cell.classList.add('wrong');
             setTimeout(() => cell.classList.remove('wrong'), 200);
@@ -373,12 +376,14 @@
             clearInterval(this.timerInterval);
             // 점수 = 도달 레벨
             const score = this.level;
+            const isBest = score > this.highScore;
             // 로컬 최고점 (오프라인 백업)
-            if (score > this.highScore) {
+            if (isBest) {
                 this.highScore = score;
                 localStorage.setItem('spyCropHighScore', this.highScore);
                 this.topLevelText.innerText = this.highScore;
             }
+            if (isBest) playFanfare(); else sfxGameOver();   // 최고점=팡파레 / 아니면 게임오버음
             document.getElementById('final-level').innerText = score;
             let rank = "";
             if (score > 25) rank = "🏅 신의 경지에 오른 조사관";
@@ -494,6 +499,46 @@
                 g.gain.exponentialRampToValueAtTime(0.0001, t0 + 1.0);
                 o.connect(g).connect(_actx.destination);
                 o.start(t0); o.stop(t0 + 1.05);
+            });
+        } catch (e) {}
+    }
+    /* ===== 게임 효과음 (Web Audio 자체 생성) ===== */
+    function sfxCorrect(lvl) {
+        try {
+            ensureAudio(); const now = _actx.currentTime;
+            const base = 620 + Math.min(320, (lvl || 0) * 8);
+            [[base, 0], [base * 1.33, 0.07]].forEach(([f, dt]) => {
+                const o = _actx.createOscillator(), g = _actx.createGain();
+                o.type = 'sine'; o.frequency.value = f; const t0 = now + dt;
+                g.gain.setValueAtTime(0.0001, t0);
+                g.gain.exponentialRampToValueAtTime(0.22, t0 + 0.02);
+                g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.16);
+                o.connect(g).connect(_actx.destination); o.start(t0); o.stop(t0 + 0.18);
+            });
+        } catch (e) {}
+    }
+    function sfxWrong() {
+        try {
+            ensureAudio(); const now = _actx.currentTime;
+            const o = _actx.createOscillator(), g = _actx.createGain();
+            o.type = 'sawtooth'; o.frequency.setValueAtTime(220, now);
+            o.frequency.exponentialRampToValueAtTime(90, now + 0.22);
+            g.gain.setValueAtTime(0.0001, now);
+            g.gain.exponentialRampToValueAtTime(0.28, now + 0.02);
+            g.gain.exponentialRampToValueAtTime(0.0001, now + 0.26);
+            o.connect(g).connect(_actx.destination); o.start(now); o.stop(now + 0.28);
+        } catch (e) {}
+    }
+    function sfxGameOver() {
+        try {
+            ensureAudio(); const now = _actx.currentTime;
+            [440, 349.23, 261.63, 196].forEach((f, i) => {
+                const o = _actx.createOscillator(), g = _actx.createGain();
+                o.type = 'triangle'; o.frequency.value = f; const t0 = now + i * 0.16;
+                g.gain.setValueAtTime(0.0001, t0);
+                g.gain.exponentialRampToValueAtTime(0.22, t0 + 0.03);
+                g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.4);
+                o.connect(g).connect(_actx.destination); o.start(t0); o.stop(t0 + 0.42);
             });
         } catch (e) {}
     }
