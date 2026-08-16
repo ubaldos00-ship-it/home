@@ -1,4 +1,4 @@
-<!-- game_crop_quiz.html · v3 · 저장: 2026-08-04 05:35 KST · 시간초과 정답표시+1.4초 텀·오답 하이라이트 -->
+<!-- game_crop_quiz.html · v4 · 저장: 2026-08-05 11:35 KST · 동점=먼저달성 우선 타이브레이크 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -624,13 +624,14 @@
         const list = document.getElementById('rankList');
         list.innerHTML = '<div class="rank-loading">불러오는 중…</div>';
         try {
-            const qs = await withTimeout(getDocs(query(weeklyCol(), orderBy('score', 'desc'), limit(10))));
+            const qs = await withTimeout(getDocs(query(weeklyCol(), orderBy('score', 'desc'), limit(50))));
             if (qs.empty) { list.innerHTML = '<div class="rank-empty">이번 주 기록이 아직 없어요.<br>첫 1위에 도전해보세요!</div>'; return; }
+            const _ms = x => x && x.seconds != null ? x.seconds*1e3 + (x.nanoseconds||0)/1e6 : (x && x.toMillis ? x.toMillis() : Infinity);
+            const rows = qs.docs.map(d => d.data()).sort((a,b) => ((b.score||0)-(a.score||0)) || (_ms(a.playedAt)-_ms(b.playedAt))).slice(0,10); // 동점=먼저 달성 우선
             const medals = ['🥇', '🥈', '🥉'];
             let html = '', pos = 0;
-            qs.forEach((d) => {
+            rows.forEach((r) => {
                 pos++;
-                const r = d.data();
                 const mine = r.userId === USER.userId;
                 const posCell = pos <= 3 ? `<div class="rank-pos top">${medals[pos-1]}</div>` : `<div class="rank-pos">${pos}</div>`;
                 html += `<div class="rank-row ${mine ? 'me' : ''}">${posCell}

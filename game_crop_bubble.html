@@ -1,4 +1,4 @@
-<!-- game_crop_bubble.html · v5 · 저장: 2026-08-05 09:50 KST · 배경 밝게(해충 대비↑)+해충 후광/그림자 -->
+<!-- game_crop_bubble.html · v6 · 저장: 2026-08-05 11:35 KST · 동점=먼저달성 우선 타이브레이크 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -757,8 +757,10 @@
 
   /* ===== 27. 랭킹/공유 ===== */
   async function openRanking(){ $('rankModal').classList.remove('hidden'); const list=$('rankList'); list.innerHTML='<div class="empty">불러오는 중…</div>';
-    try{ const qs=await withTimeout(getDocs(query(weeklyCol(), orderBy('score','desc'), limit(10)))); if(qs.empty){ list.innerHTML='<div class="empty">이번 주 첫 번째 도전자가 되어보세요!</div>'; return; }
-      const medals=['🥇','🥈','🥉']; let html='',pos=0; qs.forEach(d=>{ pos++; const r=d.data(), mine=r.userId===USER.userId;
+    try{ const qs=await withTimeout(getDocs(query(weeklyCol(), orderBy('score','desc'), limit(50)))); if(qs.empty){ list.innerHTML='<div class="empty">이번 주 첫 번째 도전자가 되어보세요!</div>'; return; }
+      const _ms=x=>x&&x.seconds!=null?x.seconds*1e3+(x.nanoseconds||0)/1e6:(x&&x.toMillis?x.toMillis():Infinity);
+      const rows=qs.docs.map(d=>d.data()).sort((a,b)=>((b.score||0)-(a.score||0))||(_ms(a.playedAt)-_ms(b.playedAt))).slice(0,10); // 동점=먼저 달성 우선
+      const medals=['🥇','🥈','🥉']; let html='',pos=0; rows.forEach(r=>{ pos++; const mine=r.userId===USER.userId;
         const pc=pos<=3?`<div class="rank-pos top">${medals[pos-1]}</div>`:`<div class="rank-pos">${pos}</div>`;
         html+=`<div class="rank-row ${mine?'me':''}">${pc}<div class="rank-nick">${escapeHtml(r.nickname||'익명')}${mine?'<small>나</small>':''}</div><div class="rank-sc">${fmt(r.score)}점</div></div>`; }); list.innerHTML=html;
     }catch(e){ list.innerHTML='<div class="empty">랭킹을 불러오지 못했습니다.<br>내 최고점 '+fmt(parseInt(safeGet('cropBubbleBestScore','0'),10)||0)+'점</div>'; } }
