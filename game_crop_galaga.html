@@ -1,4 +1,4 @@
-<!-- game_crop_galaga.html · v6 · 저장: 2026-08-05 11:35 KST · 동점=먼저달성 우선 타이브레이크 -->
+<!-- game_crop_galaga.html · v7 · 저장: 2026-08-05 12:10 KST · 동점=나중달성 우선·랭킹에 기록시각 표시 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -812,12 +812,13 @@
     try{
       const qs=await withTimeout(getDocs(query(weeklyCol(), orderBy('score','desc'), limit(50))));
       if(qs.empty){ list.innerHTML='<div class="empty">이번 주 첫 번째 도전자가 되어보세요!</div>'; return; }
-      const _ms=x=>x&&x.seconds!=null?x.seconds*1e3+(x.nanoseconds||0)/1e6:(x&&x.toMillis?x.toMillis():Infinity);
-      const rows=qs.docs.map(d=>d.data()).sort((a,b)=>((b.score||0)-(a.score||0))||(_ms(a.playedAt)-_ms(b.playedAt))).slice(0,10); // 동점=먼저 달성한 사람 우선
+      const _ms=x=>x&&x.seconds!=null?x.seconds*1e3+(x.nanoseconds||0)/1e6:(x&&x.toMillis?x.toMillis():0);
+      const _when=x=>{const ms=_ms(x); if(!ms) return ''; const d=new Date(ms+324e5); return `${d.getUTCMonth()+1}/${d.getUTCDate()} ${String(d.getUTCHours()).padStart(2,'0')}:${String(d.getUTCMinutes()).padStart(2,'0')}`;};
+      const rows=qs.docs.map(d=>d.data()).sort((a,b)=>((b.score||0)-(a.score||0))||(_ms(b.playedAt)-_ms(a.playedAt))).slice(0,10); // 동점=나중에 달성한 사람이 위
       const medals=['🥇','🥈','🥉']; let html='',pos=0;
       rows.forEach(r=>{ pos++; const mine=r.userId===USER.userId;
         const pc=pos<=3?`<div class="rank-pos top">${medals[pos-1]}</div>`:`<div class="rank-pos">${pos}</div>`;
-        html+=`<div class="rank-row ${mine?'me':''}">${pc}<div class="rank-nick">${escapeHtml(r.nickname||'익명')}${mine?'<small>나</small>':''}</div><div class="rank-sc">${fmt(r.score)}점</div></div>`; });
+        html+=`<div class="rank-row ${mine?'me':''}">${pc}<div class="rank-nick">${escapeHtml(r.nickname||'익명')}${mine?'<small>나</small>':''}<span style="display:block;font-size:10px;color:#8fa0c8;font-weight:600;">${_when(r.playedAt)}</span></div><div class="rank-sc">${fmt(r.score)}점</div></div>`; });
       list.innerHTML=html;
     }catch(e){ list.innerHTML='<div class="empty">랭킹을 불러오지 못했습니다.<br>내 최고점 '+fmt(parseInt(safeGet('cropGalagaBestScore','0'),10)||0)+'점</div>'; }
   }

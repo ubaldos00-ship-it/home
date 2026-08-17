@@ -1,4 +1,4 @@
-<!-- game_center.html · v10 · 저장: 2026-08-05 11:35 KST · 이번주1위·챔피언 동점=먼저달성 우선 -->
+<!-- game_center.html · v11 · 저장: 2026-08-05 12:10 KST · 이번주1위·챔피언 동점=나중달성 우선 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -669,8 +669,8 @@
           const q = query(collection(db, 'rankings', g.id, 'wk_' + WEEK), orderBy('score', 'desc'), limit(20));
           const qs = await withTimeout(getDocs(q));
           if (!qs.empty) {
-            const _ms = x => x && x.seconds != null ? x.seconds*1e3 + (x.nanoseconds||0)/1e6 : (x && x.toMillis ? x.toMillis() : Infinity);
-            const d = qs.docs.map(x => x.data()).sort((a,b) => ((b.score||0)-(a.score||0)) || (_ms(a.playedAt)-_ms(b.playedAt)))[0]; // 동점=먼저 달성한 사람이 1위
+            const _ms = x => x && x.seconds != null ? x.seconds*1e3 + (x.nanoseconds||0)/1e6 : (x && x.toMillis ? x.toMillis() : 0);
+            const d = qs.docs.map(x => x.data()).sort((a,b) => ((b.score||0)-(a.score||0)) || (_ms(b.playedAt)-_ms(a.playedAt)))[0]; // 동점=나중에 달성한 사람이 1위
             champHtml = `<span class="champ-name">${escapeHtml(d.nickname || '익명')}</span><span class="champ-score">${fmt(d.score)}${g.unit}</span>`;
           }
         } catch (e) {}
@@ -731,8 +731,8 @@
       if (fin.exists()) return;   // 이미 집계됨
       const qs = await withTimeout(getDocs(query(collection(db, 'rankings', g.id, 'wk_' + PREV_WEEK), orderBy('score', 'desc'), limit(20))));
       if (!qs.empty) {
-        const _ms = x => x && x.seconds != null ? x.seconds*1e3 + (x.nanoseconds||0)/1e6 : (x && x.toMillis ? x.toMillis() : Infinity);
-        const w = qs.docs.map(x => x.data()).sort((a,b) => ((b.score||0)-(a.score||0)) || (_ms(a.playedAt)-_ms(b.playedAt)))[0]; // 동점=먼저 달성한 사람이 우승
+        const _ms = x => x && x.seconds != null ? x.seconds*1e3 + (x.nanoseconds||0)/1e6 : (x && x.toMillis ? x.toMillis() : 0);
+        const w = qs.docs.map(x => x.data()).sort((a,b) => ((b.score||0)-(a.score||0)) || (_ms(b.playedAt)-_ms(a.playedAt)))[0]; // 동점=나중에 달성한 사람이 우승
         const winRef = doc(db, 'champions', g.id, 'winners', w.userId);
         let wins = 1;
         try { const cur = await withTimeout(getDoc(winRef)); if (cur.exists()) wins = (cur.data().wins || 0) + 1; } catch (e) {}
