@@ -1,4 +1,4 @@
-<!-- game_crop_baseball.html · v3.6 · 저장: 2026-08-05 12:10 KST · 동점=나중달성 우선·기록시각 표시·게임센터버튼 주간랭킹 아래로 -->
+<!-- game_crop_baseball.html · v3.7 · 저장: 2026-08-05 12:40 KST · 랭킹 기본 날짜만·제목 5번 터치 시 시간까지 표시(개인정보 보호) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -481,14 +481,18 @@
     }catch(e){ $('saveMsg').textContent='랭킹 저장 실패(결과는 정상). 잠시 후 다시 시도하세요.'; }
   }
 
+  let _rankShowTime=false,_rankTaps=0,_rankTapT=null,_rankHdrBound=false;
+  function _bindRankSecret(){ if(_rankHdrBound) return; _rankHdrBound=true; const hd=document.querySelector('#rankModal .modal-head'); if(!hd) return;
+    hd.addEventListener('click', e=>{ if(e.target.closest('button')) return; _rankTaps++; clearTimeout(_rankTapT); _rankTapT=setTimeout(()=>_rankTaps=0,1500);
+      if(_rankTaps>=5){ _rankTaps=0; _rankShowTime=!_rankShowTime; openRanking(); } }); }
   async function openRanking(){
-    $('rankModal').classList.add('show');
+    $('rankModal').classList.add('show'); _bindRankSecret();
     const list=$('rankList'); list.innerHTML='<div class="empty">불러오는 중…</div>';
     try{
       const qs=await withTimeout(getDocs(query(weeklyCol(), orderBy('score','desc'), limit(50))));
       if(qs.empty){ list.innerHTML='<div class="empty">이번 주 기록이 없어요.<br>첫 홈런왕에 도전!</div>'; return; }
       const _ms=x=>x&&x.seconds!=null?x.seconds*1e3+(x.nanoseconds||0)/1e6:(x&&x.toMillis?x.toMillis():0);
-      const _when=x=>{const ms=_ms(x); if(!ms) return ''; const d=new Date(ms+324e5); return `${d.getUTCMonth()+1}/${d.getUTCDate()} ${String(d.getUTCHours()).padStart(2,'0')}:${String(d.getUTCMinutes()).padStart(2,'0')}`;};
+      const _when=x=>{const ms=_ms(x); if(!ms) return ''; const d=new Date(ms+324e5); const dt=`${d.getUTCMonth()+1}/${d.getUTCDate()}`; return _rankShowTime?`${dt} ${String(d.getUTCHours()).padStart(2,'0')}:${String(d.getUTCMinutes()).padStart(2,'0')}`:dt;};
       const rows=qs.docs.map(d=>d.data()).sort((a,b)=>((b.score||0)-(a.score||0))||(_ms(b.playedAt)-_ms(a.playedAt))).slice(0,10); // 동점=나중에 달성한 사람이 위
       const medals=['🥇','🥈','🥉']; let html='',pos=0;
       rows.forEach(r=>{ pos++; const mine=r.userId===USER.userId;
