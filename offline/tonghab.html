@@ -10082,6 +10082,21 @@ function importJSON(input){
   var _restoring = false;
   var _initialLoadDone = false;
 
+  /* [v108] 타이핑 중 여부 — 입력칸(text/number 등)에 포커스가 있으면 true.
+     복원 완료 후의 '맨위로 스크롤'이 사용자가 이미 입력을 시작한 뒤에 터져
+     화면이 맨 위로 튕기고 입력칸이 키보드에 가려지던 현상 방지용 가드. */
+  function _tonghabTyping(){
+    var a = document.activeElement;
+    if(!a) return false;
+    var tag = a.tagName;
+    if(tag==='TEXTAREA') return true;
+    if(tag==='INPUT'){
+      var t = (a.type||'').toLowerCase();
+      return t!=='checkbox' && t!=='radio' && t!=='button' && t!=='submit';
+    }
+    return false;
+  }
+
   if(isReset){
     try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
     try{ history.replaceState(null, '', location.pathname); }catch(e){}
@@ -10182,8 +10197,8 @@ function importJSON(input){
       var saved = localStorage.getItem(SAVE_KEY);
       if(!saved){
         _initialLoadDone = true; // 저장 데이터 없음 → 새 입력 즉시 저장 허용
-        // ①공통사항 맨위로 스크롤 (v84/1)
-        setTimeout(function(){ window.scrollTo(0,0); }, 100);
+        // ①공통사항 맨위로 스크롤 (v84/1) — [v108] 단, 이미 타이핑 중이면 튐 방지 위해 생략
+        setTimeout(function(){ if(!_tonghabTyping()) window.scrollTo(0,0); }, 100);
         return;
       }
       var d = JSON.parse(saved);
@@ -10248,7 +10263,8 @@ function importJSON(input){
             /* [v24] 지도 A/B포구 값도 복원 위에 다시 적용 */
             try{ if(typeof window._tonghabReapplyFieldPlot==='function') window._tonghabReapplyFieldPlot(); }catch(e){}
             // 복원 완료 후 ①공통사항 맨위로 스크롤 (v84/1) — 단, 측정값 대기 중이면 측정칸으로 복귀하므로 생략
-            setTimeout(function(){ if(!window._tonghabReapplyPending) window.scrollTo(0,0); }, 200);
+            //  [v108] 사용자가 이미 입력을 시작(타이핑 중)했으면 맨위 스크롤을 건너뛴다 → 입력칸이 키보드에 가려지는 튐 방지
+            setTimeout(function(){ if(!window._tonghabReapplyPending && !_tonghabTyping()) window.scrollTo(0,0); }, 200);
           }, 300);
         }, 400);
       }, 500);
