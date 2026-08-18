@@ -3953,7 +3953,9 @@ function nbFmt4(inp){
   if(raw.length === 4){
     const nextMap = {nbEstTotal:'nbEstComplete', nbEstComplete:'nbThousandWeight'};
     const nextId = nextMap[inp.id];
-    if(nextId) setTimeout(()=>{ const n=document.getElementById(nextId); if(n){n.focus(); if(n.select)n.select();} }, 80);
+    /* [v109] 사용자가 실제로 이 칸에 포커스를 두고 타이핑할 때만 자동이동 —
+       자동복원(input 재현)으로 포커스가 엉뚱한 칸(천립중 등)으로 튀는 것 방지 */
+    if(nextId && document.activeElement===inp) setTimeout(()=>{ const n=document.getElementById(nextId); if(n){n.focus(); if(n.select)n.select();} }, 80);
   }
 }
 
@@ -3992,7 +3994,8 @@ function nbFormatSpacing(inp, port){
   if(raw.length === 3){
     const nextMap = {nbAWidth:'nbAHeight', nbAHeight:'nbJ-1', nbBWidth:'nbBHeight'};
     const nextId = nextMap[inp.id];
-    if(nextId) setTimeout(()=>{ const n=document.getElementById(nextId); if(n){n.focus(); if(n.select)n.select();} }, 80);
+    /* [v109] 실제 포커스 중일 때만 자동이동 (복원 input 재현으로 포커스 튐 방지) */
+    if(nextId && document.activeElement===inp) setTimeout(()=>{ const n=document.getElementById(nextId); if(n){n.focus(); if(n.select)n.select();} }, 80);
   }
   nonbyeCalcM2(port);
 }
@@ -4287,7 +4290,8 @@ function nonbyeJusuCalc(){
 
     inp.addEventListener('input', function(){
       enforce(this); toEnd(this);
-      if(this.value.slice(2).replace(/[^0-9]/g,'').length >= 2){
+      /* [v109] 실제 포커스 중일 때만 자동이동 — 복원 input 재현이 비율칸 포커스를 뺏지 않도록 */
+      if(this.value.slice(2).replace(/[^0-9]/g,'').length >= 2 && document.activeElement===this){
         setTimeout(()=>{ const n = document.getElementById(next[id]); if(n){ n.focus(); toEnd(n); } }, 80);
       }
       updateRealtimeCalc();
@@ -5452,14 +5456,16 @@ function moistFmt(el){
   /* v102: 3자리(숫자) 입력 완료 시 다음 항목으로 자동 이동 */
   if(el.value.replace(/[^0-9]/g,'').length>=3){
     var nextId=el.id==='rsMoist1'?'rsMoist2':null;
-    if(nextId) setTimeout(function(){ var n=document.getElementById(nextId); if(n){n.focus();n.select();} },60);
+    /* [v109] 실제 포커스 중일 때만 자동이동 (복원 input 재현으로 포커스 튐 방지) */
+    if(nextId && document.activeElement===el) setTimeout(function(){ var n=document.getElementById(nextId); if(n){n.focus();n.select();} },60);
   }
 }
 
 /* ════ 실수확량 자동 다음 입력란 이동 (v102) ════
    maxLen: 입력값 자릿수 도달 시 nextId 로 포커스 이동 */
 function rsAutoNext(el,maxLen,nextId){
-  if((el.value||'').length>=maxLen){
+  /* [v109] 실제 포커스 중일 때만 자동이동 (복원 input 재현으로 포커스 튐 방지) */
+  if((el.value||'').length>=maxLen && document.activeElement===el){
     setTimeout(function(){ var n=document.getElementById(nextId); if(n){n.focus();n.select();} },60);
   }
 }

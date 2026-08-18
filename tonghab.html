@@ -1,4 +1,4 @@
-<!-- tonghab.html (v108) · 저장: 2026-08-19 02:30 KST · [v108] 입력 중 화면이 「맨 위로 튕겨」 입력칸이 키보드에 가려지던 현상 「진짜 원인」 수정 — 자동복원(autoRestore) 완료 직후 실행되는 window.scrollTo(0,0) 2곳(약 1.4초 시점)이 범인. 앱을 열자마자(복원 진행 중) 주소·비율칸을 탭하면 키보드가 열린 뒤 그 스크롤이 터져 맨 위로 튕김. → 「입력칸에 포커스가 있을 때(타이핑 중)는 맨위 스크롤을 건너뛰도록」 가드 추가. 안 칠 때는 그대로 ①공통사항 맨위 정렬 유지. 계산 로직 무변경. (v106 주소 미리보기·v107 헤더 유지) -->
+<!-- tonghab.html (v109) · 저장: 2026-08-19 02:45 KST · [v109] 「주소 입력 도중 글자가 천립중 칸으로 들어가고 화면이 천립중으로 내려가던」 현상 수정 — 진짜 원인: 논벼 추정값/천립중·간격·비율(가나다)·수분 칸의 「N자리 입력 시 다음 칸 자동이동(focus 점프)」 기능이, 자동복원(autoRestore)이 모든 칸에 input 이벤트를 재현할 때 오발동해 포커스를 엉뚱한 칸으로 뺏김. → 자동이동 5곳 모두 「사용자가 실제로 그 칸에 포커스를 두고 타이핑할 때만(document.activeElement===해당칸)」 실행하도록 가드. 계산 로직·자동이동 정상동작 무변경. (v108 맨위스크롤 가드·v106 주소미리보기·v107 헤더 유지) -->
 <!-- (이전)  tonghab.html (v106) · 저장: 2026-08-19 01:53 KST · [v106] 주소 입력 시 화면이 내려갔다 올라오던 현상 수정(A안) — 주소 미리보기(#addrFull)를 입력마다 display 토글하지 않고 높이를 미리 확보(box-sizing+min-height), 값 있을 때만 배경/테두리 표시. 입력 시 레이아웃 밀림 0(문서높이 불변 검증). 계산 로직 무변경. -->
 <!-- (이전)  tonghab.html (v104) · 저장: 2026-08-18 17:30 KST · [v104] 저장/불러오기 항목: 주소 전체표시 + 잠금·핀저장·불러오기·휴지통 버튼을 목록 다음 줄로. 계산서식·JSON버튼 변경 없음 -->
 <!-- (이전)  tonghab.html (v103) · 저장: 2026-08-16 23:20 KST · [v103] 온라인판 변경 없음 · 버전표기만 -->
@@ -3906,7 +3906,9 @@ function nbFmt4(inp){
   if(raw.length === 4){
     const nextMap = {nbEstTotal:'nbEstComplete', nbEstComplete:'nbThousandWeight'};
     const nextId = nextMap[inp.id];
-    if(nextId) setTimeout(()=>{ const n=document.getElementById(nextId); if(n){n.focus(); if(n.select)n.select();} }, 80);
+    /* [v109] 사용자가 실제로 이 칸에 포커스를 두고 타이핑할 때만 자동이동 —
+       자동복원(input 재현)으로 포커스가 엉뚱한 칸(천립중 등)으로 튀는 것 방지 */
+    if(nextId && document.activeElement===inp) setTimeout(()=>{ const n=document.getElementById(nextId); if(n){n.focus(); if(n.select)n.select();} }, 80);
   }
 }
 
@@ -3945,7 +3947,8 @@ function nbFormatSpacing(inp, port){
   if(raw.length === 3){
     const nextMap = {nbAWidth:'nbAHeight', nbAHeight:'nbJ-1', nbBWidth:'nbBHeight'};
     const nextId = nextMap[inp.id];
-    if(nextId) setTimeout(()=>{ const n=document.getElementById(nextId); if(n){n.focus(); if(n.select)n.select();} }, 80);
+    /* [v109] 실제 포커스 중일 때만 자동이동 (복원 input 재현으로 포커스 튐 방지) */
+    if(nextId && document.activeElement===inp) setTimeout(()=>{ const n=document.getElementById(nextId); if(n){n.focus(); if(n.select)n.select();} }, 80);
   }
   nonbyeCalcM2(port);
 }
@@ -4240,7 +4243,8 @@ function nonbyeJusuCalc(){
 
     inp.addEventListener('input', function(){
       enforce(this); toEnd(this);
-      if(this.value.slice(2).replace(/[^0-9]/g,'').length >= 2){
+      /* [v109] 실제 포커스 중일 때만 자동이동 — 복원 input 재현이 비율칸 포커스를 뺏지 않도록 */
+      if(this.value.slice(2).replace(/[^0-9]/g,'').length >= 2 && document.activeElement===this){
         setTimeout(()=>{ const n = document.getElementById(next[id]); if(n){ n.focus(); toEnd(n); } }, 80);
       }
       updateRealtimeCalc();
@@ -5405,14 +5409,16 @@ function moistFmt(el){
   /* v102: 3자리(숫자) 입력 완료 시 다음 항목으로 자동 이동 */
   if(el.value.replace(/[^0-9]/g,'').length>=3){
     var nextId=el.id==='rsMoist1'?'rsMoist2':null;
-    if(nextId) setTimeout(function(){ var n=document.getElementById(nextId); if(n){n.focus();n.select();} },60);
+    /* [v109] 실제 포커스 중일 때만 자동이동 (복원 input 재현으로 포커스 튐 방지) */
+    if(nextId && document.activeElement===el) setTimeout(function(){ var n=document.getElementById(nextId); if(n){n.focus();n.select();} },60);
   }
 }
 
 /* ════ 실수확량 자동 다음 입력란 이동 (v102) ════
    maxLen: 입력값 자릿수 도달 시 nextId 로 포커스 이동 */
 function rsAutoNext(el,maxLen,nextId){
-  if((el.value||'').length>=maxLen){
+  /* [v109] 실제 포커스 중일 때만 자동이동 (복원 input 재현으로 포커스 튐 방지) */
+  if((el.value||'').length>=maxLen && document.activeElement===el){
     setTimeout(function(){ var n=document.getElementById(nextId); if(n){n.focus();n.select();} },60);
   }
 }
