@@ -1,4 +1,5 @@
-<!-- tonghab.html (v106) · 저장: 2026-08-19 01:53 KST · [v106] 주소 입력 시 화면이 내려갔다 올라오던 현상 수정(A안) — 주소 미리보기(#addrFull)를 입력마다 display 토글하지 않고 높이를 미리 확보(box-sizing+min-height), 값 있을 때만 배경/테두리 표시. 입력 시 레이아웃 밀림 0(문서높이 불변 검증). 계산 로직 무변경. -->
+<!-- tonghab.html (v107) · 저장: 2026-08-19 02:12 KST · [v107] 입력 시 화면 내려갔다 올라오던 현상 재수정 — 원인 재진단: 스크롤 방향에 따라 자동으로 숨김/표시되는 상단 헤더(.sticky-top, v128)가 「입력란 포커스→키보드→브라우저 자동 스크롤」에 반응해 튐. → 입력(키보드) 중엔 헤더 숨김/표시를 멈추고 항상 표시. 입력 없을 때의 스크롤 자동숨김은 유지. 계산 로직 무변경. (v106 주소 미리보기 수정도 유지) -->
+<!-- (이전)  tonghab.html (v106) · 저장: 2026-08-19 01:53 KST · [v106] 주소 입력 시 화면이 내려갔다 올라오던 현상 수정(A안) — 주소 미리보기(#addrFull)를 입력마다 display 토글하지 않고 높이를 미리 확보(box-sizing+min-height), 값 있을 때만 배경/테두리 표시. 입력 시 레이아웃 밀림 0(문서높이 불변 검증). 계산 로직 무변경. -->
 <!-- (이전)  tonghab.html (v104) · 저장: 2026-08-18 17:30 KST · [v104] 저장/불러오기 항목: 주소 전체표시 + 잠금·핀저장·불러오기·휴지통 버튼을 목록 다음 줄로. 계산서식·JSON버튼 변경 없음 -->
 <!-- (이전)  tonghab.html (v103) · 저장: 2026-08-16 23:20 KST · [v103] 온라인판 변경 없음 · 버전표기만 -->
 <!-- (이전)  tonghab.html (v102) · 저장: 2026-08-16 22:58 KST · [v102] 온라인판 변경 없음 · 오프라인 PWA판은 offline/tonghab.html(소수점 입력·오프라인) · 버전표기만 -->
@@ -7780,15 +7781,24 @@ document.addEventListener('DOMContentLoaded', function(){
 
 
 <script>
-/* ===== v128: 스크롤 시 전체 헤더 자동 숨김/표시 ===== */
+/* ===== v128: 스크롤 시 전체 헤더 자동 숨김/표시 =====
+   [v107] 입력(키보드) 중엔 헤더 숨김/표시를 멈춰 화면 튐 방지 —
+   모바일에서 입력란 포커스→키보드→브라우저 자동 스크롤에 헤더가 반응해
+   내려갔다 올라오던 현상 제거. 입력이 없을 때의 스크롤 자동숨김은 그대로 유지. */
 (function(){
   var lastY=0, ticking=false;
   var THRESHOLD=40; /* 이 픽셀 이상 스크롤 후 반응 */
   var UP_NEEDED=56, refUp=0; /* 위로 이만큼 이상 올려야 헤더 표시(작은 스크롤엔 안 내려옴) */
+  var inputFocused=false;    /* [v107] 입력(키보드) 중 여부 */
+  function isField(t){ return t && (t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.tagName==='SELECT'); }
+  function showHdr(){ var h=document.querySelector('.sticky-top'); if(h) h.style.transform='translateY(0)'; }
+  document.addEventListener('focusin', function(e){ if(isField(e.target)){ inputFocused=true; showHdr(); refUp=window.scrollY||0; lastY=window.scrollY||0; } });
+  document.addEventListener('focusout', function(e){ if(isField(e.target)){ inputFocused=false; lastY=window.scrollY||0; refUp=lastY; } });
   function onScroll(){
     var y=window.scrollY||window.pageYOffset;
     var hdr=document.querySelector('.sticky-top');
     if(!hdr){lastY=y;ticking=false;return;}
+    if(inputFocused){ hdr.style.transform='translateY(0)'; refUp=y; lastY=y; ticking=false; return; }  /* [v107] 입력 중엔 항상 표시(튐 방지) */
     if(y<=THRESHOLD){ hdr.style.transform='translateY(0)'; refUp=y; }          /* 최상단 근처: 항상 표시 */
     else if(y>lastY){ hdr.style.transform='translateY(-100%)'; refUp=y; }       /* 아래로: 숨김 + 위전환 기준점 리셋 */
     else if(y<lastY && (refUp - y) > UP_NEEDED){ hdr.style.transform='translateY(0)'; }  /* 충분히 위로 올렸을 때만 표시 */
