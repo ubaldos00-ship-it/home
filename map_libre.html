@@ -1,4 +1,5 @@
-<!-- map_v103.html (v103 · TENAR V1.5) · 저장: 2026-08-16 23:20 KST · [v103] 오른쪽 도구버튼 6개 아래에 이름표(알약) 추가 — 핀표시·포구도구·면적길이·목록·조사구·위치. 원형 버튼은 그대로, 라벨은 버튼 자식이라 숨김상태도 함께 처리. 그 외 변경 없음. -->
+<!-- map_v104.html (v104 · TENAR V1.5) · 저장: 2026-08-18 17:30 KST · [v104] 이삭수 계산기(jusu) 지도연동 — save 모드 app=jusu면 jusu.html로 복귀(지번 전달). 그 외 변경 없음 -->
+<!-- (이전)  map_v103.html (v103 · TENAR V1.5) · 저장: 2026-08-16 23:20 KST · [v103] 오른쪽 도구버튼 6개 아래에 이름표(알약) 추가 — 핀표시·포구도구·면적길이·목록·조사구·위치. 원형 버튼은 그대로, 라벨은 버튼 자식이라 숨김상태도 함께 처리. 그 외 변경 없음. -->
 <!-- (이전)  map_v102.html (v102 · TENAR V1.5) · 저장: 2026-08-16 22:58 KST · [v102] 변경 없음(공시지가=서울 Lambda) · 버전표기만 -->
 <!-- (이전)  map_v101.html (v101 · TENAR V1.5) · 저장: 2026-08-16 22:12 KST · [v101] 지도 변경 없음(공시지가=서울 Lambda 유지) · 버전표기만 -->
 <!-- (이전)  map_v100.html (v100 · TENAR V1.5) · 저장: 2026-08-15 07:05 KST · [v100] 공시지가·토지특성 조회를 NAS → AWS Lambda(서울 ap-northeast-2)로 이전. 브이월드 NED API가 해외IP엔 자료를 안 줘 Cloudflare는 불가 → 서울 리전 Lambda(한국IP)로 대체. LAND_API_BASE 한 곳 관리·fetchLatestLandPrice/fetchServerLandInfo가 Lambda 호출·NAS 온라인 게이트 제거 → NAS 전원 꺼도 공시지가 정상. 응답구조 동일이라 그 외 로직 무변경. -->
@@ -345,7 +346,7 @@
       }catch(e){ resolve('cancel'); }
     });
   };
-  window._tenarAppKo=function(app){ return app==='tonghab'?'통합계산기':(app==='chungchi'?'청취계산기':(app==='map'?'지도':app)); };
+  window._tenarAppKo=function(app){ return app==='tonghab'?'통합계산기':(app==='chungchi'?'청취계산기':(app==='jusu'?'이삭수 계산기':(app==='map'?'지도':app))); };
 })();
 TenarSecureStore.init('map',
   ['tenar_map_favs_v1','tenar_map_items_v1','tenar_map_bulk','tenar_pending_survey_coord','tenar_meas_ctx','tenar_meas_result','tenar_measure_saves_v1','tenar_fieldplot_saves_v1','tenar_map_last_view_v1','tenar_map_settings_v1','tenarAreaSurveyPlotsEncrypted','tenar_land_cache_v1','tenarAreaSaveList'],
@@ -10037,7 +10038,9 @@ TenarSecureStore.init('map',
   var saveModeMarker = null;
 
   function saveModeBackUrl() {
-    var f = (saveMode && saveMode.app === 'chungchi') ? 'chungchi.html' : 'tonghab.html';
+    var f = (saveMode && saveMode.app === 'chungchi') ? 'chungchi.html'
+          : (saveMode && saveMode.app === 'jusu') ? 'jusu.html'   /* [v104] 이삭수 계산기 복귀 */
+          : 'tonghab.html';
     try { return new URL(f, location.href).href; } catch (e) { return f; }
   }
   function saveModeReturnNow() {
