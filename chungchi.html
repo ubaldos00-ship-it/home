@@ -1,4 +1,11 @@
-<!-- chungchi.html (v97) · 저장: 2026-08-10 17:13 KST · [v97] 지도만 변경(카카오 지오코딩 보강) · 계산서식 변경 없음 · 버전표기만 -->
+<!-- chungchi.html (v104) · 저장: 2026-08-18 17:30 KST · [v104] ①저장/불러오기 항목: 주소 전체표시 + 버튼(잠금·핀저장·불러오기·휴지통) 다음 줄로 ②JSON 버튼 색을 통합계산기와 동일(공유 파랑·내보내기/불러오기 초록). 계산서식 변경 없음 -->
+<!-- (이전)  chungchi.html (v103) · 저장: 2026-08-16 23:20 KST · [v103] 온라인판 변경 없음 · 버전표기만 -->
+<!-- (이전)  chungchi.html (v102) · 저장: 2026-08-16 22:58 KST · [v102] 온라인판 변경 없음 · 오프라인 PWA판은 offline/chungchi.html · 버전표기만 -->
+<!-- (이전)  chungchi.html (v101) · 저장: 2026-08-16 22:12 KST · [v101] 온라인판 변경 없음 · 오프라인판은 offline/chungchi.html 로 별도 제공 · 버전표기만 -->
+<!-- (이전)  chungchi.html (v100) · 저장: 2026-08-15 07:05 KST · [v100] 지도만 변경 · 계산서식 변경 없음 · 버전표기만 -->
+<!-- (이전)  chungchi.html (v99) · 저장: 2026-08-12 23:16 KST · [v99] 지도만 변경 · 계산서식 변경 없음 · 버전표기만 -->
+<!-- (이전)  chungchi.html (v98) · 저장: 2026-08-12 06:10 KST · [v98] 지도/홈만 변경 · 계산서식 변경 없음 · 버전표기만 -->
+<!-- (이전)  chungchi.html (v97) · 저장: 2026-08-10 17:13 KST · [v97] 지도만 변경(카카오 지오코딩 보강) · 계산서식 변경 없음 · 버전표기만 -->
 <!-- (이전)  chungchi.html (v95) · 저장: 2026-08-08 16:56 KST · [v95] 변경 없음 -->
 <!-- (이전)  chungchi.html (v68) · 저장: 2026-07-29 08:27 KST · [v68] 변경 없음 -->
 <!-- (이전)  chungchi.html (v61) · 저장: 2026-07-28 10:26 KST · [v61] 변경 없음 -->
@@ -526,11 +533,12 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
 .sl-notice-pop.show{display:flex;}
 .sl-notice-pop strong{color:#7a5c00;font-weight:800;}
 .sl-notice-pop button{flex-shrink:0;background:#a07800;color:#fff;border:none;border-radius:7px;padding:6px 13px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;}
-.sl-item{background:#f8f6f1;border:1px solid #e0ddd6;border-radius:10px;padding:9px 10px;display:flex;align-items:center;gap:7px;}
+/* [v104] 항목: 정보 전체폭(주소 길게) + 잠금·핀·불러오기·휴지통 버튼은 다음 줄로 */
+.sl-item{background:#f8f6f1;border:1px solid #e0ddd6;border-radius:10px;padding:9px 10px;display:flex;flex-wrap:wrap;align-items:center;gap:7px;}
 .sl-item-num{min-width:22px;height:22px;background:#27500A;color:#fff;border-radius:50%;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.sl-item-info{flex:1;min-width:0;}
-.sl-item-label{font-size:13px;font-weight:700;color:#1a1918;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.sl-item-addr{font-size:11px;color:#5a7a3a;font-weight:600;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sl-item-info{flex:1 0 calc(100% - 40px);min-width:0;}
+.sl-item-label{font-size:13px;font-weight:700;color:#1a1918;white-space:normal;word-break:break-all;}
+.sl-item-addr{font-size:11px;color:#5a7a3a;font-weight:600;margin-top:1px;white-space:normal;word-break:break-all;}
 .sl-item-date{font-size:10px;color:#999;margin-top:2px;}
 .sl-item-load{padding:5px 6px;background:#EBF3FF;border:1.5px solid #b3c8f0;border-radius:7px;color:#0A3A8C;font-size:18px;cursor:pointer;white-space:nowrap;flex-shrink:0;display:flex;align-items:center;justify-content:center;min-width:32px;height:32px;transition:background .12s;}
 .sl-item-load:active{background:#d0e4ff;}
@@ -553,9 +561,10 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
 .sl-file-btn:active{opacity:.82;}
 /* v60: JSON 버튼 더 작게(통합계산기 동일) */
 .sl-file-row .sl-file-btn{padding:6px 3px;font-size:10.5px;border-width:1.5px;border-radius:8px;}
-.sl-file-row .sl-share-btn{background:#1f8a3a;color:#fff;border-color:#1f8a3a;}
-.sl-file-row .sl-file-btn:nth-child(2){background:#6d28d9;color:#fff;border-color:#6d28d9;}
-.sl-file-row .sl-file-btn:last-child{background:#0A3A8C;color:#fff;border-color:#0A3A8C;}
+/* [v104] JSON 버튼: 통합계산기(첨부 이미지)와 동일한 색 — 공유 파랑 · 내보내기/불러오기 초록 */
+.sl-file-row .sl-share-btn{background:#456F9A;color:#fff;border-color:#456F9A;}
+.sl-file-row .sl-file-btn:nth-child(2){background:#4F6F62;color:#fff;border-color:#4F6F62;}
+.sl-file-row .sl-file-btn:last-child{background:#4F6F62;color:#fff;border-color:#4F6F62;}
 
 /* 뒤로가기 토스트 */
 #back-block-toast{display:none;position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:rgba(30,30,30,.95);color:#fff;border-radius:14px;padding:11px 18px;font-size:13px;font-weight:700;z-index:99999;text-align:center;pointer-events:none;max-width:285px;line-height:1.5;box-shadow:0 4px 18px rgba(0,0,0,.3);transition:opacity .35s;}
