@@ -1,4 +1,4 @@
-<!-- jusu.html (이삭수 계산기) v110 · 저장: 2026-08-19 03:04 KST · [v110] JSON 내보내기/불러오기 시 저장·불러오기 팝업이 닫히고 메인(홈)화면으로 빠지던 문제 수정 — 원인: '링크진입 자동 reload'가 iOS 내보내기(blob 파일로 잠깐 이동 후 복귀) 때 referrer=blob 로 오발동해 페이지를 새로고침시켜 팝업이 닫힘. → 통합계산기(v137)와 동일하게 자동 reload 비활성화(뒤로가기 차단은 해시 pushState 4중 방어로 유지). 이제 내보내기 후 팝업 유지·정상 다운로드, 불러오기 정상. (v105 암호화·계산 로직 무변경) -->
+<!-- jusu.html (이삭수 계산기) v111 · 저장: 2026-08-19 03:18 KST · [v111] ①JSON 내보내기/공유를 「현재 입력자료 1건」이 아니라 「저장목록 전체」로 변경(통합계산기와 동일 번들 방식). ②JSON 불러오기도 「목록 전체」를 추가/교체 선택해 복원하고 불러오기 후 저장/불러오기 창 그대로 유지(구버전 1건 파일도 호환). ③저장/불러오기 모달이 화면보다 길어 아래(JSON 버튼)가 잘리던 문제 → 뷰포트 높이(100dvh)에 맞춰 flex 컬럼 구성, 목록만 내부 스크롤. v110(내보내기 후 홈이탈 방지)·v105 암호화·계산 로직 무변경. -->
 <!-- (이전)  jusu.html (이삭수 계산기) v104 · 저장: 2026-08-18 17:30 KST · [v104] ①필지주소 옆 📍지도 버튼(지도에서 핀 선택→지번 자동입력, 통합계산기와 동일) ②저장/불러오기 항목: 주소 전체표시+잠금·불러오기·휴지통 버튼을 다음 줄로 ③JSON 공유/내보내기/불러오기 버튼을 통합계산기와 동일하게 작게+공유 파랑·내보내기/불러오기 초록. ※암호화(기본2026)는 v105 예정 -->
 <!-- (이전)  이삭포기계산기_V21.html · 저장: 2026-06-18 06:06 KST -->
 <!DOCTYPE html>
@@ -697,17 +697,20 @@ header p  { font-size: 11px; opacity: 0.72; margin-top: 2px; }
 }
 
 /* ── 저장/불러오기 모달 (V6) ── */
-.sl-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9000;padding:16px;overflow-y:auto;}
+.sl-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9000;padding:16px;overflow:hidden;overscroll-behavior:contain;}
 .sl-modal.show{display:flex;justify-content:center;align-items:flex-start;}
-.sl-box{background:var(--bg-section);border-radius:16px;width:100%;max-width:480px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.3);}
-.sl-head{padding:13px 16px;background:var(--header-bg);display:flex;justify-content:space-between;align-items:center;}
+/* [v111] 모달이 화면보다 길어 아래(JSON 버튼)가 잘리던 문제 — 뷰포트 높이에 맞춰
+   flex 컬럼으로 구성하고 목록만 내부 스크롤(통합계산기와 동일 방식) */
+.sl-box{background:var(--bg-section);border-radius:16px;width:100%;max-width:480px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.3);max-height:calc(100dvh - 32px);display:flex;flex-direction:column;}
+.sl-head{flex-shrink:0;padding:13px 16px;background:var(--header-bg);display:flex;justify-content:space-between;align-items:center;}
 .sl-head-title{color:#fff;font-size:15px;font-weight:800;}
 .sl-close{background:transparent;border:1.5px solid rgba(255,255,255,.5);color:#fff;border-radius:50px;padding:5px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
-.sl-body{padding:14px 14px 18px;}
+.sl-body{padding:14px 14px 18px;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;}
+.sl-save-now{flex-shrink:0;}
 .sl-save-now{width:100%;padding:14px;background:#E07000;border:none;border-radius:10px;color:#fff;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:14px;font-family:inherit;touch-action:manipulation;}
 .sl-save-now:active{opacity:.82;}
 .sl-section{font-size:11px;font-weight:700;color:var(--text-muted);letter-spacing:.06em;margin-bottom:7px;}
-.sl-list{display:flex;flex-direction:column;gap:7px;margin-bottom:14px;max-height:50vh;overflow-y:auto;overscroll-behavior:contain;}
+.sl-list{display:flex;flex-direction:column;gap:7px;margin-bottom:14px;flex:1 1 auto;min-height:60px;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;}
 .sl-empty{text-align:center;color:var(--text-muted);font-size:13px;padding:18px 0;}
 /* [v104] 항목: 주소 한 줄(전체폭) + 잠금·불러오기·휴지통 버튼은 다음 줄로 */
 .sl-item{background:var(--bg-input);border:1px solid var(--border-cell);border-radius:10px;padding:9px 10px;display:flex;flex-wrap:wrap;align-items:center;gap:7px;}
@@ -723,8 +726,8 @@ header p  { font-size: 11px; opacity: 0.72; margin-top: 2px; }
 .sl-item-fav{padding:5px 6px;background:none;border:1.5px solid var(--border-cell);border-radius:7px;color:var(--text-muted);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;min-width:32px;height:32px;transition:all .15s;}
 .sl-item-fav.fav-on{border-color:#1558D6;background:#EBF3FF;}
 .sl-item.sl-selected{background:var(--bg-rep);border:2px solid var(--text-title);}
-.sl-divider{border:none;border-top:1px solid var(--border-cell);margin:10px 0;}
-.sl-file-row{display:flex;gap:8px;}
+.sl-divider{border:none;border-top:1px solid var(--border-cell);margin:10px 0;flex-shrink:0;}
+.sl-file-row{display:flex;gap:8px;flex-shrink:0;}
 .sl-file-btn{flex:1;padding:12px 6px;border:1.5px solid var(--border-input);border-radius:10px;background:var(--bg-section);color:var(--text-main);font-size:13px;font-weight:700;cursor:pointer;text-align:center;font-family:inherit;}
 .home-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;width:48px;height:48px;background:rgba(255,255,255,.18);color:#fff;font-size:10px;font-weight:700;border-radius:12px;text-decoration:none;font-family:inherit;border:1.5px solid rgba(255,255,255,.35);flex-shrink:0;}
 .home-btn:active{background:rgba(255,255,255,.28);}
@@ -1268,26 +1271,128 @@ function _slRenderList(){
       +delBtn+'</div>';
   }).join('');
 }
+/* ══ [v111] 저장목록 「전체」 백업 번들 (통합계산기와 동일 방식) ══ */
+function _slBuildBackupBundle(){
+  var list=_slGetList(); var records={};
+  list.forEach(function(it){
+    if(!it||!it.key) return;
+    try{ var raw=localStorage.getItem(SL_DATA_PFX+it.key); if(raw) records[it.key]=JSON.parse(raw); }catch(e){}
+  });
+  return {tenarBackup:true, backupType:'save-list', app:'jusu', version:3,
+          exportedAt:(new Date(Date.now()+9*3600000)).toISOString().replace('Z','+09:00'),
+          count:list.length, list:list, records:records};
+}
+function _slIsBackupBundle(d){ return !!(d && d.tenarBackup===true && d.backupType==='save-list'); }
+function _slEsc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+/* 목록에서 골라 추가/교체하는 미리보기 (통합계산기와 동일 UI) */
+function _slPickImport(items, onApply){
+  items.forEach(function(it){ it._checked=true; });
+  var ov=document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:2147483600;display:flex;align-items:flex-end;justify-content:center;';
+  var modal=document.createElement('div');
+  modal.style.cssText='background:#fff;width:100%;max-width:640px;max-height:92vh;border-radius:16px 16px 0 0;display:flex;flex-direction:column;overflow:hidden;';
+  ov.appendChild(modal);
+  var head=document.createElement('div');
+  head.style.cssText='padding:14px 16px 8px;border-bottom:1px solid #eee;position:relative;';
+  head.innerHTML='<button class="pkX" style="position:absolute;top:10px;right:12px;width:34px;height:34px;border:none;background:#f1f1f4;border-radius:50%;font-size:18px;cursor:pointer;">×</button><div style="font-size:15px;font-weight:800;color:#27500A;">저장목록 불러오기 ('+items.length+'건)</div><div style="font-size:12.5px;margin-top:6px;color:#555;">아래에서 골라 추가하거나 교체하세요.</div>';
+  modal.appendChild(head);
+  var selBar=document.createElement('div');
+  selBar.style.cssText='display:flex;align-items:center;gap:8px;padding:8px 14px;border-bottom:1px solid #f0f0f4;font-size:12.5px;';
+  selBar.innerHTML='<label style="display:flex;align-items:center;gap:6px;font-weight:700;cursor:pointer;"><input type="checkbox" class="pkAll" checked style="width:17px;height:17px;"> 전체 선택</label><span class="pkCnt" style="margin-left:auto;color:#666;"></span>';
+  modal.appendChild(selBar);
+  var listBox=document.createElement('div'); listBox.style.cssText='flex:1;overflow-y:auto;padding:4px 8px;';
+  modal.appendChild(listBox);
+  var footer=document.createElement('div'); footer.style.cssText='display:flex;gap:8px;padding:12px 14px;border-top:1px solid #eee;';
+  function mk(l,css){var b=document.createElement('button');b.textContent=l;b.style.cssText=css;return b;}
+  var bAdd=mk('추가','flex:1;padding:12px;border:none;border-radius:10px;background:#2e7a4e;color:#fff;font-weight:800;font-size:14px;cursor:pointer;');
+  var bRep=mk('교체','flex:1;padding:12px;border:1.5px solid #d97706;border-radius:10px;background:#fff;color:#d97706;font-weight:800;font-size:14px;cursor:pointer;');
+  var bCan=mk('취소','flex:1;padding:12px;border:1.5px solid #ddd;border-radius:10px;background:#fff;color:#555;font-weight:700;font-size:14px;cursor:pointer;');
+  footer.appendChild(bAdd);footer.appendChild(bRep);footer.appendChild(bCan);
+  modal.appendChild(footer);
+  function close(){try{document.body.removeChild(ov);}catch(e){}}
+  function cnt(){var n=items.filter(function(i){return i._checked;}).length;selBar.querySelector('.pkCnt').textContent='선택 '+n+' / '+items.length;selBar.querySelector('.pkAll').checked=items.length>0&&items.every(function(i){return i._checked;});}
+  function render(){listBox.innerHTML='';items.forEach(function(it){var row=document.createElement('label');row.style.cssText='display:flex;align-items:center;gap:8px;padding:8px;border-radius:8px;margin:3px 0;background:#f4faf6;font-size:12.5px;cursor:pointer;';var cb=document.createElement('input');cb.type='checkbox';cb.checked=it._checked;cb.style.cssText='width:17px;height:17px;flex:0 0 auto;';cb.addEventListener('change',function(){it._checked=cb.checked;cnt();});var t=document.createElement('div');t.style.cssText='flex:1;min-width:0;';t.innerHTML='<span style="font-weight:700;">'+_slEsc(it.label)+'</span>'+(it.sub?'<br><span style="color:#888;">'+_slEsc(it.sub)+'</span>':'');row.appendChild(cb);row.appendChild(t);listBox.appendChild(row);});cnt();}
+  head.querySelector('.pkX').addEventListener('click',function(){close();onApply&&onApply('cancel',{});});
+  bCan.addEventListener('click',function(){close();onApply&&onApply('cancel',{});});
+  selBar.querySelector('.pkAll').addEventListener('change',function(){var on=this.checked;items.forEach(function(i){i._checked=on;});render();});
+  function apply(mode){var sel={};items.forEach(function(i){if(i._checked)sel[i.key]=true;});if(!Object.keys(sel).length){alert('선택된 항목이 없습니다.');return;}close();onApply&&onApply(mode,sel);}
+  bAdd.addEventListener('click',function(){apply('add');});
+  bRep.addEventListener('click',function(){apply('replace');});
+  document.body.appendChild(ov);render();
+}
+function _slRestoreBackupBundle(pkg){
+  if(!pkg || pkg.app!=='jusu'){ alert('이삭수 계산기 저장목록 파일이 아닙니다.'); return; }
+  var incoming=Array.isArray(pkg.list)?pkg.list:[];
+  var records=pkg.records||{};
+  if(!incoming.length){ alert('불러올 저장목록이 없습니다.'); return; }
+  _slPickImport(incoming.map(function(it){ return {key:it.key, label:(it.label||'(이름없음)'), sub:((it.addr?'📍'+it.addr+' · ':'')+(it.ymd||'')+' '+(it.hm||'')).trim()}; }), function(choice, selKeys){
+    if(choice==='cancel') return;
+    try{
+      if(choice==='replace'){
+        _slGetList().forEach(function(old){ if(old&&old.key){ try{localStorage.removeItem(SL_DATA_PFX+old.key);}catch(e){} } });
+        _slSetList([]);
+      }
+      var cur=_slGetList();
+      var exist={}; cur.forEach(function(i){ if(i&&i.key) exist[i.key]=true; });
+      var added=0;
+      incoming.forEach(function(it){
+        if(!it||!it.key) return;
+        if(!selKeys[it.key]) return;   /* 선택된 항목만 */
+        var rec=records[it.key]; if(!rec) return;
+        if(typeof rec==='string'){ try{rec=JSON.parse(rec);}catch(e){return;} }
+        var item=it, key=it.key;
+        if(exist[key]){ key=String(Date.now())+String(Math.floor(Math.random()*1000)); item=Object.assign({}, it, {key:key}); }
+        exist[key]=true;
+        localStorage.setItem(SL_DATA_PFX+key, JSON.stringify(rec));
+        cur.push(item);
+        added++;
+      });
+      _slSetList(cur);
+      _slSelectedKey=null; _slUpdateSaveBtn(); _slRenderList();
+      openSaveLoadModal();   /* 불러오기 후 저장/불러오기 화면 그대로 유지 */
+      var t=document.createElement('div');
+      t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1f5132;color:#fff;padding:10px 16px;border-radius:12px;font-size:13px;font-weight:700;z-index:2147483647;box-shadow:0 4px 16px rgba(0,0,0,.35);';
+      t.textContent='✅ '+added+'건 '+(choice==='replace'?'교체':'추가')+' 완료';
+      document.body.appendChild(t);
+      setTimeout(function(){ try{document.body.removeChild(t);}catch(e){} }, 2200);
+    }catch(e){ alert('저장목록 불러오기 실패: '+e.message); }
+  });
+}
+/* [v111] JSON 내보내기 — 저장목록 「전체」를 암호화(PBKDF2·기본 2026)해 파일로 */
 function exportJSON_sl(){
-  var d=_slCollect(); var addr=(d.address||'주소없음').slice(0,12).replace(/[\/\\:*?"<>|\s]+/g,'_');
-  var t=_slNowKST(); var fileName='이삭수_'+addr+'_'+t.ymd+'_'+t.hm.replace(':','')+'.json';
-  /* [v105] 암호화(PBKDF2·기본 2026) 후 내보내기 — 통합계산기와 동일 */
+  var d=_slBuildBackupBundle();
+  if(!d.list.length){ alert('내보낼 저장목록이 없습니다.'); return; }
+  var t=_slNowKST();
+  var fileName='tenar_isaksu_list_'+((window.TenarCrypto&&TenarCrypto.ok)?'secure_':'')+t.ymd.replace(/-/g,'')+'_'+t.hm.replace(':','')+'.json';
   (window._tenarBuildExport ? window._tenarBuildExport(d,'jusu') : Promise.resolve({text:JSON.stringify(d,null,2)}))
     .then(function(r){ if(!r) return;   /* 사용자 취소 */
       var blob=new Blob([r.text],{type:'application/json'});
       var url=URL.createObjectURL(blob); var a=document.createElement('a');
-      a.href=url; a.download=fileName; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+      a.href=url; a.download=fileName; document.body.appendChild(a); a.click();
+      setTimeout(function(){ try{a.remove();}catch(e){} URL.revokeObjectURL(url); },1000);
+      /* 완료 안내(모달 유지) */
+      var msg=document.getElementById('_isakExportMsg');
+      if(!msg){ msg=document.createElement('div'); msg.id='_isakExportMsg';
+        msg.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#27500A;color:#fff;padding:10px 18px;border-radius:12px;font-size:13px;font-weight:700;z-index:2147483647;text-align:center;line-height:1.5;max-width:90vw;box-shadow:0 4px 16px rgba(0,0,0,.35);';
+        document.body.appendChild(msg); }
+      msg.innerHTML=(r.encrypted?'🔒 저장목록 전체 암호화 저장 완료':'⚠ (평문) 저장목록 저장 완료')+'<br><span style="font-weight:400;font-size:11px;">총 '+d.list.length+'건 · 📂 기기 다운로드 폴더'+(r.encrypted?' · 가져올 때 같은 암호 필요':'')+'</span>';
+      msg.style.display='block'; clearTimeout(msg._t); msg._t=setTimeout(function(){ msg.style.display='none'; },4500);
     });
 }
 function importJSON_sl(){ document.getElementById('slJsonFile').click(); }
+/* [v111] JSON 불러오기 — 저장목록 「전체」 복원(추가/교체) + 저장/불러오기 창 유지. 구버전(현재화면 1건) 파일도 호환 */
 function importJSONFile_sl(input){
   if(!input.files||!input.files[0]) return;
   var reader=new FileReader();
   reader.onload=function(e){
-    var obj; try{ obj=JSON.parse(e.target.result); }catch(err){ alert('파일 오류: '+err.message); return; }
-    /* [v105] 암호화 파일이면 복호화(비번 입력·기본 2026), 평문이면 그대로 */
+    var obj; try{ obj=JSON.parse(e.target.result); }catch(err){ alert('파일 오류: JSON 형식이 아닙니다.'); return; }
     (window._tenarParseImport ? window._tenarParseImport(obj,'jusu') : Promise.resolve(obj))
-      .then(function(data){ _slApply(data); closeSaveLoadModal(); alert('불러오기 완료!'); })
+      .then(function(data){
+        if(_slIsBackupBundle(data)){ _slRestoreBackupBundle(data); return; }   /* 목록 전체 파일 */
+        /* 구버전(현재 조사표 1건) 파일 호환 */
+        if(!confirm('구버전 JSON 파일입니다.\n저장목록 전체가 아니라 현재 조사표 화면에만 불러옵니다. 계속할까요?')) return;
+        _slApply(data); closeSaveLoadModal(); alert('불러오기 완료!');
+      })
       .catch(function(er){
         var code=er&&er.code;
         if(code==='CANCELLED') return;
@@ -1353,10 +1458,11 @@ function importJSONFile_sl(input){
   function _fmt(v){if(!isFinite(v))return '오류';return parseFloat(v.toPrecision(12)).toString();}
 })();
 function shareJSON_sl(){
-  var d=_slCollect();
-  var addr=(d.address||'주소없음').slice(0,12).replace(/[\/\\:*?"<>|\s]+/g,'_');
+  /* [v111] 공유도 저장목록 「전체」 번들로 통일 */
+  var d=_slBuildBackupBundle();
+  if(!d.list.length){ alert('공유할 저장목록이 없습니다.'); return; }
   var t=_slNowKST();
-  var fileName='이삭수_'+addr+'_'+t.ymd+'_'+t.hm.replace(':','')+'.json';
+  var fileName='tenar_isaksu_list_'+((window.TenarCrypto&&TenarCrypto.ok)?'secure_':'')+t.ymd.replace(/-/g,'')+'_'+t.hm.replace(':','')+'.json';
   /* [v105] 공유도 암호화(기본 2026) 후 */
   (window._tenarBuildExport ? window._tenarBuildExport(d,'jusu') : Promise.resolve({text:JSON.stringify(d,null,2)}))
     .then(function(r){ if(!r) return; var text=r.text;
