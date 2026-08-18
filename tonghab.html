@@ -1,4 +1,5 @@
-<!-- tonghab.html (v104) · 저장: 2026-08-18 17:30 KST · [v104] 저장/불러오기 항목: 주소 전체표시 + 잠금·핀저장·불러오기·휴지통 버튼을 목록 다음 줄로. 계산서식·JSON버튼 변경 없음 -->
+<!-- tonghab.html (v106) · 저장: 2026-08-19 01:53 KST · [v106] 주소 입력 시 화면이 내려갔다 올라오던 현상 수정(A안) — 주소 미리보기(#addrFull)를 입력마다 display 토글하지 않고 높이를 미리 확보(box-sizing+min-height), 값 있을 때만 배경/테두리 표시. 입력 시 레이아웃 밀림 0(문서높이 불변 검증). 계산 로직 무변경. -->
+<!-- (이전)  tonghab.html (v104) · 저장: 2026-08-18 17:30 KST · [v104] 저장/불러오기 항목: 주소 전체표시 + 잠금·핀저장·불러오기·휴지통 버튼을 목록 다음 줄로. 계산서식·JSON버튼 변경 없음 -->
 <!-- (이전)  tonghab.html (v103) · 저장: 2026-08-16 23:20 KST · [v103] 온라인판 변경 없음 · 버전표기만 -->
 <!-- (이전)  tonghab.html (v102) · 저장: 2026-08-16 22:58 KST · [v102] 온라인판 변경 없음 · 오프라인 PWA판은 offline/tonghab.html(소수점 입력·오프라인) · 버전표기만 -->
 <!-- (이전)  tonghab.html (v101) · 저장: 2026-08-16 22:12 KST · [v101] 온라인판 변경 없음 · 오프라인판은 offline/tonghab.html 로 별도 제공 · 버전표기만 -->
@@ -2010,12 +2011,18 @@ select,
       </div>
     </div>
     <!-- v154: 입력란에서 잘리는 필지주소 전체를 작은 글씨로 표시 -->
-    <div id="addrFull" style="display:none;font-size:11px;color:#5a6b50;line-height:1.4;margin-top:5px;word-break:break-all;background:#f3f7ef;border:1px solid #e3ecdb;border-radius:7px;padding:5px 8px;"></div>
+    <!-- v106(A안): display 토글 대신 높이를 미리 확보(box-sizing+min-height) → 입력 시 레이아웃 밀림 없음. 비었을 때는 투명 -->
+    <div id="addrFull" style="display:block;box-sizing:border-box;min-height:28px;font-size:11px;color:#5a6b50;line-height:1.4;margin-top:5px;word-break:break-all;background:transparent;border:1px solid transparent;border-radius:7px;padding:5px 8px;"></div>
     <script>
     (function(){
       var ai=document.getElementById('address'), af=document.getElementById('addrFull');
       if(!ai||!af) return;
-      function sync(){ var v=(ai.value||'').trim(); af.textContent=v?('📍 '+v):''; af.style.display=v?'block':'none'; }
+      /* v106(A안): display 토글 없이 텍스트만 갱신 + 값 있을 때만 배경/테두리 표시(바깥 높이는 그대로) → 레이아웃 밀림 제거 */
+      function sync(){
+        var v=(ai.value||'').trim();
+        if(v){ af.textContent='📍 '+v; af.style.background='#f3f7ef'; af.style.borderColor='#e3ecdb'; }
+        else { af.textContent=''; af.style.background='transparent'; af.style.borderColor='transparent'; }
+      }
       ai.addEventListener('input',sync); ai.addEventListener('change',sync);
       setTimeout(sync,1200); setTimeout(sync,3200);
     })();
