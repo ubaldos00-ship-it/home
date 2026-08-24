@@ -1,5 +1,5 @@
-<!-- 소이력관리_v5.html (배포명 cattle.html) · 저장: 2026-08-24 20:36 KST -->
-<!-- v4 → 밝은테마 · 뒤로가기 · 식별번호만 조회 · 경영자별 신고이력 · 출하차수 오늘자동 · 경영자(최종)저장 · 암호화 백업/복원(추가·교체 선택) -->
+<!-- 소이력관리_v6.html (배포명 cattle.html) · 저장: 2026-08-25 05:56 KST -->
+<!-- v5 → 뒤로=홈이동 · 라벨단축(줄바꿈방지) · 출하차수 자동제거 · 백업암호 입력창(기본2026) · 복원 초록체크박스 · 개월수 반올림 · 수정시 신고이력 표시 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>소 이력·출하·판매 관리</title>
@@ -77,9 +77,10 @@
               max-height:86vh; overflow:auto; box-shadow:0 12px 40px rgba(0,0,0,.2); }
   .modal-box h3{ margin:0 0 8px; color:var(--head); }
   .restore-list{ border:1px solid var(--line); border-radius:9px; margin-top:8px; max-height:40vh; overflow:auto; }
-  .rl-row{ display:flex; align-items:center; gap:8px; padding:7px 10px; border-bottom:1px solid var(--line); font-size:13px; }
+  .rl-row{ display:flex; align-items:center; gap:10px; padding:9px 10px; border-bottom:1px solid var(--line); font-size:13px; cursor:pointer; }
   .rl-row:last-child{ border-bottom:0; }
-  .rl-row input{ width:auto; height:auto; }
+  .rl-row.sel{ background:#ecfdf5; }
+  .rl-chk{ width:24px; height:24px; flex:0 0 auto; accent-color:#16a34a; cursor:pointer; }
   #printArea{ display:none; }
   @media print{
     body{ background:#fff; }
@@ -91,7 +92,7 @@
 <div class="wrap">
   <div class="topbar">
     <button id="btnBack" class="btn ghost">◀ 뒤로</button>
-    <div class="title">🐄 소 이력 · 출하 · 판매 관리 <span class="ver">v5</span></div>
+    <div class="title">🐄 소 이력 · 출하 · 판매 관리 <span class="ver">v6</span></div>
   </div>
 
   <!-- 설정 -->
@@ -135,23 +136,24 @@
 
     <div class="sec-title">관리</div>
     <div class="grid g2">
-      <div><label>경영자 (신고이력 최종 경영자 · 수정가능)</label><input id="rManager" list="mgrList" autocomplete="off"></div>
+      <div><label>경영자 (최종·수정가능)</label><input id="rManager" list="mgrList" autocomplete="off"></div>
       <div><label>비고</label><input id="rNote" placeholder="개체 메모 (선택)"></div>
     </div>
     <datalist id="mgrList"></datalist>
 
     <div class="sec-title">입식 · 사육</div>
     <div class="grid g3">
-      <div><label>구입일 (자동판정 · 수정가능)</label><input id="rBuyDate" type="date"></div>
-      <div><label>구입개월령 (수정가능)</label><input id="rBuyMonth" type="number" step="0.1" class="calc-in"></div>
-      <div><label>사육개월수 (수정가능)</label><input id="rRaiseMonth" type="number" step="0.1" class="calc-in"></div>
+      <div><label>구입일 (자동판정·수정가능)</label><input id="rBuyDate" type="date"></div>
+      <div><label>구입개월령 (반올림)</label><input id="rBuyMonth" type="number" step="1" class="calc-in"></div>
+      <div><label>사육개월수 (반올림)</label><input id="rRaiseMonth" type="number" step="1" class="calc-in"></div>
     </div>
     <div class="hint" id="buyHint"></div>
+    <div class="hint">※ 개월수는 소수 첫째자리에서 반올림하여 표시합니다.</div>
 
     <div class="sec-title">출하 · 도축</div>
     <div class="grid g4">
       <div><label>도축일(출하일)</label><input id="rButchery" readonly></div>
-      <div><label>출하개월수 (수정가능)</label><input id="rShipMonth" type="number" step="0.1" class="calc-in"></div>
+      <div><label>출하개월수 (반올림)</label><input id="rShipMonth" type="number" step="1" class="calc-in"></div>
       <div><label>육질등급</label><input id="rGrade" readonly></div>
       <div><label>검사결과</label><input id="rInspect" readonly></div>
     </div>
@@ -163,13 +165,13 @@
     <div class="sec-title">중량</div>
     <div class="grid g3">
       <div><label>도체중량 (kg · API값, 수정가능)</label><input id="rWeight" type="number" step="0.1" class="calc-in"></div>
-      <div><label>도체율 (%) · 생체중 수정시 자동역산</label><input id="rRate" type="number" step="0.1" class="calc-in"></div>
+      <div><label>도체율 (%·자동역산)</label><input id="rRate" type="number" step="0.1" class="calc-in"></div>
       <div><label>추정생체중량 (kg · 수정가능)</label><input id="rLive" type="number" step="0.1" class="calc-in"></div>
     </div>
 
     <div class="sec-title">판매</div>
     <div class="grid g2">
-      <div><label>출하차수 (오늘 날짜 자동 · 수정가능)</label><input id="rLot" autocomplete="off"></div>
+      <div><label>출하차수 (수정가능)</label><input id="rLot" autocomplete="off"></div>
       <div></div>
     </div>
     <div class="grid g4" style="margin-top:10px">
@@ -262,8 +264,8 @@ function rememberMgr(name){
 }
 loadMgrs();
 
-/* 뒤로가기 */
-$("btnBack").onclick = ()=>{ if(history.length>1) history.back(); else location.href=HOME_URL; };
+/* 뒤로가기 → 항상 텐아르 홈으로 이동(히스토리 뒤로가기가 안 되는 경우 방지) */
+$("btnBack").onclick = ()=>{ location.href=HOME_URL; };
 
 /* 유틸 */
 function escAttr(s){ return String(s).replace(/"/g,"&quot;"); }
@@ -275,6 +277,7 @@ function inputToDate(v){ if(!v) return null; const dt=new Date(v+"T00:00:00"); r
 function todayStr(){ return dateToInput(new Date()); }
 function monthsBetween(a,b){ if(!a||!b) return null; let m=(b.getFullYear()-a.getFullYear())*12+(b.getMonth()-a.getMonth()); const dim=new Date(b.getFullYear(),b.getMonth(),0).getDate(); m+=(b.getDate()-a.getDate())/dim; return m; }
 const r1=n=>(n==null||isNaN(n))?"":(Math.round(n*10)/10).toFixed(1);
+const rM=n=>(n==null||isNaN(n))?"":String(Math.round(n)); // 개월수: 소수 첫째자리에서 반올림 → 정수
 const won=n=>(n==null||isNaN(n))?"":Math.round(n).toLocaleString("ko-KR");
 const onlyInt=s=>String(s).replace(/[^\d]/g,"");
 
@@ -358,7 +361,7 @@ function fillForm(){
   $("buyHint").textContent=CUR.autoBuy?`구입일 자동판정: ${ymdDash(CUR.autoBuy)} (도축 이전 마지막 양수일)`:"구입일 자동판정 불가 — 직접 입력";
   $("rWeight").value=CUR.weight!=null?CUR.weight:"";
   $("rRate").value=$("cfgRate").value||"60";
-  $("rLot").value=todayStr();   // 출하차수: 오늘 날짜 자동
+  $("rLot").value="";   // 출하차수: 자동입력 제거(사용자 직접 입력)
   $("rSale").value=""; $("rCost").value="";
   recalc(); clearMods();
   $("resultCard").scrollIntoView({behavior:"smooth",block:"start"});
@@ -380,7 +383,7 @@ $("rLive").addEventListener("input",()=>{ recalcRateFromLive(); unmark("rRate");
   e.target.value=e.target.value?Number(onlyInt(e.target.value)).toLocaleString("ko-KR"):""; recalcMoney(); }));
 
 function recalcMonths(){ const birth=parseYmd(CUR?.birthYmd),buy=inputToDate($("rBuyDate").value),but=parseYmd(CUR?.butcheryYmd);
-  $("rBuyMonth").value=r1(monthsBetween(birth,buy)); $("rRaiseMonth").value=r1(monthsBetween(buy,but)); $("rShipMonth").value=r1(monthsBetween(birth,but)); }
+  $("rBuyMonth").value=rM(monthsBetween(birth,buy)); $("rRaiseMonth").value=rM(monthsBetween(buy,but)); $("rShipMonth").value=rM(monthsBetween(birth,but)); }
 function recalcLiveFromRate(){ const w=Number($("rWeight").value)||0,rate=Number($("rRate").value)||0; $("rLive").value=(w>0&&rate>0)?r1(w/(rate/100)):""; }
 function recalcRateFromLive(){ const w=Number($("rWeight").value)||0,live=Number($("rLive").value)||0; $("rRate").value=(w>0&&live>0)?r1(w/live*100):""; }
 function recalcMoney(){ const w=Number($("rWeight").value)||0,sale=Number(onlyInt($("rSale").value))||0,cost=Number(onlyInt($("rCost").value))||0,net=sale-cost;
@@ -431,16 +434,16 @@ async function loadForEdit(key){
     place:r.place, placeAddr:r.placeAddr, grade:r.grade, inspect:r.inspect, weight:r.weight,
     autoBuy:r.autoBuy, move:r.move||[], manager:r.manager };
   fillForm();
-  $("rManager").value=r.manager||""; $("rNote").value=r.note||""; $("rLot").value=r.lot||todayStr();
+  $("rManager").value=r.manager||""; $("rNote").value=r.note||""; $("rLot").value=r.lot||"";
   if(r.buyDate) $("rBuyDate").value=r.buyDate;
   if(r.dressRate) $("rRate").value=r1(r.dressRate);
   $("rSale").value=r.salePrice?Number(r.salePrice).toLocaleString("ko-KR"):"";
   $("rCost").value=r.saleCost?Number(r.saleCost).toLocaleString("ko-KR"):"";
   recalc();
   const base={}; AUTO_FIELDS.forEach(id=>base[id]=$(id).value);
-  if(r.buyMonth!=null)$("rBuyMonth").value=r1(r.buyMonth);
-  if(r.raiseMonth!=null)$("rRaiseMonth").value=r1(r.raiseMonth);
-  if(r.shipMonth!=null)$("rShipMonth").value=r1(r.shipMonth);
+  if(r.buyMonth!=null)$("rBuyMonth").value=rM(r.buyMonth);
+  if(r.raiseMonth!=null)$("rRaiseMonth").value=rM(r.raiseMonth);
+  if(r.shipMonth!=null)$("rShipMonth").value=rM(r.shipMonth);
   if(r.dressRate!=null)$("rRate").value=r1(r.dressRate);
   if(r.liveWeight!=null)$("rLive").value=r1(r.liveWeight);
   clearMods();
@@ -486,7 +489,7 @@ function applyFilter(){ const q=($("fSearch").value||"").trim().toLowerCase();
 function rowHtml(r){ return `<tr>
   <td class="l">${escHtml(r.manager)}</td><td class="l">${escHtml(r.lot)}</td><td class="l">${escHtml(r.traceNo)}</td>
   <td>${ymdDash(r.birthYmd)}</td><td>${escHtml(r.buyDate)}</td>
-  <td>${r1(r.buyMonth)}</td><td>${r1(r.raiseMonth)}</td><td>${r1(r.shipMonth)}</td>
+  <td>${rM(r.buyMonth)}</td><td>${rM(r.raiseMonth)}</td><td>${rM(r.shipMonth)}</td>
   <td>${r.weight??""}</td><td>${r1(r.liveWeight)}</td><td>${escHtml(r.grade)}</td>
   <td>${won(r.salePrice)}</td><td>${won(r.saleCost)}</td><td>${won(r.netSale)}</td><td>${won(r.unitPrice)}</td>
   <td class="l">${escHtml(r.note)}</td>
@@ -561,8 +564,11 @@ async function decryptObj(pkg,pw){ const key=await deriveKey(pw,ub64(pkg.salt));
 
 $("btnBackup").onclick=async()=>{
   const recs=await allRecs(); if(!recs.length){ setStatus("백업할 자료가 없습니다.","warn"); return; }
-  const pw=($("cfgPw").value||"2026");
-  const payload={ app:"소이력관리", version:5, exportedAt:new Date().toISOString(),
+  const pw=prompt("이 파일은 외부로 공유될 수 있어 암호가 필요합니다.\n기본 암호는 2026입니다. 원하시면 다른 암호로 변경할 수 있습니다.\n암호를 잊으면 파일을 복구할 수 없습니다.", $("cfgPw").value||"2026");
+  if(pw==null) return;                 // 취소
+  if(!pw.trim()){ setStatus("암호가 비어 있어 백업을 취소했습니다.","warn"); return; }
+  store.set(LS.pw, pw);                  // 다음에도 기본값으로
+  const payload={ app:"소이력관리", version:6, exportedAt:new Date().toISOString(),
     mgrs:JSON.parse(store.get(LS.mgrs)||"[]"), dressRate:store.get(LS.rate)||"60", records:recs };
   const z=n=>String(n).padStart(2,"0"),d=new Date(),fname=`소이력관리_암호백업_${d.getFullYear()}${z(d.getMonth()+1)}${z(d.getDate())}.json`;
   try{
@@ -603,10 +609,12 @@ function openRestoreModal(){
     <input type="checkbox" class="rl-chk" data-i="${i}">
     <span style="flex:1">${escHtml(r.manager||"-")} · ${escHtml(r.lot||"")} · <b>${escHtml(r.traceNo)}</b> · 출생 ${ymdDash(r.birthYmd)} · 등급 ${escHtml(r.grade||"-")}</span>
     </label>`).join("");
+  // 체크 시 행을 초록으로 표시
+  $("restoreList").querySelectorAll(".rl-chk").forEach(c=> c.addEventListener("change",()=> c.closest(".rl-row").classList.toggle("sel", c.checked)));
   $("chkAll").checked=false;
   $("restoreModal").style.display="flex";
 }
-$("chkAll").onchange=()=>$("restoreList").querySelectorAll(".rl-chk").forEach(c=>c.checked=$("chkAll").checked);
+$("chkAll").onchange=()=>$("restoreList").querySelectorAll(".rl-chk").forEach(c=>{ c.checked=$("chkAll").checked; c.closest(".rl-row").classList.toggle("sel",c.checked); });
 $("btnRestoreCancel").onclick=()=>{ $("restoreModal").style.display="none"; PENDING=null; };
 $("btnReplaceAll").onclick=async()=>{
   if(!PENDING) return;
