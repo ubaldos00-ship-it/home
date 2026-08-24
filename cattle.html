@@ -1,5 +1,5 @@
-<!-- 소이력관리_v7.html (배포명 cattle.html) · 저장: 2026-08-25 06:49 KST -->
-<!-- v6 → 제목변경(소 이력제 조회 자동계산)·설정은 제목5번탭시 표시 · 경영자/비고 판매하단 이동 · 목록 도축일 추가 · 개월수 반올림+정확값 병기 · 복원 체크V표시 · index 메뉴명 변경 -->
+<!-- 소이력관리_v8.html (배포명 cattle.html) · 저장: 2026-08-25 07:11 KST -->
+<!-- v7 → 수동 입력 모드(출생/구입/도축일→개월수 자동, 도체중량→생체중 자동) · 도체중량/추정생체중 소수점 처리(생체중 반올림+정확값 병기) -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>소 이력·출하·판매 관리</title>
@@ -93,7 +93,7 @@
 <div class="wrap">
   <div class="topbar">
     <button id="btnBack" class="btn ghost">◀ 뒤로</button>
-    <div class="title" id="appTitle" style="cursor:pointer" title="제목을 5번 누르면 설정이 열립니다">🐄 소 이력제 조회 자동계산 <span class="ver">v7</span></div>
+    <div class="title" id="appTitle" style="cursor:pointer" title="제목을 5번 누르면 설정이 열립니다">🐄 소 이력제 조회 자동계산 <span class="ver">v8</span></div>
   </div>
 
   <!-- 설정 (제목 5번 탭 시 표시) -->
@@ -114,6 +114,7 @@
       <div style="flex:1"><label>소 식별번호 (숫자만, 9~15자리)</label>
         <input id="fTrace" inputmode="numeric" placeholder="예: 002195273067" autocomplete="off"></div>
       <button id="btnSearch" class="btn pri">조회</button>
+      <button id="btnManual" class="btn sec">✍️ 수동 입력</button>
     </div>
     <div id="status" class="status"></div>
   </div>
@@ -127,7 +128,7 @@
       <div><label>식별번호</label><input id="rTrace" readonly></div>
       <div><label>품종</label><input id="rBreed" readonly></div>
       <div><label>성별</label><input id="rSex" readonly></div>
-      <div><label>출생일</label><input id="rBirth" readonly></div>
+      <div><label>출생일</label><input id="rBirth" type="date" readonly></div>
     </div>
 
     <div class="sec-title">신고 · 이동 이력 (경영자별)</div>
@@ -143,7 +144,7 @@
 
     <div class="sec-title">출하 · 도축</div>
     <div class="grid g4">
-      <div><label>도축일(출하일)</label><input id="rButchery" readonly></div>
+      <div><label>도축일(출하일)</label><input id="rButchery" type="date" readonly></div>
       <div><label>출하개월수 (반올림)</label><input id="rShipMonth" type="number" step="1" class="calc-in"><div class="hint" id="rShipMonthEx"></div></div>
       <div><label>육질등급</label><input id="rGrade" readonly></div>
       <div><label>검사결과</label><input id="rInspect" readonly></div>
@@ -157,7 +158,7 @@
     <div class="grid g3">
       <div><label>도체중량 (kg · API값, 수정가능)</label><input id="rWeight" type="number" step="0.1" class="calc-in"></div>
       <div><label>도체율 (%·자동역산)</label><input id="rRate" type="number" step="0.1" class="calc-in"></div>
-      <div><label>추정생체중량 (kg · 수정가능)</label><input id="rLive" type="number" step="0.1" class="calc-in"></div>
+      <div><label>추정생체중량 (kg · 반올림)</label><input id="rLive" type="number" step="0.1" class="calc-in"><div class="hint" id="rLiveEx"></div></div>
     </div>
 
     <div class="sec-title">판매</div>
@@ -353,17 +354,25 @@ function renderMoveHistory(items){
   }).join("");
 }
 
+// API값 필드: 조회모드=읽기전용(초록), 수동모드=편집가능
+const API_FIELDS=["rTrace","rBirth","rBreed","rSex","rButchery","rGrade","rInspect","rPlace","rPlaceAddr"];
+function setApiReadonly(ro){ API_FIELDS.forEach(id=> ro?$(id).setAttribute("readonly",""):$(id).removeAttribute("readonly")); }
+
 function fillForm(){
+  const manual = !!CUR.manual;
   $("resultCard").style.display="block";
-  $("rTrace").value=CUR.traceNo; $("rBreed").value=CUR.breed||""; $("rSex").value=CUR.sex||"";
-  $("rBirth").value=ymdDash(CUR.birthYmd);
-  renderMoveHistory(CUR.move);
+  setApiReadonly(!manual);
+  $("rTrace").value=CUR.traceNo||""; $("rBreed").value=CUR.breed||""; $("rSex").value=CUR.sex||"";
+  $("rBirth").value=CUR.birthYmd?dateToInput(parseYmd(CUR.birthYmd)):"";
+  if(manual) $("moveHistory").innerHTML=`<div class="hint">수동 입력 모드 — 신고·이동 이력 없음</div>`;
+  else renderMoveHistory(CUR.move);
   $("rManager").value=CUR.manager||"";
   $("rNote").value="";
-  $("rButchery").value=ymdDash(CUR.butcheryYmd); $("rGrade").value=CUR.grade||"";
+  $("rButchery").value=CUR.butcheryYmd?dateToInput(parseYmd(CUR.butcheryYmd)):""; $("rGrade").value=CUR.grade||"";
   $("rInspect").value=CUR.inspect||""; $("rPlace").value=CUR.place||""; $("rPlaceAddr").value=CUR.placeAddr||"";
   $("rBuyDate").value=CUR.autoBuy?dateToInput(parseYmd(CUR.autoBuy)):"";
-  $("buyHint").textContent=CUR.autoBuy?`구입일 자동판정: ${ymdDash(CUR.autoBuy)} (도축 이전 마지막 양수일)`:"구입일 자동판정 불가 — 직접 입력";
+  $("buyHint").textContent= manual ? "출생일·구입일·도축일을 입력하면 개월수가 자동 계산됩니다."
+    : (CUR.autoBuy?`구입일 자동판정: ${ymdDash(CUR.autoBuy)} (도축 이전 마지막 양수일)`:"구입일 자동판정 불가 — 직접 입력");
   $("rWeight").value=CUR.weight!=null?CUR.weight:"";
   $("rRate").value=$("cfgRate").value||"60";
   $("rLot").value="";   // 출하차수: 자동입력 제거(사용자 직접 입력)
@@ -371,6 +380,15 @@ function fillForm(){
   recalc(); clearMods();
   $("resultCard").scrollIntoView({behavior:"smooth",block:"start"});
 }
+
+/* 수동 입력 모드 */
+$("btnManual").onclick = ()=>{
+  CUR={ manual:true, traceNo:"", birthYmd:null, breed:"", sex:"", butcheryYmd:null,
+        place:"", placeAddr:"", grade:"", inspect:"", weight:null, autoBuy:null, move:[], manager:"" };
+  EDITING=false; $("btnSave").textContent="저장";
+  fillForm();
+  setStatus("✍️ 수동 입력 모드 — 출생일·구입일·도축일·도체중량 등을 직접 입력하세요.","warn");
+};
 
 /* 수정표시(파랑) */
 const AUTO_FIELDS=["rBuyDate","rWeight","rRate","rLive","rBuyMonth","rRaiseMonth","rShipMonth"];
@@ -381,18 +399,22 @@ AUTO_FIELDS.forEach(id=>$(id).addEventListener("input",()=>markMod(id)));
 
 /* 자동계산 */
 $("rBuyDate").addEventListener("input",()=>{ recalcMonths(); ["rBuyMonth","rRaiseMonth","rShipMonth"].forEach(unmark); markMod("rBuyDate"); });
+// 수동 입력: 출생일/도축일 → 개월수 재계산
+["rBirth","rButchery"].forEach(id=>$(id).addEventListener("input", recalcMonths));
 $("rWeight").addEventListener("input",()=>{ recalcLiveFromRate(); unmark("rLive"); recalcMoney(); });
 $("rRate").addEventListener("input",()=>{ recalcLiveFromRate(); unmark("rLive"); });
-$("rLive").addEventListener("input",()=>{ recalcRateFromLive(); unmark("rRate"); });
+$("rLive").addEventListener("input",()=>{ recalcRateFromLive(); unmark("rRate"); $("rLiveEx").textContent=""; });
 ["rSale","rCost"].forEach(id=>$(id).addEventListener("input",e=>{
   e.target.value=e.target.value?Number(onlyInt(e.target.value)).toLocaleString("ko-KR"):""; recalcMoney(); }));
 
-function recalcMonths(){ const birth=parseYmd(CUR?.birthYmd),buy=inputToDate($("rBuyDate").value),but=parseYmd(CUR?.butcheryYmd);
+function recalcMonths(){ const birth=inputToDate($("rBirth").value),buy=inputToDate($("rBuyDate").value),but=inputToDate($("rButchery").value);
   const p1=monthsBetween(birth,buy),p2=monthsBetween(buy,but),p3=monthsBetween(birth,but);
   $("rBuyMonth").value=rM(p1); $("rRaiseMonth").value=rM(p2); $("rShipMonth").value=rM(p3);
   const ex=v=>(v==null||isNaN(v))?"":`반올림 전: ${r1(v)}개월`;
   $("rBuyMonthEx").textContent=ex(p1); $("rRaiseMonthEx").textContent=ex(p2); $("rShipMonthEx").textContent=ex(p3); }
-function recalcLiveFromRate(){ const w=Number($("rWeight").value)||0,rate=Number($("rRate").value)||0; $("rLive").value=(w>0&&rate>0)?r1(w/(rate/100)):""; }
+function recalcLiveFromRate(){ const w=Number($("rWeight").value)||0,rate=Number($("rRate").value)||0;
+  if(w>0&&rate>0){ const live=w/(rate/100); $("rLive").value=String(Math.round(live)); $("rLiveEx").textContent=`반올림 전: ${r1(live)}kg`; }
+  else { $("rLive").value=""; $("rLiveEx").textContent=""; } }
 function recalcRateFromLive(){ const w=Number($("rWeight").value)||0,live=Number($("rLive").value)||0; $("rRate").value=(w>0&&live>0)?r1(w/live*100):""; }
 function recalcMoney(){ const w=Number($("rWeight").value)||0,sale=Number(onlyInt($("rSale").value))||0,cost=Number(onlyInt($("rCost").value))||0,net=sale-cost;
   $("rNet").value=sale?won(net):""; $("rUnit").value=(net&&w>0)?won(net/w):""; }
@@ -414,18 +436,23 @@ function clearRecs(){ if(MEM){MEM.clear();return Promise.resolve();} return new 
 /* 저장 (저장해도 화면 유지) */
 $("btnSave").onclick = async ()=>{
   if(!CUR) return;
-  const rec={ traceNo:CUR.traceNo, manager:$("rManager").value.trim(), lot:$("rLot").value.trim(), note:$("rNote").value.trim(),
-    savedAt:new Date().toISOString(), birthYmd:CUR.birthYmd, breed:CUR.breed, sex:CUR.sex,
-    buyDate:$("rBuyDate").value, autoBuy:CUR.autoBuy, butcheryYmd:CUR.butcheryYmd, place:CUR.place, placeAddr:CUR.placeAddr,
-    grade:CUR.grade, inspect:CUR.inspect, move:CUR.move,
+  const inYmd=v=> v? v.replace(/-/g,"") : null;   // 'YYYY-MM-DD' → 'YYYYMMDD'
+  const birthYmd=inYmd($("rBirth").value), butcheryYmd=inYmd($("rButchery").value);
+  let traceNo=($("rTrace").value||"").trim() || CUR.traceNo || ("수동_"+Date.now());
+  const rec={ traceNo, manual:!!CUR.manual, manager:$("rManager").value.trim(), lot:$("rLot").value.trim(), note:$("rNote").value.trim(),
+    savedAt:new Date().toISOString(), birthYmd, breed:$("rBreed").value.trim(), sex:$("rSex").value.trim(),
+    buyDate:$("rBuyDate").value, autoBuy:CUR.autoBuy, butcheryYmd, place:$("rPlace").value.trim(), placeAddr:$("rPlaceAddr").value.trim(),
+    grade:$("rGrade").value.trim(), inspect:$("rInspect").value.trim(), move:CUR.move,
     weight:Number($("rWeight").value)||null, dressRate:Number($("rRate").value)||null,
     buyMonth:parseFloat($("rBuyMonth").value)||null, raiseMonth:parseFloat($("rRaiseMonth").value)||null,
     shipMonth:parseFloat($("rShipMonth").value)||null, liveWeight:parseFloat($("rLive").value)||null,
     salePrice:Number(onlyInt($("rSale").value))||0, saleCost:Number(onlyInt($("rCost").value))||0 };
-  // 반올림 전 정확값(개월수, 소수1자리) 함께 저장
-  { const birth=parseYmd(CUR.birthYmd),buy=inputToDate($("rBuyDate").value),but=parseYmd(CUR.butcheryYmd);
+  // 반올림 전 정확값(개월수·추정생체중, 소수1자리) 함께 저장
+  { const birth=parseYmd(birthYmd),buy=inputToDate($("rBuyDate").value),but=parseYmd(butcheryYmd);
     const rx=v=>{ v=monthsBetween(...v); return (v==null||isNaN(v))?null:Math.round(v*10)/10; };
-    rec.buyMonthExact=rx([birth,buy]); rec.raiseMonthExact=rx([buy,but]); rec.shipMonthExact=rx([birth,but]); }
+    rec.buyMonthExact=rx([birth,buy]); rec.raiseMonthExact=rx([buy,but]); rec.shipMonthExact=rx([birth,but]);
+    const w=rec.weight||0, rate=rec.dressRate||0;
+    rec.liveWeightExact=(w>0&&rate>0)?Math.round(w/(rate/100)*10)/10:rec.liveWeight; }
   rec.netSale=rec.salePrice-rec.saleCost;
   rec.unitPrice=(rec.netSale&&rec.weight)?Math.round(rec.netSale/rec.weight):null;
   try{
@@ -442,7 +469,7 @@ $("btnSave").onclick = async ()=>{
 /* 목록 [수정] */
 async function loadForEdit(key){
   const r=await getRec(key); if(!r){ setStatus("수정할 자료를 찾지 못했습니다.","bad"); return; }
-  CUR={ traceNo:r.traceNo, birthYmd:r.birthYmd, breed:r.breed, sex:r.sex, butcheryYmd:r.butcheryYmd,
+  CUR={ traceNo:r.traceNo, manual:!!r.manual, birthYmd:r.birthYmd, breed:r.breed, sex:r.sex, butcheryYmd:r.butcheryYmd,
     place:r.place, placeAddr:r.placeAddr, grade:r.grade, inspect:r.inspect, weight:r.weight,
     autoBuy:r.autoBuy, move:r.move||[], manager:r.manager };
   fillForm();
@@ -457,7 +484,7 @@ async function loadForEdit(key){
   if(r.raiseMonth!=null)$("rRaiseMonth").value=rM(r.raiseMonth);
   if(r.shipMonth!=null)$("rShipMonth").value=rM(r.shipMonth);
   if(r.dressRate!=null)$("rRate").value=r1(r.dressRate);
-  if(r.liveWeight!=null)$("rLive").value=r1(r.liveWeight);
+  if(r.liveWeight!=null){ $("rLive").value=String(Math.round(r.liveWeight)); $("rLiveEx").textContent=(r.liveWeightExact!=null)?`반올림 전: ${r1(r.liveWeightExact)}kg`:""; }
   clearMods();
   AUTO_FIELDS.forEach(id=>{ if($(id).value!==base[id]) markMod(id); });
   if(r.buyDate&&CUR.autoBuy&&r.buyDate!==dateToInput(parseYmd(CUR.autoBuy))) markMod("rBuyDate");
@@ -502,7 +529,7 @@ function rowHtml(r){ return `<tr>
   <td class="l">${escHtml(r.manager)}</td><td class="l">${escHtml(r.lot)}</td><td class="l">${escHtml(r.traceNo)}</td>
   <td>${ymdDash(r.birthYmd)}</td><td>${escHtml(r.buyDate)}</td><td>${ymdDash(r.butcheryYmd)}</td>
   <td>${rM(r.buyMonth)}</td><td>${rM(r.raiseMonth)}</td><td>${rM(r.shipMonth)}</td>
-  <td>${r.weight??""}</td><td>${r1(r.liveWeight)}</td><td>${escHtml(r.grade)}</td>
+  <td>${r.weight??""}</td><td>${rM(r.liveWeight)}</td><td>${escHtml(r.grade)}</td>
   <td>${won(r.salePrice)}</td><td>${won(r.saleCost)}</td><td>${won(r.netSale)}</td><td>${won(r.unitPrice)}</td>
   <td class="l">${escHtml(r.note)}</td>
   <td style="white-space:nowrap"><button class="btn pri mini" data-edit="${escAttr(r.traceNo)}">수정</button>
