@@ -1,5 +1,5 @@
-<!-- 소이력관리_v6.html (배포명 cattle.html) · 저장: 2026-08-25 05:56 KST -->
-<!-- v5 → 뒤로=홈이동 · 라벨단축(줄바꿈방지) · 출하차수 자동제거 · 백업암호 입력창(기본2026) · 복원 초록체크박스 · 개월수 반올림 · 수정시 신고이력 표시 -->
+<!-- 소이력관리_v7.html (배포명 cattle.html) · 저장: 2026-08-25 06:49 KST -->
+<!-- v6 → 제목변경(소 이력제 조회 자동계산)·설정은 제목5번탭시 표시 · 경영자/비고 판매하단 이동 · 목록 도축일 추가 · 개월수 반올림+정확값 병기 · 복원 체크V표시 · index 메뉴명 변경 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>소 이력·출하·판매 관리</title>
@@ -27,6 +27,7 @@
          border:1px solid var(--line); background:#fff; color:var(--fg); font-size:16px;
          -webkit-appearance:none; appearance:none; }
   input[type=date]{ line-height:44px; }
+  input[type=checkbox]{ -webkit-appearance:auto; appearance:auto; } /* 체크 V 표시 복원(appearance:none 해제) */
   input[readonly]{ background:var(--api-bg); border-color:var(--api-bd); color:var(--api-fg); font-weight:700; }
   input.calc-in{ background:var(--calc-bg); border-color:var(--calc-bd); color:var(--calc-fg); font-weight:700; }
   input.modified{ background:var(--mod-bg); border-color:var(--mod-bd); color:var(--mod-fg); font-weight:800; }
@@ -92,20 +93,18 @@
 <div class="wrap">
   <div class="topbar">
     <button id="btnBack" class="btn ghost">◀ 뒤로</button>
-    <div class="title">🐄 소 이력 · 출하 · 판매 관리 <span class="ver">v6</span></div>
+    <div class="title" id="appTitle" style="cursor:pointer" title="제목을 5번 누르면 설정이 열립니다">🐄 소 이력제 조회 자동계산 <span class="ver">v7</span></div>
   </div>
 
-  <!-- 설정 -->
-  <div class="card">
-    <details>
-      <summary style="cursor:pointer;color:var(--accent);font-size:14px;font-weight:700">⚙️ 설정 (Lambda 주소 · 도체율 · 백업 비밀번호)</summary>
-      <div class="grid g3" style="margin-top:10px">
-        <div><label>Lambda Function URL</label><input id="cfgUrl" placeholder="https://...lambda-url..."></div>
-        <div><label>기본 도체율 (%)</label><input id="cfgRate" type="number" step="0.1" value="60"></div>
-        <div><label>백업 비밀번호 (기본 2026)</label><input id="cfgPw" value="2026"></div>
-      </div>
-      <div class="hint">여기 값은 브라우저에 저장됩니다. 백업 비밀번호는 JSON 백업 암호화/복원에 사용됩니다.</div>
-    </details>
+  <!-- 설정 (제목 5번 탭 시 표시) -->
+  <div class="card" id="cfgCard" style="display:none">
+    <div style="color:var(--accent);font-size:14px;font-weight:700;margin-bottom:10px">⚙️ 설정 (Lambda 주소 · 도체율 · 백업 비밀번호)</div>
+    <div class="grid g3">
+      <div><label>Lambda Function URL</label><input id="cfgUrl" placeholder="https://...lambda-url..."></div>
+      <div><label>기본 도체율 (%)</label><input id="cfgRate" type="number" step="0.1" value="60"></div>
+      <div><label>백업 비밀번호 (기본 2026)</label><input id="cfgPw" value="2026"></div>
+    </div>
+    <div class="hint">여기 값은 브라우저에 저장됩니다. 백업 비밀번호는 JSON 백업 암호화/복원에 사용됩니다. (제목을 5번 누르면 숨김/표시)</div>
   </div>
 
   <!-- ① 조회 -->
@@ -134,26 +133,18 @@
     <div class="sec-title">신고 · 이동 이력 (경영자별)</div>
     <div id="moveHistory"></div>
 
-    <div class="sec-title">관리</div>
-    <div class="grid g2">
-      <div><label>경영자 (최종·수정가능)</label><input id="rManager" list="mgrList" autocomplete="off"></div>
-      <div><label>비고</label><input id="rNote" placeholder="개체 메모 (선택)"></div>
-    </div>
-    <datalist id="mgrList"></datalist>
-
     <div class="sec-title">입식 · 사육</div>
     <div class="grid g3">
       <div><label>구입일 (자동판정·수정가능)</label><input id="rBuyDate" type="date"></div>
-      <div><label>구입개월령 (반올림)</label><input id="rBuyMonth" type="number" step="1" class="calc-in"></div>
-      <div><label>사육개월수 (반올림)</label><input id="rRaiseMonth" type="number" step="1" class="calc-in"></div>
+      <div><label>구입개월령 (반올림)</label><input id="rBuyMonth" type="number" step="1" class="calc-in"><div class="hint" id="rBuyMonthEx"></div></div>
+      <div><label>사육개월수 (반올림)</label><input id="rRaiseMonth" type="number" step="1" class="calc-in"><div class="hint" id="rRaiseMonthEx"></div></div>
     </div>
     <div class="hint" id="buyHint"></div>
-    <div class="hint">※ 개월수는 소수 첫째자리에서 반올림하여 표시합니다.</div>
 
     <div class="sec-title">출하 · 도축</div>
     <div class="grid g4">
       <div><label>도축일(출하일)</label><input id="rButchery" readonly></div>
-      <div><label>출하개월수 (반올림)</label><input id="rShipMonth" type="number" step="1" class="calc-in"></div>
+      <div><label>출하개월수 (반올림)</label><input id="rShipMonth" type="number" step="1" class="calc-in"><div class="hint" id="rShipMonthEx"></div></div>
       <div><label>육질등급</label><input id="rGrade" readonly></div>
       <div><label>검사결과</label><input id="rInspect" readonly></div>
     </div>
@@ -180,6 +171,11 @@
       <div><label>실판매금액 (원)</label><input id="rNet" readonly></div>
       <div><label>kg당 실판매단가 (원/kg)</label><input id="rUnit" readonly></div>
     </div>
+    <div class="grid g2" style="margin-top:10px">
+      <div><label>경영자 (최종·수정가능)</label><input id="rManager" list="mgrList" autocomplete="off"></div>
+      <div><label>비고</label><input id="rNote" placeholder="개체 메모 (선택)"></div>
+    </div>
+    <datalist id="mgrList"></datalist>
 
     <div class="row-actions">
       <button id="btnSave" class="btn ok">저장</button>
@@ -203,7 +199,7 @@
       <table id="listTbl">
         <thead><tr>
           <th class="l">경영자</th><th class="l">출하차수</th><th class="l">식별번호</th>
-          <th>출생일</th><th>구입일</th><th>구입<br>개월</th><th>사육<br>개월</th><th>출하<br>개월</th>
+          <th>출생일</th><th>구입일</th><th>도축일</th><th>구입<br>개월</th><th>사육<br>개월</th><th>출하<br>개월</th>
           <th>도체<br>중량</th><th>추정<br>생체중</th><th>등급</th>
           <th>판매금액</th><th>판매비용</th><th>실판매액</th><th>kg단가</th><th class="l">비고</th><th>관리</th>
         </tr></thead>
@@ -266,6 +262,15 @@ loadMgrs();
 
 /* 뒤로가기 → 항상 텐아르 홈으로 이동(히스토리 뒤로가기가 안 되는 경우 방지) */
 $("btnBack").onclick = ()=>{ location.href=HOME_URL; };
+
+/* 제목 5번 탭 → 설정 표시/숨김 */
+let _titleTaps=0, _titleLast=0;
+$("appTitle").onclick = ()=>{
+  const now=Date.now(); if(now-_titleLast>2000) _titleTaps=0; _titleLast=now; _titleTaps++;
+  if(_titleTaps>=5){ _titleTaps=0; const c=$("cfgCard");
+    c.style.display = (c.style.display==="none") ? "block" : "none";
+    if(c.style.display==="block") c.scrollIntoView({behavior:"smooth",block:"center"}); }
+};
 
 /* 유틸 */
 function escAttr(s){ return String(s).replace(/"/g,"&quot;"); }
@@ -383,7 +388,10 @@ $("rLive").addEventListener("input",()=>{ recalcRateFromLive(); unmark("rRate");
   e.target.value=e.target.value?Number(onlyInt(e.target.value)).toLocaleString("ko-KR"):""; recalcMoney(); }));
 
 function recalcMonths(){ const birth=parseYmd(CUR?.birthYmd),buy=inputToDate($("rBuyDate").value),but=parseYmd(CUR?.butcheryYmd);
-  $("rBuyMonth").value=rM(monthsBetween(birth,buy)); $("rRaiseMonth").value=rM(monthsBetween(buy,but)); $("rShipMonth").value=rM(monthsBetween(birth,but)); }
+  const p1=monthsBetween(birth,buy),p2=monthsBetween(buy,but),p3=monthsBetween(birth,but);
+  $("rBuyMonth").value=rM(p1); $("rRaiseMonth").value=rM(p2); $("rShipMonth").value=rM(p3);
+  const ex=v=>(v==null||isNaN(v))?"":`반올림 전: ${r1(v)}개월`;
+  $("rBuyMonthEx").textContent=ex(p1); $("rRaiseMonthEx").textContent=ex(p2); $("rShipMonthEx").textContent=ex(p3); }
 function recalcLiveFromRate(){ const w=Number($("rWeight").value)||0,rate=Number($("rRate").value)||0; $("rLive").value=(w>0&&rate>0)?r1(w/(rate/100)):""; }
 function recalcRateFromLive(){ const w=Number($("rWeight").value)||0,live=Number($("rLive").value)||0; $("rRate").value=(w>0&&live>0)?r1(w/live*100):""; }
 function recalcMoney(){ const w=Number($("rWeight").value)||0,sale=Number(onlyInt($("rSale").value))||0,cost=Number(onlyInt($("rCost").value))||0,net=sale-cost;
@@ -414,6 +422,10 @@ $("btnSave").onclick = async ()=>{
     buyMonth:parseFloat($("rBuyMonth").value)||null, raiseMonth:parseFloat($("rRaiseMonth").value)||null,
     shipMonth:parseFloat($("rShipMonth").value)||null, liveWeight:parseFloat($("rLive").value)||null,
     salePrice:Number(onlyInt($("rSale").value))||0, saleCost:Number(onlyInt($("rCost").value))||0 };
+  // 반올림 전 정확값(개월수, 소수1자리) 함께 저장
+  { const birth=parseYmd(CUR.birthYmd),buy=inputToDate($("rBuyDate").value),but=parseYmd(CUR.butcheryYmd);
+    const rx=v=>{ v=monthsBetween(...v); return (v==null||isNaN(v))?null:Math.round(v*10)/10; };
+    rec.buyMonthExact=rx([birth,buy]); rec.raiseMonthExact=rx([buy,but]); rec.shipMonthExact=rx([birth,but]); }
   rec.netSale=rec.salePrice-rec.saleCost;
   rec.unitPrice=(rec.netSale&&rec.weight)?Math.round(rec.netSale/rec.weight):null;
   try{
@@ -482,13 +494,13 @@ function applyFilter(){ const q=($("fSearch").value||"").trim().toLowerCase();
   const recs=q?ALL_RECS.filter(r=>[r.manager,r.lot,r.traceNo,r.grade].some(v=>String(v||"").toLowerCase().includes(q))):ALL_RECS;
   FILTERED=recs;
   $("listCount").textContent=`(${recs.length}두${q?` / 전체 ${ALL_RECS.length}`:""})`;
-  $("listBody").innerHTML=recs.map(rowHtml).join("")||`<tr><td class="l" colspan="17" style="color:var(--mut)">${q?"검색 결과 없음":"저장된 개체가 없습니다."}</td></tr>`;
+  $("listBody").innerHTML=recs.map(rowHtml).join("")||`<tr><td class="l" colspan="18" style="color:var(--mut)">${q?"검색 결과 없음":"저장된 개체가 없습니다."}</td></tr>`;
   $("listBody").querySelectorAll("[data-del]").forEach(b=>b.onclick=async()=>{ if(confirm(`${b.dataset.del} 삭제할까요?`)){ await delRec(b.dataset.del); refreshList(); } });
   $("listBody").querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>loadForEdit(b.dataset.edit));
   renderFoot(recs); renderStats(recs); }
 function rowHtml(r){ return `<tr>
   <td class="l">${escHtml(r.manager)}</td><td class="l">${escHtml(r.lot)}</td><td class="l">${escHtml(r.traceNo)}</td>
-  <td>${ymdDash(r.birthYmd)}</td><td>${escHtml(r.buyDate)}</td>
+  <td>${ymdDash(r.birthYmd)}</td><td>${escHtml(r.buyDate)}</td><td>${ymdDash(r.butcheryYmd)}</td>
   <td>${rM(r.buyMonth)}</td><td>${rM(r.raiseMonth)}</td><td>${rM(r.shipMonth)}</td>
   <td>${r.weight??""}</td><td>${r1(r.liveWeight)}</td><td>${escHtml(r.grade)}</td>
   <td>${won(r.salePrice)}</td><td>${won(r.saleCost)}</td><td>${won(r.netSale)}</td><td>${won(r.unitPrice)}</td>
@@ -499,9 +511,9 @@ const avg=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:null;
 const sum=a=>a.reduce((s,x)=>s+x,0);
 function renderFoot(recs){ if(!recs.length){ $("listFoot").innerHTML=""; return; }
   const w=recs.map(r=>r.weight||0),lw=recs.map(r=>r.liveWeight||0),sp=recs.map(r=>r.salePrice||0),sc=recs.map(r=>r.saleCost||0),ns=recs.map(r=>r.netSale||0);
-  $("listFoot").innerHTML=`<tr><td class="l" colspan="8">합계 (${recs.length}두)</td>
+  $("listFoot").innerHTML=`<tr><td class="l" colspan="9">합계 (${recs.length}두)</td>
     <td>${r1(sum(w))}</td><td>${r1(sum(lw))}</td><td></td><td>${won(sum(sp))}</td><td>${won(sum(sc))}</td><td>${won(sum(ns))}</td><td></td><td class="l"></td><td></td></tr>
-   <tr><td class="l" colspan="5">평균</td>
+   <tr><td class="l" colspan="6">평균</td>
     <td>${r1(avg(recs.map(r=>r.buyMonth).filter(v=>v!=null)))}</td><td>${r1(avg(recs.map(r=>r.raiseMonth).filter(v=>v!=null)))}</td><td>${r1(avg(recs.map(r=>r.shipMonth).filter(v=>v!=null)))}</td>
     <td>${r1(avg(w.filter(v=>v)))}</td><td>${r1(avg(lw.filter(v=>v)))}</td><td></td>
     <td>${won(avg(sp))}</td><td>${won(avg(sc))}</td><td>${won(avg(ns))}</td><td>${won(avg(recs.map(r=>r.unitPrice).filter(v=>v!=null)))}</td><td class="l"></td><td></td></tr>`; }
