@@ -1,126 +1,124 @@
-<!-- 소이력관리_v4.html (배포명 cattle.html) · 저장: 2026-08-20 02:46 KST -->
-<!-- 소 이력·출하·판매 관리 · v3 + 사용자가 수정한 자동/API값은 파랑색 표시 -->
+<!-- 소이력관리_v5.html (배포명 cattle.html) · 저장: 2026-08-24 20:36 KST -->
+<!-- v4 → 밝은테마 · 뒤로가기 · 식별번호만 조회 · 경영자별 신고이력 · 출하차수 오늘자동 · 경영자(최종)저장 · 암호화 백업/복원(추가·교체 선택) -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>소 이력·출하·판매 관리</title>
 <style>
   :root{
-    --bg:#0f172a; --card:#1e293b; --line:#334155; --fg:#e2e8f0; --mut:#94a3b8;
-    --accent:#38bdf8; --accent2:#22c55e; --warn:#f59e0b; --bad:#ef4444;
-    --calc:#0b3a2e; --edit:#0b1220;
+    --bg:#f4f6f9; --card:#ffffff; --line:#e3e7ee; --fg:#4b5563; --mut:#94a0b0;
+    --head:#334155; --accent:#2563eb; --ok:#16a34a; --warn:#d97706; --bad:#dc2626;
+    --api-bg:#ecfdf5; --api-bd:#a7f3d0; --api-fg:#15803d;   /* API 고정값(초록) */
+    --calc-bg:#f1f4f8; --calc-bd:#d7dee8; --calc-fg:#475569; /* 계산값(수정가능) */
+    --mod-bg:#dbeafe; --mod-bd:#3b82f6; --mod-fg:#1d4ed8;    /* 사용자 수정(파랑) */
   }
   *{ box-sizing:border-box; }
   body{ margin:0; background:var(--bg); color:var(--fg);
-        font:15px/1.5 -apple-system,"Segoe UI",Roboto,"Malgun Gothic",sans-serif; }
-  .wrap{ max-width:1120px; margin:0 auto; padding:18px 16px 90px; }
-  h1{ font-size:21px; margin:0 0 2px; }
+        font:16px/1.55 -apple-system,"Segoe UI",Roboto,"Malgun Gothic",sans-serif; }
+  .wrap{ max-width:1120px; margin:0 auto; padding:12px 14px 90px; }
+  .topbar{ display:flex; align-items:center; gap:10px; margin:2px 0 12px; }
+  .title{ font-size:19px; font-weight:800; color:var(--head); }
+  .title .ver{ font-size:12px; font-weight:600; color:var(--mut); }
+  h2{ font-size:15px; margin:0 0 12px; color:var(--accent); font-weight:800; }
   .sub{ color:var(--mut); font-size:13px; margin-bottom:14px; }
-  .card{ background:var(--card); border:1px solid var(--line); border-radius:12px;
-         padding:16px; margin-bottom:16px; }
-  .card h2{ font-size:15px; margin:0 0 12px; color:var(--accent); }
-  label{ display:block; font-size:12px; color:var(--mut); margin:0 0 4px; }
-  input,select{ width:100%; padding:9px 11px; border-radius:8px; border:1px solid var(--line);
-         background:var(--edit); color:var(--fg); font-size:16px; }
-  input[readonly]{ background:#0a1a15; border-color:#14532d; color:#bbf7d0; font-weight:600; } /* API값(고정) */
-  input.calc-in{ background:#131c2b; border-color:#2b3a52; color:#dbe4ef; font-weight:600; } /* 계산값(수정가능) */
-  input.modified{ background:#0b2f52; border-color:#3b82f6; color:#93c5fd; font-weight:700; } /* 사용자가 수정함 */
+  .card{ background:var(--card); border:1px solid var(--line); border-radius:14px;
+         padding:16px; margin-bottom:14px; box-shadow:0 1px 3px rgba(20,30,50,.04); }
+  label{ display:block; font-size:12px; color:var(--mut); margin:0 0 4px; font-weight:600; }
+  input,select{ width:100%; min-width:0; height:44px; padding:0 12px; border-radius:9px;
+         border:1px solid var(--line); background:#fff; color:var(--fg); font-size:16px;
+         -webkit-appearance:none; appearance:none; }
+  input[type=date]{ line-height:44px; }
+  input[readonly]{ background:var(--api-bg); border-color:var(--api-bd); color:var(--api-fg); font-weight:700; }
+  input.calc-in{ background:var(--calc-bg); border-color:var(--calc-bd); color:var(--calc-fg); font-weight:700; }
+  input.modified{ background:var(--mod-bg); border-color:var(--mod-bd); color:var(--mod-fg); font-weight:800; }
   .grid{ display:grid; gap:10px 12px; }
   .g2{ grid-template-columns:repeat(2,1fr); }
   .g3{ grid-template-columns:repeat(3,1fr); }
   .g4{ grid-template-columns:repeat(4,1fr); }
-  @media(max-width:720px){
-    .g3,.g4{ grid-template-columns:repeat(2,1fr);}
-    .wrap{ padding:12px 10px 80px; }
-    h1{ font-size:18px; }
-    .card{ padding:13px; }
-    .btn{ padding:9px 14px; }
-  }
-  .btn{ padding:10px 18px; border:0; border-radius:8px; cursor:pointer; font-weight:700; font-size:15px; }
-  .btn.pri{ background:var(--accent); color:#04263a; }
-  .btn.ok{ background:var(--accent2); color:#03260f; }
-  .btn.sec{ background:#334155; color:var(--fg); }
-  .btn.warn{ background:transparent; color:var(--warn); border:1px solid var(--warn); }
+  @media(max-width:720px){ .g3,.g4{ grid-template-columns:repeat(2,1fr);} .wrap{padding:10px 10px 80px;} .title{font-size:17px;} }
+  .row{ display:flex; gap:10px; align-items:flex-end; }
+  .btn{ height:44px; padding:0 18px; border:0; border-radius:9px; cursor:pointer; font-weight:800; font-size:15px; white-space:nowrap; }
+  .btn.pri{ background:var(--accent); color:#fff; }
+  .btn.ok{ background:var(--ok); color:#fff; }
+  .btn.sec{ background:#eef1f6; color:var(--head); border:1px solid var(--line); }
+  .btn.warn{ background:#fff; color:var(--warn); border:1px solid var(--warn); }
+  .btn.ghost{ background:transparent; color:var(--accent); border:1px solid var(--line); height:38px; padding:0 12px; font-size:14px; }
+  .btn.mini{ height:34px; padding:0 12px; font-size:13px; }
   .btn:disabled{ opacity:.5; cursor:default; }
-  .row-actions{ display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
-  .status{ font-size:13.5px; padding:9px 12px; border-radius:8px; margin-top:10px;
-           border:1px solid var(--line); background:var(--edit); display:none; }
+  .row-actions{ display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
+  .status{ font-size:14px; padding:10px 12px; border-radius:9px; margin-top:12px;
+           border:1px solid var(--line); background:#f8fafc; display:none; }
   .hint{ font-size:11.5px; color:var(--mut); margin-top:3px; }
-  .sec-title{ font-size:12px; color:var(--warn); text-transform:uppercase; letter-spacing:.04em;
-              margin:14px 0 6px; border-top:1px dashed var(--line); padding-top:12px; }
+  .sec-title{ font-size:12px; color:var(--warn); font-weight:800; letter-spacing:.03em;
+              margin:16px 0 8px; border-top:1px solid var(--line); padding-top:12px; }
+  /* 신고이력(경영자별) */
+  .mgr-block{ border:1px solid var(--line); border-radius:10px; padding:10px 12px; margin-bottom:8px; background:#fafbfd; }
+  .mgr-head{ font-weight:800; color:var(--head); font-size:14px; margin-bottom:4px; }
+  .mgr-no{ font-weight:600; color:var(--mut); font-size:12px; }
+  .mgr-row{ font-size:13px; color:var(--fg); padding:2px 0; }
+  .mgr-row .tag{ display:inline-block; background:#eef2ff; color:#4338ca; border-radius:6px;
+                 padding:1px 7px; font-size:11.5px; font-weight:700; margin-right:4px; }
+  /* 표 */
   table{ width:100%; border-collapse:collapse; font-size:12.5px; }
   th,td{ border:1px solid var(--line); padding:6px 7px; text-align:right; white-space:nowrap; }
-  th{ background:var(--edit); color:var(--mut); position:sticky; top:0; }
+  th{ background:#f3f6fa; color:var(--head); font-weight:700; position:sticky; top:0; }
   td.l,th.l{ text-align:left; }
-  tbody tr:hover{ background:#243248; }
-  .tbl-wrap{ overflow:auto; max-height:420px; border:1px solid var(--line); border-radius:8px; }
-  tfoot td{ background:#0a2233; color:#bae6fd; font-weight:700; }
-  .badge{ display:inline-block; font-size:11px; padding:1px 7px; border-radius:999px;
-          border:1px solid var(--line); margin:1px; }
-  .mini{ padding:4px 9px; font-size:12px; border-radius:6px; }
-  details summary{ cursor:pointer; color:var(--accent); font-size:13px; }
+  tbody tr:nth-child(even){ background:#fafbfc; }
+  .tbl-wrap{ overflow:auto; max-height:440px; border:1px solid var(--line); border-radius:9px; }
+  tfoot td{ background:#eff6ff; color:#1e40af; font-weight:800; }
+  .toolbar{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:10px; }
   .stat{ display:inline-block; min-width:150px; margin:2px 14px 2px 0; font-size:13px; }
-  .stat b{ color:#fff; }
-  /* 인쇄: 결과 카드만 */
+  .stat b{ color:var(--head); }
+  .badge{ display:inline-block; font-size:11px; padding:1px 8px; border-radius:999px;
+          border:1px solid var(--line); margin:1px; background:#fff; }
+  /* 복원 모달 */
+  .modal{ position:fixed; inset:0; background:rgba(20,30,50,.45); display:flex;
+          align-items:center; justify-content:center; padding:16px; z-index:50; }
+  .modal-box{ background:#fff; border-radius:14px; padding:18px; width:100%; max-width:560px;
+              max-height:86vh; overflow:auto; box-shadow:0 12px 40px rgba(0,0,0,.2); }
+  .modal-box h3{ margin:0 0 8px; color:var(--head); }
+  .restore-list{ border:1px solid var(--line); border-radius:9px; margin-top:8px; max-height:40vh; overflow:auto; }
+  .rl-row{ display:flex; align-items:center; gap:8px; padding:7px 10px; border-bottom:1px solid var(--line); font-size:13px; }
+  .rl-row:last-child{ border-bottom:0; }
+  .rl-row input{ width:auto; height:auto; }
   #printArea{ display:none; }
   @media print{
-    body{ background:#fff; color:#000; }
+    body{ background:#fff; }
     .wrap > *{ display:none !important; }
     #printArea{ display:block !important; }
   }
 </style>
 
 <div class="wrap">
-  <h1>🐄 소 이력 · 출하 · 판매 관리 <span style="font-size:12px;color:var(--mut)">v4</span></h1>
-  <div class="sub">식별번호 조회 → 자동계산 → 판매입력 → 저장. 데이터는 이 PC 브라우저(IndexedDB)에 저장됩니다.</div>
+  <div class="topbar">
+    <button id="btnBack" class="btn ghost">◀ 뒤로</button>
+    <div class="title">🐄 소 이력 · 출하 · 판매 관리 <span class="ver">v5</span></div>
+  </div>
 
   <!-- 설정 -->
   <div class="card">
     <details>
-      <summary>⚙️ 설정 (Lambda 주소 · 도체율)</summary>
-      <div class="grid g2" style="margin-top:10px">
-        <div>
-          <label>Lambda Function URL</label>
-          <input id="cfgUrl" placeholder="https://....lambda-url.ap-northeast-2.on.aws/">
-        </div>
-        <div>
-          <label>기본 도체율 (%) · 추정생체중량 계산용</label>
-          <input id="cfgRate" type="number" step="0.1" value="60">
-        </div>
+      <summary style="cursor:pointer;color:var(--accent);font-size:14px;font-weight:700">⚙️ 설정 (Lambda 주소 · 도체율 · 백업 비밀번호)</summary>
+      <div class="grid g3" style="margin-top:10px">
+        <div><label>Lambda Function URL</label><input id="cfgUrl" placeholder="https://...lambda-url..."></div>
+        <div><label>기본 도체율 (%)</label><input id="cfgRate" type="number" step="0.1" value="60"></div>
+        <div><label>백업 비밀번호 (기본 2026)</label><input id="cfgPw" value="2026"></div>
       </div>
-      <div class="hint">여기 값은 브라우저에 저장됩니다.</div>
+      <div class="hint">여기 값은 브라우저에 저장됩니다. 백업 비밀번호는 JSON 백업 암호화/복원에 사용됩니다.</div>
     </details>
   </div>
 
-  <!-- 조회 -->
+  <!-- ① 조회 -->
   <div class="card">
     <h2>① 조회</h2>
-    <div class="grid g4">
-      <div>
-        <label>농장명</label>
-        <input id="fFarm" list="farmList" placeholder="예: 대성농장" autocomplete="off">
-        <datalist id="farmList"></datalist>
-      </div>
-      <div>
-        <label>출하차수</label>
-        <input id="fLot" placeholder="예: 2026년 8월 1차" autocomplete="off">
-      </div>
-      <div>
-        <label>소 식별번호 (숫자만)</label>
-        <input id="fTrace" inputmode="numeric" placeholder="예: 002195273067" autocomplete="off">
-      </div>
-      <div style="display:flex; align-items:flex-end">
-        <button id="btnSearch" class="btn pri" style="width:100%">조회</button>
-      </div>
-    </div>
-    <div style="margin-top:10px">
-      <label>비고</label>
-      <input id="fNote" placeholder="개체 메모 (선택)">
+    <div class="row">
+      <div style="flex:1"><label>소 식별번호 (숫자만, 9~15자리)</label>
+        <input id="fTrace" inputmode="numeric" placeholder="예: 002195273067" autocomplete="off"></div>
+      <button id="btnSearch" class="btn pri">조회</button>
     </div>
     <div id="status" class="status"></div>
-    <div class="hint">농장명·출하차수는 다음 소를 조회해도 유지됩니다.</div>
   </div>
 
-  <!-- 결과 -->
+  <!-- ② 결과 -->
   <div class="card" id="resultCard" style="display:none">
     <h2>② 조회 결과 · 자동계산</h2>
 
@@ -132,16 +130,23 @@
       <div><label>출생일</label><input id="rBirth" readonly></div>
     </div>
 
+    <div class="sec-title">신고 · 이동 이력 (경영자별)</div>
+    <div id="moveHistory"></div>
+
+    <div class="sec-title">관리</div>
+    <div class="grid g2">
+      <div><label>경영자 (신고이력 최종 경영자 · 수정가능)</label><input id="rManager" list="mgrList" autocomplete="off"></div>
+      <div><label>비고</label><input id="rNote" placeholder="개체 메모 (선택)"></div>
+    </div>
+    <datalist id="mgrList"></datalist>
+
     <div class="sec-title">입식 · 사육</div>
     <div class="grid g3">
-      <div>
-        <label>구입일 (자동판정 · 수정가능)</label>
-        <input id="rBuyDate" type="date">
-        <div class="hint" id="buyHint"></div>
-      </div>
+      <div><label>구입일 (자동판정 · 수정가능)</label><input id="rBuyDate" type="date"></div>
       <div><label>구입개월령 (수정가능)</label><input id="rBuyMonth" type="number" step="0.1" class="calc-in"></div>
       <div><label>사육개월수 (수정가능)</label><input id="rRaiseMonth" type="number" step="0.1" class="calc-in"></div>
     </div>
+    <div class="hint" id="buyHint"></div>
 
     <div class="sec-title">출하 · 도축</div>
     <div class="grid g4">
@@ -163,7 +168,11 @@
     </div>
 
     <div class="sec-title">판매</div>
-    <div class="grid g4">
+    <div class="grid g2">
+      <div><label>출하차수 (오늘 날짜 자동 · 수정가능)</label><input id="rLot" autocomplete="off"></div>
+      <div></div>
+    </div>
+    <div class="grid g4" style="margin-top:10px">
       <div><label>판매금액 (원)</label><input id="rSale" inputmode="numeric" placeholder="0"></div>
       <div><label>판매시비용 (원)</label><input id="rCost" inputmode="numeric" placeholder="0"></div>
       <div><label>실판매금액 (원)</label><input id="rNet" readonly></div>
@@ -177,21 +186,21 @@
     </div>
   </div>
 
-  <!-- 저장 목록 -->
+  <!-- ③ 저장 목록 -->
   <div class="card">
-    <h2>③ 저장 목록 <span id="listCount" style="color:var(--mut);font-size:12px"></span></h2>
-    <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:10px">
-      <input id="fSearch" placeholder="🔍 검색 (농장명·출하차수·식별번호·등급)" style="flex:1; min-width:200px">
+    <h2>③ 저장 목록 <span id="listCount" style="color:var(--mut);font-size:12px;font-weight:600"></span></h2>
+    <div class="toolbar">
+      <input id="fSearch" placeholder="🔍 검색 (경영자·출하차수·식별번호·등급)" style="flex:1; min-width:180px">
       <button id="btnXlsxAll" class="btn ok mini">엑셀(전체)</button>
       <button id="btnXlsxFilter" class="btn ok mini">엑셀(검색결과)</button>
-      <button id="btnBackup" class="btn sec mini">백업(JSON)</button>
+      <button id="btnBackup" class="btn sec mini">🔒 백업(암호화)</button>
       <button id="btnRestore" class="btn sec mini">복원</button>
       <input id="fileRestore" type="file" accept="application/json,.json" style="display:none">
     </div>
     <div class="tbl-wrap">
       <table id="listTbl">
         <thead><tr>
-          <th class="l">농장명</th><th class="l">출하차수</th><th class="l">식별번호</th>
+          <th class="l">경영자</th><th class="l">출하차수</th><th class="l">식별번호</th>
           <th>출생일</th><th>구입일</th><th>구입<br>개월</th><th>사육<br>개월</th><th>출하<br>개월</th>
           <th>도체<br>중량</th><th>추정<br>생체중</th><th>등급</th>
           <th>판매금액</th><th>판매비용</th><th>실판매액</th><th>kg단가</th><th class="l">비고</th><th>관리</th>
@@ -204,510 +213,422 @@
   </div>
 </div>
 
-<!-- 인쇄영역 -->
+<!-- 복원 모달 -->
+<div id="restoreModal" class="modal" style="display:none">
+  <div class="modal-box">
+    <h3>백업 복원</h3>
+    <div id="restoreInfo" class="hint"></div>
+    <div class="row-actions" style="margin-top:10px">
+      <button id="btnReplaceAll" class="btn warn">전체 교체 (현재 삭제 후 불러오기)</button>
+      <button id="btnAddSel" class="btn ok">선택 항목 추가</button>
+      <button id="btnRestoreCancel" class="btn sec">취소</button>
+    </div>
+    <label style="margin-top:12px;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--head)">
+      <input type="checkbox" id="chkAll" style="width:auto;height:auto"> 전체 선택 (추가용)</label>
+    <div id="restoreList" class="restore-list"></div>
+  </div>
+</div>
+
 <div id="printArea"></div>
 
 <script>
 "use strict";
 const $ = id => document.getElementById(id);
 const DEFAULT_URL = "https://r2vnmzx2rnwirfazkzvugdyqne0vljcr.lambda-url.ap-northeast-2.on.aws/";
-const LS = { url:"cattle_url", rate:"cattle_rate", lot:"cattle_lot", farms:"cattle_farms" };
+const HOME_URL = "https://ubaldos00-ship-it.github.io/home/";
+const LS = { url:"cattle_url", rate:"cattle_rate", pw:"cattle_pw", mgrs:"cattle_mgrs" };
 
-/* localStorage 안전 래퍼 (file://·data: 등 저장 차단 환경에서도 메모리로 폴백) */
-const _mem = {};
-const store = {
-  get(k){ try{ return localStorage.getItem(k); }catch(e){ return (k in _mem)?_mem[k]:null; } },
-  set(k,v){ try{ localStorage.setItem(k,v); }catch(e){ _mem[k]=v; } }
-};
+/* localStorage 안전 래퍼 */
+const _mem={};
+const store={ get(k){ try{return localStorage.getItem(k);}catch(e){return (k in _mem)?_mem[k]:null;} },
+              set(k,v){ try{localStorage.setItem(k,v);}catch(e){_mem[k]=v;} } };
 
-/* ---------- 설정 로드 ---------- */
+/* 설정 로드 */
 $("cfgUrl").value = store.get(LS.url) || DEFAULT_URL;
 $("cfgRate").value = store.get(LS.rate) || "60";
-$("fLot").value = store.get(LS.lot) || "";
-$("cfgUrl").onchange = () => store.set(LS.url, $("cfgUrl").value.trim());
-$("cfgRate").onchange = () => store.set(LS.rate, $("cfgRate").value);
-$("fLot").onchange = () => store.set(LS.lot, $("fLot").value.trim());
+$("cfgPw").value  = store.get(LS.pw) || "2026";
+$("cfgUrl").onchange = ()=> store.set(LS.url, $("cfgUrl").value.trim());
+$("cfgRate").onchange= ()=> store.set(LS.rate, $("cfgRate").value);
+$("cfgPw").onchange  = ()=> store.set(LS.pw, $("cfgPw").value);
 
-function loadFarms(){
-  const arr = JSON.parse(store.get(LS.farms) || "[]");
-  $("farmList").innerHTML = arr.map(f=>`<option value="${escAttr(f)}">`).join("");
+function loadMgrs(){
+  const arr = JSON.parse(store.get(LS.mgrs)||"[]");
+  $("mgrList").innerHTML = arr.map(m=>`<option value="${escAttr(m)}">`).join("");
 }
-function rememberFarm(name){
-  name = (name||"").trim(); if(!name) return;
-  let arr = JSON.parse(store.get(LS.farms) || "[]");
-  if(!arr.includes(name)){ arr.push(name); store.set(LS.farms, JSON.stringify(arr)); loadFarms(); }
+function rememberMgr(name){
+  name=(name||"").trim(); if(!name) return;
+  let arr=JSON.parse(store.get(LS.mgrs)||"[]");
+  if(!arr.includes(name)){ arr.push(name); store.set(LS.mgrs, JSON.stringify(arr)); loadMgrs(); }
 }
-loadFarms();
+loadMgrs();
 
-/* ---------- 유틸 ---------- */
+/* 뒤로가기 */
+$("btnBack").onclick = ()=>{ if(history.length>1) history.back(); else location.href=HOME_URL; };
+
+/* 유틸 */
 function escAttr(s){ return String(s).replace(/"/g,"&quot;"); }
 function escHtml(s){ return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
-function parseYmd(s){ // 'YYYYMMDD' -> Date or null
-  if(!s || !/^\d{8}$/.test(s)) return null;
-  const y=+s.slice(0,4), m=+s.slice(4,6), d=+s.slice(6,8);
-  const dt=new Date(y, m-1, d); return isNaN(dt)?null:dt;
-}
-function ymdDash(s){ return (s && /^\d{8}$/.test(s)) ? `${s.slice(0,4)}-${s.slice(4,6)}-${s.slice(6,8)}` : (s||""); }
+function parseYmd(s){ if(!s||!/^\d{8}$/.test(s)) return null; const y=+s.slice(0,4),m=+s.slice(4,6),d=+s.slice(6,8); const dt=new Date(y,m-1,d); return isNaN(dt)?null:dt; }
+function ymdDash(s){ return (s&&/^\d{8}$/.test(s))?`${s.slice(0,4)}-${s.slice(4,6)}-${s.slice(6,8)}`:(s||""); }
 function dateToInput(dt){ if(!dt) return ""; const z=n=>String(n).padStart(2,"0"); return `${dt.getFullYear()}-${z(dt.getMonth()+1)}-${z(dt.getDate())}`; }
 function inputToDate(v){ if(!v) return null; const dt=new Date(v+"T00:00:00"); return isNaN(dt)?null:dt; }
-function monthsBetween(a,b){ // 소수 (연·월 차이 + 잔여일/해당월일수)
-  if(!a||!b) return null;
-  let months = (b.getFullYear()-a.getFullYear())*12 + (b.getMonth()-a.getMonth());
-  const dayDiff = b.getDate()-a.getDate();
-  const dim = new Date(b.getFullYear(), b.getMonth(), 0).getDate(); // 직전 달 일수
-  months += dayDiff/dim;
-  return months;
-}
-const r1 = n => (n==null||isNaN(n)) ? "" : (Math.round(n*10)/10).toFixed(1);
-const won = n => (n==null||isNaN(n)) ? "" : Math.round(n).toLocaleString("ko-KR");
-const onlyNum = s => String(s).replace(/[^\d.-]/g,"");
-const onlyInt = s => String(s).replace(/[^\d]/g,"");
+function todayStr(){ return dateToInput(new Date()); }
+function monthsBetween(a,b){ if(!a||!b) return null; let m=(b.getFullYear()-a.getFullYear())*12+(b.getMonth()-a.getMonth()); const dim=new Date(b.getFullYear(),b.getMonth(),0).getDate(); m+=(b.getDate()-a.getDate())/dim; return m; }
+const r1=n=>(n==null||isNaN(n))?"":(Math.round(n*10)/10).toFixed(1);
+const won=n=>(n==null||isNaN(n))?"":Math.round(n).toLocaleString("ko-KR");
+const onlyInt=s=>String(s).replace(/[^\d]/g,"");
 
-/* ---------- 조회 ---------- */
-let CUR = null;      // 현재 개체 원본 데이터
-let EDITING = false; // 목록 [수정]으로 불러온 상태
+let CUR=null, EDITING=false;
 
-function setStatus(html, kind){
-  const el=$("status"); el.style.display="block"; el.innerHTML=html;
-  el.style.borderColor = kind==="bad"?"var(--bad)":kind==="ok"?"var(--accent2)":kind==="warn"?"var(--warn)":"var(--line)";
-}
+function setStatus(html,kind){ const el=$("status"); el.style.display="block"; el.innerHTML=html;
+  el.style.borderColor= kind==="bad"?"var(--bad)":kind==="ok"?"var(--ok)":kind==="warn"?"var(--warn)":"var(--line)";
+  el.style.background = kind==="bad"?"#fef2f2":kind==="ok"?"#f0fdf4":kind==="warn"?"#fffbeb":"#f8fafc"; }
 
+/* 조회 */
 $("btnSearch").onclick = doSearch;
-$("fTrace").addEventListener("keydown", e=>{ if(e.key==="Enter") doSearch(); });
+$("fTrace").addEventListener("keydown",e=>{ if(e.key==="Enter") doSearch(); });
 
 async function doSearch(){
-  const base = $("cfgUrl").value.trim().replace(/\/+$/,"");
-  const traceNo = onlyInt($("fTrace").value);
+  const base=$("cfgUrl").value.trim().replace(/\/+$/,"");
+  const traceNo=onlyInt($("fTrace").value);
   if(!base){ setStatus("❌ 설정에서 Lambda URL을 먼저 입력하세요.","bad"); return; }
   if(traceNo.length<9||traceNo.length>15){ setStatus("❌ 식별번호는 숫자 9~15자리여야 합니다.","bad"); return; }
   store.set(LS.url, base);
-
   $("btnSearch").disabled=true; setStatus("⏳ 조회 중…");
   let data;
-  try{
-    const res = await fetch(`${base}/?traceNo=${traceNo}&all=1`);
-    data = await res.json();
-  }catch(e){ setStatus("❌ AWS 통신 오류: "+escHtml(e.message||e),"bad"); $("btnSearch").disabled=false; return; }
+  try{ const res=await fetch(`${base}/?traceNo=${traceNo}&all=1`); data=await res.json(); }
+  catch(e){ setStatus("❌ AWS 통신 오류: "+escHtml(e.message||e),"bad"); $("btnSearch").disabled=false; return; }
   finally{ $("btnSearch").disabled=false; }
-
   if(!data.ok){ setStatus(`❌ ${escHtml(data.error||"오류")}: ${escHtml(data.message||"")}`,"bad"); return; }
 
-  const byOpt = {}; (data.results||[]).forEach(r=> byOpt[r.optionNo]=r );
-  const o1 = byOpt[1]?.items?.[0];
-  const o2items = byOpt[2]?.items || [];
-  const o3 = byOpt[3]?.items?.[0];
-
+  const byOpt={}; (data.results||[]).forEach(r=>byOpt[r.optionNo]=r);
+  const o1=byOpt[1]?.items?.[0];
+  const o2=byOpt[2]?.items||[];
+  const o3=byOpt[3]?.items?.[0];
   if(!o1){ setStatus("⚠️ 개체 기본정보가 없습니다. 식별번호를 확인하세요.","warn"); return; }
 
-  // 구입일 자동판정: 도축출하 이전 마지막 '양수' regYmd
-  const butcheryYmd = o3?.butcheryYmd || null;
-  const yangsu = o2items.filter(x=>x.regType==="양수" && /^\d{8}$/.test(x.regYmd))
-                        .filter(x=> !butcheryYmd || x.regYmd <= butcheryYmd)
-                        .map(x=>x.regYmd).sort();
-  const autoBuy = yangsu.length ? yangsu[yangsu.length-1] : null;
+  const butcheryYmd=o3?.butcheryYmd||null;
+  const yangsu=o2.filter(x=>x.regType==="양수"&&/^\d{8}$/.test(x.regYmd))
+                .filter(x=>!butcheryYmd||x.regYmd<=butcheryYmd).map(x=>x.regYmd).sort();
+  const autoBuy=yangsu.length?yangsu[yangsu.length-1]:null;
 
-  CUR = {
-    traceNo,
-    birthYmd: o1.birthYmd, breed: o1.lsTypeNm, sex: o1.sexNm,
-    butcheryYmd, place: o3?.butcheryPlaceNm||"", placeAddr: o3?.butcheryPlaceAddr||"",
-    grade: o3?.gradeNm||"", inspect: o3?.inspectPassYn||"",
-    weight: o3?.weight? Number(o3.weight): null,
-    autoBuy, move:o2items,
-  };
+  CUR={ traceNo, birthYmd:o1.birthYmd, breed:o1.lsTypeNm, sex:o1.sexNm,
+    butcheryYmd, place:o3?.butcheryPlaceNm||"", placeAddr:o3?.butcheryPlaceAddr||"",
+    grade:o3?.gradeNm||"", inspect:o3?.inspectPassYn||"", weight:o3?.weight?Number(o3.weight):null,
+    autoBuy, move:o2, manager:lastManager(o2) };
   EDITING=false; $("btnSave").textContent="저장";
   fillForm();
   const msgs=[];
-  if(!o3){ msgs.push("도축정보 없음(도축 전 개체) → 도체중량 직접 입력"); }
-  else if(CUR.weight==null){ msgs.push("도체중량 미제공 → 직접 입력"); }
-  if(!autoBuy){ msgs.push("구입(양수) 이력 없음 → 구입일 직접 입력"); }
-  setStatus(`✅ 조회 완료 · ${escHtml(CUR.breed)} ${escHtml(CUR.sex)}` + (msgs.length?` · ⚠️ ${msgs.join(" / ")}`:""), msgs.length?"warn":"ok");
+  if(!o3) msgs.push("도축정보 없음 → 도체중량 직접입력");
+  else if(CUR.weight==null) msgs.push("도체중량 미제공 → 직접입력");
+  if(!autoBuy) msgs.push("구입(양수) 이력 없음 → 구입일 직접입력");
+  setStatus(`✅ 조회 완료 · ${escHtml(CUR.breed)} ${escHtml(CUR.sex)}`+(msgs.length?` · ⚠️ ${msgs.join(" / ")}`:""), msgs.length?"warn":"ok");
+}
+
+function lastManager(items){
+  const v=(items||[]).filter(x=>/^\d{8}$/.test(x.regYmd));
+  if(!v.length) return "";
+  v.sort((a,b)=>a.regYmd.localeCompare(b.regYmd));
+  return v[v.length-1].farmerNm||"";
+}
+function renderMoveHistory(items){
+  if(!items||!items.length){ $("moveHistory").innerHTML=`<div class="hint">이동·신고 이력이 없습니다.</div>`; return; }
+  const groups={}, order=[];
+  items.forEach(it=>{ const k=(it.farmerNm||"?")+"|"+(it.farmNo||"");
+    if(!groups[k]){ groups[k]={nm:it.farmerNm, no:it.farmNo, rows:[]}; order.push(k); }
+    groups[k].rows.push(it); });
+  $("moveHistory").innerHTML = order.map(k=>{ const g=groups[k];
+    return `<div class="mgr-block"><div class="mgr-head">👤 ${escHtml(g.nm||"-")}
+      <span class="mgr-no">(농장식별번호 ${escHtml(g.no||"-")})</span></div>`+
+      g.rows.map(r=>`<div class="mgr-row"><span class="tag">${escHtml(r.regType||"")}</span>
+        <b>${ymdDash(r.regYmd)}</b> · 사육지 ${escHtml(r.farmAddr||"-")}</div>`).join("")+`</div>`;
+  }).join("");
 }
 
 function fillForm(){
   $("resultCard").style.display="block";
-  $("rTrace").value = CUR.traceNo;
-  $("rBreed").value = CUR.breed||"";
-  $("rSex").value = CUR.sex||"";
-  $("rBirth").value = ymdDash(CUR.birthYmd);
-  $("rButchery").value = ymdDash(CUR.butcheryYmd);
-  $("rGrade").value = CUR.grade||"";
-  $("rInspect").value = CUR.inspect||"";
-  $("rPlace").value = CUR.place||"";
-  $("rPlaceAddr").value = CUR.placeAddr||"";
-  $("rBuyDate").value = CUR.autoBuy ? dateToInput(parseYmd(CUR.autoBuy)) : "";
-  $("buyHint").textContent = CUR.autoBuy ? `자동판정: ${ymdDash(CUR.autoBuy)} (도축 이전 마지막 양수일)` : "자동판정 불가 — 직접 입력";
-  $("rWeight").value = CUR.weight!=null ? CUR.weight : "";
-  $("rRate").value = $("cfgRate").value || "60";
+  $("rTrace").value=CUR.traceNo; $("rBreed").value=CUR.breed||""; $("rSex").value=CUR.sex||"";
+  $("rBirth").value=ymdDash(CUR.birthYmd);
+  renderMoveHistory(CUR.move);
+  $("rManager").value=CUR.manager||"";
+  $("rNote").value="";
+  $("rButchery").value=ymdDash(CUR.butcheryYmd); $("rGrade").value=CUR.grade||"";
+  $("rInspect").value=CUR.inspect||""; $("rPlace").value=CUR.place||""; $("rPlaceAddr").value=CUR.placeAddr||"";
+  $("rBuyDate").value=CUR.autoBuy?dateToInput(parseYmd(CUR.autoBuy)):"";
+  $("buyHint").textContent=CUR.autoBuy?`구입일 자동판정: ${ymdDash(CUR.autoBuy)} (도축 이전 마지막 양수일)`:"구입일 자동판정 불가 — 직접 입력";
+  $("rWeight").value=CUR.weight!=null?CUR.weight:"";
+  $("rRate").value=$("cfgRate").value||"60";
+  $("rLot").value=todayStr();   // 출하차수: 오늘 날짜 자동
   $("rSale").value=""; $("rCost").value="";
-  recalc();
-  clearMods(); // 새 조회 = 수정 없음(모두 자동/API값)
-  $("resultCard").scrollIntoView({behavior:"smooth", block:"start"});
+  recalc(); clearMods();
+  $("resultCard").scrollIntoView({behavior:"smooth",block:"start"});
 }
 
-/* ---------- 수정표시(파랑) ---------- */
-// 사용자가 직접 값을 바꾼 자동/API 필드를 파랑으로 표시
-const AUTO_FIELDS = ["rBuyDate","rWeight","rRate","rLive","rBuyMonth","rRaiseMonth","rShipMonth"];
-const markMod   = id => $(id).classList.add("modified");
-const unmark    = id => $(id).classList.remove("modified");
-const clearMods = () => AUTO_FIELDS.forEach(unmark);
-AUTO_FIELDS.forEach(id=> $(id).addEventListener("input", ()=> markMod(id)));
+/* 수정표시(파랑) */
+const AUTO_FIELDS=["rBuyDate","rWeight","rRate","rLive","rBuyMonth","rRaiseMonth","rShipMonth"];
+const markMod=id=>$(id).classList.add("modified");
+const unmark =id=>$(id).classList.remove("modified");
+const clearMods=()=>AUTO_FIELDS.forEach(unmark);
+AUTO_FIELDS.forEach(id=>$(id).addEventListener("input",()=>markMod(id)));
 
-/* ---------- 자동계산 ---------- */
-// 구입일 변경 → 개월수 3개 재계산(덮어쓰기, 자동값이므로 파랑 해제). 개월수 칸은 이후 수동 수정 가능.
-$("rBuyDate").addEventListener("input", ()=>{ recalcMonths(); ["rBuyMonth","rRaiseMonth","rShipMonth"].forEach(unmark); });
-// 도체중량 변경 → 도체율 유지하며 생체중 재계산(자동값) + 단가 재계산
-$("rWeight").addEventListener("input", ()=>{ recalcLiveFromRate(); unmark("rLive"); recalcMoney(); });
-// 도체율 변경 → 생체중 재계산(자동값)
-$("rRate").addEventListener("input", ()=>{ recalcLiveFromRate(); unmark("rLive"); });
-// 추정생체중 수동 변경 → 도체율 역산(자동값)
-$("rLive").addEventListener("input", ()=>{ recalcRateFromLive(); unmark("rRate"); });
-// 판매금액/비용 → 천단위 포맷 + 실판매/단가 재계산
-["rSale","rCost"].forEach(id=> $(id).addEventListener("input", e=>{
-  e.target.value = e.target.value ? Number(onlyInt(e.target.value)).toLocaleString("ko-KR"):"";
-  recalcMoney();
-}));
+/* 자동계산 */
+$("rBuyDate").addEventListener("input",()=>{ recalcMonths(); ["rBuyMonth","rRaiseMonth","rShipMonth"].forEach(unmark); markMod("rBuyDate"); });
+$("rWeight").addEventListener("input",()=>{ recalcLiveFromRate(); unmark("rLive"); recalcMoney(); });
+$("rRate").addEventListener("input",()=>{ recalcLiveFromRate(); unmark("rLive"); });
+$("rLive").addEventListener("input",()=>{ recalcRateFromLive(); unmark("rRate"); });
+["rSale","rCost"].forEach(id=>$(id).addEventListener("input",e=>{
+  e.target.value=e.target.value?Number(onlyInt(e.target.value)).toLocaleString("ko-KR"):""; recalcMoney(); }));
 
-function recalcMonths(){
-  const birth = parseYmd(CUR?.birthYmd);
-  const buy = inputToDate($("rBuyDate").value);
-  const but = parseYmd(CUR?.butcheryYmd);
-  $("rBuyMonth").value   = r1(monthsBetween(birth, buy));
-  $("rRaiseMonth").value = r1(monthsBetween(buy, but));
-  $("rShipMonth").value  = r1(monthsBetween(birth, but));
-}
-function recalcLiveFromRate(){ // 도체중량 & 도체율 → 추정생체중
-  const w = Number($("rWeight").value)||0, rate = Number($("rRate").value)||0;
-  $("rLive").value = (w>0 && rate>0) ? r1(w/(rate/100)) : "";
-}
-function recalcRateFromLive(){ // 도체중량 & 추정생체중 → 도체율(역산)
-  const w = Number($("rWeight").value)||0, live = Number($("rLive").value)||0;
-  $("rRate").value = (w>0 && live>0) ? r1(w/live*100) : "";
-}
-function recalcMoney(){
-  const w = Number($("rWeight").value)||0;
-  const sale = Number(onlyInt($("rSale").value))||0;
-  const cost = Number(onlyInt($("rCost").value))||0;
-  const net = sale - cost;
-  $("rNet").value = sale? won(net) : "";
-  $("rUnit").value = (net && w>0) ? won(net/w) : "";
-}
+function recalcMonths(){ const birth=parseYmd(CUR?.birthYmd),buy=inputToDate($("rBuyDate").value),but=parseYmd(CUR?.butcheryYmd);
+  $("rBuyMonth").value=r1(monthsBetween(birth,buy)); $("rRaiseMonth").value=r1(monthsBetween(buy,but)); $("rShipMonth").value=r1(monthsBetween(birth,but)); }
+function recalcLiveFromRate(){ const w=Number($("rWeight").value)||0,rate=Number($("rRate").value)||0; $("rLive").value=(w>0&&rate>0)?r1(w/(rate/100)):""; }
+function recalcRateFromLive(){ const w=Number($("rWeight").value)||0,live=Number($("rLive").value)||0; $("rRate").value=(w>0&&live>0)?r1(w/live*100):""; }
+function recalcMoney(){ const w=Number($("rWeight").value)||0,sale=Number(onlyInt($("rSale").value))||0,cost=Number(onlyInt($("rCost").value))||0,net=sale-cost;
+  $("rNet").value=sale?won(net):""; $("rUnit").value=(net&&w>0)?won(net/w):""; }
 function recalc(){ recalcMonths(); recalcLiveFromRate(); recalcMoney(); }
 
-/* ---------- IndexedDB (차단 환경에서는 메모리 폴백) ---------- */
-let DB=null, MEM=null; // MEM 활성 시 = 저장이 유지되지 않는 임시 모드
-function openDB(){
-  return new Promise((res)=>{
-    let rq;
-    try{ rq = indexedDB.open("cattleDB", 1); }
-    catch(e){ MEM=new Map(); return res(); }
-    rq.onupgradeneeded = e=>{ const db=e.target.result;
-      if(!db.objectStoreNames.contains("records")) db.createObjectStore("records",{keyPath:"traceNo"}); };
-    rq.onsuccess = e=>{ DB=e.target.result; res(); };
-    rq.onerror = ()=>{ MEM=new Map(); res(); };
-  });
-}
-function tx(mode){ return DB.transaction("records",mode).objectStore("records"); }
-function putRec(rec){ if(MEM){ MEM.set(rec.traceNo,rec); return Promise.resolve(); }
-  return new Promise((res,rej)=>{ const r=tx("readwrite").put(rec); r.onsuccess=res; r.onerror=e=>rej(e.target.error); }); }
-function getRec(k){ if(MEM){ return Promise.resolve(MEM.get(k)); }
-  return new Promise((res,rej)=>{ const r=tx("readonly").get(k); r.onsuccess=e=>res(e.target.result); r.onerror=e=>rej(e.target.error); }); }
-function delRec(k){ if(MEM){ MEM.delete(k); return Promise.resolve(); }
-  return new Promise((res,rej)=>{ const r=tx("readwrite").delete(k); r.onsuccess=res; r.onerror=e=>rej(e.target.error); }); }
-function allRecs(){ if(MEM){ return Promise.resolve([...MEM.values()]); }
-  return new Promise((res,rej)=>{ const r=tx("readonly").getAll(); r.onsuccess=e=>res(e.target.result||[]); r.onerror=e=>rej(e.target.error); }); }
+/* IndexedDB (메모리 폴백) */
+let DB=null, MEM=null;
+function openDB(){ return new Promise(res=>{ let rq;
+  try{ rq=indexedDB.open("cattleDB",1); }catch(e){ MEM=new Map(); return res(); }
+  rq.onupgradeneeded=e=>{ const db=e.target.result; if(!db.objectStoreNames.contains("records")) db.createObjectStore("records",{keyPath:"traceNo"}); };
+  rq.onsuccess=e=>{ DB=e.target.result; res(); }; rq.onerror=()=>{ MEM=new Map(); res(); }; }); }
+function tx(m){ return DB.transaction("records",m).objectStore("records"); }
+function putRec(r){ if(MEM){MEM.set(r.traceNo,r);return Promise.resolve();} return new Promise((res,rej)=>{const q=tx("readwrite").put(r);q.onsuccess=res;q.onerror=e=>rej(e.target.error);}); }
+function getRec(k){ if(MEM){return Promise.resolve(MEM.get(k));} return new Promise((res,rej)=>{const q=tx("readonly").get(k);q.onsuccess=e=>res(e.target.result);q.onerror=e=>rej(e.target.error);}); }
+function delRec(k){ if(MEM){MEM.delete(k);return Promise.resolve();} return new Promise((res,rej)=>{const q=tx("readwrite").delete(k);q.onsuccess=res;q.onerror=e=>rej(e.target.error);}); }
+function allRecs(){ if(MEM){return Promise.resolve([...MEM.values()]);} return new Promise((res,rej)=>{const q=tx("readonly").getAll();q.onsuccess=e=>res(e.target.result||[]);q.onerror=e=>rej(e.target.error);}); }
+function clearRecs(){ if(MEM){MEM.clear();return Promise.resolve();} return new Promise((res,rej)=>{const q=tx("readwrite").clear();q.onsuccess=res;q.onerror=e=>rej(e.target.error);}); }
 
-/* ---------- 저장 ---------- */
+/* 저장 (저장해도 화면 유지) */
 $("btnSave").onclick = async ()=>{
-  if(!CUR){ return; }
-  const rec = {
-    traceNo: CUR.traceNo,
-    farm: $("fFarm").value.trim(), lot: $("fLot").value.trim(), note: $("fNote").value.trim(),
-    savedAt: new Date().toISOString(),
-    birthYmd: CUR.birthYmd, breed: CUR.breed, sex: CUR.sex,
-    buyDate: $("rBuyDate").value, autoBuy: CUR.autoBuy,
-    butcheryYmd: CUR.butcheryYmd, place: CUR.place, placeAddr: CUR.placeAddr,
-    grade: CUR.grade, inspect: CUR.inspect,
-    weight: Number($("rWeight").value)||null, dressRate: Number($("rRate").value)||null,
-    buyMonth: parseFloat($("rBuyMonth").value)||null,
-    raiseMonth: parseFloat($("rRaiseMonth").value)||null,
-    shipMonth: parseFloat($("rShipMonth").value)||null,
-    liveWeight: parseFloat($("rLive").value)||null,
-    salePrice: Number(onlyInt($("rSale").value))||0,
-    saleCost: Number(onlyInt($("rCost").value))||0,
-  };
-  rec.netSale = rec.salePrice - rec.saleCost;
-  rec.unitPrice = (rec.netSale && rec.weight) ? Math.round(rec.netSale/rec.weight) : null;
-
+  if(!CUR) return;
+  const rec={ traceNo:CUR.traceNo, manager:$("rManager").value.trim(), lot:$("rLot").value.trim(), note:$("rNote").value.trim(),
+    savedAt:new Date().toISOString(), birthYmd:CUR.birthYmd, breed:CUR.breed, sex:CUR.sex,
+    buyDate:$("rBuyDate").value, autoBuy:CUR.autoBuy, butcheryYmd:CUR.butcheryYmd, place:CUR.place, placeAddr:CUR.placeAddr,
+    grade:CUR.grade, inspect:CUR.inspect, move:CUR.move,
+    weight:Number($("rWeight").value)||null, dressRate:Number($("rRate").value)||null,
+    buyMonth:parseFloat($("rBuyMonth").value)||null, raiseMonth:parseFloat($("rRaiseMonth").value)||null,
+    shipMonth:parseFloat($("rShipMonth").value)||null, liveWeight:parseFloat($("rLive").value)||null,
+    salePrice:Number(onlyInt($("rSale").value))||0, saleCost:Number(onlyInt($("rCost").value))||0 };
+  rec.netSale=rec.salePrice-rec.saleCost;
+  rec.unitPrice=(rec.netSale&&rec.weight)?Math.round(rec.netSale/rec.weight):null;
   try{
-    const exist = await getRec(rec.traceNo);
-    if(exist && !EDITING && !confirm(`식별번호 ${rec.traceNo} 는 이미 저장돼 있습니다.\n기존 자료를 갱신할까요?`)) return;
-    await putRec(rec);
-    rememberFarm(rec.farm);
-    setStatus(`💾 ${EDITING?"수정 저장":"저장"} 완료 · ${escHtml(rec.farm||"(농장명 없음)")} · ${rec.traceNo}`
-      + (MEM?" · ⚠️ 임시저장(브라우저 저장 차단됨)":""),"ok");
+    const exist=await getRec(rec.traceNo);
+    if(exist&&!EDITING&&!confirm(`식별번호 ${rec.traceNo} 는 이미 저장돼 있습니다.\n기존 자료를 갱신할까요?`)) return;
+    await putRec(rec); rememberMgr(rec.manager);
+    setStatus(`💾 ${EDITING?"수정 저장":"저장"} 완료 · ${escHtml(rec.manager||"(경영자 없음)")} · ${rec.traceNo}`+(MEM?" · ⚠️ 임시저장(브라우저 저장 차단됨)":""),"ok");
     EDITING=false; $("btnSave").textContent="저장";
     await refreshList();
+    // 화면 유지: resultCard 그대로 둠 (닫거나 홈 이동하지 않음)
   }catch(e){ setStatus("❌ 저장 오류: "+escHtml(e.message||e),"bad"); }
 };
 
-/* ---------- 목록 [수정] 불러오기 ---------- */
+/* 목록 [수정] */
 async function loadForEdit(key){
-  const r = await getRec(key);
-  if(!r){ setStatus("수정할 자료를 찾지 못했습니다.","bad"); return; }
-  CUR = {
-    traceNo:r.traceNo, birthYmd:r.birthYmd, breed:r.breed, sex:r.sex,
-    butcheryYmd:r.butcheryYmd, place:r.place, placeAddr:r.placeAddr,
-    grade:r.grade, inspect:r.inspect, weight:r.weight, autoBuy:r.autoBuy,
-  };
+  const r=await getRec(key); if(!r){ setStatus("수정할 자료를 찾지 못했습니다.","bad"); return; }
+  CUR={ traceNo:r.traceNo, birthYmd:r.birthYmd, breed:r.breed, sex:r.sex, butcheryYmd:r.butcheryYmd,
+    place:r.place, placeAddr:r.placeAddr, grade:r.grade, inspect:r.inspect, weight:r.weight,
+    autoBuy:r.autoBuy, move:r.move||[], manager:r.manager };
   fillForm();
-  // 저장돼 있던 사용자 입력값으로 덮어쓰기
-  $("fFarm").value = r.farm||""; $("fLot").value = r.lot||""; $("fNote").value = r.note||"";
-  if(r.buyDate) $("rBuyDate").value = r.buyDate;
-  if(r.dressRate) $("rRate").value = r.dressRate;
-  $("rSale").value = r.salePrice ? Number(r.salePrice).toLocaleString("ko-KR") : "";
-  $("rCost").value = r.saleCost ? Number(r.saleCost).toLocaleString("ko-KR") : "";
+  $("rManager").value=r.manager||""; $("rNote").value=r.note||""; $("rLot").value=r.lot||todayStr();
+  if(r.buyDate) $("rBuyDate").value=r.buyDate;
+  if(r.dressRate) $("rRate").value=r1(r.dressRate);
+  $("rSale").value=r.salePrice?Number(r.salePrice).toLocaleString("ko-KR"):"";
+  $("rCost").value=r.saleCost?Number(r.saleCost).toLocaleString("ko-KR"):"";
   recalc();
-  // 현재 buyDate/도체중량/도체율 기준 자동 baseline 캡처
-  const baseVals = {}; AUTO_FIELDS.forEach(id=> baseVals[id]=$(id).value);
-  // 저장된(수동 수정 포함) 값 그대로 복원 — 자동계산으로 덮어쓰지 않음
-  if(r.buyMonth!=null)   $("rBuyMonth").value   = r1(r.buyMonth);
-  if(r.raiseMonth!=null) $("rRaiseMonth").value = r1(r.raiseMonth);
-  if(r.shipMonth!=null)  $("rShipMonth").value  = r1(r.shipMonth);
-  if(r.dressRate!=null)  $("rRate").value        = r1(r.dressRate);
-  if(r.liveWeight!=null) $("rLive").value        = r1(r.liveWeight);
-  // 파랑 표시: 저장값이 자동 baseline과 다르면 사용자가 수정한 것
+  const base={}; AUTO_FIELDS.forEach(id=>base[id]=$(id).value);
+  if(r.buyMonth!=null)$("rBuyMonth").value=r1(r.buyMonth);
+  if(r.raiseMonth!=null)$("rRaiseMonth").value=r1(r.raiseMonth);
+  if(r.shipMonth!=null)$("rShipMonth").value=r1(r.shipMonth);
+  if(r.dressRate!=null)$("rRate").value=r1(r.dressRate);
+  if(r.liveWeight!=null)$("rLive").value=r1(r.liveWeight);
   clearMods();
-  AUTO_FIELDS.forEach(id=>{ if($(id).value!==baseVals[id]) markMod(id); });
-  if(r.buyDate && CUR.autoBuy && r.buyDate!==dateToInput(parseYmd(CUR.autoBuy))) markMod("rBuyDate");
-  EDITING = true; $("btnSave").textContent = "수정 저장";
-  setStatus(`✏️ 수정 모드 · ${escHtml(r.farm||"")} · ${r.traceNo} (저장 시 갱신됩니다)`,"warn");
+  AUTO_FIELDS.forEach(id=>{ if($(id).value!==base[id]) markMod(id); });
+  if(r.buyDate&&CUR.autoBuy&&r.buyDate!==dateToInput(parseYmd(CUR.autoBuy))) markMod("rBuyDate");
+  EDITING=true; $("btnSave").textContent="수정 저장";
+  setStatus(`✏️ 수정 모드 · ${escHtml(r.manager||"")} · ${r.traceNo}`,"warn");
 }
 
-/* ---------- 다음 소 ---------- */
-$("btnNext").onclick = ()=>{
-  CUR=null; EDITING=false; $("btnSave").textContent="저장";
-  $("resultCard").style.display="none";
-  $("fTrace").value=""; $("fNote").value="";
-  $("status").style.display="none";
-  $("fTrace").focus();
-  window.scrollTo({top:0, behavior:"smooth"});
-};
+/* 다음 소 */
+$("btnNext").onclick=()=>{ CUR=null; EDITING=false; $("btnSave").textContent="저장";
+  $("resultCard").style.display="none"; $("fTrace").value=""; $("status").style.display="none";
+  $("fTrace").focus(); window.scrollTo({top:0,behavior:"smooth"}); };
 
-/* ---------- 인쇄 ---------- */
-$("btnPrint").onclick = ()=>{
-  if(!CUR) return;
-  const g=(id)=>$(id).value||"";
-  $("printArea").innerHTML = `
-    <div style="font-family:'Malgun Gothic',sans-serif; color:#000; padding:10px">
-      <h2 style="text-align:center; margin:0 0 4px">소 이력 · 출하 · 판매 분석표</h2>
-      <div style="text-align:center; color:#555; font-size:12px; margin-bottom:14px">
-        ${escHtml($("fFarm").value)} · ${escHtml($("fLot").value)} · 출력 ${new Date().toLocaleString("ko-KR")}</div>
-      ${printRow("식별번호",g("rTrace"),"품종",g("rBreed"))}
-      ${printRow("성별",g("rSex"),"출생일",g("rBirth"))}
-      ${printRow("구입일",g("rBuyDate"),"구입개월령",g("rBuyMonth"))}
-      ${printRow("도축일",g("rButchery"),"사육개월수",g("rRaiseMonth"))}
-      ${printRow("출하개월수",g("rShipMonth"),"육질등급",g("rGrade"))}
-      ${printRow("도축장",g("rPlace"),"검사결과",g("rInspect"))}
-      ${printRow("도체중량(kg)",g("rWeight"),"추정생체중량(kg)",g("rLive"))}
-      ${printRow("판매금액",g("rSale"),"판매시비용",g("rCost"))}
-      ${printRow("실판매금액",g("rNet"),"kg당 실판매단가",g("rUnit"))}
-      ${printRow("비고",escHtml($("fNote").value),"","")}
-    </div>`;
-  window.print();
-};
-function printRow(a,b,c,d){
-  const cell=(k,v)=>`<td style="border:1px solid #999;padding:6px 8px;background:#f3f3f3;width:120px">${k}</td>
-    <td style="border:1px solid #999;padding:6px 8px">${v}</td>`;
-  return `<table style="width:100%;border-collapse:collapse;font-size:13px"><tr>${cell(a,b)}${c?cell(c,d):'<td colspan=2 style="border:1px solid #999"></td>'}</tr></table>`;
-}
+/* 인쇄 */
+$("btnPrint").onclick=()=>{ if(!CUR) return; const g=id=>$(id).value||"";
+  $("printArea").innerHTML=`<div style="font-family:'Malgun Gothic',sans-serif;color:#000;padding:10px">
+    <h2 style="text-align:center;margin:0 0 4px">소 이력 · 출하 · 판매 분석표</h2>
+    <div style="text-align:center;color:#555;font-size:12px;margin-bottom:14px">경영자 ${escHtml($("rManager").value)} · 출하차수 ${escHtml($("rLot").value)} · 출력 ${new Date().toLocaleString("ko-KR")}</div>
+    ${pr("식별번호",g("rTrace"),"품종",g("rBreed"))}${pr("성별",g("rSex"),"출생일",g("rBirth"))}
+    ${pr("경영자",g("rManager"),"출하차수",g("rLot"))}
+    ${pr("구입일",g("rBuyDate"),"구입개월령",g("rBuyMonth"))}${pr("도축일",g("rButchery"),"사육개월수",g("rRaiseMonth"))}
+    ${pr("출하개월수",g("rShipMonth"),"육질등급",g("rGrade"))}${pr("도축장",g("rPlace"),"검사결과",g("rInspect"))}
+    ${pr("도체중량(kg)",g("rWeight"),"추정생체중량(kg)",g("rLive"))}
+    ${pr("판매금액",g("rSale"),"판매시비용",g("rCost"))}${pr("실판매금액",g("rNet"),"kg당 단가",g("rUnit"))}
+    ${pr("비고",escHtml($("rNote").value),"","")}</div>`;
+  window.print(); };
+function pr(a,b,c,d){ const cell=(k,v)=>`<td style="border:1px solid #999;padding:6px 8px;background:#f3f3f3;width:120px">${k}</td><td style="border:1px solid #999;padding:6px 8px">${v}</td>`;
+  return `<table style="width:100%;border-collapse:collapse;font-size:13px"><tr>${cell(a,b)}${c?cell(c,d):'<td colspan=2 style="border:1px solid #999"></td>'}</tr></table>`; }
 
-/* ---------- 목록 · 합계/평균 ---------- */
-let ALL_RECS = [];
-async function refreshList(){
-  ALL_RECS = await allRecs();
-  ALL_RECS.sort((a,b)=> (a.lot||"").localeCompare(b.lot||"") || (a.savedAt||"").localeCompare(b.savedAt||""));
-  applyFilter();
-}
-let FILTERED = [];
-function applyFilter(){
-  const q = ($("fSearch").value||"").trim().toLowerCase();
-  const recs = q ? ALL_RECS.filter(r=>
-    [r.farm,r.lot,r.traceNo,r.grade].some(v=>String(v||"").toLowerCase().includes(q))) : ALL_RECS;
-  FILTERED = recs;
-  $("listCount").textContent = `(${recs.length}두${q?` / 전체 ${ALL_RECS.length}`:""})`;
-  $("listBody").innerHTML = recs.map(r=>rowHtml(r)).join("") ||
-    `<tr><td class="l" colspan="17" style="color:var(--mut)">${q?"검색 결과 없음":"저장된 개체가 없습니다."}</td></tr>`;
-  $("listBody").querySelectorAll("[data-del]").forEach(b=> b.onclick=async()=>{
-    if(confirm(`${b.dataset.del} 삭제할까요?`)){ await delRec(b.dataset.del); refreshList(); }
-  });
-  $("listBody").querySelectorAll("[data-edit]").forEach(b=> b.onclick=()=> loadForEdit(b.dataset.edit));
-  renderFoot(recs); renderStats(recs);
-}
-function rowHtml(r){
-  return `<tr>
-    <td class="l">${escHtml(r.farm)}</td><td class="l">${escHtml(r.lot)}</td><td class="l">${escHtml(r.traceNo)}</td>
-    <td>${ymdDash(r.birthYmd)}</td><td>${escHtml(r.buyDate)}</td>
-    <td>${r1(r.buyMonth)}</td><td>${r1(r.raiseMonth)}</td><td>${r1(r.shipMonth)}</td>
-    <td>${r.weight??""}</td><td>${r1(r.liveWeight)}</td><td>${escHtml(r.grade)}</td>
-    <td>${won(r.salePrice)}</td><td>${won(r.saleCost)}</td><td>${won(r.netSale)}</td><td>${won(r.unitPrice)}</td>
-    <td class="l">${escHtml(r.note)}</td>
-    <td style="white-space:nowrap">
-      <button class="btn pri mini" data-edit="${escAttr(r.traceNo)}">수정</button>
-      <button class="btn warn mini" data-del="${escAttr(r.traceNo)}">삭제</button>
-    </td>
-  </tr>`;
-}
-const avg=(a)=> a.length? a.reduce((s,x)=>s+x,0)/a.length : null;
-const sum=(a)=> a.reduce((s,x)=>s+x,0);
-function renderFoot(recs){
-  if(!recs.length){ $("listFoot").innerHTML=""; return; }
-  const w=recs.map(r=>r.weight||0), lw=recs.map(r=>r.liveWeight||0);
-  const sp=recs.map(r=>r.salePrice||0), sc=recs.map(r=>r.saleCost||0), ns=recs.map(r=>r.netSale||0);
-  $("listFoot").innerHTML = `
-   <tr><td class="l" colspan="8">합계 (${recs.length}두)</td>
-     <td>${r1(sum(w))}</td><td>${r1(sum(lw))}</td><td></td>
-     <td>${won(sum(sp))}</td><td>${won(sum(sc))}</td><td>${won(sum(ns))}</td><td></td><td class="l"></td><td></td></tr>
+/* 목록 · 합계/평균 */
+let ALL_RECS=[], FILTERED=[];
+async function refreshList(){ ALL_RECS=await allRecs();
+  ALL_RECS.sort((a,b)=>(a.lot||"").localeCompare(b.lot||"")||(a.savedAt||"").localeCompare(b.savedAt||"")); applyFilter(); }
+function applyFilter(){ const q=($("fSearch").value||"").trim().toLowerCase();
+  const recs=q?ALL_RECS.filter(r=>[r.manager,r.lot,r.traceNo,r.grade].some(v=>String(v||"").toLowerCase().includes(q))):ALL_RECS;
+  FILTERED=recs;
+  $("listCount").textContent=`(${recs.length}두${q?` / 전체 ${ALL_RECS.length}`:""})`;
+  $("listBody").innerHTML=recs.map(rowHtml).join("")||`<tr><td class="l" colspan="17" style="color:var(--mut)">${q?"검색 결과 없음":"저장된 개체가 없습니다."}</td></tr>`;
+  $("listBody").querySelectorAll("[data-del]").forEach(b=>b.onclick=async()=>{ if(confirm(`${b.dataset.del} 삭제할까요?`)){ await delRec(b.dataset.del); refreshList(); } });
+  $("listBody").querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>loadForEdit(b.dataset.edit));
+  renderFoot(recs); renderStats(recs); }
+function rowHtml(r){ return `<tr>
+  <td class="l">${escHtml(r.manager)}</td><td class="l">${escHtml(r.lot)}</td><td class="l">${escHtml(r.traceNo)}</td>
+  <td>${ymdDash(r.birthYmd)}</td><td>${escHtml(r.buyDate)}</td>
+  <td>${r1(r.buyMonth)}</td><td>${r1(r.raiseMonth)}</td><td>${r1(r.shipMonth)}</td>
+  <td>${r.weight??""}</td><td>${r1(r.liveWeight)}</td><td>${escHtml(r.grade)}</td>
+  <td>${won(r.salePrice)}</td><td>${won(r.saleCost)}</td><td>${won(r.netSale)}</td><td>${won(r.unitPrice)}</td>
+  <td class="l">${escHtml(r.note)}</td>
+  <td style="white-space:nowrap"><button class="btn pri mini" data-edit="${escAttr(r.traceNo)}">수정</button>
+    <button class="btn warn mini" data-del="${escAttr(r.traceNo)}">삭제</button></td></tr>`; }
+const avg=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:null;
+const sum=a=>a.reduce((s,x)=>s+x,0);
+function renderFoot(recs){ if(!recs.length){ $("listFoot").innerHTML=""; return; }
+  const w=recs.map(r=>r.weight||0),lw=recs.map(r=>r.liveWeight||0),sp=recs.map(r=>r.salePrice||0),sc=recs.map(r=>r.saleCost||0),ns=recs.map(r=>r.netSale||0);
+  $("listFoot").innerHTML=`<tr><td class="l" colspan="8">합계 (${recs.length}두)</td>
+    <td>${r1(sum(w))}</td><td>${r1(sum(lw))}</td><td></td><td>${won(sum(sp))}</td><td>${won(sum(sc))}</td><td>${won(sum(ns))}</td><td></td><td class="l"></td><td></td></tr>
    <tr><td class="l" colspan="5">평균</td>
-     <td>${r1(avg(recs.map(r=>r.buyMonth).filter(v=>v!=null)))}</td>
-     <td>${r1(avg(recs.map(r=>r.raiseMonth).filter(v=>v!=null)))}</td>
-     <td>${r1(avg(recs.map(r=>r.shipMonth).filter(v=>v!=null)))}</td>
-     <td>${r1(avg(w.filter(v=>v)))}</td><td>${r1(avg(lw.filter(v=>v)))}</td><td></td>
-     <td>${won(avg(sp))}</td><td>${won(avg(sc))}</td><td>${won(avg(ns))}</td>
-     <td>${won(avg(recs.map(r=>r.unitPrice).filter(v=>v!=null)))}</td><td class="l"></td><td></td></tr>`;
-}
-function renderStats(recs){
-  if(!recs.length){ $("statBox").innerHTML=""; return; }
-  const n=recs.length;
-  const grades={}; recs.forEach(r=>{ const g=r.grade||"기타"; grades[g]=(grades[g]||0)+1; });
-  const order=["1++","1+","1","2","3"];
-  const keys=[...order.filter(k=>grades[k]), ...Object.keys(grades).filter(k=>!order.includes(k))];
-  const above1 = (grades["1++"]||0)+(grades["1+"]||0)+(grades["1"]||0);
-  const gradeHtml = keys.map(k=>`<span class="badge">${escHtml(k)}: ${grades[k]}두 (${(grades[k]/n*100).toFixed(0)}%)</span>`).join(" ");
-  $("statBox").innerHTML = `
-    <div style="border-top:1px dashed var(--line); padding-top:10px">
-      <div style="margin-bottom:6px">
-        <span class="stat">출하두수 <b>${n}두</b></span>
-        <span class="stat">평균 도체중 <b>${r1(avg(recs.map(r=>r.weight||0).filter(v=>v)))}kg</b></span>
-        <span class="stat">평균 추정생체중 <b>${r1(avg(recs.map(r=>r.liveWeight||0).filter(v=>v)))}kg</b></span>
-        <span class="stat">두당 평균 실판매 <b>${won(avg(recs.map(r=>r.netSale||0)))}원</b></span>
-        <span class="stat">평균 kg단가 <b>${won(avg(recs.map(r=>r.unitPrice).filter(v=>v!=null)))}원</b></span>
-      </div>
-      <div style="font-size:12px;color:var(--mut);margin-bottom:4px">육질등급 분포</div>
-      <div>${gradeHtml} <span class="badge" style="border-color:var(--accent2);color:#bbf7d0">1등급이상 ${above1}두 (${(above1/n*100).toFixed(0)}%)</span></div>
-    </div>`;
-}
+    <td>${r1(avg(recs.map(r=>r.buyMonth).filter(v=>v!=null)))}</td><td>${r1(avg(recs.map(r=>r.raiseMonth).filter(v=>v!=null)))}</td><td>${r1(avg(recs.map(r=>r.shipMonth).filter(v=>v!=null)))}</td>
+    <td>${r1(avg(w.filter(v=>v)))}</td><td>${r1(avg(lw.filter(v=>v)))}</td><td></td>
+    <td>${won(avg(sp))}</td><td>${won(avg(sc))}</td><td>${won(avg(ns))}</td><td>${won(avg(recs.map(r=>r.unitPrice).filter(v=>v!=null)))}</td><td class="l"></td><td></td></tr>`; }
+function renderStats(recs){ if(!recs.length){ $("statBox").innerHTML=""; return; }
+  const n=recs.length, grades={}; recs.forEach(r=>{const g=r.grade||"기타"; grades[g]=(grades[g]||0)+1;});
+  const order=["1++","1+","1","2","3"], keys=[...order.filter(k=>grades[k]),...Object.keys(grades).filter(k=>!order.includes(k))];
+  const above=(grades["1++"]||0)+(grades["1+"]||0)+(grades["1"]||0);
+  $("statBox").innerHTML=`<div style="border-top:1px solid var(--line);padding-top:10px">
+    <div style="margin-bottom:6px">
+      <span class="stat">출하두수 <b>${n}두</b></span>
+      <span class="stat">평균 도체중 <b>${r1(avg(recs.map(r=>r.weight||0).filter(v=>v)))}kg</b></span>
+      <span class="stat">평균 추정생체중 <b>${r1(avg(recs.map(r=>r.liveWeight||0).filter(v=>v)))}kg</b></span>
+      <span class="stat">두당 평균 실판매 <b>${won(avg(recs.map(r=>r.netSale||0)))}원</b></span>
+      <span class="stat">평균 kg단가 <b>${won(avg(recs.map(r=>r.unitPrice).filter(v=>v!=null)))}원</b></span></div>
+    <div style="font-size:12px;color:var(--mut);margin-bottom:4px">육질등급 분포</div>
+    <div>${keys.map(k=>`<span class="badge">${escHtml(k)}: ${grades[k]}두 (${(grades[k]/n*100).toFixed(0)}%)</span>`).join(" ")}
+      <span class="badge" style="border-color:var(--ok);color:var(--ok)">1등급이상 ${above}두 (${(above/n*100).toFixed(0)}%)</span></div></div>`; }
 
-/* ---------- 검색 ---------- */
-$("fSearch").addEventListener("input", applyFilter);
+/* Excel */
+const XLSX_HEADER=["경영자","출하차수","식별번호","품종","성별","출생일","구입일","도축일","구입개월령","사육개월수","출하개월수","도체중량","도체율","추정생체중량","육질등급","검사결과","도축장","판매금액","판매시비용","실판매금액","kg당단가","비고","조회일"];
+function recToArr(r){ return [r.manager||"",r.lot||"",r.traceNo||"",r.breed||"",r.sex||"",ymdDash(r.birthYmd),r.buyDate||"",ymdDash(r.butcheryYmd),
+  r.buyMonth??"",r.raiseMonth??"",r.shipMonth??"",r.weight??"",r.dressRate??"",r.liveWeight??"",r.grade||"",r.inspect||"",r.place||"",
+  r.salePrice??0,r.saleCost??0,r.netSale??0,r.unitPrice??"",r.note||"",(r.savedAt||"").slice(0,10)]; }
+function buildAOA(recs){ const aoa=[XLSX_HEADER,...recs.map(recToArr)]; const s=a=>a.reduce((x,y)=>x+(Number(y)||0),0);
+  const a=arr=>{const v=arr.map(Number).filter(x=>!isNaN(x)); return v.length?Math.round(v.reduce((p,q)=>p+q,0)/v.length*10)/10:"";};
+  const col=k=>recs.map(r=>r[k]); aoa.push([]);
+  aoa.push(["합계",`${recs.length}두`,"","","","","","","","","",Math.round(s(col("weight"))*10)/10,"",Math.round(s(col("liveWeight"))*10)/10,"","","",s(col("salePrice")),s(col("saleCost")),s(col("netSale")),"","",""]);
+  aoa.push(["평균","","","","","","","",a(col("buyMonth")),a(col("raiseMonth")),a(col("shipMonth")),a(col("weight")),a(col("dressRate")),a(col("liveWeight")),"","","",Math.round(a(col("salePrice"))),Math.round(a(col("saleCost"))),Math.round(a(col("netSale"))),Math.round(a(col("unitPrice")))||"","",""]);
+  return aoa; }
+function lazyXLSX(){ return new Promise((res,rej)=>{ if(window.XLSX) return res(window.XLSX);
+  const s=document.createElement("script"); s.src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";
+  s.onload=()=>window.XLSX?res(window.XLSX):rej(new Error("XLSX 미로드")); s.onerror=()=>rej(new Error("CDN 접속 실패(오프라인?)")); document.head.appendChild(s); }); }
+function dlBlob(blob,fname){ const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=fname; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000); }
+function csvFallback(aoa,base){ const esc=v=>{v=String(v??"");return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+  dlBlob(new Blob(["﻿"+aoa.map(r=>r.map(esc).join(",")).join("\r\n")],{type:"text/csv;charset=utf-8"}),base+".csv"); }
+async function exportExcel(recs,suffix){ if(!recs.length){ setStatus("내보낼 자료가 없습니다.","warn"); return; }
+  const z=n=>String(n).padStart(2,"0"),d=new Date(),base=`소이력관리_${d.getFullYear()}${z(d.getMonth()+1)}${z(d.getDate())}${suffix?"_"+suffix:""}`;
+  const aoa=buildAOA(recs);
+  try{ const X=await lazyXLSX(); const ws=X.utils.aoa_to_sheet(aoa); ws["!cols"]=XLSX_HEADER.map(h=>({wch:Math.max(8,h.length*2)}));
+    const wb=X.utils.book_new(); X.utils.book_append_sheet(wb,ws,"소이력"); X.writeFile(wb,base+".xlsx");
+    setStatus(`⬇️ 엑셀 저장: ${base}.xlsx (${recs.length}두)`,"ok"); }
+  catch(e){ csvFallback(aoa,base); setStatus(`⬇️ CSV로 저장: ${base}.csv (엑셀 라이브러리 미로드)`,"warn"); } }
+$("btnXlsxAll").onclick=()=>exportExcel(ALL_RECS,"");
+$("btnXlsxFilter").onclick=()=>exportExcel(FILTERED,"검색결과");
 
-/* ---------- JSON 백업 / 복원 ---------- */
-$("btnBackup").onclick = async ()=>{
-  const recs = await allRecs();
-  if(!recs.length){ setStatus("백업할 자료가 없습니다.","warn"); return; }
-  const payload = {
-    app:"소이력관리", version:2, exportedAt:new Date().toISOString(),
-    farms: JSON.parse(store.get(LS.farms)||"[]"),
-    dressRate: store.get(LS.rate)||"60",
-    records: recs,
-  };
-  const z=n=>String(n).padStart(2,"0"); const d=new Date();
-  const fname = `소이력관리_전체백업_${d.getFullYear()}${z(d.getMonth()+1)}${z(d.getDate())}.json`;
-  const blob = new Blob([JSON.stringify(payload,null,2)], {type:"application/json"});
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob); a.download = fname; a.click();
-  setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
-  setStatus(`⬇️ 백업 파일 생성: ${fname} (${recs.length}두)`,"ok");
+/* 검색 */
+$("fSearch").addEventListener("input",applyFilter);
+
+/* ===== 암호화 백업/복원 ===== */
+function b64(u8){ let s=""; for(let i=0;i<u8.length;i+=0x8000) s+=String.fromCharCode.apply(null,u8.subarray(i,i+0x8000)); return btoa(s); }
+function ub64(str){ const bin=atob(str),u8=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u8[i]=bin.charCodeAt(i); return u8; }
+async function deriveKey(pw,salt){ const enc=new TextEncoder();
+  const base=await crypto.subtle.importKey("raw",enc.encode(pw),"PBKDF2",false,["deriveKey"]);
+  return crypto.subtle.deriveKey({name:"PBKDF2",salt,iterations:100000,hash:"SHA-256"},base,{name:"AES-GCM",length:256},false,["encrypt","decrypt"]); }
+async function encryptObj(obj,pw){ const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));
+  const key=await deriveKey(pw,salt); const ct=await crypto.subtle.encrypt({name:"AES-GCM",iv},key,new TextEncoder().encode(JSON.stringify(obj)));
+  return { enc:true, alg:"AES-GCM", kdf:"PBKDF2-100000-SHA256", salt:b64(salt), iv:b64(iv), data:b64(new Uint8Array(ct)) }; }
+async function decryptObj(pkg,pw){ const key=await deriveKey(pw,ub64(pkg.salt));
+  const pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:ub64(pkg.iv)},key,ub64(pkg.data)); return JSON.parse(new TextDecoder().decode(pt)); }
+
+$("btnBackup").onclick=async()=>{
+  const recs=await allRecs(); if(!recs.length){ setStatus("백업할 자료가 없습니다.","warn"); return; }
+  const pw=($("cfgPw").value||"2026");
+  const payload={ app:"소이력관리", version:5, exportedAt:new Date().toISOString(),
+    mgrs:JSON.parse(store.get(LS.mgrs)||"[]"), dressRate:store.get(LS.rate)||"60", records:recs };
+  const z=n=>String(n).padStart(2,"0"),d=new Date(),fname=`소이력관리_암호백업_${d.getFullYear()}${z(d.getMonth()+1)}${z(d.getDate())}.json`;
+  try{
+    if(!crypto?.subtle) throw new Error("이 환경은 암호화 미지원");
+    const pkg=await encryptObj(payload,pw);
+    dlBlob(new Blob([JSON.stringify(pkg)],{type:"application/json"}),fname);
+    setStatus(`🔒 암호화 백업 생성: ${fname} (${recs.length}두) · 비밀번호로만 복원 가능`,"ok");
+  }catch(e){ // 폴백: 비암호 백업(경고)
+    dlBlob(new Blob([JSON.stringify(payload,null,2)],{type:"application/json"}),fname.replace("암호백업","백업"));
+    setStatus(`⚠️ 암호화 불가(${escHtml(e.message||e)}) → 비암호 백업으로 저장했습니다.`,"warn");
+  }
 };
 
-$("btnRestore").onclick = ()=> $("fileRestore").click();
-$("fileRestore").onchange = async (e)=>{
-  const file = e.target.files[0]; if(!file) return;
-  let data;
-  try{ data = JSON.parse(await file.text()); }
-  catch(err){ setStatus("❌ 백업 파일을 읽을 수 없습니다(JSON 형식 오류).","bad"); e.target.value=""; return; }
-  const recs = data.records || [];
-  if(!Array.isArray(recs) || !recs.length){ setStatus("❌ 백업 파일에 개체 자료가 없습니다.","bad"); e.target.value=""; return; }
-  const cur = await allRecs();
-  if(!confirm(`백업 복원: ${recs.length}두를 불러옵니다.\n같은 식별번호는 덮어쓰기됩니다. 진행할까요?\n(현재 저장 ${cur.length}두)`)){
-    e.target.value=""; return; }
-  try{
-    for(const r of recs){ if(r && r.traceNo) await putRec(r); }
-    if(Array.isArray(data.farms) && data.farms.length) store.set(LS.farms, JSON.stringify(data.farms));
-    if(data.dressRate) store.set(LS.rate, data.dressRate);
-    loadFarms();
-    setStatus(`⬆️ 복원 완료 · ${recs.length}두 불러옴`+(MEM?" · ⚠️ 임시(브라우저 저장 차단됨)":""),"ok");
-    await refreshList();
-  }catch(err){ setStatus("❌ 복원 오류: "+escHtml(err.message||err),"bad"); }
+let PENDING=null; // {records, mgrs, dressRate}
+$("btnRestore").onclick=()=>$("fileRestore").click();
+$("fileRestore").onchange=async e=>{
+  const file=e.target.files[0]; if(!file) return; let raw;
+  try{ raw=JSON.parse(await file.text()); }catch(err){ setStatus("❌ 백업 파일을 읽을 수 없습니다(JSON 오류).","bad"); e.target.value=""; return; }
+  let payload=raw;
+  if(raw && raw.enc){ // 암호화 백업
+    const pw=prompt("복원 비밀번호를 입력하세요 (기본 2026):", $("cfgPw").value||"2026");
+    if(pw==null){ e.target.value=""; return; }
+    try{ payload=await decryptObj(raw,pw); }
+    catch(err){ setStatus("❌ 복원 실패: 비밀번호가 틀렸거나 파일이 손상됨.","bad"); e.target.value=""; return; }
+  }
+  const recs=payload.records||[];
+  if(!Array.isArray(recs)||!recs.length){ setStatus("❌ 백업에 개체 자료가 없습니다.","bad"); e.target.value=""; return; }
+  PENDING={ records:recs, mgrs:payload.mgrs, dressRate:payload.dressRate };
+  openRestoreModal();
   e.target.value="";
 };
 
-/* ---------- Excel 다운로드 ---------- */
-const XLSX_HEADER = ["농장명","출하차수","식별번호","품종","성별","출생일","구입일","도축일",
-  "구입개월령","사육개월수","출하개월수","도체중량","도체율","추정생체중량","육질등급","검사결과",
-  "도축장","판매금액","판매시비용","실판매금액","kg당단가","비고","조회일"];
-function recToArr(r){
-  return [ r.farm||"", r.lot||"", r.traceNo||"", r.breed||"", r.sex||"",
-    ymdDash(r.birthYmd), r.buyDate||"", ymdDash(r.butcheryYmd),
-    r.buyMonth??"", r.raiseMonth??"", r.shipMonth??"",
-    r.weight??"", r.dressRate??"", r.liveWeight??"", r.grade||"", r.inspect||"",
-    r.place||"", r.salePrice??0, r.saleCost??0, r.netSale??0, r.unitPrice??"",
-    r.note||"", (r.savedAt||"").slice(0,10) ];
+function openRestoreModal(){
+  const recs=PENDING.records;
+  $("restoreInfo").innerHTML=`백업에 <b>${recs.length}두</b>가 있습니다. <b>전체 교체</b>는 현재 저장을 모두 지우고 불러오고,
+    <b>선택 항목 추가</b>는 아래에서 고른 개체만 현재 목록에 추가(같은 식별번호는 갱신)합니다.`;
+  $("restoreList").innerHTML=recs.map((r,i)=>`<label class="rl-row">
+    <input type="checkbox" class="rl-chk" data-i="${i}">
+    <span style="flex:1">${escHtml(r.manager||"-")} · ${escHtml(r.lot||"")} · <b>${escHtml(r.traceNo)}</b> · 출생 ${ymdDash(r.birthYmd)} · 등급 ${escHtml(r.grade||"-")}</span>
+    </label>`).join("");
+  $("chkAll").checked=false;
+  $("restoreModal").style.display="flex";
 }
-function buildAOA(recs){
-  const aoa = [XLSX_HEADER, ...recs.map(recToArr)];
-  const s=a=>a.reduce((x,y)=>x+(Number(y)||0),0);
-  const a=(arr)=>{ const v=arr.map(x=>Number(x)).filter(x=>!isNaN(x)); return v.length? Math.round(v.reduce((p,q)=>p+q,0)/v.length*10)/10 : ""; };
-  const col=k=>recs.map(r=>r[k]);
-  aoa.push([]);
-  aoa.push(["합계",`${recs.length}두`,"","","","","","","","","",
-    Math.round(s(col("weight"))*10)/10, "", Math.round(s(col("liveWeight"))*10)/10, "","","",
-    s(col("salePrice")), s(col("saleCost")), s(col("netSale")), "","",""]);
-  aoa.push(["평균","","","","","","","",
-    a(col("buyMonth")), a(col("raiseMonth")), a(col("shipMonth")),
-    a(col("weight")), a(col("dressRate")), a(col("liveWeight")),"","","",
-    Math.round(a(col("salePrice"))), Math.round(a(col("saleCost"))), Math.round(a(col("netSale"))),
-    Math.round(a(col("unitPrice")))||"","",""]);
-  return aoa;
-}
-function lazyXLSX(){
-  return new Promise((res,rej)=>{
-    if(window.XLSX) return res(window.XLSX);
-    const s=document.createElement("script");
-    s.src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";
-    s.onload=()=> window.XLSX ? res(window.XLSX) : rej(new Error("XLSX 미로드"));
-    s.onerror=()=> rej(new Error("CDN 접속 실패(오프라인?)"));
-    document.head.appendChild(s);
-  });
-}
-function dlBlob(blob, fname){
-  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=fname; a.click();
-  setTimeout(()=>URL.revokeObjectURL(a.href),2000);
-}
-function csvFallback(aoa, base){
-  const esc=v=>{ v=String(v??""); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; };
-  const csv="﻿"+aoa.map(row=>row.map(esc).join(",")).join("\r\n");
-  dlBlob(new Blob([csv],{type:"text/csv;charset=utf-8"}), base+".csv");
-}
-async function exportExcel(recs, suffix){
-  if(!recs.length){ setStatus("내보낼 자료가 없습니다.","warn"); return; }
-  const z=n=>String(n).padStart(2,"0"); const d=new Date();
-  const base=`소이력관리_${d.getFullYear()}${z(d.getMonth()+1)}${z(d.getDate())}${suffix?"_"+suffix:""}`;
-  const aoa=buildAOA(recs);
-  try{
-    const X=await lazyXLSX();
-    const ws=X.utils.aoa_to_sheet(aoa);
-    ws["!cols"]=XLSX_HEADER.map(h=>({wch: Math.max(8, h.length*2)}));
-    const wb=X.utils.book_new(); X.utils.book_append_sheet(wb, ws, "소이력");
-    X.writeFile(wb, base+".xlsx");
-    setStatus(`⬇️ 엑셀 저장: ${base}.xlsx (${recs.length}두)`,"ok");
-  }catch(e){
-    csvFallback(aoa, base);
-    setStatus(`⬇️ CSV로 저장: ${base}.csv (엑셀 라이브러리 미로드: ${escHtml(e.message||e)})`,"warn");
-  }
-}
-$("btnXlsxAll").onclick   = ()=> exportExcel(ALL_RECS, "");
-$("btnXlsxFilter").onclick= ()=> exportExcel(FILTERED, "검색결과");
+$("chkAll").onchange=()=>$("restoreList").querySelectorAll(".rl-chk").forEach(c=>c.checked=$("chkAll").checked);
+$("btnRestoreCancel").onclick=()=>{ $("restoreModal").style.display="none"; PENDING=null; };
+$("btnReplaceAll").onclick=async()=>{
+  if(!PENDING) return;
+  if(!confirm(`전체 교체: 현재 저장을 모두 삭제하고 백업 ${PENDING.records.length}두로 바꿉니다. 진행할까요?`)) return;
+  try{ await clearRecs(); for(const r of PENDING.records){ if(r&&r.traceNo) await putRec(r); }
+    if(Array.isArray(PENDING.mgrs)&&PENDING.mgrs.length) store.set(LS.mgrs,JSON.stringify(PENDING.mgrs)); loadMgrs();
+    if(PENDING.dressRate) store.set(LS.rate,PENDING.dressRate);
+    $("restoreModal").style.display="none"; PENDING=null;
+    setStatus("⬆️ 전체 교체 복원 완료","ok"); await refreshList();
+  }catch(e){ setStatus("❌ 복원 오류: "+escHtml(e.message||e),"bad"); }
+};
+$("btnAddSel").onclick=async()=>{
+  if(!PENDING) return;
+  const sel=[...$("restoreList").querySelectorAll(".rl-chk")].filter(c=>c.checked).map(c=>PENDING.records[+c.dataset.i]);
+  if(!sel.length){ alert("추가할 개체를 선택하세요."); return; }
+  try{ for(const r of sel){ if(r&&r.traceNo) await putRec(r); }
+    if(Array.isArray(PENDING.mgrs)) PENDING.mgrs.forEach(rememberMgr);
+    $("restoreModal").style.display="none"; PENDING=null;
+    setStatus(`⬆️ 선택 ${sel.length}두 추가 완료`,"ok"); await refreshList();
+  }catch(e){ setStatus("❌ 추가 오류: "+escHtml(e.message||e),"bad"); }
+};
 
-/* ---------- 시작 ---------- */
-openDB().then(refreshList).catch(e=> setStatus("❌ IndexedDB 오류: "+escHtml(e.message||e),"bad"));
+/* 시작 */
+openDB().then(refreshList).catch(e=>setStatus("❌ IndexedDB 오류: "+escHtml(e.message||e),"bad"));
 </script>
