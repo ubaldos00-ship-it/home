@@ -1,5 +1,5 @@
-<!-- 소이력관리_v9.html (배포명 cattle.html) · 저장: 2026-08-25 09:38 KST -->
-<!-- v8 → 수동입력 change이벤트 자동계산(iOS 날짜선택 대응) · 백업 파일명에 시각 추가 · 백업은 공유시트/다운로드로 화면 유지 -->
+<!-- 소이력관리_v10.html (배포명 cattle.html) · 저장: 2026-08-26 02:50 KST -->
+<!-- v9 → 저장 토스트 알림 · 수동입력 필드 노랑강조(입력완료시 흰색+파랑글자) · 엑셀 다운로드 후 화면유지 · 상단 이모지 🐂 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>소 이력·출하·판매 관리</title>
@@ -31,6 +31,12 @@
   input[readonly]{ background:var(--api-bg); border-color:var(--api-bd); color:var(--api-fg); font-weight:700; }
   input.calc-in{ background:var(--calc-bg); border-color:var(--calc-bd); color:var(--calc-fg); font-weight:700; }
   input.modified{ background:var(--mod-bg); border-color:var(--mod-bd); color:var(--mod-fg); font-weight:800; }
+  input.need{ background:#fff8db !important; border-color:#eab308 !important; color:#92600a !important; }  /* 수동입력 필요(노랑) */
+  input.filled{ background:#fff !important; border-color:var(--accent) !important; color:var(--accent) !important; font-weight:800 !important; }  /* 입력완료(흰색+파랑) */
+  #toast{ position:fixed; left:50%; bottom:42px; transform:translateX(-50%) translateY(16px);
+    background:#16a34a; color:#fff; padding:13px 24px; border-radius:999px; font-weight:800; font-size:15.5px;
+    box-shadow:0 8px 24px rgba(0,0,0,.25); opacity:0; pointer-events:none; transition:.25s; z-index:100; }
+  #toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
   .grid{ display:grid; gap:10px 12px; }
   .g2{ grid-template-columns:repeat(2,1fr); }
   .g3{ grid-template-columns:repeat(3,1fr); }
@@ -93,7 +99,7 @@
 <div class="wrap">
   <div class="topbar">
     <button id="btnBack" class="btn ghost">◀ 뒤로</button>
-    <div class="title" id="appTitle" style="cursor:pointer" title="제목을 5번 누르면 설정이 열립니다">🐄 소 이력제 조회 자동계산 <span class="ver">v9</span></div>
+    <div class="title" id="appTitle" style="cursor:pointer" title="제목을 5번 누르면 설정이 열립니다">🐂 소 이력제 조회 자동계산 <span class="ver">v10</span></div>
   </div>
 
   <!-- 설정 (제목 5번 탭 시 표시) -->
@@ -229,6 +235,7 @@
 </div>
 
 <div id="printArea"></div>
+<div id="toast"></div>
 
 <script>
 "use strict";
@@ -292,6 +299,15 @@ let CUR=null, EDITING=false;
 function setStatus(html,kind){ const el=$("status"); el.style.display="block"; el.innerHTML=html;
   el.style.borderColor= kind==="bad"?"var(--bad)":kind==="ok"?"var(--ok)":kind==="warn"?"var(--warn)":"var(--line)";
   el.style.background = kind==="bad"?"#fef2f2":kind==="ok"?"#f0fdf4":kind==="warn"?"#fffbeb":"#f8fafc"; }
+let _toastT;
+function showToast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(_toastT); _toastT=setTimeout(()=>t.classList.remove("show"),1800); }
+
+/* 수동입력 강조: 노랑(입력필요) → 흰색+파랑(입력완료) */
+const NEED_FIELDS=["rBirth","rBuyDate","rButchery","rWeight"];
+function refreshNeed(){ const on = CUR && CUR.manual;
+  NEED_FIELDS.forEach(id=>{ const el=$(id); el.classList.remove("need","filled");
+    if(on){ el.classList.add(el.value?"filled":"need"); } }); }
+NEED_FIELDS.forEach(id=>["input","change"].forEach(ev=>$(id).addEventListener(ev, refreshNeed)));
 
 /* 조회 */
 $("btnSearch").onclick = doSearch;
@@ -377,7 +393,7 @@ function fillForm(){
   $("rRate").value=$("cfgRate").value||"60";
   $("rLot").value="";   // 출하차수: 자동입력 제거(사용자 직접 입력)
   $("rSale").value=""; $("rCost").value="";
-  recalc(); clearMods();
+  recalc(); clearMods(); refreshNeed();
   $("resultCard").scrollIntoView({behavior:"smooth",block:"start"});
 }
 
@@ -464,6 +480,7 @@ $("btnSave").onclick = async ()=>{
     if(exist&&!EDITING&&!confirm(`식별번호 ${rec.traceNo} 는 이미 저장돼 있습니다.\n기존 자료를 갱신할까요?`)) return;
     await putRec(rec); rememberMgr(rec.manager);
     setStatus(`💾 ${EDITING?"수정 저장":"저장"} 완료 · ${escHtml(rec.manager||"(경영자 없음)")} · ${rec.traceNo}`+(MEM?" · ⚠️ 임시저장(브라우저 저장 차단됨)":""),"ok");
+    showToast(`✅ ${EDITING?"수정 저장":"저장"}되었습니다`);
     EDITING=false; $("btnSave").textContent="저장";
     await refreshList();
     // 화면 유지: resultCard 그대로 둠 (닫거나 홈 이동하지 않음)
@@ -492,6 +509,7 @@ async function loadForEdit(key){
   clearMods();
   AUTO_FIELDS.forEach(id=>{ if($(id).value!==base[id]) markMod(id); });
   if(r.buyDate&&CUR.autoBuy&&r.buyDate!==dateToInput(parseYmd(CUR.autoBuy))) markMod("rBuyDate");
+  refreshNeed();
   EDITING=true; $("btnSave").textContent="수정 저장";
   setStatus(`✏️ 수정 모드 · ${escHtml(r.manager||"")} · ${r.traceNo}`,"warn");
 }
@@ -599,7 +617,9 @@ async function exportExcel(recs,suffix){ if(!recs.length){ setStatus("내보낼 
   const z=n=>String(n).padStart(2,"0"),d=new Date(),base=`소이력관리_${d.getFullYear()}${z(d.getMonth()+1)}${z(d.getDate())}${suffix?"_"+suffix:""}`;
   const aoa=buildAOA(recs);
   try{ const X=await lazyXLSX(); const ws=X.utils.aoa_to_sheet(aoa); ws["!cols"]=XLSX_HEADER.map(h=>({wch:Math.max(8,h.length*2)}));
-    const wb=X.utils.book_new(); X.utils.book_append_sheet(wb,ws,"소이력"); X.writeFile(wb,base+".xlsx");
+    const wb=X.utils.book_new(); X.utils.book_append_sheet(wb,ws,"소이력");
+    const buf=X.write(wb,{bookType:"xlsx",type:"array"});   // writeFile 대신: 화면 유지(공유/다운로드)
+    await saveFile(buf, base+".xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
     setStatus(`⬇️ 엑셀 저장: ${base}.xlsx (${recs.length}두)`,"ok"); }
   catch(e){ csvFallback(aoa,base); setStatus(`⬇️ CSV로 저장: ${base}.csv (엑셀 라이브러리 미로드)`,"warn"); } }
 $("btnXlsxAll").onclick=()=>exportExcel(ALL_RECS,"");
