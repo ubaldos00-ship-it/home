@@ -1,4 +1,4 @@
-<!-- disease.html (v1) · 저장: 2026-08-26 04:47 KST -->
+<!-- disease.html (v2) · 저장: 2026-08-26 06:47 KST · 지역검색 시군구그룹+최근배지 / 과거자료 지역한정+질병·축종필터+연도드릴 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -11,7 +11,8 @@
     --t1:#1f2937; --t2:#6b7280; --t3:#9ca3af;
     --accent:#1d6fe0; --accent-bg:#e8f1fd;
     --warn:#b45309; --warn-bg:#fef3e2;
-    --red:#d85a30; --amber:#ba7517; --gray:#9ca3af;
+    --red:#d64545; --red-bg:#fdecec;
+    --amber:#ba7517; --gray:#9ca3af;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{margin:0; padding:0;}
@@ -21,60 +22,56 @@
     font-size:16px; line-height:1.5; overflow-x:hidden;
   }
   .wrap{max-width:560px; margin:0 auto; padding:0 14px 40px;}
-  header{
-    position:sticky; top:0; z-index:10; background:var(--bg);
-    padding:14px 0 8px; border-bottom:1px solid var(--line);
-  }
+  header{position:sticky; top:0; z-index:10; background:var(--bg); padding:14px 0 8px; border-bottom:1px solid var(--line);}
   .h-title{font-size:19px; font-weight:700; display:flex; align-items:center; gap:6px;}
   .h-time{font-size:12px; color:var(--t3); margin-top:2px;}
   .search-box{display:flex; gap:6px; margin-top:10px;}
-  .search-box input{
-    flex:1; height:46px; border:1px solid var(--line2); border-radius:12px;
-    padding:0 14px; font-size:16px; background:var(--card); color:var(--t1);
-  }
-  .search-box button{
-    width:52px; border:none; border-radius:12px; background:var(--accent);
-    color:#fff; font-size:20px; font-weight:600;
-  }
+  .search-box input{flex:1; height:46px; border:1px solid var(--line2); border-radius:12px; padding:0 14px; font-size:16px; background:var(--card); color:var(--t1);}
+  .search-box button{width:52px; border:none; border-radius:12px; background:var(--accent); color:#fff; font-size:20px; font-weight:600;}
   .period{display:flex; gap:6px; margin:12px 0 4px; overflow-x:auto; -webkit-overflow-scrolling:touch;}
-  .period button{
-    flex:0 0 auto; height:34px; padding:0 14px; border:1px solid var(--line2);
-    background:var(--card); border-radius:20px; font-size:14px; color:var(--t2);
-  }
+  .period button{flex:0 0 auto; height:34px; padding:0 14px; border:1px solid var(--line2); background:var(--card); border-radius:20px; font-size:14px; color:var(--t2);}
   .period button.on{background:var(--accent); color:#fff; border-color:var(--accent);}
   .summary{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:12px 0;}
   .stat{background:var(--card); border-radius:12px; padding:12px 4px; text-align:center; border:1px solid var(--line);}
   .stat .n{font-size:24px; font-weight:700;}
   .stat .l{font-size:12px; color:var(--t2); margin-top:1px;}
   .sec-label{font-size:13px; color:var(--t2); margin:16px 2px 8px; font-weight:600;}
-  .card{
-    background:var(--card); border:1px solid var(--line); border-left-width:4px;
-    border-radius:10px; padding:11px 13px; margin-bottom:8px;
-  }
+  .card{background:var(--card); border:1px solid var(--line); border-left-width:4px; border-radius:10px; padding:11px 13px; margin-bottom:8px;}
   .card .loc{font-size:16px; font-weight:700; line-height:1.35;}
   .card .dis{font-size:14px; color:var(--accent); margin-top:2px; font-weight:600;}
   .card .meta{font-size:13px; color:var(--t2); margin-top:3px;}
   .card .meta .sep{color:var(--line2); margin:0 5px;}
   .btn-row{display:flex; gap:8px; margin-top:12px;}
-  .btn{
-    flex:1; text-align:center; padding:13px; border:1px solid var(--line2);
-    background:var(--card); border-radius:12px; font-size:15px; font-weight:600; color:var(--t1);
-  }
-  .btn-more{width:100%; text-align:center; padding:13px; border:1px dashed var(--line2);
-    background:transparent; border-radius:12px; font-size:14px; color:var(--t2); margin-top:4px;}
+  .btn{flex:1; text-align:center; padding:13px; border:1px solid var(--line2); background:var(--card); border-radius:12px; font-size:15px; font-weight:600; color:var(--t1);}
+  .btn-more{width:100%; text-align:center; padding:13px; border:1px dashed var(--line2); background:transparent; border-radius:12px; font-size:14px; color:var(--t2); margin-top:4px;}
   .banner-none{background:var(--warn-bg); color:var(--warn); border-radius:10px; padding:12px 14px; font-size:14px; font-weight:600; margin-bottom:10px;}
-  .banner-ok{background:var(--accent-bg); color:var(--accent); border-radius:10px; padding:12px 14px; font-size:14px; font-weight:600; margin-bottom:10px;}
+  .banner-ok{background:var(--red-bg); color:var(--red); border-radius:10px; padding:12px 14px; font-size:14px; font-weight:600; margin-bottom:10px;}
+  .banner-hint{background:var(--accent-bg); color:var(--accent); border-radius:10px; padding:11px 13px; font-size:13.5px; font-weight:600; margin-bottom:10px;}
   .back{display:inline-flex; align-items:center; gap:5px; font-size:14px; color:var(--t2); padding:10px 0; background:none; border:none;}
-  .region-item{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:13px; margin-bottom:7px; font-size:15px; display:flex; justify-content:space-between; align-items:center;}
-  .region-item .chev{color:var(--t3);}
   .empty{text-align:center; color:var(--t3); padding:36px 12px; font-size:15px;}
   .loading{text-align:center; color:var(--t2); padding:30px; font-size:15px;}
-  .yr{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-bottom:8px;}
-  .yr .y{font-size:16px; font-weight:700;}
-  .yr .d{font-size:14px; color:var(--t2); margin-top:2px;}
   .hidden{display:none;}
   .subttl{font-size:15px; font-weight:700; margin:4px 0 10px; padding:11px 13px; background:var(--card); border:1px solid var(--line); border-radius:10px;}
   .note{font-size:12px; color:var(--t3); text-align:center; margin-top:18px; line-height:1.5;}
+  /* 검색결과 시군구 카드 */
+  .sgg-card{background:var(--card); border:1px solid var(--line); border-radius:12px; margin-bottom:9px; overflow:hidden;}
+  .sgg-head{display:flex; justify-content:space-between; align-items:center; padding:13px; gap:8px;}
+  .sgg-name{font-size:16px; font-weight:700;}
+  .badge{flex:0 0 auto; font-size:12.5px; font-weight:700; padding:4px 10px; border-radius:20px;}
+  .badge.red{background:var(--red-bg); color:var(--red);}
+  .badge.gray{background:#eef0f2; color:var(--t3);}
+  .badge.sm{font-size:12px; padding:2px 9px; min-width:26px; text-align:center;}
+  .sub-list{border-top:1px solid var(--line);}
+  .sub-item{display:flex; justify-content:space-between; align-items:center; gap:8px; padding:11px 13px; border-bottom:1px solid #f0f1f3; font-size:14.5px;}
+  .sub-item:last-child{border-bottom:none;}
+  .sub-item .chev{color:var(--t3);}
+  /* 과거자료 */
+  .filters{display:flex; gap:8px; margin:2px 0 10px;}
+  .filters select{flex:1; height:40px; border:1px solid var(--line2); border-radius:10px; background:var(--card); color:var(--t1); font-size:14px; padding:0 10px;}
+  .yr{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; gap:8px;}
+  .yr .y{font-size:16px; font-weight:700;}
+  .yr .cnt{font-size:13px; color:var(--t3); font-weight:400; margin-left:6px;}
+  .yr .d{font-size:13.5px; color:var(--t2); margin-top:2px;}
 </style>
 </head>
 <body>
@@ -84,7 +81,7 @@
     <div class="h-title">🐾 가축질병 현장정보</div>
     <div class="h-time" id="dataTime">데이터 확인 중…</div>
     <div class="search-box">
-      <input id="q" type="search" inputmode="search" placeholder="방문지역 검색 (예: 영천, 봉황면)" autocomplete="off">
+      <input id="q" type="search" inputmode="search" placeholder="방문지역 검색 (예: 나주, 봉황면)" autocomplete="off">
       <button id="btnSearch" aria-label="검색">🔍</button>
     </div>
   </header>
@@ -103,7 +100,7 @@
       <div class="stat"><div class="n" id="sCase">–</div><div class="l">발생건수</div></div>
       <div class="stat"><div class="n" id="s7">–</div><div class="l">최근 7일</div></div>
     </div>
-    <div class="sec-label" id="homeLabel">최근 발생지역 · 최신순</div>
+    <div class="sec-label" id="homeLabel">최근 3개월 발생지역 · 최신순</div>
     <div id="homeList"></div>
     <div class="btn-row">
       <button class="btn" id="btnAll">전체보기</button>
@@ -115,16 +112,17 @@
     </div>
   </section>
 
-  <!-- ===== 지역 후보 목록 ===== -->
+  <!-- ===== 지역 후보(시군구 그룹) ===== -->
   <section id="viewSearch" class="hidden">
-    <button class="back" onclick="goHome()">← 홈</button>
+    <button class="back" data-home>← 홈</button>
+    <div id="searchHint"></div>
     <div class="sec-label" id="searchLabel">지역 검색 결과</div>
     <div id="searchList"></div>
   </section>
 
   <!-- ===== 지역 드릴다운(확대) ===== -->
   <section id="viewArea" class="hidden">
-    <button class="back" onclick="goHome()">← 홈</button>
+    <button class="back" data-home>← 홈</button>
     <div class="subttl" id="areaTitle"></div>
     <div id="areaBody"></div>
     <button class="btn-more" id="btnAreaHist">이 지역 과거자료 보기</button>
@@ -132,7 +130,7 @@
 
   <!-- ===== 과거자료 ===== -->
   <section id="viewHist" class="hidden">
-    <button class="back" onclick="goHome()">← 홈</button>
+    <button class="back" data-home>← 홈</button>
     <div class="subttl" id="histTitle"></div>
     <div id="histBody"></div>
   </section>
@@ -142,54 +140,44 @@
 <script>
 const RELAY = "https://induowdrembd3zhtym3ke6prcy0cgajf.lambda-url.ap-northeast-2.on.aws/";
 let curDays = 90;
-let curArea = null; // {code, loc}
+let searchPurpose = "area";   // "area" | "history"
+let curArea = null;           // {sgg,emd,ri,title}
+let histScope = null;         // {sgg,emd,ri,title}
+let histFilter = { disease:"", species:"" };
 
-// ── 유틸 ──────────────────────────────
 function el(id){return document.getElementById(id);}
 function show(view){
   ["viewHome","viewSearch","viewArea","viewHist"].forEach(v=>el(v).classList.add("hidden"));
   el(view).classList.remove("hidden");
   window.scrollTo(0,0);
 }
-function goHome(){ show("viewHome"); }
+function goHome(){ searchPurpose="area"; show("viewHome"); }
+document.addEventListener("click", e=>{ if(e.target.closest("[data-home]")) goHome(); });
 
-function fmtOcc(s){ // "20260813" → "26.08.13"
-  if(!s || s.length<8) return s||"";
-  return s.slice(2,4)+"."+s.slice(4,6)+"."+s.slice(6,8);
-}
-function fmtCess(s){
-  if(!s) return "종식일 미등록";
-  if(s.length<8) return "종식일 미등록";
-  return "종식 "+s.slice(2,4)+"."+s.slice(4,6)+"."+s.slice(6,8);
-}
-function fmtTime(iso){ // ISO(UTC) → KST "MM.DD HH:mm"
-  try{
-    const d=new Date(iso); const k=new Date(d.getTime()+9*3600000);
-    const p=n=>String(n).padStart(2,"0");
-    return p(k.getUTCMonth()+1)+"."+p(k.getUTCDate())+" "+p(k.getUTCHours())+":"+p(k.getUTCMinutes());
-  }catch(e){ return ""; }
-}
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function fmtOcc(s){ if(!s||s.length<8) return s||""; return s.slice(2,4)+"."+s.slice(4,6)+"."+s.slice(6,8); }
+function fmtCess(s){ if(!s||s.length<8) return "종식일 미등록"; return "종식 "+s.slice(2,4)+"."+s.slice(4,6)+"."+s.slice(6,8); }
+function fmtTime(iso){ try{ const k=new Date(new Date(iso).getTime()+9*3600000); const p=n=>String(n).padStart(2,"0"); return p(k.getUTCMonth()+1)+"."+p(k.getUTCDate())+" "+p(k.getUTCHours())+":"+p(k.getUTCMinutes()); }catch(e){ return ""; } }
 function diseaseColor(name){
-  if(/ASF|아프리카|돼지열병/.test(name)) return "var(--red)";
-  if(/AI|인플루엔자|뉴캣슬/.test(name)) return "var(--amber)";
-  if(/럼피|구제역/.test(name)) return "var(--accent)";
-  return "var(--gray)";
+  if(/ASF|아프리카|돼지열병/.test(name)) return "#d85a30";
+  if(/AI|인플루엔자|뉴캣슬|가금/.test(name)) return "#ba7517";
+  if(/럼피|구제역/.test(name)) return "#1d6fe0";
+  return "#9ca3af";
 }
 function cardHTML(x){
   return `<div class="card" style="border-left-color:${diseaseColor(x.disease)}">
-    <div class="loc">${x.loc||"-"}</div>
-    <div class="dis">${x.disease||"-"} · ${x.species||"-"}</div>
-    <div class="meta">${fmtOcc(x.occDe)} 발생<span class="sep">|</span>${x.count?x.count.toLocaleString()+"마리":"두수 미상"}<span class="sep">|</span>${fmtCess(x.cessDe)}</div>
+    <div class="loc">${esc(x.loc)||"-"}</div>
+    <div class="dis">${esc(x.disease)||"-"} · ${esc(x.species)||"-"}</div>
+    <div class="meta">${fmtOcc(x.occDe)} 발생<span class="sep">|</span>${x.count?Number(x.count).toLocaleString()+"마리":"두수 미상"}<span class="sep">|</span>${fmtCess(x.cessDe)}</div>
   </div>`;
 }
 async function api(params){
-  const url = RELAY + "?" + new URLSearchParams(params).toString();
-  const res = await fetch(url);
+  const res = await fetch(RELAY + "?" + new URLSearchParams(params).toString());
   if(!res.ok) throw new Error("HTTP "+res.status);
   return res.json();
 }
 
-// ── 홈: 최근현황 ──────────────────────
+/* ── 홈 ── */
 async function loadHome(){
   el("homeList").innerHTML = '<div class="loading">불러오는 중…</div>';
   el("sRegion").textContent="–"; el("sCase").textContent="–"; el("s7").textContent="–";
@@ -200,18 +188,12 @@ async function loadHome(){
     el("sRegion").textContent = d.summary.regionCount;
     el("sCase").textContent = d.summary.caseCount;
     el("s7").textContent = d.summary.last7d;
-    if(!d.items.length){
-      el("homeList").innerHTML = '<div class="empty">해당 기간 발생 없음</div>';
-    }else{
-      el("homeList").innerHTML = d.items.map(cardHTML).join("");
-    }
+    el("homeList").innerHTML = d.items.length ? d.items.map(cardHTML).join("") : '<div class="empty">해당 기간 발생 없음</div>';
   }catch(e){
     el("homeList").innerHTML = '<div class="empty">현재 가축질병 정보를 불러오지<br>못했습니다. 잠시 후 다시 확인해 주세요.</div>';
     el("dataTime").textContent = "데이터 확인 실패";
   }
 }
-
-// ── 기간 버튼 ─────────────────────────
 el("period").addEventListener("click", e=>{
   const b=e.target.closest("button"); if(!b) return;
   curDays = Number(b.dataset.d);
@@ -220,92 +202,150 @@ el("period").addEventListener("click", e=>{
   el("homeLabel").textContent = lbl+" 발생지역 · 최신순";
   loadHome();
 });
-
-// ── 지역 검색 ─────────────────────────
-async function doSearch(){
-  const kw = el("q").value.trim();
-  if(kw.length<2){ alert("두 글자 이상 입력하세요."); return; }
-  show("viewSearch");
-  el("searchLabel").textContent = `"${kw}" 검색 결과`;
-  el("searchList").innerHTML = '<div class="loading">검색 중…</div>';
-  try{
-    const d = await api({mode:"search", q:kw});
-    if(!d.ok) throw new Error(d.message);
-    if(!d.regions.length){
-      el("searchList").innerHTML = '<div class="empty">일치하는 지역이 없습니다.<br>시·군·읍·면·리 이름으로 검색해 보세요.</div>';
-      return;
-    }
-    el("searchList").innerHTML = d.regions.map(r=>
-      `<div class="region-item" onclick='openArea(${JSON.stringify(r).replace(/'/g,"&#39;")})'>
-         <span>${r.loc}</span><span class="chev">›</span></div>`).join("");
-  }catch(e){
-    el("searchList").innerHTML = '<div class="empty">검색에 실패했습니다.<br>잠시 후 다시 시도해 주세요.</div>';
-  }
-}
-el("btnSearch").addEventListener("click", doSearch);
-el("q").addEventListener("keydown", e=>{ if(e.key==="Enter") doSearch(); });
-
-// ── 지역 드릴다운(확대) ────────────────
-async function openArea(r){
-  curArea = r;
-  show("viewArea");
-  el("areaTitle").textContent = r.loc;
-  el("areaBody").innerHTML = '<div class="loading">불러오는 중…</div>';
-  try{
-    const d = await api({mode:"area", code:r.code, days:curDays});
-    if(!d.ok) throw new Error(d.message);
-    let html="";
-    // 해당 리
-    if(d.ri.count>0){
-      html += `<div class="banner-ok">해당 리 · 최근 발생 ${d.ri.count}건</div>` + d.ri.items.map(cardHTML).join("");
-    }else{
-      html += `<div class="banner-none">해당 리 · 최근 발생 없음</div>`;
-    }
-    // 같은 읍면동
-    html += `<div class="sec-label">같은 읍·면·동 <b>${d.emd.count}건</b></div>`;
-    html += d.emd.count ? d.emd.items.map(cardHTML).join("") : '<div class="empty" style="padding:16px">발생 없음</div>';
-    // 같은 시군구
-    html += `<div class="sec-label">같은 시·군·구 <b>${d.sigungu.count}건</b></div>`;
-    html += d.sigungu.count ? d.sigungu.items.map(cardHTML).join("") : '<div class="empty" style="padding:16px">발생 없음</div>';
-    el("areaBody").innerHTML = html;
-  }catch(e){
-    el("areaBody").innerHTML = '<div class="empty">정보를 불러오지 못했습니다.</div>';
-  }
-}
-
-// ── 과거자료 ──────────────────────────
-async function openHist(code, title){
-  show("viewHist");
-  el("histTitle").textContent = (title||"전국") + " · 과거자료";
-  el("histBody").innerHTML = '<div class="loading">불러오는 중…</div>';
-  try{
-    const d = await api(code ? {mode:"history", code} : {mode:"history"});
-    if(!d.ok) throw new Error(d.message);
-    if(!d.byYear.length){ el("histBody").innerHTML='<div class="empty">발생 이력이 없습니다.</div>'; return; }
-    let html = `<div class="sec-label">총 ${d.total.toLocaleString()}건 · 연도별</div>`;
-    html += d.byYear.map(y=>{
-      const dis = y.byDisease.slice(0,4).map(x=>`${x.name} ${x.count}`).join(" · ");
-      return `<div class="yr"><div class="y">${y.year} <span style="color:var(--t3);font-size:13px;font-weight:400">${y.count}건</span></div><div class="d">${dis}</div></div>`;
-    }).join("");
-    el("histBody").innerHTML = html;
-  }catch(e){
-    el("histBody").innerHTML = '<div class="empty">정보를 불러오지 못했습니다.</div>';
-  }
-}
-el("btnHistHome").addEventListener("click", ()=>openHist(null,"전국"));
-el("btnAreaHist").addEventListener("click", ()=>{ if(curArea) openHist(curArea.code.slice(0,5), curArea.loc.split(" ").slice(0,2).join(" ")); });
-
-// ── 전체보기(간단: 큰 limit로 재조회) ──
 el("btnAll").addEventListener("click", async ()=>{
   el("homeList").innerHTML = '<div class="loading">불러오는 중…</div>';
   try{
-    const d = await api({mode:"recent", days:curDays, limit:200});
+    const d = await api({mode:"recent", days:curDays, limit:300});
     el("homeList").innerHTML = d.items.length ? d.items.map(cardHTML).join("") : '<div class="empty">발생 없음</div>';
     el("btnAll").textContent = `전체 ${d.summary.caseCount}건`;
   }catch(e){}
 });
 
-// ── 시작 ──────────────────────────────
+/* ── 지역 검색 ── */
+async function doSearch(){
+  const kw = el("q").value.trim();
+  if(kw.length<2){ alert("두 글자 이상 입력하세요."); return; }
+  show("viewSearch");
+  el("searchHint").innerHTML = searchPurpose==="history"
+    ? '<div class="banner-hint">과거자료를 볼 지역을 선택하세요</div>' : '';
+  el("searchLabel").textContent = `"${kw}" 검색 결과`;
+  el("searchList").innerHTML = '<div class="loading">검색 중…</div>';
+  try{
+    const d = await api({mode:"search", q:kw, days:curDays});
+    if(!d.ok) throw new Error(d.message);
+    if(!d.regions.length){
+      el("searchList").innerHTML = '<div class="empty">일치하는 지역이 없습니다.<br>시·군·읍·면·리 이름으로 검색해 보세요.</div>';
+      return;
+    }
+    el("searchList").innerHTML = d.regions.map(g=>{
+      const badge = g.recent>0 ? `<span class="badge red">최근 ${g.recent}건</span>` : `<span class="badge gray">최근 없음</span>`;
+      const subs = g.subs.map(s=>{
+        const short = s.loc.startsWith(g.sgg) ? s.loc.slice(g.sgg.length).trim() : s.loc;
+        const rb = s.recent>0 ? `<span class="badge red sm">${s.recent}</span>` : `<span class="chev">›</span>`;
+        return `<div class="sub-item" data-pick data-sgg="${esc(s.sgg)}" data-emd="${esc(s.emd)}" data-ri="${esc(s.ri)}" data-title="${esc(s.loc)}">
+                  <span>${esc(short)}</span>${rb}</div>`;
+      }).join("");
+      return `<div class="sgg-card">
+        <div class="sgg-head" data-pick data-sgg="${esc(g.sgg)}" data-title="${esc(g.name)}">
+          <span class="sgg-name">${esc(g.name)}</span>${badge}
+        </div>
+        <div class="sub-list">${subs}</div>
+      </div>`;
+    }).join("");
+  }catch(e){
+    el("searchList").innerHTML = '<div class="empty">검색에 실패했습니다.<br>잠시 후 다시 시도해 주세요.</div>';
+  }
+}
+el("btnSearch").addEventListener("click", ()=>{ searchPurpose="area"; doSearch(); });
+el("q").addEventListener("keydown", e=>{ if(e.key==="Enter"){ searchPurpose="area"; doSearch(); } });
+el("searchList").addEventListener("click", e=>{
+  const t=e.target.closest("[data-pick]"); if(!t) return;
+  const scope={ sgg:t.dataset.sgg||"", emd:t.dataset.emd||"", ri:t.dataset.ri||"", title:t.dataset.title||"" };
+  if(searchPurpose==="history") openHist(scope);
+  else openArea(scope);
+});
+
+/* ── 지역 드릴다운 ── */
+async function openArea(scope){
+  curArea = scope;
+  show("viewArea");
+  el("areaTitle").textContent = scope.title;
+  el("areaBody").innerHTML = '<div class="loading">불러오는 중…</div>';
+  try{
+    const p={mode:"area", sgg:scope.sgg, days:curDays};
+    if(scope.emd) p.emd=scope.emd;
+    if(scope.ri) p.ri=scope.ri;
+    const d = await api(p);
+    if(!d.ok) throw new Error(d.message);
+    let html="";
+    if(scope.ri){
+      html += d.ri.count>0
+        ? `<div class="banner-ok">해당 리 · 최근 발생 ${d.ri.count}건</div>` + d.ri.items.map(cardHTML).join("")
+        : `<div class="banner-none">해당 리 · 최근 발생 없음</div>`;
+      html += `<div class="sec-label">같은 읍·면·동 <b>${d.emd.count}건</b></div>`;
+      html += d.emd.count ? d.emd.items.map(cardHTML).join("") : '<div class="empty" style="padding:16px">발생 없음</div>';
+    }
+    html += `<div class="sec-label">${scope.ri?"같은 ":""}시·군·구 <b>${d.sigungu.count}건</b></div>`;
+    html += d.sigungu.count ? d.sigungu.items.map(cardHTML).join("") : '<div class="empty" style="padding:16px">해당 기간 발생 없음</div>';
+    el("areaBody").innerHTML = html;
+  }catch(e){
+    el("areaBody").innerHTML = '<div class="empty">정보를 불러오지 못했습니다.</div>';
+  }
+}
+el("btnAreaHist").addEventListener("click", ()=>{ if(curArea) openHist(curArea); });
+el("btnHistHome").addEventListener("click", ()=>{ searchPurpose="history"; el("q").value=""; show("viewSearch"); el("searchHint").innerHTML='<div class="banner-hint">과거자료를 볼 지역을 먼저 검색하세요</div>'; el("searchLabel").textContent="지역 검색"; el("searchList").innerHTML='<div class="empty">위 검색창에 지역명을 입력하세요.</div>'; el("q").focus(); });
+
+/* ── 과거자료 ── */
+function openHist(scope){
+  histScope = scope;
+  histFilter = { disease:"", species:"" };
+  loadHist();
+}
+async function loadHist(){
+  show("viewHist");
+  el("histTitle").textContent = (histScope.title||"전국") + " · 과거자료";
+  el("histBody").innerHTML = '<div class="loading">불러오는 중…</div>';
+  try{
+    const p={mode:"history"};
+    if(histScope.sgg) p.sgg=histScope.sgg;
+    if(histScope.emd) p.emd=histScope.emd;
+    if(histScope.ri) p.ri=histScope.ri;
+    if(histFilter.disease) p.disease=histFilter.disease;
+    if(histFilter.species) p.species=histFilter.species;
+    const d = await api(p);
+    if(!d.ok) throw new Error(d.message);
+    const dOpt = `<option value="">질병 전체</option>` + d.diseases.map(x=>`<option ${x===histFilter.disease?"selected":""}>${esc(x)}</option>`).join("");
+    const sOpt = `<option value="">축종 전체</option>` + d.speciesList.map(x=>`<option ${x===histFilter.species?"selected":""}>${esc(x)}</option>`).join("");
+    let html = `<div class="filters"><select id="fDisease">${dOpt}</select><select id="fSpecies">${sOpt}</select></div>`;
+    html += `<div class="sec-label">총 ${Number(d.total).toLocaleString()}건 · 연도를 누르면 개별기록</div>`;
+    if(!d.byYear.length){
+      html += '<div class="empty">해당 조건의 발생 이력이 없습니다.</div>';
+    }else{
+      html += d.byYear.map(y=>{
+        const dis = y.byDisease.slice(0,4).map(x=>`${esc(x.name)} ${x.count}`).join(" · ");
+        return `<div class="yr" data-year="${y.year}"><div><div class="y">${y.year}<span class="cnt">${y.count}건</span></div><div class="d">${dis}</div></div><span class="chev" style="color:var(--t3)">›</span></div>`;
+      }).join("");
+    }
+    el("histBody").innerHTML = html;
+    el("fDisease").onchange = e=>{ histFilter.disease=e.target.value; loadHist(); };
+    el("fSpecies").onchange = e=>{ histFilter.species=e.target.value; loadHist(); };
+    el("histBody").querySelectorAll(".yr").forEach(row=>{
+      row.onclick = ()=> openYear(row.dataset.year);
+    });
+  }catch(e){
+    el("histBody").innerHTML = '<div class="empty">정보를 불러오지 못했습니다.</div>';
+  }
+}
+async function openYear(year){
+  el("histBody").innerHTML = '<div class="loading">불러오는 중…</div>';
+  try{
+    const p={mode:"history", from:year+"0101", to:year+"1231"};
+    if(histScope.sgg) p.sgg=histScope.sgg;
+    if(histScope.emd) p.emd=histScope.emd;
+    if(histScope.ri) p.ri=histScope.ri;
+    if(histFilter.disease) p.disease=histFilter.disease;
+    if(histFilter.species) p.species=histFilter.species;
+    const d = await api(p);
+    let html = `<button class="back" id="backYear">← 연도별로</button>`;
+    html += `<div class="sec-label">${esc(histScope.title||"전국")} · ${year} · ${Number(d.total).toLocaleString()}건</div>`;
+    html += d.items.length ? d.items.map(cardHTML).join("") : '<div class="empty">기록 없음</div>';
+    el("histBody").innerHTML = html;
+    el("backYear").onclick = loadHist;
+  }catch(e){
+    el("histBody").innerHTML = '<div class="empty">정보를 불러오지 못했습니다.</div>';
+  }
+}
+
 loadHome();
 </script>
 </body>
