@@ -1,10 +1,18 @@
-<!-- disease.html (v10) · 저장: 2026-08-28 05:00 KST · VWorld 실지도 이미지 합성(일반/위성, 실패시 자체윤곽 폴백) + (v9)한반도전체·통계축소·핀½·기간설정파랑·플랫폼별저장·과거자료엑셀 -->
+<!-- disease.html (v11) · 저장: 2026-08-28 06:18 KST · 캡처지도 남한중심 프레이밍+도로뮤트(일반) + 목록/엑셀 순서번호 + (v10)VWorld실지도 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>가축질병 현장정보</title>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PYTDP9E5YL"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-PYTDP9E5YL');
+</script>
 <style>
   :root{
     --bg:#f4f5f7; --card:#ffffff; --line:#e5e7eb; --line2:#d1d5db;
@@ -114,7 +122,7 @@
   <header>
     <div class="h-top">
       <button id="backBtn" class="nav-btn hidden">← 뒤로</button>
-      <div class="h-title" id="hTitle">🐾 가축질병 현장정보 <span style="font-size:11px;color:#c9962b;font-weight:800;">v10</span></div>
+      <div class="h-title" id="hTitle">🐾 가축질병 현장정보 <span style="font-size:11px;color:#c9962b;font-weight:800;">v11</span></div>
       <a href="https://ubaldos00-ship-it.github.io/home/" class="hub-btn" aria-label="홈">🏠 홈</a>
     </div>
     <div class="h-time" id="dataTime">데이터 확인 중…</div>
@@ -182,7 +190,7 @@
     <div class="btn-row">
       <button class="btn" id="btnHistHome">전국 과거자료</button>
     </div>
-    <div class="note">본 정보는 농림축산검역본부 공개데이터 기준이며 방역 판단 자료가 아닙니다. 최종 방문 여부는 소속기관 지침에 따르세요.<br><span style="color:#c9962b;font-weight:700;">화면버전 v10</span></div>
+    <div class="note">본 정보는 농림축산검역본부 공개데이터 기준이며 방역 판단 자료가 아닙니다. 최종 방문 여부는 소속기관 지침에 따르세요.<br><span style="color:#c9962b;font-weight:700;">화면버전 v11</span></div>
   </section>
 
   <section id="viewArea" class="hidden">
@@ -277,11 +285,12 @@ function levelsFromLoc(loc){
 }
 function sgg2FromSgg(sgg){ const t=sgg.split(" "); return t.length>=3?t.slice(0,2).join(" "):sgg; }
 function catColor(c){ return CAT_HEX[c]||"#9ca3af"; }
-function cardHTML(x){
+function cardHTML(x,n){
   const lv=levelsFromLoc(x.loc);
   const farm=(admin && x.farm) ? `<span class="farm">· ${esc(x.farm)}</span>` : "";
+  const num=n?`<span style="color:#9ca3af;font-weight:700;margin-right:5px;">${n}.</span>`:"";
   return `<div class="card" data-sgg="${esc(lv.sgg)}" data-emd="${esc(lv.emd)}" data-ri="${esc(lv.ri)}" data-title="${esc(x.loc)}" style="border-left-color:${catColor(diseaseCat(x.disease))}">
-    <div class="loc">${esc(x.loc)||"-"}${farm}</div>
+    <div class="loc">${num}${esc(x.loc)||"-"}${farm}</div>
     <div class="dis">${esc(x.disease)||"-"} · ${esc(x.species)||"-"}</div>
     <div class="meta">${fmtOcc(x.occDe)} 발생<span class="sep">|</span>${x.count?Number(x.count).toLocaleString()+"마리":"두수 미상"}<span class="sep">|</span>${fmtCess(x.cessDe)}</div>
   </div>`;
@@ -325,7 +334,7 @@ function applyFilters(){
   if(curCat) tag+=` <span class="filter-tag">${CAT_LABEL[curCat]}</span>`;
   if(admin) tag+=` <span class="admin-tag">농장정보 ON</span>`;
   el("homeLabel").innerHTML=`${periodLabel} 발생 목록 · 최신순${tag}`;
-  el("homeList").innerHTML = v.length ? v.slice(0,200).map(cardHTML).join("") : '<div class="empty">조건에 맞는 발생이 없습니다.</div>';
+  el("homeList").innerHTML = v.length ? v.slice(0,200).map((x,i)=>cardHTML(x,i+1)).join("") : '<div class="empty">조건에 맞는 발생이 없습니다.</div>';
   renderPins(v);
   saveState();
 }
@@ -467,13 +476,14 @@ function lngLatToMerc(lng,lat){ const x=lng*20037508.34/180; let y=Math.log(Math
 function loadImg(url){ return new Promise((res,rej)=>{ const im=new Image(); const t=setTimeout(()=>rej(new Error("timeout")),8000); im.onload=()=>{clearTimeout(t);res(im);}; im.onerror=()=>{clearTimeout(t);rej(new Error("err"));}; im.src=url; }); }
 async function getMapCanvas(w,h){
   try{
-    const cx=127.8, cy=36.6, zoom=7; const [Cx,Cy]=lngLatToMerc(cx,cy);
+    const cx=127.7, cy=36.15, zoom=7; const [Cx,Cy]=lngLatToMerc(cx,cy);
     const basemap=curMapType==="sky"?"PHOTO":"GRAPHIC";
     const r=await api({mode:"staticmap", center:Cx.toFixed(2)+","+Cy.toFixed(2), zoom:zoom, size:w+","+h, basemap:basemap});
     if(!r || !r.ok || !r.img) throw new Error("no img");
     const img=await loadImg(r.img);
     const c=document.createElement("canvas"); c.width=w; c.height=h; const g=c.getContext("2d");
     g.drawImage(img,0,0,w,h);
+    if(curMapType!=="sky"){ g.fillStyle="rgba(255,255,255,0.42)"; g.fillRect(0,0,w,h); } // 도로·라벨 뮤트
     const resM=156543.03392804097/Math.pow(2,zoom);
     const proj=(lat,lng)=>{ const [mx,my]=lngLatToMerc(lng,lat); return [ w/2+(mx-Cx)/resM, h/2-(my-Cy)/resM ]; };
     drawPins(g,_pinData,proj);
@@ -504,7 +514,7 @@ function drawMapInto(g,pins,ox,oy,w,h){
 // 리포트 전체를 canvas로 직접 렌더 (html2canvas 미사용 → 멈춤 불가)
 async function drawFullReport(){
   const v=currentView(); const pins=_pinData;
-  const W=520, PAD=18, mapW=W-PAD*2, mapH=Math.round(mapW*MAP_ASPECT);
+  const W=520, PAD=18, mapW=W-PAD*2, mapH=Math.round(mapW*1.2);
   const listRows=Math.min(v.length,22);
   const H = PAD +26+20 +72 +mapH+8 +18 +16 +18 + listRows*22 +42 +PAD;
   const S=2, cv=document.createElement("canvas"); cv.width=W*S; cv.height=H*S;
@@ -537,8 +547,8 @@ async function drawFullReport(){
   g.textAlign="left"; g.fillStyle="#666"; g.font="700 12.5px sans-serif"; g.fillText(`발생 목록 (상위 ${listRows}건)`, PAD, y); y+=18;
   for(let i=0;i<listRows;i++){ const x=v[i];
     g.font="12.5px sans-serif"; g.textAlign="left"; g.fillStyle="#222";
-    const loc=x.loc+((admin&&x.farm)?(" · "+x.farm):"");
-    g.fillText(trunc(g,loc,mapW*0.56), PAD, y);
+    const loc=(i+1)+". "+x.loc+((admin&&x.farm)?(" · "+x.farm):"");
+    g.fillText(trunc(g,loc,mapW*0.60), PAD, y);
     g.textAlign="right"; g.fillStyle="#666"; g.fillText(trunc(g,x.disease+" · "+fmtOcc(x.occDe),mapW*0.42), W-PAD, y);
     g.strokeStyle="#eee"; g.lineWidth=1; g.beginPath(); g.moveTo(PAD,y+16); g.lineTo(W-PAD,y+16); g.stroke();
     y+=22;
@@ -586,22 +596,22 @@ async function exportExcel(){
     ws.getCell("A2").value=`데이터확인 ${dt} · ${flt}`; ws.getCell("A2").font={color:{argb:"FF666666"}};
     ws.getCell("A3").value=`발생지역 ${lastSummary.regionCount} · 발생건수 ${lastSummary.caseCount} · 최근7일 ${lastSummary.last7d}`; ws.getCell("A3").font={bold:true};
     try{
-      const mc=await getMapCanvas(480, Math.round(480*MAP_ASPECT));
+      const mc=await getMapCanvas(480, Math.round(480*1.2));
       const dataUrl=mc.toDataURL("image/png");
       const imgId=wb.addImage({ base64:dataUrl.split(",")[1], extension:"png" });
-      ws.addImage(imgId, { tl:{col:0,row:4}, ext:{width:430,height:Math.round(430*MAP_ASPECT)} });
+      ws.addImage(imgId, { tl:{col:0,row:4}, ext:{width:430,height:Math.round(430*1.2)} });
     }catch(e){}
-    const head=5, cols=["지역","질병","축종","발생두수(마리)","발생일","종식일"].concat(admin?["농장명(농장주)"]:[]);
+    const head=5, cols=["번호","지역","질병","축종","발생두수(마리)","발생일","종식일"].concat(admin?["농장명(농장주)"]:[]);
     // 목록은 지도 오른쪽(H열~)에 표로 배치 (지도와 안 겹치게)
     const C0=8; // H열
     cols.forEach((c,i)=>{ const cell=ws.getRow(head).getCell(C0+i); cell.value=c; cell.font={bold:true}; cell.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FFEFEFEF"}}; });
     v.forEach((x,i)=>{
       const r=ws.getRow(head+1+i);
-      const row=[x.loc, x.disease, x.species, x.count, fmtYmd(x.occDe), (x.cessDe?fmtYmd(x.cessDe):"미등록")].concat(admin?[x.farm||""]:[]);
+      const row=[i+1, x.loc, x.disease, x.species, x.count, fmtYmd(x.occDe), (x.cessDe?fmtYmd(x.cessDe):"미등록")].concat(admin?[x.farm||""]:[]);
       row.forEach((val,j)=>{ r.getCell(C0+j).value=val; });
     });
     // 열너비
-    const widths={8:36,9:20,10:12,11:14,12:12,13:12,14:18};
+    const widths={8:7,9:36,10:20,11:12,12:14,13:12,14:12,15:18};
     Object.entries(widths).forEach(([c,w])=>{ ws.getColumn(Number(c)).width=w; });
     const buf=await wb.xlsx.writeBuffer();
     const blob=new Blob([buf], {type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
@@ -642,12 +652,12 @@ async function openArea(scope){
     const d=await api(p); if(!d.ok) throw new Error(d.message);
     let html="";
     if(scope.ri){
-      html += d.ri.count>0 ? `<div class="banner-ok">해당 리 · 최근 발생 ${d.ri.count}건</div>`+d.ri.items.map(cardHTML).join("") : `<div class="banner-none">해당 리 · 최근 발생 없음</div>`;
+      html += d.ri.count>0 ? `<div class="banner-ok">해당 리 · 최근 발생 ${d.ri.count}건</div>`+d.ri.items.map((x,i)=>cardHTML(x,i+1)).join("") : `<div class="banner-none">해당 리 · 최근 발생 없음</div>`;
       html += `<div class="sec-label">같은 읍·면·동 <b>${d.emd.count}건</b></div>`;
-      html += d.emd.count ? d.emd.items.map(cardHTML).join("") : '<div class="empty" style="padding:16px">발생 없음</div>';
+      html += d.emd.count ? d.emd.items.map((x,i)=>cardHTML(x,i+1)).join("") : '<div class="empty" style="padding:16px">발생 없음</div>';
     }
     html += `<div class="sec-label">${scope.ri?"같은 ":""}시·군·구 <b>${d.sigungu.count}건</b></div>`;
-    html += d.sigungu.count ? d.sigungu.items.map(cardHTML).join("") : '<div class="empty" style="padding:16px">해당 기간 발생 없음</div>';
+    html += d.sigungu.count ? d.sigungu.items.map((x,i)=>cardHTML(x,i+1)).join("") : '<div class="empty" style="padding:16px">해당 기간 발생 없음</div>';
     el("areaBody").innerHTML=html;
   }catch(e){ el("areaBody").innerHTML='<div class="empty">정보를 불러오지 못했습니다.</div>'; }
 }
@@ -663,11 +673,11 @@ async function exportHistExcel(){
     const wb=new ExcelJS.Workbook(); const ws=wb.addWorksheet("과거자료");
     ws.getCell("A1").value=(histScope.title||"전국")+" · 과거자료"; ws.getCell("A1").font={size:14,bold:true};
     ws.getCell("A2").value="총 "+Number(d.total).toLocaleString()+"건"+(histFilter.disease?(" · "+histFilter.disease):"")+(histFilter.species?(" · "+histFilter.species):"");
-    const cols=["시도","시군구","읍면동/리","질병","축종","발생두수(마리)","발생일","종식일"].concat(admin?["농장명(농장주)"]:[]);
+    const cols=["번호","시도","시군구","읍면동/리","질병","축종","발생두수(마리)","발생일","종식일"].concat(admin?["농장명(농장주)"]:[]);
     const hr=3;
     cols.forEach((c,i)=>{ const cell=ws.getRow(hr).getCell(1+i); cell.value=c; cell.font={bold:true}; cell.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FFEFEFEF"}}; });
-    list.forEach((x,i)=>{ const lp=locParts(x.loc); const row=[lp.sido,lp.sgg,lp.emdri,x.disease,x.species,x.count,fmtYmd(x.occDe),x.cessDe?fmtYmd(x.cessDe):"미등록"].concat(admin?[x.farm||""]:[]); const r=ws.getRow(hr+1+i); row.forEach((v,j)=>r.getCell(1+j).value=v); });
-    [16,18,24,18,12,14,12,12,18].forEach((w,i)=>{ ws.getColumn(1+i).width=w; });
+    list.forEach((x,i)=>{ const lp=locParts(x.loc); const row=[i+1,lp.sido,lp.sgg,lp.emdri,x.disease,x.species,x.count,fmtYmd(x.occDe),x.cessDe?fmtYmd(x.cessDe):"미등록"].concat(admin?[x.farm||""]:[]); const r=ws.getRow(hr+1+i); row.forEach((v,j)=>r.getCell(1+j).value=v); });
+    [7,16,18,24,18,12,14,12,12,18].forEach((w,i)=>{ ws.getColumn(1+i).width=w; });
     const buf=await wb.xlsx.writeBuffer();
     const blob=new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
     await saveFile(blob, "과거자료_"+(histScope.title||"전국").replace(/\s/g,"")+"_"+new Date().toISOString().slice(0,10)+".xlsx");
@@ -710,7 +720,7 @@ async function openYear(year){
     const d=await api(p);
     let html=`<button class="btn-more" id="backYear" style="margin-bottom:10px">← 연도별로</button>`;
     html+=`<div class="sec-label">${esc(histScope.title||"전국")} · ${year} · ${Number(d.total).toLocaleString()}건</div>`;
-    html+= d.items.length ? d.items.map(cardHTML).join("") : '<div class="empty">기록 없음</div>';
+    html+= d.items.length ? d.items.map((x,i)=>cardHTML(x,i+1)).join("") : '<div class="empty">기록 없음</div>';
     el("histBody").innerHTML=html;
     el("backYear").onclick=loadHist;
   }catch(e){ el("histBody").innerHTML='<div class="empty">정보를 불러오지 못했습니다.</div>'; }
