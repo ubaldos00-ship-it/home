@@ -1,4 +1,4 @@
-<!-- disease.html (v7) · 저장: 2026-08-27 20:08 KST · 핀탭=홈목록필터(카운트일치) + area가 기간·질병필터 반영 + 캔버스지도에 전국 해안선 윤곽 + (v6)자체canvas이미지·상태유지·농장정보·핀변경·위성토글 -->
+<!-- disease.html (v8) · 저장: 2026-08-28 04:08 KST · 지도윤곽 정밀화 + 캡처 링크주소 제거 + 엑셀(전체목록+지도이미지) 내보내기 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -114,7 +114,7 @@
   <header>
     <div class="h-top">
       <button id="backBtn" class="nav-btn hidden">← 뒤로</button>
-      <div class="h-title" id="hTitle">🐾 가축질병 현장정보 <span style="font-size:11px;color:#c9962b;font-weight:800;">v7</span></div>
+      <div class="h-title" id="hTitle">🐾 가축질병 현장정보 <span style="font-size:11px;color:#c9962b;font-weight:800;">v8</span></div>
       <a href="https://ubaldos00-ship-it.github.io/home/" class="hub-btn" aria-label="홈">🏠 홈</a>
     </div>
     <div class="h-time" id="dataTime">데이터 확인 중…</div>
@@ -154,7 +154,8 @@
       <button class="chip cat" data-cat="etc">기타</button>
     </div>
     <div class="share-row">
-      <button id="btnCap">🖼 결과 이미지 저장 / 공유</button>
+      <button id="btnCap">🖼 이미지 저장/공유</button>
+      <button id="btnExcel">📊 엑셀(전체)</button>
     </div>
 
     <div class="summary">
@@ -181,7 +182,7 @@
     <div class="btn-row">
       <button class="btn" id="btnHistHome">전국 과거자료</button>
     </div>
-    <div class="note">본 정보는 농림축산검역본부 공개데이터 기준이며 방역 판단 자료가 아닙니다. 최종 방문 여부는 소속기관 지침에 따르세요.<br><span style="color:#c9962b;font-weight:700;">화면버전 v7</span></div>
+    <div class="note">본 정보는 농림축산검역본부 공개데이터 기준이며 방역 판단 자료가 아닙니다. 최종 방문 여부는 소속기관 지침에 따르세요.<br><span style="color:#c9962b;font-weight:700;">화면버전 v8</span></div>
   </section>
 
   <section id="viewArea" class="hidden">
@@ -213,6 +214,7 @@
 </div>
 
 <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=d7a99b2a71a456ad75815e664f3dda20&libraries=services&autoload=false"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script>
 const RELAY = "https://induowdrembd3zhtym3ke6prcy0cgajf.lambda-url.ap-northeast-2.on.aws/";
 const SITE = "https://ubaldos00-ship-it.github.io/home/disease.html";
@@ -425,11 +427,13 @@ const ANCHORS=[
  {name:"울산",lat:35.54,lng:129.31},{name:"제주",lat:33.40,lng:126.55}
 ];
 const KOREA_PATH=[
- [126.62,37.75],[126.95,38.05],[127.45,38.30],[128.05,38.42],[128.38,38.60],[128.52,38.25],
- [129.02,37.65],[129.24,37.05],[129.42,36.45],[129.52,35.95],[129.46,35.55],[129.32,35.20],
- [129.05,35.10],[128.75,35.02],[128.42,34.86],[128.05,34.75],[127.75,34.92],[127.50,34.60],
- [127.22,34.35],[126.92,34.42],[126.70,34.34],[126.50,34.62],[126.40,35.05],[126.52,35.45],
- [126.42,35.95],[126.55,36.42],[126.72,36.92],[126.92,37.22],[126.60,37.42],[126.42,37.62],[126.62,37.75]
+ [126.68,37.78],[126.95,38.00],[127.20,38.28],[127.55,38.32],[128.00,38.35],[128.36,38.61],[128.52,38.30],
+ [128.72,38.05],[129.00,37.55],[129.12,37.10],[129.30,36.70],[129.40,36.30],[129.48,36.00],[129.56,35.75],
+ [129.48,35.55],[129.35,35.40],[129.30,35.20],[129.10,35.08],[128.90,35.02],[128.70,34.95],[128.55,34.80],
+ [128.40,34.86],[128.20,34.75],[128.00,34.82],[127.80,34.72],[127.65,34.90],[127.50,34.60],[127.35,34.75],
+ [127.20,34.35],[127.00,34.55],[126.90,34.38],[126.75,34.30],[126.60,34.45],[126.50,34.30],[126.42,34.65],
+ [126.48,35.00],[126.40,35.35],[126.52,35.62],[126.42,35.95],[126.60,36.20],[126.50,36.50],[126.68,36.80],
+ [126.85,37.05],[126.75,37.25],[126.55,37.40],[126.42,37.55],[126.55,37.70],[126.68,37.78]
 ];
 const JEJU={lng:126.53,lat:33.40,rx:0.34,ry:0.17};
 function roundRect(g,x,y,w,h,r){ g.beginPath(); g.moveTo(x+r,y); g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r); g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath(); }
@@ -504,7 +508,6 @@ function drawFullReport(){
   if(!listRows){ g.textAlign="center"; g.fillStyle="#999"; g.font="13px sans-serif"; g.fillText("조건에 맞는 발생이 없습니다.", W/2, y); y+=22; }
   y+=8; g.textAlign="center"; g.fillStyle="#aaa"; g.font="10.5px sans-serif";
   g.fillText("농림축산검역본부 공개데이터 · 방역 판단 자료 아님", W/2, y);
-  g.fillText(SITE, W/2, y+14);
   return cv;
 }
 el("btnCap").addEventListener("click",()=>{
@@ -516,6 +519,49 @@ el("btnCap").addEventListener("click",()=>{
     el("imgModal").classList.remove("hidden");
   }catch(e){ alert("이미지 생성에 실패했습니다."); }
 });
+
+/* 엑셀 내보내기 (지도이미지 + 목록 전체) */
+function fmtYmd(s){ if(!s||s.length<8) return s||""; return s.slice(0,4)+"-"+s.slice(4,6)+"-"+s.slice(6,8); }
+function mapCanvas(){ const W=480,H=520,c=document.createElement("canvas"); c.width=W; c.height=H; drawMapInto(c.getContext("2d"),_pinData,0,0,W,H); return c; }
+async function exportExcel(){
+  if(!window.ExcelJS){ alert("엑셀 모듈이 아직 로딩되지 않았습니다. 잠시 후 다시 시도하세요."); return; }
+  const btn=el("btnExcel"); const orig=btn.innerHTML; btn.innerHTML="⏳ 생성 중…"; btn.disabled=true;
+  try{
+    const v=currentView();
+    const dt=el("dataTime").textContent.replace("데이터 확인 ","");
+    const flt=`${curOffice} · ${periodLabel}`+(curCat?` · ${CAT_LABEL[curCat]}`:"")+(curQ?` · 검색:${curQ}`:"");
+    const wb=new ExcelJS.Workbook();
+    const ws=wb.addWorksheet("발생현황");
+    ws.getCell("A1").value="가축질병 현장정보"; ws.getCell("A1").font={size:16,bold:true};
+    ws.getCell("A2").value=`데이터확인 ${dt} · ${flt}`; ws.getCell("A2").font={color:{argb:"FF666666"}};
+    ws.getCell("A3").value=`발생지역 ${lastSummary.regionCount} · 발생건수 ${lastSummary.caseCount} · 최근7일 ${lastSummary.last7d}`; ws.getCell("A3").font={bold:true};
+    try{
+      const dataUrl=mapCanvas().toDataURL("image/png");
+      const imgId=wb.addImage({ base64:dataUrl.split(",")[1], extension:"png" });
+      ws.addImage(imgId, { tl:{col:0,row:4}, ext:{width:420,height:455} });
+    }catch(e){}
+    const head=5, cols=["지역","질병","축종","발생두수(마리)","발생일","종식일"].concat(admin?["농장명(농장주)"]:[]);
+    // 목록은 지도 오른쪽(H열~)에 표로 배치 (지도와 안 겹치게)
+    const C0=8; // H열
+    cols.forEach((c,i)=>{ const cell=ws.getRow(head).getCell(C0+i); cell.value=c; cell.font={bold:true}; cell.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FFEFEFEF"}}; });
+    v.forEach((x,i)=>{
+      const r=ws.getRow(head+1+i);
+      const row=[x.loc, x.disease, x.species, x.count, fmtYmd(x.occDe), (x.cessDe?fmtYmd(x.cessDe):"미등록")].concat(admin?[x.farm||""]:[]);
+      row.forEach((val,j)=>{ r.getCell(C0+j).value=val; });
+    });
+    // 열너비
+    const widths={8:36,9:20,10:12,11:14,12:12,13:12,14:18};
+    Object.entries(widths).forEach(([c,w])=>{ ws.getColumn(Number(c)).width=w; });
+    const buf=await wb.xlsx.writeBuffer();
+    const blob=new Blob([buf], {type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+    const fname="가축질병_"+curOffice+"_"+new Date().toISOString().slice(0,10)+".xlsx";
+    const file=new File([blob], fname, {type:blob.type});
+    if(navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], title:fname}); }
+    else { const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=fname; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },1000); }
+  }catch(e){ if(e&&e.name==="AbortError"){} else alert("엑셀 내보내기에 실패했습니다."); }
+  finally{ btn.innerHTML=orig; btn.disabled=false; }
+}
+el("btnExcel").addEventListener("click", exportExcel);
 el("imgClose").addEventListener("click",()=>el("imgModal").classList.add("hidden"));
 el("imgModal").addEventListener("click",e=>{ if(e.target===el("imgModal")) el("imgModal").classList.add("hidden"); });
 el("btnImgSave").addEventListener("click",()=>{
