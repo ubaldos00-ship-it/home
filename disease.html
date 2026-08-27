@@ -449,7 +449,6 @@ const MAP_BBOX={latMax:43.0,latMin:32.9,lngMin:124.0,lngMax:132.2};
 const MAP_ASPECT=(MAP_BBOX.latMax-MAP_BBOX.latMin)/((MAP_BBOX.lngMax-MAP_BBOX.lngMin)*Math.cos(38*Math.PI/180));
 function roundRect(g,x,y,w,h,r){ g.beginPath(); g.moveTo(x+r,y); g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r); g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath(); }
 function trunc(g,s,max){ s=s||""; if(g.measureText(s).width<=max) return s; while(s.length>1 && g.measureText(s+"…").width>max) s=s.slice(0,-1); return s+"…"; }
-const VWORLD_KEY="00EB5BC0-22B4-3B7E-89D1-341699F7CE05";
 let curMapType="road";
 function drawPins(g,pins,proj){
   pins.forEach(p=>{
@@ -465,24 +464,23 @@ function drawPins(g,pins,proj){
   });
 }
 function lngLatToMerc(lng,lat){ const x=lng*20037508.34/180; let y=Math.log(Math.tan((90+lat)*Math.PI/360))/(Math.PI/180); return [x, y*20037508.34/180]; }
-function loadImg(url){ return new Promise((res,rej)=>{ const im=new Image(); im.crossOrigin="anonymous"; const t=setTimeout(()=>rej(new Error("timeout")),8000); im.onload=()=>{clearTimeout(t);res(im);}; im.onerror=()=>{clearTimeout(t);rej(new Error("err"));}; im.src=url; }); }
-async function vworldMapCanvas(w,h){
-  const cx=127.8, cy=36.6, zoom=7;
-  const basemap=curMapType==="sky"?"PHOTO":"GRAPHIC";
-  const url=`https://api.vworld.kr/req/image?service=image&request=GetMap&version=1.0.0&crs=EPSG:4326&center=${cx},${cy}&zoom=${zoom}&size=${w},${h}&format=png&basemap=${basemap}&key=${VWORLD_KEY}`;
-  const img=await loadImg(url);
-  const c=document.createElement("canvas"); c.width=w; c.height=h; const g=c.getContext("2d");
-  g.drawImage(img,0,0,w,h);
-  const resM=156543.03392804097/Math.pow(2,zoom);
-  const [Cx,Cy]=lngLatToMerc(cx,cy);
-  const proj=(lat,lng)=>{ const [mx,my]=lngLatToMerc(lng,lat); return [ w/2+(mx-Cx)/resM, h/2-(my-Cy)/resM ]; };
-  drawPins(g,_pinData,proj);
-  c.toDataURL("image/png");
-  return c;
-}
+function loadImg(url){ return new Promise((res,rej)=>{ const im=new Image(); const t=setTimeout(()=>rej(new Error("timeout")),8000); im.onload=()=>{clearTimeout(t);res(im);}; im.onerror=()=>{clearTimeout(t);rej(new Error("err"));}; im.src=url; }); }
 async function getMapCanvas(w,h){
-  try{ if(!VWORLD_KEY || VWORLD_KEY.indexOf("__")===0) throw new Error("nokey"); return await vworldMapCanvas(w,h); }
-  catch(e){ const c=document.createElement("canvas"); c.width=w; c.height=h; drawMapInto(c.getContext("2d"),_pinData,0,0,w,h); return c; }
+  try{
+    const cx=127.8, cy=36.6, zoom=7; const [Cx,Cy]=lngLatToMerc(cx,cy);
+    const basemap=curMapType==="sky"?"PHOTO":"GRAPHIC";
+    const r=await api({mode:"staticmap", center:Cx.toFixed(2)+","+Cy.toFixed(2), zoom:zoom, size:w+","+h, basemap:basemap});
+    if(!r || !r.ok || !r.img) throw new Error("no img");
+    const img=await loadImg(r.img);
+    const c=document.createElement("canvas"); c.width=w; c.height=h; const g=c.getContext("2d");
+    g.drawImage(img,0,0,w,h);
+    const resM=156543.03392804097/Math.pow(2,zoom);
+    const proj=(lat,lng)=>{ const [mx,my]=lngLatToMerc(lng,lat); return [ w/2+(mx-Cx)/resM, h/2-(my-Cy)/resM ]; };
+    drawPins(g,_pinData,proj);
+    return c;
+  }catch(e){
+    const c=document.createElement("canvas"); c.width=w; c.height=h; drawMapInto(c.getContext("2d"),_pinData,0,0,w,h); return c;
+  }
 }
 function drawMapInto(g,pins,ox,oy,w,h){
   const {latMax,latMin,lngMin,lngMax}=MAP_BBOX;
