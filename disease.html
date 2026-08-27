@@ -1,4 +1,4 @@
-<!-- disease.html (v6) · 저장: 2026-08-27 16:50 KST · 상태유지 + 캡처 자체캔버스지도(무한대기 해결) + 농장정보(제목5클릭) + 럼피초록·발생수 파랑크게 + 위성/일반 토글 -->
+<!-- disease.html (v6) · 저장: 2026-08-27 16:50 KST · 결과이미지 100% 자체 canvas 렌더(html2canvas 제거→멈춤 불가) + 상태유지 + 농장정보(제목5클릭) + 럼피초록·발생수 파랑크게 + 위성/일반 토글 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -215,7 +215,6 @@
 <div id="capBusy" class="hidden">⏳ 이미지 생성 중…</div>
 
 <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=d7a99b2a71a456ad75815e664f3dda20&libraries=services&autoload=false"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 const RELAY = "https://induowdrembd3zhtym3ke6prcy0cgajf.lambda-url.ap-northeast-2.on.aws/";
 const SITE = "https://ubaldos00-ship-it.github.io/home/disease.html";
@@ -426,12 +425,13 @@ const ANCHORS=[
  {name:"대구",lat:35.87,lng:128.60},{name:"경남",lat:35.30,lng:128.30},{name:"부산",lat:35.18,lng:129.08},
  {name:"울산",lat:35.54,lng:129.31},{name:"제주",lat:33.40,lng:126.55}
 ];
-function drawMapCanvas(pins){
-  const W=480,H=560, latMax=38.7,latMin=32.9,lngMin=124.5,lngMax=131.0;
-  const cv=document.createElement("canvas"); cv.width=W; cv.height=H;
-  const g=cv.getContext("2d");
-  g.fillStyle="#eaf0f4"; g.fillRect(0,0,W,H);
-  const proj=(lat,lng)=>[ (lng-lngMin)/(lngMax-lngMin)*W, (latMax-lat)/(latMax-latMin)*H ];
+function roundRect(g,x,y,w,h,r){ g.beginPath(); g.moveTo(x+r,y); g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r); g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath(); }
+function trunc(g,s,max){ s=s||""; if(g.measureText(s).width<=max) return s; while(s.length>1 && g.measureText(s+"…").width>max) s=s.slice(0,-1); return s+"…"; }
+function drawMapInto(g,pins,ox,oy,w,h){
+  const latMax=38.7,latMin=32.9,lngMin=124.5,lngMax=131.0;
+  g.save(); roundRect(g,ox,oy,w,h,10); g.clip();
+  g.fillStyle="#eaf0f4"; g.fillRect(ox,oy,w,h);
+  const proj=(lat,lng)=>[ ox+(lng-lngMin)/(lngMax-lngMin)*w, oy+(latMax-lat)/(latMax-latMin)*h ];
   g.fillStyle="#aab4bd"; g.font="12px sans-serif"; g.textAlign="center"; g.textBaseline="middle";
   ANCHORS.forEach(a=>{ const [x,y]=proj(a.lat,a.lng); g.fillText(a.name,x,y); });
   pins.forEach(p=>{
@@ -445,57 +445,63 @@ function drawMapCanvas(pins){
     else { g.arc(bx,by,p.cat==="etc"?4:5,0,Math.PI*2); }
     g.fill(); g.stroke();
   });
+  g.restore();
+}
+// 리포트 전체를 canvas로 직접 렌더 (html2canvas 미사용 → 멈춤 불가)
+function drawFullReport(){
+  const v=currentView(); const pins=_pinData;
+  const W=520, PAD=18, mapW=W-PAD*2, mapH=Math.round(mapW*1.05);
+  const listRows=Math.min(v.length,22);
+  const H = PAD +26+20 +72 +mapH+8 +18 +16 +18 + listRows*22 +42 +PAD;
+  const S=2, cv=document.createElement("canvas"); cv.width=W*S; cv.height=H*S;
+  const g=cv.getContext("2d"); g.scale(S,S);
+  g.fillStyle="#ffffff"; g.fillRect(0,0,W,H);
+  let y=PAD;
+  g.textBaseline="top"; g.textAlign="left";
+  g.fillStyle="#1f2937"; g.font="800 20px sans-serif"; g.fillText("🐾 가축질병 현장정보", PAD, y); y+=27;
+  const dt=el("dataTime").textContent.replace("데이터 확인 ","");
+  const flt=`${curOffice} · ${periodLabel}`+(curCat?` · ${CAT_LABEL[curCat]}`:"")+(curQ?` · 검색:${curQ}`:"");
+  g.fillStyle="#8a8f96"; g.font="12px sans-serif"; g.fillText(trunc(g,"데이터 확인 "+dt+" · "+flt, mapW), PAD, y); y+=20;
+  const sw=(mapW-16)/3;
+  [["발생지역",lastSummary.regionCount],["발생건수",lastSummary.caseCount],["최근 7일",lastSummary.last7d]].forEach((s,i)=>{
+    const x=PAD+i*(sw+8);
+    g.fillStyle="#f4f5f7"; roundRect(g,x,y,sw,64,10); g.fill();
+    g.textAlign="center"; g.fillStyle="#1f2937"; g.font="800 23px sans-serif"; g.fillText(String(s[1]), x+sw/2, y+11);
+    g.fillStyle="#666"; g.font="11px sans-serif"; g.fillText(s[0], x+sw/2, y+42);
+  });
+  g.textAlign="left"; y+=72;
+  drawMapInto(g,pins,PAD,y,mapW,mapH);
+  g.strokeStyle="#e5e7eb"; g.lineWidth=1; roundRect(g,PAD,y,mapW,mapH,10); g.stroke(); y+=mapH+8;
+  const cats=Object.keys(CAT_LABEL);
+  g.font="11.5px sans-serif"; g.textBaseline="middle";
+  let totW=0; cats.forEach(k=>{ totW+=16+g.measureText(CAT_LABEL[k]).width+14; });
+  let lx=(W-totW)/2, ly=y+9;
+  cats.forEach(k=>{ g.fillStyle=CAT_HEX[k]; g.beginPath(); g.arc(lx+5,ly,5,0,Math.PI*2); g.fill(); g.fillStyle="#555"; g.textAlign="left"; g.fillText(CAT_LABEL[k], lx+13, ly); lx+=16+g.measureText(CAT_LABEL[k]).width+14; });
+  g.textBaseline="top"; y+=18;
+  g.fillStyle="#999"; g.font="10.5px sans-serif"; g.textAlign="center"; g.fillText("핀 위치는 실제 농가가 아닌 행정구역(시·군) 중심점 기준", W/2, y); y+=16;
+  g.textAlign="left"; g.fillStyle="#666"; g.font="700 12.5px sans-serif"; g.fillText(`발생 목록 (상위 ${listRows}건)`, PAD, y); y+=18;
+  for(let i=0;i<listRows;i++){ const x=v[i];
+    g.font="12.5px sans-serif"; g.textAlign="left"; g.fillStyle="#222";
+    const loc=x.loc+((admin&&x.farm)?(" · "+x.farm):"");
+    g.fillText(trunc(g,loc,mapW*0.56), PAD, y);
+    g.textAlign="right"; g.fillStyle="#666"; g.fillText(trunc(g,x.disease+" · "+fmtOcc(x.occDe),mapW*0.42), W-PAD, y);
+    g.strokeStyle="#eee"; g.lineWidth=1; g.beginPath(); g.moveTo(PAD,y+16); g.lineTo(W-PAD,y+16); g.stroke();
+    y+=22;
+  }
+  if(!listRows){ g.textAlign="center"; g.fillStyle="#999"; g.font="13px sans-serif"; g.fillText("조건에 맞는 발생이 없습니다.", W/2, y); y+=22; }
+  y+=8; g.textAlign="center"; g.fillStyle="#aaa"; g.font="10.5px sans-serif";
+  g.fillText("농림축산검역본부 공개데이터 · 방역 판단 자료 아님", W/2, y);
+  g.fillText(SITE, W/2, y+14);
   return cv;
 }
-function buildReportHTML(v){
-  const dt=el("dataTime").textContent.replace("데이터 확인 ","");
-  const flt=`${curOffice} · ${periodLabel}`+(curCat?` · ${CAT_LABEL[curCat]}`:"")+(curQ?` · 검색:${esc(curQ)}`:"");
-  const rows=v.slice(0,25).map(x=>`<div style="display:flex;justify-content:space-between;gap:10px;padding:6px 2px;border-bottom:1px solid #eee;font-size:12.5px;">
-    <span style="font-weight:700;color:#222;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(x.loc)}${(admin&&x.farm)?` <span style="color:#b45309;">· ${esc(x.farm)}</span>`:""}</span>
-    <span style="color:#666;white-space:nowrap;">${esc(x.disease)} · ${fmtOcc(x.occDe)}</span></div>`).join("");
-  const leg=Object.keys(CAT_LABEL).map(k=>`<span style="display:inline-flex;align-items:center;gap:4px;margin:0 6px;font-size:11.5px;color:#555;"><i style="display:inline-block;width:11px;height:11px;border-radius:50%;background:${CAT_HEX[k]}"></i>${CAT_LABEL[k]}</span>`).join("");
-  return `
-    <div style="font-size:19px;font-weight:800;">🐾 가축질병 현장정보</div>
-    <div style="font-size:12px;color:#888;margin:2px 0 10px;">데이터 확인 ${esc(dt)} · <b style="color:#1d6fe0;">${flt}</b></div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;">
-      <div style="background:#f4f5f7;border-radius:10px;padding:10px;text-align:center;"><div style="font-size:22px;font-weight:800;">${lastSummary.regionCount}</div><div style="font-size:11px;color:#666;">발생지역</div></div>
-      <div style="background:#f4f5f7;border-radius:10px;padding:10px;text-align:center;"><div style="font-size:22px;font-weight:800;">${lastSummary.caseCount}</div><div style="font-size:11px;color:#666;">발생건수</div></div>
-      <div style="background:#f4f5f7;border-radius:10px;padding:10px;text-align:center;"><div style="font-size:22px;font-weight:800;">${lastSummary.last7d}</div><div style="font-size:11px;color:#666;">최근 7일</div></div>
-    </div>
-    <div id="capMap" style="width:100%;border-radius:10px;border:1px solid #e5e7eb;overflow:hidden;line-height:0;"></div>
-    <div style="text-align:center;margin:7px 0 3px;">${leg}</div>
-    <div style="font-size:11px;color:#999;text-align:center;margin-bottom:8px;">핀 위치는 실제 농가가 아닌 행정구역(시·군) 중심점 기준</div>
-    <div style="font-size:12.5px;color:#666;font-weight:700;margin:4px 0 4px;">발생 목록 (상위 ${Math.min(v.length,25)}건)</div>
-    ${rows||'<div style="color:#999;text-align:center;padding:16px;font-size:13px;">조건에 맞는 발생이 없습니다.</div>'}
-    <div style="font-size:10.5px;color:#aaa;text-align:center;margin-top:12px;line-height:1.5;">농림축산검역본부 공개데이터 · 방역 판단 자료 아님<br>${SITE}</div>`;
-}
-function buildReport(){
-  const v=currentView();
-  el("reportCard").innerHTML=buildReportHTML(v);
-  const holder=el("capMap");
-  if(holder && _pinData.length){
-    const cv=drawMapCanvas(_pinData);
-    cv.style.width="100%"; cv.style.height="auto"; cv.style.display="block";
-    holder.innerHTML=""; holder.appendChild(cv);
-  } else if(holder){
-    holder.outerHTML='<div style="width:100%;padding:26px;text-align:center;color:#999;font-size:12.5px;background:#f4f5f7;border-radius:10px;">표시할 발생지역이 없습니다</div>';
-  }
-}
-el("btnCap").addEventListener("click",async()=>{
-  el("capBusy").classList.remove("hidden");
+el("btnCap").addEventListener("click",()=>{
   try{
-    buildReport();
-    await new Promise(r=>setTimeout(r,50));
-    const c=await Promise.race([
-      html2canvas(el("reportCard"),{useCORS:true,backgroundColor:"#ffffff",scale:2}),
-      new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout")),8000))
-    ]);
-    const url=c.toDataURL("image/png");
+    const cv=drawFullReport();
+    const url=cv.toDataURL("image/png");
     _capDataUrl=url; _capFname="가축질병_"+curOffice+"_"+new Date().toISOString().slice(0,10)+".png";
     el("imgPreview").src=url; el("imgFname").textContent=_capFname;
     el("imgModal").classList.remove("hidden");
-  }catch(e){ alert("이미지 생성에 실패했습니다. 잠시 후 다시 시도해주세요."); }
-  finally{ el("capBusy").classList.add("hidden"); }
+  }catch(e){ alert("이미지 생성에 실패했습니다."); }
 });
 el("imgClose").addEventListener("click",()=>el("imgModal").classList.add("hidden"));
 el("imgModal").addEventListener("click",e=>{ if(e.target===el("imgModal")) el("imgModal").classList.add("hidden"); });
