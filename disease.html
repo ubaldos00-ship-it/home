@@ -1,4 +1,4 @@
-<!-- disease.html (v5) · 저장: 2026-08-27 07:04 KST · 홈버튼(텐아르 홈) + 이미지 결과모달(저장/아이폰공유·파일저장) + 정적지도(캡처) -->
+<!-- disease.html (v6) · 저장: 2026-08-27 16:50 KST · 상태유지 + 캡처 지도포함 + 농장정보(제목5클릭) + 럼피초록·발생수 파랑크게 + 위성/일반 토글 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -12,7 +12,7 @@
     --accent:#1d6fe0; --accent-bg:#e8f1fd;
     --warn:#b45309; --warn-bg:#fef3e2;
     --red:#d64545; --red-bg:#fdecec;
-    --amber:#e08b16; --purple:#7c3aed; --blue:#1d6fe0; --gray:#9ca3af;
+    --amber:#e08b16; --purple:#7c3aed; --blue:#1d6fe0; --green:#2fa84f; --gray:#9ca3af;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{margin:0; padding:0;}
@@ -21,7 +21,7 @@
   header{position:sticky; top:0; z-index:10; background:var(--bg); padding:12px 0 8px; border-bottom:1px solid var(--line);}
   .h-top{display:flex; align-items:center; gap:8px;}
   .nav-btn{background:none; border:none; color:var(--accent); font-size:14px; font-weight:700; padding:4px 0; flex:0 0 auto;}
-  .h-title{font-size:18px; font-weight:700; display:flex; align-items:center; gap:6px;}
+  .h-title{font-size:18px; font-weight:700; display:flex; align-items:center; gap:6px; cursor:pointer; user-select:none;}
   .hub-btn{margin-left:auto; flex:0 0 auto; display:inline-flex; align-items:center; gap:4px; background:var(--accent); color:#fff; text-decoration:none; font-size:13px; font-weight:700; padding:7px 12px; border-radius:20px;}
   .h-time{font-size:12px; color:var(--t3); margin-top:2px;}
   .search-box{display:flex; gap:6px; margin-top:9px;}
@@ -43,8 +43,10 @@
   .stat .l{font-size:12px; color:var(--t2); margin-top:1px;}
   .sec-label{font-size:13px; color:var(--t2); margin:15px 2px 8px; font-weight:600;}
   .filter-tag{display:inline-block; font-size:12px; background:var(--accent-bg); color:var(--accent); border-radius:20px; padding:2px 10px; margin-left:6px; font-weight:600;}
+  .admin-tag{display:inline-block; font-size:12px; background:#fef3e2; color:#b45309; border-radius:20px; padding:2px 10px; margin-left:6px; font-weight:700;}
   .card{background:var(--card); border:1px solid var(--line); border-left-width:4px; border-radius:10px; padding:11px 13px; margin-bottom:8px;}
   .card .loc{font-size:16px; font-weight:700; line-height:1.35;}
+  .card .farm{color:#b45309; font-size:13.5px; font-weight:700; margin-left:4px;}
   .card .dis{font-size:14px; color:var(--accent); margin-top:2px; font-weight:600;}
   .card .meta{font-size:13px; color:var(--t2); margin-top:3px;}
   .card .meta .sep{color:var(--line2); margin:0 5px;}
@@ -58,8 +60,11 @@
   .hidden{display:none;}
   .subttl{font-size:15px; font-weight:700; margin:4px 0 10px; padding:11px 13px; background:var(--card); border:1px solid var(--line); border-radius:10px;}
   .note{font-size:12px; color:var(--t3); text-align:center; margin-top:18px; line-height:1.5;}
-  #mapWrap{margin:11px 0 4px;}
+  #mapWrap{margin:11px 0 4px; position:relative;}
   #map{width:100%; height:340px; border-radius:12px; border:1px solid var(--line); background:#e9edf1;}
+  #mapType{position:absolute; top:8px; right:8px; z-index:5; display:flex; background:#fff; border:1px solid var(--line2); border-radius:8px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,.15);}
+  #mapType button{border:none; background:#fff; color:var(--t2); font-size:12.5px; font-weight:600; padding:6px 12px;}
+  #mapType button.on{background:var(--accent); color:#fff;}
   .map-legend{display:flex; flex-wrap:wrap; gap:11px; justify-content:center; margin:8px 0 2px; font-size:12.5px; color:var(--t2);}
   .map-legend .lg{display:inline-flex; align-items:center; gap:5px;}
   .map-note{font-size:11.5px; color:var(--t3); text-align:center; margin-top:2px;}
@@ -67,16 +72,17 @@
   .mk-i.mk-asf{background:var(--red); border-radius:50%;}
   .mk-i.mk-etc{background:var(--gray); border-radius:50%;}
   .mk-i.mk-fmd{background:var(--purple); border-radius:2px; transform:rotate(45deg);}
-  .mk-i.mk-lumpy{background:var(--blue); border-radius:50% 50% 50% 0; transform:rotate(45deg);}
+  .mk-i.mk-lumpy{background:var(--green); border-radius:50% 50% 50% 0; transform:rotate(45deg);}
   .mk-i.mk-ai{width:0; height:0; background:none; border-left:7px solid transparent; border-right:7px solid transparent; border-bottom:12px solid var(--amber);}
+  /* 마커: 파랑 발생수(크게) + 작은 질병표시 */
   .mk{position:relative; transform:translate(-50%,-50%);}
-  .mk .sh{display:block; box-shadow:0 1px 3px rgba(0,0,0,.4);}
-  .mk-asf .sh{width:20px; height:20px; background:var(--red); border-radius:50%;}
-  .mk-etc .sh{width:15px; height:15px; background:var(--gray); border-radius:50%;}
-  .mk-fmd .sh{width:18px; height:18px; background:var(--purple); border-radius:3px; transform:rotate(45deg);}
-  .mk-lumpy .sh{width:18px; height:18px; background:var(--blue); border-radius:50% 50% 50% 0; transform:rotate(45deg);}
-  .mk-ai .sh{width:0; height:0; background:none; border-left:11px solid transparent; border-right:11px solid transparent; border-bottom:19px solid var(--amber); box-shadow:none; filter:drop-shadow(0 1px 2px rgba(0,0,0,.4));}
-  .mk .cnt{position:absolute; top:-10px; left:50%; transform:translateX(-50%); background:rgba(20,20,22,.62); color:#fff; font-size:11px; font-weight:700; border-radius:10px; padding:0 6px; line-height:16px; min-width:16px; text-align:center; white-space:nowrap;}
+  .mk .cbig{display:flex; align-items:center; justify-content:center; width:30px; height:30px; border-radius:50%; background:rgba(29,111,224,.92); color:#fff; font-size:13px; font-weight:800; border:2px solid #fff; box-shadow:0 1px 4px rgba(0,0,0,.4);}
+  .mk .sh{position:absolute; top:-5px; right:-6px; box-shadow:0 1px 2px rgba(0,0,0,.35);}
+  .mk-asf .sh{width:13px; height:13px; background:var(--red); border-radius:50%;}
+  .mk-etc .sh{width:11px; height:11px; background:var(--gray); border-radius:50%;}
+  .mk-fmd .sh{width:12px; height:12px; background:var(--purple); border-radius:2px; transform:rotate(45deg);}
+  .mk-lumpy .sh{width:12px; height:12px; background:var(--green); border-radius:50% 50% 50% 0; transform:rotate(45deg);}
+  .mk-ai .sh{width:0; height:0; background:none; border-left:7px solid transparent; border-right:7px solid transparent; border-bottom:12px solid var(--amber); box-shadow:none; filter:drop-shadow(0 1px 2px rgba(0,0,0,.35));}
   .filters{display:flex; gap:8px; margin:2px 0 10px;}
   .filters select{flex:1; height:40px; border:1px solid var(--line2); border-radius:10px; background:var(--card); color:var(--t1); font-size:14px; padding:0 10px;}
   .yr{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; gap:8px;}
@@ -84,7 +90,6 @@
   .yr .cnt2{font-size:13px; color:var(--t3); font-weight:400; margin-left:6px;}
   .yr .d{font-size:13.5px; color:var(--t2); margin-top:2px;}
   .chev{color:var(--t3);}
-  /* 이미지 결과 모달 */
   .modal{position:fixed; inset:0; z-index:100; background:rgba(0,0,0,.55); overflow-y:auto; padding:16px;}
   .modal-box{max-width:520px; margin:20px auto; background:#151515; color:#eee; border-radius:16px; padding:18px;}
   .modal-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;}
@@ -100,6 +105,7 @@
   .modal-file b{color:#7fd18a;}
   #imgPreview{width:100%; border-radius:10px; border:1px solid #333; display:block;}
   #reportCard{position:absolute; left:-99999px; top:0; width:520px; background:#fff; color:#1f2937; padding:18px; font-family:-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;}
+  #capBusy{position:fixed; inset:0; z-index:200; background:rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center; color:#fff; font-size:16px; font-weight:700;}
 </style>
 </head>
 <body>
@@ -108,7 +114,7 @@
   <header>
     <div class="h-top">
       <button id="backBtn" class="nav-btn hidden">← 뒤로</button>
-      <div class="h-title">🐾 가축질병 현장정보</div>
+      <div class="h-title" id="hTitle">🐾 가축질병 현장정보</div>
       <a href="https://ubaldos00-ship-it.github.io/home/" class="hub-btn" aria-label="홈">🏠 홈</a>
     </div>
     <div class="h-time" id="dataTime">데이터 확인 중…</div>
@@ -158,6 +164,7 @@
     </div>
 
     <div id="mapWrap">
+      <div id="mapType"><button data-mt="road" class="on">일반</button><button data-mt="sky">위성</button></div>
       <div id="map"></div>
       <div class="map-legend">
         <span class="lg"><i class="mk-i mk-asf"></i>ASF</span>
@@ -166,7 +173,7 @@
         <span class="lg"><i class="mk-i mk-lumpy"></i>럼피스킨</span>
         <span class="lg"><i class="mk-i mk-etc"></i>기타</span>
       </div>
-      <div class="map-note">핀의 숫자는 발생건수, 색·모양은 대표 질병(ASF›AI›FMD›럼피스킨›기타 순)입니다. 위치는 실제 농가가 아닌 행정구역(시·군) 중심점 기준.</div>
+      <div class="map-note">파랑 원 숫자는 발생건수, 옆의 작은 색·모양은 대표 질병(ASF›AI›FMD›럼피스킨›기타)입니다. 위치는 실제 농가가 아닌 행정구역(시·군) 중심점 기준.</div>
     </div>
 
     <div class="sec-label" id="homeLabel">발생 목록 · 최신순</div>
@@ -191,12 +198,11 @@
   <div id="reportCard"></div>
 </div>
 
-<!-- 이미지 결과 모달 -->
 <div id="imgModal" class="modal hidden">
   <div class="modal-box">
     <div class="modal-head"><span>📷 결과 이미지</span><button id="imgClose">✕ 닫기</button></div>
     <div class="modal-guide">
-      📱 <b>iPhone</b>: [iPhone 공유 / 파일에 저장] → 공유창에서 "사진에 추가" 또는 "파일에 저장"·"카카오톡"<br>
+      📱 <b>iPhone</b>: [iPhone 공유 / 파일에 저장] → 공유창에서 "사진에 추가"·"파일에 저장"·"카카오톡"<br>
       💻 <b>PC/Android</b>: [이미지 저장] → Downloads 폴더에 자동 저장
     </div>
     <div class="modal-warn">⚠️ 카톡 전송시 원본으로 전송해야 화질이 좋음</div>
@@ -206,6 +212,7 @@
     <img id="imgPreview" alt="결과 이미지 미리보기">
   </div>
 </div>
+<div id="capBusy" class="hidden">⏳ 이미지 생성 중…</div>
 
 <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=d7a99b2a71a456ad75815e664f3dda20&libraries=services&autoload=false"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -216,16 +223,35 @@ const SIDO_FULL = {"서울":"서울특별시","부산":"부산광역시","대구
 const OFFICE = {"전국":null,"동북청":["대구","경북","강원"],"동남청":["부산","울산","경남"],"경인청":["서울","인천","경기"],"충청청":["대전","세종","충남","충북"],"호남청":["전북","전남","광주","제주"]};
 const CAT_ORDER = ["asf","ai","fmd","lumpy","etc"];
 const CAT_LABEL = {asf:"ASF",ai:"AI",fmd:"FMD",lumpy:"럼피스킨",etc:"기타"};
-const CAT_HEX = {asf:"#d64545",ai:"#e08b16",fmd:"#7c3aed",lumpy:"#1d6fe0",etc:"#9ca3af"};
+const CAT_HEX = {asf:"#d64545",ai:"#e08b16",fmd:"#7c3aed",lumpy:"#2fa84f",etc:"#9ca3af"};
 
 let allItems=[];
 let curDays=90, curFrom="", curTo="", periodLabel="최근 3개월";
-let curOffice="전국", curCat="", curQ="";
+let curOffice="전국", curCat="", curQ="", admin=false;
 let lastSummary={regionCount:0,caseCount:0,last7d:0};
 let _map=null,_geocoder=null,_places=null,_overlays=[],_pinData=[];
 let _capDataUrl="", _capFname="";
 
 function el(id){return document.getElementById(id);}
+function saveState(){ try{ sessionStorage.setItem("diseaseState", JSON.stringify({curOffice,curDays,curFrom,curTo,curCat,curQ,periodLabel,admin})); }catch(e){} }
+function restoreState(){
+  try{
+    const s=JSON.parse(sessionStorage.getItem("diseaseState")||"null"); if(!s) return;
+    curOffice=s.curOffice||"전국"; curDays=s.curDays||90; curFrom=s.curFrom||""; curTo=s.curTo||"";
+    curCat=s.curCat||""; curQ=s.curQ||""; periodLabel=s.periodLabel||"최근 3개월"; admin=!!s.admin;
+    [...el("officeChips").children].forEach(x=>x.classList.toggle("on",x.dataset.off===curOffice));
+    [...el("catChips").children].forEach(x=>x.classList.toggle("on",x.dataset.cat===curCat));
+    if(curFrom||curTo){
+      [...el("period").querySelectorAll("[data-d]")].forEach(x=>x.classList.remove("on"));
+      el("btnRange").classList.add("on");
+      if(curFrom) el("fromM").value=curFrom.slice(0,4)+"-"+curFrom.slice(4,6);
+      if(curTo) el("toM").value=curTo.slice(0,4)+"-"+curTo.slice(4,6);
+    } else {
+      [...el("period").querySelectorAll("[data-d]")].forEach(x=>x.classList.toggle("on",Number(x.dataset.d)===curDays));
+    }
+    if(curQ) el("q").value=curQ;
+  }catch(e){}
+}
 function show(view){
   ["viewHome","viewArea","viewHist"].forEach(v=>el(v).classList.add("hidden"));
   el(view).classList.remove("hidden");
@@ -253,8 +279,9 @@ function sgg2FromSgg(sgg){ const t=sgg.split(" "); return t.length>=3?t.slice(0,
 function catColor(c){ return CAT_HEX[c]||"#9ca3af"; }
 function cardHTML(x){
   const lv=levelsFromLoc(x.loc);
+  const farm=(admin && x.farm) ? `<span class="farm">· ${esc(x.farm)}</span>` : "";
   return `<div class="card" data-sgg="${esc(lv.sgg)}" data-emd="${esc(lv.emd)}" data-ri="${esc(lv.ri)}" data-title="${esc(x.loc)}" style="border-left-color:${catColor(diseaseCat(x.disease))}">
-    <div class="loc">${esc(x.loc)||"-"}</div>
+    <div class="loc">${esc(x.loc)||"-"}${farm}</div>
     <div class="dis">${esc(x.disease)||"-"} · ${esc(x.species)||"-"}</div>
     <div class="meta">${fmtOcc(x.occDe)} 발생<span class="sep">|</span>${x.count?Number(x.count).toLocaleString()+"마리":"두수 미상"}<span class="sep">|</span>${fmtCess(x.cessDe)}</div>
   </div>`;
@@ -296,9 +323,11 @@ function applyFilters(){
   if(curOffice!=="전국") tag+=` <span class="filter-tag">${curOffice}</span>`;
   if(curQ) tag+=` <span class="filter-tag">검색: ${esc(curQ)}</span>`;
   if(curCat) tag+=` <span class="filter-tag">${CAT_LABEL[curCat]}</span>`;
+  if(admin) tag+=` <span class="admin-tag">농장정보 ON</span>`;
   el("homeLabel").innerHTML=`${periodLabel} 발생 목록 · 최신순${tag}`;
   el("homeList").innerHTML = v.length ? v.slice(0,200).map(cardHTML).join("") : '<div class="empty">조건에 맞는 발생이 없습니다.</div>';
   renderPins(v);
+  saveState();
 }
 
 /* 지도 */
@@ -338,7 +367,7 @@ async function renderPins(items){
     _pinData.push({sgg:p.sgg,total:p.total,cat,lat:c[0],lng:c[1]});
     const d=document.createElement("div");
     d.className="mk mk-"+cat;
-    d.innerHTML=`<span class="sh"></span><span class="cnt">${p.total}</span>`;
+    d.innerHTML=`<span class="cbig">${p.total}</span><span class="sh"></span>`;
     d.onclick=()=>openArea({sgg:p.sgg,emd:"",ri:"",title:p.sgg});
     const ov=new kakao.maps.CustomOverlay({position:new kakao.maps.LatLng(c[0],c[1]),content:d,yAnchor:0.5,xAnchor:0.5,clickable:true});
     ov.setMap(_map); _overlays.push(ov);
@@ -374,26 +403,38 @@ el("q").addEventListener("keydown",e=>{ if(e.key==="Enter") doSearch(); });
 el("q").addEventListener("search",()=>{ if(el("q").value.trim()==="" && curQ){ curQ=""; applyFilters(); } });
 el("homeList").addEventListener("click",e=>{ const t=e.target.closest(".card"); if(!t)return; openArea({sgg:t.dataset.sgg,emd:t.dataset.emd,ri:t.dataset.ri,title:t.dataset.title}); });
 
-/* ── 결과 이미지 (캡처 → 모달) ── */
+/* 위성/일반 토글 */
+el("mapType").addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b||!_map)return;
+  [...el("mapType").children].forEach(x=>x.classList.toggle("on",x===b));
+  _map.setMapTypeId(b.dataset.mt==="sky"?kakao.maps.MapTypeId.HYBRID:kakao.maps.MapTypeId.ROADMAP);
+});
+
+/* 농장정보: 제목 5번 클릭 */
+let _tc=0, _tt=null;
+el("hTitle").addEventListener("click",()=>{
+  _tc++; clearTimeout(_tt); _tt=setTimeout(()=>{_tc=0;},1500);
+  if(_tc>=5){ _tc=0; admin=!admin; saveState(); alert(admin?"농장명·농장주 표시 ON":"농장명·농장주 표시 OFF"); applyFilters(); }
+});
+
+/* 결과 이미지 */
 function shapeDataUri(cat,count){
-  const c=document.createElement("canvas"); c.width=40; c.height=40; const g=c.getContext("2d");
-  g.fillStyle=CAT_HEX[cat]||"#9ca3af"; g.strokeStyle="rgba(0,0,0,.3)"; g.lineWidth=1.5;
-  const cx=20, cy=18, r=13;
-  g.beginPath();
-  if(cat==="ai"){ g.moveTo(cx,cy-r); g.lineTo(cx+r,cy+r*0.85); g.lineTo(cx-r,cy+r*0.85); g.closePath(); }
-  else if(cat==="fmd"){ g.moveTo(cx,cy-r); g.lineTo(cx+r,cy); g.lineTo(cx,cy+r); g.lineTo(cx-r,cy); g.closePath(); }
-  else if(cat==="lumpy"){ g.arc(cx,cy,r,0,Math.PI*2); }
-  else { g.arc(cx,cy,cat==="etc"?10:r,0,Math.PI*2); }
+  const c=document.createElement("canvas"); c.width=46; c.height=46; const g=c.getContext("2d");
+  g.beginPath(); g.arc(20,24,15,0,Math.PI*2); g.fillStyle="rgba(29,111,224,.95)"; g.fill(); g.lineWidth=2; g.strokeStyle="#fff"; g.stroke();
+  g.fillStyle="#fff"; g.font="bold 14px sans-serif"; g.textAlign="center"; g.textBaseline="middle"; g.fillText(String(count),20,24);
+  const bx=35, by=11, hex=CAT_HEX[cat]||"#9ca3af";
+  g.fillStyle=hex; g.strokeStyle="rgba(0,0,0,.25)"; g.lineWidth=1; g.beginPath();
+  if(cat==="ai"){ g.moveTo(bx,by-7); g.lineTo(bx+6,by+5); g.lineTo(bx-6,by+5); g.closePath(); }
+  else if(cat==="fmd"){ g.moveTo(bx,by-6); g.lineTo(bx+6,by); g.lineTo(bx,by+6); g.lineTo(bx-6,by); g.closePath(); }
+  else { g.arc(bx,by,cat==="etc"?5:6,0,Math.PI*2); }
   g.fill(); g.stroke();
-  g.fillStyle="#fff"; g.font="bold 12px sans-serif"; g.textAlign="center"; g.textBaseline="middle";
-  g.fillText(String(count), cx, cat==="ai"?cy+4:cy);
   return c.toDataURL();
 }
 function buildReportHTML(v){
   const dt=el("dataTime").textContent.replace("데이터 확인 ","");
   const flt=`${curOffice} · ${periodLabel}`+(curCat?` · ${CAT_LABEL[curCat]}`:"")+(curQ?` · 검색:${esc(curQ)}`:"");
   const rows=v.slice(0,25).map(x=>`<div style="display:flex;justify-content:space-between;gap:10px;padding:6px 2px;border-bottom:1px solid #eee;font-size:12.5px;">
-    <span style="font-weight:700;color:#222;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(x.loc)}</span>
+    <span style="font-weight:700;color:#222;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(x.loc)}${(admin&&x.farm)?` <span style="color:#b45309;">· ${esc(x.farm)}</span>`:""}</span>
     <span style="color:#666;white-space:nowrap;">${esc(x.disease)} · ${fmtOcc(x.occDe)}</span></div>`).join("");
   const leg=Object.keys(CAT_LABEL).map(k=>`<span style="display:inline-flex;align-items:center;gap:4px;margin:0 6px;font-size:11.5px;color:#555;"><i style="display:inline-block;width:11px;height:11px;border-radius:50%;background:${CAT_HEX[k]}"></i>${CAT_LABEL[k]}</span>`).join("");
   return `
@@ -419,12 +460,12 @@ async function buildReport(withMap){
       const center=_map.getCenter(), level=_map.getLevel();
       try{
         const markers=_pinData.map(p=>({ position:new kakao.maps.LatLng(p.lat,p.lng),
-          image:new kakao.maps.MarkerImage(shapeDataUri(p.cat,p.total), new kakao.maps.Size(40,40), {offset:new kakao.maps.Point(20,18)}) }));
+          image:new kakao.maps.MarkerImage(shapeDataUri(p.cat,p.total), new kakao.maps.Size(46,46), {offset:new kakao.maps.Point(20,24)}) }));
         new kakao.maps.StaticMap(el("capMap"),{center,level,marker:markers});
       }catch(e){
         try{ new kakao.maps.StaticMap(el("capMap"),{center,level,marker:_pinData.map(p=>({position:new kakao.maps.LatLng(p.lat,p.lng)}))}); }catch(e2){}
       }
-      setTimeout(res,850);
+      setTimeout(res,1500);
     });
   } else {
     el("capMap").outerHTML='<div style="width:100%;padding:26px;text-align:center;color:#999;font-size:12.5px;background:#f4f5f7;border-radius:10px;">지도는 앱 화면에서 확인하세요</div>';
@@ -432,7 +473,8 @@ async function buildReport(withMap){
 }
 async function captureReport(){ const c=await html2canvas(el("reportCard"),{useCORS:true,backgroundColor:"#ffffff",scale:2}); return c.toDataURL("image/png"); }
 el("btnCap").addEventListener("click",async()=>{
-  const btn=el("btnCap"); const orig=btn.innerHTML; btn.innerHTML="⏳ 이미지 생성 중…"; btn.disabled=true;
+  el("capBusy").classList.remove("hidden");
+  el("reportCard").style.left="0"; el("reportCard").style.top="0";
   try{
     let url=null;
     try{ await buildReport(true); url=await captureReport(); }catch(e){ url=null; }
@@ -441,7 +483,7 @@ el("btnCap").addEventListener("click",async()=>{
     _capDataUrl=url; _capFname="가축질병_"+curOffice+"_"+new Date().toISOString().slice(0,10)+".png";
     el("imgPreview").src=url; el("imgFname").textContent=_capFname;
     el("imgModal").classList.remove("hidden");
-  } finally { btn.innerHTML=orig; btn.disabled=false; }
+  } finally { el("reportCard").style.left="-99999px"; el("capBusy").classList.add("hidden"); }
 });
 el("imgClose").addEventListener("click",()=>el("imgModal").classList.add("hidden"));
 el("imgModal").addEventListener("click",e=>{ if(e.target===el("imgModal")) el("imgModal").classList.add("hidden"); });
@@ -534,6 +576,7 @@ function initMap(){
   });
 }
 
+restoreState();
 fetchPeriod();
 initMap();
 </script>
