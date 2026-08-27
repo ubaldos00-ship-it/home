@@ -1,8 +1,17 @@
-<!-- 소이력관리_v10.html (배포명 cattle.html) · 저장: 2026-08-26 02:50 KST -->
-<!-- v9 → 저장 토스트 알림 · 수동입력 필드 노랑강조(입력완료시 흰색+파랑글자) · 엑셀 다운로드 후 화면유지 · 상단 이모지 🐂 -->
+<!-- 소이력관리_v11.html (배포명 cattle.html) · 저장: 2026-08-28 06:23 KST -->
+<!-- v10 → 방문 카운트(Abacus 전역, 실패시 이 기기 폴백) · Google Analytics(gtag) 추가 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>소 이력·출하·판매 관리</title>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PYTDP9E5YL"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-PYTDP9E5YL');
+</script>
 <style>
   :root{
     --bg:#f4f6f9; --card:#ffffff; --line:#e3e7ee; --fg:#4b5563; --mut:#94a0b0;
@@ -99,7 +108,7 @@
 <div class="wrap">
   <div class="topbar">
     <button id="btnBack" class="btn ghost">◀ 뒤로</button>
-    <div class="title" id="appTitle" style="cursor:pointer" title="제목을 5번 누르면 설정이 열립니다">🐂 소 이력제 조회 자동계산 <span class="ver">v10</span></div>
+    <div class="title" id="appTitle" style="cursor:pointer" title="제목을 5번 누르면 설정이 열립니다">🐂 소 이력제 조회 자동계산 <span class="ver">v11</span></div>
   </div>
 
   <!-- 설정 (제목 5번 탭 시 표시) -->
@@ -215,6 +224,10 @@
       </table>
     </div>
     <div id="statBox" style="margin-top:12px"></div>
+  </div>
+
+  <div style="text-align:center;color:var(--mut);font-size:12px;margin-top:16px">
+    🐂 소 이력제 조회 자동계산 · <span id="visitBox">방문 …</span>
   </div>
 </div>
 
@@ -716,6 +729,22 @@ $("btnAddSel").onclick=async()=>{
     setStatus(`⬆️ 선택 ${sel.length}두 추가 완료`,"ok"); await refreshList();
   }catch(e){ setStatus("❌ 추가 오류: "+escHtml(e.message||e),"bad"); }
 };
+
+/* 방문 카운트 (Abacus 전역 · 실패 시 이 기기 폴백) */
+const VISIT_NS="tenar-cattle", VISIT_KEY="visits";
+async function initVisit(){
+  const box=$("visitBox");
+  try{
+    const res=await fetch(`https://abacus.jasoncameron.dev/hit/${VISIT_NS}/${VISIT_KEY}`, {cache:"no-store"});
+    const j=await res.json();
+    if(j && typeof j.value==="number"){ box.textContent=`방문 ${j.value.toLocaleString("ko-KR")}회`; return; }
+    throw new Error("bad");
+  }catch(e){
+    let n=0; try{ n=(parseInt(store.get("cattle_visits")||"0",10)||0)+1; store.set("cattle_visits",String(n)); }catch(_){}
+    box.textContent=`방문 ${n.toLocaleString("ko-KR")}회 (이 기기)`;
+  }
+}
+initVisit();
 
 /* 시작 */
 openDB().then(refreshList).catch(e=>setStatus("❌ IndexedDB 오류: "+escHtml(e.message||e),"bad"));
