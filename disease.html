@@ -1,4 +1,4 @@
-<!-- disease.html (v8) · 저장: 2026-08-28 04:08 KST · 지도윤곽 정밀화 + 캡처 링크주소 제거 + 엑셀(전체목록+지도이미지) 내보내기 -->
+<!-- disease.html (v10) · 저장: 2026-08-28 05:00 KST · VWorld 실지도 이미지 합성(일반/위성, 실패시 자체윤곽 폴백) + (v9)한반도전체·통계축소·핀½·기간설정파랑·플랫폼별저장·과거자료엑셀 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -38,9 +38,9 @@
   .share-row{display:flex; gap:8px; margin:9px 0 2px;}
   .share-row button{flex:1; height:44px; border:none; border-radius:11px; background:var(--t1); color:#fff; font-size:14px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:6px;}
   .summary{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:11px 0;}
-  .stat{background:var(--card); border-radius:12px; padding:12px 4px; text-align:center; border:1px solid var(--line);}
-  .stat .n{font-size:24px; font-weight:700;}
-  .stat .l{font-size:12px; color:var(--t2); margin-top:1px;}
+  .stat{background:var(--card); border-radius:10px; padding:6px 4px; text-align:center; border:1px solid var(--line);}
+  .stat .n{font-size:20px; font-weight:700; line-height:1.1;}
+  .stat .l{font-size:11px; color:var(--t2); margin-top:0;}
   .sec-label{font-size:13px; color:var(--t2); margin:15px 2px 8px; font-weight:600;}
   .filter-tag{display:inline-block; font-size:12px; background:var(--accent-bg); color:var(--accent); border-radius:20px; padding:2px 10px; margin-left:6px; font-weight:600;}
   .admin-tag{display:inline-block; font-size:12px; background:#fef3e2; color:#b45309; border-radius:20px; padding:2px 10px; margin-left:6px; font-weight:700;}
@@ -61,7 +61,7 @@
   .subttl{font-size:15px; font-weight:700; margin:4px 0 10px; padding:11px 13px; background:var(--card); border:1px solid var(--line); border-radius:10px;}
   .note{font-size:12px; color:var(--t3); text-align:center; margin-top:18px; line-height:1.5;}
   #mapWrap{margin:11px 0 4px; position:relative;}
-  #map{width:100%; height:340px; border-radius:12px; border:1px solid var(--line); background:#e9edf1;}
+  #map{width:100%; height:470px; border-radius:12px; border:1px solid var(--line); background:#e9edf1;}
   #mapType{position:absolute; top:8px; right:8px; z-index:5; display:flex; background:#fff; border:1px solid var(--line2); border-radius:8px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,.15);}
   #mapType button{border:none; background:#fff; color:var(--t2); font-size:12.5px; font-weight:600; padding:6px 12px;}
   #mapType button.on{background:var(--accent); color:#fff;}
@@ -76,13 +76,13 @@
   .mk-i.mk-ai{width:0; height:0; background:none; border-left:7px solid transparent; border-right:7px solid transparent; border-bottom:12px solid var(--amber);}
   /* 마커: 파랑 발생수(크게) + 작은 질병표시 */
   .mk{position:relative; transform:translate(-50%,-50%);}
-  .mk .cbig{display:flex; align-items:center; justify-content:center; width:30px; height:30px; border-radius:50%; background:rgba(29,111,224,.92); color:#fff; font-size:13px; font-weight:800; border:2px solid #fff; box-shadow:0 1px 4px rgba(0,0,0,.4);}
-  .mk .sh{position:absolute; top:-5px; right:-6px; box-shadow:0 1px 2px rgba(0,0,0,.35);}
-  .mk-asf .sh{width:13px; height:13px; background:var(--red); border-radius:50%;}
-  .mk-etc .sh{width:11px; height:11px; background:var(--gray); border-radius:50%;}
-  .mk-fmd .sh{width:12px; height:12px; background:var(--purple); border-radius:2px; transform:rotate(45deg);}
-  .mk-lumpy .sh{width:12px; height:12px; background:var(--green); border-radius:50% 50% 50% 0; transform:rotate(45deg);}
-  .mk-ai .sh{width:0; height:0; background:none; border-left:7px solid transparent; border-right:7px solid transparent; border-bottom:12px solid var(--amber); box-shadow:none; filter:drop-shadow(0 1px 2px rgba(0,0,0,.35));}
+  .mk .cbig{display:flex; align-items:center; justify-content:center; width:20px; height:20px; border-radius:50%; background:rgba(29,111,224,.92); color:#fff; font-size:11px; font-weight:800; border:1.5px solid #fff; box-shadow:0 1px 3px rgba(0,0,0,.35);}
+  .mk .sh{position:absolute; top:-4px; right:-4px; box-shadow:0 1px 2px rgba(0,0,0,.3);}
+  .mk-asf .sh{width:9px; height:9px; background:var(--red); border-radius:50%;}
+  .mk-etc .sh{width:8px; height:8px; background:var(--gray); border-radius:50%;}
+  .mk-fmd .sh{width:9px; height:9px; background:var(--purple); border-radius:2px; transform:rotate(45deg);}
+  .mk-lumpy .sh{width:9px; height:9px; background:var(--green); border-radius:50% 50% 50% 0; transform:rotate(45deg);}
+  .mk-ai .sh{width:0; height:0; background:none; border-left:5px solid transparent; border-right:5px solid transparent; border-bottom:9px solid var(--amber); box-shadow:none; filter:drop-shadow(0 1px 2px rgba(0,0,0,.3));}
   .filters{display:flex; gap:8px; margin:2px 0 10px;}
   .filters select{flex:1; height:40px; border:1px solid var(--line2); border-radius:10px; background:var(--card); color:var(--t1); font-size:14px; padding:0 10px;}
   .yr{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; gap:8px;}
@@ -114,7 +114,7 @@
   <header>
     <div class="h-top">
       <button id="backBtn" class="nav-btn hidden">← 뒤로</button>
-      <div class="h-title" id="hTitle">🐾 가축질병 현장정보 <span style="font-size:11px;color:#c9962b;font-weight:800;">v8</span></div>
+      <div class="h-title" id="hTitle">🐾 가축질병 현장정보 <span style="font-size:11px;color:#c9962b;font-weight:800;">v10</span></div>
       <a href="https://ubaldos00-ship-it.github.io/home/" class="hub-btn" aria-label="홈">🏠 홈</a>
     </div>
     <div class="h-time" id="dataTime">데이터 확인 중…</div>
@@ -182,7 +182,7 @@
     <div class="btn-row">
       <button class="btn" id="btnHistHome">전국 과거자료</button>
     </div>
-    <div class="note">본 정보는 농림축산검역본부 공개데이터 기준이며 방역 판단 자료가 아닙니다. 최종 방문 여부는 소속기관 지침에 따르세요.<br><span style="color:#c9962b;font-weight:700;">화면버전 v8</span></div>
+    <div class="note">본 정보는 농림축산검역본부 공개데이터 기준이며 방역 판단 자료가 아닙니다. 최종 방문 여부는 소속기관 지침에 따르세요.<br><span style="color:#c9962b;font-weight:700;">화면버전 v10</span></div>
   </section>
 
   <section id="viewArea" class="hidden">
@@ -193,6 +193,7 @@
 
   <section id="viewHist" class="hidden">
     <div class="subttl" id="histTitle"></div>
+    <button class="btn-more" id="btnHistExcel" style="margin:0 0 10px;">📊 이 과거자료 엑셀 내보내기 (전체)</button>
     <div id="histBody"></div>
   </section>
 
@@ -384,7 +385,11 @@ el("period").addEventListener("click",e=>{
   periodLabel={7:"최근 7일",30:"최근 1개월",90:"최근 3개월",180:"최근 6개월",365:"최근 1년"}[curDays];
   fetchPeriod();
 });
-el("btnRange").addEventListener("click",()=>{ el("rangeBox").classList.toggle("hidden"); });
+el("btnRange").addEventListener("click",()=>{
+  const opening = el("rangeBox").classList.contains("hidden");
+  el("rangeBox").classList.toggle("hidden");
+  if(opening){ el("btnRange").classList.add("on"); [...el("period").querySelectorAll("[data-d]")].forEach(x=>x.classList.remove("on")); }
+});
 el("applyRange").addEventListener("click",()=>{
   const f=el("fromM").value, t=el("toM").value;
   if(!f&&!t){ alert("시작 또는 종료 년월을 선택하세요."); return; }
@@ -407,6 +412,7 @@ el("homeList").addEventListener("click",e=>{ const t=e.target.closest(".card"); 
 el("mapType").addEventListener("click",e=>{
   const b=e.target.closest("button"); if(!b||!_map)return;
   [...el("mapType").children].forEach(x=>x.classList.toggle("on",x===b));
+  curMapType=b.dataset.mt;
   _map.setMapTypeId(b.dataset.mt==="sky"?kakao.maps.MapTypeId.HYBRID:kakao.maps.MapTypeId.ROADMAP);
 });
 
@@ -427,47 +433,80 @@ const ANCHORS=[
  {name:"울산",lat:35.54,lng:129.31},{name:"제주",lat:33.40,lng:126.55}
 ];
 const KOREA_PATH=[
- [126.68,37.78],[126.95,38.00],[127.20,38.28],[127.55,38.32],[128.00,38.35],[128.36,38.61],[128.52,38.30],
- [128.72,38.05],[129.00,37.55],[129.12,37.10],[129.30,36.70],[129.40,36.30],[129.48,36.00],[129.56,35.75],
- [129.48,35.55],[129.35,35.40],[129.30,35.20],[129.10,35.08],[128.90,35.02],[128.70,34.95],[128.55,34.80],
- [128.40,34.86],[128.20,34.75],[128.00,34.82],[127.80,34.72],[127.65,34.90],[127.50,34.60],[127.35,34.75],
- [127.20,34.35],[127.00,34.55],[126.90,34.38],[126.75,34.30],[126.60,34.45],[126.50,34.30],[126.42,34.65],
- [126.48,35.00],[126.40,35.35],[126.52,35.62],[126.42,35.95],[126.60,36.20],[126.50,36.50],[126.68,36.80],
- [126.85,37.05],[126.75,37.25],[126.55,37.40],[126.42,37.55],[126.55,37.70],[126.68,37.78]
+ [124.35,39.95],[125.0,40.05],[125.9,40.9],[126.5,41.5],[127.3,41.6],[128.0,41.4],[128.9,42.0],[129.7,42.4],
+ [130.3,42.35],[130.65,42.28],[130.4,41.6],[129.8,40.9],[129.2,40.2],[128.6,39.6],[127.95,39.1],[127.55,39.55],
+ [128.35,38.62],[128.72,38.05],[129.00,37.55],[129.12,37.10],[129.30,36.70],[129.40,36.30],[129.48,36.00],
+ [129.56,35.75],[129.48,35.55],[129.35,35.40],[129.30,35.20],[129.10,35.08],[128.90,35.02],[128.70,34.95],
+ [128.55,34.80],[128.40,34.86],[128.20,34.75],[128.00,34.82],[127.80,34.72],[127.65,34.90],[127.50,34.60],
+ [127.35,34.75],[127.20,34.35],[127.00,34.55],[126.90,34.38],[126.75,34.30],[126.60,34.45],[126.50,34.30],
+ [126.42,34.65],[126.48,35.00],[126.40,35.35],[126.52,35.62],[126.42,35.95],[126.60,36.20],[126.50,36.50],
+ [126.68,36.80],[126.85,37.05],[126.75,37.25],[126.55,37.40],[126.10,37.75],[125.5,38.25],[125.35,38.65],
+ [124.75,39.15],[125.10,39.60],[124.35,39.95]
 ];
 const JEJU={lng:126.53,lat:33.40,rx:0.34,ry:0.17};
+const ISLANDS=[{name:"울릉도",lat:37.50,lng:130.87,r:3.5},{name:"독도",lat:37.24,lng:131.87,r:2.5}];
+const MAP_BBOX={latMax:43.0,latMin:32.9,lngMin:124.0,lngMax:132.2};
+const MAP_ASPECT=(MAP_BBOX.latMax-MAP_BBOX.latMin)/((MAP_BBOX.lngMax-MAP_BBOX.lngMin)*Math.cos(38*Math.PI/180));
 function roundRect(g,x,y,w,h,r){ g.beginPath(); g.moveTo(x+r,y); g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r); g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath(); }
 function trunc(g,s,max){ s=s||""; if(g.measureText(s).width<=max) return s; while(s.length>1 && g.measureText(s+"…").width>max) s=s.slice(0,-1); return s+"…"; }
+const VWORLD_KEY="00EB5BC0-22B4-3B7E-89D1-341699F7CE05";
+let curMapType="road";
+function drawPins(g,pins,proj){
+  pins.forEach(p=>{
+    const [x,y]=proj(p.lat,p.lng);
+    g.beginPath(); g.arc(x,y,9,0,Math.PI*2); g.fillStyle="rgba(29,111,224,.92)"; g.fill(); g.lineWidth=1.5; g.strokeStyle="#fff"; g.stroke();
+    g.fillStyle="#fff"; g.font="bold 10px sans-serif"; g.textAlign="center"; g.textBaseline="middle"; g.fillText(String(p.total),x,y);
+    const bx=x+8, by=y-8, hex=CAT_HEX[p.cat]||"#9ca3af";
+    g.fillStyle=hex; g.strokeStyle="rgba(0,0,0,.2)"; g.lineWidth=1; g.beginPath();
+    if(p.cat==="ai"){ g.moveTo(bx,by-5); g.lineTo(bx+4,by+3); g.lineTo(bx-4,by+3); g.closePath(); }
+    else if(p.cat==="fmd"){ g.moveTo(bx,by-4); g.lineTo(bx+4,by); g.lineTo(bx,by+4); g.lineTo(bx-4,by); g.closePath(); }
+    else { g.arc(bx,by,p.cat==="etc"?3:4,0,Math.PI*2); }
+    g.fill(); g.stroke();
+  });
+}
+function lngLatToMerc(lng,lat){ const x=lng*20037508.34/180; let y=Math.log(Math.tan((90+lat)*Math.PI/360))/(Math.PI/180); return [x, y*20037508.34/180]; }
+function loadImg(url){ return new Promise((res,rej)=>{ const im=new Image(); im.crossOrigin="anonymous"; const t=setTimeout(()=>rej(new Error("timeout")),8000); im.onload=()=>{clearTimeout(t);res(im);}; im.onerror=()=>{clearTimeout(t);rej(new Error("err"));}; im.src=url; }); }
+async function vworldMapCanvas(w,h){
+  const cx=127.8, cy=36.6, zoom=7;
+  const basemap=curMapType==="sky"?"PHOTO":"GRAPHIC";
+  const url=`https://api.vworld.kr/req/image?service=image&request=GetMap&version=1.0.0&crs=EPSG:4326&center=${cx},${cy}&zoom=${zoom}&size=${w},${h}&format=png&basemap=${basemap}&key=${VWORLD_KEY}`;
+  const img=await loadImg(url);
+  const c=document.createElement("canvas"); c.width=w; c.height=h; const g=c.getContext("2d");
+  g.drawImage(img,0,0,w,h);
+  const resM=156543.03392804097/Math.pow(2,zoom);
+  const [Cx,Cy]=lngLatToMerc(cx,cy);
+  const proj=(lat,lng)=>{ const [mx,my]=lngLatToMerc(lng,lat); return [ w/2+(mx-Cx)/resM, h/2-(my-Cy)/resM ]; };
+  drawPins(g,_pinData,proj);
+  c.toDataURL("image/png");
+  return c;
+}
+async function getMapCanvas(w,h){
+  try{ if(!VWORLD_KEY || VWORLD_KEY.indexOf("__")===0) throw new Error("nokey"); return await vworldMapCanvas(w,h); }
+  catch(e){ const c=document.createElement("canvas"); c.width=w; c.height=h; drawMapInto(c.getContext("2d"),_pinData,0,0,w,h); return c; }
+}
 function drawMapInto(g,pins,ox,oy,w,h){
-  const latMax=38.7,latMin=32.9,lngMin=124.5,lngMax=131.0;
+  const {latMax,latMin,lngMin,lngMax}=MAP_BBOX;
   g.save(); roundRect(g,ox,oy,w,h,10); g.clip();
   g.fillStyle="#d9e6ef"; g.fillRect(ox,oy,w,h);
   const proj=(lat,lng)=>[ ox+(lng-lngMin)/(lngMax-lngMin)*w, oy+(latMax-lat)/(latMax-latMin)*h ];
-  // 육지(전국 윤곽)
   g.beginPath();
   KOREA_PATH.forEach((p,i)=>{ const [x,y]=proj(p[1],p[0]); if(i===0) g.moveTo(x,y); else g.lineTo(x,y); });
-  g.closePath(); g.fillStyle="#eef3e8"; g.fill(); g.strokeStyle="#bcc8cf"; g.lineWidth=1.2; g.stroke();
-  const [jx,jy]=proj(JEJU.lat,JEJU.lng), [jx2]=proj(JEJU.lat,JEJU.lng+JEJU.rx), [,jy2]=proj(JEJU.lat-JEJU.ry,JEJU.lng);
+  g.closePath(); g.fillStyle="#eef3e8"; g.fill(); g.strokeStyle="#bcc8cf"; g.lineWidth=1.1; g.stroke();
+  const [jx,jy]=proj(JEJU.lat,JEJU.lng),[jx2]=proj(JEJU.lat,JEJU.lng+JEJU.rx),[,jy2]=proj(JEJU.lat-JEJU.ry,JEJU.lng);
   g.beginPath(); g.ellipse(jx,jy,Math.abs(jx2-jx),Math.abs(jy2-jy),0,0,Math.PI*2); g.fillStyle="#eef3e8"; g.fill(); g.strokeStyle="#bcc8cf"; g.stroke();
+  g.fillStyle="#eef3e8";
+  ISLANDS.forEach(o=>{ const [x,y]=proj(o.lat,o.lng); g.beginPath(); g.arc(x,y,o.r,0,Math.PI*2); g.fill(); g.stroke(); });
   g.fillStyle="#8a97a3"; g.font="12px sans-serif"; g.textAlign="center"; g.textBaseline="middle";
   ANCHORS.forEach(a=>{ const [x,y]=proj(a.lat,a.lng); g.fillText(a.name,x,y); });
-  pins.forEach(p=>{
-    const [x,y]=proj(p.lat,p.lng);
-    g.beginPath(); g.arc(x,y,13,0,Math.PI*2); g.fillStyle="rgba(29,111,224,.92)"; g.fill(); g.lineWidth=2; g.strokeStyle="#fff"; g.stroke();
-    g.fillStyle="#fff"; g.font="bold 12px sans-serif"; g.textAlign="center"; g.textBaseline="middle"; g.fillText(String(p.total),x,y);
-    const bx=x+11, by=y-11, hex=CAT_HEX[p.cat]||"#9ca3af";
-    g.fillStyle=hex; g.strokeStyle="rgba(0,0,0,.2)"; g.lineWidth=1; g.beginPath();
-    if(p.cat==="ai"){ g.moveTo(bx,by-6); g.lineTo(bx+5,by+4); g.lineTo(bx-5,by+4); g.closePath(); }
-    else if(p.cat==="fmd"){ g.moveTo(bx,by-5); g.lineTo(bx+5,by); g.lineTo(bx,by+5); g.lineTo(bx-5,by); g.closePath(); }
-    else { g.arc(bx,by,p.cat==="etc"?4:5,0,Math.PI*2); }
-    g.fill(); g.stroke();
-  });
+  g.font="10px sans-serif"; ISLANDS.forEach(o=>{ const [x,y]=proj(o.lat,o.lng); g.fillText(o.name,x,y-7); });
+  const [nx,ny]=proj(40.2,126.8); g.fillStyle="#c2cbd3"; g.font="14px sans-serif"; g.fillText("북한",nx,ny);
+  drawPins(g,pins,(lat,lng)=>proj(lat,lng));
   g.restore();
 }
 // 리포트 전체를 canvas로 직접 렌더 (html2canvas 미사용 → 멈춤 불가)
-function drawFullReport(){
+async function drawFullReport(){
   const v=currentView(); const pins=_pinData;
-  const W=520, PAD=18, mapW=W-PAD*2, mapH=Math.round(mapW*1.05);
+  const W=520, PAD=18, mapW=W-PAD*2, mapH=Math.round(mapW*MAP_ASPECT);
   const listRows=Math.min(v.length,22);
   const H = PAD +26+20 +72 +mapH+8 +18 +16 +18 + listRows*22 +42 +PAD;
   const S=2, cv=document.createElement("canvas"); cv.width=W*S; cv.height=H*S;
@@ -487,7 +526,8 @@ function drawFullReport(){
     g.fillStyle="#666"; g.font="11px sans-serif"; g.fillText(s[0], x+sw/2, y+42);
   });
   g.textAlign="left"; y+=72;
-  drawMapInto(g,pins,PAD,y,mapW,mapH);
+  const mc=await getMapCanvas(mapW,mapH);
+  g.save(); roundRect(g,PAD,y,mapW,mapH,10); g.clip(); g.drawImage(mc,PAD,y,mapW,mapH); g.restore();
   g.strokeStyle="#e5e7eb"; g.lineWidth=1; roundRect(g,PAD,y,mapW,mapH,10); g.stroke(); y+=mapH+8;
   const cats=Object.keys(CAT_LABEL);
   g.font="11.5px sans-serif"; g.textBaseline="middle";
@@ -510,19 +550,31 @@ function drawFullReport(){
   g.fillText("농림축산검역본부 공개데이터 · 방역 판단 자료 아님", W/2, y);
   return cv;
 }
-el("btnCap").addEventListener("click",()=>{
+el("btnCap").addEventListener("click",async()=>{
+  const btn=el("btnCap"); const o=btn.innerHTML; btn.innerHTML="⏳ 생성 중…"; btn.disabled=true;
   try{
-    const cv=drawFullReport();
+    const cv=await drawFullReport();
     const url=cv.toDataURL("image/png");
     _capDataUrl=url; _capFname="가축질병_"+curOffice+"_"+new Date().toISOString().slice(0,10)+".png";
     el("imgPreview").src=url; el("imgFname").textContent=_capFname;
     el("imgModal").classList.remove("hidden");
   }catch(e){ alert("이미지 생성에 실패했습니다."); }
+  finally{ btn.innerHTML=o; btn.disabled=false; }
 });
 
+/* 파일 저장: 모바일=공유시트, 데스크톱(맥/윈)=직접 다운로드 */
+async function saveFile(blob, fname){
+  const isMobile=/Android|iP(hone|ad|od)/.test(navigator.userAgent);
+  if(isMobile && navigator.share){
+    try{ const file=new File([blob],fname,{type:blob.type}); if(!navigator.canShare || navigator.canShare({files:[file]})){ await navigator.share({files:[file], title:fname}); return; } }
+    catch(e){ if(e&&e.name==="AbortError") return; }
+  }
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=fname; document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },1500);
+}
 /* 엑셀 내보내기 (지도이미지 + 목록 전체) */
 function fmtYmd(s){ if(!s||s.length<8) return s||""; return s.slice(0,4)+"-"+s.slice(4,6)+"-"+s.slice(6,8); }
-function mapCanvas(){ const W=480,H=520,c=document.createElement("canvas"); c.width=W; c.height=H; drawMapInto(c.getContext("2d"),_pinData,0,0,W,H); return c; }
+function locParts(loc){ const t=(loc||"").trim().split(/\s+/); const lv=levelsFromLoc(loc); const sgg=lv.sgg.split(" ").slice(1).join(" "); const rest=loc.startsWith(lv.sgg)?loc.slice(lv.sgg.length).trim():t.slice(sgg.split(" ").length+1).join(" "); return { sido:t[0]||"", sgg, emdri:rest }; }
 async function exportExcel(){
   if(!window.ExcelJS){ alert("엑셀 모듈이 아직 로딩되지 않았습니다. 잠시 후 다시 시도하세요."); return; }
   const btn=el("btnExcel"); const orig=btn.innerHTML; btn.innerHTML="⏳ 생성 중…"; btn.disabled=true;
@@ -536,9 +588,10 @@ async function exportExcel(){
     ws.getCell("A2").value=`데이터확인 ${dt} · ${flt}`; ws.getCell("A2").font={color:{argb:"FF666666"}};
     ws.getCell("A3").value=`발생지역 ${lastSummary.regionCount} · 발생건수 ${lastSummary.caseCount} · 최근7일 ${lastSummary.last7d}`; ws.getCell("A3").font={bold:true};
     try{
-      const dataUrl=mapCanvas().toDataURL("image/png");
+      const mc=await getMapCanvas(480, Math.round(480*MAP_ASPECT));
+      const dataUrl=mc.toDataURL("image/png");
       const imgId=wb.addImage({ base64:dataUrl.split(",")[1], extension:"png" });
-      ws.addImage(imgId, { tl:{col:0,row:4}, ext:{width:420,height:455} });
+      ws.addImage(imgId, { tl:{col:0,row:4}, ext:{width:430,height:Math.round(430*MAP_ASPECT)} });
     }catch(e){}
     const head=5, cols=["지역","질병","축종","발생두수(마리)","발생일","종식일"].concat(admin?["농장명(농장주)"]:[]);
     // 목록은 지도 오른쪽(H열~)에 표로 배치 (지도와 안 겹치게)
@@ -555,9 +608,7 @@ async function exportExcel(){
     const buf=await wb.xlsx.writeBuffer();
     const blob=new Blob([buf], {type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
     const fname="가축질병_"+curOffice+"_"+new Date().toISOString().slice(0,10)+".xlsx";
-    const file=new File([blob], fname, {type:blob.type});
-    if(navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], title:fname}); }
-    else { const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=fname; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },1000); }
+    await saveFile(blob, fname);
   }catch(e){ if(e&&e.name==="AbortError"){} else alert("엑셀 내보내기에 실패했습니다."); }
   finally{ btn.innerHTML=orig; btn.disabled=false; }
 }
@@ -603,6 +654,29 @@ async function openArea(scope){
   }catch(e){ el("areaBody").innerHTML='<div class="empty">정보를 불러오지 못했습니다.</div>'; }
 }
 el("btnAreaHist").addEventListener("click",()=>{ if(curArea) openHist(curArea); });
+async function exportHistExcel(){
+  if(!window.ExcelJS){ alert("엑셀 모듈이 아직 로딩되지 않았습니다. 잠시 후 다시 시도하세요."); return; }
+  const btn=el("btnHistExcel"); const o=btn.innerHTML; btn.innerHTML="⏳ 생성 중…"; btn.disabled=true;
+  try{
+    const p={mode:"history", limit:100000};
+    if(histScope.sgg) p.sgg=histScope.sgg; if(histScope.emd) p.emd=histScope.emd; if(histScope.ri) p.ri=histScope.ri;
+    if(histFilter.disease) p.disease=histFilter.disease; if(histFilter.species) p.species=histFilter.species;
+    const d=await api(p); const list=d.items||[];
+    const wb=new ExcelJS.Workbook(); const ws=wb.addWorksheet("과거자료");
+    ws.getCell("A1").value=(histScope.title||"전국")+" · 과거자료"; ws.getCell("A1").font={size:14,bold:true};
+    ws.getCell("A2").value="총 "+Number(d.total).toLocaleString()+"건"+(histFilter.disease?(" · "+histFilter.disease):"")+(histFilter.species?(" · "+histFilter.species):"");
+    const cols=["시도","시군구","읍면동/리","질병","축종","발생두수(마리)","발생일","종식일"].concat(admin?["농장명(농장주)"]:[]);
+    const hr=3;
+    cols.forEach((c,i)=>{ const cell=ws.getRow(hr).getCell(1+i); cell.value=c; cell.font={bold:true}; cell.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FFEFEFEF"}}; });
+    list.forEach((x,i)=>{ const lp=locParts(x.loc); const row=[lp.sido,lp.sgg,lp.emdri,x.disease,x.species,x.count,fmtYmd(x.occDe),x.cessDe?fmtYmd(x.cessDe):"미등록"].concat(admin?[x.farm||""]:[]); const r=ws.getRow(hr+1+i); row.forEach((v,j)=>r.getCell(1+j).value=v); });
+    [16,18,24,18,12,14,12,12,18].forEach((w,i)=>{ ws.getColumn(1+i).width=w; });
+    const buf=await wb.xlsx.writeBuffer();
+    const blob=new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+    await saveFile(blob, "과거자료_"+(histScope.title||"전국").replace(/\s/g,"")+"_"+new Date().toISOString().slice(0,10)+".xlsx");
+  }catch(e){ if(!(e&&e.name==="AbortError")) alert("엑셀 내보내기에 실패했습니다."); }
+  finally{ btn.innerHTML=o; btn.disabled=false; }
+}
+el("btnHistExcel").addEventListener("click", exportHistExcel);
 el("btnHistHome").addEventListener("click",()=>openHist({sgg:"",emd:"",ri:"",title:"전국"}));
 el("viewArea").addEventListener("click",e=>{ const t=e.target.closest(".card"); if(!t)return; openArea({sgg:t.dataset.sgg,emd:t.dataset.emd,ri:t.dataset.ri,title:t.dataset.title}); });
 
