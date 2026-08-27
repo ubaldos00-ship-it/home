@@ -1,4 +1,4 @@
-<!-- disease.html (v6) · 저장: 2026-08-27 16:50 KST · 결과이미지 100% 자체 canvas 렌더(html2canvas 제거→멈춤 불가) + 상태유지 + 농장정보(제목5클릭) + 럼피초록·발생수 파랑크게 + 위성/일반 토글 -->
+<!-- disease.html (v7) · 저장: 2026-08-27 20:08 KST · 핀탭=홈목록필터(카운트일치) + area가 기간·질병필터 반영 + 캔버스지도에 전국 해안선 윤곽 + (v6)자체canvas이미지·상태유지·농장정보·핀변경·위성토글 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -114,7 +114,7 @@
   <header>
     <div class="h-top">
       <button id="backBtn" class="nav-btn hidden">← 뒤로</button>
-      <div class="h-title" id="hTitle">🐾 가축질병 현장정보 <span style="font-size:11px;color:#c9962b;font-weight:800;">v6</span></div>
+      <div class="h-title" id="hTitle">🐾 가축질병 현장정보 <span style="font-size:11px;color:#c9962b;font-weight:800;">v7</span></div>
       <a href="https://ubaldos00-ship-it.github.io/home/" class="hub-btn" aria-label="홈">🏠 홈</a>
     </div>
     <div class="h-time" id="dataTime">데이터 확인 중…</div>
@@ -181,7 +181,7 @@
     <div class="btn-row">
       <button class="btn" id="btnHistHome">전국 과거자료</button>
     </div>
-    <div class="note">본 정보는 농림축산검역본부 공개데이터 기준이며 방역 판단 자료가 아닙니다. 최종 방문 여부는 소속기관 지침에 따르세요.<br><span style="color:#c9962b;font-weight:700;">화면버전 v6 (이미지 즉시생성)</span></div>
+    <div class="note">본 정보는 농림축산검역본부 공개데이터 기준이며 방역 판단 자료가 아닙니다. 최종 방문 여부는 소속기관 지침에 따르세요.<br><span style="color:#c9962b;font-weight:700;">화면버전 v7</span></div>
   </section>
 
   <section id="viewArea" class="hidden">
@@ -365,7 +365,7 @@ async function renderPins(items){
     const d=document.createElement("div");
     d.className="mk mk-"+cat;
     d.innerHTML=`<span class="cbig">${p.total}</span><span class="sh"></span>`;
-    d.onclick=()=>openArea({sgg:p.sgg,emd:"",ri:"",title:p.sgg});
+    d.onclick=()=>filterByRegion(p.sgg);
     const ov=new kakao.maps.CustomOverlay({position:new kakao.maps.LatLng(c[0],c[1]),content:d,yAnchor:0.5,xAnchor:0.5,clickable:true});
     ov.setMap(_map); _overlays.push(ov);
   });
@@ -395,6 +395,7 @@ el("applyRange").addEventListener("click",()=>{
 
 /* 검색 */
 function doSearch(){ curQ=el("q").value.trim(); goHome(); applyFilters(); }
+function filterByRegion(sgg){ curQ=sgg; el("q").value=sgg; goHome(); applyFilters(); const t=el("homeLabel"); if(t&&t.scrollIntoView) t.scrollIntoView({behavior:"smooth",block:"start"}); }
 el("btnSearch").addEventListener("click",doSearch);
 el("q").addEventListener("keydown",e=>{ if(e.key==="Enter") doSearch(); });
 el("q").addEventListener("search",()=>{ if(el("q").value.trim()==="" && curQ){ curQ=""; applyFilters(); } });
@@ -423,14 +424,28 @@ const ANCHORS=[
  {name:"대구",lat:35.87,lng:128.60},{name:"경남",lat:35.30,lng:128.30},{name:"부산",lat:35.18,lng:129.08},
  {name:"울산",lat:35.54,lng:129.31},{name:"제주",lat:33.40,lng:126.55}
 ];
+const KOREA_PATH=[
+ [126.62,37.75],[126.95,38.05],[127.45,38.30],[128.05,38.42],[128.38,38.60],[128.52,38.25],
+ [129.02,37.65],[129.24,37.05],[129.42,36.45],[129.52,35.95],[129.46,35.55],[129.32,35.20],
+ [129.05,35.10],[128.75,35.02],[128.42,34.86],[128.05,34.75],[127.75,34.92],[127.50,34.60],
+ [127.22,34.35],[126.92,34.42],[126.70,34.34],[126.50,34.62],[126.40,35.05],[126.52,35.45],
+ [126.42,35.95],[126.55,36.42],[126.72,36.92],[126.92,37.22],[126.60,37.42],[126.42,37.62],[126.62,37.75]
+];
+const JEJU={lng:126.53,lat:33.40,rx:0.34,ry:0.17};
 function roundRect(g,x,y,w,h,r){ g.beginPath(); g.moveTo(x+r,y); g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r); g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath(); }
 function trunc(g,s,max){ s=s||""; if(g.measureText(s).width<=max) return s; while(s.length>1 && g.measureText(s+"…").width>max) s=s.slice(0,-1); return s+"…"; }
 function drawMapInto(g,pins,ox,oy,w,h){
   const latMax=38.7,latMin=32.9,lngMin=124.5,lngMax=131.0;
   g.save(); roundRect(g,ox,oy,w,h,10); g.clip();
-  g.fillStyle="#eaf0f4"; g.fillRect(ox,oy,w,h);
+  g.fillStyle="#d9e6ef"; g.fillRect(ox,oy,w,h);
   const proj=(lat,lng)=>[ ox+(lng-lngMin)/(lngMax-lngMin)*w, oy+(latMax-lat)/(latMax-latMin)*h ];
-  g.fillStyle="#aab4bd"; g.font="12px sans-serif"; g.textAlign="center"; g.textBaseline="middle";
+  // 육지(전국 윤곽)
+  g.beginPath();
+  KOREA_PATH.forEach((p,i)=>{ const [x,y]=proj(p[1],p[0]); if(i===0) g.moveTo(x,y); else g.lineTo(x,y); });
+  g.closePath(); g.fillStyle="#eef3e8"; g.fill(); g.strokeStyle="#bcc8cf"; g.lineWidth=1.2; g.stroke();
+  const [jx,jy]=proj(JEJU.lat,JEJU.lng), [jx2]=proj(JEJU.lat,JEJU.lng+JEJU.rx), [,jy2]=proj(JEJU.lat-JEJU.ry,JEJU.lng);
+  g.beginPath(); g.ellipse(jx,jy,Math.abs(jx2-jx),Math.abs(jy2-jy),0,0,Math.PI*2); g.fillStyle="#eef3e8"; g.fill(); g.strokeStyle="#bcc8cf"; g.stroke();
+  g.fillStyle="#8a97a3"; g.font="12px sans-serif"; g.textAlign="center"; g.textBaseline="middle";
   ANCHORS.forEach(a=>{ const [x,y]=proj(a.lat,a.lng); g.fillText(a.name,x,y); });
   pins.forEach(p=>{
     const [x,y]=proj(p.lat,p.lng);
@@ -525,7 +540,9 @@ async function openArea(scope){
   el("areaTitle").textContent=scope.title;
   el("areaBody").innerHTML='<div class="loading">불러오는 중…</div>';
   try{
-    const p={mode:"area", sgg:scope.sgg, days:(curFrom||curTo)?365:curDays};
+    const p={mode:"area", sgg:scope.sgg};
+    if(curFrom||curTo){ if(curFrom)p.from=curFrom; if(curTo)p.to=curTo; } else p.days=curDays;
+    if(curCat) p.cat=curCat;
     if(scope.emd) p.emd=scope.emd; if(scope.ri) p.ri=scope.ri;
     const d=await api(p); if(!d.ok) throw new Error(d.message);
     let html="";
