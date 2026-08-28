@@ -1,4 +1,5 @@
-<!-- chungchi.html (v105) · 저장: 2026-08-29 06:07 KST · [v105] 저장/불러오기 「📍」 동작 변경 — 지도핀이 연결된 항목의 📍를 누르면 (기존처럼 위치저장 모드로 가지 않고) 지도가 그 저장핀 위치로 이동 + 「저장 위치」(연결 측정자료) 팝업을 여는 「보기」 모드(map?viewKey=키&app=chungchi)로 진입. 핀 미연결 항목은 종전대로 위치저장 모드. 주소칸 📍·측정전송 등 기존 동작 무변경. -->
+<!-- chungchi.html (v106) · 저장: 2026-08-29 07:42 KST · [v106] ①초기화(🔄) 시 자동저장(복원용) 데이터도 즉시 삭제 — 초기화/홈 후 다시 들어오면 이전 값이 복원되던 버그 수정. ②저장/불러오기 목록 표시 정리: 메인줄=작물명만, 주소는 「전체주소」 한 줄(잘림 없음), 주소 중복(라벨+📍줄) 제거. ③항목 버튼(잠금·위치·불러오기·휴지통)을 둘째 줄에 가로 균등폭 정렬. + [v114] 저장목록 📍=지도 저장핀 「보기」 모드(viewKey) 포함. 계산서식 변경 없음. -->
+<!-- (이전)  chungchi.html (v104) · 저장: 2026-08-18 17:30 KST · [v104] 저장/불러오기 주소표시·버튼 다음줄·JSON 버튼 색 -->
 <!-- (이전)  chungchi.html (v103) · 저장: 2026-08-16 23:20 KST · [v103] 온라인판 변경 없음 · 버전표기만 -->
 <!-- (이전)  chungchi.html (v102) · 저장: 2026-08-16 22:58 KST · [v102] 온라인판 변경 없음 · 오프라인 PWA판은 offline/chungchi.html · 버전표기만 -->
 <!-- (이전)  chungchi.html (v101) · 저장: 2026-08-16 22:12 KST · [v101] 온라인판 변경 없음 · 오프라인판은 offline/chungchi.html 로 별도 제공 · 버전표기만 -->
@@ -552,6 +553,11 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
 .sl-item-fav{padding:5px 6px;background:none;border:1.5px solid #e0ddd6;border-radius:7px;color:#aaa;font-size:16px;cursor:pointer;white-space:nowrap;flex-shrink:0;display:flex;align-items:center;justify-content:center;min-width:32px;height:32px;transition:all .15s;line-height:1;}
 .sl-item-fav.fav-on{border-color:#1558D6;background:#EBF3FF;}
 .sl-item-del.del-locked{opacity:.35;cursor:not-allowed;}
+/* [v105] 저장목록 항목 버튼(잠금·위치·불러오기·휴지통)을 둘째 줄에 가로 균등폭으로 정렬 */
+.sl-item-btns{display:flex;gap:6px;width:100%;margin-top:4px;flex-basis:100%;}
+.sl-item-btns>button{flex:1 1 0;min-width:0;height:36px;padding:0;font-size:17px;display:flex;align-items:center;justify-content:center;}
+.sl-item-map{background:#EBF3FF;border:1.5px solid #b3c8f0;border-radius:7px;color:#0A3A8C;cursor:pointer;transition:background .12s;}
+.sl-item-map:active{background:#d0e4ff;}
 .sl-item.sl-selected{background:#edfbe8;border:2px solid #3a7d44;}
 .sl-item.sl-selected .sl-item-label{color:#1a5c22;}
 .sl-empty{text-align:center;color:#bbb;font-size:13px;padding:22px 0;}
@@ -1812,6 +1818,9 @@ function resetAll(scrollTop=false){
   document.getElementById('regBars').innerHTML='';
   document.getElementById('ch2T').textContent='📊 지역별 10a당 수량 비교';
   updateHeadStatus();uAll();
+  /* [v105] 초기화 시 자동저장(복원용) 데이터도 즉시 삭제 — 그러지 않으면 초기화 후
+     곧바로 홈/이탈했다가 다시 들어올 때 이전 값이 복원되던 버그. (홈 버튼 goHome과 동일 처리) */
+  try{ localStorage.removeItem(CC_AUTO_KEY); }catch(e){}
   if(scrollTop){window.scrollTo({top:0,behavior:'smooth'});}
 }
 
@@ -2537,7 +2546,13 @@ function _slRenderList(){
   /* v44: 순서 변경 없이 원래 순서 유지 */
   el.innerHTML = raw.map(function(it, idx){
     var num = raw.length - idx;
-    var addrLine = it.addr ? '<div class="sl-item-addr">📍 '+it.addr+'</div>' : '';
+    /* [v105] 목록 표시 정리: 메인줄=작물명만, 주소는 전체주소(저장 데이터에서 읽어 잘리지 않게) 한 줄로,
+       기존 라벨(작물·주소·날짜)과 아래 📍주소 줄의 「주소 중복」을 제거한다. */
+    var fullAddr='';
+    try{ var _dd=JSON.parse(localStorage.getItem(CC_DATA_PFX+it.key)||'null'); if(_dd&&_dd.address) fullAddr=(_dd.address+'').trim(); }catch(e){}
+    if(!fullAddr) fullAddr = it.addr || '';
+    var cropName = it.crop || (it.label ? it.label.split(' · ')[0] : '');
+    var addrLine = fullAddr ? '<div class="sl-item-addr">📍 '+fullAddr+'</div>' : '';
     var locked = !!it.fav;
     var lockCls = locked?'sl-item-fav fav-on':'sl-item-fav';
     var lockIcon = locked?_LOCK_SVG:_UNLOCK_SVG;
@@ -2546,17 +2561,20 @@ function _slRenderList(){
     var delBtn = locked
       ?'<button class="sl-item-del del-locked" onclick="alert(\'🔒 잠금 해제 후 삭제하세요.\')" aria-label="삭제(잠금)">'+_TRASH_SVG+'</button>'
       :'<button class="sl-item-del" onclick="deleteSavedData(\''+it.key+'\')" aria-label="삭제">'+_TRASH_SVG+'</button>';
+    var mapBtn = it.addr?'<button class="sl-item-map '+(_tenarMapFavLinked('chungchi', it.key)?'sl-item-map-linked':'sl-item-map-unlinked')+'" onclick="slOpenMap(\''+it.key+'\')" aria-label="지도에서 위치보기" title="'+(_tenarMapFavLinked('chungchi', it.key)?'지도 핀 연결됨 · 위치보기':'지도 핀 미연결 · 누르면 지도에 저장')+'">📍</button>':'';
     return '<div class="sl-item'+selCls+'">'
       +'<div class="sl-item-num" style="'+numBg+'">'+num+'</div>'
       +'<div class="sl-item-info" onclick="slSelectItem(\''+it.key+'\')" style="cursor:pointer;">'
-        +'<div class="sl-item-label">'+_slItemSecIcon(it.key)+it.label+'</div>'
+        +'<div class="sl-item-label">'+_slItemSecIcon(it.key)+cropName+'</div>'
         +addrLine
         +'<div class="sl-item-date">'+(it.ymd||'')+' '+(it.hm||'')+'</div>'
       +'</div>'
-      +'<button class="'+lockCls+'" onclick="toggleFav(\''+it.key+'\')" aria-label="잠금">'+lockIcon+'</button>'
-      +(it.addr?'<button class="sl-item-load '+(_tenarMapFavLinked('chungchi', it.key)?'sl-item-map-linked':'sl-item-map-unlinked')+'" onclick="slOpenMap(\''+it.key+'\')" aria-label="지도에서 위치보기" title="'+(_tenarMapFavLinked('chungchi', it.key)?'지도 핀 연결됨 · 위치보기':'지도 핀 미연결 · 누르면 지도에 저장')+'">📍</button>':'')
-      +'<button class="sl-item-load" onclick="loadSavedData(\''+it.key+'\')" aria-label="불러오기">📂</button>'
-      +delBtn
+      +'<div class="sl-item-btns">'
+        +'<button class="'+lockCls+'" onclick="toggleFav(\''+it.key+'\')" aria-label="잠금">'+lockIcon+'</button>'
+        +mapBtn
+        +'<button class="sl-item-load" onclick="loadSavedData(\''+it.key+'\')" aria-label="불러오기">📂</button>'
+        +delBtn
+      +'</div>'
       +'</div>';
   }).join('');
 }
