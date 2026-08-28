@@ -1,4 +1,5 @@
-<!-- map_v107.html (v107 · TENAR V1.5) · 저장: 2026-08-29 07:54 KST · [v107] ①꾹눌러 저장 팝업 작물목록 24종으로 확장(논벼·마늘·양파·감자·배추·무·총각무·콩·겉보리·쌀보리·밀·사과·배·고추·참깨·고구마·가을감자·노지봄무·시설봄무·노지봄배추·시설봄배추·기타·미지정·응답자집). ②핀 색상 6→14색 확장(빨강·주황·노랑·초록·파랑·보라·분홍·청록·하늘·연두·남색·갈색·장미·회색)+색상칸 줄바꿈. ③면적/길이 「센터추가」가 화면 십자선과 다른 곳에 찍히던 버그 수정 — map.getCenter()(패딩 보정 지리중심) 대신 십자선(컨테이너 정중앙) 픽셀을 unproject 한 좌표에 점을 찍음(포구·측정 도구 공통). (v106 저장핀 보기모드 유지) -->
+<!-- map_v108.html (v108 · TENAR V1.5) · 저장: 2026-08-29 08:07 KST · [v108] 포구도구·측정도구 「조사표 전송」 후 조사표로 「이동이 안 되던(간헐)」 현상 수정 — ①측정도구를 지도에서 「바로」 시작(계산기 컨텍스트 없음)했을 때 전송이 저장만 되고 이동을 안 하던 것을, 합성 컨텍스트(app:chungchi·첫 재배면적 행 idx:0)로 청취조사표에 반영+이동하도록 수정. ②전송→이동 지연을 900ms→250ms로 단축해 「전송과 거의 동시에」 이동. (포구=tonghab·측정=chungchi 공통) · v107 이하(작물24종·핀14색·센터추가) 유지 -->
+<!-- (이전)  map_v107.html (v107 · TENAR V1.5) · 저장: 2026-08-29 07:54 KST · [v107] ①꾹눌러 저장 팝업 작물목록 24종으로 확장(논벼·마늘·양파·감자·배추·무·총각무·콩·겉보리·쌀보리·밀·사과·배·고추·참깨·고구마·가을감자·노지봄무·시설봄무·노지봄배추·시설봄배추·기타·미지정·응답자집). ②핀 색상 6→14색 확장(빨강·주황·노랑·초록·파랑·보라·분홍·청록·하늘·연두·남색·갈색·장미·회색)+색상칸 줄바꿈. ③면적/길이 「센터추가」가 화면 십자선과 다른 곳에 찍히던 버그 수정 — map.getCenter()(패딩 보정 지리중심) 대신 십자선(컨테이너 정중앙) 픽셀을 unproject 한 좌표에 점을 찍음(포구·측정 도구 공통). (v106 저장핀 보기모드 유지) -->
 <!-- (이전)  map_v106.html (v106 · TENAR V1.5) · 저장: 2026-08-29 07:42 KST · [v106] 저장/불러오기 「📍」 보기모드(viewFavInit·viewKey) -->
 <!-- (이전)  map_v104.html (v104 · TENAR V1.5) · 저장: 2026-08-18 17:30 KST · [v104] 이삭수 계산기(jusu) 지도연동 — save 모드 app=jusu면 jusu.html로 복귀(지번 전달). 그 외 변경 없음 -->
 <!-- (이전)  map_v103.html (v103 · TENAR V1.5) · 저장: 2026-08-16 23:20 KST · [v103] 오른쪽 도구버튼 6개 아래에 이름표(알약) 추가 — 핀표시·포구도구·면적길이·목록·조사구·위치. 원형 버튼은 그대로, 라벨은 버튼 자식이라 숨김상태도 함께 처리. 그 외 변경 없음. -->
@@ -7053,34 +7054,24 @@ TenarSecureStore.init('map',
       }));
     } catch (e) { showToast('전송 저장에 실패했습니다.', 3500); return; }
     showToast('청취조사표로 면적을 전송했습니다.\n' + formatNumber(t.totalM2, 1) + '㎡', 2600, 'success');
+    /* [v108] 전송과 「거의 동시에」 이동 — 예전 900ms 지연을 250ms로 단축(암호화 flush는 수십ms면 끝남) */
     setTimeout(function () {
       var back = 'chungchi.html';
       try { back = new URL('chungchi.html', location.href).href; } catch (e) {}
       window.location.href = back;
-    }, 900);
+    }, 250);
   }
 
   function sendAreaToSurvey() {
     /* [v26-6] 청취계산기에서 들어왔으면 그쪽 규약으로 보낸다 */
     if (ccMeasCtx()) { sendAreaToChungchi(); return; }
-    var t = measureTotals();
-    if (!(t.totalM2 > 0)) { showToast('전송할 면적이 없습니다.\n먼저 면적을 측정해주세요.', 3500, 'info'); return; }
-    var msg = '청취조사표로 면적을 전송하시겠습니까?\n\n' +
-              '측정 건수 ' + t.count + '건\n' +
-              '전체 면적합계 ' + formatNumber(t.totalM2, 1) + '㎡ (' + formatNumber(t.totalPyeong, 1) + '평)';
-    if (!window.confirm(msg)) return;
-    var rec = {
-      app: 'chungchi', type: 'area',
-      count: t.count,
-      currentM2: Math.round(t.currentM2 * 10) / 10,
-      totalM2: Math.round(t.totalM2 * 10) / 10,
-      totalPyeong: Math.round(t.totalPyeong * 10) / 10,
-      crop: surveyMeasureState.measCrop || (fp.ctx && fp.ctx.crop) || '',   /* [v83-1] 측정도구 작물 우선 */
-      savedAt: kstNowStr()
-    };
-    try { saveJSON(MEAS_AREA_RESULT_KEY, rec); } catch (e) { showToast('전송 저장에 실패했습니다.', 3500); return; }
-    showToast('청취조사표로 면적합계를 전송했습니다.\n' +
-              formatNumber(t.totalM2, 1) + '㎡ (' + formatNumber(t.totalPyeong, 1) + '평)', 4000, 'success');
+    /* [v108] 지도에서 「바로」 측정도구로 시작한 경우에도(계산기 컨텍스트 없음) 청취조사표로
+       전송 + 이동되도록 — 첫 재배면적 행(idx:0)에 반영되는 합성 컨텍스트를 만들고 청취 규약으로 보낸다.
+       (예전엔 이 경우 저장만 하고 이동을 안 해 「전송해도 조사표로 안 넘어감」 현상이 있었다) */
+    var t0 = measureTotals();
+    if (!(t0.totalM2 > 0)) { showToast('전송할 면적이 없습니다.\n먼저 면적을 측정해주세요.', 3500, 'info'); return; }
+    try { localStorage.setItem(CC_MEAS_CTX_KEY, JSON.stringify({ app: 'chungchi', idx: 0, ts: Date.now() })); } catch (e) {}
+    sendAreaToChungchi();
   }
 
   /* ===================================================================
@@ -9419,6 +9410,7 @@ TenarSecureStore.init('map',
     try { saveJSON(FP_RESULT_KEY, rec); } catch (e) {}
     showToast('조사표로 전송했습니다. 계산기로 돌아갑니다.' +
               (rec.ratioChanged ? '\n(비율도 ' + fp.ratio + '번으로 바꿉니다)' : ''), 2800, 'success');
+    /* [v108] 전송과 「거의 동시에」 이동 — 예전 900ms 지연을 250ms로 단축(tenar_fieldplot_result는 평문 즉시 저장) */
     setTimeout(function () {
       /* 계산기 화면으로 복귀 */
       /* [v18-8] 실측 통합조사표는 항상 같은 폴더의 tonghab.html 로 이동한다.
@@ -9428,7 +9420,7 @@ TenarSecureStore.init('map',
         back = new URL('tonghab.html', location.href).href;
       } catch (e) { back = 'tonghab.html'; }
       window.location.href = back;   /* 뒤로가기 차단(pushState) 때문에 history.back() 대신 주소 이동 */
-    }, 900);
+    }, 250);
   }
 
   /* ===================================================================
