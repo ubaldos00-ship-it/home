@@ -1,4 +1,4 @@
-<!-- chungchi.html (v104) · 저장: 2026-08-18 17:30 KST · [v104] ①저장/불러오기 항목: 주소 전체표시 + 버튼(잠금·핀저장·불러오기·휴지통) 다음 줄로 ②JSON 버튼 색을 통합계산기와 동일(공유 파랑·내보내기/불러오기 초록). 계산서식 변경 없음 -->
+<!-- chungchi.html (v105) · 저장: 2026-08-29 06:07 KST · [v105] 저장/불러오기 「📍」 동작 변경 — 지도핀이 연결된 항목의 📍를 누르면 (기존처럼 위치저장 모드로 가지 않고) 지도가 그 저장핀 위치로 이동 + 「저장 위치」(연결 측정자료) 팝업을 여는 「보기」 모드(map?viewKey=키&app=chungchi)로 진입. 핀 미연결 항목은 종전대로 위치저장 모드. 주소칸 📍·측정전송 등 기존 동작 무변경. -->
 <!-- (이전)  chungchi.html (v103) · 저장: 2026-08-16 23:20 KST · [v103] 온라인판 변경 없음 · 버전표기만 -->
 <!-- (이전)  chungchi.html (v102) · 저장: 2026-08-16 22:58 KST · [v102] 온라인판 변경 없음 · 오프라인 PWA판은 offline/chungchi.html · 버전표기만 -->
 <!-- (이전)  chungchi.html (v101) · 저장: 2026-08-16 22:12 KST · [v101] 온라인판 변경 없음 · 오프라인판은 offline/chungchi.html 로 별도 제공 · 버전표기만 -->
@@ -2612,6 +2612,11 @@ function slOpenMap(key){
     var d = s ? JSON.parse(s) : {};
     var a = (d.address||'').trim();
     if(!a){ alert('이 항목에는 필지 주소가 없습니다.'); return; }
+    /* [v114] 지도에 저장된 측정핀이 연결돼 있으면 → 위치저장 모드가 아니라 그 핀 「보기」로 이동 */
+    if(typeof _tenarMapFavLinked==='function' && _tenarMapFavLinked('chungchi', key)){
+      _tenarOpenMapUrl(_tenarMapBase() + '?viewKey=' + encodeURIComponent(key) + '&app=chungchi');
+      return;
+    }
     /* 목록에 저장된 작물명(it.crop) 우선 사용 — 작물명 누락 방지 */
     var item = (typeof _ccGetList==='function') ? _ccGetList().find(function(x){return x.key===key;}) : null;
     var crop = (item && item.crop) ? item.crop : (d.__sC || '');

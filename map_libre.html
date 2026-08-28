@@ -1,4 +1,5 @@
-<!-- map_v104.html (v104 · TENAR V1.5) · 저장: 2026-08-18 17:30 KST · [v104] 이삭수 계산기(jusu) 지도연동 — save 모드 app=jusu면 jusu.html로 복귀(지번 전달). 그 외 변경 없음 -->
+<!-- map_v105.html (v105 · TENAR V1.5) · 저장: 2026-08-29 06:07 KST · [v105] 저장/불러오기 「📍」 보기모드 추가 — 계산기(통합·청취) 저장목록에서 지도핀이 연결된 항목의 📍를 누르면 위치저장(save) 모드가 아니라 그 즐겨찾기 핀 위치로 이동 + 「저장 위치」(연결 측정자료) 팝업을 연다(viewKey=surveyKey&app=). save/measure/bulk/조사표전송 등 기존 경로 완전 무변경(추가 진입점만). -->
+<!-- (이전)  map_v104.html (v104 · TENAR V1.5) · 저장: 2026-08-18 17:30 KST · [v104] 이삭수 계산기(jusu) 지도연동 — save 모드 app=jusu면 jusu.html로 복귀(지번 전달). 그 외 변경 없음 -->
 <!-- (이전)  map_v103.html (v103 · TENAR V1.5) · 저장: 2026-08-16 23:20 KST · [v103] 오른쪽 도구버튼 6개 아래에 이름표(알약) 추가 — 핀표시·포구도구·면적길이·목록·조사구·위치. 원형 버튼은 그대로, 라벨은 버튼 자식이라 숨김상태도 함께 처리. 그 외 변경 없음. -->
 <!-- (이전)  map_v102.html (v102 · TENAR V1.5) · 저장: 2026-08-16 22:58 KST · [v102] 변경 없음(공시지가=서울 Lambda) · 버전표기만 -->
 <!-- (이전)  map_v101.html (v101 · TENAR V1.5) · 저장: 2026-08-16 22:12 KST · [v101] 지도 변경 없음(공시지가=서울 Lambda 유지) · 버전표기만 -->
@@ -10245,6 +10246,36 @@ TenarSecureStore.init('map',
     }
   }
 
+  /* [v114] 저장/불러오기 「📍」 → 지도에 저장된 측정핀(즐겨찾기) 「보기」 모드.
+     계산기 저장목록에서 지도핀이 연결된 항목의 📍를 누르면 save(위치저장) 모드가 아니라
+     그 핀 위치로 이동 + 저장위치(연결 측정자료) 팝업을 연다.
+     · viewKey = 조사표 저장키(surveyKey), app = tonghab|chungchi
+     · save/measure/bulk 경로와 완전히 분리(추가 진입점) — 기존 동작 무변경 */
+  function viewFavInit() {
+    var qs = new URLSearchParams(location.search);
+    var vk = (qs.get('viewKey') || '').trim();
+    if (!vk) return;
+    var app = (qs.get('app') || '').trim();
+    var tries = 0;
+    (function waitFav() {
+      tries++;
+      var favs = [];
+      try { favs = getFavs(); } catch (e) {}
+      var target = null;
+      for (var i = 0; i < favs.length; i++) {
+        var f = favs[i] || {};
+        if (String(f.surveyId) === vk && (!app || !f.surveyType || f.surveyType === app)) { target = f; break; }
+      }
+      if (target) {
+        try { focusFavPin(target); } catch (e) {}
+        setTimeout(function () { try { openSavedLocationSheet(target); } catch (e) {} }, 650);
+        return;
+      }
+      if (tries < 40) { setTimeout(waitFav, 200); return; }   /* 보안저장 복호화·복원 대기 최대 ~8초 */
+      showToast('이 항목에 연결된 지도 저장핀을 찾지 못했습니다.\n지도에서 위치를 저장하면 다음부터 여기로 열립니다.', 5000, 'info');
+    })();
+  }
+
   /* [v36-1] 조사위치 저장 모드에서 현재 위치를 잡아 그 좌표·전체주소로 채운다 */
   function saveModeUseCurrentLocation() {
     if (!navigator.geolocation) {
@@ -10460,6 +10491,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     try { ccMeasInit(); } catch (e) { console.error('[v26] 청취 면적측정 init 오류:', e); }   /* [v26-6] */
     try { tonghabMeasInit(); } catch (e) { console.error('[v85-9] 실측 길이측정 init 오류:', e); }   /* [v85-9] */
     try { saveModeInit(); } catch (e) { console.error('[v29] 위치저장 init 오류:', e); }        /* [v29-1] */
+    try { viewFavInit(); } catch (e) { console.error('[v114] 저장핀 보기 init 오류:', e); }        /* [v114] */
     try { bulkSyncInit(); } catch (e) { console.error('[v30] bulk init 오류:', e); }              /* [v30-4] */
     try { setTimeout(cleanupBadFavs, 300); } catch (e) {}                                          /* [v33] 0,0 핀 정리 */
     /* [v37] 옛 저장목록(포구·측정)을 통합 즐겨찾기로 1회 이전 후 요도 렌더 */
