@@ -1,4 +1,5 @@
-<!-- map_v109.html (v109 · TENAR V1.5) · 저장: 2026-08-29 11:22 KST · [v109] 계산기↔지도 전환 「진행중」 차단 오버레이 — 계산기에서 지도로 진입 시(지도 로드~수신데이터 처리까지) 및 포구·측정 「조사표 전송」 후 계산기로 이동하는 동안, 완료 전 사용자가 선택·이동해 잘못 선택되던 문제 방지. 「진행중입니다. 잠시만 기다려주세요.」 전체화면 오버레이. (v108 이하 유지) -->
+<!-- map_v110.html (v110 · TENAR V1.5) · 저장: 2026-08-29 11:39 KST · [v110] 다중 조사구 시스템 1단계(통합형) — 작물재배조사구 시스템을 「조사 종류」로 매개변수화. 🌾 조사구 시트 상단에 「작물재배·가축」 선택 탭 추가(고른 종류의 목록·핀만 표시), 종류별 저장키 분리(작물=기존 tenarAreaSurveyPlotsEncrypted, 가축=tenarAreaPlots_livestock_enc·암호화), 저장/불러오기·순서안내·시도/시군구/읍면동·전체삭제·좌표조회·선택해제·메모 등 전 도구 종류별 공유. 지도 핀 「모양」을 종류별로(작물=원 ●, 가축=사각 ■) — 신규 area-plots-shape 심볼 레이어. 다음 단계에서 축비·농비·쌀값·농판 추가 예정. (v109 이하 유지) -->
+<!-- (이전)  map_v109.html (v109 · TENAR V1.5) · 저장: 2026-08-29 11:22 KST · [v109] 계산기↔지도 전환 「진행중」 차단 오버레이 — 계산기에서 지도로 진입 시(지도 로드~수신데이터 처리까지) 및 포구·측정 「조사표 전송」 후 계산기로 이동하는 동안, 완료 전 사용자가 선택·이동해 잘못 선택되던 문제 방지. 「진행중입니다. 잠시만 기다려주세요.」 전체화면 오버레이. (v108 이하 유지) -->
 <!-- (이전)  map_v108.html (v108 · TENAR V1.5) · 저장: 2026-08-29 08:07 KST · [v108] 포구도구·측정도구 「조사표 전송」 후 조사표로 「이동이 안 되던(간헐)」 현상 수정 — ①측정도구를 지도에서 「바로」 시작(계산기 컨텍스트 없음)했을 때 전송이 저장만 되고 이동을 안 하던 것을, 합성 컨텍스트(app:chungchi·첫 재배면적 행 idx:0)로 청취조사표에 반영+이동하도록 수정. ②전송→이동 지연을 900ms→250ms로 단축해 「전송과 거의 동시에」 이동. (포구=tonghab·측정=chungchi 공통) · v107 이하(작물24종·핀14색·센터추가) 유지 -->
 <!-- (이전)  map_v107.html (v107 · TENAR V1.5) · 저장: 2026-08-29 07:54 KST · [v107] ①꾹눌러 저장 팝업 작물목록 24종으로 확장(논벼·마늘·양파·감자·배추·무·총각무·콩·겉보리·쌀보리·밀·사과·배·고추·참깨·고구마·가을감자·노지봄무·시설봄무·노지봄배추·시설봄배추·기타·미지정·응답자집). ②핀 색상 6→14색 확장(빨강·주황·노랑·초록·파랑·보라·분홍·청록·하늘·연두·남색·갈색·장미·회색)+색상칸 줄바꿈. ③면적/길이 「센터추가」가 화면 십자선과 다른 곳에 찍히던 버그 수정 — map.getCenter()(패딩 보정 지리중심) 대신 십자선(컨테이너 정중앙) 픽셀을 unproject 한 좌표에 점을 찍음(포구·측정 도구 공통). (v106 저장핀 보기모드 유지) -->
 <!-- (이전)  map_v106.html (v106 · TENAR V1.5) · 저장: 2026-08-29 07:42 KST · [v106] 저장/불러오기 「📍」 보기모드(viewFavInit·viewKey) -->
@@ -354,7 +355,7 @@
 })();
 TenarSecureStore.init('map',
   ['tenar_map_favs_v1','tenar_map_items_v1','tenar_map_bulk','tenar_pending_survey_coord','tenar_meas_ctx','tenar_meas_result','tenar_measure_saves_v1','tenar_fieldplot_saves_v1','tenar_map_last_view_v1','tenar_map_settings_v1','tenarAreaSurveyPlotsEncrypted','tenar_land_cache_v1','tenarAreaSaveList'],
-  ['tonghabSave_','chungchiSave_','tenarAreaSave_']);
+  ['tonghabSave_','chungchiSave_','tenarAreaSave_','tenarAreaPlots_','tenarAreaSaveList_']);
 </script>
 <!-- ═══════════ /TenarCrypto 보안 저장 계층 ═══════════ -->
 
@@ -5736,7 +5737,7 @@ TenarSecureStore.init('map',
     /* [v68-3] 축소하면 점으로 작아지고(기존 작물핀처럼), 확대하면 번호가 들어갈 크기로 커진다 */
     map.addLayer({
       id: 'area-plots-halo', type: 'circle', source: 'area-plots-source',
-      filter: ['==', ['get', 'visible'], true],
+      filter: ['all', ['==', ['get', 'visible'], true], ['==', ['get', 'isCircle'], true]],
       paint: {
         /* [v69-3] zoom interpolate 는 최상위여야 하므로 각 구간 출력에 sel(case)을 둔다 */
         'circle-radius': ['interpolate', ['linear'], ['zoom'],
@@ -5750,7 +5751,7 @@ TenarSecureStore.init('map',
     });
     map.addLayer({
       id: 'area-plots-dot', type: 'circle', source: 'area-plots-source',
-      filter: ['==', ['get', 'visible'], true],
+      filter: ['all', ['==', ['get', 'visible'], true], ['==', ['get', 'isCircle'], true]],
       paint: {
         /* [v70-1] 축소(줌11)에서도 번호가 보이도록 최소 크기 확보 · 확대할수록 커짐 · 선택 핀은 조금 크게 */
         'circle-radius': ['interpolate', ['linear'], ['zoom'],
@@ -5761,6 +5762,25 @@ TenarSecureStore.init('map',
           18, ['case', ['get', 'sel'], 17.5, 13]],
         'circle-color': ['coalesce', ['get', 'dotColor'], '#f59e0b'],
         'circle-stroke-color': ['case', ['get', 'sel'], '#111827', '#ffffff'], 'circle-stroke-width': ['case', ['get', 'sel'], 3, 1.6]
+      }
+    });
+    /* [v110] 작물재배(원) 외 조사 종류 — 종류별 「모양 글리프(■◆▲⬟⬢ 등)」를 핀으로 렌더 */
+    map.addLayer({
+      id: 'area-plots-shape', type: 'symbol', source: 'area-plots-source',
+      filter: ['all', ['==', ['get', 'visible'], true], ['==', ['get', 'isCircle'], false]],
+      layout: {
+        'text-field': ['get', 'shapeChar'],
+        'text-size': ['interpolate', ['linear'], ['zoom'],
+          8, ['case', ['get', 'sel'], 17, 14],
+          11, ['case', ['get', 'sel'], 24, 20],
+          14, ['case', ['get', 'sel'], 30, 24],
+          16, ['case', ['get', 'sel'], 38, 28],
+          18, ['case', ['get', 'sel'], 44, 33]],
+        'text-allow-overlap': true, 'text-font': ['literal', ['Open Sans Bold', 'Arial Unicode MS Bold']]
+      },
+      paint: {
+        'text-color': ['coalesce', ['get', 'dotColor'], '#2563eb'],
+        'text-halo-color': ['case', ['get', 'sel'], '#111827', '#ffffff'], 'text-halo-width': ['case', ['get', 'sel'], 2.4, 1.8]
       }
     });
     map.addLayer({
@@ -5789,7 +5809,7 @@ TenarSecureStore.init('map',
       var _areaPinTap = function (e) {
         if (e.features && e.features[0]) { try { areaOnPinClick(e.features[0].properties.plotId); } catch (er) {} }
       };
-      ['area-plots-dot', 'area-plots-num', 'area-plots-label'].forEach(function (lid) {
+      ['area-plots-dot', 'area-plots-shape', 'area-plots-num', 'area-plots-label'].forEach(function (lid) {
         map.on('click', lid, _areaPinTap);
         map.on('mouseenter', lid, function () { map.getCanvas().style.cursor = 'pointer'; });
         map.on('mouseleave', lid, function () { map.getCanvas().style.cursor = ''; });
@@ -10582,6 +10602,19 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
      ═══════════════════════════════════════════════════════════════ */
   var AREA_KEY = 'tenarAreaSurveyPlotsEncrypted';
   var AREA_APP = 'area-plots';
+  /* [v110] 다중 조사구 종류(통합형) — 작물재배 + 가축(1단계). 종류별로 저장키만 분리하고
+     트리·순서안내·삭제·좌표조회·선택해제·메모 등 모든 도구는 그대로 재사용한다.
+     각 종류는 지도 핀 「모양」을 다르게(작물=원 ●, 가축=사각 ■ …). */
+  var AREA_TYPES = [
+    { key: 'crop',      label: '작물재배', emoji: '🌾', store: 'tenarAreaSurveyPlotsEncrypted', shape: '●' },
+    { key: 'livestock', label: '가축',     emoji: '🐄', store: 'tenarAreaPlots_livestock_enc', shape: '■' }
+  ];
+  var currentAreaType = 'crop';
+  function areaTypeCfg(t) { t = t || currentAreaType; for (var i = 0; i < AREA_TYPES.length; i++) { if (AREA_TYPES[i].key === t) return AREA_TYPES[i]; } return AREA_TYPES[0]; }
+  function areaStoreKey() { return areaTypeCfg().store; }
+  /* 종류별 저장/불러오기(명명 백업) 키 — 작물재배는 기존 키 유지(하위호환), 그 외는 종류 접미사 */
+  function areaSaveListKey() { return currentAreaType === 'crop' ? 'tenarAreaSaveList' : ('tenarAreaSaveList_' + currentAreaType); }
+  function areaSavePrefix() { return currentAreaType === 'crop' ? 'tenarAreaSave_' : ('tenarAreaSave_' + currentAreaType + '_'); }
   var AREA_XLSX_URLS = [
     'https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js',
     'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/package/dist/xlsx.full.min.js'
@@ -10609,8 +10642,8 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
   var _areaImport = null;
   var _xlsxPromise = null;
 
-  function getAreaPlots() { var a = loadJSON(AREA_KEY, []); return Array.isArray(a) ? a : []; }
-  function setAreaPlots(arr) { saveJSON(AREA_KEY, Array.isArray(arr) ? arr : []); }
+  function getAreaPlots() { var a = loadJSON(areaStoreKey(), []); return Array.isArray(a) ? a : []; }
+  function setAreaPlots(arr) { saveJSON(areaStoreKey(), Array.isArray(arr) ? arr : []); }
   function areaUid() { return 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
 
   /* [v91] 단순화 : 회차·완료 기능 제거, 메모는 조사구당 1개 */
@@ -10757,6 +10790,8 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
           visible: (settings.showAreaPins === true),   /* [v88-2] 필터와 무관하게 전체 표시(선택은 이동만) */
           sel: (p.id === _areaSelectedId),
           dotColor: eupColor(p.eupmyeondong),
+          shapeChar: areaTypeCfg().shape,                 /* [v110] 조사 종류별 핀 모양 글리프 */
+          isCircle: (areaTypeCfg().shape === '●'),        /* 작물재배(원)는 기존 원 레이어, 그 외는 글리프 레이어 */
           labelText: areaPlotName(p)   /* [v67-4] 읍면동 층 조사구 */
         },
         geometry: { type: 'Point', coordinates: [p.longitude, p.latitude] }
@@ -11251,11 +11286,11 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
   var AREA_SAVELIST_KEY = 'tenarAreaSaveList';
   var _areaSelectedSaveKey = null;   /* [v77-2] 저장·불러오기에서 선택한 저장본 */
   var AREA_SAVE_PREFIX = 'tenarAreaSave_';
-  function getAreaSaveList() { var a = loadJSON(AREA_SAVELIST_KEY, []); return Array.isArray(a) ? a : []; }
-  function setAreaSaveList(a) { saveJSON(AREA_SAVELIST_KEY, Array.isArray(a) ? a : []); }
+  function getAreaSaveList() { var a = loadJSON(areaSaveListKey(), []); return Array.isArray(a) ? a : []; }
+  function setAreaSaveList(a) { saveJSON(areaSaveListKey(), Array.isArray(a) ? a : []); }
   function areaSaveCurrentPlots(name) {
     var plots = getAreaPlots();
-    var key = AREA_SAVE_PREFIX + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+    var key = areaSavePrefix() + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
     saveJSON(key, plots);
     var list = getAreaSaveList();
     list.unshift({ key: key, name: name, ts: kstNowStr(), locked: false, count: plots.length });
@@ -11335,7 +11370,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     /* [v78-9] 저장본 개수·대략 용량 */
     (function () {
       var svs = getAreaSaveList(); var bytes = 0;
-      try { svs.forEach(function (x) { var v = localStorage.getItem(x.key); if (v) bytes += v.length; }); var l = localStorage.getItem(AREA_SAVELIST_KEY); if (l) bytes += l.length; } catch (e) {}
+      try { svs.forEach(function (x) { var v = localStorage.getItem(x.key); if (v) bytes += v.length; }); var l = localStorage.getItem(areaSaveListKey()); if (l) bytes += l.length; } catch (e) {}
       var kb = Math.round(bytes / 1024 * 10) / 10;
       box.appendChild(el('div', 'lyr-desc', '💾 저장본 ' + svs.length + '개 · 약 ' + kb + ' KB (암호화 저장)'));
     })();
@@ -11500,7 +11535,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     box.appendChild(banner);
     var pane = el('div'); box.appendChild(pane);
     try { areaRestoreFilter(); } catch (e) {}   /* [v81-2b] 마지막 필터 복원 */
-    openSheet('🌾 작물재배조사구', box, 66);
+    openSheet(areaTypeCfg().emoji + ' ' + areaTypeCfg().label + ' 조사구', box, 66);
     /* [v99] 전체보기 = 필터 해제 후 전체를 한 번에 맞춤(예전엔 필터가 남아 두 번 눌러야 했음) */
     setSheetAction('⤢ 전체보기', function () { areaClearSelection(); areaFitAllVisible(); });
     try { renderAreaPane(pane); } catch (e) { console.error(e); }
@@ -11509,6 +11544,26 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
   function renderAreaPane(container) {
     container.innerHTML = '';
     var wrap = el('div');
+
+    /* [v110] ⓪ 조사 종류 선택 (작물재배 · 가축 …) — 고른 종류의 목록·핀만 표시, 저장은 종류별로 분리 */
+    var rType = el('div');
+    rType.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;';
+    AREA_TYPES.forEach(function (t) {
+      var on = (t.key === currentAreaType);
+      var b = el('button', '', t.emoji + ' ' + t.label);
+      b.style.cssText = 'flex:1 1 auto;min-width:84px;padding:9px 8px;border-radius:9px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;border:1.5px solid ' + (on ? '#1a7a3e' : '#cdd9c0') + ';background:' + (on ? '#1a7a3e' : '#f2f7ee') + ';color:' + (on ? '#fff' : '#3a6b1e') + ';';
+      b.addEventListener('click', function () {
+        if (t.key === currentAreaType) return;
+        currentAreaType = t.key;
+        _areaSelectedId = null;
+        _areaSel = { sido: '', sigungu: '', eupmyeondong: '', floor: '' };
+        try { areaRestoreFilter(); } catch (e) {}
+        try { areaUpdateSource(); } catch (e) {}   /* 핀을 새 종류로 갱신 */
+        openAreaSheet();                            /* 제목·목록·트리 새 종류로 다시 렌더 */
+      });
+      rType.appendChild(b);
+    });
+    wrap.appendChild(rType);
 
     /* [v80-6] ① 맨 위 : 저장·불러오기 (파일 기능은 저장·불러오기 팝업 하단으로 통합) */
     var rSL = el('div', 'btn-row');
