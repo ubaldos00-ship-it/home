@@ -1,4 +1,5 @@
-<!-- map_v108.html (v108 · TENAR V1.5) · 저장: 2026-08-29 08:07 KST · [v108] 포구도구·측정도구 「조사표 전송」 후 조사표로 「이동이 안 되던(간헐)」 현상 수정 — ①측정도구를 지도에서 「바로」 시작(계산기 컨텍스트 없음)했을 때 전송이 저장만 되고 이동을 안 하던 것을, 합성 컨텍스트(app:chungchi·첫 재배면적 행 idx:0)로 청취조사표에 반영+이동하도록 수정. ②전송→이동 지연을 900ms→250ms로 단축해 「전송과 거의 동시에」 이동. (포구=tonghab·측정=chungchi 공통) · v107 이하(작물24종·핀14색·센터추가) 유지 -->
+<!-- map_v109.html (v109 · TENAR V1.5) · 저장: 2026-08-29 11:22 KST · [v109] 계산기↔지도 전환 「진행중」 차단 오버레이 — 계산기에서 지도로 진입 시(지도 로드~수신데이터 처리까지) 및 포구·측정 「조사표 전송」 후 계산기로 이동하는 동안, 완료 전 사용자가 선택·이동해 잘못 선택되던 문제 방지. 「진행중입니다. 잠시만 기다려주세요.」 전체화면 오버레이. (v108 이하 유지) -->
+<!-- (이전)  map_v108.html (v108 · TENAR V1.5) · 저장: 2026-08-29 08:07 KST · [v108] 포구도구·측정도구 「조사표 전송」 후 조사표로 「이동이 안 되던(간헐)」 현상 수정 — ①측정도구를 지도에서 「바로」 시작(계산기 컨텍스트 없음)했을 때 전송이 저장만 되고 이동을 안 하던 것을, 합성 컨텍스트(app:chungchi·첫 재배면적 행 idx:0)로 청취조사표에 반영+이동하도록 수정. ②전송→이동 지연을 900ms→250ms로 단축해 「전송과 거의 동시에」 이동. (포구=tonghab·측정=chungchi 공통) · v107 이하(작물24종·핀14색·센터추가) 유지 -->
 <!-- (이전)  map_v107.html (v107 · TENAR V1.5) · 저장: 2026-08-29 07:54 KST · [v107] ①꾹눌러 저장 팝업 작물목록 24종으로 확장(논벼·마늘·양파·감자·배추·무·총각무·콩·겉보리·쌀보리·밀·사과·배·고추·참깨·고구마·가을감자·노지봄무·시설봄무·노지봄배추·시설봄배추·기타·미지정·응답자집). ②핀 색상 6→14색 확장(빨강·주황·노랑·초록·파랑·보라·분홍·청록·하늘·연두·남색·갈색·장미·회색)+색상칸 줄바꿈. ③면적/길이 「센터추가」가 화면 십자선과 다른 곳에 찍히던 버그 수정 — map.getCenter()(패딩 보정 지리중심) 대신 십자선(컨테이너 정중앙) 픽셀을 unproject 한 좌표에 점을 찍음(포구·측정 도구 공통). (v106 저장핀 보기모드 유지) -->
 <!-- (이전)  map_v106.html (v106 · TENAR V1.5) · 저장: 2026-08-29 07:42 KST · [v106] 저장/불러오기 「📍」 보기모드(viewFavInit·viewKey) -->
 <!-- (이전)  map_v104.html (v104 · TENAR V1.5) · 저장: 2026-08-18 17:30 KST · [v104] 이삭수 계산기(jusu) 지도연동 — save 모드 app=jusu면 jusu.html로 복귀(지번 전달). 그 외 변경 없음 -->
@@ -1249,6 +1250,25 @@ TenarSecureStore.init('map',
 </head>
 
 <body>
+<!-- [v109] 계산기↔지도 전환 「진행중」 차단 오버레이 — 완료 전 사용자가 선택/이동해 잘못 선택되는 것 방지 -->
+<script>
+(function(){
+  function build(){
+    var ex=document.getElementById('tenarWaitOv'); if(ex) return ex;
+    var ov=document.createElement('div'); ov.id='tenarWaitOv';
+    ov.style.cssText='position:fixed;inset:0;z-index:2147483000;background:rgba(255,255,255,.93);display:none;flex-direction:column;align-items:center;justify-content:center;font-family:inherit;touch-action:none;';
+    ov.innerHTML='<div style="width:48px;height:48px;border:4px solid #dfe6da;border-top-color:#1a7a3e;border-radius:50%;animation:_twspin .8s linear infinite"></div><div style="margin-top:16px;font-size:16px;font-weight:800;color:#27500A;text-align:center;line-height:1.55">진행중입니다.<br>잠시만 기다려주세요.</div><style>@keyframes _twspin{to{transform:rotate(360deg)}}</style>';
+    (document.body||document.documentElement).appendChild(ov);
+    return ov;
+  }
+  var _maxT=null;
+  window._tenarShowWait=function(maxMs){ var ov=build(); ov.style.display='flex'; if(_maxT) clearTimeout(_maxT); _maxT=setTimeout(window._tenarHideWait, maxMs||1800); };
+  window._tenarHideWait=function(){ try{ sessionStorage.removeItem('tenar_wait'); }catch(e){} var ov=document.getElementById('tenarWaitOv'); if(ov) ov.style.display='none'; if(_maxT){ clearTimeout(_maxT); _maxT=null; } };
+  window._tenarBeginTransition=function(){ try{ sessionStorage.setItem('tenar_wait','1'); }catch(e){} window._tenarShowWait(3500); };
+  /* 지도가 전환의 도착지이면(계산기→지도) 로드 즉시 오버레이 표시(지도 준비되면 해제) */
+  try{ if(sessionStorage.getItem('tenar_wait')==='1'){ window._tenarShowWait(2500); } }catch(e){}
+})();
+</script>
   <div id="topUI">
     <div id="searchBar">
       <button id="backBtn" type="button" title="뒤로가기" aria-label="뒤로가기">‹</button>
@@ -7054,6 +7074,7 @@ TenarSecureStore.init('map',
       }));
     } catch (e) { showToast('전송 저장에 실패했습니다.', 3500); return; }
     showToast('청취조사표로 면적을 전송했습니다.\n' + formatNumber(t.totalM2, 1) + '㎡', 2600, 'success');
+    try { if (window._tenarBeginTransition) window._tenarBeginTransition(); } catch (e) {}   /* [v109] 이동~계산기 적용완료까지 「진행중」 차단 */
     /* [v108] 전송과 「거의 동시에」 이동 — 예전 900ms 지연을 250ms로 단축(암호화 flush는 수십ms면 끝남) */
     setTimeout(function () {
       var back = 'chungchi.html';
@@ -9410,6 +9431,7 @@ TenarSecureStore.init('map',
     try { saveJSON(FP_RESULT_KEY, rec); } catch (e) {}
     showToast('조사표로 전송했습니다. 계산기로 돌아갑니다.' +
               (rec.ratioChanged ? '\n(비율도 ' + fp.ratio + '번으로 바꿉니다)' : ''), 2800, 'success');
+    try { if (window._tenarBeginTransition) window._tenarBeginTransition(); } catch (e) {}   /* [v109] 이동~계산기 적용완료까지 「진행중」 차단 */
     /* [v108] 전송과 「거의 동시에」 이동 — 예전 900ms 지연을 250ms로 단축(tenar_fieldplot_result는 평문 즉시 저장) */
     setTimeout(function () {
       /* 계산기 화면으로 복귀 */
@@ -10509,6 +10531,8 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     try { tonghabMeasInit(); } catch (e) { console.error('[v85-9] 실측 길이측정 init 오류:', e); }   /* [v85-9] */
     try { saveModeInit(); } catch (e) { console.error('[v29] 위치저장 init 오류:', e); }        /* [v29-1] */
     try { viewFavInit(); } catch (e) { console.error('[v114] 저장핀 보기 init 오류:', e); }        /* [v114] */
+    /* [v109] 지도 로드·수신 데이터 처리(측정/저장/보기 init)까지 마친 뒤 「진행중」 오버레이 해제 */
+    try { setTimeout(function () { if (window._tenarHideWait) window._tenarHideWait(); }, 1200); } catch (e) {}
     try { bulkSyncInit(); } catch (e) { console.error('[v30] bulk init 오류:', e); }              /* [v30-4] */
     try { setTimeout(cleanupBadFavs, 300); } catch (e) {}                                          /* [v33] 0,0 핀 정리 */
     /* [v37] 옛 저장목록(포구·측정)을 통합 즐겨찾기로 1회 이전 후 요도 렌더 */

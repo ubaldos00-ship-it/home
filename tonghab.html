@@ -1,4 +1,5 @@
-<!-- tonghab.html (v116) · 저장: 2026-08-29 08:40 KST · [v116] 저장/불러오기 목록: 작물명 옆에 「읍면동 리 지번」을 작물명 글자크기로 함께 표기(예: 논벼, 논공읍 금포리 324) — 시도·시군구 앞부분은 빼고 읍면동부터. 기존 📍 전체주소 줄은 그대로 유지. 계산 로직 무변경. (v115 이하 유지) -->
+<!-- tonghab.html (v117) · 저장: 2026-08-29 11:22 KST · [v117] 계산기↔지도 전환 「진행중」 차단 오버레이 — 지도로 이동/지도에서 계산기로 전송·복귀할 때, 데이터 적용이 「완료되기 전」 사용자가 작물·항목을 선택하거나 이동해 잘못 선택되던 문제 방지. 이동 시 세션 플래그를 세우고, 도착 페이지 로드~적용 완료(또는 최대 3.5초)까지 전체화면 「진행중입니다. 잠시만 기다려주세요.」 오버레이로 상호작용을 막음(확인 팝업 z-index 9500보다 낮은 9400이라 「이전 자료」 선택 팝업은 그대로 사용 가능). 계산 로직 무변경. -->
+<!-- (이전)  tonghab.html (v116) · 저장: 2026-08-29 08:40 KST · [v116] 저장/불러오기 목록: 작물명 옆에 「읍면동 리 지번」을 작물명 글자크기로 함께 표기(예: 논벼, 논공읍 금포리 324) — 시도·시군구 앞부분은 빼고 읍면동부터. 기존 📍 전체주소 줄은 그대로 유지. 계산 로직 무변경. (v115 이하 유지) -->
 <!-- (이전)  tonghab.html (v115) · 저장: 2026-08-29 07:42 KST · [v115] ①작물 선택+필지주소 핀 후 지도에서 돌아오면 작물이 선택해제되던 버그 수정 — 지도로 나갈 때 저장된 작물을 조기에 붙잡아, 복원 레이스로 작물이 풀리면 다시 선택(계통추출 an/bn은 보존). ②저장/불러오기 목록 표시 정리: 메인줄=작물명만, 주소는 「전체주소」 한 줄(저장 데이터에서 읽어 잘림 없음), 기존 라벨(작물·주소·날짜)+아래 📍주소 줄의 주소 중복 제거. ③항목 버튼(잠금·위치·불러오기·휴지통)을 둘째 줄에 가로 균등폭 정렬. + [v114] 저장목록 📍=지도 저장핀 「보기」 모드(viewKey) 포함. 계산 로직 무변경. -->
 <!-- (이전)  tonghab.html (v113) · 저장: 2026-08-24 04:52 KST · [v113] 체크포인트(v112와 동일) -->
 <!-- (이전)  tonghab.html (v106) · 저장: 2026-08-19 01:53 KST · [v106] 주소 입력 시 화면이 내려갔다 올라오던 현상 수정(A안) — 주소 미리보기(#addrFull)를 입력마다 display 토글하지 않고 높이를 미리 확보(box-sizing+min-height), 값 있을 때만 배경/테두리 표시. 입력 시 레이아웃 밀림 0(문서높이 불변 검증). 계산 로직 무변경. -->
@@ -1864,6 +1865,25 @@ select,
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
+<!-- [v117] 계산기↔지도 전환 「진행중」 차단 오버레이 — 완료 전 사용자가 선택/이동해 잘못 선택되는 것 방지 -->
+<script>
+(function(){
+  function build(){
+    var ex=document.getElementById('tenarWaitOv'); if(ex) return ex;
+    var ov=document.createElement('div'); ov.id='tenarWaitOv';
+    ov.style.cssText='position:fixed;inset:0;z-index:9400;background:rgba(255,255,255,.93);display:none;flex-direction:column;align-items:center;justify-content:center;font-family:inherit;touch-action:none;';
+    ov.innerHTML='<div style="width:48px;height:48px;border:4px solid #dfe6da;border-top-color:#1a7a3e;border-radius:50%;animation:_twspin .8s linear infinite"></div><div style="margin-top:16px;font-size:16px;font-weight:800;color:#27500A;text-align:center;line-height:1.55">진행중입니다.<br>잠시만 기다려주세요.</div><style>@keyframes _twspin{to{transform:rotate(360deg)}}</style>';
+    (document.body||document.documentElement).appendChild(ov);
+    return ov;
+  }
+  var _maxT=null;
+  window._tenarShowWait=function(maxMs){ var ov=build(); ov.style.display='flex'; if(_maxT) clearTimeout(_maxT); _maxT=setTimeout(window._tenarHideWait, maxMs||3500); };
+  window._tenarHideWait=function(){ try{ sessionStorage.removeItem('tenar_wait'); }catch(e){} var ov=document.getElementById('tenarWaitOv'); if(ov) ov.style.display='none'; if(_maxT){ clearTimeout(_maxT); _maxT=null; } };
+  window._tenarBeginTransition=function(){ try{ sessionStorage.setItem('tenar_wait','1'); }catch(e){} window._tenarShowWait(3500); };
+  /* 이 페이지가 전환의 도착지이면(플래그 있음) 로드 즉시 차단 오버레이 표시(적용 완료 또는 최대 3.5초까지) */
+  try{ if(sessionStorage.getItem('tenar_wait')==='1'){ window._tenarShowWait(3500); } }catch(e){}
+})();
+</script>
 
 <!-- ═════════ STICKY HEADER ═════════ -->
 <div class="sticky-top">
@@ -9361,6 +9381,8 @@ function _tenarMapBase(){
 }
 function _tenarOpenMapUrl(u){
   try{ sessionStorage.setItem('tenar_last_calc_url', location.href); }catch(e){}
+  /* [v117] 지도로 이동하는 동안·지도 로드 완료까지 「진행중」 오버레이로 상호작용 차단 */
+  try{ if(window._tenarBeginTransition) window._tenarBeginTransition(); }catch(e){}
   /* 현장 사용 기준: 새 창이 아니라 현재 화면을 지도 화면으로 확실히 이동 */
   location.href = u;
 }
