@@ -1,4 +1,5 @@
-<!-- map_v112.html (v112 · TENAR V1.5) · 저장: 2026-08-29 12:10 KST · [v112] 다중 조사구 — 종류별 입력필드·필수강조·핀라벨 — ①가축·축비·농비·쌀값·농판은 「층·조사구」 대신 「성명·전화번호」 입력(작물재배는 기존 층·조사구 유지). ②지도 핀/팝업 라벨: 작물재배=읍면동 층 조사구, 그 외=조사명·성명·읍면동(팝업에 전화번호도). ③조사구 추가/수정 폼 필수칸을 노란색 강조 + 회색 「필수입력」 안내 — 작물재배=층·조사구·초입주소, 그 외=성명·초입주소. (v111 이하 유지) -->
+<!-- map_v113.html (v113 · TENAR V1.5) · 저장: 2026-08-29 14:12 KST · [v113] 다중 조사구 — 지도 「꾹눌러 저장」 시 조사종류 선택 — 롱프레스 퀵메뉴 「저장」을 누르면 「이 위치에 저장」 시트가 떠서 ⭐즐겨찾기 핀 또는 6개 조사종류(🌾작물재배·🐄가축·🐖축비·🚜농비·🍚쌀값·🧺농판) 중 선택. 조사종류를 고르면 그 종류로 전환 후 「조사구 추가」 폼이 초입주소·시도·시군구·읍면동·위도·경도 자동채움 상태로 열림(작물=층·조사구, 그 외=성명·전화번호 칸). (v112 이하 유지) -->
+<!-- (이전)  map_v112.html (v112 · TENAR V1.5) · 저장: 2026-08-29 12:10 KST · [v112] 다중 조사구 — 종류별 입력필드·필수강조·핀라벨 — ①가축·축비·농비·쌀값·농판은 「층·조사구」 대신 「성명·전화번호」 입력(작물재배는 기존 층·조사구 유지). ②지도 핀/팝업 라벨: 작물재배=읍면동 층 조사구, 그 외=조사명·성명·읍면동(팝업에 전화번호도). ③조사구 추가/수정 폼 필수칸을 노란색 강조 + 회색 「필수입력」 안내 — 작물재배=층·조사구·초입주소, 그 외=성명·초입주소. (v111 이하 유지) -->
 <!-- (이전)  map_v111.html (v111 · TENAR V1.5) · 저장: 2026-08-29 11:53 KST · [v111] 다중 조사구 시스템 2단계 — 조사 종류에 축비·농비·쌀값·농판 4종 추가(작물재배·가축 포함 6종). 종류별 저장키 분리·자동 암호화, 지도 핀 모양 종류별: 작물재배 ● · 가축 ■ · 축비 ◆ · 농비 ▲ · 쌀값 ★ · 농판 ▼. 전 도구(저장/불러오기·순서안내·시도/시군구/읍면동·전체삭제·좌표조회·선택해제·메모) 종류별 공유. 다음 3단계=꾹눌러 저장 시 조사종류 선택. (v110 이하 유지) -->
 <!-- (이전)  map_v110.html (v110 · TENAR V1.5) · 저장: 2026-08-29 11:39 KST · [v110] 다중 조사구 시스템 1단계(통합형) — 작물재배조사구 시스템을 「조사 종류」로 매개변수화. 🌾 조사구 시트 상단에 「작물재배·가축」 선택 탭 추가(고른 종류의 목록·핀만 표시), 종류별 저장키 분리(작물=기존 tenarAreaSurveyPlotsEncrypted, 가축=tenarAreaPlots_livestock_enc·암호화), 저장/불러오기·순서안내·시도/시군구/읍면동·전체삭제·좌표조회·선택해제·메모 등 전 도구 종류별 공유. 지도 핀 「모양」을 종류별로(작물=원 ●, 가축=사각 ■) — 신규 area-plots-shape 심볼 레이어. 다음 단계에서 축비·농비·쌀값·농판 추가 예정. (v109 이하 유지) -->
 <!-- (이전)  map_v109.html (v109 · TENAR V1.5) · 저장: 2026-08-29 11:22 KST · [v109] 계산기↔지도 전환 「진행중」 차단 오버레이 — 계산기에서 지도로 진입 시(지도 로드~수신데이터 처리까지) 및 포구·측정 「조사표 전송」 후 계산기로 이동하는 동안, 완료 전 사용자가 선택·이동해 잘못 선택되던 문제 방지. 「진행중입니다. 잠시만 기다려주세요.」 전체화면 오버레이. (v108 이하 유지) -->
@@ -7831,7 +7832,7 @@ TenarSecureStore.init('map',
       toastEl.style.display = 'none';
       if (kind === 'nav') openNavSheet(info);
       else if (kind === 'share') qaShare(info, parcel);
-      else if (kind === 'save') openPinSaveSheet(info);
+      else if (kind === 'save') { try { areaSaveFromMap(info); } catch (e) { openPinSaveSheet(info); } }   /* [v113] 즐겨찾기 핀/조사종류 선택 */
     });
   });
 
@@ -11032,9 +11033,49 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
   }
 
   /* ── 조사구 추가/수정 폼 ── */
-  function areaOpenEditSheet(plotId, returnTo) {
+  /* [v113] 지도 꾹눌러 「저장」 → 즐겨찾기 핀 또는 조사 종류별 조사구로 저장 선택 */
+  function areaSaveFromMap(info) {
+    var box = el('div');
+    box.appendChild(el('div', 'lyr-desc', '이 위치를 어떻게 저장할까요?'));
+    box.appendChild(el('div', null,
+      '<div class="addr-value" style="margin:4px 0 2px;font-weight:700;">📍 ' + escapeHtml(info.jibunAddress || '주소 미확인') + '</div>' +
+      '<div class="addr-value" style="font-size:12px;color:#999;">위도 ' + info.lat.toFixed(6) + ' · 경도 ' + info.lng.toFixed(6) + '</div>'));
+
+    var prefill = { lat: info.lat, lng: info.lng, address1: info.jibunAddress || '' };
+    try { var ad = parseAdminFromAddr(info.jibunAddress || ''); if (ad) { prefill.sido = ad.sido || ''; prefill.sigungu = ad.sigungu || ''; prefill.eupmyeondong = ad.eupmyeondong || ''; } } catch (e) {}
+
+    var favHdr = el('div', null, '⭐ 즐겨찾기 핀'); favHdr.style.cssText = 'margin:14px 2px 4px;font-size:12.5px;font-weight:800;color:#333;';
+    box.appendChild(favHdr);
+    var bFav = el('button', 'sheet-btn', '⭐ 즐겨찾기 핀으로 저장'); bFav.style.cssText = 'width:100%;';
+    bFav.addEventListener('click', function () { openPinSaveSheet(info); });
+    box.appendChild(bFav);
+
+    var areaHdr = el('div', null, '🗺 조사구로 저장 (조사 종류 선택)'); areaHdr.style.cssText = 'margin:14px 2px 4px;font-size:12.5px;font-weight:800;color:#333;border-top:1px solid #eee;padding-top:12px;';
+    box.appendChild(areaHdr);
+    var g = el('div'); g.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:2px;';
+    AREA_TYPES.forEach(function (t) {
+      var b = el('button', 'sheet-btn', t.emoji + ' ' + t.label + '  ' + t.shape); b.style.cssText = 'padding:12px 4px;font-size:13px;font-weight:800;';
+      b.addEventListener('click', function () {
+        if (currentAreaType !== t.key) {
+          currentAreaType = t.key; _areaSelectedId = null;
+          _areaSel = { sido: '', sigungu: '', eupmyeondong: '', floor: '' };
+          try { areaRestoreFilter(); } catch (e) {}
+          try { areaUpdateSource(); } catch (e) {}
+        }
+        areaEnsurePinsOn();
+        areaOpenEditSheet(null, { type: 'tab' }, prefill);   /* 좌표·주소 자동채운 추가폼 */
+      });
+      g.appendChild(b);
+    });
+    box.appendChild(g);
+
+    openSheet('📍 이 위치에 저장', box, 'auto');
+  }
+
+  function areaOpenEditSheet(plotId, returnTo, prefill) {
     returnTo = returnTo || { type: 'tab' };
     var editing = plotId ? getAreaPlots().filter(function (x) { return x.id === plotId; })[0] : null;
+    var pf = (!editing && prefill) ? prefill : null;   /* [v113] 지도 꾹눌러 저장 → 좌표·주소 자동채움 */
     var oldKey = editing ? areaGroupKey(editing) : null;
     var oldAddr = editing ? (editing.address1 || '') : '';
     var box = el('div');
@@ -11051,9 +11092,9 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     /* [v112] 조사 종류별 입력 필드 — 작물재배=층·조사구, 그 외=성명·전화번호. 필수칸은 노란색 강조 */
     var _isCropType = (currentAreaType === 'crop');
     var iNum = fld('번호(읍면동별)', editing ? editing.number : '', '자동'); iNum.type = 'number';
-    var iSido = fld('시도', editing ? editing.sido : '', '예: 경상북도(경북 자동변환)');
-    var iSgg = fld('시군구', editing ? editing.sigungu : '', '예: 경산시');
-    var iEmd = fld('읍면동', editing ? editing.eupmyeondong : '', '예: 자인면');
+    var iSido = fld('시도', editing ? editing.sido : (pf ? (pf.sido || '') : ''), '예: 경상북도(경북 자동변환)');
+    var iSgg = fld('시군구', editing ? editing.sigungu : (pf ? (pf.sigungu || '') : ''), '예: 경산시');
+    var iEmd = fld('읍면동', editing ? editing.eupmyeondong : (pf ? (pf.eupmyeondong || '') : ''), '예: 자인면');
     var iFloor = null, iJosagu = null, iName = null, iPhone = null;
     if (_isCropType) {
       iFloor  = fld('층',   editing ? editing.floor  : '', '', true);   /* 작물재배 필수 */
@@ -11062,7 +11103,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
       iName  = fld('성명',   editing ? editing.name  : '', '', true);    /* 그 외 필수 */
       iPhone = fld('전화번호', editing ? editing.phone : '', '예: 010-0000-0000');
     }
-    var iAddr = fld('초입주소', editing ? editing.address1 : '', '주소만 입력하면 시도·시군구·읍면동 자동', true);   /* 모든 종류 필수 */
+    var iAddr = fld('초입주소', editing ? editing.address1 : (pf ? (pf.address1 || '') : ''), '주소만 입력하면 시도·시군구·읍면동 자동', true);   /* 모든 종류 필수 */
     /* [v78-3] 주소를 입력하면 시도·시군구·읍면동 자동 채움(비어 있을 때) */
     function autoFillAdmin(force) {
       var ad = parseAdminFromAddr(iAddr.value);
@@ -11098,8 +11139,8 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
       });
       box.appendChild(bChk);
     })();
-    var iLat = fld('위도(선택)', editing && isFinite(editing.latitude) ? editing.latitude : '', '비워두면 주소로 자동');
-    var iLng = fld('경도(선택)', editing && isFinite(editing.longitude) ? editing.longitude : '', '비워두면 주소로 자동');
+    var iLat = fld('위도(선택)', editing && isFinite(editing.latitude) ? editing.latitude : (pf && isFinite(pf.lat) ? pf.lat : ''), '비워두면 주소로 자동');
+    var iLng = fld('경도(선택)', editing && isFinite(editing.longitude) ? editing.longitude : (pf && isFinite(pf.lng) ? pf.lng : ''), '비워두면 주소로 자동');
     var iNote = fld('비고(선택)', editing ? editing.note : '', '');
     /* [v91-1] 큰 메모 입력칸 */
     var iMemo;
