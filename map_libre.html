@@ -1,4 +1,5 @@
-<!-- map_v122.html (v122 · TENAR V1.5) · 저장: 2026-09-01 23:54 KST · [v122] 꾹저장 「생산량목록 핀」 개명+찍은 위치 핀표시 · ⓘ에 버전표기 · 엑셀 담당자ID · 타입탭 재클릭 최소화 · 위치 확대/축소 멈춤수정 — ①꾹눌러 저장 시트: 「즐겨찾기 핀」→「생산량목록 핀」, 꾹 찍은 위치에 핀 표시. ②ⓘ 지도 출처 정보 맨위에 버전(v122) 표기(MAP_VERSION). ③작물재배 엑셀 양식·가져오기: 「완료회차」→「담당자ID」, 가져오기 미리보기에 담당자 필터 추가(담당자ID로 골라 가져오기), managerId 저장·내보내기·템플릿 반영. ④조사구목록에서 이미 선택된 종류 탭을 다시 누르면 시트 최소화+그 종류 핀 지도맞춤(한 번에). ⑤위치추적 중 확대/축소마다 중심을 GPS로 되돌리던 재중심(zoomend) 제거 — 자유 확대·축소 가능(멈춤/스냅백 해결). (v121 이하 유지) -->
+<!-- map_v123.html (v123 · TENAR V1.5) · 저장: 2026-09-02 07:02 KST · [v123] 저장·불러오기 UI/엑셀 개편 — ①「저장·불러오기」 버튼 글자 작게(한 줄). ②저장·불러오기 팝업 제목을 종류별로(작물재배/가축/축비… 저장·불러오기) — 저장본은 종류별로 각각 유지. ③가축 엑셀 양식 신규(gachuk_josagu/gachuk_josagu.xlsx: 층·조사구 없이 축종·경영주명·전화번호·농장명·관리인·관리인연락처·담당자ID) + 엑셀 가져오기 타입대응(가축은 경영주명·축종 등으로 저장, 양식 링크·미리보기 제목 종류별). ④엑셀/JSON 내보내기를 새 탭 blob 다운로드로(iOS에서 지도 탭이 파일로 이동해 홈으로 가던 문제) + 가져오기 후 저장·불러오기 화면 유지. (v122 이하 유지) -->
+<!-- (이전)  map_v122.html (v122 · TENAR V1.5) · 저장: 2026-09-01 23:54 KST · [v122] 꾹저장 「생산량목록 핀」 개명+찍은 위치 핀표시 · ⓘ에 버전표기 · 엑셀 담당자ID · 타입탭 재클릭 최소화 · 위치 확대/축소 멈춤수정 — ①꾹눌러 저장 시트: 「즐겨찾기 핀」→「생산량목록 핀」, 꾹 찍은 위치에 핀 표시. ②ⓘ 지도 출처 정보 맨위에 버전(v122) 표기(MAP_VERSION). ③작물재배 엑셀 양식·가져오기: 「완료회차」→「담당자ID」, 가져오기 미리보기에 담당자 필터 추가(담당자ID로 골라 가져오기), managerId 저장·내보내기·템플릿 반영. ④조사구목록에서 이미 선택된 종류 탭을 다시 누르면 시트 최소화+그 종류 핀 지도맞춤(한 번에). ⑤위치추적 중 확대/축소마다 중심을 GPS로 되돌리던 재중심(zoomend) 제거 — 자유 확대·축소 가능(멈춤/스냅백 해결). (v121 이하 유지) -->
 <!-- (이전)  map_v121.html (v121 · TENAR V1.5) · 저장: 2026-09-01 23:12 KST · [v121·버그수정] 지도 멈춤/현재위치 안움직임 해결 — ①시트에서 「핀을 팝업 위로 올리려고」 지도 padding을 쓰는데(고정 속성) 남아 있으면 이후 카메라 이동이 어긋남 → 시트 닫을 때 padding 자동 초기화 + 현재위치 첫 이동에 padding 0 명시(핀만 움직이고 지도 안 움직이던 증상 해결). ②전체보기(생산량목록·조사구목록)·핀 이동 fitBounds/flyTo에 essential:true 추가 → 기기 「동작 줄이기(reduce motion)」 설정에서도 카메라가 이동(전체보기가 한번씩 멈추던 증상 해결). (v120 이하 기능 동일) -->
 <!-- (이전)  map_v120.html (v120 · TENAR V1.5) · 저장: 2026-09-01 06:50 KST · [v120] 생산량목록 조회콤보(시도·시군구·읍면동·작물) · 조사구목록 라벨 · 조사구 지도검색 · 가축 입력/표시 개편 — ①생산량목록에 시도/시군구/읍면동/작물 콤보 검색 추가. ②오른쪽 🌾 라벨 「조사구」→「조사구목록」. ③조사구 추가폼 주소확인 옆 「지도검색」(지도에서 위치선택→초입주소·좌표 자동채움, 통합계산기 방식). ④가축: 성명→경영주명, 농장명·관리인·관리인연락처 추가. ⑤전화번호 자동 하이픈(010-1111-2222·054-111-1111). ⑥가축 축종: 삼계·토종닭 추가, 종계→육용종계·산란종계. ⑦폼 순서: 비고·메모 위, 위도·경도 아래. ⑧⑨가축 목록 「N번 경영주명 축종 리 지번」. ⑩가축 핀 팝업에 축종·농장명·관리인·전화(전화걸기 tel링크). (v119 이하 유지) -->
 <!-- (이전)  map_v119.html (v119 · TENAR V1.5) · 저장: 2026-08-31 06:27 KST · [v119] 생산량목록·저장위치의 작물 아이콘을 「통합계산기(tonghab)와 동일한 SVG」로 — 마늘·양파·감자·논벼·콩·배추·무·총각무 8종은 tonghab의 작물 SVG(CROP_SVG)로 표시(이모지 대체), 그 외 작물은 기존 이모지(cropIconOf) 폴백. 지도 핀 라벨은 캔버스라 이모지 유지. (v118 이하 유지) -->
@@ -1559,7 +1560,7 @@ TenarSecureStore.init('map',
      · 키는 HTML에 노출되므로 반드시 허용 도메인을 위 주소로 제한하세요.
        제한해 두면 타인이 키를 복사해도 다른 사이트에서는 쓸 수 없습니다.
      =================================================================== */
-  var MAP_VERSION = 'v122';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
+  var MAP_VERSION = 'v123';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
   var VWORLD_API_KEY = '00EB5BC0-22B4-3B7E-89D1-341699F7CE05';
   var VWORLD_DOMAIN  = 'ubaldos00-ship-it.github.io';   /* 호스트만 · 스킴 금지 */
 
@@ -11984,12 +11985,16 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     });
     box.appendChild(gb);
 
-    box.appendChild((function () { var a = document.createElement('a'); a.href = './nongup_josagu/nongup_area_josagu.xlsx'; a.setAttribute('download', 'nongup_area_josagu.xlsx'); a.textContent = '📎 엑셀 양식 다운로드'; a.style.cssText = 'display:block;text-align:center;padding:9px;margin-top:7px;border-radius:9px;background:#e8f6ee;border:1.5px solid #1f8a4c;color:#14612f;font-weight:800;font-size:12.5px;text-decoration:none;'; return a; })());
+    /* [v123] 조사 종류별 엑셀 양식 링크 (작물재배=nongup, 가축=gachuk) */
+    var _tpl = { crop: ['./nongup_josagu/nongup_area_josagu.xlsx', 'nongup_area_josagu.xlsx'], livestock: ['./gachuk_josagu/gachuk_josagu.xlsx', 'gachuk_josagu.xlsx'] }[currentAreaType];
+    if (_tpl) {
+      box.appendChild((function () { var a = document.createElement('a'); a.href = _tpl[0]; a.setAttribute('download', _tpl[1]); a.setAttribute('target', '_blank'); a.setAttribute('rel', 'noopener'); a.textContent = '📎 ' + areaTypeCfg().label + ' 엑셀 양식 다운로드'; a.style.cssText = 'display:block;text-align:center;padding:9px;margin-top:7px;border-radius:9px;background:#e8f6ee;border:1.5px solid #1f8a4c;color:#14612f;font-weight:800;font-size:12.5px;text-decoration:none;'; return a; })());
+    }
 
     var c = el('button', 'sheet-btn', '← 조사구 목록으로'); c.style.cssText = 'width:100%;margin-top:12px;';
     c.addEventListener('click', function () { openAreaSheet(); });
     box.appendChild(c);
-    openSheet('💾 조사구 저장·불러오기', box, 'auto');
+    openSheet('💾 ' + areaTypeCfg().label + ' 저장·불러오기', box, 'auto');   /* [v123] 종류별 제목(각 종류 저장본은 별도 유지됨) */
     window._areaCloseReturn = function () { openAreaSheet(); };
   }
 
@@ -12140,9 +12145,10 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
 
     /* [v80-6] ① 맨 위 : 저장·불러오기 (파일 기능은 저장·불러오기 팝업 하단으로 통합) */
     var rSL = el('div', 'btn-row');
-    var bSL = el('button', 'sheet-btn', '💾 저장·불러오기');
+    var _rslBtnCss = 'font-size:11.5px;padding:9px 2px;white-space:nowrap;';   /* [v123] 한 줄에 들어가게 글자 작게 */
+    var bSL = el('button', 'sheet-btn', '💾 저장·불러오기'); bSL.style.cssText += _rslBtnCss;
     bSL.addEventListener('click', function () { _areaSelectedSaveKey = null; openAreaSaveLoadSheet(); });
-    var bNav = el('button', 'sheet-btn', '🧭 순서 안내');   /* [v86] 조사구 순서 네비게이션 */
+    var bNav = el('button', 'sheet-btn', '🧭 순서 안내'); bNav.style.cssText += _rslBtnCss;   /* [v86] 조사구 순서 네비게이션 */
     bNav.addEventListener('click', function () {
       /* [v87-1] 목록에서 선택된 조사구가 있으면 그 위치부터 안내 시작 */
       var list = areaNavList();
@@ -12150,7 +12156,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
       if (_areaSelectedId) { for (var i = 0; i < list.length; i++) { if (list[i].id === _areaSelectedId) { idx = i; break; } } }
       _areaNavIdx = idx; areaOpenNavStep();
     });
-    var bColor = el('button', 'sheet-btn', '🎨 핀 색상');   /* [v114] 핀 색 편집 */
+    var bColor = el('button', 'sheet-btn', '🎨 핀 색상'); bColor.style.cssText += _rslBtnCss;   /* [v114] 핀 색 편집 */
     bColor.addEventListener('click', function () { areaOpenColorSheet(); });
     rSL.appendChild(bSL); rSL.appendChild(bNav); rSL.appendChild(bColor);
     wrap.appendChild(rSL);
@@ -12511,6 +12517,9 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     '경도': 'longitude', 'lng': 'longitude', 'lon': 'longitude', 'longitude': 'longitude',
     '메모': 'memo', '완료회차': 'doneStr', '완료': 'doneStr',
     '담당자ID': 'managerId', '담당자id': 'managerId', '담당자': 'managerId', '담당자명': 'managerId',   /* [v122] 담당자ID로 가져오기 필터 */
+    /* [v123] 가축 등 비작물 양식 열 */
+    '축종': 'kind', '지목': 'kind', '경영주명': 'name', '성명': 'name', '전화번호': 'phone', '연락처': 'phone',
+    '농장명': 'farmName', '관리인': 'manager', '관리인명': 'manager', '관리인연락처': 'managerPhone', '관리인전화': 'managerPhone',
     /* [v90] 리·본지번·부지번(또는 합쳐진 지번) → 초입주소 자동 구성 */
     '리': 'ridong', '리명': 'ridong',
     '본지번': 'bonbeon', '본번': 'bonbeon', '본': 'bonbeon',
@@ -12557,7 +12566,8 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     for (var r = 0; r < Math.min(aoa.length, 10); r++) {
       var row = aoa[r] || [];
       var m = {}; row.forEach(function (cell, c) { var key = String(cell || '').trim(); if (AREA_HEADER_MAP[key] != null) m[AREA_HEADER_MAP[key]] = c; });
-      if (m.sido != null && m.josagu != null) { hRow = r; colMap = m; break; }
+      /* [v123] 작물재배=조사구 열 / 가축 등=경영주명 열 로 헤더 인식 */
+      if (m.sido != null && (m.josagu != null || m.name != null)) { hRow = r; colMap = m; break; }
     }
     if (hRow < 0) return [];
     var out = [];
@@ -12569,6 +12579,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
         ridong: get('ridong'), floor: get('floor'), josagu: get('josagu'), address1: get('address1'),
         note: get('note'), latitude: get('latitude'), longitude: get('longitude'),
         memo: get('memo'), doneStr: get('doneStr'), managerId: get('managerId'),   /* [v122] 담당자ID */
+        kind: get('kind'), name: get('name'), phone: get('phone'), farmName: get('farmName'), manager: get('manager'), managerPhone: get('managerPhone'),   /* [v123] 가축 등 */
         bonbeon: get('bonbeon'), bubeon: get('bubeon'), jibun: get('jibun')
       };
       /* [v90] 초입주소가 비어 있고 본지번(또는 지번)이 있으면 「…리 995-2」로 조합 */
@@ -12628,7 +12639,11 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
 
   /* ── 검증 ── */
   function areaValidate(rec) {
-    var reqOk = rec.sido && rec.sigungu && rec.eupmyeondong && (rec.josagu !== '' && rec.josagu != null) && (rec.address1 || (rec.latitude !== '' && rec.longitude !== ''));
+    /* [v123] 작물재배=조사구 필수, 그 외=경영주명(성명) 필수 */
+    var _reqType = (currentAreaType === 'crop')
+      ? (rec.josagu !== '' && rec.josagu != null)
+      : (rec.name != null && String(rec.name).trim() !== '');
+    var reqOk = rec.sido && rec.sigungu && rec.eupmyeondong && _reqType && (rec.address1 || (rec.latitude !== '' && rec.longitude !== ''));
     var latN = (rec.latitude === '' || rec.latitude == null) ? null : Number(rec.latitude);
     var lngN = (rec.longitude === '' || rec.longitude == null) ? null : Number(rec.longitude);
     var badCoord = (rec.latitude !== '' && rec.latitude != null && !isFinite(latN)) || (rec.longitude !== '' && rec.longitude != null && !isFinite(lngN));
@@ -12638,10 +12653,11 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
   }
   function areaToPlot(rec) {
     var latN = Number(rec.latitude), lngN = Number(rec.longitude);
-    return {
+    var isCrop = (currentAreaType === 'crop');
+    var p = {
       id: areaUid(), number: parseInt(rec.number, 10) || 0,
       sido: normalizeSido(rec.sido), sigungu: rec.sigungu, eupmyeondong: rec.eupmyeondong,
-      ridong: deriveRidong(rec.address1, rec.ridong), floor: rec.floor + '', josagu: rec.josagu + '',
+      ridong: deriveRidong(rec.address1, rec.ridong),
       address1: rec.address1, note: rec.note || '',
       memo: rec.memo ? String(rec.memo).trim() : '',
       latitude: (rec.latitude !== '' && areaCoordOk(latN, lngN)) ? latN : NaN,
@@ -12649,6 +12665,14 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
       managerId: rec.managerId ? String(rec.managerId).trim() : '',   /* [v122] 담당자ID */
       createdAt: kstNowStr(), updatedAt: kstNowStr()
     };
+    if (isCrop) {   /* 작물재배: 층·조사구 */
+      p.floor = (rec.floor == null ? '' : rec.floor) + ''; p.josagu = (rec.josagu == null ? '' : rec.josagu) + '';
+    } else {         /* [v123] 그 외: 축종·경영주명·전화번호 (+가축은 농장명·관리인 등) */
+      p.floor = ''; p.josagu = '';
+      p.kind = (rec.kind || '').trim(); p.name = (rec.name || '').trim(); p.phone = (rec.phone || '').trim();
+      if (currentAreaType === 'livestock') { p.farmName = (rec.farmName || '').trim(); p.manager = (rec.manager || '').trim(); p.managerPhone = (rec.managerPhone || '').trim(); }
+    }
+    return p;
   }
 
   /* ── 가져오기 미리보기 팝업 ── */
@@ -12668,7 +12692,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     head.style.cssText = 'padding:14px 16px 8px;border-bottom:1px solid #eee;position:relative;';
     head.innerHTML =
       '<button id="areaImpX" style="position:absolute;top:10px;right:12px;width:34px;height:34px;border:none;background:#f1f1f4;border-radius:50%;font-size:18px;cursor:pointer;">×</button>' +
-      '<div style="font-size:15px;font-weight:800;color:#14612f;">재배면적 조사구 가져오기</div>' +
+      '<div style="font-size:15px;font-weight:800;color:#14612f;">' + areaTypeCfg().label + ' 조사구 가져오기</div>' +
       '<div style="font-size:12px;color:#888;margin-top:2px;">파일: ' + escapeHtml(filename) + '</div>' +
       '<div style="font-size:12.5px;margin-top:6px;">전체 <b>' + rows.length + '</b>건 · <span style="color:#14612f;">정상 ' + cnt.ok + '</span> · <span style="color:#b8860b;">확인 필요 ' + cnt.warn + '</span> · <span style="color:#c0392b;">오류 ' + cnt.error + '</span></div>' +
       '<div style="font-size:11px;color:#999;margin-top:2px;">확인 필요 = 좌표는 없지만 주소로 지도표시 가능</div>';
@@ -12787,7 +12811,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
       _afterImport(closeFn);
     } else {
       var prevCount = getAreaPlots().length;
-      if (!window.confirm('기존 작물재배조사구 자료가 모두 삭제되고\n선택한 자료(' + newPlots.length + '건)로 교체됩니다.\n\n계속하시겠습니까?')) return;
+      if (!window.confirm('기존 ' + areaTypeCfg().label + ' 조사구 자료가 모두 삭제되고\n선택한 자료(' + newPlots.length + '건)로 교체됩니다.\n\n계속하시겠습니까?')) return;
       var backup = getAreaPlots();
       try {
         areaRenumber(newPlots); setAreaPlots(newPlots);
@@ -12800,11 +12824,20 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
   function _afterImport(closeFn) {
     _areaSel = { sido: '', sigungu: '', eupmyeondong: '', floor: '' }; _areaSelectedId = null;
     if (closeFn) closeFn();
-    try { areaRefreshTree(); } catch (e) {} areaApplyVisibility();
+    areaApplyVisibility();
+    try { openAreaSaveLoadSheet(); } catch (e) {}   /* [v123] 가져오기 후 저장·불러오기 화면 유지(홈으로 가지 않게) */
     setTimeout(areaGeocodeMissing, 400);
   }
 
   /* ── 내보내기 ── */
+  /* [v123] 다운로드 공용 — target=_blank 로 「현재 지도 탭이 파일로 이동(홈으로 감)」 방지(iOS) */
+  function areaDownloadBlob(blob, filename) {
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = filename; a.target = '_blank'; a.rel = 'noopener';
+    document.body.appendChild(a); a.click();
+    setTimeout(function () { try { a.remove(); } catch (e) {} try { URL.revokeObjectURL(url); } catch (e) {} }, 4000);
+  }
   var AREA_EXPORT_HEADERS = ['번호', '시도', '시군구', '읍면동', '층', '조사구', '초입주소', '위도', '경도', '비고', '메모', '담당자ID'];   /* [v122] 완료회차 → 담당자ID */
   function areaExportExcel() {
     var arr = getAreaPlots();
@@ -12819,7 +12852,9 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
       });
       var ws = XLSX.utils.aoa_to_sheet(aoa);
       var wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, '조사구');
-      XLSX.writeFile(wb, 'nongup_area_josagu_export_' + kstNowStr().slice(0, 10) + '.xlsx');
+      /* [v123] writeFile 대신 blob+새탭 다운로드 → iOS에서 지도 탭이 파일로 이동(홈으로 감) 방지 */
+      var wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+      areaDownloadBlob(new Blob([wbout], { type: 'application/octet-stream' }), 'nongup_area_' + currentAreaType + '_export_' + kstNowStr().slice(0, 10) + '.xlsx');
       showToast('엑셀을 내보냈습니다.', 2500, 'success');
     }).catch(function () { showToast('엑셀 라이브러리를 불러오지 못했습니다.', 4500); });
   }
@@ -12830,10 +12865,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     var build = (window._tenarBuildExport) ? window._tenarBuildExport(dataObj, AREA_APP) : Promise.resolve({ text: JSON.stringify(dataObj, null, 2), encrypted: false });
     build.then(function (res) {
       if (!res) return;   /* 취소 */
-      var blob = new Blob([res.text], { type: 'application/json' });
-      var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-      a.download = 'nongup_area_' + currentAreaType + '_' + (res.encrypted ? 'enc_' : '') + kstNowStr().slice(0, 10) + '.json';
-      a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+      areaDownloadBlob(new Blob([res.text], { type: 'application/json' }), 'nongup_area_' + currentAreaType + '_' + (res.encrypted ? 'enc_' : '') + kstNowStr().slice(0, 10) + '.json');
       showToast(res.encrypted ? 'JSON을 암호화해 내보냈습니다.' : 'JSON을 내보냈습니다.', 2800, 'success');
     });
   }
@@ -12847,10 +12879,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     var build = (window._tenarBuildExport) ? window._tenarBuildExport(dataObj, AREA_APP) : Promise.resolve({ text: JSON.stringify(dataObj, null, 2), encrypted: false });
     build.then(function (res) {
       if (!res) return;
-      var blob = new Blob([res.text], { type: 'application/json' });
-      var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-      a.download = 'tenar_area_backup_' + (res.encrypted ? 'enc_' : '') + kstNowStr().slice(0, 10) + '.json';
-      a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+      areaDownloadBlob(new Blob([res.text], { type: 'application/json' }), 'tenar_area_backup_' + (res.encrypted ? 'enc_' : '') + kstNowStr().slice(0, 10) + '.json');
       showToast('전체 백업(' + total + '건)을 내보냈습니다.' + (res.encrypted ? ' (암호화)' : ''), 3200, 'success');
     });
   }
