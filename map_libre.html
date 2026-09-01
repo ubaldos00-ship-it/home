@@ -1,4 +1,5 @@
-<!-- map_v120.html (v120 · TENAR V1.5) · 저장: 2026-09-01 06:50 KST · [v120] 생산량목록 조회콤보(시도·시군구·읍면동·작물) · 조사구목록 라벨 · 조사구 지도검색 · 가축 입력/표시 개편 — ①생산량목록에 시도/시군구/읍면동/작물 콤보 검색 추가. ②오른쪽 🌾 라벨 「조사구」→「조사구목록」. ③조사구 추가폼 주소확인 옆 「지도검색」(지도에서 위치선택→초입주소·좌표 자동채움, 통합계산기 방식). ④가축: 성명→경영주명, 농장명·관리인·관리인연락처 추가. ⑤전화번호 자동 하이픈(010-1111-2222·054-111-1111). ⑥가축 축종: 삼계·토종닭 추가, 종계→육용종계·산란종계. ⑦폼 순서: 비고·메모 위, 위도·경도 아래. ⑧⑨가축 목록 「N번 경영주명 축종 리 지번」. ⑩가축 핀 팝업에 축종·농장명·관리인·전화(전화걸기 tel링크). (v119 이하 유지) -->
+<!-- map_v121.html (v121 · TENAR V1.5) · 저장: 2026-09-01 23:12 KST · [v121·버그수정] 지도 멈춤/현재위치 안움직임 해결 — ①시트에서 「핀을 팝업 위로 올리려고」 지도 padding을 쓰는데(고정 속성) 남아 있으면 이후 카메라 이동이 어긋남 → 시트 닫을 때 padding 자동 초기화 + 현재위치 첫 이동에 padding 0 명시(핀만 움직이고 지도 안 움직이던 증상 해결). ②전체보기(생산량목록·조사구목록)·핀 이동 fitBounds/flyTo에 essential:true 추가 → 기기 「동작 줄이기(reduce motion)」 설정에서도 카메라가 이동(전체보기가 한번씩 멈추던 증상 해결). (v120 이하 기능 동일) -->
+<!-- (이전)  map_v120.html (v120 · TENAR V1.5) · 저장: 2026-09-01 06:50 KST · [v120] 생산량목록 조회콤보(시도·시군구·읍면동·작물) · 조사구목록 라벨 · 조사구 지도검색 · 가축 입력/표시 개편 — ①생산량목록에 시도/시군구/읍면동/작물 콤보 검색 추가. ②오른쪽 🌾 라벨 「조사구」→「조사구목록」. ③조사구 추가폼 주소확인 옆 「지도검색」(지도에서 위치선택→초입주소·좌표 자동채움, 통합계산기 방식). ④가축: 성명→경영주명, 농장명·관리인·관리인연락처 추가. ⑤전화번호 자동 하이픈(010-1111-2222·054-111-1111). ⑥가축 축종: 삼계·토종닭 추가, 종계→육용종계·산란종계. ⑦폼 순서: 비고·메모 위, 위도·경도 아래. ⑧⑨가축 목록 「N번 경영주명 축종 리 지번」. ⑩가축 핀 팝업에 축종·농장명·관리인·전화(전화걸기 tel링크). (v119 이하 유지) -->
 <!-- (이전)  map_v119.html (v119 · TENAR V1.5) · 저장: 2026-08-31 06:27 KST · [v119] 생산량목록·저장위치의 작물 아이콘을 「통합계산기(tonghab)와 동일한 SVG」로 — 마늘·양파·감자·논벼·콩·배추·무·총각무 8종은 tonghab의 작물 SVG(CROP_SVG)로 표시(이모지 대체), 그 외 작물은 기존 이모지(cropIconOf) 폴백. 지도 핀 라벨은 캔버스라 이모지 유지. (v118 이하 유지) -->
 <!-- (이전)  map_v118.html (v118 · TENAR V1.5) · 저장: 2026-08-31 06:19 KST · [v118] 생산량목록(구 즐겨찾기) 개선 — ①오른쪽 ⭐ 버튼 라벨 「목록」→「생산량목록」. ②목록 시트 제목·배너 「즐겨찾기」→「생산량」. ③목록에서 항목 선택→저장위치 팝업 「저장 위치」 왼쪽에 뒤로가기(←) 추가 — 누르면 생산량목록으로 복귀(목록 스크롤 위치 기억). ④목록 항목의 작물명을 주소글자만큼 크게(13px)+초록, 숫자와 작물명 사이에 작물 이모지(cropIconOf) 표시. (v117 이하 유지) -->
 <!-- (이전)  map_v117.html (v117 · TENAR V1.5) · 저장: 2026-08-30 06:03 KST · [v117] 조사구 시트 4번째 콤보를 조사 종류별로 — 작물재배=「층」 그대로, 가축·축비=「축종」, 농비=「지목」, 쌀값·농판=콤보 없음(3개). 핀을 누르면 그 조사구의 축종·지목이 4번째 콤보에 반영(작물재배는 층 비움 유지). 목록·필터·전체보기 모두 해당 항목 기준. (v116 이하 유지) -->
@@ -2995,6 +2996,9 @@ TenarSecureStore.init('map',
     sheetOverlay.classList.remove('show');
     sheetOpen = false;
     sheetHasForm = false;
+    /* [v121] 시트를 닫으면 지도 padding(팝업 위로 핀 올리기용)을 초기화한다.
+       — 남아 있으면 이후 현재위치/전체보기 카메라 이동이 어긋나거나 멈춘 듯 보임(핀만 움직임) */
+    try { if (typeof map !== 'undefined' && map && map.getPadding) { var _cp = map.getPadding(); if (_cp && (_cp.top || _cp.bottom || _cp.left || _cp.right)) map.setPadding({ top: 0, right: 0, bottom: 0, left: 0 }); } } catch (e) {}
     updateBottomBtnsPos();
     clearTempMarker();   /* [v6-4] 주소 조회용 임시핀은 시트를 닫으면 사라진다(저장 아님) */
     /* [v10-23] 시트를 완전히 닫으면 선택 필지 강조도 해제 */
@@ -4559,7 +4563,7 @@ TenarSecureStore.init('map',
     }
     var b = new maplibregl.LngLatBounds();
     favs.forEach(function (f) { b.extend([f.longitude, f.latitude]); });
-    map.fitBounds(b, { padding: 70, maxZoom: 17, duration: 700 });
+    map.fitBounds(b, { padding: 70, maxZoom: 17, duration: 700, essential: true });   /* [v121] reduce-motion 대응 */
   }
 
   function favShare() {
@@ -5105,8 +5109,8 @@ TenarSecureStore.init('map',
     var z = (zoom != null) ? zoom : Math.max(map.getZoom(), 17);
     requestAnimationFrame(function () {
       var sheetH = (typeof sheetOpen !== 'undefined' && sheetOpen) ? sheetEl.getBoundingClientRect().height : 0;
-      try { map.flyTo({ center: [lng, lat], zoom: z, padding: { top: 100, bottom: Math.round(sheetH) + 50, left: 30, right: 30 }, duration: 600 }); }
-      catch (e) { try { map.flyTo({ center: [lng, lat], zoom: z, duration: 600 }); } catch (e2) {} }
+      try { map.flyTo({ center: [lng, lat], zoom: z, padding: { top: 100, bottom: Math.round(sheetH) + 50, left: 30, right: 30 }, duration: 600, essential: true }); }
+      catch (e) { try { map.flyTo({ center: [lng, lat], zoom: z, duration: 600, essential: true }); } catch (e2) {} }
     });
   }
 
@@ -5123,7 +5127,7 @@ TenarSecureStore.init('map',
     map.easeTo({
       center: center,
       padding: { top: 90, bottom: Math.round(sheetH) + 40, left: 20, right: 20 },
-      duration: 500
+      duration: 500, essential: true   /* [v121] reduce-motion 대응 */
     });
   }
 
@@ -11108,7 +11112,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
       try {
         var b = new maplibregl.LngLatBounds();
         pts.forEach(function (p) { b.extend([p.longitude, p.latitude]); });
-        map.fitBounds(b, { padding: { top: 110, bottom: 130, left: 55, right: 55 }, maxZoom: 16, duration: 700 });
+        map.fitBounds(b, { padding: { top: 110, bottom: 130, left: 55, right: 55 }, maxZoom: 16, duration: 700, essential: true });   /* [v121] reduce-motion에서도 이동 */
       } catch (e) {}
     }, 230);
     showToast('모든 조사 종류 핀을 표시했습니다. (' + pts.length + '건)', 2600, 'success');
@@ -11180,7 +11184,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     try {
       var b = new maplibregl.LngLatBounds();
       pts.forEach(function (p) { b.extend([p.longitude, p.latitude]); });
-      map.fitBounds(b, { padding: 80, maxZoom: 17, duration: 600 });
+      map.fitBounds(b, { padding: 80, maxZoom: 17, duration: 600, essential: true });   /* [v121] reduce-motion 대응 */
     } catch (e) {}
   }
 
@@ -13055,7 +13059,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
         /* 첫 위치 : 화면 중앙+확대(북쪽). 이후엔 이동분만 재중심 */
         pendingCenterOnce = false;
         programmatic = true;
-        try { map.easeTo({ center: [lastPos.lng, lastPos.lat], zoom: Math.max(map.getZoom(), FOCUS_ZOOM), bearing: 0, duration: 500, essential: true }); } catch (e) {}
+        try { map.easeTo({ center: [lastPos.lng, lastPos.lat], zoom: Math.max(map.getZoom(), FOCUS_ZOOM), bearing: 0, padding: { top: 0, right: 0, bottom: 0, left: 0 }, duration: 500, essential: true }); } catch (e) {}   /* [v121] padding 초기화(안 그러면 지도가 안 움직이는 증상) */
         setTimeout(function () { programmatic = false; }, 560);
         showToast('', 1, 'info');
       } else if (mode !== 'off') {
