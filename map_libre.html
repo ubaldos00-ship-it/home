@@ -1,4 +1,5 @@
-<!-- map_v124.html (v124 · TENAR V1.5) · 저장: 2026-09-02 10:57 KST · [v124] 암호 걸린 엑셀 가져오기 지원 + 가축 축종 「닭」 추가 — ①.xlsx에 암호가 걸려 있으면(엑셀 파일 암호) 가져오기 시 암호 입력창이 떠서 입력하면 복호화해 불러옴(ECMA-376 agile · cfb+crypto-js 온디맨드 로드, 인터넷 필요). 암호 틀리면 재입력 안내. ②가축 축종 목록에 「닭」 추가(돼지·닭·산란계·육계·육용종계·산란종계·오리·삼계·토종닭). (v123 이하 유지) -->
+<!-- map_v125.html (v125 · TENAR V1.5) · 저장: 2026-09-02 11:13 KST · [v125] 엑셀 가져오기: 초입주소만 있어도 등록 가능 — ①「시도·시군구·읍면동·조사구/성명」이 비어 있어도 「초입주소(또는 좌표)」만 있으면 선택가능(전엔 필수값 누락=선택불가). ②가져올 때 초입주소로 좌표조회 + 역지오코딩으로 시도·시군구·읍면동 자동 채움(주소에 이미 있으면 파싱). → 초입주소만 넣어도 핀이 찍히고 분류됨. (v124 이하 유지) -->
+<!-- (이전)  map_v124.html (v124 · TENAR V1.5) · 저장: 2026-09-02 10:57 KST · [v124] 암호 걸린 엑셀 가져오기 지원 + 가축 축종 「닭」 추가 — ①.xlsx에 암호가 걸려 있으면(엑셀 파일 암호) 가져오기 시 암호 입력창이 떠서 입력하면 복호화해 불러옴(ECMA-376 agile · cfb+crypto-js 온디맨드 로드, 인터넷 필요). 암호 틀리면 재입력 안내. ②가축 축종 목록에 「닭」 추가(돼지·닭·산란계·육계·육용종계·산란종계·오리·삼계·토종닭). (v123 이하 유지) -->
 <!-- (이전)  map_v123.html (v123 · TENAR V1.5) · 저장: 2026-09-02 07:02 KST · [v123] 저장·불러오기 UI/엑셀 개편 — ①「저장·불러오기」 버튼 글자 작게(한 줄). ②저장·불러오기 팝업 제목을 종류별로(작물재배/가축/축비… 저장·불러오기) — 저장본은 종류별로 각각 유지. ③가축 엑셀 양식 신규(gachuk_josagu/gachuk_josagu.xlsx: 층·조사구 없이 축종·경영주명·전화번호·농장명·관리인·관리인연락처·담당자ID) + 엑셀 가져오기 타입대응(가축은 경영주명·축종 등으로 저장, 양식 링크·미리보기 제목 종류별). ④엑셀/JSON 내보내기를 새 탭 blob 다운로드로(iOS에서 지도 탭이 파일로 이동해 홈으로 가던 문제) + 가져오기 후 저장·불러오기 화면 유지. (v122 이하 유지) -->
 <!-- (이전)  map_v122.html (v122 · TENAR V1.5) · 저장: 2026-09-01 23:54 KST · [v122] 꾹저장 「생산량목록 핀」 개명+찍은 위치 핀표시 · ⓘ에 버전표기 · 엑셀 담당자ID · 타입탭 재클릭 최소화 · 위치 확대/축소 멈춤수정 — ①꾹눌러 저장 시트: 「즐겨찾기 핀」→「생산량목록 핀」, 꾹 찍은 위치에 핀 표시. ②ⓘ 지도 출처 정보 맨위에 버전(v122) 표기(MAP_VERSION). ③작물재배 엑셀 양식·가져오기: 「완료회차」→「담당자ID」, 가져오기 미리보기에 담당자 필터 추가(담당자ID로 골라 가져오기), managerId 저장·내보내기·템플릿 반영. ④조사구목록에서 이미 선택된 종류 탭을 다시 누르면 시트 최소화+그 종류 핀 지도맞춤(한 번에). ⑤위치추적 중 확대/축소마다 중심을 GPS로 되돌리던 재중심(zoomend) 제거 — 자유 확대·축소 가능(멈춤/스냅백 해결). (v121 이하 유지) -->
 <!-- (이전)  map_v121.html (v121 · TENAR V1.5) · 저장: 2026-09-01 23:12 KST · [v121·버그수정] 지도 멈춤/현재위치 안움직임 해결 — ①시트에서 「핀을 팝업 위로 올리려고」 지도 padding을 쓰는데(고정 속성) 남아 있으면 이후 카메라 이동이 어긋남 → 시트 닫을 때 padding 자동 초기화 + 현재위치 첫 이동에 padding 0 명시(핀만 움직이고 지도 안 움직이던 증상 해결). ②전체보기(생산량목록·조사구목록)·핀 이동 fitBounds/flyTo에 essential:true 추가 → 기기 「동작 줄이기(reduce motion)」 설정에서도 카메라가 이동(전체보기가 한번씩 멈추던 증상 해결). (v120 이하 기능 동일) -->
@@ -1561,7 +1562,7 @@ TenarSecureStore.init('map',
      · 키는 HTML에 노출되므로 반드시 허용 도메인을 위 주소로 제한하세요.
        제한해 두면 타인이 키를 복사해도 다른 사이트에서는 쓸 수 없습니다.
      =================================================================== */
-  var MAP_VERSION = 'v124';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
+  var MAP_VERSION = 'v125';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
   var VWORLD_API_KEY = '00EB5BC0-22B4-3B7E-89D1-341699F7CE05';
   var VWORLD_DOMAIN  = 'ubaldos00-ship-it.github.io';   /* 호스트만 · 스킴 금지 */
 
@@ -11833,9 +11834,20 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
           var cur = getAreaPlots();
           for (var k = 0; k < cur.length; k++) if (cur[k].id === p.id) { cur[k].longitude = c.lng; cur[k].latitude = c.lat; cur[k].updatedAt = kstNowStr(); }
           setAreaPlots(cur); areaUpdateSource(); found++;
+          if (showProgress) showToast('📍 좌표 조회 중… ' + done + '/' + total + ' (다시 누르면 중단)', 0, 'info');
+          /* [v125] 시도·시군구·읍면동이 비어 있으면 역지오코딩으로 채워 분류(트리)·라벨 정확히 */
+          if (!(p.sido && p.sigungu && p.eupmyeondong)) {
+            areaResolveAdminByCoord(c.lng, c.lat).then(function (ad) {
+              if (ad) { var cur2 = getAreaPlots(); for (var j = 0; j < cur2.length; j++) if (cur2[j].id === p.id) { if (ad.sido) cur2[j].sido = ad.sido; if (ad.sigungu) cur2[j].sigungu = ad.sigungu; if (ad.eupmyeondong) cur2[j].eupmyeondong = ad.eupmyeondong; if (ad.jibun && !cur2[j].address1) cur2[j].address1 = ad.jibun; cur2[j].ridong = deriveRidong(cur2[j].address1, cur2[j].ridong); } try { areaRenumber(cur2); } catch (e) {} setAreaPlots(cur2); areaUpdateSource(); }
+              setTimeout(step, 250);
+            }).catch(function () { setTimeout(step, 250); });
+            return;
+          }
+          setTimeout(step, 300);
+        } else {
+          if (showProgress) showToast('📍 좌표 조회 중… ' + done + '/' + total + ' (다시 누르면 중단)', 0, 'info');
+          setTimeout(step, 300);
         }
-        if (showProgress) showToast('📍 좌표 조회 중… ' + done + '/' + total + ' (다시 누르면 중단)', 0, 'info');
-        setTimeout(step, 300);
       });
     })();
   }
@@ -12724,17 +12736,16 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
 
   /* ── 검증 ── */
   function areaValidate(rec) {
-    /* [v123] 작물재배=조사구 필수, 그 외=경영주명(성명) 필수 */
-    var _reqType = (currentAreaType === 'crop')
-      ? (rec.josagu !== '' && rec.josagu != null)
-      : (rec.name != null && String(rec.name).trim() !== '');
-    var reqOk = rec.sido && rec.sigungu && rec.eupmyeondong && _reqType && (rec.address1 || (rec.latitude !== '' && rec.longitude !== ''));
+    /* [v125] 초입주소(또는 좌표)만 있어도 가져오기 가능 — 시도·시군구·읍면동·조사구/성명은
+       비어 있어도 됨(좌표조회·역지오코딩으로 채움). 위치 정보만 있으면 통과. */
+    var hasLoc = (rec.address1 && String(rec.address1).trim() !== '') ||
+                 (rec.latitude !== '' && rec.latitude != null && rec.longitude !== '' && rec.longitude != null);
     var latN = (rec.latitude === '' || rec.latitude == null) ? null : Number(rec.latitude);
     var lngN = (rec.longitude === '' || rec.longitude == null) ? null : Number(rec.longitude);
     var badCoord = (rec.latitude !== '' && rec.latitude != null && !isFinite(latN)) || (rec.longitude !== '' && rec.longitude != null && !isFinite(lngN));
-    if (!reqOk || badCoord) return 'error';
+    if (!hasLoc || badCoord) return 'error';
     if (areaCoordOk(latN, lngN)) return 'ok';
-    return 'warn';
+    return 'warn';   /* 좌표는 없지만 주소로 지도표시 가능 → 가져올 때 좌표조회 */
   }
   function areaToPlot(rec) {
     var latN = Number(rec.latitude), lngN = Number(rec.longitude);
@@ -12756,6 +12767,10 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
       p.floor = ''; p.josagu = '';
       p.kind = (rec.kind || '').trim(); p.name = (rec.name || '').trim(); p.phone = (rec.phone || '').trim();
       if (currentAreaType === 'livestock') { p.farmName = (rec.farmName || '').trim(); p.manager = (rec.manager || '').trim(); p.managerPhone = (rec.managerPhone || '').trim(); }
+    }
+    /* [v125] 시도·시군구·읍면동이 비어 있으면 초입주소에서 자동 파싱(주소만 넣어도 분류·핀 가능) */
+    if ((!p.sido || !p.sigungu || !p.eupmyeondong) && p.address1) {
+      try { var ad = parseAdminFromAddr(p.address1); if (ad) { if (!p.sido && ad.sido) p.sido = normalizeSido(ad.sido); if (!p.sigungu && ad.sigungu) p.sigungu = ad.sigungu; if (!p.eupmyeondong && ad.eupmyeondong) p.eupmyeondong = ad.eupmyeondong; } } catch (e) {}
     }
     return p;
   }
