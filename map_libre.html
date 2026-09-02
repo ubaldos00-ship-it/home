@@ -1,4 +1,5 @@
-<!-- map_v127.html (v127 · TENAR V1.5) · 저장: 2026-09-03 06:40 KST · [v127] 측정/포구·조사표 개선 — ①핀이 작게 멈춰보이던 것 방지(줌 도중에도 핀 크기 갱신). ②저장핀 조사표: 연결돼 있으면 「열기·수정 / 다른 조사표로 변경 / 연결 해제」를 고르게(수정 가능). ③저장 누르면 「완료」 자동 처리(측정=finishCurrentMeasurement, 포구=fpFinish). ④저장 안 하고 조사표 전송하면 「저장 후 전송」 안내(저장/취소). ⑤새 조사 시작/새로그리기를 「조사표 전송」 아래로 이동(전송 대신 잘못 누름 방지). ⑥ⓘ에 버전+저장일시 표기. (v126 이하 유지) -->
+<!-- map_v128.html (v128 · TENAR V1.5) · 저장: 2026-09-03 07:12 KST · [v128] 지도 핀 라벨 개편 — ①생산량목록(즐겨찾기) 핀: 작물명(위) + 읍면동(아래) 표기. ②조사구 핀 「위」=조사명(작물재배/가축/축비/농비/쌀값/농판). ③핀 「아래」: 작물재배=층-조사구(03-0023) · 가축=축종 경영주 읍면동 · 축비=축종 이름 읍면동 · 농비=지목 이름 읍면동 · 쌀값=(업체명) 이름 읍면동 · 농판=이름 읍면동. ④작물재배 층=2자리·조사구=4자리 zero-pad(입력 3→03, 23→0023 저장·표시). (v127 이하 유지) -->
+<!-- (이전)  map_v127.html (v127 · TENAR V1.5) · 저장: 2026-09-03 06:40 KST · [v127] 측정/포구·조사표 개선 — ①핀이 작게 멈춰보이던 것 방지(줌 도중에도 핀 크기 갱신). ②저장핀 조사표: 연결돼 있으면 「열기·수정 / 다른 조사표로 변경 / 연결 해제」를 고르게(수정 가능). ③저장 누르면 「완료」 자동 처리(측정=finishCurrentMeasurement, 포구=fpFinish). ④저장 안 하고 조사표 전송하면 「저장 후 전송」 안내(저장/취소). ⑤새 조사 시작/새로그리기를 「조사표 전송」 아래로 이동(전송 대신 잘못 누름 방지). ⑥ⓘ에 버전+저장일시 표기. (v126 이하 유지) -->
 <!-- (이전)  map_v126.html (v126 · TENAR V1.5) · 저장: 2026-09-02 11:26 KST · [v126·버그수정] 엑셀 가져오기에서 담당자ID(및 시도·시군구·읍면동) 필터로 걸러도, 가려진 다른 행의 체크가 남아 「추가/교체 시 전체」가 들어가던 문제 수정 — 이제 「현재 필터에 보이는 체크된 행만」 가져옴(담당자ID 고르면 그 ID만 추가/교체). (v125 이하 유지) -->
 <!-- (이전)  map_v125.html (v125 · TENAR V1.5) · 저장: 2026-09-02 11:13 KST · [v125] 엑셀 가져오기: 초입주소만 있어도 등록 가능 — ①「시도·시군구·읍면동·조사구/성명」이 비어 있어도 「초입주소(또는 좌표)」만 있으면 선택가능(전엔 필수값 누락=선택불가). ②가져올 때 초입주소로 좌표조회 + 역지오코딩으로 시도·시군구·읍면동 자동 채움(주소에 이미 있으면 파싱). → 초입주소만 넣어도 핀이 찍히고 분류됨. (v124 이하 유지) -->
 <!-- (이전)  map_v124.html (v124 · TENAR V1.5) · 저장: 2026-09-02 10:57 KST · [v124] 암호 걸린 엑셀 가져오기 지원 + 가축 축종 「닭」 추가 — ①.xlsx에 암호가 걸려 있으면(엑셀 파일 암호) 가져오기 시 암호 입력창이 떠서 입력하면 복호화해 불러옴(ECMA-376 agile · cfb+crypto-js 온디맨드 로드, 인터넷 필요). 암호 틀리면 재입력 안내. ②가축 축종 목록에 「닭」 추가(돼지·닭·산란계·육계·육용종계·산란종계·오리·삼계·토종닭). (v123 이하 유지) -->
@@ -803,6 +804,15 @@ TenarSecureStore.init('map',
   /* [v12-3] 작물명은 축소해도 계속 표시 (겹쳐도 됨) — 작은 핀/점일 때 위치만 조정 */
   .pin.pin-sm .pin-crop { bottom: 19px; font-size: 9.5px; }
   .pin.pin-dot .pin-crop { bottom: 9px; font-size: 9.5px; }
+  /* [v128] 핀 「아래」 라벨(읍면동 등) */
+  .pin .pin-sub {
+    position: absolute; left: 50%; top: 30px; transform: translateX(-50%);
+    padding: 1px 5px; border-radius: 6px; background: rgba(31,42,25,.82);
+    color: #fff; font-size: 9.5px; font-weight: 800; line-height: 1.35;
+    white-space: nowrap; pointer-events: none; box-shadow: 0 1px 3px rgba(0,0,0,.3);
+  }
+  .pin.pin-sm .pin-sub { top: 17px; font-size: 9px; }
+  .pin.pin-dot .pin-sub { top: 11px; font-size: 9px; }
   .pin.pin-dot::before {
     /* 원의 중심이 실제 좌표(요소 하단)에 오도록 아래로 5px 내림 */
     content: ''; position: absolute; left: 0; top: auto; bottom: -5px; width: 10px; height: 10px;
@@ -1566,8 +1576,8 @@ TenarSecureStore.init('map',
      · 키는 HTML에 노출되므로 반드시 허용 도메인을 위 주소로 제한하세요.
        제한해 두면 타인이 키를 복사해도 다른 사이트에서는 쓸 수 없습니다.
      =================================================================== */
-  var MAP_VERSION = 'v127';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
-  var MAP_VERSION_TIME = '2026-09-03 06:40 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
+  var MAP_VERSION = 'v128';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
+  var MAP_VERSION_TIME = '2026-09-03 07:12 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
   var VWORLD_API_KEY = '00EB5BC0-22B4-3B7E-89D1-341699F7CE05';
   var VWORLD_DOMAIN  = 'ubaldos00-ship-it.github.io';   /* 호스트만 · 스킴 금지 */
 
@@ -3162,7 +3172,7 @@ TenarSecureStore.init('map',
   /* [v5-8] SVG 물방울 핀 — 꼭짓점이 viewBox 하단 중앙(12,29.4)에 있어
      anchor:'bottom' 이면 좌표에 정확히 수직으로 꽂힌다. */
   /* [v11-8] cropName 이 있으면 핀 위쪽에 작물명 라벨로 표시 (핀 안 이모지는 없음) */
-  function makePinElement(hex, cropName) {
+  function makePinElement(hex, cropName, subLabel) {
     var e = document.createElement('div');
     e.className = 'pin';
     e.style.setProperty('--pin-color', hex);
@@ -3172,7 +3182,8 @@ TenarSecureStore.init('map',
       '<path d="M12 29.4C12 29.4 21.6 17.6 21.6 11.1A9.6 9.6 0 1 0 2.4 11.1C2.4 17.6 12 29.4 12 29.4Z" ' +
       'fill="' + hex + '" stroke="#ffffff" stroke-width="2" stroke-linejoin="round"/>' +
       '</svg>' +
-      (cropName ? '<span class="pin-crop">' + escapeHtml(cropName) + '</span>' : '');
+      (cropName ? '<span class="pin-crop">' + escapeHtml(cropName) + '</span>' : '') +
+      (subLabel ? '<span class="pin-sub">' + escapeHtml(subLabel) + '</span>' : '');   /* [v128] 핀 아래 읍면동 */
     return e;
   }
 
@@ -3692,7 +3703,9 @@ TenarSecureStore.init('map',
     var favs = getFavs();
     favs.forEach(function (f) {
       /* [v11-8] 작물별 필터 없음 — 저장핀은 모두 표시, 작물명만 켜고 끔 */
-      var e = makePinElement(colorHex(f.color), settings.showCropName ? (f.crop || '없음') : '');
+      /* [v128] 핀 아래에 읍면동 표기(주소에서 추출) */
+      var _femd = ''; try { var _fa = parseAdminFromAddr(f.jibunAddress || f.name || ''); _femd = (_fa && _fa.eupmyeondong) || ''; } catch (e2) {}
+      var e = makePinElement(colorHex(f.color), settings.showCropName ? (f.crop || '없음') : '', _femd);
       /* [v6-2] 작물핀 터치 → 큰 팝업 대신 50% 바텀시트 (위로 끌면 90%까지)
          [v13] 실측모드에서는 상세시트 대신 측정점으로 추가.
                실측모드에서도 핀 정보를 봐야 할 수 있으므로 "길게 누르기"로 상세시트를 연다. */
@@ -11062,8 +11075,27 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     arr.forEach(function (p) { var k = areaGroupKey(p); cnt[k] = (cnt[k] || 0) + 1; p.number = cnt[k]; });
     return arr;
   }
-  function areaFloorLabel(p) { return (p.floor !== '' && p.floor != null) ? (p.floor + '층') : ''; }
-  function areaJosaguLabel(p) { return (p.josagu !== '' && p.josagu != null) ? (p.josagu + '조사구') : ''; }
+  /* [v128] 작물재배 층=2자리·조사구=4자리 zero-pad (예: 3→03, 23→0023). 숫자가 아니면 원문 유지 */
+  function _padL(s, n) { s = String(s); while (s.length < n) s = '0' + s; return s; }
+  function areaPadFloor(v) { v = (v == null ? '' : String(v)).trim(); return (/^\d{1,2}$/.test(v)) ? _padL(v, 2) : v; }
+  function areaPadJosagu(v) { v = (v == null ? '' : String(v)).trim(); return (/^\d{1,4}$/.test(v)) ? _padL(v, 4) : v; }
+  function areaFloorLabel(p) { return (p.floor !== '' && p.floor != null) ? (areaPadFloor(p.floor) + '층') : ''; }
+  function areaJosaguLabel(p) { return (p.josagu !== '' && p.josagu != null) ? (areaPadJosagu(p.josagu) + '조사구') : ''; }
+  /* [v128] 지도 핀 「아래」 라벨 — 조사 종류별
+     작물재배=층-조사구(03-0023) · 가축/축비=축종 이름 읍면동 · 농비=지목 이름 읍면동
+     쌀값=업체명 이름 읍면동 · 농판=이름 읍면동 */
+  function areaLabelBelow(p, tk) {
+    tk = tk || currentAreaType;
+    var emd = p.eupmyeondong || '';
+    if (tk === 'crop') {
+      var s = [areaPadFloor(p.floor), areaPadJosagu(p.josagu)].filter(Boolean).join('-');
+      return s || '조사구';
+    }
+    if (tk === 'riceprice') return [(p.company || p.farmName || ''), (p.name || ''), emd].filter(Boolean).join(' ') || (areaTypeCfg(tk).label + ' 조사');
+    if (tk === 'farmsale') return [(p.name || ''), emd].filter(Boolean).join(' ') || (areaTypeCfg(tk).label + ' 조사');
+    /* 가축·축비=축종, 농비=지목 → kind 먼저 */
+    return [(p.kind || ''), (p.name || ''), emd].filter(Boolean).join(' ') || (areaTypeCfg(tk).label + ' 조사');
+  }
   /* [v67-4] 핀 이름 = 읍면동 + 층 + 조사구 (예: 자인면 9층 125조사구) */
   function areaPlotNameOf(p, tk) {
     /* [v112] 작물재배 = 읍면동 층 조사구, 그 외 = 조사명 · 성명 · 읍면동 (지도 핀/목록/팝업 공통) */
@@ -11121,8 +11153,8 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
             dotColor: areaPinColor(p, tk),                  /* [v114] 조사구·읍면동·종류별 핀 색 */
             shapeChar: cfg.shape,                           /* [v110] 조사 종류별 핀 모양 글리프 */
             isCircle: (cfg.shape === '●'),                  /* 작물재배(원)는 기존 원 레이어, 그 외는 글리프 레이어 */
-            topText: (cfg.kinds ? (p.kind || '') : ''),     /* [v116] 핀 위 축종/지목 */
-            labelText: areaPlotNameOf(p, tk)   /* [v67-4] 읍면동 층 조사구 / (그 외)조사명·성명·읍면동 */
+            topText: cfg.label,                             /* [v128] 핀 위 = 조사명(작물재배/가축/축비/농비/쌀값/농판) */
+            labelText: areaLabelBelow(p, tk)                 /* [v128] 핀 아래 = 종류별 필드 */
           },
           geometry: { type: 'Point', coordinates: [p.longitude, p.latitude] }
         });
@@ -11695,7 +11727,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
       var rec = editing || { id: areaUid(), createdAt: kstNowStr(), latitude: NaN, longitude: NaN };
       rec.sido = sido; rec.sigungu = sgg; rec.eupmyeondong = emd;
       /* [v112] 종류별 저장 — 작물재배=층·조사구, 그 외=성명·전화번호 */
-      if (_isCropType) { rec.floor = iFloor.value.trim(); rec.josagu = iJosagu.value.trim(); if (rec.kind) delete rec.kind; }
+      if (_isCropType) { rec.floor = areaPadFloor(iFloor.value.trim()); rec.josagu = areaPadJosagu(iJosagu.value.trim()); if (rec.kind) delete rec.kind; }   /* [v128] 층2·조사구4자리 zero-pad */
       else {
         rec.name = iName.value.trim(); rec.phone = iPhone.value.trim(); rec.floor = ''; rec.josagu = ''; rec.kind = iKind ? iKind.value : '';
         if (_isLivestock) {   /* [v120] 가축 추가 필드 */
@@ -12791,8 +12823,8 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
       managerId: rec.managerId ? String(rec.managerId).trim() : '',   /* [v122] 담당자ID */
       createdAt: kstNowStr(), updatedAt: kstNowStr()
     };
-    if (isCrop) {   /* 작물재배: 층·조사구 */
-      p.floor = (rec.floor == null ? '' : rec.floor) + ''; p.josagu = (rec.josagu == null ? '' : rec.josagu) + '';
+    if (isCrop) {   /* 작물재배: 층·조사구 (2·4자리 zero-pad) */
+      p.floor = areaPadFloor(rec.floor); p.josagu = areaPadJosagu(rec.josagu);
     } else {         /* [v123] 그 외: 축종·경영주명·전화번호 (+가축은 농장명·관리인 등) */
       p.floor = ''; p.josagu = '';
       p.kind = (rec.kind || '').trim(); p.name = (rec.name || '').trim(); p.phone = (rec.phone || '').trim();
