@@ -1,4 +1,5 @@
-<!-- map_v123.html (v123 · TENAR V1.5) · 저장: 2026-09-02 07:02 KST · [v123] 저장·불러오기 UI/엑셀 개편 — ①「저장·불러오기」 버튼 글자 작게(한 줄). ②저장·불러오기 팝업 제목을 종류별로(작물재배/가축/축비… 저장·불러오기) — 저장본은 종류별로 각각 유지. ③가축 엑셀 양식 신규(gachuk_josagu/gachuk_josagu.xlsx: 층·조사구 없이 축종·경영주명·전화번호·농장명·관리인·관리인연락처·담당자ID) + 엑셀 가져오기 타입대응(가축은 경영주명·축종 등으로 저장, 양식 링크·미리보기 제목 종류별). ④엑셀/JSON 내보내기를 새 탭 blob 다운로드로(iOS에서 지도 탭이 파일로 이동해 홈으로 가던 문제) + 가져오기 후 저장·불러오기 화면 유지. (v122 이하 유지) -->
+<!-- map_v124.html (v124 · TENAR V1.5) · 저장: 2026-09-02 10:57 KST · [v124] 암호 걸린 엑셀 가져오기 지원 + 가축 축종 「닭」 추가 — ①.xlsx에 암호가 걸려 있으면(엑셀 파일 암호) 가져오기 시 암호 입력창이 떠서 입력하면 복호화해 불러옴(ECMA-376 agile · cfb+crypto-js 온디맨드 로드, 인터넷 필요). 암호 틀리면 재입력 안내. ②가축 축종 목록에 「닭」 추가(돼지·닭·산란계·육계·육용종계·산란종계·오리·삼계·토종닭). (v123 이하 유지) -->
+<!-- (이전)  map_v123.html (v123 · TENAR V1.5) · 저장: 2026-09-02 07:02 KST · [v123] 저장·불러오기 UI/엑셀 개편 — ①「저장·불러오기」 버튼 글자 작게(한 줄). ②저장·불러오기 팝업 제목을 종류별로(작물재배/가축/축비… 저장·불러오기) — 저장본은 종류별로 각각 유지. ③가축 엑셀 양식 신규(gachuk_josagu/gachuk_josagu.xlsx: 층·조사구 없이 축종·경영주명·전화번호·농장명·관리인·관리인연락처·담당자ID) + 엑셀 가져오기 타입대응(가축은 경영주명·축종 등으로 저장, 양식 링크·미리보기 제목 종류별). ④엑셀/JSON 내보내기를 새 탭 blob 다운로드로(iOS에서 지도 탭이 파일로 이동해 홈으로 가던 문제) + 가져오기 후 저장·불러오기 화면 유지. (v122 이하 유지) -->
 <!-- (이전)  map_v122.html (v122 · TENAR V1.5) · 저장: 2026-09-01 23:54 KST · [v122] 꾹저장 「생산량목록 핀」 개명+찍은 위치 핀표시 · ⓘ에 버전표기 · 엑셀 담당자ID · 타입탭 재클릭 최소화 · 위치 확대/축소 멈춤수정 — ①꾹눌러 저장 시트: 「즐겨찾기 핀」→「생산량목록 핀」, 꾹 찍은 위치에 핀 표시. ②ⓘ 지도 출처 정보 맨위에 버전(v122) 표기(MAP_VERSION). ③작물재배 엑셀 양식·가져오기: 「완료회차」→「담당자ID」, 가져오기 미리보기에 담당자 필터 추가(담당자ID로 골라 가져오기), managerId 저장·내보내기·템플릿 반영. ④조사구목록에서 이미 선택된 종류 탭을 다시 누르면 시트 최소화+그 종류 핀 지도맞춤(한 번에). ⑤위치추적 중 확대/축소마다 중심을 GPS로 되돌리던 재중심(zoomend) 제거 — 자유 확대·축소 가능(멈춤/스냅백 해결). (v121 이하 유지) -->
 <!-- (이전)  map_v121.html (v121 · TENAR V1.5) · 저장: 2026-09-01 23:12 KST · [v121·버그수정] 지도 멈춤/현재위치 안움직임 해결 — ①시트에서 「핀을 팝업 위로 올리려고」 지도 padding을 쓰는데(고정 속성) 남아 있으면 이후 카메라 이동이 어긋남 → 시트 닫을 때 padding 자동 초기화 + 현재위치 첫 이동에 padding 0 명시(핀만 움직이고 지도 안 움직이던 증상 해결). ②전체보기(생산량목록·조사구목록)·핀 이동 fitBounds/flyTo에 essential:true 추가 → 기기 「동작 줄이기(reduce motion)」 설정에서도 카메라가 이동(전체보기가 한번씩 멈추던 증상 해결). (v120 이하 기능 동일) -->
 <!-- (이전)  map_v120.html (v120 · TENAR V1.5) · 저장: 2026-09-01 06:50 KST · [v120] 생산량목록 조회콤보(시도·시군구·읍면동·작물) · 조사구목록 라벨 · 조사구 지도검색 · 가축 입력/표시 개편 — ①생산량목록에 시도/시군구/읍면동/작물 콤보 검색 추가. ②오른쪽 🌾 라벨 「조사구」→「조사구목록」. ③조사구 추가폼 주소확인 옆 「지도검색」(지도에서 위치선택→초입주소·좌표 자동채움, 통합계산기 방식). ④가축: 성명→경영주명, 농장명·관리인·관리인연락처 추가. ⑤전화번호 자동 하이픈(010-1111-2222·054-111-1111). ⑥가축 축종: 삼계·토종닭 추가, 종계→육용종계·산란종계. ⑦폼 순서: 비고·메모 위, 위도·경도 아래. ⑧⑨가축 목록 「N번 경영주명 축종 리 지번」. ⑩가축 핀 팝업에 축종·농장명·관리인·전화(전화걸기 tel링크). (v119 이하 유지) -->
@@ -1560,7 +1561,7 @@ TenarSecureStore.init('map',
      · 키는 HTML에 노출되므로 반드시 허용 도메인을 위 주소로 제한하세요.
        제한해 두면 타인이 키를 복사해도 다른 사이트에서는 쓸 수 없습니다.
      =================================================================== */
-  var MAP_VERSION = 'v123';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
+  var MAP_VERSION = 'v124';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
   var VWORLD_API_KEY = '00EB5BC0-22B4-3B7E-89D1-341699F7CE05';
   var VWORLD_DOMAIN  = 'ubaldos00-ship-it.github.io';   /* 호스트만 · 스킴 금지 */
 
@@ -10856,7 +10857,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
      각 종류는 지도 핀 「모양」을 다르게(작물=원 ●, 가축=사각 ■ …). */
   var AREA_TYPES = [
     { key: 'crop',      label: '작물재배', emoji: '🌾', store: 'tenarAreaSurveyPlotsEncrypted', shape: '●', color: '#10b981' },
-    { key: 'livestock', label: '가축',     emoji: '🐄', store: 'tenarAreaPlots_livestock_enc', shape: '■', color: '#2563eb', kindLabel: '축종', kinds: ['돼지', '산란계', '육계', '육용종계', '산란종계', '오리', '삼계', '토종닭'] },
+    { key: 'livestock', label: '가축',     emoji: '🐄', store: 'tenarAreaPlots_livestock_enc', shape: '■', color: '#2563eb', kindLabel: '축종', kinds: ['돼지', '닭', '산란계', '육계', '육용종계', '산란종계', '오리', '삼계', '토종닭'] },
     { key: 'livecost',  label: '축비',     emoji: '🐖', store: 'tenarAreaPlots_livecost_enc',  shape: '◆', color: '#db2777', kindLabel: '축종', kinds: ['비육우', '번식우', '육우', '젖소', '비육돈', '산란계', '육계'] },
     { key: 'farmcost',  label: '농비',     emoji: '🚜', store: 'tenarAreaPlots_farmcost_enc',  shape: '▲', color: '#ea580c', kindLabel: '지목', kinds: ['논', '밭', '대지', '창고', '축사', '기타'] },
     { key: 'riceprice', label: '쌀값',     emoji: '🍚', store: 'tenarAreaPlots_riceprice_enc', shape: '★', color: '#eab308' },
@@ -12544,22 +12545,106 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     if (!jibun) return '';
     return [rec.sido, rec.sigungu, rec.eupmyeondong, rec.ridong, jibun].filter(Boolean).join(' ');
   }
+  /* [v124] 암호 걸린 엑셀(.xlsx) 열기 지원 — CFB(OLE2) 컨테이너면 암호화된 파일.
+     cfb + crypto-js 를 필요할 때 불러와 ECMA-376 「agile」 암호화를 복호화한다. */
+  function _isCfbEncrypted(u8) { return u8 && u8.length > 8 && u8[0] === 0xD0 && u8[1] === 0xCF && u8[2] === 0x11 && u8[3] === 0xE0; }
+  function ensureOfficeCrypto() {
+    function load(src) { return new Promise(function (res, rej) { var s = document.createElement('script'); s.src = src; s.onload = function () { res(); }; s.onerror = function () { rej(new Error('load')); }; document.head.appendChild(s); }); }
+    var jobs = [];
+    if (!window.CFB) jobs.push(load('https://cdn.jsdelivr.net/npm/cfb@1.2.2/dist/cfb.min.js'));
+    if (!window.CryptoJS) jobs.push(load('https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js'));
+    return Promise.all(jobs).then(function () { return !!(window.CFB && window.CryptoJS); });
+  }
+  function decryptOfficeAgile(u8, password) {
+    var C = window.CryptoJS;
+    function u8ToWA(x) { var w = []; for (var i = 0; i < x.length; i++) { w[i >>> 2] |= (x[i] & 0xff) << (24 - (i % 4) * 8); } return C.lib.WordArray.create(w, x.length); }
+    function waToU8(wa) { var o = new Uint8Array(wa.sigBytes); for (var i = 0; i < wa.sigBytes; i++) { o[i] = (wa.words[i >>> 2] >>> (24 - (i % 4) * 8)) & 0xff; } return o; }
+    function cat(a, b) { var r = new Uint8Array(a.length + b.length); r.set(a, 0); r.set(b, a.length); return r; }
+    function b64(s) { var bin = atob(s); var u = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u; }
+    function le32(n) { return new Uint8Array([n & 255, (n >>> 8) & 255, (n >>> 16) & 255, (n >>> 24) & 255]); }
+    function hsh(algo, x) { var wa = u8ToWA(x); var h = (algo === 'SHA1') ? C.SHA1(wa) : (algo === 'SHA256') ? C.SHA256(wa) : (algo === 'SHA384') ? C.SHA384(wa) : C.SHA512(wa); return waToU8(h); }
+    function pw16(p) { var u = new Uint8Array(p.length * 2); for (var i = 0; i < p.length; i++) { var c = p.charCodeAt(i); u[i * 2] = c & 255; u[i * 2 + 1] = (c >>> 8) & 255; } return u; }
+    function aesNoPad(cipher, key, iv) { var d = C.AES.decrypt({ ciphertext: u8ToWA(cipher) }, u8ToWA(key), { iv: u8ToWA(iv), mode: C.mode.CBC, padding: C.pad.NoPadding }); return waToU8(d); }
+    function getEl(xml, tag) { var m = xml.match(new RegExp('<' + tag + '\\b[^>]*>')); return m ? m[0] : ''; }
+    function at(el, n) { var m = el.match(new RegExp(n + '="([^"]*)"')); return m ? m[1] : null; }
+
+    var cont = CFB.read(u8, { type: 'array' });
+    var eiF = CFB.find(cont, 'EncryptionInfo'), epF = CFB.find(cont, 'EncryptedPackage');
+    if (!eiF || !epF) throw new Error('암호화 정보 없음');
+    var ei = eiF.content, ep = epF.content;
+    var major = ei[0] | (ei[1] << 8);
+    if (major !== 4) throw new Error('구형 암호화 방식(agile 아님)은 지원하지 않습니다.\nExcel에서 암호를 지우거나 최신 형식으로 다시 저장해 주세요.');
+    var xml = ''; for (var i = 8; i < ei.length; i++) xml += String.fromCharCode(ei[i]);
+    var kd = getEl(xml, 'keyData'), ek = getEl(xml, 'p:encryptedKey') || getEl(xml, 'encryptedKey');
+    var algo = at(kd, 'hashAlgorithm') || 'SHA512';
+    var keyBytes = parseInt(at(ek, 'keyBits'), 10) / 8;
+    var blockSize = parseInt(at(kd, 'blockSize'), 10) || 16;
+    var spin = parseInt(at(ek, 'spinCount'), 10);
+    var ekSalt = b64(at(ek, 'saltValue')), kdSalt = b64(at(kd, 'saltValue'));
+    var encKeyVal = b64(at(ek, 'encryptedKeyValue'));
+    /* 비밀번호 → 키 유도 */
+    var h = hsh(algo, cat(ekSalt, pw16(password)));
+    for (var s = 0; s < spin; s++) { h = hsh(algo, cat(le32(s), h)); }
+    var bk = new Uint8Array([0x14, 0x6e, 0x0b, 0xe7, 0xab, 0xac, 0xd0, 0xd6]);   /* encryptedKeyValue block key */
+    var keyForVal = hsh(algo, cat(h, bk)).slice(0, keyBytes);
+    var secret = aesNoPad(encKeyVal, keyForVal, ekSalt.slice(0, blockSize)).slice(0, keyBytes);
+    /* 패키지 복호화 */
+    var total = ep[0] | (ep[1] << 8) | (ep[2] << 16) | (ep[3] * 16777216);
+    var data = ep.slice(8);
+    var res = new Uint8Array(Math.ceil(data.length / 4096) * 4096), off = 0;
+    for (var seg = 0; seg * 4096 < data.length; seg++) {
+      var chunk = data.slice(seg * 4096, seg * 4096 + 4096);
+      var iv = hsh(algo, cat(kdSalt, le32(seg))).slice(0, blockSize);
+      var dec = aesNoPad(chunk, secret, iv);
+      res.set(dec, off); off += dec.length;
+    }
+    return res.slice(0, total);
+  }
+  function areaImportEncryptedExcel(u8, filename) {
+    showToast('', 1, 'info');
+    ensureOfficeCrypto().then(function (ok) {
+      if (!ok) { showToast('암호 해제 준비에 실패했습니다.\n인터넷 연결을 확인하세요.', 5000); return; }
+      (function tryPw() {
+        var pw = window.prompt('🔒 암호가 걸린 엑셀입니다.\n엑셀 파일 암호를 입력하세요:');
+        if (pw == null) { showToast('가져오기를 취소했습니다.', 2200, 'info'); return; }
+        var dec;
+        try { dec = decryptOfficeAgile(u8, pw); }
+        catch (err) { showToast('암호 해제 실패: ' + (err.message || ''), 5500); return; }
+        if (!(dec && dec[0] === 0x50 && dec[1] === 0x4b)) {   /* PK.. = 올바른 xlsx(암호 맞음) */
+          if (window.confirm('암호가 맞지 않는 것 같습니다.\n다시 입력할까요?')) { setTimeout(tryPw, 50); }
+          return;
+        }
+        ensureXLSX().then(function (XLSX) {
+          try {
+            var wb = XLSX.read(dec, { type: 'array' });
+            var aoa = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, raw: false, defval: '' });
+            var rows = areaParseAOA(aoa);
+            if (!rows.length) { showToast('읽을 자료가 없습니다.\n양식의 헤더(번호·시도·시군구…)를 확인하세요.', 5000); return; }
+            showToast('암호를 풀어 불러왔습니다.', 2000, 'success');
+            areaOpenImportPreview(rows, filename);
+          } catch (er) { showToast('엑셀을 읽지 못했습니다.', 5000); }
+        }).catch(function () { showToast('엑셀 라이브러리를 불러오지 못했습니다.', 5000); });
+      })();
+    }).catch(function () { showToast('암호 해제 라이브러리를 불러오지 못했습니다.\n인터넷 연결을 확인하세요.', 5000); });
+  }
   function areaReadExcel(file) {
     showToast('엑셀을 읽는 중…', 0, 'info');
-    ensureXLSX().then(function (XLSX) {
-      var reader = new FileReader();
-      reader.onload = function (e) {
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      var u8 = new Uint8Array(e.target.result);
+      if (_isCfbEncrypted(u8)) { areaImportEncryptedExcel(u8, file.name); return; }   /* [v124] 암호 걸린 파일 */
+      ensureXLSX().then(function (XLSX) {
         try {
-          var wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+          var wb = XLSX.read(u8, { type: 'array' });
           var aoa = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, raw: false, defval: '' });
           var rows = areaParseAOA(aoa);
           showToast('', 1, 'info');
           if (!rows.length) { showToast('읽을 자료가 없습니다.\n양식의 헤더(번호·시도·시군구…)를 확인하세요.', 5000); return; }
           areaOpenImportPreview(rows, file.name);
         } catch (err) { console.error(err); showToast('엑셀을 읽지 못했습니다.\n' + (err.message || ''), 5000); }
-      };
-      reader.readAsArrayBuffer(file);
-    }).catch(function () { showToast('엑셀 라이브러리를 불러오지 못했습니다.\n인터넷 연결을 확인하세요.', 5000); });
+      }).catch(function () { showToast('엑셀 라이브러리를 불러오지 못했습니다.\n인터넷 연결을 확인하세요.', 5000); });
+    };
+    reader.readAsArrayBuffer(file);
   }
   function areaParseAOA(aoa) {
     var hRow = -1, colMap = null;
