@@ -1,4 +1,5 @@
-<!-- map_v126.html (v126 · TENAR V1.5) · 저장: 2026-09-02 11:26 KST · [v126·버그수정] 엑셀 가져오기에서 담당자ID(및 시도·시군구·읍면동) 필터로 걸러도, 가려진 다른 행의 체크가 남아 「추가/교체 시 전체」가 들어가던 문제 수정 — 이제 「현재 필터에 보이는 체크된 행만」 가져옴(담당자ID 고르면 그 ID만 추가/교체). (v125 이하 유지) -->
+<!-- map_v127.html (v127 · TENAR V1.5) · 저장: 2026-09-03 06:40 KST · [v127] 측정/포구·조사표 개선 — ①핀이 작게 멈춰보이던 것 방지(줌 도중에도 핀 크기 갱신). ②저장핀 조사표: 연결돼 있으면 「열기·수정 / 다른 조사표로 변경 / 연결 해제」를 고르게(수정 가능). ③저장 누르면 「완료」 자동 처리(측정=finishCurrentMeasurement, 포구=fpFinish). ④저장 안 하고 조사표 전송하면 「저장 후 전송」 안내(저장/취소). ⑤새 조사 시작/새로그리기를 「조사표 전송」 아래로 이동(전송 대신 잘못 누름 방지). ⑥ⓘ에 버전+저장일시 표기. (v126 이하 유지) -->
+<!-- (이전)  map_v126.html (v126 · TENAR V1.5) · 저장: 2026-09-02 11:26 KST · [v126·버그수정] 엑셀 가져오기에서 담당자ID(및 시도·시군구·읍면동) 필터로 걸러도, 가려진 다른 행의 체크가 남아 「추가/교체 시 전체」가 들어가던 문제 수정 — 이제 「현재 필터에 보이는 체크된 행만」 가져옴(담당자ID 고르면 그 ID만 추가/교체). (v125 이하 유지) -->
 <!-- (이전)  map_v125.html (v125 · TENAR V1.5) · 저장: 2026-09-02 11:13 KST · [v125] 엑셀 가져오기: 초입주소만 있어도 등록 가능 — ①「시도·시군구·읍면동·조사구/성명」이 비어 있어도 「초입주소(또는 좌표)」만 있으면 선택가능(전엔 필수값 누락=선택불가). ②가져올 때 초입주소로 좌표조회 + 역지오코딩으로 시도·시군구·읍면동 자동 채움(주소에 이미 있으면 파싱). → 초입주소만 넣어도 핀이 찍히고 분류됨. (v124 이하 유지) -->
 <!-- (이전)  map_v124.html (v124 · TENAR V1.5) · 저장: 2026-09-02 10:57 KST · [v124] 암호 걸린 엑셀 가져오기 지원 + 가축 축종 「닭」 추가 — ①.xlsx에 암호가 걸려 있으면(엑셀 파일 암호) 가져오기 시 암호 입력창이 떠서 입력하면 복호화해 불러옴(ECMA-376 agile · cfb+crypto-js 온디맨드 로드, 인터넷 필요). 암호 틀리면 재입력 안내. ②가축 축종 목록에 「닭」 추가(돼지·닭·산란계·육계·육용종계·산란종계·오리·삼계·토종닭). (v123 이하 유지) -->
 <!-- (이전)  map_v123.html (v123 · TENAR V1.5) · 저장: 2026-09-02 07:02 KST · [v123] 저장·불러오기 UI/엑셀 개편 — ①「저장·불러오기」 버튼 글자 작게(한 줄). ②저장·불러오기 팝업 제목을 종류별로(작물재배/가축/축비… 저장·불러오기) — 저장본은 종류별로 각각 유지. ③가축 엑셀 양식 신규(gachuk_josagu/gachuk_josagu.xlsx: 층·조사구 없이 축종·경영주명·전화번호·농장명·관리인·관리인연락처·담당자ID) + 엑셀 가져오기 타입대응(가축은 경영주명·축종 등으로 저장, 양식 링크·미리보기 제목 종류별). ④엑셀/JSON 내보내기를 새 탭 blob 다운로드로(iOS에서 지도 탭이 파일로 이동해 홈으로 가던 문제) + 가져오기 후 저장·불러오기 화면 유지. (v122 이하 유지) -->
@@ -1427,17 +1428,18 @@ TenarSecureStore.init('map',
       </div>
 
       <div class="tp-sec">⑤ 완료</div>
-      <!-- [v61-9] 새로그리기 → 완료 순서 -->
-      <button class="tool-btn one-line" type="button" id="fpTNewSurvey" style="width:100%">＋ 새로그리기</button>
-      <button class="tool-btn one-line" type="button" id="fpTFinish" style="width:100%;margin-top:4px;">✓ 완료</button>
-      <div class="tp-sec">⑤ 저장 / 즐겨찾기</div>
+      <button class="tool-btn one-line" type="button" id="fpTFinish" style="width:100%;">✓ 완료</button>
+      <div class="tp-sec">⑥ 저장 / 즐겨찾기</div>
       <div class="tp-grid">
         <button class="tool-btn one-line" type="button" id="fpSaveBtn2"><span class="em">💾</span>저장</button>
         <button class="tool-btn one-line" type="button" id="fpFavBtn"><span class="em">⭐</span>즐겨찾기</button>
       </div>
 
-      <div class="tp-sec">⑥ 조사표 전송</div>
+      <div class="tp-sec">⑦ 조사표 전송</div>
       <button class="tool-btn one-line" type="button" id="fpSendBtn" style="width:100%"><span class="em">📤</span>조사표 전송</button>
+      <!-- [v127] 새로그리기를 「조사표 전송」 아래로 이동(전송 대신 잘못 누르는 것 방지) -->
+      <div class="tp-sec">⑧ 새로그리기</div>
+      <button class="tool-btn one-line" type="button" id="fpTNewSurvey" style="width:100%">＋ 새로그리기</button>
 
       <div id="fpPanel">
         <div id="fpInfo"></div>
@@ -1481,10 +1483,11 @@ TenarSecureStore.init('map',
         <button class="tool-btn one-line" type="button" id="btnSaveMeas"><span class="em">💾</span>저장</button>
         <button class="tool-btn one-line" type="button" id="btnMeasList"><span class="em">⭐</span>즐겨찾기</button>
       </div>
-      <!-- [v61-7] 새 조사 시작을 저장/즐겨찾기 아래로 이동 -->
-      <button class="tool-btn one-line" type="button" id="btnNewSurvey" style="width:100%;margin-top:4px;">＋ 새 조사 시작</button>
       <div class="tp-sec">④ 조사표 전송</div>
       <button class="tool-btn one-line" type="button" id="btnSendArea" style="width:100%"><span class="em">📤</span>조사표 전송</button>
+      <!-- [v127] 새 조사 시작을 「조사표 전송」 아래로 이동(전송 대신 잘못 누르는 것 방지) -->
+      <div class="tp-sec">⑤ 새 조사</div>
+      <button class="tool-btn one-line" type="button" id="btnNewSurvey" style="width:100%;">＋ 새 조사 시작</button>
       <div id="resultToggle"><span>측정 결과</span><span id="resultArrow">▶</span></div>
       <div id="resultBox"><span class="res-empty">측정 결과가 없습니다.</span></div>
     </div>
@@ -1563,7 +1566,8 @@ TenarSecureStore.init('map',
      · 키는 HTML에 노출되므로 반드시 허용 도메인을 위 주소로 제한하세요.
        제한해 두면 타인이 키를 복사해도 다른 사이트에서는 쓸 수 없습니다.
      =================================================================== */
-  var MAP_VERSION = 'v126';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
+  var MAP_VERSION = 'v127';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
+  var MAP_VERSION_TIME = '2026-09-03 06:40 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
   var VWORLD_API_KEY = '00EB5BC0-22B4-3B7E-89D1-341699F7CE05';
   var VWORLD_DOMAIN  = 'ubaldos00-ship-it.github.io';   /* 호스트만 · 스킴 금지 */
 
@@ -3745,6 +3749,8 @@ TenarSecureStore.init('map',
   });
   map.on('rotateend', function () { try { if (fp && fp.angleMode) { fpRender(); fpSyncButtons(); } } catch (e) {} });
   map.on('zoomend', applyPinScale);   /* [v11-3] 줌에 따라 핀 크기 갱신 */
+  map.on('zoom', applyPinScale);      /* [v127] 줌 도중에도 크기 갱신 → 핀이 작게 「멈춰」 보이던 문제 방지 */
+  map.on('load', applyPinScale);      /* [v127] 로드 직후에도 현재 줌 크기 적용 */
   map.on('zoomend', function () {   /* [v57] 공시지가 금액 라벨은 확대 16 경계에서만 나타나므로 줌 변화 시 재평가 */
     try { if (settings.overlays && settings.overlays.landprice) { if (map.getZoom() < 16) clearPriceLabels(); else reloadDataOverlays(false); } } catch (e) {}
   });
@@ -5575,17 +5581,14 @@ TenarSecureStore.init('map',
     opts = opts || {};
     var favId = info.favoriteId || null;
 
-    /* 저장핀에 이미 연결된 조사표가 있으면 고르지 않고 바로 연다 */
+    /* [v127] 저장핀에 이미 연결된 조사표가 있으면 → 바로 열지 않고, 「열기·수정 / 다른 조사표로 변경 / 연결 해제」를 고를 수 있게 한다 */
+    var linkedType = '';
     if (opts.mode === 'pin' && favId) {
       var fav = getFavs().filter(function (x) { return x.id === favId; })[0];
       var linked = fav && (fav.surveyType || fav.surveyApp);
-      if (linked && SURVEY_FILES[linked]) {
-        /* [v28-1] 연결된 저장자료가 있으면 ?load= 로 그 자료를 바로 연다 */
-        info.surveyId = fav.surveyId || fav.surveyKey || '';
-        openSurveyApp(info, linked, favId);
-        return;
-      }
+      if (linked && SURVEY_FILES[linked]) { linkedType = linked; info.surveyId = fav.surveyId || fav.surveyKey || ''; }
     }
+    function surveyKo(t) { return (t === 'tonghab') ? '📐 실측조사표' : (t === 'chungchi') ? '🎧 청취조사표' : t; }
 
     var box = el('div');
     box.appendChild(el('div', null,
@@ -5594,11 +5597,22 @@ TenarSecureStore.init('map',
       (info.pnu ? '<br>PNU ' + escapeHtml(info.pnu) : '') +
       '</div>' +
       '<div style="font-size:12px;color:#888;margin-bottom:12px;">' +
-      (opts.mode === 'pin'
-        ? '이 저장핀은 아직 조사표에 연결되지 않았습니다.<br>연결할 조사표를 골라주세요. (다음부터는 바로 열립니다)<br>' +
-          '<span style="color:#1a5fd0;">조사표에서 저장하면 그 자료까지 연결됩니다.</span>'
-        : '이 위치의 정보를 가지고 조사표를 엽니다.') +
+      (linkedType
+        ? '이 저장핀은 <b>' + surveyKo(linkedType) + '</b>에 연결돼 있습니다.<br>「열기·수정」으로 이어서 고치거나, 아래에서 다른 조사표로 바꿀 수 있습니다.'
+        : (opts.mode === 'pin'
+          ? '이 저장핀은 아직 조사표에 연결되지 않았습니다.<br>연결할 조사표를 골라주세요. (다음부터는 바로 열립니다)<br>' +
+            '<span style="color:#1a5fd0;">조사표에서 저장하면 그 자료까지 연결됩니다.</span>'
+          : '이 위치의 정보를 가지고 조사표를 엽니다.')) +
       '</div>'));
+
+    /* [v127] 연결돼 있으면 「열기·수정」 버튼을 위에 크게 */
+    if (linkedType) {
+      var bOpen = el('button', 'sheet-btn primary', '📂 ' + surveyKo(linkedType) + ' 열기·수정');
+      bOpen.style.cssText += 'width:100%;margin-bottom:6px;font-weight:800;';
+      bOpen.addEventListener('click', function () { openSurveyApp(info, linkedType, favId); });
+      box.appendChild(bOpen);
+      box.appendChild(el('div', null, '<div style="font-size:12px;color:#888;margin:6px 2px 8px;border-top:1px solid #eee;padding-top:8px;">🔁 다른 조사표로 변경</div>'));
+    }
 
     [['tonghab', '📐 실측조사표', '통합계산기 (tonghabbb)'],
      ['chungchi', '🎧 청취조사표', '청취 10a 계산기 (chungchiii)']].forEach(function (x) {
@@ -7134,6 +7148,8 @@ TenarSecureStore.init('map',
 
   function openMeasSaveSheet() {
     var s = surveyMeasureState;
+    /* [v127] 저장하면 「완료」를 자동으로 — 완료를 건너뛰고 저장·전송하던 문제 방지 */
+    try { finishCurrentMeasurement(); } catch (e) {}
     if (!s.areas.length && !s.lines.length && s.fieldPoints.length < 3 && s.distancePoints.length < 2) {
       showToast('저장할 측정 결과가 없습니다.', 3000, 'info');
       return;
@@ -7352,6 +7368,13 @@ TenarSecureStore.init('map',
   }
 
   function sendAreaToSurvey() {
+    /* [v127] 저장하지 않았으면 먼저 저장하도록 안내(저장 후 전송) */
+    var _s = surveyMeasureState;
+    var _hasWork = !!(_s.fieldPoints.length || _s.distancePoints.length || (_s.areas && _s.areas.length) || (_s.lines && _s.lines.length));
+    if (_hasWork && !_s.editingSaveId) {
+      if (window.confirm('저장 후 조사표를 전송할 수 있습니다.\n지금 저장할까요?\n\n[확인] 저장하기   [취소] 닫기')) { openMeasSaveSheet(); }
+      return;
+    }
     /* [v26-6] 청취계산기에서 들어왔으면 그쪽 규약으로 보낸다 */
     if (ccMeasCtx()) { sendAreaToChungchi(); return; }
     /* [v108] 지도에서 「바로」 측정도구로 시작한 경우에도(계산기 컨텍스트 없음) 청취조사표로
@@ -8143,7 +8166,7 @@ TenarSecureStore.init('map',
     e.stopPropagation();
     var box = el('div');
     /* [v122] 지도 버전 표기 */
-    box.appendChild(el('div', null, '<div class="addr-value" style="margin-top:0;font-weight:800;color:#14612f;">텐아르 지도 <span style="color:#1a73e8;">' + MAP_VERSION + '</span></div>'));
+    box.appendChild(el('div', null, '<div class="addr-value" style="margin-top:0;font-weight:800;color:#14612f;">텐아르 지도 <span style="color:#1a73e8;">' + MAP_VERSION + '</span> <span style="color:#999;font-weight:600;font-size:12px;">· ' + MAP_VERSION_TIME + '</span></div>'));
     var introBlock = el('div', null,
       '<div class="addr-label" style="margin-top:0;">지도 엔진</div>' +
       '<div class="addr-value">MapLibre GL JS<br>' +
@@ -9596,6 +9619,7 @@ TenarSecureStore.init('map',
      열어 둔 저장자료가 있을 때만 「덮어쓰기」를 함께 보여준다. */
   function openFpSaveSheet() {
     if (!fpCanSubmit()) { showToast('가·나 지점을 먼저 지정해주세요.', 3000, 'info'); return; }
+    if (!fp.finished) { try { fpFinish(); } catch (e) {} }   /* [v127] 저장 시 완료 자동 처리 */
     var prev = fp.editingId ? getFpSaves().filter(function (x) { return x.id === fp.editingId; })[0] : null;
     var box = el('div');
 
@@ -9673,6 +9697,11 @@ TenarSecureStore.init('map',
 
   function fpSubmit() {
     if (!fpCanSubmit()) { showToast('가·나 지점을 먼저 지정해주세요.', 3000, 'info'); return; }
+    /* [v127] 저장하지 않았으면 먼저 저장하도록 안내(저장 후 전송) */
+    if (!fp.editingId) {
+      if (window.confirm('저장 후 조사표를 전송할 수 있습니다.\n지금 저장할까요?\n\n[확인] 저장하기   [취소] 닫기')) { openFpSaveSheet(); }
+      return;
+    }
     /* [v20-1] 주소를 아직 못 받았으면 최대 2초만 기다렸다 보낸다 */
     if (!fp.jibunAddress && fp.ga) {
       showToast('필지 주소를 확인하는 중입니다…', 0, 'info');
