@@ -1,4 +1,4 @@
-<!-- map_v137.html (v137 · TENAR V1.5) · 저장: 2026-09-04 05:22 KST · [v137] ★중대수정: 포구/측정 저장 후 조사표(통합·청취) 전송·저장 시 연결자료가 사라지던 문제 해결 — 조사표 왕복 중 연결 핀 id가 갈려 요도가 「고아」가 되면 예전엔 삭제됐으나, 이제 삭제하지 않고 같은 위치의 핀으로 「재연결」(없으면 최소 핀 재생성)해 자료를 절대 잃지 않음. ②「연결 지도자료」 팝업에 뒤로가기(←) 추가. ③생산량목록: G)「미전송만 보기」 필터, H)정렬 선택 기억, I)전송완료 일시 표시. (v136 이하 유지) -->
+<!-- map_v139.html (v139 · TENAR V1.5) · 저장: 2026-09-04 05:59 KST · [v139] 포구도구 단계 안내 개선: ①안내 배너의 「설정됨 작물·비율」 중복문구 삭제(위 배너에 이미 표시). ②배너를 스크롤해도 상단 고정(sticky) → 아래로 내려도 항상 보임. ③L)「👉 지금 하기」 버튼으로 현재 단계 동작 바로 실행(작물·비율 입력/필지선택/가·나 찍기/완료/저장). M)완료 전 비율(가·나) 누락 시 빨간 경고, 이전 필지 비율 잔존 시 주황 경고. N)안내 접기/펴기 토글(▾/▸, 기억). (v138 이하 유지) -->
 <!-- (이전)  map_v130.html (v130 · TENAR V1.5) · 저장: 2026-09-03 14:14 KST · [v130] 생산량목록 공유 안드로이드 대응 — 공유가 안 되는 기기(안드로이드에서 JSON 파일 공유 미지원/암호화 비동기로 제스처 만료 등)에서는 예전에 아무 반응이 없었는데, 이제 「공유 실패/미지원」이면 자동으로 파일을 다운로드하고 「공유 앱으로 그 파일을 보내세요」 안내를 띄운다(아이폰은 기존 네이티브 공유창 그대로). (v129 이하 유지) -->
 <!-- (이전)  map_v129.html (v129 · TENAR V1.5) · 저장: 2026-09-03 14:07 KST · [v129] 생산량목록 공유/내보내기/불러오기에 「연결자료」 포함(팀 전달용) — 즐겨찾기 핀뿐 아니라 연결된 「요도(mapItems: 포구·면적·길이)」 + 「포구 저장기록(fpSaves)」 + 「측정 저장기록(measSaves)」을 한 파일에 함께 내보내고, 불러오기 때 함께 복원. 이전엔 내보내기에 요도조차 없어 연결자료가 빠졌음. (v128 이하 유지) -->
 <!-- (이전)  map_v129.html (v129 · TENAR V1.5) · 저장: 2026-09-03 07:47 KST · [v129] ①조사구 목록 핀의 「조사명(핀 위)」을 작물핀처럼 모든 확대/축소 레벨에서 항상 표시(area-plots-top minzoom 제거) — 핀 아래 라벨은 기존 유지. ②작물재배 핀 「아래」를 「00-0000」→「읍면동 00-0000」(예: 자인면 03-0023)로 표기. (v128 이하 유지) -->
@@ -889,6 +889,32 @@ TenarSecureStore.init('map',
   #fpBanner .fp-rvals { font-size: 10px; font-weight: 700; white-space: nowrap; }
   #fpBtns { display: none; grid-template-columns: repeat(2, 1fr); gap: 4px; margin-top: 6px; }
 
+  /* [v138·v139] 포구도구 단계 안내 배너 — 현재 단계 → 지금 할 일. 스크롤해도 상단 고정(sticky) */
+  #fpStepGuide {
+    position: sticky; top: 0; z-index: 6;
+    margin: 0 0 6px; padding: 7px 9px; border-radius: 10px;
+    background: #fff7ed; border: 1.5px solid #fdba74; color: #7c2d12;
+    box-shadow: 0 2px 6px rgba(176,74,0,.16);
+  }
+  #fpStepGuide .sg-top { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+  #fpStepGuide .sg-step { font-size: 12.5px; font-weight: 900; color: #B04A00; }
+  #fpStepGuide .sg-toggle {
+    border: none; background: transparent; color: #B04A00; font-size: 13px; font-weight: 900;
+    line-height: 1; padding: 2px 4px; cursor: pointer; flex: 0 0 auto;
+  }
+  #fpStepGuide.collapsed #sgBody { display: none; }
+  #fpStepGuide .sg-do { font-size: 12.5px; font-weight: 700; line-height: 1.45; margin-top: 3px; }
+  #fpStepGuide .sg-warn { font-size: 11px; font-weight: 800; margin-top: 5px;
+    background: #fee2e2; color: #b91c1c; border-radius: 6px; padding: 4px 7px; line-height: 1.4; }
+  #fpStepGuide .sg-warn.amber { background: #ffedd5; color: #b45309; }
+  #fpStepGuide .sg-act {
+    width: 100%; margin-top: 6px; padding: 7px 8px; border: none; border-radius: 8px;
+    background: #B04A00; color: #fff; font-size: 12.5px; font-weight: 900; cursor: pointer;
+  }
+  #fpStepGuide .sg-act:active { background: #8f3c00; }
+  #fpStepGuide .sg-prog { display: flex; gap: 3px; margin-top: 6px; }
+  #fpStepGuide .sg-dot { flex: 1; height: 5px; border-radius: 3px; background: #fed7aa; }
+  #fpStepGuide .sg-dot.on { background: #B04A00; }
   #fpPanel { display: none; margin-top: 6px; padding: 7px 8px; border-radius: 8px; background: #f4f7fb; }
   #fpPanel .fp-line { font-size: 11px; line-height: 1.6; color: #16324f; }
   #fpPanel .fp-sub { color: #6b7c93; font-size: 10px; font-weight: 600; }
@@ -1407,6 +1433,20 @@ TenarSecureStore.init('map',
     <div id="fpToolBody">
       <button class="tool-btn danger" type="button" id="fpTReset" style="width:100%">🗑 초기화</button>
 
+      <!-- [v138·v139] 단계 안내 배너 (현재 단계 → 지금 할 일) · 스크롤해도 상단 고정 · 접기/실행 버튼 -->
+      <div id="fpStepGuide">
+        <div class="sg-top">
+          <span class="sg-step" id="sgStep">1단계 · 조사설정</span>
+          <button type="button" id="sgToggle" class="sg-toggle" aria-label="안내 접기/펴기">▾</button>
+        </div>
+        <div id="sgBody">
+          <div class="sg-do" id="sgDo">아래 「작물·기준·비율」을 눌러 이 필지의 작물과 비율을 입력하세요.</div>
+          <div class="sg-warn" id="sgWarn" style="display:none;"></div>
+          <button type="button" id="sgAct" class="sg-act">지금 하기</button>
+          <div class="sg-prog" id="sgProg"></div>
+        </div>
+      </div>
+
       <!-- [v18-7] 계산기를 거치지 않고 지도에서 바로 작물·기준·비율을 넣을 수 있다 -->
       <div class="tp-sec">⓪ 조사 설정</div>
       <button class="tool-btn one-line" type="button" id="fpTSetup" style="width:100%">작물·기준·비율</button>
@@ -1587,8 +1627,8 @@ TenarSecureStore.init('map',
      · 키는 HTML에 노출되므로 반드시 허용 도메인을 위 주소로 제한하세요.
        제한해 두면 타인이 키를 복사해도 다른 사이트에서는 쓸 수 없습니다.
      =================================================================== */
-  var MAP_VERSION = 'v137';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
-  var MAP_VERSION_TIME = '2026-09-04 05:22 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
+  var MAP_VERSION = 'v139';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
+  var MAP_VERSION_TIME = '2026-09-04 05:59 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
   var VWORLD_API_KEY = '00EB5BC0-22B4-3B7E-89D1-341699F7CE05';
   var VWORLD_DOMAIN  = 'ubaldos00-ship-it.github.io';   /* 호스트만 · 스킴 금지 */
 
@@ -6956,11 +6996,12 @@ TenarSecureStore.init('map',
     fp._sessionFavId = null;                /* [v132] 새 조사(다른 필지) → 새 핀에 연결(같은 핀에 다른 지번이 붙던 문제 수정) */
     fp.finished = false;                    /* 새 작업이므로 완료 해제 */
     fpReset();                              /* 가·나·각도·도형값 초기화 (ctx=작물·비율은 유지) */
+    if (fp.ctx) fp._ctxRetained = true;     /* [v138] 이전 필지의 작물·비율이 남아 있음 → 새 필지에서 재확인하도록 안내 */
     updateMeasurementSources();
     updateNewMeasureBtn();
     if (typeof geoClearHistory === 'function') geoClearHistory();
     fpSyncButtons();
-    showToast('새 포구 선정을 시작합니다.\n작물·기준·비율 설정은 그대로 두었습니다.\n「필지선택」부터 이어서 하세요.', 4000, 'success');
+    showToast('새 포구 선정을 시작합니다.\n작물·기준·비율 설정은 그대로 두었습니다.\n⚠ 다른 필지면 「작물·기준·비율」이 맞는지 꼭 확인하세요.\n「필지선택」부터 이어서 하세요.', 5000, 'success');
   }
 
   function toggleMeasureLock() {
@@ -10167,6 +10208,7 @@ TenarSecureStore.init('map',
       }
       fp.ctx = next;
       fp._autoTo2 = false;
+      fp._ctxRetained = false;   /* [v138] 이 필지용으로 방금 직접 입력/확인함 → 재사용 경고 해제 */
       try { saveJSON(FP_CTX_KEY, next); } catch (e) {}
       if (!(parseFloat(next['r' + fp.ratio].ga) > 0)) fp.ratio = (fp.ratio === 1) ? 2 : 1;
       var banner = document.getElementById('fpBanner');
@@ -10253,6 +10295,101 @@ TenarSecureStore.init('map',
     if (v2) v2.textContent = vals(c.r2);
   }
 
+  /* [v139] 안내 접기 상태(기억) */
+  var _fpGuideCollapsed = false;
+  try { _fpGuideCollapsed = (localStorage.getItem('tenar_fp_guide_collapsed') === '1'); } catch (e) {}
+  /* [v138·v139] 포구도구 단계 안내 — 현재 상태로 「지금 할 일」을 짚어준다. 순서는 그대로.
+     · 작물/비율 값은 위 파란 배너에 이미 나오므로 여기선 반복 표시하지 않음(요청).
+     · 필수값 누락(비율 0 등)·다른 필지 비율 잔존 시 빨간/주황 경고(M).
+     · 「지금 하기」 버튼으로 현재 단계 동작을 바로 실행(L).
+     · 접기/펴기 토글(N) + 스크롤해도 상단 고정. */
+  function fpUpdateStepGuide() {
+    var box = document.getElementById('fpStepGuide');
+    if (!box) return;
+    if (!fp.toolOpen) { box.style.display = 'none'; return; }
+    box.style.display = '';
+    box.classList.toggle('collapsed', _fpGuideCollapsed);
+    var stepEl = document.getElementById('sgStep');
+    var doEl = document.getElementById('sgDo');
+    var warnEl = document.getElementById('sgWarn');
+    var actEl = document.getElementById('sgAct');
+    var progEl = document.getElementById('sgProg');
+    var togEl = document.getElementById('sgToggle');
+    if (togEl) { togEl.textContent = _fpGuideCollapsed ? '▸' : '▾'; togEl.onclick = _fpToggleGuide; }
+
+    var c = fp.ctx || {};
+    var hasCtx = !!(c.crop || (c.r1 && parseFloat(c.r1.ga) > 0) || (c.r2 && parseFloat(c.r2.ga) > 0));
+    var hasShape = fpHasShape();
+    var gaNa = !!(fp.ga && fp.na);
+    var finished = !!fp.finished;
+    /* 현재 비율(선택된 번호)의 가·나 값이 유효한가 — 완료 전 필수값 점검(M) */
+    var rv = (typeof fpRatioVals === 'function') ? fpRatioVals() : { ga: 0, na: 0 };
+    var ratioBad = hasCtx && !(parseFloat(rv.ga) > 0 && parseFloat(rv.na) > 0);
+
+    var stageIdx, title, doTxt, actLabel, actId;
+    if (!hasCtx) {
+      stageIdx = 0; title = '1단계 · 조사설정';
+      doTxt = '「작물·기준·비율」을 눌러 이 필지의 작물과 비율을 입력하세요.';
+      actLabel = '작물·비율 입력'; actId = 'fpTSetup';
+    } else if (!hasShape) {
+      stageIdx = 1; title = '2단계 · 조사구역 선택';
+      doTxt = '「필지선택」으로 필지를 고르거나 「그리기」로 재배구역을 그리세요.';
+      actLabel = '필지선택 켜기'; actId = 'fpTParcel';
+    } else if (!gaNa) {
+      stageIdx = 2; title = '3단계 · 가 · 나 지점';
+      doTxt = !fp.ga ? '「가」를 누른 뒤 지도에서 가(기준 시작) 지점을 찍으세요.'
+                     : '「나」를 누른 뒤 지도에서 나(기준 끝) 지점을 찍으세요.';
+      actLabel = !fp.ga ? '가 지점 찍기' : '나 지점 찍기'; actId = !fp.ga ? 'fpGa' : 'fpNa';
+    } else if (!finished) {
+      stageIdx = 3; title = '4단계 · 확인 후 완료';
+      doTxt = '필요하면 「각도조절」로 맞춘 뒤, 값을 확인하고 「✓ 완료」를 누르세요.';
+      actLabel = '완료하기'; actId = 'fpTFinish';
+    } else {
+      stageIdx = 4; title = '5단계 · 저장 · 전송';
+      doTxt = '「💾 저장」한 뒤 「📤 조사표 전송」을 누르세요.';
+      actLabel = '저장하기'; actId = 'fpSaveBtn2';
+    }
+    if (stepEl) stepEl.textContent = title;
+    if (doEl) doEl.textContent = doTxt;
+
+    /* [M] 경고: 비율값 누락(빨강, 최우선) > 새 필지 비율 잔존(주황) */
+    if (warnEl) {
+      if (ratioBad) {
+        warnEl.style.display = ''; warnEl.className = 'sg-warn';
+        warnEl.textContent = '⚠ 비율(가·나) 값이 비어 있어요 — 「작물·기준·비율」에서 확인·입력하세요.';
+      } else if (fp._ctxRetained && !finished) {
+        warnEl.style.display = ''; warnEl.className = 'sg-warn amber';
+        warnEl.textContent = '⚠ 이전 필지 설정이 남아 있어요 — 새 필지면 「작물·기준·비율」을 다시 확인하세요.';
+      } else {
+        warnEl.style.display = 'none';
+      }
+    }
+
+    /* [L] 지금 하기 버튼 — 현재 단계 동작 바로 실행 */
+    if (actEl) {
+      actEl.textContent = '👉 ' + actLabel;
+      actEl.onclick = function () {
+        var b = document.getElementById(actId);
+        if (b && !b.disabled) b.click();
+      };
+    }
+
+    if (progEl) {
+      var dots = '';
+      for (var i = 0; i < 5; i++) dots += '<span class="sg-dot' + (i <= stageIdx ? ' on' : '') + '"></span>';
+      progEl.innerHTML = dots;
+    }
+  }
+  /* [v139-N] 안내 접기/펴기 */
+  function _fpToggleGuide() {
+    _fpGuideCollapsed = !_fpGuideCollapsed;
+    try { localStorage.setItem('tenar_fp_guide_collapsed', _fpGuideCollapsed ? '1' : '0'); } catch (e) {}
+    var box = document.getElementById('fpStepGuide');
+    if (box) box.classList.toggle('collapsed', _fpGuideCollapsed);
+    var togEl = document.getElementById('sgToggle');
+    if (togEl) togEl.textContent = _fpGuideCollapsed ? '▸' : '▾';
+  }
+
   /* ---------- 진입 / UI ---------- */
   function fpSyncButtons() {
     function set(id, fn) { var b = document.getElementById(id); if (b) fn(b); }
@@ -10286,6 +10423,7 @@ TenarSecureStore.init('map',
     var box = document.getElementById('fpPanel');
     if (box) box.style.display = (fp.ga && fp.na) ? 'block' : 'none';
     if (typeof fpUpdateGuide === 'function') fpUpdateGuide();   /* [v28-2] */
+    if (typeof fpUpdateStepGuide === 'function') fpUpdateStepGuide();   /* [v138] 단계 안내 갱신 */
   }
 
   /* [v17-1] 포구도구 열기/닫기 — 측정도구와 동시에 열리지 않게 한다 */
