@@ -1,4 +1,4 @@
-<!-- map_v131.html (v131 · TENAR V1.5) · 저장: 2026-09-03 14:39 KST · [v131] 순서안내가 콤보 선택(시도·시군구·읍면동)을 따르도록 — 읍면동을 고르면 그 읍면동 조사구만 순서안내 대상(전에는 전체 조사구 순서였음). 콤보를 「전체」로 두면 종전처럼 전체. (v130 이하 유지) -->
+<!-- map_v132.html (v132 · TENAR V1.5) · 저장: 2026-09-03 20:27 KST · [v132] ①포구/측정 연속측정 시 다른 지번이 같은 핀에 붙던 문제 수정(새 조사 시작 시 _sessionFavId 초기화). ②저장위치 팝업에 「🚩포구도구」·「📐측정도구」 버튼 추가 — 생산량목록 핀을 만든 뒤 바로 그 핀에 연결해 포구선정/측정 시작. ③저장 후 조사표 이동 시 저장이 사라지던 문제 방지 — 이동 직전 암호화 저장을 강제 반영(__tenarSecureFlush). ④측정/포구 저장 ↔ 조사표 저장은 공통 surveyKey로 같은 핀에 연결됨(확인). (v131 이하 유지) -->
 <!-- (이전)  map_v130.html (v130 · TENAR V1.5) · 저장: 2026-09-03 14:14 KST · [v130] 생산량목록 공유 안드로이드 대응 — 공유가 안 되는 기기(안드로이드에서 JSON 파일 공유 미지원/암호화 비동기로 제스처 만료 등)에서는 예전에 아무 반응이 없었는데, 이제 「공유 실패/미지원」이면 자동으로 파일을 다운로드하고 「공유 앱으로 그 파일을 보내세요」 안내를 띄운다(아이폰은 기존 네이티브 공유창 그대로). (v129 이하 유지) -->
 <!-- (이전)  map_v129.html (v129 · TENAR V1.5) · 저장: 2026-09-03 14:07 KST · [v129] 생산량목록 공유/내보내기/불러오기에 「연결자료」 포함(팀 전달용) — 즐겨찾기 핀뿐 아니라 연결된 「요도(mapItems: 포구·면적·길이)」 + 「포구 저장기록(fpSaves)」 + 「측정 저장기록(measSaves)」을 한 파일에 함께 내보내고, 불러오기 때 함께 복원. 이전엔 내보내기에 요도조차 없어 연결자료가 빠졌음. (v128 이하 유지) -->
 <!-- (이전)  map_v129.html (v129 · TENAR V1.5) · 저장: 2026-09-03 07:47 KST · [v129] ①조사구 목록 핀의 「조사명(핀 위)」을 작물핀처럼 모든 확대/축소 레벨에서 항상 표시(area-plots-top minzoom 제거) — 핀 아래 라벨은 기존 유지. ②작물재배 핀 「아래」를 「00-0000」→「읍면동 00-0000」(예: 자인면 03-0023)로 표기. (v128 이하 유지) -->
@@ -259,6 +259,9 @@
           }
         }
       }
+      /* [v132] 화면 전환(조사표 이동) 직전에 대기 중인 암호화 저장을 강제로 실 저장소에 반영.
+         저장 → 조사표 전송 → 이동 → 복귀 시 저장이 사라지던 문제(비동기 flush 미완료) 방지. */
+      window.__tenarSecureFlush = function(){ try{ return Promise.resolve(flushNow()); }catch(e){ return Promise.resolve(); } };
 
       /* 오버라이드 설치 + 자기검증: 일부 브라우저(iOS Safari·인앱 웹뷰 등)는 localStorage
          메서드 오버라이드를 막거나 일부만 적용해 읽기/쓰기가 어긋날 수 있음 → 저장이 안 되는 것처럼 보임.
@@ -1580,8 +1583,8 @@ TenarSecureStore.init('map',
      · 키는 HTML에 노출되므로 반드시 허용 도메인을 위 주소로 제한하세요.
        제한해 두면 타인이 키를 복사해도 다른 사이트에서는 쓸 수 없습니다.
      =================================================================== */
-  var MAP_VERSION = 'v131';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
-  var MAP_VERSION_TIME = '2026-09-03 14:39 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
+  var MAP_VERSION = 'v132';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
+  var MAP_VERSION_TIME = '2026-09-03 20:27 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
   var VWORLD_API_KEY = '00EB5BC0-22B4-3B7E-89D1-341699F7CE05';
   var VWORLD_DOMAIN  = 'ubaldos00-ship-it.github.io';   /* 호스트만 · 스킴 금지 */
 
@@ -3873,6 +3876,13 @@ TenarSecureStore.init('map',
     var bSurvey = el('button', 'sheet-btn green-soft', '📋 조사표');
     bSurvey.addEventListener('click', function () { openSurveySheet(info, { mode: 'pin' });   /* [v27-2] 저장핀 : 연결돼 있으면 바로 열기 */ });
     r1.appendChild(bNav); r1.appendChild(bSurvey);
+    /* [v132] 이 핀에 연결해 포구도구·측정도구 바로 시작 */
+    var rTools = el('div', 'btn-row'); rTools.style.marginTop = '8px';
+    var bFp = el('button', 'sheet-btn', '🚩 포구도구');
+    bFp.addEventListener('click', function () { startToolForFav(f, 'fp'); });
+    var bMs = el('button', 'sheet-btn', '📐 측정도구');
+    bMs.addEventListener('click', function () { startToolForFav(f, 'meas'); });
+    rTools.appendChild(bFp); rTools.appendChild(bMs);
     /* [v47-6] 연결 지도자료 버튼 — 연결자료가 있을 때만 활성 */
     var _cnt = itemCounts(f.id);
     var _tot = _cnt.fieldplot + _cnt.area + _cnt.distance;
@@ -3906,7 +3916,7 @@ TenarSecureStore.init('map',
       });
     });
 
-    box.appendChild(r2); box.appendChild(r1); box.appendChild(bParcel);   /* [v47-5] 핀수정·삭제를 위로 */
+    box.appendChild(r2); box.appendChild(r1); box.appendChild(rTools); box.appendChild(bParcel);   /* [v47-5·v132] 핀수정·삭제·도구 */
     openSheet('저장 위치', box, 'auto');
     /* [v118] 생산량목록에서 들어왔으면 「저장 위치」 왼쪽에 뒤로가기(←) — 누르면 목록으로(스크롤 위치 그대로) */
     if (navOpts && navOpts.fromList) {
@@ -3931,6 +3941,25 @@ TenarSecureStore.init('map',
   }
   /* 이전 이름 호환 */
   function openFavPinSheet(f) { openSavedLocationSheet(f); }
+  /* [v132] 저장핀(생산량목록 핀)에 연결해 포구도구/측정도구를 바로 시작 */
+  function startToolForFav(f, which) {
+    closeSheet();
+    if (isFinite(f.latitude) && isFinite(f.longitude)) { try { map.flyTo({ center: [f.longitude, f.latitude], zoom: Math.max(map.getZoom(), 18), essential: true }); } catch (e) {} }
+    if (which === 'fp') {
+      fp._sessionFavId = f.id;                 /* 저장 시 이 핀에 연결(다른 필지가 딴 핀으로 안 가게) */
+      fp.jibunAddress = f.jibunAddress || '';
+      if (f.crop && (!fp.ctx || !fp.ctx.crop)) { fp.ctx = fp.ctx || {}; fp.ctx.crop = f.crop; }
+      try { openFpTool(); } catch (e) {}
+      showToast('이 핀에 연결해 포구도구를 시작합니다.\n「필지선택」부터 진행하세요. 저장하면 이 핀에 연결됩니다.', 4500, 'info');
+    } else {
+      try {
+        fpToolPanelEl.classList.remove('show'); document.getElementById('btnFpTool').classList.remove('active');
+        toolPanelEl.classList.add('show'); document.getElementById('btnMeasure').classList.add('active');
+      } catch (e) {}
+      if (f.crop) { surveyMeasureState.measCrop = f.crop; try { measSetupLabel(); } catch (e) {} }
+      showToast('이 위치에서 측정도구를 시작합니다.\n면적/길이를 재고 저장하면 이 핀에 연결됩니다.', 4500, 'info');
+    }
+  }
   /* [v118] 저장위치 → 뒤로가기 → 생산량목록(스크롤 위치 그대로 복원) */
   function backToFavList() {
     openFavSheet(_favPriority);
@@ -5635,7 +5664,12 @@ TenarSecureStore.init('map',
     closeSheet();
     showToast(SURVEY_NAMES[type] + '를 엽니다.' +
               (payload.jibunAddress ? '\n' + payload.jibunAddress : ''), 2200, 'success');
-    setTimeout(function () { window.location.href = surveyUrl(type, info); }, 700);
+    /* [v132] 이동 전 대기 중인 암호화 저장을 확실히 반영(저장 사라짐 방지) */
+    setTimeout(function () {
+      var go = function(){ window.location.href = surveyUrl(type, info); };
+      if (window.__tenarSecureFlush) { try { window.__tenarSecureFlush().then(go, go); return; } catch (e) {} }
+      go();
+    }, 700);
   }
 
   /* [v27-1][v27-2] 조사표 선택 시트
@@ -6730,6 +6764,7 @@ TenarSecureStore.init('map',
     s.areas = []; s.editingSaveId = null;
     if (typeof clearSelectedParcelHighlight === 'function') clearSelectedParcelHighlight();
     fp.editingId = null; fp._libFavId = null; fp._libItemId = null; fp._editingItemId = null;
+    fp._sessionFavId = null;                /* [v132] 새 조사(다른 필지) → 새 핀에 연결(같은 핀에 다른 지번이 붙던 문제 수정) */
     fp.finished = false;                    /* 새 작업이므로 완료 해제 */
     fpReset();                              /* 가·나·각도·도형값 초기화 (ctx=작물·비율은 유지) */
     updateMeasurementSources();
@@ -7427,7 +7462,10 @@ TenarSecureStore.init('map',
     setTimeout(function () {
       var back = 'chungchi.html';
       try { back = new URL('chungchi.html', location.href).href; } catch (e) {}
-      window.location.href = back;
+      var go = function(){ window.location.href = back; };
+      /* [v132] 이동 전 대기 중인 암호화 저장 반영(저장 사라짐 방지) */
+      if (window.__tenarSecureFlush) { try { window.__tenarSecureFlush().then(go, go); return; } catch (e) {} }
+      go();
     }, 250);
   }
 
