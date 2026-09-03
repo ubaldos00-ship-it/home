@@ -1,4 +1,4 @@
-<!-- map_v136.html (v136 · TENAR V1.5) · 저장: 2026-09-04 01:24 KST · [v136] 추가개선 A·B·E·F: ⒜저장위치 팝업 2단 스냅(접힘=핀수정·삭제까지 ↔ 위로 쓸면 전체=현재 필지정보까지 딱 멈춤). ⒝⒠조사표 전송완료/미전송 상태칩 표시(목록 카드+저장위치 팝업). 저장 시 자동완료(v127)라 '완료'는 조사표 전송 기준으로 판단. ⒡생산량목록 정렬 선택(최근 저장순·면적 큰순·작물별). (v135 이하 유지) -->
+<!-- map_v137.html (v137 · TENAR V1.5) · 저장: 2026-09-04 05:22 KST · [v137] ★중대수정: 포구/측정 저장 후 조사표(통합·청취) 전송·저장 시 연결자료가 사라지던 문제 해결 — 조사표 왕복 중 연결 핀 id가 갈려 요도가 「고아」가 되면 예전엔 삭제됐으나, 이제 삭제하지 않고 같은 위치의 핀으로 「재연결」(없으면 최소 핀 재생성)해 자료를 절대 잃지 않음. ②「연결 지도자료」 팝업에 뒤로가기(←) 추가. ③생산량목록: G)「미전송만 보기」 필터, H)정렬 선택 기억, I)전송완료 일시 표시. (v136 이하 유지) -->
 <!-- (이전)  map_v130.html (v130 · TENAR V1.5) · 저장: 2026-09-03 14:14 KST · [v130] 생산량목록 공유 안드로이드 대응 — 공유가 안 되는 기기(안드로이드에서 JSON 파일 공유 미지원/암호화 비동기로 제스처 만료 등)에서는 예전에 아무 반응이 없었는데, 이제 「공유 실패/미지원」이면 자동으로 파일을 다운로드하고 「공유 앱으로 그 파일을 보내세요」 안내를 띄운다(아이폰은 기존 네이티브 공유창 그대로). (v129 이하 유지) -->
 <!-- (이전)  map_v129.html (v129 · TENAR V1.5) · 저장: 2026-09-03 14:07 KST · [v129] 생산량목록 공유/내보내기/불러오기에 「연결자료」 포함(팀 전달용) — 즐겨찾기 핀뿐 아니라 연결된 「요도(mapItems: 포구·면적·길이)」 + 「포구 저장기록(fpSaves)」 + 「측정 저장기록(measSaves)」을 한 파일에 함께 내보내고, 불러오기 때 함께 복원. 이전엔 내보내기에 요도조차 없어 연결자료가 빠졌음. (v128 이하 유지) -->
 <!-- (이전)  map_v129.html (v129 · TENAR V1.5) · 저장: 2026-09-03 07:47 KST · [v129] ①조사구 목록 핀의 「조사명(핀 위)」을 작물핀처럼 모든 확대/축소 레벨에서 항상 표시(area-plots-top minzoom 제거) — 핀 아래 라벨은 기존 유지. ②작물재배 핀 「아래」를 「00-0000」→「읍면동 00-0000」(예: 자인면 03-0023)로 표기. (v128 이하 유지) -->
@@ -1587,8 +1587,8 @@ TenarSecureStore.init('map',
      · 키는 HTML에 노출되므로 반드시 허용 도메인을 위 주소로 제한하세요.
        제한해 두면 타인이 키를 복사해도 다른 사이트에서는 쓸 수 없습니다.
      =================================================================== */
-  var MAP_VERSION = 'v136';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
-  var MAP_VERSION_TIME = '2026-09-04 01:24 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
+  var MAP_VERSION = 'v137';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
+  var MAP_VERSION_TIME = '2026-09-04 05:22 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
   var VWORLD_API_KEY = '00EB5BC0-22B4-3B7E-89D1-341699F7CE05';
   var VWORLD_DOMAIN  = 'ubaldos00-ship-it.github.io';   /* 호스트만 · 스킴 금지 */
 
@@ -1747,6 +1747,12 @@ TenarSecureStore.init('map',
   }
   /* [v136] 이 핀의 자료가 조사표로 전송(=작성/저장 연결)됐는지 — sentToSurveyAt(전송시각) 또는 surveyId(조사표 연결키) */
   function favSurveySent(f) { return !!(f && (f.sentToSurveyAt || f.surveyId)); }
+  /* [v137-I] 전송완료 일시 텍스트(있을 때만). full=true 면 YYYY-MM-DD HH:MM, 아니면 MM-DD HH:MM */
+  function favSentTimeText(f, full) {
+    var t = f && f.sentToSurveyAt; if (!t) return '';
+    var s = String(t).slice(0, 16).replace('T', ' ');
+    return full ? s : s.slice(5);
+  }
   /* 요도 종류별 다음 순번(이름 자동) */
   function nextItemName(favId, type) {
     var n = itemsOfFav(favId).filter(function (x) { return x.type === type; }).length + 1;
@@ -1918,22 +1924,78 @@ TenarSecureStore.init('map',
     try { map.triggerRepaint(); } catch (e) {}
   }
 
-  /* [v49-2] 부모가 없어진 요도(고아)를 저장소에서 정리한다.
-     예전 버전에서 부모만 지워져 지도에 경계가 남아 있던 자료를 없앤다. */
+  /* [v137] 요도(포구·면적·길이)의 대표 좌표 [lng,lat] 추출 */
+  function _itemLngLat(x) {
+    try {
+      if (x.points && x.points.length && x.points[0] && x.points[0].length === 2) return x.points[0];
+      if (x.geometry && x.geometry.coordinates) {
+        var c = x.geometry.coordinates;
+        while (Array.isArray(c) && Array.isArray(c[0])) c = c[0];
+        if (Array.isArray(c) && c.length === 2 && isFinite(c[0]) && isFinite(c[1])) return c;
+      }
+      if (x.mapCenter && x.mapCenter.length === 2) return x.mapCenter;
+    } catch (e) {}
+    return null;
+  }
+  /* [v137] 고아 요도를 붙일 fav 찾기 — surveyId → 주소 → 좌표(≈40m) 순 */
+  function _findFavForOrphanItem(x, favs) {
+    var i, f;
+    var sid = x.surveyId || x.surveyKey || '';
+    if (sid) { for (i = 0; i < favs.length; i++) { f = favs[i]; if (f && (f.surveyId === sid || f.surveyKey === sid)) return f; } }
+    var addr = String(x.addrSnapshot || '').replace(/\s+/g, '');
+    if (addr) { for (i = 0; i < favs.length; i++) { f = favs[i]; if (f && String(f.jibunAddress || '').replace(/\s+/g, '') === addr) return f; } }
+    var ll = _itemLngLat(x);
+    if (ll && hasTurf) {
+      for (i = 0; i < favs.length; i++) {
+        f = favs[i]; if (!f) continue;
+        var fl = (f.longitude != null ? f.longitude : f.lng), ft = (f.latitude != null ? f.latitude : f.lat);
+        if (!isFinite(fl) || !isFinite(ft)) continue;
+        try { if (turf.distance(ll, [fl, ft]) <= 0.04) return f; } catch (e) {}
+      }
+    }
+    return null;
+  }
+  /* [v49-2·v137] 부모가 없어진 요도(고아) 처리.
+     ★ 중요(v137): 예전에는 고아 요도를 삭제했으나, 조사표(통합/청취) 저장 왕복 중
+        연결 핀이 새 id 로 갈리면 포구·측정 자료가 통째로 사라지는 문제가 있었다.
+        → 이제 삭제하지 않고, 같은 위치의 핀으로 「재연결」하거나(없으면) 최소 핀을
+        「재생성」해서 사용자 자료를 절대 잃지 않도록 한다. */
   function cleanupOrphanMapItems(silent) {
     try {
       if (!secureReady) return 0;
-      var favIds = {}; getFavs().forEach(function (f) { favIds[f.id] = true; });
+      var favs = getFavs();
+      var favById = {}; favs.forEach(function (f) { if (f) favById[f.id] = f; });
       var items = getMapItems();
-      var keep = items.filter(function (x) { return !x.favoriteId || favIds[x.favoriteId]; });
-      var removed = items.length - keep.length;
-      if (removed > 0) {
-        setMapItems(keep);
+      var rehomed = 0, recreated = 0, favsChanged = false, itemsChanged = false;
+      for (var k = 0; k < items.length; k++) {
+        var x = items[k];
+        if (!x || !x.favoriteId || favById[x.favoriteId]) continue;   /* 정상(부모 있음) */
+        var target = _findFavForOrphanItem(x, favs);
+        if (!target) {
+          /* 붙일 핀이 없으면 최소 핀을 새로 만들어 자료 보존 */
+          var ll = _itemLngLat(x);
+          var lat = ll ? ll[1] : null, lng = ll ? ll[0] : null;
+          if (!(isFinite(lat) && isFinite(lng)) && !x.addrSnapshot) continue;   /* 좌표·주소 모두 없으면 그대로 둔다(삭제 안 함) */
+          target = normalizeFav({
+            name: (x.crop ? x.crop + ' · ' : '') + (x.addrSnapshot || '조사 위치'),
+            jibunAddress: x.addrSnapshot || '',
+            latitude: isFinite(lat) ? lat : undefined, longitude: isFinite(lng) ? lng : undefined,
+            crop: x.crop || '', color: 'green',
+            surveyId: x.surveyId || x.surveyKey || '', surveyType: x.surveyType || ''
+          });
+          favs.unshift(target); favById[target.id] = target; favsChanged = true; recreated++;
+        }
+        x.favoriteId = target.id; x.updatedAt = kstNowStr(); itemsChanged = true; rehomed++;
+      }
+      if (favsChanged) setFavs(favs);
+      if (itemsChanged) { setMapItems(items); }
+      if (favsChanged || itemsChanged) {
+        try { refreshFavPins(); } catch (e) {}
         renderMapItems();
         try { map.triggerRepaint(); } catch (e) {}
-        if (!silent) showToast('삭제된 위치에 남아 있던 지도 경계 ' + removed + '건을 정리했습니다.', 4000, 'success');
+        if (!silent && rehomed) showToast('연결이 끊겼던 조사자료 ' + rehomed + '건을 다시 연결했습니다.', 4000, 'success');
       }
-      return removed;
+      return 0;   /* [v137] 삭제하지 않으므로 항상 0 */
     } catch (e) { return 0; }
   }
   window.cleanupOrphanMapItems = cleanupOrphanMapItems;
@@ -3841,6 +3903,12 @@ TenarSecureStore.init('map',
       '<div class="lyr-desc" style="margin-top:10px;">이름을 누르면 그 자료를 도구로 불러와 수정할 수 있습니다.<br>' +
       '🔒 로 삭제잠금, 🗑 로 그 자료만 삭제합니다.</div>'));
     openSheet('🗺 연결 지도자료', box, 'auto');
+    /* [v137] 「연결 지도자료」 제목 왼쪽에 뒤로가기(←) — 누르면 저장 위치 팝업으로 복귀 */
+    try {
+      sheetTitle.innerHTML = '<button type="button" id="liBack" title="저장 위치로" style="border:none;background:transparent;cursor:pointer;font-size:19px;line-height:1;padding:0 8px 0 0;margin:0;color:inherit;font-family:inherit;">←</button><span>🗺 연결 지도자료</span>';
+      sheetTitle.style.display = 'flex'; sheetTitle.style.alignItems = 'center';
+      document.getElementById('liBack').addEventListener('click', function () { openSavedLocationSheet(f); });
+    } catch (e) {}
   }
 
   function openSavedLocationSheet(f, isRestore, navOpts) {
@@ -3933,8 +4001,9 @@ TenarSecureStore.init('map',
     if (_tot) {
       rStatus = el('div');
       rStatus.style.cssText = 'margin-top:8px;font-size:12.5px;font-weight:700;';
+      var _sentTf = favSentTimeText(f, true);
       rStatus.innerHTML = favSurveySent(f)
-        ? '<span style="padding:2px 9px;border-radius:9px;background:#e7f6ec;color:#14612f;">✓ 조사표 전송완료</span>'
+        ? '<span style="padding:2px 9px;border-radius:9px;background:#e7f6ec;color:#14612f;">✓ 조사표 전송완료</span>' + (_sentTf ? ' <span style="color:#888;font-weight:600;font-size:11.5px;">' + escapeHtml(_sentTf) + '</span>' : '')
         : '<span style="padding:2px 9px;border-radius:9px;background:#fdecec;color:#c0392b;">⚠ 조사표 미전송</span> <span style="color:#888;font-weight:600;font-size:11.5px;">— 위 「조사표」로 전송하세요</span>';
     }
 
@@ -4293,7 +4362,12 @@ TenarSecureStore.init('map',
   /* [v8-16] 화면복귀 —— 즐겨찾기를 열기 직전의 지도 상태로 되돌린다 */
   var favReturnView = null;
   var _favPriority = '';   /* [v45-4] '', 'fieldplot', 'measure' */
-  var _favSort = 'recent';   /* [v136] 목록 정렬: 'recent'(최근저장순)·'area'(면적순)·'crop'(작물별) */
+  /* [v136] 목록 정렬: 'recent'(최근저장순)·'area'(면적순)·'crop'(작물별) · [v137-H] 마지막 선택 기억 */
+  var _favSort = 'recent';
+  try { var _ss = localStorage.getItem('tenar_fav_sort'); if (_ss === 'recent' || _ss === 'area' || _ss === 'crop') _favSort = _ss; } catch (e) {}
+  /* [v137-G] 「조사표 미전송만 보기」 필터(연결자료 있고 미전송인 핀만) · 기억 */
+  var _favUnsentOnly = false;
+  try { _favUnsentOnly = (localStorage.getItem('tenar_fav_unsent') === '1'); } catch (e) {}
   /* [v136] 이 핀의 연결 면적(area) 요도 실측면적 합(㎡) */
   function favSumAreaM2(favId) {
     var s = 0;
@@ -4392,8 +4466,24 @@ TenarSecureStore.init('map',
       if (o[0] === _favSort) op.selected = true;
       sortSel.appendChild(op);
     });
-    sortSel.addEventListener('change', function () { _favSort = sortSel.value; renderFavList(); });
+    sortSel.addEventListener('change', function () {
+      _favSort = sortSel.value;
+      try { localStorage.setItem('tenar_fav_sort', _favSort); } catch (e) {}   /* [v137-H] 정렬 기억 */
+      renderFavList();
+    });
     rSort.appendChild(sortSel);
+    /* [v137-G] 조사표 미전송만 보기 */
+    var lblUnsent = el('label');
+    lblUnsent.style.cssText = 'display:flex;align-items:center;gap:4px;font-size:12px;color:#c0392b;font-weight:700;flex:0 0 auto;cursor:pointer;';
+    var chkUnsent = document.createElement('input'); chkUnsent.type = 'checkbox'; chkUnsent.checked = _favUnsentOnly;
+    chkUnsent.style.cssText = 'width:16px;height:16px;';
+    chkUnsent.addEventListener('change', function () {
+      _favUnsentOnly = chkUnsent.checked;
+      try { localStorage.setItem('tenar_fav_unsent', _favUnsentOnly ? '1' : '0'); } catch (e) {}
+      renderFavList();
+    });
+    lblUnsent.appendChild(chkUnsent); lblUnsent.appendChild(document.createTextNode('미전송만'));
+    rSort.appendChild(lblUnsent);
 
     /* [v80] 재배면적 조사구는 전용 팝업(openAreaSheet)으로 분리 — 탭 제거, 즐겨찾기만 표시 */
     box.appendChild(r2); box.appendChild(r3); box.appendChild(rSort); box.appendChild(combos); box.appendChild(list);
@@ -4406,6 +4496,12 @@ TenarSecureStore.init('map',
     var list = document.getElementById('favList');
     if (!list) return;
     var favs = getFavs().filter(favMatchesSel);   /* [v120] 조회 콤보 필터 */
+    /* [v137-G] 「조사표 미전송만 보기」: 연결자료가 있고 아직 전송 안 된 핀만 */
+    if (_favUnsentOnly) {
+      favs = favs.filter(function (f) {
+        var c = itemCounts(f.id); return (c.fieldplot + c.area + c.distance) > 0 && !favSurveySent(f);
+      });
+    }
     /* [v136] 목록 정렬 (도구에서 열지 않은 일반 목록에 적용) */
     var _ts = function (f) { var t = f.createdAt || f.updatedAt || ''; return String(t); };
     if (_favSort === 'area') {
@@ -4438,7 +4534,8 @@ TenarSecureStore.init('map',
     list.innerHTML = '';
     if (!favs.length) {
       var _filtered = (_favSel.sido || _favSel.sigungu || _favSel.eupmyeondong || _favSel.crop);
-      list.appendChild(el('div', null, '<div style="color:#888;font-size:13px;padding:18px 2px;">' + (_filtered ? '조건에 맞는 생산량 목록이 없습니다.' : '저장된 생산량 목록이 없습니다.') + '</div>'));
+      var _msg = _favUnsentOnly ? '조사표 미전송 항목이 없습니다. (모두 전송 완료)' : (_filtered ? '조건에 맞는 생산량 목록이 없습니다.' : '저장된 생산량 목록이 없습니다.');
+      list.appendChild(el('div', null, '<div style="color:#888;font-size:13px;padding:18px 2px;">' + _msg + '</div>'));
       return;
     }
     favs.forEach(function (f, i) {
@@ -4453,9 +4550,10 @@ TenarSecureStore.init('map',
       itemsOfFav(f.id).forEach(function (x) { if (x.type === 'area' && x.measurementData) _sumM2 += (Number(x.measurementData.areaM2) || 0); });
       var _areaTxt = _sumM2 > 0 ? ' · 면적합 ' + formatNumber(_sumM2 / 3.305785, 1) + '평' : '';
       /* [v136] 조사표 전송완료 / 미전송 상태칩 — 연결자료가 있을 때만 */
+      var _sentT = favSentTimeText(f, false);
       var _sentChip = total
         ? (favSurveySent(f)
-            ? '<span style="display:inline-block;margin-top:3px;padding:1px 7px;border-radius:9px;background:#e7f6ec;color:#14612f;font-size:11px;font-weight:700;">✓ 조사표 전송</span>'
+            ? '<span style="display:inline-block;margin-top:3px;padding:1px 7px;border-radius:9px;background:#e7f6ec;color:#14612f;font-size:11px;font-weight:700;">✓ 조사표 전송' + (_sentT ? ' · ' + escapeHtml(_sentT) : '') + '</span>'
             : '<span style="display:inline-block;margin-top:3px;padding:1px 7px;border-radius:9px;background:#fdecec;color:#c0392b;font-size:11px;font-weight:700;">조사표 미전송</span>')
         : '';
       var summary = total
