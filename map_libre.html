@@ -1,4 +1,5 @@
-<!-- map_v143.html (v143 · TENAR V1.5) · 저장: 2026-09-04 07:09 KST · [v143] ①핀 상단 작물명을 「핀+연결자료 모든 작물」로 표시(예: 감자 핀에 논벼·양파 포구 → 「감자 · 논벼 · 양파」). ②생산량목록 작물 필터가 핀 작물뿐 아니라 연결자료(포구·면적·길이) 작물까지 매칭 + 작물 드롭다운에도 연결자료 작물 포함. ③현장모드 숨김 확대 — 검색창·작물비율창·포구도구/측정패널·우측버튼(레이어·핀표시·포구도구·면적길이·생산량목록·조사구목록)·로컬배지 모두 숨김, 「위치·종료 바·레벨·지도i」만 표시(해제 시 복원). (v142 이하 유지) -->
+<!-- map_v144.html (v144 · TENAR V1.5) · 저장: 2026-09-04 07:25 KST · [v144] 「연결 지도자료」 목록에서 각 A/B포구 항목 「바로 아래」에 「🧭 이 포구로 현장모드 (GPS·진행방향)」 버튼 추가 — 누르면 그 포구를 도구로 불러와 현장모드 시작(작은 🧭 아이콘 → 명확한 전체너비 버튼으로 변경). 저장위치 팝업의 「현장모드로 이동」은 유지(포구 2개↑면 이 목록으로 안내). (v143 이하 유지) -->
+<!-- (v143 요약) map_v143.html · [v143] ①핀 상단 작물명을 「핀+연결자료 모든 작물」로 표시(예: 감자 핀에 논벼·양파 포구 → 「감자 · 논벼 · 양파」). ②생산량목록 작물 필터가 핀 작물뿐 아니라 연결자료(포구·면적·길이) 작물까지 매칭 + 작물 드롭다운에도 연결자료 작물 포함. ③현장모드 숨김 확대 — 검색창·작물비율창·포구도구/측정패널·우측버튼(레이어·핀표시·포구도구·면적길이·생산량목록·조사구목록)·로컬배지 모두 숨김, 「위치·종료 바·레벨·지도i」만 표시(해제 시 복원). (v142 이하 유지) -->
 <!-- (이전)  map_v130.html (v130 · TENAR V1.5) · 저장: 2026-09-03 14:14 KST · [v130] 생산량목록 공유 안드로이드 대응 — 공유가 안 되는 기기(안드로이드에서 JSON 파일 공유 미지원/암호화 비동기로 제스처 만료 등)에서는 예전에 아무 반응이 없었는데, 이제 「공유 실패/미지원」이면 자동으로 파일을 다운로드하고 「공유 앱으로 그 파일을 보내세요」 안내를 띄운다(아이폰은 기존 네이티브 공유창 그대로). (v129 이하 유지) -->
 <!-- (이전)  map_v129.html (v129 · TENAR V1.5) · 저장: 2026-09-03 14:07 KST · [v129] 생산량목록 공유/내보내기/불러오기에 「연결자료」 포함(팀 전달용) — 즐겨찾기 핀뿐 아니라 연결된 「요도(mapItems: 포구·면적·길이)」 + 「포구 저장기록(fpSaves)」 + 「측정 저장기록(measSaves)」을 한 파일에 함께 내보내고, 불러오기 때 함께 복원. 이전엔 내보내기에 요도조차 없어 연결자료가 빠졌음. (v128 이하 유지) -->
 <!-- (이전)  map_v129.html (v129 · TENAR V1.5) · 저장: 2026-09-03 07:47 KST · [v129] ①조사구 목록 핀의 「조사명(핀 위)」을 작물핀처럼 모든 확대/축소 레벨에서 항상 표시(area-plots-top minzoom 제거) — 핀 아래 라벨은 기존 유지. ②작물재배 핀 「아래」를 「00-0000」→「읍면동 00-0000」(예: 자인면 03-0023)로 표기. (v128 이하 유지) -->
@@ -1669,8 +1670,8 @@ TenarSecureStore.init('map',
      · 키는 HTML에 노출되므로 반드시 허용 도메인을 위 주소로 제한하세요.
        제한해 두면 타인이 키를 복사해도 다른 사이트에서는 쓸 수 없습니다.
      =================================================================== */
-  var MAP_VERSION = 'v143';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
-  var MAP_VERSION_TIME = '2026-09-04 07:09 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
+  var MAP_VERSION = 'v144';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
+  var MAP_VERSION_TIME = '2026-09-04 07:25 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
   var VWORLD_API_KEY = '00EB5BC0-22B4-3B7E-89D1-341699F7CE05';
   var VWORLD_DOMAIN  = 'ubaldos00-ship-it.github.io';   /* 호스트만 · 스킴 금지 */
 
@@ -4837,20 +4838,21 @@ TenarSecureStore.init('map',
         showToast('요도를 삭제했습니다.', 2000, 'success');
       });
       row.appendChild(nm);
-      /* [v142] A/B포구(fieldplot) 항목은 이 포구로 바로 현장모드 시작 — 연결자료가 여러 개여도 어느 포구인지 명확 */
-      if (it.type === 'fieldplot' && it.fieldPlotData) {
-        var fm = el('button', 'icon-btn', '🧭');
-        fm.title = '이 포구로 현장모드';
-        fm.style.cssText = 'width:30px;height:28px;padding:0;font-size:14px;flex:0 0 auto;background:#1a73e8;color:#fff;border-color:#1a73e8;';
-        fm.addEventListener('click', function () {
-          closeSheet();
-          try { focusMapItem(it); } catch (e) {}   /* 이 포구를 도구로 되살림 */
-          setTimeout(function () { try { fpEnterFieldMode(); } catch (e) {} }, 400);
-        });
-        row.appendChild(fm);
-      }
       row.appendChild(lk); row.appendChild(dl);
       box.appendChild(row);
+      /* [v144] 각 A/B포구(fieldplot) 항목 「아래」에 「🧭 현장모드」 버튼 — 누르면 그 포구로 현장모드 시작 */
+      if (it.type === 'fieldplot' && it.fieldPlotData) {
+        var fbtn = el('button', 'sheet-btn', '🧭 이 포구로 현장모드 (GPS·진행방향)');
+        fbtn.style.cssText += 'width:100%;margin-top:4px;background:#1a73e8;color:#fff;border-color:#1a73e8;font-weight:800;font-size:12.5px;';
+        (function (item) {
+          fbtn.addEventListener('click', function () {
+            closeSheet();
+            try { focusMapItem(item); } catch (e) {}   /* 이 포구를 도구로 되살림 */
+            setTimeout(function () { try { fpEnterFieldMode(); } catch (e) {} }, 400);
+          });
+        })(it);
+        box.appendChild(fbtn);
+      }
     });
   }
 
