@@ -1,4 +1,4 @@
-<!-- map_v134.html (v134 · TENAR V1.5) · 저장: 2026-09-03 22:10 KST · [v134] 저장위치(핀선택) 팝업 초기 높이를 「핀수정·삭제」 줄까지 보이도록 확장(포구도구·측정도구가 살짝 짤리던 문제 해소). 「현재 필지정보」는 fold 아래로 두어 위로 스크롤하면 나타남. (v133 이하 유지: ①도구버튼 노출 순서, ②번호 크기 고정, ③우편번호 브이월드 보완) -->
+<!-- map_v135.html (v135 · TENAR V1.5) · 저장: 2026-09-04 01:16 KST · [v135] 추가개선: ①저장위치 팝업 「🚩포구도구」·「📐측정도구」 버튼에 이 핀에 이미 저장된 개수 배지 표시(예: 포구도구(2)). ②생산량목록 카드 요약에 연결 면적 요도들의 실측 면적합(평) 표시. ③토지정보 우편번호를 근처 도로명주소 기준으로 채운 경우 「(근처 기준)」 표기. (v134 이하 유지) -->
 <!-- (이전)  map_v130.html (v130 · TENAR V1.5) · 저장: 2026-09-03 14:14 KST · [v130] 생산량목록 공유 안드로이드 대응 — 공유가 안 되는 기기(안드로이드에서 JSON 파일 공유 미지원/암호화 비동기로 제스처 만료 등)에서는 예전에 아무 반응이 없었는데, 이제 「공유 실패/미지원」이면 자동으로 파일을 다운로드하고 「공유 앱으로 그 파일을 보내세요」 안내를 띄운다(아이폰은 기존 네이티브 공유창 그대로). (v129 이하 유지) -->
 <!-- (이전)  map_v129.html (v129 · TENAR V1.5) · 저장: 2026-09-03 14:07 KST · [v129] 생산량목록 공유/내보내기/불러오기에 「연결자료」 포함(팀 전달용) — 즐겨찾기 핀뿐 아니라 연결된 「요도(mapItems: 포구·면적·길이)」 + 「포구 저장기록(fpSaves)」 + 「측정 저장기록(measSaves)」을 한 파일에 함께 내보내고, 불러오기 때 함께 복원. 이전엔 내보내기에 요도조차 없어 연결자료가 빠졌음. (v128 이하 유지) -->
 <!-- (이전)  map_v129.html (v129 · TENAR V1.5) · 저장: 2026-09-03 07:47 KST · [v129] ①조사구 목록 핀의 「조사명(핀 위)」을 작물핀처럼 모든 확대/축소 레벨에서 항상 표시(area-plots-top minzoom 제거) — 핀 아래 라벨은 기존 유지. ②작물재배 핀 「아래」를 「00-0000」→「읍면동 00-0000」(예: 자인면 03-0023)로 표기. (v128 이하 유지) -->
@@ -1587,8 +1587,8 @@ TenarSecureStore.init('map',
      · 키는 HTML에 노출되므로 반드시 허용 도메인을 위 주소로 제한하세요.
        제한해 두면 타인이 키를 복사해도 다른 사이트에서는 쓸 수 없습니다.
      =================================================================== */
-  var MAP_VERSION = 'v134';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
-  var MAP_VERSION_TIME = '2026-09-03 22:10 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
+  var MAP_VERSION = 'v135';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
+  var MAP_VERSION_TIME = '2026-09-04 01:16 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
   var VWORLD_API_KEY = '00EB5BC0-22B4-3B7E-89D1-341699F7CE05';
   var VWORLD_DOMAIN  = 'ubaldos00-ship-it.github.io';   /* 호스트만 · 스킴 금지 */
 
@@ -3880,16 +3880,18 @@ TenarSecureStore.init('map',
     var bSurvey = el('button', 'sheet-btn green-soft', '📋 조사표');
     bSurvey.addEventListener('click', function () { openSurveySheet(info, { mode: 'pin' });   /* [v27-2] 저장핀 : 연결돼 있으면 바로 열기 */ });
     r1.appendChild(bNav); r1.appendChild(bSurvey);
-    /* [v132] 이 핀에 연결해 포구도구·측정도구 바로 시작 */
+    /* [v47-6·v135] 연결자료 개수 — 도구 버튼 배지와 연결자료 버튼에 함께 사용 */
+    var _cnt = itemCounts(f.id);
+    var _tot = _cnt.fieldplot + _cnt.area + _cnt.distance;
+    var _measCnt = _cnt.area + _cnt.distance;
+    /* [v132] 이 핀에 연결해 포구도구·측정도구 바로 시작 · [v135] 이미 이 핀에 저장된 개수 배지 표시 */
     var rTools = el('div', 'btn-row'); rTools.style.marginTop = '8px';
-    var bFp = el('button', 'sheet-btn', '🚩 포구도구');
+    var bFp = el('button', 'sheet-btn', '🚩 포구도구' + (_cnt.fieldplot ? ' (' + _cnt.fieldplot + ')' : ''));
     bFp.addEventListener('click', function () { startToolForFav(f, 'fp'); });
-    var bMs = el('button', 'sheet-btn', '📐 측정도구');
+    var bMs = el('button', 'sheet-btn', '📐 측정도구' + (_measCnt ? ' (' + _measCnt + ')' : ''));
     bMs.addEventListener('click', function () { startToolForFav(f, 'meas'); });
     rTools.appendChild(bFp); rTools.appendChild(bMs);
     /* [v47-6] 연결 지도자료 버튼 — 연결자료가 있을 때만 활성 */
-    var _cnt = itemCounts(f.id);
-    var _tot = _cnt.fieldplot + _cnt.area + _cnt.distance;
     var bLinked = el('button', 'sheet-btn', _tot ? ('🗺 연결자료 ' + _tot) : '연결자료 없음');
     if (_tot) bLinked.addEventListener('click', function () { openLinkedItemsSheet(f); });
     else { bLinked.disabled = true; bLinked.style.opacity = '.5'; }
@@ -4386,8 +4388,12 @@ TenarSecureStore.init('map',
 
       var cnt = itemCounts(f.id);
       var total = cnt.fieldplot + cnt.area + cnt.distance;
+      /* [v135] 이 핀에 연결된 면적(area) 요도들의 실측면적 합계 — 목록에서 바로 규모 파악 */
+      var _sumM2 = 0;
+      itemsOfFav(f.id).forEach(function (x) { if (x.type === 'area' && x.measurementData) _sumM2 += (Number(x.measurementData.areaM2) || 0); });
+      var _areaTxt = _sumM2 > 0 ? ' · 면적합 ' + formatNumber(_sumM2 / 3.305785, 1) + '평' : '';
       var summary = total
-        ? '<div class="fav-items">🚩 포구 ' + cnt.fieldplot + ' · ▱ 면적 ' + cnt.area + ' · ↔ 길이 ' + cnt.distance + '</div>'
+        ? '<div class="fav-items">🚩 포구 ' + cnt.fieldplot + ' · ▱ 면적 ' + cnt.area + ' · ↔ 길이 ' + cnt.distance + _areaTxt + '</div>'
         : '<div class="fav-items" style="color:#aaa;">연결된 자료 없음</div>';
 
       /* [v119] 작물 아이콘: 통합계산기 SVG 우선 → 없으면 이모지 */
@@ -5267,7 +5273,7 @@ TenarSecureStore.init('map',
          지번 기준으로 우편번호가 없어도 근처 도로명주소 우편번호가 채워진다. */
       var pAddr = usedKakao ? requestVWorldReverse(lng, lat).then(function (a) {
         if (a) {
-          if (!data.postalCode && a.postalCode) data.postalCode = a.postalCode;   /* 우편번호 보완 */
+          if (!data.postalCode && a.postalCode) { data.postalCode = a.postalCode; data.postalNearby = true; }   /* [v135] 카카오엔 우편번호가 없어 근처 도로명주소 우편번호로 보완 → 근처기준 표시 */
           if (!data.roadAddress && a.roadAddress) data.roadAddress = a.roadAddress; /* 도로명 없으면 보완 */
         }
         stage('우편번호 조회 완료'); return k;
@@ -5512,7 +5518,9 @@ TenarSecureStore.init('map',
       jb.textContent = (data.jibunAddress || data.parcelAddr) + (data.jimok ? ' (' + data.jimok + ')' : '');
     }
     if (r) r.textContent = data.roadAddress || '도로명주소 없음';
-    if (z) z.textContent = data.postalCode || '확인되지 않음';
+    if (z) z.innerHTML = data.postalCode
+      ? (escapeHtml(data.postalCode) + (data.postalNearby ? ' <span style="color:#9a3412;font-size:10.5px;font-weight:600;">(근처 기준)</span>' : ''))
+      : '확인되지 않음';   /* [v135] 근처 도로명주소 우편번호로 채운 경우 표시 */
     if (a) a.textContent = data.areaM2 ? (formatNumber(data.areaM2, 0) + '㎡ / 약 ' + formatNumber(data.areaM2 / 3.305785, 1) + '평') : '확인되지 않음';
     if (pr) {
       var yy = pickPriceYears(data.prices);
