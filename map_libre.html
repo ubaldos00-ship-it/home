@@ -1,4 +1,4 @@
-<!-- map_v139.html (v139 · TENAR V1.5) · 저장: 2026-09-04 05:59 KST · [v139] 포구도구 단계 안내 개선: ①안내 배너의 「설정됨 작물·비율」 중복문구 삭제(위 배너에 이미 표시). ②배너를 스크롤해도 상단 고정(sticky) → 아래로 내려도 항상 보임. ③L)「👉 지금 하기」 버튼으로 현재 단계 동작 바로 실행(작물·비율 입력/필지선택/가·나 찍기/완료/저장). M)완료 전 비율(가·나) 누락 시 빨간 경고, 이전 필지 비율 잔존 시 주황 경고. N)안내 접기/펴기 토글(▾/▸, 기억). (v138 이하 유지) -->
+<!-- map_v140.html (v140 · TENAR V1.5) · 저장: 2026-09-04 06:23 KST · [v140] 현장모드 추가 — 사무실에서 A/B 선정 후 현장에서 GPS·진행방향(지도회전) 자동 추적 + 포구도구 패널 최소화 + 상단 「🧭 현장모드」 바(종료 버튼). 두 곳에서 시작: ①포구도구 패널 「🧭 현장모드 시작/종료」 버튼, ②저장위치 팝업 「🧭 현장모드로 이동」(저장된 A/B포구를 도구로 불러와 바로 추적 시작). 도구를 닫으면 현장모드(GPS)도 자동 종료. (v139 이하 유지) -->
 <!-- (이전)  map_v130.html (v130 · TENAR V1.5) · 저장: 2026-09-03 14:14 KST · [v130] 생산량목록 공유 안드로이드 대응 — 공유가 안 되는 기기(안드로이드에서 JSON 파일 공유 미지원/암호화 비동기로 제스처 만료 등)에서는 예전에 아무 반응이 없었는데, 이제 「공유 실패/미지원」이면 자동으로 파일을 다운로드하고 「공유 앱으로 그 파일을 보내세요」 안내를 띄운다(아이폰은 기존 네이티브 공유창 그대로). (v129 이하 유지) -->
 <!-- (이전)  map_v129.html (v129 · TENAR V1.5) · 저장: 2026-09-03 14:07 KST · [v129] 생산량목록 공유/내보내기/불러오기에 「연결자료」 포함(팀 전달용) — 즐겨찾기 핀뿐 아니라 연결된 「요도(mapItems: 포구·면적·길이)」 + 「포구 저장기록(fpSaves)」 + 「측정 저장기록(measSaves)」을 한 파일에 함께 내보내고, 불러오기 때 함께 복원. 이전엔 내보내기에 요도조차 없어 연결자료가 빠졌음. (v128 이하 유지) -->
 <!-- (이전)  map_v129.html (v129 · TENAR V1.5) · 저장: 2026-09-03 07:47 KST · [v129] ①조사구 목록 핀의 「조사명(핀 위)」을 작물핀처럼 모든 확대/축소 레벨에서 항상 표시(area-plots-top minzoom 제거) — 핀 아래 라벨은 기존 유지. ②작물재배 핀 「아래」를 「00-0000」→「읍면동 00-0000」(예: 자인면 03-0023)로 표기. (v128 이하 유지) -->
@@ -889,6 +889,23 @@ TenarSecureStore.init('map',
   #fpBanner .fp-rvals { font-size: 10px; font-weight: 700; white-space: nowrap; }
   #fpBtns { display: none; grid-template-columns: repeat(2, 1fr); gap: 4px; margin-top: 6px; }
 
+  /* [v140] 현장모드 상단 바 */
+  #fpFieldBar {
+    display: none; position: fixed; left: 50%; transform: translateX(-50%);
+    top: calc(env(safe-area-inset-top, 0px) + 8px); z-index: 30;
+    align-items: center; gap: 10px; padding: 7px 10px 7px 14px; border-radius: 22px;
+    background: #1a73e8; color: #fff; box-shadow: 0 3px 12px rgba(0,0,0,.35);
+    font-size: 13px; font-weight: 800; max-width: calc(100% - 24px);
+  }
+  #fpFieldBar.show { display: flex; }
+  #fpFieldBar .ffb-txt { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #fpFieldBar .ffb-exit {
+    flex: 0 0 auto; border: none; border-radius: 16px; padding: 5px 12px;
+    background: rgba(255,255,255,.22); color: #fff; font-size: 12.5px; font-weight: 900; cursor: pointer;
+  }
+  #fpFieldBar .ffb-exit:active { background: rgba(255,255,255,.4); }
+  /* [v140] 현장모드 켜짐 시 포구도구 버튼 강조 */
+  #fpFieldBtn.on { background: #1a73e8 !important; color: #fff !important; border-color: #1a73e8 !important; }
   /* [v138·v139] 포구도구 단계 안내 배너 — 현재 단계 → 지금 할 일. 스크롤해도 상단 고정(sticky) */
   #fpStepGuide {
     position: sticky; top: 0; z-index: 6;
@@ -1428,6 +1445,12 @@ TenarSecureStore.init('map',
   <!-- [v42-추천] 각도조절 중 세로각도 실시간 배지 -->
   <div id="fpAngleBadge"><span id="fpAngleBadgeTxt">세로각도 90.0°</span></div>
 
+  <!-- [v140] 현장모드 바 — GPS·진행방향 추적 중 상단 고정, 종료 버튼 -->
+  <div id="fpFieldBar">
+    <span class="ffb-txt">🧭 현장모드 · A/B로 이동해 깃대</span>
+    <button type="button" id="fpFieldExit" class="ffb-exit">종료</button>
+  </div>
+
   <div id="fpToolPanel">
     <div id="fpToolHeader"><span>🚩 포구도구</span><button id="fpToolToggle" type="button" aria-label="포구도구 접기/펴기">▼</button></div>
     <div id="fpToolBody">
@@ -1487,6 +1510,10 @@ TenarSecureStore.init('map',
         <button class="tool-btn one-line" type="button" id="fpAngleSep">각도따로</button>
         <button class="tool-btn one-line" type="button" id="fpAngleOrtho">직각복원</button>
       </div>
+
+      <!-- [v140] 현장모드 — GPS 켜고 진행방향 추적 + 패널 최소화 (A/B로 이동해 깃대 꽂기) -->
+      <div class="tp-sec">🧭 현장모드</div>
+      <button class="tool-btn one-line" type="button" id="fpFieldBtn" style="width:100%;">🧭 현장모드 시작</button>
 
       <div class="tp-sec">⑤ 완료</div>
       <button class="tool-btn one-line" type="button" id="fpTFinish" style="width:100%;">✓ 완료</button>
@@ -1627,8 +1654,8 @@ TenarSecureStore.init('map',
      · 키는 HTML에 노출되므로 반드시 허용 도메인을 위 주소로 제한하세요.
        제한해 두면 타인이 키를 복사해도 다른 사이트에서는 쓸 수 없습니다.
      =================================================================== */
-  var MAP_VERSION = 'v139';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
-  var MAP_VERSION_TIME = '2026-09-04 05:59 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
+  var MAP_VERSION = 'v140';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
+  var MAP_VERSION_TIME = '2026-09-04 06:23 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
   var VWORLD_API_KEY = '00EB5BC0-22B4-3B7E-89D1-341699F7CE05';
   var VWORLD_DOMAIN  = 'ubaldos00-ship-it.github.io';   /* 호스트만 · 스킴 금지 */
 
@@ -4047,9 +4074,18 @@ TenarSecureStore.init('map',
         : '<span style="padding:2px 9px;border-radius:9px;background:#fdecec;color:#c0392b;">⚠ 조사표 미전송</span> <span style="color:#888;font-weight:600;font-size:11.5px;">— 위 「조사표」로 전송하세요</span>';
     }
 
+    /* [v140] 저장된 A/B포구가 있으면 「현장모드로 이동」 — 그 포구를 불러와 GPS·진행방향 추적 시작 */
+    var rField = null;
+    if (_cnt.fieldplot > 0) {
+      rField = el('button', 'sheet-btn', '🧭 현장모드로 이동 (GPS·진행방향)');
+      rField.style.cssText += 'width:100%;margin-top:8px;background:#1a73e8;color:#fff;border-color:#1a73e8;font-weight:800;';
+      rField.addEventListener('click', function () { startFieldModeForFav(f); });
+    }
+
     /* [v133] 순서: 길찾기·조사표·연결자료(r1) → 포구·측정도구(rTools)를 위로 두어 핀선택 시 바로 보이게,
        핀수정·삭제(r2)는 아래로(위로 쓸면 나옴) — 시트를 짧게 유지해 핀이 가려지지 않게 함 */
     box.appendChild(r1); box.appendChild(rTools);
+    if (rField) box.appendChild(rField);
     if (rStatus) box.appendChild(rStatus);
     box.appendChild(r2); box.appendChild(bParcel);
     openSheet('저장 위치', box, 'auto');
@@ -4097,6 +4133,19 @@ TenarSecureStore.init('map',
       if (f.crop) { surveyMeasureState.measCrop = f.crop; try { measSetupLabel(); } catch (e) {} }
       showToast('이 위치에서 측정도구를 시작합니다.\n면적/길이를 재고 저장하면 이 핀에 연결됩니다.', 4500, 'info');
     }
+  }
+  /* [v140] 저장위치 팝업 → 현장모드: 저장된 A/B포구를 도구로 불러온 뒤 GPS·진행방향 추적 시작 */
+  function startFieldModeForFav(f) {
+    closeSheet();
+    if (isFinite(f.latitude) && isFinite(f.longitude)) { try { map.flyTo({ center: [f.longitude, f.latitude], zoom: Math.max(map.getZoom(), 18), essential: true }); } catch (e) {} }
+    var items = itemsOfFav(f.id).filter(function (x) { return x.type === 'fieldplot' && x.fieldPlotData; });
+    try { openFpTool(); } catch (e) {}
+    if (items.length) {
+      try { focusMapItem(items[0]); } catch (e) {}   /* 저장된 A/B포구를 도구에 되살림 */
+    } else {
+      fp._sessionFavId = f.id; fp.jibunAddress = f.jibunAddress || '';
+    }
+    setTimeout(function () { try { fpEnterFieldMode(); } catch (e) {} }, 350);
   }
   /* [v118] 저장위치 → 뒤로가기 → 생산량목록(스크롤 위치 그대로 복원) */
   function backToFavList() {
@@ -10390,6 +10439,37 @@ TenarSecureStore.init('map',
     if (togEl) togEl.textContent = _fpGuideCollapsed ? '▸' : '▾';
   }
 
+  /* [v140] 현장모드 — 사무실에서 A/B 선정 후, 현장에서 GPS·진행방향으로 A/B까지 이동해 깃대.
+     GPS 자동 켜기 + 진행방향(지도회전) 추적 + 포구도구 패널 최소화. */
+  function fpMinimizePanel(min) {
+    var body = document.getElementById('fpToolBody');
+    var tog = document.getElementById('fpToolToggle');
+    if (!body) return;
+    if (min) { body.classList.add('collapsed'); if (tog) tog.textContent = '▲'; }
+    else { body.classList.remove('collapsed'); if (tog) tog.textContent = '▼'; }
+  }
+  function fpEnterFieldMode() {
+    if (!fp.toolOpen) { try { openFpTool(); } catch (e) {} }
+    var ok = true;
+    try { ok = (typeof TLoc !== 'undefined' && TLoc.startField) ? TLoc.startField() : false; } catch (e) { ok = false; }
+    if (ok === false) { showToast('현재 기기에서 GPS를 시작할 수 없습니다.', 4000); return; }
+    fp._fieldMode = true;
+    fpMinimizePanel(true);
+    var bar = document.getElementById('fpFieldBar'); if (bar) bar.classList.add('show');
+    var btn = document.getElementById('fpFieldBtn'); if (btn) { btn.classList.add('on'); btn.textContent = '🧭 현장모드 종료'; }
+    showToast('현장모드 시작 — GPS·진행방향 추적을 켰습니다.\n지도의 A/B 지점으로 이동해 깃대를 꽂으세요.\n(상단 「종료」로 끕니다)', 5200, 'success');
+  }
+  function fpExitFieldMode(silent) {
+    fp._fieldMode = false;
+    try { if (typeof TLoc !== 'undefined' && TLoc.stopField) TLoc.stopField(); } catch (e) {}
+    var bar = document.getElementById('fpFieldBar'); if (bar) bar.classList.remove('show');
+    var btn = document.getElementById('fpFieldBtn'); if (btn) { btn.classList.remove('on'); btn.textContent = '🧭 현장모드 시작'; }
+    fpMinimizePanel(false);
+    if (!silent) showToast('현장모드를 껐습니다.', 1800, 'info');
+  }
+  function fpToggleFieldMode() { if (fp._fieldMode) fpExitFieldMode(); else fpEnterFieldMode(); }
+  window.fpEnterFieldMode = fpEnterFieldMode;
+
   /* ---------- 진입 / UI ---------- */
   function fpSyncButtons() {
     function set(id, fn) { var b = document.getElementById(id); if (b) fn(b); }
@@ -10511,6 +10591,7 @@ TenarSecureStore.init('map',
   }
 
   function closeFpTool(clearData) {
+    if (fp._fieldMode) { try { fpExitFieldMode(true); } catch (e) {} }   /* [v140] 도구 닫으면 현장모드도 종료(GPS 정리) */
     if (clearData) {
       var s = surveyMeasureState;
       s.fieldPoints = []; s.fieldPolygon = null; s.fieldAreaM2 = 0; s.fieldPerimeterM = 0;
@@ -11224,6 +11305,9 @@ TenarSecureStore.init('map',
     on('fpAngleOrtho', function () { if (requireAngleAdjustment()) fpRestoreOrtho(); });
     /* ④ 완료 */
     on('fpTFinish', function () { if (fp.finished) fpUnfinish(); else fpFinish(); });
+    /* [v140] 현장모드 시작/종료 */
+    on('fpFieldBtn', fpToggleFieldMode);
+    on('fpFieldExit', function () { fpExitFieldMode(); });
     /* ⑤ 저장 / 목록 */
 on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필지 시작 */
     on('fpSaveBtn2', function () { openFpSaveSheet(); });      /* [v46-3] 저장 폼 팝업 */
@@ -13885,7 +13969,28 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
       setInterval(function () { if (mode !== 'off') updateGpsStatus(); }, 3000);
       window.addEventListener('pagehide', teardown);
     }
-    return { init: init };
+    /* [v140] 현장모드용 공개 API — GPS 켜고 바로 「진행방향(지도회전) 추적」 시작 */
+    function startField() {
+      if (isSaveMode()) return false;
+      if (!navigator.geolocation) { showToast('이 브라우저는 위치 기능을 지원하지 않습니다.', 4000); return false; }
+      if (window.isSecureContext === false) showToast('현장모드(GPS·방향)는 HTTPS(또는 배포본)에서 정상 동작합니다.', 5000);
+      permDenied = false;
+      setMode('current');
+      pendingCenterOnce = true;
+      startWatch();
+      requestOrientPerm().then(function (ok) {
+        if (ok) { startOrient(); setMode('track'); recenter(); if (heading != null) rotateMapTo(heading); }
+        else { showToast('방향 센서를 쓸 수 없어 진행방향(지도 회전)은 못 씁니다.\n현재 위치만 표시합니다.', 5000); }
+      });
+      return true;
+    }
+    function stopField() {
+      stopWatch(); stopOrient(); setMode('off');
+      try { if (marker) marker.remove(); } catch (e) {}
+      try { ensureNorth(); } catch (e) {}
+    }
+    function isOn() { return mode !== 'off'; }
+    return { init: init, startField: startField, stopField: stopField, isOn: isOn };
   })();
 
   /* 디버그/연동용 */
