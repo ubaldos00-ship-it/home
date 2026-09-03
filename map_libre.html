@@ -1,4 +1,4 @@
-<!-- map_v141.html (v141 · TENAR V1.5) · 저장: 2026-09-04 06:32 KST · [v141] 현장모드 강화: ①GPS 정밀화(watchPosition maximumAge:0 — 항상 최신 fix). ②Q)상단 바에 A/B포구까지 남은 거리(m)·방향(↗ 화살표, 방향센서 있으면 「내가 향한 방향」 기준) 실시간 표시. ③R)목표 3m 이내+정확도 15m 이하면 「여기가 A포구」 도착 안내(오판 방지). ④핀표시 설정에 「현장모드 도착 진동」 on/off(배터리 절약). A·B 모두 도착 시 완료 표시. (v140 이하 유지) -->
+<!-- map_v143.html (v143 · TENAR V1.5) · 저장: 2026-09-04 07:09 KST · [v143] ①핀 상단 작물명을 「핀+연결자료 모든 작물」로 표시(예: 감자 핀에 논벼·양파 포구 → 「감자 · 논벼 · 양파」). ②생산량목록 작물 필터가 핀 작물뿐 아니라 연결자료(포구·면적·길이) 작물까지 매칭 + 작물 드롭다운에도 연결자료 작물 포함. ③현장모드 숨김 확대 — 검색창·작물비율창·포구도구/측정패널·우측버튼(레이어·핀표시·포구도구·면적길이·생산량목록·조사구목록)·로컬배지 모두 숨김, 「위치·종료 바·레벨·지도i」만 표시(해제 시 복원). (v142 이하 유지) -->
 <!-- (이전)  map_v130.html (v130 · TENAR V1.5) · 저장: 2026-09-03 14:14 KST · [v130] 생산량목록 공유 안드로이드 대응 — 공유가 안 되는 기기(안드로이드에서 JSON 파일 공유 미지원/암호화 비동기로 제스처 만료 등)에서는 예전에 아무 반응이 없었는데, 이제 「공유 실패/미지원」이면 자동으로 파일을 다운로드하고 「공유 앱으로 그 파일을 보내세요」 안내를 띄운다(아이폰은 기존 네이티브 공유창 그대로). (v129 이하 유지) -->
 <!-- (이전)  map_v129.html (v129 · TENAR V1.5) · 저장: 2026-09-03 14:07 KST · [v129] 생산량목록 공유/내보내기/불러오기에 「연결자료」 포함(팀 전달용) — 즐겨찾기 핀뿐 아니라 연결된 「요도(mapItems: 포구·면적·길이)」 + 「포구 저장기록(fpSaves)」 + 「측정 저장기록(measSaves)」을 한 파일에 함께 내보내고, 불러오기 때 함께 복원. 이전엔 내보내기에 요도조차 없어 연결자료가 빠졌음. (v128 이하 유지) -->
 <!-- (이전)  map_v129.html (v129 · TENAR V1.5) · 저장: 2026-09-03 07:47 KST · [v129] ①조사구 목록 핀의 「조사명(핀 위)」을 작물핀처럼 모든 확대/축소 레벨에서 항상 표시(area-plots-top minzoom 제거) — 핀 아래 라벨은 기존 유지. ②작물재배 핀 「아래」를 「00-0000」→「읍면동 00-0000」(예: 자인면 03-0023)로 표기. (v128 이하 유지) -->
@@ -889,6 +889,21 @@ TenarSecureStore.init('map',
   #fpBanner .fp-rvals { font-size: 10px; font-weight: 700; white-space: nowrap; }
   #fpBtns { display: none; grid-template-columns: repeat(2, 1fr); gap: 4px; margin-top: 6px; }
 
+  /* [v142·v143] 현장모드 중에는 지도만 크게 — 검색창·작물비율창·포구도구/측정 패널,
+     우측 버튼(레이어·핀표시·포구도구·면적길이·생산량목록·조사구목록), 로컬배지를 모두 숨긴다.
+     남는 것: 위치(현재위치) 버튼 · 상단 현장모드 바(종료) · 레벨/축척 · 지도 i.  해제 시 복원. */
+  body.field-mode #searchBar,
+  body.field-mode #fpBanner,
+  body.field-mode #fpToolPanel,
+  body.field-mode #toolPanel,
+  body.field-mode #serverBadgeInline,
+  body.field-mode #btnLayer,
+  body.field-mode #btnPins,
+  body.field-mode #btnFpTool,
+  body.field-mode #btnMeasure,
+  body.field-mode #btnFav,
+  body.field-mode #btnAreaShort,
+  body.field-mode #btnCompass { display: none !important; }
   /* [v140] 현장모드 상단 바 */
   #fpFieldBar {
     display: none; position: fixed; left: 50%; transform: translateX(-50%);
@@ -1654,8 +1669,8 @@ TenarSecureStore.init('map',
      · 키는 HTML에 노출되므로 반드시 허용 도메인을 위 주소로 제한하세요.
        제한해 두면 타인이 키를 복사해도 다른 사이트에서는 쓸 수 없습니다.
      =================================================================== */
-  var MAP_VERSION = 'v141';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
-  var MAP_VERSION_TIME = '2026-09-04 06:32 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
+  var MAP_VERSION = 'v143';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
+  var MAP_VERSION_TIME = '2026-09-04 07:09 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
   var VWORLD_API_KEY = '00EB5BC0-22B4-3B7E-89D1-341699F7CE05';
   var VWORLD_DOMAIN  = 'ubaldos00-ship-it.github.io';   /* 호스트만 · 스킴 금지 */
 
@@ -1814,6 +1829,20 @@ TenarSecureStore.init('map',
   }
   /* [v136] 이 핀의 자료가 조사표로 전송(=작성/저장 연결)됐는지 — sentToSurveyAt(전송시각) 또는 surveyId(조사표 연결키) */
   function favSurveySent(f) { return !!(f && (f.sentToSurveyAt || f.surveyId)); }
+  /* [v143] 이 핀의 「모든 작물」(핀 자체 + 연결된 포구·면적·길이 요도)의 중복 없는 목록.
+     예: 핀=감자, 포구=논벼·양파 → ['감자','논벼','양파'] */
+  function favAllCrops(f) {
+    var out = [];
+    function add(c) { c = String(c || '').trim(); if (c && out.indexOf(c) < 0) out.push(c); }
+    if (f) add(f.crop);
+    try { if (f) itemsOfFav(f.id).forEach(function (x) { add(x.crop); }); } catch (e) {}
+    return out;
+  }
+  /* [v143] 이 핀이 특정 작물을 갖는가(핀 또는 연결자료 어느 하나라도) */
+  function favHasCrop(f, crop) {
+    if (!crop) return true;
+    return favAllCrops(f).indexOf(crop) >= 0;
+  }
   /* [v137-I] 전송완료 일시 텍스트(있을 때만). full=true 면 YYYY-MM-DD HH:MM, 아니면 MM-DD HH:MM */
   function favSentTimeText(f, full) {
     var t = f && f.sentToSurveyAt; if (!t) return '';
@@ -2452,6 +2481,7 @@ TenarSecureStore.init('map',
     showLandInfo: false,  /* [v40-8] 토지정보 조회 (지적도와 분리 · 기본 꺼짐) */
     showRidgeDots: true,  /* [v40-10] 이랑 점 표시 */
     fieldVibrate: true,   /* [v141] 현장모드 도착 시 진동 (배터리 절약하려면 끔) */
+    fieldVoice: true,     /* [v142] 현장모드 도착 시 음성 안내 */
     showAreaPins: false,  /* [v67-7] 작물재배조사구 핀 표시 (기본 꺼짐) */
     showQuickBtns: true,  /* [v93] 주소창 아래 빠른버튼 표시 */
     fpAutoRotate: true,   /* [v40-12] 가·나 지정 시 지도 자동 회전 */
@@ -3852,7 +3882,10 @@ TenarSecureStore.init('map',
       /* [v11-8] 작물별 필터 없음 — 저장핀은 모두 표시, 작물명만 켜고 끔 */
       /* [v128] 핀 아래에 읍면동 표기(주소에서 추출) */
       var _femd = ''; try { var _fa = parseAdminFromAddr(f.jibunAddress || f.name || ''); _femd = (_fa && _fa.eupmyeondong) || ''; } catch (e2) {}
-      var e = makePinElement(colorHex(f.color), settings.showCropName ? (f.crop || '없음') : '', _femd);
+      /* [v143] 핀 상단 작물명: 핀+연결자료의 모든 작물을 함께 표시(예: 감자 · 논벼 · 양파) */
+      var _crops = favAllCrops(f);
+      var _cropLabel = _crops.length ? _crops.join(' · ') : '없음';
+      var e = makePinElement(colorHex(f.color), settings.showCropName ? _cropLabel : '', _femd);
       /* [v6-2] 작물핀 터치 → 큰 팝업 대신 50% 바텀시트 (위로 끌면 90%까지)
          [v13] 실측모드에서는 상세시트 대신 측정점으로 추가.
                실측모드에서도 핀 정보를 봐야 할 수 있으므로 "길게 누르기"로 상세시트를 연다. */
@@ -4137,9 +4170,15 @@ TenarSecureStore.init('map',
   }
   /* [v140] 저장위치 팝업 → 현장모드: 저장된 A/B포구를 도구로 불러온 뒤 GPS·진행방향 추적 시작 */
   function startFieldModeForFav(f) {
+    var items = itemsOfFav(f.id).filter(function (x) { return x.type === 'fieldplot' && x.fieldPlotData; });
+    /* [v142] A/B포구가 2개 이상이면 어느 포구인지 골라야 하므로 「연결 지도자료」 목록으로 보낸다 */
+    if (items.length >= 2) {
+      openLinkedItemsSheet(f);
+      showToast('이 위치에 A/B포구가 ' + items.length + '개 있습니다.\n목록에서 「🧭」를 눌러 현장모드로 갈 포구를 선택하세요.', 5000, 'info');
+      return;
+    }
     closeSheet();
     if (isFinite(f.latitude) && isFinite(f.longitude)) { try { map.flyTo({ center: [f.longitude, f.latitude], zoom: Math.max(map.getZoom(), 18), essential: true }); } catch (e) {} }
-    var items = itemsOfFav(f.id).filter(function (x) { return x.type === 'fieldplot' && x.fieldPlotData; });
     try { openFpTool(); } catch (e) {}
     if (items.length) {
       try { focusMapItem(items[0]); } catch (e) {}   /* 저장된 A/B포구를 도구에 되살림 */
@@ -4473,7 +4512,7 @@ TenarSecureStore.init('map',
     if (_favSel.sido && (a.sido || '') !== _favSel.sido) return false;
     if (_favSel.sigungu && (a.sigungu || '') !== _favSel.sigungu) return false;
     if (_favSel.eupmyeondong && (a.eupmyeondong || '') !== _favSel.eupmyeondong) return false;
-    if (_favSel.crop && (f.crop || '') !== _favSel.crop) return false;
+    if (_favSel.crop && !favHasCrop(f, _favSel.crop)) return false;   /* [v143] 핀 자체뿐 아니라 연결자료(포구·면적·길이) 작물도 매칭 */
     return true;
   }
   function renderFavCombos() {
@@ -4488,7 +4527,13 @@ TenarSecureStore.init('map',
         if (level === 'crop' && _favSel.eupmyeondong && (a.eupmyeondong || '') !== _favSel.eupmyeondong) return false;
         return true;
       });
-      var vals = (level === 'crop') ? f2.map(function (f) { return f.crop || ''; }) : f2.map(function (f) { return favAdmin(f)[level] || ''; });
+      var vals;
+      if (level === 'crop') {   /* [v143] 핀+연결자료의 모든 작물을 옵션으로 (논벼·양파 포구가 붙은 감자 핀도 논벼/양파로 검색) */
+        vals = [];
+        f2.forEach(function (f) { favAllCrops(f).forEach(function (c) { vals.push(c); }); });
+      } else {
+        vals = f2.map(function (f) { return favAdmin(f)[level] || ''; });
+      }
       return areaUniq(vals.filter(Boolean)).sort();
     }
     [['sido', '전체 시도'], ['sigungu', '전체 시군구'], ['eupmyeondong', '전체 읍면동'], ['crop', '전체 작물']].forEach(function (c) {
@@ -4791,7 +4836,20 @@ TenarSecureStore.init('map',
         renderFavList();
         showToast('요도를 삭제했습니다.', 2000, 'success');
       });
-      row.appendChild(nm); row.appendChild(lk); row.appendChild(dl);
+      row.appendChild(nm);
+      /* [v142] A/B포구(fieldplot) 항목은 이 포구로 바로 현장모드 시작 — 연결자료가 여러 개여도 어느 포구인지 명확 */
+      if (it.type === 'fieldplot' && it.fieldPlotData) {
+        var fm = el('button', 'icon-btn', '🧭');
+        fm.title = '이 포구로 현장모드';
+        fm.style.cssText = 'width:30px;height:28px;padding:0;font-size:14px;flex:0 0 auto;background:#1a73e8;color:#fff;border-color:#1a73e8;';
+        fm.addEventListener('click', function () {
+          closeSheet();
+          try { focusMapItem(it); } catch (e) {}   /* 이 포구를 도구로 되살림 */
+          setTimeout(function () { try { fpEnterFieldMode(); } catch (e) {} }, 400);
+        });
+        row.appendChild(fm);
+      }
+      row.appendChild(lk); row.appendChild(dl);
       box.appendChild(row);
     });
   }
@@ -5259,6 +5317,23 @@ TenarSecureStore.init('map',
         settings.fieldVibrate = v; saveSettings();
         sw.classList.toggle('on', v);
         if (v && navigator.vibrate) { try { navigator.vibrate(60); } catch (e) {} }   /* 켤 때 짧게 확인 진동 */
+      });
+      row.appendChild(sw);
+      return row;
+    })());
+
+    /* [v142] 현장모드 도착 음성 안내 on/off */
+    box.appendChild((function () {
+      var row = el('div', 'lyr-row');
+      row.appendChild(el('div', null,
+        '<div class="lyr-name">🔊 현장모드 도착 음성</div>' +
+        '<div class="lyr-desc">A/B포구에 도착하면 음성으로 알립니다 (예: “A포구에 도착했습니다”)</div>'));
+      var sw = el('div', 'switch' + ((settings.fieldVoice !== false) ? ' on' : ''), '<div class="knob"></div>');
+      sw.addEventListener('click', function () {
+        var v = !(settings.fieldVoice !== false);
+        settings.fieldVoice = v; saveSettings();
+        sw.classList.toggle('on', v);
+        if (v) { try { if ('speechSynthesis' in window) { var u = new SpeechSynthesisUtterance('음성 안내를 켰습니다'); u.lang = 'ko-KR'; window.speechSynthesis.cancel(); window.speechSynthesis.speak(u); } } catch (e) {} }
       });
       row.appendChild(sw);
       return row;
@@ -10488,8 +10563,19 @@ TenarSecureStore.init('map',
     }
     fp._fieldTargets = t;
   }
+  /* [v142] 음성 안내(TTS) — 도착 알림용 */
+  function _fpSpeak(text) {
+    try {
+      if (!('speechSynthesis' in window)) return;
+      var u = new SpeechSynthesisUtterance(text);
+      u.lang = 'ko-KR'; u.rate = 1; u.pitch = 1; u.volume = 1;
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(u);
+    } catch (e) {}
+  }
   function _fpArrive(t) {
     if (settings.fieldVibrate !== false && navigator.vibrate) { try { navigator.vibrate([120, 60, 120]); } catch (e) {} }
+    if (settings.fieldVoice !== false) _fpSpeak(t.label + '에 도착했습니다. 깃대를 꽂으세요.');
     showToast('🚩 여기가 ' + t.label + " 입니다.\n깃대를 꽂으세요.", 4500, 'success');
   }
   function _fpFieldTick(pos, heading) {
@@ -10524,7 +10610,7 @@ TenarSecureStore.init('map',
     fp._fieldMode = true;
     _fpBuildFieldTargets();
     window._tlocFieldTick = _fpFieldTick;   /* GPS 갱신마다 거리·방향·도착 판정 */
-    fpMinimizePanel(true);
+    document.body.classList.add('field-mode');   /* [v142] 검색창·작물비율창·포구도구창 숨김 */
     var bar = document.getElementById('fpFieldBar');
     if (bar) { bar.classList.add('show'); var tx = bar.querySelector('.ffb-txt'); if (tx) tx.textContent = '🧭 현장모드 · 위치 확인 중…'; }
     var btn = document.getElementById('fpFieldBtn'); if (btn) { btn.classList.add('on'); btn.textContent = '🧭 현장모드 종료'; }
@@ -10536,6 +10622,8 @@ TenarSecureStore.init('map',
   function fpExitFieldMode(silent) {
     fp._fieldMode = false;
     window._tlocFieldTick = null; fp._fieldTargets = null;
+    document.body.classList.remove('field-mode');   /* [v142] 검색창·작물비율창·포구도구창 복원 */
+    try { if ('speechSynthesis' in window) window.speechSynthesis.cancel(); } catch (e) {}
     try { if (typeof TLoc !== 'undefined' && TLoc.stopField) TLoc.stopField(); } catch (e) {}
     var bar = document.getElementById('fpFieldBar');
     if (bar) { bar.classList.remove('show'); var tx = bar.querySelector('.ffb-txt'); if (tx) tx.textContent = '🧭 현장모드 · A/B로 이동해 깃대'; }
