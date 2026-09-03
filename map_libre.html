@@ -1,4 +1,5 @@
-<!-- map_v129.html (v129 · TENAR V1.5) · 저장: 2026-09-03 07:47 KST · [v129] ①조사구 목록 핀의 「조사명(핀 위)」을 작물핀처럼 모든 확대/축소 레벨에서 항상 표시(area-plots-top minzoom 제거) — 핀 아래 라벨은 기존 유지. ②작물재배 핀 「아래」를 「00-0000」→「읍면동 00-0000」(예: 자인면 03-0023)로 표기. (v128 이하 유지) -->
+<!-- map_v129.html (v129 · TENAR V1.5) · 저장: 2026-09-03 14:07 KST · [v129] 생산량목록 공유/내보내기/불러오기에 「연결자료」 포함(팀 전달용) — 즐겨찾기 핀뿐 아니라 연결된 「요도(mapItems: 포구·면적·길이)」 + 「포구 저장기록(fpSaves)」 + 「측정 저장기록(measSaves)」을 한 파일에 함께 내보내고, 불러오기 때 함께 복원. 이전엔 내보내기에 요도조차 없어 연결자료가 빠졌음. (v128 이하 유지) -->
+<!-- (이전)  map_v129.html (v129 · TENAR V1.5) · 저장: 2026-09-03 07:47 KST · [v129] ①조사구 목록 핀의 「조사명(핀 위)」을 작물핀처럼 모든 확대/축소 레벨에서 항상 표시(area-plots-top minzoom 제거) — 핀 아래 라벨은 기존 유지. ②작물재배 핀 「아래」를 「00-0000」→「읍면동 00-0000」(예: 자인면 03-0023)로 표기. (v128 이하 유지) -->
 <!-- (이전)  map_v128.html (v128 · TENAR V1.5) · 저장: 2026-09-03 07:12 KST · [v128] 지도 핀 라벨 개편 — ①생산량목록(즐겨찾기) 핀: 작물명(위) + 읍면동(아래) 표기. ②조사구 핀 「위」=조사명(작물재배/가축/축비/농비/쌀값/농판). ③핀 「아래」: 작물재배=층-조사구(03-0023) · 가축=축종 경영주 읍면동 · 축비=축종 이름 읍면동 · 농비=지목 이름 읍면동 · 쌀값=(업체명) 이름 읍면동 · 농판=이름 읍면동. ④작물재배 층=2자리·조사구=4자리 zero-pad(입력 3→03, 23→0023 저장·표시). (v127 이하 유지) -->
 <!-- (이전)  map_v127.html (v127 · TENAR V1.5) · 저장: 2026-09-03 06:40 KST · [v127] 측정/포구·조사표 개선 — ①핀이 작게 멈춰보이던 것 방지(줌 도중에도 핀 크기 갱신). ②저장핀 조사표: 연결돼 있으면 「열기·수정 / 다른 조사표로 변경 / 연결 해제」를 고르게(수정 가능). ③저장 누르면 「완료」 자동 처리(측정=finishCurrentMeasurement, 포구=fpFinish). ④저장 안 하고 조사표 전송하면 「저장 후 전송」 안내(저장/취소). ⑤새 조사 시작/새로그리기를 「조사표 전송」 아래로 이동(전송 대신 잘못 누름 방지). ⑥ⓘ에 버전+저장일시 표기. (v126 이하 유지) -->
 <!-- (이전)  map_v126.html (v126 · TENAR V1.5) · 저장: 2026-09-02 11:26 KST · [v126·버그수정] 엑셀 가져오기에서 담당자ID(및 시도·시군구·읍면동) 필터로 걸러도, 가려진 다른 행의 체크가 남아 「추가/교체 시 전체」가 들어가던 문제 수정 — 이제 「현재 필터에 보이는 체크된 행만」 가져옴(담당자ID 고르면 그 ID만 추가/교체). (v125 이하 유지) -->
@@ -1577,8 +1578,8 @@ TenarSecureStore.init('map',
      · 키는 HTML에 노출되므로 반드시 허용 도메인을 위 주소로 제한하세요.
        제한해 두면 타인이 키를 복사해도 다른 사이트에서는 쓸 수 없습니다.
      =================================================================== */
-  var MAP_VERSION = 'v128';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
-  var MAP_VERSION_TIME = '2026-09-03 07:12 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
+  var MAP_VERSION = 'v129';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
+  var MAP_VERSION_TIME = '2026-09-03 14:07 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
   var VWORLD_API_KEY = '00EB5BC0-22B4-3B7E-89D1-341699F7CE05';
   var VWORLD_DOMAIN  = 'ubaldos00-ship-it.github.io';   /* 호스트만 · 스킴 금지 */
 
@@ -4592,10 +4593,20 @@ TenarSecureStore.init('map',
     map.fitBounds(b, { padding: 70, maxZoom: 17, duration: 700, essential: true });   /* [v121] reduce-motion 대응 */
   }
 
+  /* [v129] 즐겨찾기 + 연결자료(요도·포구저장·측정저장) 전체 번들 — 팀 공유/내보내기용 */
+  function favExportData() {
+    return {
+      app: 'map', type: 'favorites', version: 38, savedAt: kstNowStr(), exportedAt: kstNowStr(),
+      favorites: getFavs(),
+      mapItems: getMapItems(),          /* 연결 요도(포구·면적·길이) — fieldPlotData/measurementData 포함 */
+      fpSaves: getFpSaves(),            /* A/B포구 저장기록 원본 */
+      measSaves: getMeasSaves()         /* 면적·길이 저장기록 원본 */
+    };
+  }
   function favShare() {
     var favs = getFavs();
     if (!favs.length) { showToast('저장된 즐겨찾기 위치가 없습니다.', 3000, 'info'); return; }
-    window._tenarBuildExport({ app: 'map', type: 'favorites', version: 37, savedAt: kstNowStr(), exportedAt: kstNowStr(), favorites: favs, mapItems: getMapItems() }, 'map')  /* [v37] 요도 포함 */
+    window._tenarBuildExport(favExportData(), 'map')  /* [v129] 연결자료(요도·포구·측정) 포함 */
       .then(function (out) {
         if (!out) return;
         var file = new File([out.text], 'tenar_map_favs_' + Date.now() + '.json', { type: 'application/json' });
@@ -4610,7 +4621,7 @@ TenarSecureStore.init('map',
   function favExport() {
     var favs = getFavs();
     if (!favs.length) { showToast('저장된 즐겨찾기 위치가 없습니다.', 3000, 'info'); return; }
-    window._tenarBuildExport({ app: 'map', type: 'favorites', savedAt: kstNowStr(), favorites: favs }, 'map')
+    window._tenarBuildExport(favExportData(), 'map')   /* [v129] 연결자료(요도·포구·측정) 포함 */
       .then(function (out) {
         if (!out) return;
         var blob = new Blob([out.text], { type: 'application/json' });
@@ -4730,8 +4741,29 @@ TenarSecureStore.init('map',
                 setMapItems((mode === 'replace') ? selItems.slice() : selItems.concat(curItems));
                 renderMapItems();
               }
+              /* [v129] 연결자료 원본(포구저장·측정저장)도 함께 복원 — 계산기 저장목록에서 열 수 있게 */
+              var fpN = 0, msN = 0;
+              try {
+                var inFp = (data && data.fpSaves && data.fpSaves.length) ? data.fpSaves : [];
+                /* 선택한 요도(fp:<id>)에 연결된 포구저장만 골라 담되, 요도가 없으면 파일의 전체를 담는다 */
+                if (inFp.length) {
+                  var wantFp = {}; selItems.forEach(function (it) { if (it && it.srcKey && it.srcKey.indexOf('fp:') === 0) wantFp[it.srcKey.slice(3)] = 1; });
+                  var pickFp = (mode === 'replace') ? inFp.slice() : inFp.filter(function (r) { return Object.keys(wantFp).length ? wantFp[r.id] : true; });
+                  var curFp = getFpSaves(); var seenFp = {}; curFp.forEach(function (x) { seenFp[x.id] = 1; });
+                  var addFp = pickFp.filter(function (r) { return !seenFp[r.id]; });
+                  setFpSaves((mode === 'replace') ? pickFp : addFp.concat(curFp)); fpN = (mode === 'replace') ? pickFp.length : addFp.length;
+                }
+                var inMs = (data && data.measSaves && data.measSaves.length) ? data.measSaves : [];
+                if (inMs.length) {
+                  var wantMs = {}; selItems.forEach(function (it) { if (it && it.srcKey && it.srcKey.indexOf('ms:') === 0) wantMs[it.srcKey.slice(3).split(':')[0]] = 1; });
+                  var pickMs = (mode === 'replace') ? inMs.slice() : inMs.filter(function (r) { return Object.keys(wantMs).length ? wantMs[r.id] : true; });
+                  var curMs = getMeasSaves(); var seenMs = {}; curMs.forEach(function (x) { seenMs[x.id] = 1; });
+                  var addMs = pickMs.filter(function (r) { return !seenMs[r.id]; });
+                  setMeasSaves((mode === 'replace') ? pickMs : addMs.concat(curMs)); msN = (mode === 'replace') ? pickMs.length : addMs.length;
+                }
+              } catch (e) {}
               renderFavList();
-              showToast('즐겨찾기 ' + normSel.length + '개' + (selItems.length ? (' · 요도 ' + selItems.length + '개') : '') + '를 불러왔습니다.', 3000, 'success');
+              showToast('즐겨찾기 ' + normSel.length + '개' + (selItems.length ? (' · 요도 ' + selItems.length + '개') : '') + ((fpN || msN) ? (' · 연결자료 ' + (fpN + msN) + '건') : '') + '를 불러왔습니다.', 3200, 'success');
             }
           });
         }).catch(function (e) {
