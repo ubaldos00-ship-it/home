@@ -1,4 +1,4 @@
-<!-- map_v156.html (v156 · TENAR V1.5) · 저장: 2026-09-04 14:30 KST · [v156] 네이버 지도 정상 표시 확정(Client ID=l300nz0ugi · oapi/ncpKeyId). 카카오·네이버 뷰 「현재위치 핀」 크기 축소(18→12px). 지도 로드 후 하단 안내문구 갱신(불러오는 중 고정 방지). 네이버 리버스지오코딩은 미사용(주소·우편번호는 카카오+브이월드 그대로). (v155 이하 유지) -->
+<!-- map_v157.html (v157 · TENAR V1.5) · 저장: 2026-09-05 04:34 KST · [v157] 포구도구: 저장시 저장버튼 초록(저장됨✓)+저장상태면 초기화·새로그리기 활성 / 비율창에 초기화·포구표시(측정값 숨김토글) 버튼 / 1·2번 비율 수동선택 고정(자동전환 플래그 해제, 통합계산기 규칙 일치) / 현장모드 작동중 표시. 지도: 현장모드 네이버 버튼 추가, 카카오·네이버 뷰에 조사표전송(좌하단)+현재위치(우하단 원+십자) 버튼. (v156 이하 유지) -->
 <!-- (v155) 저장: 2026-09-04 14:22 KST · [v155] 카카오 지도 「🔎확대」 버튼 추가 — 카카오 위성 최대(레벨1) 위를 CSS로 더 크게(1.5배·2.2배, 해상도 낮아도) 보이게(아이폰에서도 더 확대). 확대 중엔 드래그·줌 잠금(좌표 어긋남 방지)·현재위치 중앙. (v154 이하 유지) -->
 <!-- (v154) 저장: 2026-09-04 14:11 KST · [v154] 네이버 지도 로드 방식을 예전 작동 파일(0.지도/map.html)과 동일하게 수정 — oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=w8m4oe36ev (구형 openapi?ncpClientId 아님). 도메인 등록된 배포본에서 표시됨. (v153 이하 유지) -->
 <!-- (v153) 저장: 2026-09-04 14:05 KST · [v153] 네이버 지도 maxZoom 21로 상향 + 초기 확대 심화(zoom 20) — 해상도 낮아도(업스케일=흐릿) 더 확대되게. 카카오 위성은 최대 레벨 1(이미 최대·카카오 자체 한계). (v152 이하 유지) -->
@@ -891,6 +891,16 @@ TenarSecureStore.init('map',
     box-shadow: 0 2px 8px rgba(0,0,0,.3);
   }
   #fpBanner .fp-head { font-size: 11.5px; font-weight: 800; }
+  /* [v157] 비율창 상단 작은 버튼(초기화·포구표시) */
+  #fpBanner .fp-head-row { display: flex; align-items: center; gap: 5px; }
+  #fpBanner .fp-head-row .fp-head { flex: 1 1 auto; min-width: 0; }
+  #fpBanner .fp-bbtn {
+    flex: 0 0 auto; border: 1px solid rgba(255,255,255,.55); background: rgba(255,255,255,.14);
+    color: #fff; font-size: 10px; font-weight: 800; padding: 3px 7px; border-radius: 7px; cursor: pointer;
+    font-family: inherit; white-space: nowrap;
+  }
+  #fpBanner .fp-bbtn:active { background: rgba(255,255,255,.32); }
+  #fpBanner .fp-bbtn.off { opacity: .6; text-decoration: line-through; }
   #fpBanner .fp-rtable { display: flex; gap: 5px; }
   #fpBanner .fp-rcol {
     flex: 1; display: flex; align-items: center; gap: 5px; padding: 4px 6px;
@@ -898,6 +908,8 @@ TenarSecureStore.init('map',
     cursor: pointer;
   }
   #fpBanner .fp-rcol.active { background: #fff; color: #1565C0; border-color: #fff; }
+  /* [v157] 저장 완료된 저장버튼 초록 표시 */
+  #fpSaveBtn2.fp-saved-ok { background: #1f8a4c !important; color: #fff !important; border-color: #1f8a4c !important; }
   #fpBanner .fp-rname { font-size: 10.5px; font-weight: 900; flex: 0 0 auto; }
   #fpBanner .fp-rvals { font-size: 10px; font-weight: 700; white-space: nowrap; }
   #fpBtns { display: none; grid-template-columns: repeat(2, 1fr); gap: 4px; margin-top: 6px; }
@@ -925,7 +937,8 @@ TenarSecureStore.init('map',
     background: #1a73e8; color: #fff; box-shadow: 0 3px 14px rgba(0,0,0,.38);
     font-weight: 800;
   }
-  #fpFieldBar.show { display: flex; }
+  #fpFieldBar.show { display: flex; animation: ffbLive 1.8s ease-in-out infinite; }
+  @keyframes ffbLive { 0%,100% { box-shadow: 0 3px 14px rgba(0,0,0,.38); } 50% { box-shadow: 0 3px 14px rgba(0,0,0,.38), 0 0 0 3px rgba(26,115,232,.45); } }
   #fpFieldBar .ffb-txt { flex: 1 1 auto; min-width: 0; font-size: 15.5px; line-height: 1.35; white-space: normal; word-break: keep-all; }
   #fpFieldBar .ffb-exit {
     flex: 0 0 auto; border: none; border-radius: 14px; padding: 10px 18px;
@@ -954,6 +967,29 @@ TenarSecureStore.init('map',
   }
   body.field-mode #fpFieldKakao { display: block; }
   #fpFieldKakao:active { background: #d9ab00; }
+  /* [v157] 현장모드 네이버 지도 버튼(카카오 위) */
+  #fpFieldNaver {
+    display: none; position: fixed; left: 10px;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 170px); z-index: 30;
+    padding: 11px 15px; border: none; border-radius: 16px;
+    background: #03c75a; color: #fff; font-size: 14px; font-weight: 900; cursor: pointer;
+    box-shadow: 0 3px 12px rgba(0,0,0,.35);
+  }
+  body.field-mode #fpFieldNaver { display: block; }
+  #fpFieldNaver:active { background: #02a94b; }
+  /* [v157] 카카오/네이버 뷰 안의 「조사표 전송」(좌하단, 맵리브레와 같은 위치) + 현재위치(우하단 원형+십자) */
+  #kakaoView .mv-send, #naverView .mv-send {
+    position: absolute; left: 10px; bottom: calc(env(safe-area-inset-bottom, 0px) + 74px); z-index: 40;
+    padding: 12px 16px; border: none; border-radius: 16px; background: #14612f; color: #fff;
+    font-size: 15px; font-weight: 900; cursor: pointer; box-shadow: 0 3px 12px rgba(0,0,0,.4);
+  }
+  #kakaoView .mv-send:active, #naverView .mv-send:active { background: #0f4a24; }
+  #kakaoView .mv-loc, #naverView .mv-loc {
+    position: absolute; right: 12px; bottom: calc(env(safe-area-inset-bottom, 0px) + 74px); z-index: 40;
+    width: 52px; height: 52px; border-radius: 50%; border: none; background: #fff; color: #27500A;
+    display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 3px 12px rgba(0,0,0,.4);
+  }
+  #kakaoView .mv-loc:active, #naverView .mv-loc:active { background: #eef4ea; }
   /* [v146] 카카오 지도 대체 뷰 */
   #kakaoView { display: none; position: fixed; inset: 0; z-index: 60; background: #000; flex-direction: column; }
   #kakaoView.show { display: flex; }
@@ -1517,7 +1553,11 @@ TenarSecureStore.init('map',
   <!-- [v15-3] A/B포구 선정 모드 상단 배너 (선택된 비율 표시) -->
   <!-- [v17-9] 주소검색창 아래 : 작물 · 기준 · 1번/2번 비율(가·나·다)을 보여주고 골라 쓴다 -->
   <div id="fpBanner">
-    <div class="fp-head" id="fpBannerText"></div>
+    <div class="fp-head-row">
+      <div class="fp-head" id="fpBannerText"></div>
+      <button type="button" id="fpBannerReset" class="fp-bbtn">🗑 초기화</button>
+      <button type="button" id="fpBannerShowVals" class="fp-bbtn">📏 포구표시</button>
+    </div>
     <div class="fp-rtable">
       <div class="fp-rcol" id="fpR1"><span class="fp-rname">1번</span><span class="fp-rvals" id="fpR1Vals">—</span></div>
       <div class="fp-rcol" id="fpR2"><span class="fp-rname">2번</span><span class="fp-rvals" id="fpR2Vals">—</span></div>
@@ -1535,20 +1575,25 @@ TenarSecureStore.init('map',
   </div>
   <!-- [v145] 현장모드 중 좌하단 조사표 전송 바로가기 -->
   <button type="button" id="fpFieldSend">📤 조사표로 전송</button>
-  <!-- [v146] 현장모드 중 카카오 지도로 전환 -->
+  <!-- [v146·v157] 현장모드 중 카카오/네이버 지도로 전환 -->
   <button type="button" id="fpFieldKakao">🗺 카카오 지도</button>
+  <button type="button" id="fpFieldNaver">🟢 네이버 지도</button>
 
-  <!-- [v146] 카카오 지도 대체 뷰 — 맵리브레가 안 맞을 때(위성정합·현재위치) 사용. A/B포구·측정도형·현재위치를 그대로 표시 -->
+  <!-- [v146] 카카오 지도 대체 뷰 -->
   <div id="kakaoView">
     <div id="kakaoTop">
       <span id="kakaoTitle">🗺 카카오 (현장)</span>
       <button type="button" id="kakaoToNaver" class="kv-btn">네이버로</button>
       <button type="button" id="kakaoZoomPlus" class="kv-btn">🔎 확대</button>
-      <button type="button" id="kakaoRecenter" class="kv-btn">📍</button>
       <button type="button" id="kakaoClose" class="kv-btn kv-close">✕ 닫기</button>
     </div>
     <div id="kakaoMap"></div>
     <div id="kakaoInfo"></div>
+    <!-- [v157] 조사표 전송(좌하단, 맵리브레와 같은 위치) + 현재위치(우하단, 동그라미+십자) -->
+    <button type="button" id="kakaoSend" class="mv-send">📤 조사표 전송</button>
+    <button type="button" id="kakaoRecenter" class="mv-loc" aria-label="현재위치">
+      <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><circle cx="12" cy="12" r="7.1" fill="none" stroke="currentColor" stroke-width="1.9"/><circle cx="12" cy="12" r="2.9" fill="currentColor"/><path d="M12 1.4v3.6M12 19v3.6M1.4 12h3.6M19 12h3.6" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/></svg>
+    </button>
   </div>
 
   <!-- [v150] 네이버 지도 대체 뷰 -->
@@ -1556,11 +1601,14 @@ TenarSecureStore.init('map',
     <div id="naverTop">
       <span id="naverTitle">🟢 네이버 (현장)</span>
       <button type="button" id="naverToKakao" class="nv-btn">카카오로</button>
-      <button type="button" id="naverRecenter" class="nv-btn">📍</button>
       <button type="button" id="naverClose" class="nv-btn nv-close">✕ 닫기</button>
     </div>
     <div id="naverMap"></div>
     <div id="naverInfo"></div>
+    <button type="button" id="naverSend" class="mv-send">📤 조사표 전송</button>
+    <button type="button" id="naverRecenter" class="mv-loc" aria-label="현재위치">
+      <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><circle cx="12" cy="12" r="7.1" fill="none" stroke="currentColor" stroke-width="1.9"/><circle cx="12" cy="12" r="2.9" fill="currentColor"/><path d="M12 1.4v3.6M12 19v3.6M1.4 12h3.6M19 12h3.6" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/></svg>
+    </button>
   </div>
 
   <div id="fpToolPanel">
@@ -1766,8 +1814,8 @@ TenarSecureStore.init('map',
      · 키는 HTML에 노출되므로 반드시 허용 도메인을 위 주소로 제한하세요.
        제한해 두면 타인이 키를 복사해도 다른 사이트에서는 쓸 수 없습니다.
      =================================================================== */
-  var MAP_VERSION = 'v156';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
-  var MAP_VERSION_TIME = '2026-09-04 14:30 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
+  var MAP_VERSION = 'v157';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
+  var MAP_VERSION_TIME = '2026-09-05 04:34 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
   var VWORLD_API_KEY = '00EB5BC0-22B4-3B7E-89D1-341699F7CE05';
   var VWORLD_DOMAIN  = 'ubaldos00-ship-it.github.io';   /* 호스트만 · 스킴 금지 */
 
@@ -9986,11 +10034,14 @@ TenarSecureStore.init('map',
       }
     }
     fp.ratio = n;
+    fp._autoTo2 = false;   /* [v157] 수동 선택 시 자동전환 플래그 해제(통합계산기 selectRatio와 동일) — 골라도 되돌아가던 문제 수정 */
+    fp._saved = false;     /* [v157] 비율 바꾸면 저장상태 해제 */
     var b1 = document.getElementById('fpR1'), b2 = document.getElementById('fpR2');
     if (b1) b1.classList.toggle('active', n === 1);
     if (b2) b2.classList.toggle('active', n === 2);
     fpRenderBanner();
     if (fp.ga && fp.na) { fpCompute(); fpRender(); } else fpUpdatePanel();
+    if (typeof fpSyncButtons === 'function') fpSyncButtons();
     showToast(n + '번 비율로 계산합니다.', 2000, 'info');
   }
   /* [v17-6] 완료 — 가·나·각도·필지·재배구역·UNDO·REDO 잠그고 「수정」만 남긴다 */
@@ -10006,6 +10057,7 @@ TenarSecureStore.init('map',
   function fpUnfinish() {
     if (!window.confirm('포구선정 완료를 해제하시겠습니까?')) return;   /* [v43-10] */
     fp.finished = false;
+    fp._saved = false;   /* [v157] 완료 해제하면 저장상태도 해제(다시 고치는 중) */
     fpSyncButtons();
     try { applyMeasPointsVisibility(); } catch (e) {}   /* [v62-1] 해제 시 다시 표시 */
     showToast('완료를 해제했습니다. 다시 고칠 수 있습니다.', 2600, 'info');
@@ -10031,6 +10083,7 @@ TenarSecureStore.init('map',
     fp.heightA = fp.heightB = 0; fp.aPoLen = fp.bPoLen = 0;
   }
   function fpReset() {
+    fp._saved = false;   /* [v157] 새로 그리면 저장상태 해제 */
     fp.ga = fp.na = null; fp.aBase = fp.bBase = fp.aEnd = fp.bEnd = fp.aPo = fp.bPo = null;
     fp.aSel = fp.bSel = fp.heightA = fp.heightB = fp.aPoLen = fp.bPoLen = 0;
     fp.picking = null; fp.angleA = fp.angleB = 0; fp.angleMode = false; fp.path = null;
@@ -10203,7 +10256,9 @@ TenarSecureStore.init('map',
     } else arr.unshift(rec);
     if (!setFpSaves(arr)) return;
     fp.editingId = rec.id;
+    fp._saved = true;   /* [v157] 저장됨 — 저장버튼 초록 + 초기화·새로그리기 활성(바로 다음 필지 추가) */
     fp._saveName = '';   /* [v46-3] 1회용 */
+    try { fpSyncButtons(); } catch (e) {}
     try { saveJSON(FP_PRELOAD_KEY, rec); } catch (e) {}
     /* [v37] 통합 즐겨찾기 목록에도 포구 요도로 연결 저장 */
     fpSaveToLibrary(rec);
@@ -10568,7 +10623,16 @@ TenarSecureStore.init('map',
   }
 
   /* [v17-9] 주소검색창 아래 안내 — 작물 / 기준 / 1번·2번 비율(가·나·다) */
+  /* [v157] 포구표시 버튼 라벨/상태 동기화 */
+  function fpSyncBannerBtns() {
+    var b = document.getElementById('fpBannerShowVals');
+    if (!b) return;
+    var showing = (settings.showFpValues !== false);
+    b.classList.toggle('off', !showing);
+    b.textContent = showing ? '📏 포구표시' : '📏 포구표시 OFF';
+  }
   function fpRenderBanner() {
+    fpSyncBannerBtns();
     var c = fp.ctx || {};
     var t = document.getElementById('fpBannerText');
     if (t && !c.crop && !(c.r1 && c.r1.ga)) {
@@ -10739,7 +10803,7 @@ TenarSecureStore.init('map',
     if (!bar || !fp._fieldMode) return;
     var txtEl = bar.querySelector('.ffb-txt');
     var targets = fp._fieldTargets || [];
-    if (!pos || !targets.length) { if (txtEl) txtEl.textContent = '🧭 현장모드 · A/B로 이동해 깃대'; return; }
+    if (!pos || !targets.length) { if (txtEl) txtEl.textContent = '🧭 현장모드 작동중 · A/B로 이동해 깃대'; return; }
     var acc = isFinite(pos.acc) ? pos.acc : 99;
     targets.forEach(function (t) { t._d = _distM(pos.lat, pos.lng, t.lat, t.lng); });
     /* [R] 도착 판정 — 3m 이내 + 정확도 15m 이하일 때만(오판 방지) */
@@ -10755,7 +10819,7 @@ TenarSecureStore.init('map',
     var ar = arrows[Math.round(rel / 45) % 8];
     var dm = Math.round(best._d);
     var accTxt = isFinite(acc) ? ' · GPS±' + Math.round(acc) + 'm' : '';
-    if (txtEl) txtEl.textContent = '🧭 ' + best.label + ' ' + ar + ' ' + dm + 'm' + accTxt;
+    if (txtEl) txtEl.textContent = '🧭 현장모드 작동중 · ' + best.label + ' ' + ar + ' ' + dm + 'm' + accTxt;
   }
 
   function fpEnterFieldMode() {
@@ -10768,7 +10832,7 @@ TenarSecureStore.init('map',
     window._tlocFieldTick = _fpFieldTick;   /* GPS 갱신마다 거리·방향·도착 판정 */
     document.body.classList.add('field-mode');   /* [v142] 검색창·작물비율창·포구도구창 숨김 */
     var bar = document.getElementById('fpFieldBar');
-    if (bar) { bar.classList.add('show'); var tx = bar.querySelector('.ffb-txt'); if (tx) tx.textContent = '🧭 현장모드 · 위치 확인 중…'; }
+    if (bar) { bar.classList.add('show'); var tx = bar.querySelector('.ffb-txt'); if (tx) tx.textContent = '🧭 현장모드 작동중 · 위치 확인 중…'; }
     var btn = document.getElementById('fpFieldBtn'); if (btn) { btn.classList.add('on'); btn.textContent = '🧭 현장모드 종료'; }
     var hasT = (fp._fieldTargets && fp._fieldTargets.length);
     showToast('현장모드 시작 — GPS·진행방향 추적을 켰습니다.\n' +
@@ -11007,6 +11071,16 @@ TenarSecureStore.init('map',
      'fpTParcel', 'fpTCrop', 'fpTUndo', 'fpTRedo', 'fpTCenter',
      'fpTReset', 'fpTSetup', 'fpTCancelArea', 'fpTEdit', 'fpTNewSurvey'].forEach(function (id) {   /* [v72-14] 완료 시 새로그리기도 비활성 */
       set(id, function (b) { b.disabled = lock; });
+    });
+    /* [v157] 저장된 상태(입력완료+저장)면 「초기화·새로그리기」는 다시 활성 — 바로 다음 필지 추가 가능 */
+    if (lock && fp._saved) {
+      set('fpTReset', function (b) { b.disabled = false; });
+      set('fpTNewSurvey', function (b) { b.disabled = false; });
+    }
+    /* [v157] 저장 버튼 초록 표시(저장됨 ✓) / 저장 전 기본 */
+    set('fpSaveBtn2', function (b) {
+      b.classList.toggle('fp-saved-ok', !!fp._saved);
+      b.innerHTML = fp._saved ? '<span class="em">✅</span>저장됨' : '<span class="em">💾</span>저장';
     });
     if (!lock) updateUndoRedoButtons();
 
@@ -11842,9 +11916,14 @@ TenarSecureStore.init('map',
     });
     /* [v146] 카카오 지도 대체 뷰 */
     on('fpFieldKakao', function () { openKakaoView(); });
+    on('fpFieldNaver', function () { openNaverView(); });   /* [v157] 현장모드 네이버 버튼 */
     on('kakaoClose', function () { closeKakaoView(); });
     on('kakaoRecenter', function () { _kRecenter(); });
     on('kakaoZoomPlus', function () { _kCycleZoom(); });
+    /* [v157] 카카오/네이버 뷰 안의 「조사표 전송」 — 이동/취소 확인 후 fpSubmit */
+    function _mapViewSend() { if (window.confirm('조사표로 이동할까요?\n\n[확인] 이동   [취소] 취소')) { try { fpSubmit(); } catch (e) {} } }
+    on('kakaoSend', _mapViewSend);
+    on('naverSend', _mapViewSend);
     /* [v150] 네이버 지도 대체 뷰 + 카카오↔네이버 상호 전환 */
     on('naverClose', function () { closeNaverView(); });
     on('naverRecenter', function () { _nRecenter(); });
@@ -11859,6 +11938,23 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     /* [v17-9] 비율 선택 */
     on('fpR1', function () { if (fpBlockedByFinish()) return; fpSetRatio(1); });   /* [v43-9] */
     on('fpR2', function () { if (fpBlockedByFinish()) return; fpSetRatio(2); });
+    /* [v157] 비율창 초기화 버튼 — 포구도구 조사구역·가나·각도 초기화(fpToolReset이 확인창 표시) */
+    on('fpBannerReset', function () { try { fpToolReset(); } catch (e) {} });
+    /* [v157] 포구표시 토글 — A/B포구 값(가로·세로 길이) 표시/숨김 (확인창) */
+    on('fpBannerShowVals', function () {
+      var showing = (settings.showFpValues !== false);
+      if (showing) {
+        if (!window.confirm('길이 측정값(가로·세로 길이)을 숨김 처리하시겠습니까?\n\n[확인] 숨김   [취소] 취소')) return;
+        settings.showFpValues = false;
+      } else {
+        if (!window.confirm('측정값(가로·세로 길이)을 다시 표시하시겠습니까?\n\n[확인] 표시   [취소] 취소')) return;
+        settings.showFpValues = true;
+      }
+      try { saveSettings(); } catch (e) {}
+      try { fpRender(); } catch (e) {}
+      try { updateAreaLabel(); } catch (e) {}
+      fpSyncBannerBtns();
+    });
   })();
 
   map.on('load', function () {
