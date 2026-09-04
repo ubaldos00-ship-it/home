@@ -1,4 +1,5 @@
-<!-- tonghab.html (v117) · 저장: 2026-08-29 11:22 KST · [v117] 계산기↔지도 전환 「진행중」 차단 오버레이 — 지도로 이동/지도에서 계산기로 전송·복귀할 때, 데이터 적용이 「완료되기 전」 사용자가 작물·항목을 선택하거나 이동해 잘못 선택되던 문제 방지. 이동 시 세션 플래그를 세우고, 도착 페이지 로드~적용 완료(또는 최대 3.5초)까지 전체화면 「진행중입니다. 잠시만 기다려주세요.」 오버레이로 상호작용을 막음(확인 팝업 z-index 9500보다 낮은 9400이라 「이전 자료」 선택 팝업은 그대로 사용 가능). 계산 로직 무변경. -->
+<!-- tonghab.html (v118) · 저장: 2026-09-04 09:40 KST · [v118] 논벼 ⑤ 이삭수(초기화·이전·다음) 아래에 「🧭 지도에서 A/B포구 위치(현장모드)」 버튼 추가 — 누르면 연결된 핀 정보를 넘겨 지도 map_libre.html 로 이동, 지도가 그 핀의 현장모드(GPS·진행방향)를 자동 시작(B포구 GPS로 깃대). 계산 로직 무변경. (v117 유지) -->
+<!-- (v117) [v117] 계산기↔지도 전환 「진행중」 차단 오버레이 — 지도로 이동/지도에서 계산기로 전송·복귀할 때, 데이터 적용이 「완료되기 전」 사용자가 작물·항목을 선택하거나 이동해 잘못 선택되던 문제 방지. 이동 시 세션 플래그를 세우고, 도착 페이지 로드~적용 완료(또는 최대 3.5초)까지 전체화면 「진행중입니다. 잠시만 기다려주세요.」 오버레이로 상호작용을 막음(확인 팝업 z-index 9500보다 낮은 9400이라 「이전 자료」 선택 팝업은 그대로 사용 가능). 계산 로직 무변경. -->
 <!-- (이전)  tonghab.html (v116) · 저장: 2026-08-29 08:40 KST · [v116] 저장/불러오기 목록: 작물명 옆에 「읍면동 리 지번」을 작물명 글자크기로 함께 표기(예: 논벼, 논공읍 금포리 324) — 시도·시군구 앞부분은 빼고 읍면동부터. 기존 📍 전체주소 줄은 그대로 유지. 계산 로직 무변경. (v115 이하 유지) -->
 <!-- (이전)  tonghab.html (v115) · 저장: 2026-08-29 07:42 KST · [v115] ①작물 선택+필지주소 핀 후 지도에서 돌아오면 작물이 선택해제되던 버그 수정 — 지도로 나갈 때 저장된 작물을 조기에 붙잡아, 복원 레이스로 작물이 풀리면 다시 선택(계통추출 an/bn은 보존). ②저장/불러오기 목록 표시 정리: 메인줄=작물명만, 주소는 「전체주소」 한 줄(저장 데이터에서 읽어 잘림 없음), 기존 라벨(작물·주소·날짜)+아래 📍주소 줄의 주소 중복 제거. ③항목 버튼(잠금·위치·불러오기·휴지통)을 둘째 줄에 가로 균등폭 정렬. + [v114] 저장목록 📍=지도 저장핀 「보기」 모드(viewKey) 포함. 계산 로직 무변경. -->
 <!-- (이전)  tonghab.html (v113) · 저장: 2026-08-24 04:52 KST · [v113] 체크포인트(v112와 동일) -->
@@ -2313,6 +2314,8 @@ select,
           <button type="button" onclick="nbJusuNav(-1)" style="flex:1;padding:8px 4px;background:#f4f2ec;border:1.5px solid #d0cfc6;border-radius:8px;font-size:13px;font-weight:700;color:#555;cursor:pointer;font-family:inherit;touch-action:manipulation;">← 이전</button>
           <button type="button" onclick="nbJusuNav(1)" style="flex:1;padding:8px 4px;background:#f4f2ec;border:1.5px solid #d0cfc6;border-radius:8px;font-size:13px;font-weight:700;color:#555;cursor:pointer;font-family:inherit;touch-action:manipulation;">다음 →</button>
         </div>
+        <!-- [v145] 지도 현장모드로 이동 — 연결된 A/B포구를 GPS로 찾아가 깃대 -->
+        <button type="button" onclick="tenarGoFieldFromSurvey()" style="width:100%;margin-top:6px;padding:10px 8px;background:#1a73e8;border:none;border-radius:8px;font-size:13px;font-weight:800;color:#fff;cursor:pointer;font-family:inherit;touch-action:manipulation;">🧭 지도에서 A/B포구 위치 (현장모드)</button>
         <div style="font-size:11px;color:var(--a600);background:var(--a50);border:1px solid #f5d59c;border-radius:var(--rad);padding:7px 10px;margin-top:2px;display:none;" id="nbAJusuWarn">⚠ 10포기를 모두 입력해야 평균과 대표주수를 산출합니다.</div>
       </div>
 
@@ -9386,6 +9389,22 @@ function _tenarOpenMapUrl(u){
   /* 현장 사용 기준: 새 창이 아니라 현재 화면을 지도 화면으로 확실히 이동 */
   location.href = u;
 }
+
+/* [v145-map/tonghab] 조사표에서 바로 지도 「현장모드」로 이동 — 연결된 A/B포구를 GPS로 찾아가 깃대 */
+function tenarGoFieldFromSurvey(){
+  var payload = { app:'tonghab', ts:Date.now() };
+  var lk=null; try{ lk=JSON.parse(localStorage.getItem('tenar_pin_link')||'null'); }catch(e){}
+  if(lk && lk.favoriteId){
+    payload.favoriteId = lk.favoriteId;
+    if(isFinite(Number(lk.lat))) payload.lat = Number(lk.lat);
+    if(isFinite(Number(lk.lng))) payload.lng = Number(lk.lng);
+    if(lk.addr) payload.addr = lk.addr;
+  }
+  try{ if(_slLastLoadedKey) payload.surveyKey = _slLastLoadedKey; }catch(e){}
+  try{ localStorage.setItem('tenar_go_field', JSON.stringify(payload)); }catch(e){}
+  _tenarOpenMapUrl(_tenarMapBase());
+}
+window.tenarGoFieldFromSurvey = tenarGoFieldFromSurvey;
 
 /* ════════════════════════════════════════════════════════════════
    [v27] 지도 기반 A/B포구 위치 선정 — 지도로 넘기기 / 결과 받기
