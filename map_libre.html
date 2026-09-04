@@ -1,4 +1,6 @@
-<!-- map_v154.html (v154 · TENAR V1.5) · 저장: 2026-09-04 14:11 KST · [v154] 네이버 지도 로드 방식을 예전 작동 파일(0.지도/map.html)과 동일하게 수정 — oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=w8m4oe36ev (구형 openapi?ncpClientId 아님). 도메인 등록된 배포본에서 표시됨. (v153 이하 유지) -->
+<!-- map_v156.html (v156 · TENAR V1.5) · 저장: 2026-09-04 14:30 KST · [v156] 네이버 지도 정상 표시 확정(Client ID=l300nz0ugi · oapi/ncpKeyId). 카카오·네이버 뷰 「현재위치 핀」 크기 축소(18→12px). 지도 로드 후 하단 안내문구 갱신(불러오는 중 고정 방지). 네이버 리버스지오코딩은 미사용(주소·우편번호는 카카오+브이월드 그대로). (v155 이하 유지) -->
+<!-- (v155) 저장: 2026-09-04 14:22 KST · [v155] 카카오 지도 「🔎확대」 버튼 추가 — 카카오 위성 최대(레벨1) 위를 CSS로 더 크게(1.5배·2.2배, 해상도 낮아도) 보이게(아이폰에서도 더 확대). 확대 중엔 드래그·줌 잠금(좌표 어긋남 방지)·현재위치 중앙. (v154 이하 유지) -->
+<!-- (v154) 저장: 2026-09-04 14:11 KST · [v154] 네이버 지도 로드 방식을 예전 작동 파일(0.지도/map.html)과 동일하게 수정 — oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=w8m4oe36ev (구형 openapi?ncpClientId 아님). 도메인 등록된 배포본에서 표시됨. (v153 이하 유지) -->
 <!-- (v153) 저장: 2026-09-04 14:05 KST · [v153] 네이버 지도 maxZoom 21로 상향 + 초기 확대 심화(zoom 20) — 해상도 낮아도(업스케일=흐릿) 더 확대되게. 카카오 위성은 최대 레벨 1(이미 최대·카카오 자체 한계). (v152 이하 유지) -->
 <!-- (v152 요약) map_v152.html · [v152] 네이버 지도 인증 정정 — Client ID(w8m4oe36ev)로 교체 + JS SDK를 구형 방식(openapi.map.naver.com?ncpClientId=)으로 변경(이 앱이 X-NCP-APIGW Client ID/Secret 방식이라). 로컬은 미등록 URI라 인증실패로 확인되나, 배포 도메인(github.io, NCP에 등록됨)에서 표시됨. (v151 이하 유지) -->
 <!-- (v151 요약) map_v151.html · [v151] 네이버 지도 키(ncpKeyId)를 새 값으로 교체. (로컬은 도메인 미등록이라 인증 확인 불가 — 배포 도메인 등록 후 확인 필요) (v150 이하 유지) -->
@@ -962,7 +964,11 @@ TenarSecureStore.init('map',
   #kakaoTitle { flex: 1 1 auto; font-size: 15px; font-weight: 900; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   #kakaoView .kv-btn { flex: 0 0 auto; border: none; border-radius: 12px; padding: 9px 12px; font-size: 13.5px; font-weight: 800; background: rgba(0,0,0,.12); color: #3a2e00; cursor: pointer; }
   #kakaoView .kv-close { background: #3a2e00; color: #fee500; }
-  #kakaoMap { flex: 1 1 auto; width: 100%; touch-action: none; }   /* [v149] iOS에서 핀치 확대가 카카오 지도로 전달되도록 */
+  #kakaoMap { flex: 1 1 auto; width: 100%; touch-action: none; overflow: hidden; }   /* [v149] iOS에서 핀치 확대가 카카오 지도로 전달되도록 */
+  /* [v155] 카카오 「추가 확대」(해상도 낮아도 크게 보기) — 레벨1이 카카오 최대라, 그 위를 CSS로 시각 확대 */
+  #kakaoMap > div:first-child { transform-origin: 50% 50%; transition: transform .15s ease; }
+  #kakaoView.kx15 #kakaoMap > div:first-child { transform: scale(1.5); }
+  #kakaoView.kx22 #kakaoMap > div:first-child { transform: scale(2.2); }
   #kakaoInfo {
     position: absolute; left: 8px; right: 8px; bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
     background: rgba(26,115,232,.95); color: #fff; border-radius: 12px; padding: 9px 12px;
@@ -1537,6 +1543,7 @@ TenarSecureStore.init('map',
     <div id="kakaoTop">
       <span id="kakaoTitle">🗺 카카오 (현장)</span>
       <button type="button" id="kakaoToNaver" class="kv-btn">네이버로</button>
+      <button type="button" id="kakaoZoomPlus" class="kv-btn">🔎 확대</button>
       <button type="button" id="kakaoRecenter" class="kv-btn">📍</button>
       <button type="button" id="kakaoClose" class="kv-btn kv-close">✕ 닫기</button>
     </div>
@@ -1759,8 +1766,8 @@ TenarSecureStore.init('map',
      · 키는 HTML에 노출되므로 반드시 허용 도메인을 위 주소로 제한하세요.
        제한해 두면 타인이 키를 복사해도 다른 사이트에서는 쓸 수 없습니다.
      =================================================================== */
-  var MAP_VERSION = 'v154';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
-  var MAP_VERSION_TIME = '2026-09-04 14:11 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
+  var MAP_VERSION = 'v156';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
+  var MAP_VERSION_TIME = '2026-09-04 14:30 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
   var VWORLD_API_KEY = '00EB5BC0-22B4-3B7E-89D1-341699F7CE05';
   var VWORLD_DOMAIN  = 'ubaldos00-ship-it.github.io';   /* 호스트만 · 스킴 금지 */
 
@@ -1773,7 +1780,7 @@ TenarSecureStore.init('map',
          https://ubaldos00-ship-it.github.io
      · JavaScript 키는 도메인 제한으로 보호되므로 HTML 노출이 정상입니다. */
   var KAKAO_JS_KEY = 'd714e9625ae9e816526288f6cde536a9';
-  var NAVER_CLIENT_ID = 'w8m4oe36ev';   /* [v152] 네이버 클라우드 Maps Client ID (X-NCP-APIGW-API-KEY-ID) — JS 지도 SDK는 이 값만 사용 */
+  var NAVER_CLIENT_ID = 'l300nz0ugi';   /* [v156] map 앱 Client ID(X-NCP-APIGW-API-KEY-ID) — Dynamic Map+github.io 등록된 앱 */   /* [v152] 네이버 클라우드 Maps Client ID (X-NCP-APIGW-API-KEY-ID) — JS 지도 SDK는 이 값만 사용 */
   var NAVER_KEY_ID = NAVER_CLIENT_ID;   /* 하위호환 별칭 */
 
   /* ═══════════════════════════════════════════════════════════════
@@ -10835,7 +10842,7 @@ TenarSecureStore.init('map',
   function _kUpdateMe(lat, lng, acc) {
     _kMePos = { lat: lat, lng: lng };
     var pos = new kakao.maps.LatLng(lat, lng);
-    if (!_kMe) { _kMe = new kakao.maps.CustomOverlay({ position: pos, xAnchor: 0.5, yAnchor: 0.5, zIndex: 5, content: '<div style="width:18px;height:18px;border-radius:50%;background:#1a73e8;border:3px solid #fff;box-shadow:0 0 0 2px rgba(26,115,232,.5);"></div>' }); _kMe.setMap(_kmap); }
+    if (!_kMe) { _kMe = new kakao.maps.CustomOverlay({ position: pos, xAnchor: 0.5, yAnchor: 0.5, zIndex: 5, content: '<div style="width:12px;height:12px;border-radius:50%;background:#1a73e8;border:2px solid #fff;box-shadow:0 0 0 1.5px rgba(26,115,232,.5);"></div>' }); _kMe.setMap(_kmap); }
     else _kMe.setPosition(pos);
     if (!_kAcc) { _kAcc = new kakao.maps.Circle({ center: pos, radius: acc || 0, strokeWeight: 1, strokeColor: '#1a73e8', strokeOpacity: 0.5, fillColor: '#1a73e8', fillOpacity: 0.12 }); _kAcc.setMap(_kmap); }
     else { _kAcc.setPosition(pos); _kAcc.setRadius(acc || 0); }
@@ -10850,6 +10857,7 @@ TenarSecureStore.init('map',
   function openKakaoView() {
     var ov = document.getElementById('kakaoView'); if (!ov) return;
     ov.classList.add('show');
+    try { _kResetZoom(); } catch (e) {}   /* [v155] 열 때 추가확대 초기화 */
     var info = document.getElementById('kakaoInfo'); if (info) info.textContent = '카카오 지도를 불러오는 중…';
     ensureKakaoSdk().then(function (ok) {
       if (!ok) { ov.classList.remove('show'); showToast('카카오 지도를 불러오지 못했습니다.\n인터넷 연결·배포본(도메인 등록)에서 동작합니다.', 5000); return; }
@@ -10865,11 +10873,12 @@ TenarSecureStore.init('map',
       }
       _kDrawOverlays();
       _kStartWatch();
+      if (info) info.textContent = '카카오 위성 · 현재위치(GPS) 확인 중…';   /* [v156] 로드 완료 후 문구 갱신 */
       /* [v149] iOS에서 최대확대(레벨1)에 확실히 도달하도록, 레이아웃 확정 후 최소레벨·레벨을 재적용 */
       setTimeout(function () { try { _kmap.relayout(); _kmap.setMinLevel(1); if (_kmap.getLevel() > 1) _kmap.setLevel(1); } catch (e) {} }, 350);
     });
   }
-  function closeKakaoView() { var ov = document.getElementById('kakaoView'); if (ov) ov.classList.remove('show'); _kStopWatch(); }
+  function closeKakaoView() { var ov = document.getElementById('kakaoView'); if (ov) ov.classList.remove('show'); _kStopWatch(); try { _kResetZoom(); } catch (e) {} }
 
   /* ===================================================================
      [v150] 네이버 지도 대체 뷰 — 카카오와 동일하게 A/B포구·측정도형·현재위치 표시.
@@ -10912,7 +10921,7 @@ TenarSecureStore.init('map',
   function _nUpdateMe(lat, lng, acc) {
     _nMePos = { lat: lat, lng: lng };
     var pos = new naver.maps.LatLng(lat, lng);
-    if (!_nMe) { _nMe = new naver.maps.Marker({ position: pos, map: _nmap, zIndex: 100, icon: { content: '<div style="transform:translate(-50%,-50%);width:18px;height:18px;border-radius:50%;background:#1a73e8;border:3px solid #fff;box-shadow:0 0 0 2px rgba(26,115,232,.5);"></div>', anchor: new naver.maps.Point(0, 0) } }); }
+    if (!_nMe) { _nMe = new naver.maps.Marker({ position: pos, map: _nmap, zIndex: 100, icon: { content: '<div style="transform:translate(-50%,-50%);width:12px;height:12px;border-radius:50%;background:#1a73e8;border:2px solid #fff;box-shadow:0 0 0 1.5px rgba(26,115,232,.5);"></div>', anchor: new naver.maps.Point(0, 0) } }); }
     else _nMe.setPosition(pos);
     if (!_nAcc) { _nAcc = new naver.maps.Circle({ map: _nmap, center: pos, radius: acc || 0, strokeColor: '#1a73e8', strokeWeight: 1, strokeOpacity: 0.5, fillColor: '#1a73e8', fillOpacity: 0.12 }); }
     else { _nAcc.setCenter(pos); _nAcc.setRadius(acc || 0); }
@@ -10947,6 +10956,7 @@ TenarSecureStore.init('map',
       }
       _nDraw();
       _nStartWatch();
+      if (info) info.textContent = _nTargets.length ? '네이버 위성 · 현재위치(GPS) 확인 중…' : '네이버 위성 · 현재위치(GPS) 확인 중…';   /* [v156] 로드 완료 후 문구 갱신(불러오는 중 고정 방지) */
       setTimeout(function () { try { _nmap.refresh(true); } catch (e) {} }, 300);
     });
   }
@@ -10968,6 +10978,22 @@ TenarSecureStore.init('map',
     if (_kMePos) { _kmap.setCenter(new kakao.maps.LatLng(_kMePos.lat, _kMePos.lng)); return; }
     if (navigator.geolocation) navigator.geolocation.getCurrentPosition(function (p) { var c = p.coords; _kUpdateMe(c.latitude, c.longitude, c.accuracy); try { _kmap.setCenter(new kakao.maps.LatLng(c.latitude, c.longitude)); } catch (e) {} }, function () {}, { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 });
   }
+  /* [v155] 카카오 추가 확대(CSS) — 레벨1이 카카오 최대라, 그 위를 시각적으로 더 크게(해상도 낮아도) */
+  var _kx = 0;   /* 0=1배, 1=1.5배, 2=2.2배 */
+  function _kSetZoomClass() {
+    var ov = document.getElementById('kakaoView'); if (!ov) return;
+    ov.classList.remove('kx15', 'kx22');
+    if (_kx === 1) ov.classList.add('kx15'); else if (_kx === 2) ov.classList.add('kx22');
+    var btn = document.getElementById('kakaoZoomPlus');
+    if (btn) btn.textContent = (_kx === 0) ? '🔎 확대' : ('🔎 ' + (_kx === 1 ? '1.5' : '2.2') + '배');
+    try { if (_kmap) { var on = _kx > 0; _kmap.setDraggable(!on); _kmap.setZoomable(!on); } } catch (e) {}
+  }
+  function _kCycleZoom() {
+    if (_kx === 0) { try { if (_kMePos && _kmap) _kmap.setCenter(new kakao.maps.LatLng(_kMePos.lat, _kMePos.lng)); } catch (e) {} }   /* 확대 전 현재위치 중앙 */
+    _kx = (_kx + 1) % 3;
+    _kSetZoomClass();
+  }
+  function _kResetZoom() { _kx = 0; _kSetZoomClass(); }
   window.openKakaoView = openKakaoView;
 
   /* ---------- 진입 / UI ---------- */
@@ -11818,6 +11844,7 @@ TenarSecureStore.init('map',
     on('fpFieldKakao', function () { openKakaoView(); });
     on('kakaoClose', function () { closeKakaoView(); });
     on('kakaoRecenter', function () { _kRecenter(); });
+    on('kakaoZoomPlus', function () { _kCycleZoom(); });
     /* [v150] 네이버 지도 대체 뷰 + 카카오↔네이버 상호 전환 */
     on('naverClose', function () { closeNaverView(); });
     on('naverRecenter', function () { _nRecenter(); });
