@@ -1,4 +1,5 @@
-<!-- map_v146.html (v146 · TENAR V1.5) · 저장: 2026-09-04 09:40 KST · [v146] ①GPS 위치를 실제 수신값 그대로 표시(카카오처럼 정확히) — v145의 데드밴드가 마커를 실제보다 뒤처지게(오프셋) 하던 것을 제거, 명백히 나쁜 fix만 걸러냄. ②통합계산기(이삭수 아래) 「🧭 지도에서 A/B포구 위치(현장모드)」 버튼 → 지도로 넘어오면 연결된 핀의 현장모드 자동 시작(tenar_go_field 처리). (v145 이하 유지) -->
+<!-- map_v147.html (v147 · TENAR V1.5) · 저장: 2026-09-04 10:08 KST · [v147] 카카오 지도 대체 뷰 추가 — 맵리브레(브이월드) 위성정합·현재위치가 안 맞을 때 「🗺 카카오 지도(위성/HYBRID)」로 전환해 현재위치·A/B포구·측정도형을 그대로 확인(측정값 자동 이전). 진입: ①레이어 시트 「카카오 지도(위성)로 보기」, ②현장모드 좌하단 「🗺 카카오 지도」 버튼. 카카오 뷰에서도 실시간 현재위치·A/B까지 거리 표시. 맵리브레는 그대로 유지, 카카오 미지원 환경에선 자동 폴백. (v146 이하 유지) -->
+<!-- (v146 요약) map_v146.html · [v146] ①GPS 위치를 실제 수신값 그대로 표시(카카오처럼 정확히) — v145의 데드밴드가 마커를 실제보다 뒤처지게(오프셋) 하던 것을 제거, 명백히 나쁜 fix만 걸러냄. ②통합계산기(이삭수 아래) 「🧭 지도에서 A/B포구 위치(현장모드)」 버튼 → 지도로 넘어오면 연결된 핀의 현장모드 자동 시작(tenar_go_field 처리). (v145 이하 유지) -->
 <!-- (v145 요약) map_v145.html · [v145] ①GPS 지터(왔다갔다) 완화 — 나쁜 fix 무시 + 정지 시 데드밴드(작은 흔들림 흡수), 필드바에 GPS±정확도 항상 표시. ②현장모드 상단 바 크게+줄바꿈(내용 안 짤림)·종료 버튼 크게. ③현장모드에선 「입력완료 ↺」 안내배지 숨김. ④현장모드 중 좌하단 「📤 조사표로 전송」 버튼(이동/취소 확인 후 바로 이동). ⑤생산량목록 전체삭제 시 연결 요도까지 삭제(재로딩 시 목록이 되살아나던 문제 수정). (v144 이하 유지) -->
 <!-- (v144 요약) map_v144.html · [v144] 「연결 지도자료」 목록에서 각 A/B포구 항목 「바로 아래」에 「🧭 이 포구로 현장모드 (GPS·진행방향)」 버튼 추가 — 누르면 그 포구를 도구로 불러와 현장모드 시작(작은 🧭 아이콘 → 명확한 전체너비 버튼으로 변경). 저장위치 팝업의 「현장모드로 이동」은 유지(포구 2개↑면 이 목록으로 안내). (v143 이하 유지) -->
 <!-- (v143 요약) map_v143.html · [v143] ①핀 상단 작물명을 「핀+연결자료 모든 작물」로 표시(예: 감자 핀에 논벼·양파 포구 → 「감자 · 논벼 · 양파」). ②생산량목록 작물 필터가 핀 작물뿐 아니라 연결자료(포구·면적·길이) 작물까지 매칭 + 작물 드롭다운에도 연결자료 작물 포함. ③현장모드 숨김 확대 — 검색창·작물비율창·포구도구/측정패널·우측버튼(레이어·핀표시·포구도구·면적길이·생산량목록·조사구목록)·로컬배지 모두 숨김, 「위치·종료 바·레벨·지도i」만 표시(해제 시 복원). (v142 이하 유지) -->
@@ -934,6 +935,32 @@ TenarSecureStore.init('map',
   }
   body.field-mode #fpFieldSend { display: block; }
   #fpFieldSend:active { background: #0f4a24; }
+  /* [v146] 현장모드 카카오 전환 버튼(좌하단, 전송 버튼 위) */
+  #fpFieldKakao {
+    display: none; position: fixed; left: 10px;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 122px); z-index: 30;
+    padding: 11px 15px; border: none; border-radius: 16px;
+    background: #f6c000; color: #3a2e00; font-size: 14px; font-weight: 900; cursor: pointer;
+    box-shadow: 0 3px 12px rgba(0,0,0,.35);
+  }
+  body.field-mode #fpFieldKakao { display: block; }
+  #fpFieldKakao:active { background: #d9ab00; }
+  /* [v146] 카카오 지도 대체 뷰 */
+  #kakaoView { display: none; position: fixed; inset: 0; z-index: 60; background: #000; flex-direction: column; }
+  #kakaoView.show { display: flex; }
+  #kakaoTop {
+    display: flex; align-items: center; gap: 8px;
+    padding: calc(env(safe-area-inset-top, 0px) + 8px) 10px 8px; background: #fee500; color: #3a2e00;
+  }
+  #kakaoTitle { flex: 1 1 auto; font-size: 15px; font-weight: 900; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #kakaoView .kv-btn { flex: 0 0 auto; border: none; border-radius: 12px; padding: 9px 12px; font-size: 13.5px; font-weight: 800; background: rgba(0,0,0,.12); color: #3a2e00; cursor: pointer; }
+  #kakaoView .kv-close { background: #3a2e00; color: #fee500; }
+  #kakaoMap { flex: 1 1 auto; width: 100%; }
+  #kakaoInfo {
+    position: absolute; left: 8px; right: 8px; bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
+    background: rgba(26,115,232,.95); color: #fff; border-radius: 12px; padding: 9px 12px;
+    font-size: 14px; font-weight: 800; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,.35); line-height: 1.4;
+  }
   /* [v140] 현장모드 켜짐 시 포구도구 버튼 강조 */
   #fpFieldBtn.on { background: #1a73e8 !important; color: #fff !important; border-color: #1a73e8 !important; }
   /* [v138·v139] 포구도구 단계 안내 배너 — 현재 단계 → 지금 할 일. 스크롤해도 상단 고정(sticky) */
@@ -1482,6 +1509,19 @@ TenarSecureStore.init('map',
   </div>
   <!-- [v145] 현장모드 중 좌하단 조사표 전송 바로가기 -->
   <button type="button" id="fpFieldSend">📤 조사표로 전송</button>
+  <!-- [v146] 현장모드 중 카카오 지도로 전환 -->
+  <button type="button" id="fpFieldKakao">🗺 카카오 지도</button>
+
+  <!-- [v146] 카카오 지도 대체 뷰 — 맵리브레가 안 맞을 때(위성정합·현재위치) 사용. A/B포구·측정도형·현재위치를 그대로 표시 -->
+  <div id="kakaoView">
+    <div id="kakaoTop">
+      <span id="kakaoTitle">🗺 카카오 지도 (현장)</span>
+      <button type="button" id="kakaoRecenter" class="kv-btn">📍현재위치</button>
+      <button type="button" id="kakaoClose" class="kv-btn kv-close">✕ 닫기</button>
+    </div>
+    <div id="kakaoMap"></div>
+    <div id="kakaoInfo"></div>
+  </div>
 
   <div id="fpToolPanel">
     <div id="fpToolHeader"><span>🚩 포구도구</span><button id="fpToolToggle" type="button" aria-label="포구도구 접기/펴기">▼</button></div>
@@ -1686,8 +1726,8 @@ TenarSecureStore.init('map',
      · 키는 HTML에 노출되므로 반드시 허용 도메인을 위 주소로 제한하세요.
        제한해 두면 타인이 키를 복사해도 다른 사이트에서는 쓸 수 없습니다.
      =================================================================== */
-  var MAP_VERSION = 'v146';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
-  var MAP_VERSION_TIME = '2026-09-04 09:40 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
+  var MAP_VERSION = 'v147';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
+  var MAP_VERSION_TIME = '2026-09-04 10:08 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
   var VWORLD_API_KEY = '00EB5BC0-22B4-3B7E-89D1-341699F7CE05';
   var VWORLD_DOMAIN  = 'ubaldos00-ship-it.github.io';   /* 호스트만 · 스킴 금지 */
 
@@ -6172,6 +6212,13 @@ TenarSecureStore.init('map',
     bSat.addEventListener('click', function () { setMapType('satellite'); bSat.classList.add('active'); bBase.classList.remove('active'); });
     r.appendChild(bBase); r.appendChild(bSat);
     box.appendChild(r);
+
+    /* [v146] 카카오 지도(위성) 대체 뷰 — 맵리브레 위성정합/현재위치가 안 맞을 때 사용. 측정값·A/B포구 그대로 표시 */
+    var bKakao = el('button', 'sheet-btn', '🗺 카카오 지도(위성)로 보기');
+    bKakao.style.cssText += 'width:100%;margin-top:6px;background:#fee500;color:#3a2e00;border-color:#f6c000;font-weight:800;';
+    bKakao.addEventListener('click', function () { closeSheet(); openKakaoView(); });
+    box.appendChild(bKakao);
+    box.appendChild(el('div', 'lyr-desc', 'GPS·위성사진이 안 맞을 때 카카오 위성지도로 현재위치·A/B포구·측정값을 확인할 수 있어요.'));
 
     box.appendChild(el('div', 'sec-title', '중첩 레이어 (여러 개 선택)'));
     /* [v40-9] 목록에 보이는 순서 : 지적도 → 토지이용계획 → 하이브리드 → 나머지 경계
@@ -10680,6 +10727,96 @@ TenarSecureStore.init('map',
   function fpToggleFieldMode() { if (fp._fieldMode) fpExitFieldMode(); else fpEnterFieldMode(); }
   window.fpEnterFieldMode = fpEnterFieldMode;
 
+  /* ===================================================================
+     [v146] 카카오 지도 대체 뷰 — 맵리브레(브이월드)가 위성정합/현재위치가 안 맞을 때,
+     같은 A/B포구·측정도형·현재위치를 카카오 위성(HYBRID)에서 확인. 측정값이 그대로 이전됨.
+     =================================================================== */
+  var _kmap = null, _kOverlays = [], _kMe = null, _kAcc = null, _kWatch = null, _kTargets = [], _kMePos = null;
+  function _kClearOverlays() { _kOverlays.forEach(function (o) { try { o.setMap(null); } catch (e) {} }); _kOverlays = []; }
+  function _kAddMarkerLabel(lat, lng, label, color) {
+    var pos = new kakao.maps.LatLng(lat, lng);
+    var mk = new kakao.maps.Marker({ position: pos }); mk.setMap(_kmap); _kOverlays.push(mk);
+    if (label) {
+      var ov = new kakao.maps.CustomOverlay({ position: pos, yAnchor: 2.2,
+        content: '<div style="background:' + (color || '#1a73e8') + ';color:#fff;padding:2px 7px;border-radius:8px;font-size:12px;font-weight:800;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.45);">' + label + '</div>' });
+      ov.setMap(_kmap); _kOverlays.push(ov);
+    }
+  }
+  function _kDrawOverlays() {
+    _kClearOverlays(); _kTargets = [];
+    if (fp.aPo && isFinite(fp.aPo[0])) { _kAddMarkerLabel(fp.aPo[1], fp.aPo[0], 'A포구', '#1565C0'); _kTargets.push({ lat: fp.aPo[1], lng: fp.aPo[0], label: 'A포구' }); }
+    if (fp.bPo && isFinite(fp.bPo[0])) { _kAddMarkerLabel(fp.bPo[1], fp.bPo[0], 'B포구', '#e5342a'); _kTargets.push({ lat: fp.bPo[1], lng: fp.bPo[0], label: 'B포구' }); }
+    var s = surveyMeasureState;
+    function poly(points, col) {
+      if (!points || points.length < 3) return;
+      var path = points.map(function (p) { return new kakao.maps.LatLng(p[1], p[0]); });
+      var pg = new kakao.maps.Polygon({ path: path, strokeWeight: 3, strokeColor: col, strokeOpacity: 0.9, fillColor: col, fillOpacity: 0.15 });
+      pg.setMap(_kmap); _kOverlays.push(pg);
+    }
+    function line(points, col) {
+      if (!points || points.length < 2) return;
+      var path = points.map(function (p) { return new kakao.maps.LatLng(p[1], p[0]); });
+      var pl = new kakao.maps.Polyline({ path: path, strokeWeight: 4, strokeColor: col, strokeOpacity: 0.9 });
+      pl.setMap(_kmap); _kOverlays.push(pl);
+    }
+    if (s.fieldPoints && s.fieldPoints.length >= 3) poly(s.fieldPoints, '#B04A00');
+    (s.areas || []).forEach(function (ar) { poly(ar.points, '#1f8a4c'); });
+    (s.lines || []).forEach(function (ln) { line(ln.points, '#1a5fd0'); });
+  }
+  function _kInitCenter() {
+    if (fp.aPo && isFinite(fp.aPo[0])) return { lat: fp.aPo[1], lng: fp.aPo[0] };
+    if (fp.bPo && isFinite(fp.bPo[0])) return { lat: fp.bPo[1], lng: fp.bPo[0] };
+    try { var c = map.getCenter(); return { lat: c.lat, lng: c.lng }; } catch (e) {}
+    return { lat: 36.5, lng: 127.8 };
+  }
+  function _kUpdateInfo(lat, lng, acc) {
+    var info = document.getElementById('kakaoInfo'); if (!info) return;
+    if (!_kTargets.length) { info.textContent = '현재 위치 표시 중 · GPS±' + (isFinite(acc) ? Math.round(acc) : '?') + 'm'; return; }
+    var best = null;
+    _kTargets.forEach(function (t) { var d = _distM(lat, lng, t.lat, t.lng); if (!best || d < best._d) { best = t; best._d = d; } });
+    info.textContent = '🧭 ' + best.label + '까지 ' + Math.round(best._d) + 'm · GPS±' + (isFinite(acc) ? Math.round(acc) : '?') + 'm';
+  }
+  function _kUpdateMe(lat, lng, acc) {
+    _kMePos = { lat: lat, lng: lng };
+    var pos = new kakao.maps.LatLng(lat, lng);
+    if (!_kMe) { _kMe = new kakao.maps.CustomOverlay({ position: pos, xAnchor: 0.5, yAnchor: 0.5, zIndex: 5, content: '<div style="width:18px;height:18px;border-radius:50%;background:#1a73e8;border:3px solid #fff;box-shadow:0 0 0 2px rgba(26,115,232,.5);"></div>' }); _kMe.setMap(_kmap); }
+    else _kMe.setPosition(pos);
+    if (!_kAcc) { _kAcc = new kakao.maps.Circle({ center: pos, radius: acc || 0, strokeWeight: 1, strokeColor: '#1a73e8', strokeOpacity: 0.5, fillColor: '#1a73e8', fillOpacity: 0.12 }); _kAcc.setMap(_kmap); }
+    else { _kAcc.setPosition(pos); _kAcc.setRadius(acc || 0); }
+    _kUpdateInfo(lat, lng, acc);
+  }
+  function _kStopWatch() { if (_kWatch != null) { try { navigator.geolocation.clearWatch(_kWatch); } catch (e) {} _kWatch = null; } }
+  function _kStartWatch() {
+    if (!navigator.geolocation) return;
+    _kStopWatch();
+    _kWatch = navigator.geolocation.watchPosition(function (p) { var c = p.coords; _kUpdateMe(c.latitude, c.longitude, c.accuracy); }, function () {}, { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 });
+  }
+  function openKakaoView() {
+    var ov = document.getElementById('kakaoView'); if (!ov) return;
+    ov.classList.add('show');
+    var info = document.getElementById('kakaoInfo'); if (info) info.textContent = '카카오 지도를 불러오는 중…';
+    ensureKakaoSdk().then(function (ok) {
+      if (!ok) { ov.classList.remove('show'); showToast('카카오 지도를 불러오지 못했습니다.\n인터넷 연결·배포본(도메인 등록)에서 동작합니다.', 5000); return; }
+      var c = _kInitCenter();
+      if (!_kmap) {
+        _kmap = new kakao.maps.Map(document.getElementById('kakaoMap'), { center: new kakao.maps.LatLng(c.lat, c.lng), level: 2 });
+        try { _kmap.setMapTypeId(kakao.maps.MapTypeId.HYBRID); } catch (e) {}
+      } else {
+        setTimeout(function () { try { _kmap.relayout(); _kmap.setCenter(new kakao.maps.LatLng(c.lat, c.lng)); } catch (e) {} }, 120);
+      }
+      _kDrawOverlays();
+      _kStartWatch();
+      setTimeout(function () { try { _kmap.relayout(); } catch (e) {} }, 300);
+    });
+  }
+  function closeKakaoView() { var ov = document.getElementById('kakaoView'); if (ov) ov.classList.remove('show'); _kStopWatch(); }
+  function _kRecenter() {
+    if (!_kmap) return;
+    if (_kMePos) { _kmap.setCenter(new kakao.maps.LatLng(_kMePos.lat, _kMePos.lng)); return; }
+    if (navigator.geolocation) navigator.geolocation.getCurrentPosition(function (p) { var c = p.coords; _kUpdateMe(c.latitude, c.longitude, c.accuracy); try { _kmap.setCenter(new kakao.maps.LatLng(c.latitude, c.longitude)); } catch (e) {} }, function () {}, { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 });
+  }
+  window.openKakaoView = openKakaoView;
+
   /* ---------- 진입 / UI ---------- */
   function fpSyncButtons() {
     function set(id, fn) { var b = document.getElementById(id); if (b) fn(b); }
@@ -11524,6 +11661,10 @@ TenarSecureStore.init('map',
         try { fpSubmit(); } catch (e) {}
       }
     });
+    /* [v146] 카카오 지도 대체 뷰 */
+    on('fpFieldKakao', function () { openKakaoView(); });
+    on('kakaoClose', function () { closeKakaoView(); });
+    on('kakaoRecenter', function () { _kRecenter(); });
     /* ⑤ 저장 / 목록 */
 on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필지 시작 */
     on('fpSaveBtn2', function () { openFpSaveSheet(); });      /* [v46-3] 저장 폼 팝업 */

@@ -10203,8 +10203,8 @@ function importJSON(input){
       var saved = localStorage.getItem(SAVE_KEY);
       if(!saved){
         _initialLoadDone = true; // 저장 데이터 없음 → 새 입력 즉시 저장 허용
-        // ①공통사항 맨위로 스크롤 (v84/1) — [v108] 단, 이미 타이핑 중이면 튐 방지 위해 생략
-        setTimeout(function(){ if(!_tonghabTyping()) window.scrollTo(0,0); }, 100);
+        // ①공통사항 맨위로 스크롤 (v84/1) — [v108] 타이핑 중이면 생략 · [v112] 사용자가 이미 아래로 스크롤했으면(맨위 아님) 생략
+        setTimeout(function(){ if(!_tonghabTyping() && (window.scrollY||0)<8) window.scrollTo(0,0); }, 100);
         return;
       }
       var d = JSON.parse(saved);
@@ -10269,8 +10269,9 @@ function importJSON(input){
             /* [v24] 지도 A/B포구 값도 복원 위에 다시 적용 */
             try{ if(typeof window._tonghabReapplyFieldPlot==='function') window._tonghabReapplyFieldPlot(); }catch(e){}
             // 복원 완료 후 ①공통사항 맨위로 스크롤 (v84/1) — 단, 측정값 대기 중이면 측정칸으로 복귀하므로 생략
-            //  [v108] 사용자가 이미 입력을 시작(타이핑 중)했으면 맨위 스크롤을 건너뛴다 → 입력칸이 키보드에 가려지는 튐 방지
-            setTimeout(function(){ if(!window._tonghabReapplyPending && !_tonghabTyping()) window.scrollTo(0,0); }, 200);
+            //  [v108] 타이핑 중이면 맨위 스크롤 생략(입력칸이 키보드에 가려지는 튐 방지)
+            //  [v112] 복원 재실행(fallback·pageshow) 시 사용자가 이미 아래로 스크롤해 두었으면 맨위로 끌어올리지 않음
+            setTimeout(function(){ if(!window._tonghabReapplyPending && !_tonghabTyping() && (window.scrollY||0)<8) window.scrollTo(0,0); }, 200);
           }, 300);
         }, 400);
       }, 500);
