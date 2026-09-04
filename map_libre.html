@@ -1,4 +1,4 @@
-<!-- map_v158.html (v158 · TENAR V1.5) · 저장: 2026-09-05 05:08 KST · [v158] 파란 비율창의 1번·2번 비율·초기화·포구표시 버튼이 안 눌리던 문제 수정 — 포구도구 열 때 상단 퀵버튼(quickSurvey)이 배너를 덮던 것을, 여는 즉시 tool-open 적용해 숨김(관찰자 지연 틈 제거). 0.5는 사사오입으로 1이랑=1번 유지, 0.49는 2번(기존 Math.round 유지). (v157 이하 유지) -->
+<!-- map_v159.html (v159 · TENAR V1.5) · 저장: 2026-09-05 05:20 KST · [v159] ①저장위치 팝업 맨 아래에 연결자료를 바로 표시(버튼 없이) — 항목별 「🧭 이 포구로 현장모드」 포함해 빠르게 현장조사. ②연결자료 팝업의 뒤로가기(←)를 눌렀을 때 시트가 위로 올라가던 버그 수정(뒤로가기 버튼을 시트 드래그/스냅 대상에서 제외 → 이전 화면으로 정상 복귀). (v158 이하 유지) -->
 <!-- (v155) 저장: 2026-09-04 14:22 KST · [v155] 카카오 지도 「🔎확대」 버튼 추가 — 카카오 위성 최대(레벨1) 위를 CSS로 더 크게(1.5배·2.2배, 해상도 낮아도) 보이게(아이폰에서도 더 확대). 확대 중엔 드래그·줌 잠금(좌표 어긋남 방지)·현재위치 중앙. (v154 이하 유지) -->
 <!-- (v154) 저장: 2026-09-04 14:11 KST · [v154] 네이버 지도 로드 방식을 예전 작동 파일(0.지도/map.html)과 동일하게 수정 — oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=w8m4oe36ev (구형 openapi?ncpClientId 아님). 도메인 등록된 배포본에서 표시됨. (v153 이하 유지) -->
 <!-- (v153) 저장: 2026-09-04 14:05 KST · [v153] 네이버 지도 maxZoom 21로 상향 + 초기 확대 심화(zoom 20) — 해상도 낮아도(업스케일=흐릿) 더 확대되게. 카카오 위성은 최대 레벨 1(이미 최대·카카오 자체 한계). (v152 이하 유지) -->
@@ -1814,8 +1814,8 @@ TenarSecureStore.init('map',
      · 키는 HTML에 노출되므로 반드시 허용 도메인을 위 주소로 제한하세요.
        제한해 두면 타인이 키를 복사해도 다른 사이트에서는 쓸 수 없습니다.
      =================================================================== */
-  var MAP_VERSION = 'v158';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
-  var MAP_VERSION_TIME = '2026-09-05 05:08 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
+  var MAP_VERSION = 'v159';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
+  var MAP_VERSION_TIME = '2026-09-05 05:20 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
   var VWORLD_API_KEY = '00EB5BC0-22B4-3B7E-89D1-341699F7CE05';
   var VWORLD_DOMAIN  = 'ubaldos00-ship-it.github.io';   /* 호스트만 · 스킴 금지 */
 
@@ -3403,6 +3403,7 @@ TenarSecureStore.init('map',
     function down(e) {
       if (e.target === closeBtn || closeBtn.contains(e.target)) return;   /* ✕는 그대로 클릭 */
       if (minBtn && (e.target === minBtn || minBtn.contains(e.target))) return;   /* 최소화 버튼도 예외 */
+      if (e.target && e.target.closest && e.target.closest('.sheet-back-btn')) return;   /* [v159] 뒤로가기(←)는 드래그/스냅 유발 금지 — 눌러도 시트가 올라가던 버그 수정 */
       dragging = true;
       startY = lastY = y(e);
       startT = lastT = Date.now();
@@ -4169,7 +4170,7 @@ TenarSecureStore.init('map',
     openSheet('🗺 연결 지도자료', box, 'auto');
     /* [v137] 「연결 지도자료」 제목 왼쪽에 뒤로가기(←) — 누르면 저장 위치 팝업으로 복귀 */
     try {
-      sheetTitle.innerHTML = '<button type="button" id="liBack" title="저장 위치로" style="border:none;background:transparent;cursor:pointer;font-size:19px;line-height:1;padding:0 8px 0 0;margin:0;color:inherit;font-family:inherit;">←</button><span>🗺 연결 지도자료</span>';
+      sheetTitle.innerHTML = '<button type="button" id="liBack" class="sheet-back-btn" title="저장 위치로" style="border:none;background:transparent;cursor:pointer;font-size:19px;line-height:1;padding:0 8px 0 0;margin:0;color:inherit;font-family:inherit;">←</button><span>🗺 연결 지도자료</span>';
       sheetTitle.style.display = 'flex'; sheetTitle.style.alignItems = 'center';
       document.getElementById('liBack').addEventListener('click', function () { openSavedLocationSheet(f); });
     } catch (e) {}
@@ -4285,11 +4286,20 @@ TenarSecureStore.init('map',
     if (rField) box.appendChild(rField);
     if (rStatus) box.appendChild(rStatus);
     box.appendChild(r2); box.appendChild(bParcel);
+    /* [v159] 저장위치 팝업 맨 아래에 연결자료를 바로 표시(버튼 없이) — 항목별 「🧭 이 포구로 현장모드」 포함 → 빠른 현장조사 */
+    if (_tot) {
+      var childHdr = el('div', 'sec-title', '🗺 연결된 자료 ' + _tot + '개');
+      childHdr.style.cssText += 'margin-top:14px;';
+      box.appendChild(childHdr);
+      var childBox = el('div');
+      try { buildFavChildren(childBox, f.id); } catch (e) {}
+      box.appendChild(childBox);
+    }
     openSheet('저장 위치', box, 'auto');
     /* [v118] 생산량목록에서 들어왔으면 「저장 위치」 왼쪽에 뒤로가기(←) — 누르면 목록으로(스크롤 위치 그대로) */
     if (navOpts && navOpts.fromList) {
       try {
-        sheetTitle.innerHTML = '<button type="button" id="svBack" title="생산량목록으로" style="border:none;background:transparent;cursor:pointer;font-size:19px;line-height:1;padding:0 8px 0 0;margin:0;color:inherit;font-family:inherit;">←</button><span>저장 위치</span>';
+        sheetTitle.innerHTML = '<button type="button" id="svBack" class="sheet-back-btn" title="생산량목록으로" style="border:none;background:transparent;cursor:pointer;font-size:19px;line-height:1;padding:0 8px 0 0;margin:0;color:inherit;font-family:inherit;">←</button><span>저장 위치</span>';
         sheetTitle.style.display = 'flex'; sheetTitle.style.alignItems = 'center';
         document.getElementById('svBack').addEventListener('click', function () { backToFavList(); });
       } catch (e) {}
