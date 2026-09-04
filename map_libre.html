@@ -1,4 +1,5 @@
-<!-- map_v149.html (v149 · TENAR V1.5) · 저장: 2026-09-04 12:56 KST · [v149] 카카오 지도 확대 보완 — 아이폰에서도 최대 확대(레벨1)에 확실히 도달하도록 최소레벨1 재적용 + 지도 컨테이너 touch-action:none(iOS 핀치 전달). (v148 이하 유지) -->
+<!-- map_v150.html (v150 · TENAR V1.5) · 저장: 2026-09-04 13:10 KST · [v150] 네이버 지도 대체 뷰 추가(카카오와 동일하게 현재위치·A/B포구·측정도형 표시). 진입: 레이어 시트 「카카오/네이버」 버튼, 지도 안에서 카카오↔네이버 상호 전환. 네이버 인증실패(도메인 미등록) 시 안내·자동폴백. (v149 이하 유지) -->
+<!-- (v149 요약) map_v149.html · [v149] 카카오 지도 확대 보완 — 아이폰에서도 최대 확대(레벨1)에 확실히 도달하도록 최소레벨1 재적용 + 지도 컨테이너 touch-action:none(iOS 핀치 전달). (v148 이하 유지) -->
 <!-- (v148 요약) map_v148.html · [v148] 카카오 지도 확대 개선 — 처음부터 최대 확대(level 1)로 열고, 최소레벨 1 허용 + 지도 오른쪽에 +/- 확대·축소 버튼(ZoomControl) 추가, 다시 열 때도 최대 확대. (v147 이하 유지) -->
 <!-- (v147 요약) map_v147.html · [v147] 카카오 지도 대체 뷰 추가 — 맵리브레(브이월드) 위성정합·현재위치가 안 맞을 때 「🗺 카카오 지도(위성/HYBRID)」로 전환해 현재위치·A/B포구·측정도형을 그대로 확인(측정값 자동 이전). 진입: ①레이어 시트 「카카오 지도(위성)로 보기」, ②현장모드 좌하단 「🗺 카카오 지도」 버튼. 카카오 뷰에서도 실시간 현재위치·A/B까지 거리 표시. 맵리브레는 그대로 유지, 카카오 미지원 환경에선 자동 폴백. (v146 이하 유지) -->
 <!-- (v146 요약) map_v146.html · [v146] ①GPS 위치를 실제 수신값 그대로 표시(카카오처럼 정확히) — v145의 데드밴드가 마커를 실제보다 뒤처지게(오프셋) 하던 것을 제거, 명백히 나쁜 fix만 걸러냄. ②통합계산기(이삭수 아래) 「🧭 지도에서 A/B포구 위치(현장모드)」 버튼 → 지도로 넘어오면 연결된 핀의 현장모드 자동 시작(tenar_go_field 처리). (v145 이하 유지) -->
@@ -963,6 +964,19 @@ TenarSecureStore.init('map',
     background: rgba(26,115,232,.95); color: #fff; border-radius: 12px; padding: 9px 12px;
     font-size: 14px; font-weight: 800; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,.35); line-height: 1.4;
   }
+  /* [v150] 네이버 지도 대체 뷰 */
+  #naverView { display: none; position: fixed; inset: 0; z-index: 60; background: #000; flex-direction: column; }
+  #naverView.show { display: flex; }
+  #naverTop { display: flex; align-items: center; gap: 8px; padding: calc(env(safe-area-inset-top, 0px) + 8px) 10px 8px; background: #03c75a; color: #fff; }
+  #naverTitle { flex: 1 1 auto; font-size: 15px; font-weight: 900; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #naverView .nv-btn { flex: 0 0 auto; border: none; border-radius: 12px; padding: 9px 12px; font-size: 13.5px; font-weight: 800; background: rgba(255,255,255,.22); color: #fff; cursor: pointer; }
+  #naverView .nv-close { background: #024a24; color: #fff; }
+  #naverMap { flex: 1 1 auto; width: 100%; touch-action: none; }
+  #naverInfo {
+    position: absolute; left: 8px; right: 8px; bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
+    background: rgba(3,199,90,.95); color: #fff; border-radius: 12px; padding: 9px 12px;
+    font-size: 14px; font-weight: 800; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,.35); line-height: 1.4;
+  }
   /* [v140] 현장모드 켜짐 시 포구도구 버튼 강조 */
   #fpFieldBtn.on { background: #1a73e8 !important; color: #fff !important; border-color: #1a73e8 !important; }
   /* [v138·v139] 포구도구 단계 안내 배너 — 현재 단계 → 지금 할 일. 스크롤해도 상단 고정(sticky) */
@@ -1517,12 +1531,25 @@ TenarSecureStore.init('map',
   <!-- [v146] 카카오 지도 대체 뷰 — 맵리브레가 안 맞을 때(위성정합·현재위치) 사용. A/B포구·측정도형·현재위치를 그대로 표시 -->
   <div id="kakaoView">
     <div id="kakaoTop">
-      <span id="kakaoTitle">🗺 카카오 지도 (현장)</span>
-      <button type="button" id="kakaoRecenter" class="kv-btn">📍현재위치</button>
+      <span id="kakaoTitle">🗺 카카오 (현장)</span>
+      <button type="button" id="kakaoToNaver" class="kv-btn">네이버로</button>
+      <button type="button" id="kakaoRecenter" class="kv-btn">📍</button>
       <button type="button" id="kakaoClose" class="kv-btn kv-close">✕ 닫기</button>
     </div>
     <div id="kakaoMap"></div>
     <div id="kakaoInfo"></div>
+  </div>
+
+  <!-- [v150] 네이버 지도 대체 뷰 -->
+  <div id="naverView">
+    <div id="naverTop">
+      <span id="naverTitle">🟢 네이버 (현장)</span>
+      <button type="button" id="naverToKakao" class="nv-btn">카카오로</button>
+      <button type="button" id="naverRecenter" class="nv-btn">📍</button>
+      <button type="button" id="naverClose" class="nv-btn nv-close">✕ 닫기</button>
+    </div>
+    <div id="naverMap"></div>
+    <div id="naverInfo"></div>
   </div>
 
   <div id="fpToolPanel">
@@ -1728,8 +1755,8 @@ TenarSecureStore.init('map',
      · 키는 HTML에 노출되므로 반드시 허용 도메인을 위 주소로 제한하세요.
        제한해 두면 타인이 키를 복사해도 다른 사이트에서는 쓸 수 없습니다.
      =================================================================== */
-  var MAP_VERSION = 'v149';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
-  var MAP_VERSION_TIME = '2026-09-04 12:56 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
+  var MAP_VERSION = 'v150';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
+  var MAP_VERSION_TIME = '2026-09-04 13:10 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
   var VWORLD_API_KEY = '00EB5BC0-22B4-3B7E-89D1-341699F7CE05';
   var VWORLD_DOMAIN  = 'ubaldos00-ship-it.github.io';   /* 호스트만 · 스킴 금지 */
 
@@ -1742,6 +1769,7 @@ TenarSecureStore.init('map',
          https://ubaldos00-ship-it.github.io
      · JavaScript 키는 도메인 제한으로 보호되므로 HTML 노출이 정상입니다. */
   var KAKAO_JS_KEY = 'd714e9625ae9e816526288f6cde536a9';
+  var NAVER_KEY_ID = 'd2HqvtKiVVsdCWKuGK7KXAPNYtlZb08DxYqyoEYh';   /* [v150] 네이버 클라우드 Maps ncpKeyId (도메인 제한 클라이언트 키) */
 
   /* ═══════════════════════════════════════════════════════════════
      [v51 · TENAR V1.4] 오프라인 우선(Offline First) + NAS(Node) 선택형
@@ -3640,6 +3668,22 @@ TenarSecureStore.init('map',
       document.head.appendChild(s);
     });
     return _kakaoSdk;
+  }
+  /* [v150] 네이버 지도 JS SDK(신형 ncpKeyId) 로더 — 성공 true / 실패 false */
+  var _naverSdk = null;
+  function ensureNaverSdk() {
+    if (_naverSdk) return _naverSdk;
+    _naverSdk = new Promise(function (resolve) {
+      if (!(NAVER_KEY_ID && !/여기에_네이버|YOUR_/.test(NAVER_KEY_ID))) { resolve(false); return; }
+      if (window.naver && window.naver.maps && window.naver.maps.Map) { resolve(true); return; }
+      var loaded = false, s = document.createElement('script');
+      var to = setTimeout(function () { if (!loaded) { loaded = true; resolve(false); } }, 9000);
+      s.src = 'https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=' + encodeURIComponent(NAVER_KEY_ID);
+      s.onload = function () { if (!loaded) { loaded = true; clearTimeout(to); resolve(!!(window.naver && window.naver.maps && window.naver.maps.Map)); } };
+      s.onerror = function () { if (!loaded) { loaded = true; clearTimeout(to); resolve(false); } };
+      document.head.appendChild(s);
+    });
+    return _naverSdk;
   }
   /* 카카오 주소·지번 지오코딩 (지번·도로명 모두 지원). 성공 시 {lng,lat,parcel,road}, 실패 시 null */
   function requestKakaoGeocode(query) {
@@ -6216,11 +6260,16 @@ TenarSecureStore.init('map',
     box.appendChild(r);
 
     /* [v146] 카카오 지도(위성) 대체 뷰 — 맵리브레 위성정합/현재위치가 안 맞을 때 사용. 측정값·A/B포구 그대로 표시 */
-    var bKakao = el('button', 'sheet-btn', '🗺 카카오 지도(위성)로 보기');
-    bKakao.style.cssText += 'width:100%;margin-top:6px;background:#fee500;color:#3a2e00;border-color:#f6c000;font-weight:800;';
+    var rAlt = el('div', 'btn-row'); rAlt.style.marginTop = '6px';
+    var bKakao = el('button', 'sheet-btn', '🗺 카카오');
+    bKakao.style.cssText += 'flex:1;background:#fee500;color:#3a2e00;border-color:#f6c000;font-weight:800;';
     bKakao.addEventListener('click', function () { closeSheet(); openKakaoView(); });
-    box.appendChild(bKakao);
-    box.appendChild(el('div', 'lyr-desc', 'GPS·위성사진이 안 맞을 때 카카오 위성지도로 현재위치·A/B포구·측정값을 확인할 수 있어요.'));
+    var bNaver = el('button', 'sheet-btn', '🟢 네이버');
+    bNaver.style.cssText += 'flex:1;background:#03c75a;color:#fff;border-color:#02a94b;font-weight:800;';
+    bNaver.addEventListener('click', function () { closeSheet(); openNaverView(); });
+    rAlt.appendChild(bKakao); rAlt.appendChild(bNaver);
+    box.appendChild(rAlt);
+    box.appendChild(el('div', 'lyr-desc', 'GPS·위성사진이 안 맞을 때 카카오/네이버 위성지도로 현재위치·A/B포구·측정값을 확인할 수 있어요. (지도 안에서 서로 전환 가능)'));
 
     box.appendChild(el('div', 'sec-title', '중첩 레이어 (여러 개 선택)'));
     /* [v40-9] 목록에 보이는 순서 : 지적도 → 토지이용계획 → 하이브리드 → 나머지 경계
@@ -10816,6 +10865,98 @@ TenarSecureStore.init('map',
     });
   }
   function closeKakaoView() { var ov = document.getElementById('kakaoView'); if (ov) ov.classList.remove('show'); _kStopWatch(); }
+
+  /* ===================================================================
+     [v150] 네이버 지도 대체 뷰 — 카카오와 동일하게 A/B포구·측정도형·현재위치 표시.
+     =================================================================== */
+  var _nmap = null, _nOverlays = [], _nMe = null, _nAcc = null, _nWatch = null, _nTargets = [], _nMePos = null;
+  function _nClear() { _nOverlays.forEach(function (o) { try { o.setMap(null); } catch (e) {} }); _nOverlays = []; }
+  function _nMarkerLabel(lat, lng, label, color) {
+    var mk = new naver.maps.Marker({
+      position: new naver.maps.LatLng(lat, lng), map: _nmap,
+      icon: { content: '<div style="transform:translate(-50%,-100%);white-space:nowrap;"><div style="background:' + color + ';color:#fff;padding:2px 7px;border-radius:8px;font-size:12px;font-weight:800;box-shadow:0 1px 3px rgba(0,0,0,.45);">' + label + '</div><div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid ' + color + ';margin:0 auto;"></div></div>', anchor: new naver.maps.Point(0, 0) }
+    });
+    _nOverlays.push(mk);
+  }
+  function _nDraw() {
+    _nClear(); _nTargets = [];
+    if (fp.aPo && isFinite(fp.aPo[0])) { _nMarkerLabel(fp.aPo[1], fp.aPo[0], 'A포구', '#1565C0'); _nTargets.push({ lat: fp.aPo[1], lng: fp.aPo[0], label: 'A포구' }); }
+    if (fp.bPo && isFinite(fp.bPo[0])) { _nMarkerLabel(fp.bPo[1], fp.bPo[0], 'B포구', '#e5342a'); _nTargets.push({ lat: fp.bPo[1], lng: fp.bPo[0], label: 'B포구' }); }
+    var s = surveyMeasureState;
+    function poly(points, col) {
+      if (!points || points.length < 3) return;
+      var path = points.map(function (p) { return new naver.maps.LatLng(p[1], p[0]); });
+      _nOverlays.push(new naver.maps.Polygon({ map: _nmap, paths: [path], strokeColor: col, strokeWeight: 3, strokeOpacity: 0.9, fillColor: col, fillOpacity: 0.15 }));
+    }
+    function line(points, col) {
+      if (!points || points.length < 2) return;
+      var path = points.map(function (p) { return new naver.maps.LatLng(p[1], p[0]); });
+      _nOverlays.push(new naver.maps.Polyline({ map: _nmap, path: path, strokeColor: col, strokeWeight: 4, strokeOpacity: 0.9 }));
+    }
+    if (s.fieldPoints && s.fieldPoints.length >= 3) poly(s.fieldPoints, '#B04A00');
+    (s.areas || []).forEach(function (ar) { poly(ar.points, '#1f8a4c'); });
+    (s.lines || []).forEach(function (ln) { line(ln.points, '#1a5fd0'); });
+  }
+  function _nInfo(lat, lng, acc) {
+    var info = document.getElementById('naverInfo'); if (!info) return;
+    if (!_nTargets.length) { info.textContent = '현재 위치 표시 중 · GPS±' + (isFinite(acc) ? Math.round(acc) : '?') + 'm'; return; }
+    var best = null;
+    _nTargets.forEach(function (t) { var d = _distM(lat, lng, t.lat, t.lng); if (!best || d < best._d) { best = t; best._d = d; } });
+    info.textContent = '🧭 ' + best.label + '까지 ' + Math.round(best._d) + 'm · GPS±' + (isFinite(acc) ? Math.round(acc) : '?') + 'm';
+  }
+  function _nUpdateMe(lat, lng, acc) {
+    _nMePos = { lat: lat, lng: lng };
+    var pos = new naver.maps.LatLng(lat, lng);
+    if (!_nMe) { _nMe = new naver.maps.Marker({ position: pos, map: _nmap, zIndex: 100, icon: { content: '<div style="transform:translate(-50%,-50%);width:18px;height:18px;border-radius:50%;background:#1a73e8;border:3px solid #fff;box-shadow:0 0 0 2px rgba(26,115,232,.5);"></div>', anchor: new naver.maps.Point(0, 0) } }); }
+    else _nMe.setPosition(pos);
+    if (!_nAcc) { _nAcc = new naver.maps.Circle({ map: _nmap, center: pos, radius: acc || 0, strokeColor: '#1a73e8', strokeWeight: 1, strokeOpacity: 0.5, fillColor: '#1a73e8', fillOpacity: 0.12 }); }
+    else { _nAcc.setCenter(pos); _nAcc.setRadius(acc || 0); }
+    _nInfo(lat, lng, acc);
+  }
+  function _nStopWatch() { if (_nWatch != null) { try { navigator.geolocation.clearWatch(_nWatch); } catch (e) {} _nWatch = null; } }
+  function _nStartWatch() {
+    if (!navigator.geolocation) return;
+    _nStopWatch();
+    _nWatch = navigator.geolocation.watchPosition(function (p) { var c = p.coords; _nUpdateMe(c.latitude, c.longitude, c.accuracy); }, function () {}, { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 });
+  }
+  function openNaverView() {
+    var ov = document.getElementById('naverView'); if (!ov) return;
+    ov.classList.add('show');
+    var info = document.getElementById('naverInfo'); if (info) info.textContent = '네이버 지도를 불러오는 중…';
+    /* [v150] 안전장치: 10초 안에 지도가 안 뜨면(인증실패·네트워크) 자동으로 닫고 안내 */
+    setTimeout(function () {
+      if (ov.classList.contains('show') && !(_nmap && document.getElementById('naverMap') && document.getElementById('naverMap').children.length)) {
+        ov.classList.remove('show'); _nStopWatch(); _naverSdk = null;
+        showToast('네이버 지도를 표시하지 못했습니다.\n(도메인 등록/인터넷 확인) — 카카오 지도를 이용해 보세요.', 6000);
+      }
+    }, 10000);
+    ensureNaverSdk().then(function (ok) {
+      if (!ok) { ov.classList.remove('show'); showToast('네이버 지도를 불러오지 못했습니다.\n인터넷 연결·배포본(도메인 등록)에서 동작합니다.', 5000); return; }
+      var c = _kInitCenter();
+      var center = new naver.maps.LatLng(c.lat, c.lng);
+      if (!_nmap) {
+        _nmap = new naver.maps.Map(document.getElementById('naverMap'), { center: center, zoom: 19, mapTypeId: naver.maps.MapTypeId.HYBRID, zoomControl: true, zoomControlOptions: { position: naver.maps.Position.RIGHT_CENTER } });
+      } else {
+        setTimeout(function () { try { _nmap.refresh(true); _nmap.setZoom(19); _nmap.setCenter(center); } catch (e) {} }, 120);
+      }
+      _nDraw();
+      _nStartWatch();
+      setTimeout(function () { try { _nmap.refresh(true); } catch (e) {} }, 300);
+    });
+  }
+  function closeNaverView() { var ov = document.getElementById('naverView'); if (ov) ov.classList.remove('show'); _nStopWatch(); }
+  function _nRecenter() {
+    if (!_nmap) return;
+    if (_nMePos) { _nmap.setCenter(new naver.maps.LatLng(_nMePos.lat, _nMePos.lng)); return; }
+    if (navigator.geolocation) navigator.geolocation.getCurrentPosition(function (p) { var c = p.coords; _nUpdateMe(c.latitude, c.longitude, c.accuracy); try { _nmap.setCenter(new naver.maps.LatLng(c.latitude, c.longitude)); } catch (e) {} }, function () {}, { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 });
+  }
+  window.openNaverView = openNaverView;
+  /* [v150] 네이버 지도 인증 실패(도메인 미등록 등) 공식 콜백 — 뷰 닫고 안내 */
+  window.navermap_authFailure = function () {
+    try { closeNaverView(); } catch (e) {}
+    try { _naverSdk = null; } catch (e) {}   /* 다음에 다시 시도 가능하게 */
+    showToast('네이버 지도 인증에 실패했습니다.\n네이버 클라우드(NCP) > Maps 서비스에 이 사이트 주소(배포 도메인)를 등록해야 표시됩니다.', 6500);
+  };
   function _kRecenter() {
     if (!_kmap) return;
     if (_kMePos) { _kmap.setCenter(new kakao.maps.LatLng(_kMePos.lat, _kMePos.lng)); return; }
@@ -11671,6 +11812,11 @@ TenarSecureStore.init('map',
     on('fpFieldKakao', function () { openKakaoView(); });
     on('kakaoClose', function () { closeKakaoView(); });
     on('kakaoRecenter', function () { _kRecenter(); });
+    /* [v150] 네이버 지도 대체 뷰 + 카카오↔네이버 상호 전환 */
+    on('naverClose', function () { closeNaverView(); });
+    on('naverRecenter', function () { _nRecenter(); });
+    on('kakaoToNaver', function () { closeKakaoView(); openNaverView(); });
+    on('naverToKakao', function () { closeNaverView(); openKakaoView(); });
     /* ⑤ 저장 / 목록 */
 on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필지 시작 */
     on('fpSaveBtn2', function () { openFpSaveSheet(); });      /* [v46-3] 저장 폼 팝업 */
