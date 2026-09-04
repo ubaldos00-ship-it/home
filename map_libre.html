@@ -1,4 +1,5 @@
-<!-- map_v145.html (v145 · TENAR V1.5) · 저장: 2026-09-04 09:02 KST · [v145] ①GPS 지터(왔다갔다) 완화 — 나쁜 fix 무시 + 정지 시 데드밴드(작은 흔들림 흡수), 필드바에 GPS±정확도 항상 표시. ②현장모드 상단 바 크게+줄바꿈(내용 안 짤림)·종료 버튼 크게. ③현장모드에선 「입력완료 ↺」 안내배지 숨김. ④현장모드 중 좌하단 「📤 조사표로 전송」 버튼(이동/취소 확인 후 바로 이동). ⑤생산량목록 전체삭제 시 연결 요도까지 삭제(재로딩 시 목록이 되살아나던 문제 수정). (v144 이하 유지) -->
+<!-- map_v146.html (v146 · TENAR V1.5) · 저장: 2026-09-04 09:40 KST · [v146] ①GPS 위치를 실제 수신값 그대로 표시(카카오처럼 정확히) — v145의 데드밴드가 마커를 실제보다 뒤처지게(오프셋) 하던 것을 제거, 명백히 나쁜 fix만 걸러냄. ②통합계산기(이삭수 아래) 「🧭 지도에서 A/B포구 위치(현장모드)」 버튼 → 지도로 넘어오면 연결된 핀의 현장모드 자동 시작(tenar_go_field 처리). (v145 이하 유지) -->
+<!-- (v145 요약) map_v145.html · [v145] ①GPS 지터(왔다갔다) 완화 — 나쁜 fix 무시 + 정지 시 데드밴드(작은 흔들림 흡수), 필드바에 GPS±정확도 항상 표시. ②현장모드 상단 바 크게+줄바꿈(내용 안 짤림)·종료 버튼 크게. ③현장모드에선 「입력완료 ↺」 안내배지 숨김. ④현장모드 중 좌하단 「📤 조사표로 전송」 버튼(이동/취소 확인 후 바로 이동). ⑤생산량목록 전체삭제 시 연결 요도까지 삭제(재로딩 시 목록이 되살아나던 문제 수정). (v144 이하 유지) -->
 <!-- (v144 요약) map_v144.html · [v144] 「연결 지도자료」 목록에서 각 A/B포구 항목 「바로 아래」에 「🧭 이 포구로 현장모드 (GPS·진행방향)」 버튼 추가 — 누르면 그 포구를 도구로 불러와 현장모드 시작(작은 🧭 아이콘 → 명확한 전체너비 버튼으로 변경). 저장위치 팝업의 「현장모드로 이동」은 유지(포구 2개↑면 이 목록으로 안내). (v143 이하 유지) -->
 <!-- (v143 요약) map_v143.html · [v143] ①핀 상단 작물명을 「핀+연결자료 모든 작물」로 표시(예: 감자 핀에 논벼·양파 포구 → 「감자 · 논벼 · 양파」). ②생산량목록 작물 필터가 핀 작물뿐 아니라 연결자료(포구·면적·길이) 작물까지 매칭 + 작물 드롭다운에도 연결자료 작물 포함. ③현장모드 숨김 확대 — 검색창·작물비율창·포구도구/측정패널·우측버튼(레이어·핀표시·포구도구·면적길이·생산량목록·조사구목록)·로컬배지 모두 숨김, 「위치·종료 바·레벨·지도i」만 표시(해제 시 복원). (v142 이하 유지) -->
 <!-- (이전)  map_v130.html (v130 · TENAR V1.5) · 저장: 2026-09-03 14:14 KST · [v130] 생산량목록 공유 안드로이드 대응 — 공유가 안 되는 기기(안드로이드에서 JSON 파일 공유 미지원/암호화 비동기로 제스처 만료 등)에서는 예전에 아무 반응이 없었는데, 이제 「공유 실패/미지원」이면 자동으로 파일을 다운로드하고 「공유 앱으로 그 파일을 보내세요」 안내를 띄운다(아이폰은 기존 네이티브 공유창 그대로). (v129 이하 유지) -->
@@ -1685,8 +1686,8 @@ TenarSecureStore.init('map',
      · 키는 HTML에 노출되므로 반드시 허용 도메인을 위 주소로 제한하세요.
        제한해 두면 타인이 키를 복사해도 다른 사이트에서는 쓸 수 없습니다.
      =================================================================== */
-  var MAP_VERSION = 'v145';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
-  var MAP_VERSION_TIME = '2026-09-04 09:02 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
+  var MAP_VERSION = 'v146';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
+  var MAP_VERSION_TIME = '2026-09-04 09:40 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
   var VWORLD_API_KEY = '00EB5BC0-22B4-3B7E-89D1-341699F7CE05';
   var VWORLD_DOMAIN  = 'ubaldos00-ship-it.github.io';   /* 호스트만 · 스킴 금지 */
 
@@ -4203,6 +4204,27 @@ TenarSecureStore.init('map',
     }
     setTimeout(function () { try { fpEnterFieldMode(); } catch (e) {} }, 350);
   }
+  /* [v146] 조사표(통합계산기 등)에서 「지도에서 A/B포구 위치(현장모드)」로 넘어온 경우 처리.
+     tenar_go_field = { favoriteId?, surveyKey?, addr?, lat?, lng? } 를 읽어 그 핀의 현장모드를 시작한다. */
+  function consumeGoField(tries) {
+    tries = tries || 0;
+    var g = null; try { g = JSON.parse(localStorage.getItem('tenar_go_field') || 'null'); } catch (e) {}
+    if (!g) return;
+    if (!secureReady) { if (tries < 25) setTimeout(function () { consumeGoField(tries + 1); }, 300); return; }
+    try { localStorage.removeItem('tenar_go_field'); } catch (e) {}
+    var favs = getFavs(), f = null;
+    if (g.favoriteId) f = favs.filter(function (x) { return x && x.id === g.favoriteId; })[0];
+    if (!f && g.surveyKey) f = favs.filter(function (x) { return x && (x.surveyId === g.surveyKey || x.surveyKey === g.surveyKey); })[0];
+    if (!f && g.addr) { var ea = String(g.addr).replace(/\s+/g, ''); f = favs.filter(function (x) { return x && String(x.jibunAddress || '').replace(/\s+/g, '') === ea; })[0]; }
+    if (!f && isFinite(g.lat) && isFinite(g.lng)) {
+      var best = null, bd = 1e9;
+      favs.forEach(function (x) { var la = (x.latitude != null ? x.latitude : x.lat), lo = (x.longitude != null ? x.longitude : x.lng); if (!isFinite(la) || !isFinite(lo)) return; var d = Math.abs(la - g.lat) + Math.abs(lo - g.lng); if (d < bd) { bd = d; best = x; } });
+      if (best && bd < 0.0008) f = best;   /* 약 80m 이내 */
+    }
+    if (!f) { showToast('조사표와 연결된 저장 위치를 찾지 못했습니다.\n생산량목록에서 핀을 선택해 현장모드를 시작해주세요.', 5000, 'info'); return; }
+    try { startFieldModeForFav(f); } catch (e) {}
+  }
+  window.consumeGoField = consumeGoField;
   /* [v118] 저장위치 → 뒤로가기 → 생산량목록(스크롤 위치 그대로 복원) */
   function backToFavList() {
     openFavSheet(_favPriority);
@@ -11546,6 +11568,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     /* [v37] 옛 저장목록(포구·측정)을 통합 즐겨찾기로 1회 이전 후 요도 렌더 */
     try { setTimeout(function () { migrateMapLibraryV37(); renderMapItems(); }, 400); } catch (e) { console.error('[v37] 통합 이전 오류:', e); }
     try { setTimeout(function () { cleanupOrphanMapItems(false); }, 900); } catch (e) {}   /* [v49-2] 고아 경계 정리 */
+    try { setTimeout(function () { consumeGoField(); }, 1200); } catch (e) {}   /* [v146] 조사표에서 「현장모드로 이동」 처리 */
     try { setTimeout(function () { checkNasHealth(); }, 500); } catch (e) {}   /* [v51-3] NAS 자동 감지 → ONLINE/OFFLINE */
     try { areaPlotsInit(); } catch (e) { console.error('[v64] 작물재배조사구 init 오류:', e); }   /* [v64] */
     try { TLoc.init(); } catch (e) { console.error('[v71] 위치추적 init 오류:', e); }   /* [v71-4] */
@@ -13969,17 +13992,13 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
       var prev = lastPos;
       lastFixTs = Date.now();
       var nlat = c.latitude, nlng = c.longitude, nacc = c.accuracy;
-      /* [v145] GPS 지터(왔다갔다) 완화 —
-         ① 이전보다 정확도가 크게 나쁜 fix(2배↑ & 20m↑)는 최근(8초 내) 좋은 fix가 있으면 무시.
-         ② 정지 중 미세 흔들림: 이동량이 데드밴드(정확도 기반 2.5~6m)보다 작으면 이전 좌표 유지. */
-      if (prev && isFinite(prev.lat)) {
-        if (isFinite(nacc) && isFinite(prev.acc) && nacc > Math.max(20, prev.acc * 2) && (Date.now() - (prev.ts || 0) < 8000)) {
-          nlat = prev.lat; nlng = prev.lng;   /* 나쁜 fix 무시(좌표 유지) */
-        } else {
-          var jump = _tlocDistM(prev.lat, prev.lng, nlat, nlng);
-          var dead = Math.max(2.5, Math.min(6, (nacc || 0) * 0.5));
-          if (jump < dead) { nlat = prev.lat; nlng = prev.lng; }   /* 정지 흔들림 흡수 */
-        }
+      /* [v146] 실제 수신 위치를 그대로 표시(카카오처럼 정확히 맞춤).
+         v145의 「데드밴드 좌표 유지」가 마커를 실제보다 뒤처지게(오프셋) 만들던 것을 제거.
+         명백히 나쁜 fix(정확도 50m↑ & 직전의 3배↑, 최근 6초 내 좋은값 존재)만 한 번 건너뛴다. */
+      if (prev && isFinite(prev.lat) && isFinite(nacc) && isFinite(prev.acc)
+          && nacc > 50 && nacc > prev.acc * 3 && (Date.now() - (prev.ts || 0) < 6000)) {
+        nlat = prev.lat; nlng = prev.lng;
+        nacc = prev.acc;
       }
       lastPos = { lat: nlat, lng: nlng, acc: nacc, ts: pos.timestamp || Date.now(), addr: prev ? prev.addr : '' };
       showMarker(nlng, nlat);
