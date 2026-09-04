@@ -1,4 +1,4 @@
-<!-- map_v159.html (v159 · TENAR V1.5) · 저장: 2026-09-05 05:20 KST · [v159] ①저장위치 팝업 맨 아래에 연결자료를 바로 표시(버튼 없이) — 항목별 「🧭 이 포구로 현장모드」 포함해 빠르게 현장조사. ②연결자료 팝업의 뒤로가기(←)를 눌렀을 때 시트가 위로 올라가던 버그 수정(뒤로가기 버튼을 시트 드래그/스냅 대상에서 제외 → 이전 화면으로 정상 복귀). (v158 이하 유지) -->
+<!-- map_v160.html (v160 · TENAR V1.5) · 저장: 2026-09-05 05:33 KST · [v160] 저장위치 팝업 재배치: ①포구/측정도구 아래의 「현장모드로 이동」 버튼 제거(연결자료 항목별 「이 포구로 현장모드」와 중복). ②조사표 전송상태(미전송/전송완료)를 연결자료 목록 바로 위로 이동. ③「현재 필지정보」를 연결자료 목록 맨 아래로 이동. ④연결자료가 열자마자 바로 보이도록 접힘 높이를 목록까지 확장. (v159 이하 유지) -->
 <!-- (v155) 저장: 2026-09-04 14:22 KST · [v155] 카카오 지도 「🔎확대」 버튼 추가 — 카카오 위성 최대(레벨1) 위를 CSS로 더 크게(1.5배·2.2배, 해상도 낮아도) 보이게(아이폰에서도 더 확대). 확대 중엔 드래그·줌 잠금(좌표 어긋남 방지)·현재위치 중앙. (v154 이하 유지) -->
 <!-- (v154) 저장: 2026-09-04 14:11 KST · [v154] 네이버 지도 로드 방식을 예전 작동 파일(0.지도/map.html)과 동일하게 수정 — oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=w8m4oe36ev (구형 openapi?ncpClientId 아님). 도메인 등록된 배포본에서 표시됨. (v153 이하 유지) -->
 <!-- (v153) 저장: 2026-09-04 14:05 KST · [v153] 네이버 지도 maxZoom 21로 상향 + 초기 확대 심화(zoom 20) — 해상도 낮아도(업스케일=흐릿) 더 확대되게. 카카오 위성은 최대 레벨 1(이미 최대·카카오 자체 한계). (v152 이하 유지) -->
@@ -1814,8 +1814,8 @@ TenarSecureStore.init('map',
      · 키는 HTML에 노출되므로 반드시 허용 도메인을 위 주소로 제한하세요.
        제한해 두면 타인이 키를 복사해도 다른 사이트에서는 쓸 수 없습니다.
      =================================================================== */
-  var MAP_VERSION = 'v159';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
-  var MAP_VERSION_TIME = '2026-09-05 05:20 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
+  var MAP_VERSION = 'v160';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
+  var MAP_VERSION_TIME = '2026-09-05 05:33 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
   var VWORLD_API_KEY = '00EB5BC0-22B4-3B7E-89D1-341699F7CE05';
   var VWORLD_DOMAIN  = 'ubaldos00-ship-it.github.io';   /* 호스트만 · 스킴 금지 */
 
@@ -4272,29 +4272,22 @@ TenarSecureStore.init('map',
         : '<span style="padding:2px 9px;border-radius:9px;background:#fdecec;color:#c0392b;">⚠ 조사표 미전송</span> <span style="color:#888;font-weight:600;font-size:11.5px;">— 위 「조사표」로 전송하세요</span>';
     }
 
-    /* [v140] 저장된 A/B포구가 있으면 「현장모드로 이동」 — 그 포구를 불러와 GPS·진행방향 추적 시작 */
-    var rField = null;
-    if (_cnt.fieldplot > 0) {
-      rField = el('button', 'sheet-btn', '🧭 현장모드로 이동 (GPS·진행방향)');
-      rField.style.cssText += 'width:100%;margin-top:8px;background:#1a73e8;color:#fff;border-color:#1a73e8;font-weight:800;';
-      rField.addEventListener('click', function () { startFieldModeForFav(f); });
-    }
-
-    /* [v133] 순서: 길찾기·조사표·연결자료(r1) → 포구·측정도구(rTools)를 위로 두어 핀선택 시 바로 보이게,
-       핀수정·삭제(r2)는 아래로(위로 쓸면 나옴) — 시트를 짧게 유지해 핀이 가려지지 않게 함 */
-    box.appendChild(r1); box.appendChild(rTools);
-    if (rField) box.appendChild(rField);
-    if (rStatus) box.appendChild(rStatus);
-    box.appendChild(r2); box.appendChild(bParcel);
-    /* [v159] 저장위치 팝업 맨 아래에 연결자료를 바로 표시(버튼 없이) — 항목별 「🧭 이 포구로 현장모드」 포함 → 빠른 현장조사 */
+    /* [v160] 순서: 길찾기·조사표·연결자료(r1) → 포구·측정도구(rTools) → 핀수정·삭제(r2)
+       → (연결자료 있으면) 전송상태 + 연결자료 목록(항목별 「이 포구로 현장모드」) → 맨 아래 현재 필지정보.
+       ※ 「포구/측정도구 아래 현장모드로 이동」(rField)은 제거 — 연결자료 목록의 항목별 현장모드 버튼과 중복이라. */
+    box.appendChild(r1); box.appendChild(rTools); box.appendChild(r2);
+    var collapseRef = r2;   /* [v160] 접힘 높이 기준 */
     if (_tot) {
+      if (rStatus) box.appendChild(rStatus);   /* [v160] 조사표 전송상태를 연결자료 바로 위로 이동 */
       var childHdr = el('div', 'sec-title', '🗺 연결된 자료 ' + _tot + '개');
-      childHdr.style.cssText += 'margin-top:14px;';
+      childHdr.style.cssText += 'margin-top:10px;';
       box.appendChild(childHdr);
       var childBox = el('div');
       try { buildFavChildren(childBox, f.id); } catch (e) {}
       box.appendChild(childBox);
+      collapseRef = childBox;   /* [v160] 연결자료가 바로 보이도록 접힘 높이를 목록까지 확장 */
     }
+    box.appendChild(bParcel);   /* [v160] 현재 필지정보는 연결자료 목록 아래(맨 끝)로 이동 */
     openSheet('저장 위치', box, 'auto');
     /* [v118] 생산량목록에서 들어왔으면 「저장 위치」 왼쪽에 뒤로가기(←) — 누르면 목록으로(스크롤 위치 그대로) */
     if (navOpts && navOpts.fromList) {
@@ -4307,7 +4300,7 @@ TenarSecureStore.init('map',
     /* [v47-5] 처음에는 「핀 수정·삭제」까지만 보이는 높이로 연다 (위로 쓸면 나머지) */
     requestAnimationFrame(function () {
       try {
-        var h = getSavedLocationCollapsedHeight(sheetEl, r2);   /* [v49-3·v134] 핀수정·삭제 줄까지 보이게(포구/측정도구 짤림 해소). 현재 필지정보는 fold 아래(스크롤 시 노출) */
+        var h = getSavedLocationCollapsedHeight(sheetEl, collapseRef);   /* [v160] 연결자료 있으면 목록까지, 없으면 핀수정·삭제까지 보이게 */
         if (h > 0) {
           sheetEl.style.height = h + 'px'; sheetSnap = Math.round(h / window.innerHeight * 100); updateBottomBtnsPos();
           _snapMids = [sheetSnap];   /* [v136] 2단 스냅: 접힘(핀수정·삭제까지) ↔ 전체(현재 필지정보까지). 위로 한 번 쓸면 전체, 다시 내리면 접힘에서 딱 멈춤 */
