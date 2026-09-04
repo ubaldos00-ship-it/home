@@ -1,4 +1,4 @@
-<!-- map_v160.html (v160 · TENAR V1.5) · 저장: 2026-09-05 05:33 KST · [v160] 저장위치 팝업 재배치: ①포구/측정도구 아래의 「현장모드로 이동」 버튼 제거(연결자료 항목별 「이 포구로 현장모드」와 중복). ②조사표 전송상태(미전송/전송완료)를 연결자료 목록 바로 위로 이동. ③「현재 필지정보」를 연결자료 목록 맨 아래로 이동. ④연결자료가 열자마자 바로 보이도록 접힘 높이를 목록까지 확장. (v159 이하 유지) -->
+<!-- map_v161.html (v161 · TENAR V1.5) · 저장: 2026-09-05 06:18 KST · [v161] 파란 비율창 1번/2번·초기화·포구표시가 「입력완료(완료)」 상태에서 막히던 문제 해결 — ①비율은 완료 상태에서도 바로 변경(막던 fpBlockedByFinish 제거, 바꾸면 A/B 재계산). ②초기화·새로그리기 버튼은 완료 상태에서도 항상 활성. (v160 이하 유지) -->
 <!-- (v155) 저장: 2026-09-04 14:22 KST · [v155] 카카오 지도 「🔎확대」 버튼 추가 — 카카오 위성 최대(레벨1) 위를 CSS로 더 크게(1.5배·2.2배, 해상도 낮아도) 보이게(아이폰에서도 더 확대). 확대 중엔 드래그·줌 잠금(좌표 어긋남 방지)·현재위치 중앙. (v154 이하 유지) -->
 <!-- (v154) 저장: 2026-09-04 14:11 KST · [v154] 네이버 지도 로드 방식을 예전 작동 파일(0.지도/map.html)과 동일하게 수정 — oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=w8m4oe36ev (구형 openapi?ncpClientId 아님). 도메인 등록된 배포본에서 표시됨. (v153 이하 유지) -->
 <!-- (v153) 저장: 2026-09-04 14:05 KST · [v153] 네이버 지도 maxZoom 21로 상향 + 초기 확대 심화(zoom 20) — 해상도 낮아도(업스케일=흐릿) 더 확대되게. 카카오 위성은 최대 레벨 1(이미 최대·카카오 자체 한계). (v152 이하 유지) -->
@@ -1814,8 +1814,8 @@ TenarSecureStore.init('map',
      · 키는 HTML에 노출되므로 반드시 허용 도메인을 위 주소로 제한하세요.
        제한해 두면 타인이 키를 복사해도 다른 사이트에서는 쓸 수 없습니다.
      =================================================================== */
-  var MAP_VERSION = 'v160';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
-  var MAP_VERSION_TIME = '2026-09-05 05:33 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
+  var MAP_VERSION = 'v161';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
+  var MAP_VERSION_TIME = '2026-09-05 06:18 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
   var VWORLD_API_KEY = '00EB5BC0-22B4-3B7E-89D1-341699F7CE05';
   var VWORLD_DOMAIN  = 'ubaldos00-ship-it.github.io';   /* 호스트만 · 스킴 금지 */
 
@@ -11070,16 +11070,15 @@ TenarSecureStore.init('map',
     var lock = fp.finished;
     /* [v26-4] 완료됨 상태에서는 아래를 모두 잠근다 (초기화·조사설정·선택취소·수정 포함).
        「완료됨 ↺」을 다시 눌러 완료를 풀면 전부 다시 쓸 수 있다. */
+    /* [v161] 「초기화(fpTReset)·새로그리기(fpTNewSurvey)」는 목록에서 제외 → 입력완료 상태에서도 항상 활성
+       (완료 후 바로 다음 필지를 그리거나 초기화할 수 있게) */
     ['fpGa', 'fpNa', 'fpAngleBtn', 'fpAngleSep', 'fpAngleOrtho',
      'fpTParcel', 'fpTCrop', 'fpTUndo', 'fpTRedo', 'fpTCenter',
-     'fpTReset', 'fpTSetup', 'fpTCancelArea', 'fpTEdit', 'fpTNewSurvey'].forEach(function (id) {   /* [v72-14] 완료 시 새로그리기도 비활성 */
+     'fpTSetup', 'fpTCancelArea', 'fpTEdit'].forEach(function (id) {
       set(id, function (b) { b.disabled = lock; });
     });
-    /* [v157] 저장된 상태(입력완료+저장)면 「초기화·새로그리기」는 다시 활성 — 바로 다음 필지 추가 가능 */
-    if (lock && fp._saved) {
-      set('fpTReset', function (b) { b.disabled = false; });
-      set('fpTNewSurvey', function (b) { b.disabled = false; });
-    }
+    set('fpTReset', function (b) { b.disabled = false; });        /* [v161] 항상 활성 */
+    set('fpTNewSurvey', function (b) { b.disabled = false; });    /* [v161] 항상 활성 */
     /* [v157] 저장 버튼 초록 표시(저장됨 ✓) / 저장 전 기본 */
     set('fpSaveBtn2', function (b) {
       b.classList.toggle('fp-saved-ok', !!fp._saved);
@@ -11940,8 +11939,9 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     /* ⑥ 조사표 전송 */
     on('fpSendBtn', fpSubmit);
     /* [v17-9] 비율 선택 */
-    on('fpR1', function () { if (fpBlockedByFinish()) return; fpSetRatio(1); });   /* [v43-9] */
-    on('fpR2', function () { if (fpBlockedByFinish()) return; fpSetRatio(2); });
+    /* [v161] 완료 상태에서도 1번/2번 비율을 바로 바꿀 수 있게(막지 않음) — 바꾸면 A/B가 새 비율로 다시 계산됨 */
+    on('fpR1', function () { fpSetRatio(1); });
+    on('fpR2', function () { fpSetRatio(2); });
     /* [v157] 비율창 초기화 버튼 — 포구도구 조사구역·가나·각도 초기화(fpToolReset이 확인창 표시) */
     on('fpBannerReset', function () { try { fpToolReset(); } catch (e) {} });
     /* [v157] 포구표시 토글 — A/B포구 값(가로·세로 길이) 표시/숨김 (확인창) */
