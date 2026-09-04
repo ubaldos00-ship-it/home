@@ -1,4 +1,6 @@
-<!-- map_v152.html (v152 · TENAR V1.5) · 저장: 2026-09-04 14:01 KST · [v152] 네이버 지도 인증 정정 — Client ID(w8m4oe36ev)로 교체 + JS SDK를 구형 방식(openapi.map.naver.com?ncpClientId=)으로 변경(이 앱이 X-NCP-APIGW Client ID/Secret 방식이라). 로컬은 미등록 URI라 인증실패로 확인되나, 배포 도메인(github.io, NCP에 등록됨)에서 표시됨. (v151 이하 유지) -->
+<!-- map_v154.html (v154 · TENAR V1.5) · 저장: 2026-09-04 14:11 KST · [v154] 네이버 지도 로드 방식을 예전 작동 파일(0.지도/map.html)과 동일하게 수정 — oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=w8m4oe36ev (구형 openapi?ncpClientId 아님). 도메인 등록된 배포본에서 표시됨. (v153 이하 유지) -->
+<!-- (v153) 저장: 2026-09-04 14:05 KST · [v153] 네이버 지도 maxZoom 21로 상향 + 초기 확대 심화(zoom 20) — 해상도 낮아도(업스케일=흐릿) 더 확대되게. 카카오 위성은 최대 레벨 1(이미 최대·카카오 자체 한계). (v152 이하 유지) -->
+<!-- (v152 요약) map_v152.html · [v152] 네이버 지도 인증 정정 — Client ID(w8m4oe36ev)로 교체 + JS SDK를 구형 방식(openapi.map.naver.com?ncpClientId=)으로 변경(이 앱이 X-NCP-APIGW Client ID/Secret 방식이라). 로컬은 미등록 URI라 인증실패로 확인되나, 배포 도메인(github.io, NCP에 등록됨)에서 표시됨. (v151 이하 유지) -->
 <!-- (v151 요약) map_v151.html · [v151] 네이버 지도 키(ncpKeyId)를 새 값으로 교체. (로컬은 도메인 미등록이라 인증 확인 불가 — 배포 도메인 등록 후 확인 필요) (v150 이하 유지) -->
 <!-- (v150 요약) map_v150.html · [v150] 네이버 지도 대체 뷰 추가(카카오와 동일하게 현재위치·A/B포구·측정도형 표시). 진입: 레이어 시트 「카카오/네이버」 버튼, 지도 안에서 카카오↔네이버 상호 전환. 네이버 인증실패(도메인 미등록) 시 안내·자동폴백. (v149 이하 유지) -->
 <!-- (v149 요약) map_v149.html · [v149] 카카오 지도 확대 보완 — 아이폰에서도 최대 확대(레벨1)에 확실히 도달하도록 최소레벨1 재적용 + 지도 컨테이너 touch-action:none(iOS 핀치 전달). (v148 이하 유지) -->
@@ -1757,8 +1759,8 @@ TenarSecureStore.init('map',
      · 키는 HTML에 노출되므로 반드시 허용 도메인을 위 주소로 제한하세요.
        제한해 두면 타인이 키를 복사해도 다른 사이트에서는 쓸 수 없습니다.
      =================================================================== */
-  var MAP_VERSION = 'v152';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
-  var MAP_VERSION_TIME = '2026-09-04 14:01 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
+  var MAP_VERSION = 'v154';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
+  var MAP_VERSION_TIME = '2026-09-04 14:11 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
   var VWORLD_API_KEY = '00EB5BC0-22B4-3B7E-89D1-341699F7CE05';
   var VWORLD_DOMAIN  = 'ubaldos00-ship-it.github.io';   /* 호스트만 · 스킴 금지 */
 
@@ -3681,7 +3683,7 @@ TenarSecureStore.init('map',
       if (window.naver && window.naver.maps && window.naver.maps.Map) { resolve(true); return; }
       var loaded = false, s = document.createElement('script');
       var to = setTimeout(function () { if (!loaded) { loaded = true; resolve(false); } }, 9000);
-      s.src = 'https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=' + encodeURIComponent(NAVER_CLIENT_ID);   /* [v152] 이 앱은 Client ID/Secret(X-NCP-APIGW) 방식 → 구형 ncpClientId + openapi 도메인 */
+      s.src = 'https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=' + encodeURIComponent(NAVER_CLIENT_ID);   /* [v154] 예전 작동 파일과 동일 방식: oapi.map.naver.com + ncpKeyId + 짧은 키 */
       s.onload = function () { if (!loaded) { loaded = true; clearTimeout(to); resolve(!!(window.naver && window.naver.maps && window.naver.maps.Map)); } };
       s.onerror = function () { if (!loaded) { loaded = true; clearTimeout(to); resolve(false); } };
       document.head.appendChild(s);
@@ -10938,9 +10940,10 @@ TenarSecureStore.init('map',
       var c = _kInitCenter();
       var center = new naver.maps.LatLng(c.lat, c.lng);
       if (!_nmap) {
-        _nmap = new naver.maps.Map(document.getElementById('naverMap'), { center: center, zoom: 19, mapTypeId: naver.maps.MapTypeId.HYBRID, zoomControl: true, zoomControlOptions: { position: naver.maps.Position.RIGHT_CENTER } });
+        _nmap = new naver.maps.Map(document.getElementById('naverMap'), { center: center, zoom: 20, minZoom: 6, maxZoom: 21, mapTypeId: naver.maps.MapTypeId.HYBRID, zoomControl: true, zoomControlOptions: { position: naver.maps.Position.RIGHT_CENTER } });   /* [v153] maxZoom 21 — 해상도 낮아도(업스케일) 더 확대 */
+        try { _nmap.setOptions('maxZoom', 21); } catch (e) {}
       } else {
-        setTimeout(function () { try { _nmap.refresh(true); _nmap.setZoom(19); _nmap.setCenter(center); } catch (e) {} }, 120);
+        setTimeout(function () { try { _nmap.refresh(true); _nmap.setZoom(20); _nmap.setCenter(center); } catch (e) {} }, 120);   /* [v153] 다시 열면 깊게 확대 */
       }
       _nDraw();
       _nStartWatch();
