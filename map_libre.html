@@ -1,4 +1,4 @@
-<!-- map_v164.html (v164 · TENAR V1.5) · 저장: 2026-09-05 12:01 KST · [v164] ①꼭짓점 번호 인라인 크기고정(iOS 간헐 작게 찍힘 방지). ②★비율창 버튼이 저장·다른작업 후 안 눌리던 근본원인 해결 — 순서안내(topUI z15)가 비율창을 덮던 것을, 배너 z-index 16으로 올려 항상 최상단(탭 보장). ③입력완료(초록)일 때 1/2번 비율 변경 잠금(완료 해제 후 변경). ④완료 버튼도 작물·비율만 입력해도 동작. (v163 이하 유지) -->
+<!-- map_v165.html (v165 · TENAR V1.5) · 저장: 2026-09-05 12:21 KST · [v165] 저장위치 팝업의 위도·경도 옆에 「📋 좌표복사」 버튼 추가 — 카카오·네이버 지도 검색에 붙여넣을 수 있게 「위도, 경도」 숫자·점·쉼표만(라벨 없이) 복사(예: 35.840123, 128.750456). (v164 이하 유지) -->
 <!-- (v155) 저장: 2026-09-04 14:22 KST · [v155] 카카오 지도 「🔎확대」 버튼 추가 — 카카오 위성 최대(레벨1) 위를 CSS로 더 크게(1.5배·2.2배, 해상도 낮아도) 보이게(아이폰에서도 더 확대). 확대 중엔 드래그·줌 잠금(좌표 어긋남 방지)·현재위치 중앙. (v154 이하 유지) -->
 <!-- (v154) 저장: 2026-09-04 14:11 KST · [v154] 네이버 지도 로드 방식을 예전 작동 파일(0.지도/map.html)과 동일하게 수정 — oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=w8m4oe36ev (구형 openapi?ncpClientId 아님). 도메인 등록된 배포본에서 표시됨. (v153 이하 유지) -->
 <!-- (v153) 저장: 2026-09-04 14:05 KST · [v153] 네이버 지도 maxZoom 21로 상향 + 초기 확대 심화(zoom 20) — 해상도 낮아도(업스케일=흐릿) 더 확대되게. 카카오 위성은 최대 레벨 1(이미 최대·카카오 자체 한계). (v152 이하 유지) -->
@@ -1814,8 +1814,8 @@ TenarSecureStore.init('map',
      · 키는 HTML에 노출되므로 반드시 허용 도메인을 위 주소로 제한하세요.
        제한해 두면 타인이 키를 복사해도 다른 사이트에서는 쓸 수 없습니다.
      =================================================================== */
-  var MAP_VERSION = 'v164';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
-  var MAP_VERSION_TIME = '2026-09-05 12:01 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
+  var MAP_VERSION = 'v165';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
+  var MAP_VERSION_TIME = '2026-09-05 12:21 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
   var VWORLD_API_KEY = '00EB5BC0-22B4-3B7E-89D1-341699F7CE05';
   var VWORLD_DOMAIN  = 'ubaldos00-ship-it.github.io';   /* 호스트만 · 스킴 금지 */
 
@@ -4199,10 +4199,22 @@ TenarSecureStore.init('map',
         '<div class="addr-label">도로명주소</div><div class="addr-value">' + escapeHtml(f.roadAddress) + '</div>'));
     }
 
-    /* ③ 우편번호 · 좌표 한 줄 */
-    box.appendChild(el('div', 'li-coord',
+    /* ③ 우편번호 · 좌표 한 줄 + [v165] 좌표 복사 버튼(카카오·네이버 검색용: 위도, 경도 숫자만) */
+    var _coordStr = f.latitude.toFixed(6) + ', ' + f.longitude.toFixed(6);   /* 예: 35.840123, 128.750456 */
+    var coordRow = el('div', 'li-row');
+    coordRow.style.cssText = 'align-items:center;margin-top:10px;';
+    var coordTxt = el('div', 'li-coord',
       (f.postalCode ? '우편번호 ' + escapeHtml(f.postalCode) + ' · ' : '') +
-      '위도 ' + f.latitude.toFixed(6) + ' · 경도 ' + f.longitude.toFixed(6)));
+      '위도 ' + f.latitude.toFixed(6) + ' · 경도 ' + f.longitude.toFixed(6));
+    coordTxt.style.marginTop = '0'; coordTxt.style.flex = '1 1 auto';
+    coordRow.appendChild(coordTxt);
+    var bCoordCopy = el('button', 'copy-btn copy-plain', '📋 좌표복사');
+    bCoordCopy.style.flexShrink = '0';
+    bCoordCopy.addEventListener('click', function () {
+      copyText(_coordStr, '좌표를 복사했습니다.\n' + _coordStr + '\n카카오·네이버 지도 검색창에 붙여넣기하세요.');
+    });
+    coordRow.appendChild(bCoordCopy);
+    box.appendChild(coordRow);
 
     /* 작물·메모·저장일시 */
     /* [v42-6] 작물은 맨 위 제목줄에 이미 있으므로 여기서는 빼서 중복을 없앤다 */
@@ -4441,8 +4453,8 @@ TenarSecureStore.init('map',
   /* 공통 명칭 (item 21) */
   function openCurrentLocationSheet(locationData) { return openHereSheet(locationData); }
 
-  function copyText(txt) {
-    function ok() { showToast('주소가 복사되었습니다.', 2500, 'success'); }
+  function copyText(txt, msg) {
+    function ok() { showToast(msg || '주소가 복사되었습니다.', 2500, 'success'); }   /* [v165] 복사 완료 메시지 지정 가능(좌표 복사 등) */
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(txt).then(ok).catch(function () { legacyCopy(txt, ok); });
     } else legacyCopy(txt, ok);
