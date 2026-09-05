@@ -1,4 +1,4 @@
-<!-- map_v163.html (v163 · TENAR V1.5) · 저장: 2026-09-05 07:42 KST · [v163] 파란 비율창 초기화·포구표시·1번·2번 버튼이 아이폰(iOS Safari)에서 탭이 안 먹던 문제 → touchend+click 동시 바인딩(bindTap, 중복실행 방지)으로 터치 실행 보장. 데스크톱 클릭·아이폰 터치 모두 검증. (v162 이하 유지) -->
+<!-- map_v164.html (v164 · TENAR V1.5) · 저장: 2026-09-05 12:01 KST · [v164] ①꼭짓점 번호 인라인 크기고정(iOS 간헐 작게 찍힘 방지). ②★비율창 버튼이 저장·다른작업 후 안 눌리던 근본원인 해결 — 순서안내(topUI z15)가 비율창을 덮던 것을, 배너 z-index 16으로 올려 항상 최상단(탭 보장). ③입력완료(초록)일 때 1/2번 비율 변경 잠금(완료 해제 후 변경). ④완료 버튼도 작물·비율만 입력해도 동작. (v163 이하 유지) -->
 <!-- (v155) 저장: 2026-09-04 14:22 KST · [v155] 카카오 지도 「🔎확대」 버튼 추가 — 카카오 위성 최대(레벨1) 위를 CSS로 더 크게(1.5배·2.2배, 해상도 낮아도) 보이게(아이폰에서도 더 확대). 확대 중엔 드래그·줌 잠금(좌표 어긋남 방지)·현재위치 중앙. (v154 이하 유지) -->
 <!-- (v154) 저장: 2026-09-04 14:11 KST · [v154] 네이버 지도 로드 방식을 예전 작동 파일(0.지도/map.html)과 동일하게 수정 — oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=w8m4oe36ev (구형 openapi?ncpClientId 아님). 도메인 등록된 배포본에서 표시됨. (v153 이하 유지) -->
 <!-- (v153) 저장: 2026-09-04 14:05 KST · [v153] 네이버 지도 maxZoom 21로 상향 + 초기 확대 심화(zoom 20) — 해상도 낮아도(업스케일=흐릿) 더 확대되게. 카카오 위성은 최대 레벨 1(이미 최대·카카오 자체 한계). (v152 이하 유지) -->
@@ -885,7 +885,7 @@ TenarSecureStore.init('map',
   /* [v17-9] 주소검색창 아래 : 작물·기준·1번/2번 비율을 표로 보여주고 골라 쓴다 */
   #fpBanner {
     display: none; position: absolute; left: 8px; right: 8px;
-    top: calc(env(safe-area-inset-top, 0px) + 70px); z-index: 12;   /* [v26-2] 포구도구(14)보다 아래로 */
+    top: calc(env(safe-area-inset-top, 0px) + 70px); z-index: 16;   /* [v164] topUI(검색·순서안내 z15)보다 위로 — 순서안내 버튼이 비율창을 덮어 「초기화·포구표시·1/2번」 탭이 안 먹던 근본원인 해결 */
     flex-direction: column; gap: 5px; padding: 7px 9px; border-radius: 10px;
     background: rgba(21, 101, 192, .95); color: #fff; font-size: 11px; line-height: 1.3;
     box-shadow: 0 2px 8px rgba(0,0,0,.3);
@@ -1814,8 +1814,8 @@ TenarSecureStore.init('map',
      · 키는 HTML에 노출되므로 반드시 허용 도메인을 위 주소로 제한하세요.
        제한해 두면 타인이 키를 복사해도 다른 사이트에서는 쓸 수 없습니다.
      =================================================================== */
-  var MAP_VERSION = 'v163';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
-  var MAP_VERSION_TIME = '2026-09-05 07:42 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
+  var MAP_VERSION = 'v164';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
+  var MAP_VERSION_TIME = '2026-09-05 12:01 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
   var VWORLD_API_KEY = '00EB5BC0-22B4-3B7E-89D1-341699F7CE05';
   var VWORLD_DOMAIN  = 'ubaldos00-ship-it.github.io';   /* 호스트만 · 스킴 금지 */
 
@@ -6854,6 +6854,9 @@ TenarSecureStore.init('map',
       var e2 = document.createElement('div');
       /* [v15-9] 마지막 점은 항상 다른 색 (그리는 중·완료 무관) */
       e2.className = 'vtx-num' + (i === s.fieldPoints.length - 1 ? ' vtx-last' : '');
+      /* [v164] 번호 크기를 인라인으로 못박아 iOS에서 간헐적으로 작게 찍히던 문제 방지(클래스 적용 지연·자동확대 무관) */
+      e2.style.cssText = 'width:16px;height:16px;line-height:16px;font-size:12px;font-weight:900;text-align:center;-webkit-text-size-adjust:none;text-size-adjust:none;text-shadow:0 0 2px #fff,0 0 2px #fff;';
+      e2.style.color = (i === s.fieldPoints.length - 1) ? '#e5342a' : '#14612f';
       e2.textContent = String(i + 1);
       vtxNumMarkers.push(
         new maplibregl.Marker({ element: e2 }).setLngLat(s.fieldPoints[i]).addTo(map)   /* offset 없음 = 점 안 */
@@ -10049,7 +10052,7 @@ TenarSecureStore.init('map',
   }
   /* [v17-6] 완료 — 가·나·각도·필지·재배구역·UNDO·REDO 잠그고 「수정」만 남긴다 */
   function fpFinish() {
-    if (!fpCanSubmit()) { showToast('가·나 지점까지 지정한 뒤 완료해주세요.', 3200, 'info'); return; }
+    if (!fpCanSubmit() && !fpHasSetup()) { showToast('먼저 「작물·기준·비율」을 입력하거나 가·나 지점까지 지정해주세요.', 3500, 'info'); return; }   /* [v164] 작물·비율만 있어도 완료 허용 */
     fp.finished = true;
     fp.picking = null; fp.angleMode = false;
     setSurveyMode('none');
@@ -11952,9 +11955,9 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     /* ⑥ 조사표 전송 */
     on('fpSendBtn', fpSubmit);
     /* [v17-9] 비율 선택 */
-    /* [v161·v163] 완료 상태에서도 1번/2번 비율 변경 가능 + iOS 탭 보장(bindTap) */
-    bindTap('fpR1', function () { fpSetRatio(1); });
-    bindTap('fpR2', function () { fpSetRatio(2); });
+    /* [v164] 입력완료(초록) 상태에서는 1번/2번 비율 변경 잠금(완료 해제 후에만 변경) + iOS 탭 보장(bindTap) */
+    bindTap('fpR1', function () { if (fpBlockedByFinish()) return; fpSetRatio(1); });
+    bindTap('fpR2', function () { if (fpBlockedByFinish()) return; fpSetRatio(2); });
     /* [v157·v163] 비율창 초기화 버튼(iOS 탭 보장) */
     bindTap('fpBannerReset', function () { try { fpToolReset(); } catch (e) {} });
     /* [v157·v163] 포구표시 토글(iOS 탭 보장) — A/B포구 값(가로·세로 길이) 표시/숨김 (확인창) */
