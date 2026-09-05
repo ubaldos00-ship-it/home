@@ -1,3 +1,4 @@
+<!-- chungchi.html (v110) · 저장: 2026-09-06 07:41 KST · [v110] 맥류 빠른선택 칩 개선 + 측정 전송 반영 — ①추가한 행이 바로 붙어 보이지 않도록 행 사이에 여백·점선 구분선 추가. ②기본중량 빠른선택 칩을 세로로 더 작게(입력란과 헷갈리지 않게) + 「40 포대」식 한 줄 표기. ③지도 측정도구에서 전송된 「핀 지번주소」를 필지주소칸에 자동 입력(비어 있을 때만). 지역·작물·면적 자동반영은 유지. 계산 로직 무변경. (v109 이하 유지) -->
 <!-- chungchi.html (v109) · 저장: 2026-09-06 07:21 KST · [v109] 맥류(겉보리·쌀보리·밀) 수확단위 개선 — ①각 수량이력 행 위에 기본중량 빠른선택 칩(40 포대 / 300·500·800·1,000 톤백) 추가: 보고 눌러 바로 선택, 현재값 강조. ②기본중량을 수동으로 입력하면(예:250) 가까운 값으로 스냅하지 않고 사용자가 친 값을 그대로 유지(스크롤·칩은 지정목록으로 스냅). ③지도 측정도구에서 넘어온 지역·작물 자동선택(면적만 넘어오던 것 보완, 하위작물 포함). 계산 로직 무변경. (v108 이하 유지) -->
 <!-- (이전)  chungchi.html (v108) · 저장: 2026-08-29 11:22 KST · [v108] 계산기↔지도 전환 「진행중」 차단 오버레이 — 지도로 이동/지도에서 측정값 전송·복귀할 때, 적용 완료 전 사용자가 선택·이동해 잘못 선택되던 문제 방지. 이동 시 세션 플래그를 세우고 도착 페이지 로드~적용 완료(또는 최대 3.5초)까지 「진행중입니다. 잠시만 기다려주세요.」 오버레이로 상호작용 차단. 계산 로직 무변경. -->
 <!-- (이전)  chungchi.html (v107) · 저장: 2026-08-29 08:40 KST · [v107] 저장/불러오기 목록: 작물명 옆에 「읍면동 리 지번」을 작물명 글자크기로 함께 표기(예: 논벼, 논공읍 금포리 324) — 시도·시군구 앞부분은 빼고 읍면동부터. 기존 📍 전체주소 줄은 그대로 유지. 계산 로직 무변경. (v106 이하 유지) -->
@@ -596,11 +597,12 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
 .drum-box:active{background:#d5f5e3;}
 .drum-inp{display:none;position:absolute;inset:0;width:100%;height:100%;text-align:center;font-size:16px;font-weight:700;color:#27500A;background:#fff;border:2px solid #27ae60;border-radius:10px;z-index:10;padding:0;box-sizing:border-box;-webkit-appearance:none;appearance:none;} /* v51 */
 /* [v109] 맥류 기본중량 빠른선택 칩 — 행 위에 40/300/500/800/1000(포대·톤백) 버튼으로 직관 선택 */
-.hr2.grain{flex-direction:column;align-items:stretch;gap:6px;}
+.hr2.grain{flex-direction:column;align-items:stretch;gap:5px;margin-bottom:12px;padding-bottom:11px;border-bottom:1px dashed #cfe3d5;} /* [v110] 행 사이 구분 여백 */
+.hr2.grain:last-child{border-bottom:none;padding-bottom:0;margin-bottom:5px;}
 .hr2-line{display:flex;gap:4px;align-items:center;flex-wrap:nowrap;width:100%;}
 .grain-chips{display:flex;gap:5px;flex-wrap:wrap;}
-.gchip{flex:1 1 0;min-width:52px;padding:6px 3px;border:1.5px solid #bfe3c8;border-radius:9px;background:#f2fbf5;color:#27500A;font-size:11px;font-weight:800;font-family:inherit;line-height:1.15;cursor:pointer;text-align:center;-webkit-tap-highlight-color:transparent;}
-.gchip .gcw{font-size:14px;font-weight:900;display:block;}
+.gchip{flex:1 1 0;min-width:50px;padding:3px 3px;border:1.5px solid #bfe3c8;border-radius:8px;background:#f2fbf5;color:#27500A;font-size:10.5px;font-weight:700;font-family:inherit;line-height:1.1;cursor:pointer;text-align:center;-webkit-tap-highlight-color:transparent;} /* [v110] 세로로 더 작게(입력란과 구분) */
+.gchip .gcw{font-size:13px;font-weight:900;margin-right:2px;}
 .gchip.on{background:#27500A;border-color:#27500A;color:#fff;}
 
 /* ── 계산기 팝업 (통합계산기 동일) v41 ── */
@@ -1305,7 +1307,8 @@ function measRow(b){
         }
       }catch(e){}
       _measPending={ area:_area, idx:_idx,
-        region:(res.region||'').trim(), crop:(res.crop||'').trim() };   /* [v109] 지역·작물도 함께 반영 */
+        region:(res.region||'').trim(), crop:(res.crop||'').trim(),
+        jibun:(res.jibunAddress||'').trim() };   /* [v109] 지역·작물 · [v110] 핀주소도 함께 반영 */
       /* v21: 측정 점(핀)을 이 조사표 데이터로 보관 → 저장/불러오기에 함께 유지, 이모지 재클릭 시 그대로 표시 */
       if(res.pts && res.pts.length){ window.__ccMeasAreaPts = { pts:res.pts, mode:res.mode||'area' }; }
       try{ localStorage.removeItem('tenar_meas_result'); localStorage.removeItem('tenar_meas_ctx'); }catch(e){}
@@ -1345,6 +1348,9 @@ function measRow(b){
   function _putMeas(showUi){
     if(!_measPending || _measPending===undefined) return;
     _applyRegionCrop();   /* [v109] 지역·작물 반영 */
+    try{ var _adr=document.getElementById('address');   /* [v110] 핀주소(지번) 자동입력 — 비어 있을 때만 */
+      if(_adr && !_adr.value && _measPending.jibun){ _adr.value=_measPending.jibun; if(typeof uAll==='function') uAll(); }
+    }catch(e){}
     var rows=document.querySelectorAll('#areaRows .ar');
     if(!rows.length) return;
     var idx=Math.min(_measPending.idx, rows.length-1);

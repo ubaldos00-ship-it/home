@@ -1,4 +1,4 @@
-<!-- map_v168.html (v168 · TENAR V1.5) · 저장: 2026-09-06 07:00 KST · [v168] ①측정/포구 완료·저장 후 「숫자는 남고 동그라미만 사라지던」 현상 해결 — 꼭짓점 번호와 원을 하나의 SVG로 묶어 항상 같이 표시/같이 사라지게 함(원=별도 GL레이어, 번호=DOM마커로 분리돼 iOS에서 어긋나던 문제). ②지도에서 처음 측정도구로 지역·작물 선택→면적측정→조사표 전송 시 면적만 넘어가고 지역·작물이 누락되던 것 수정 — 청취조사표가 전송받은 지역·작물(하위작물 포함)을 자동 선택(이미 고른 값이 있으면 유지). (v167 이하 유지) -->
+<!-- map_v169.html (v169 · TENAR V1.5) · 저장: 2026-09-06 07:41 KST · [v169] 측정도구→청취조사표 전송 원터치화 — ①「저장 후 전송」 2단계 안내를 없애고, 저장 안 한 측정은 조용히 저장(자료 보존)한 뒤 곧바로 청취조사표로 이동. ②전송 시 지번(핀)주소를 확실히 함께 전송 — 저장핀이 아니어서 주소가 없으면 좌표로 역지오코딩해 채운 뒤 전송(최대 1.8초 대기 후에도 전송 진행). 지역·작물과 함께 청취조사표에 자동 반영. (v168 이하 유지) -->
 <!-- (v155) 저장: 2026-09-04 14:22 KST · [v155] 카카오 지도 「🔎확대」 버튼 추가 — 카카오 위성 최대(레벨1) 위를 CSS로 더 크게(1.5배·2.2배, 해상도 낮아도) 보이게(아이폰에서도 더 확대). 확대 중엔 드래그·줌 잠금(좌표 어긋남 방지)·현재위치 중앙. (v154 이하 유지) -->
 <!-- (v154) 저장: 2026-09-04 14:11 KST · [v154] 네이버 지도 로드 방식을 예전 작동 파일(0.지도/map.html)과 동일하게 수정 — oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=w8m4oe36ev (구형 openapi?ncpClientId 아님). 도메인 등록된 배포본에서 표시됨. (v153 이하 유지) -->
 <!-- (v153) 저장: 2026-09-04 14:05 KST · [v153] 네이버 지도 maxZoom 21로 상향 + 초기 확대 심화(zoom 20) — 해상도 낮아도(업스케일=흐릿) 더 확대되게. 카카오 위성은 최대 레벨 1(이미 최대·카카오 자체 한계). (v152 이하 유지) -->
@@ -1825,8 +1825,8 @@ TenarSecureStore.init('map',
      · 키는 HTML에 노출되므로 반드시 허용 도메인을 위 주소로 제한하세요.
        제한해 두면 타인이 키를 복사해도 다른 사이트에서는 쓸 수 없습니다.
      =================================================================== */
-  var MAP_VERSION = 'v168';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
-  var MAP_VERSION_TIME = '2026-09-06 07:00 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
+  var MAP_VERSION = 'v169';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
+  var MAP_VERSION_TIME = '2026-09-06 07:41 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
   var VWORLD_API_KEY = '00EB5BC0-22B4-3B7E-89D1-341699F7CE05';
   var VWORLD_DOMAIN  = 'ubaldos00-ship-it.github.io';   /* 호스트만 · 스킴 금지 */
 
@@ -8068,53 +8068,84 @@ TenarSecureStore.init('map',
               '측정 건수 ' + t.count + '건\n' +
               '전체 면적합계 ' + formatNumber(t.totalM2, 1) + '㎡ (' + formatNumber(t.totalPyeong, 1) + '평)';
     if (!window.confirm(msg)) return;
+    var _ctx = ccMeasCtx() || {};
+    var _today = kstNowStr().slice(0, 10);
+    /* [v169] 지번주소(핀주소)를 확실히 함께 보낸다 — 즐겨찾기/컨텍스트에 없으면 좌표로 역지오코딩해 채운 뒤 전송 */
+    function _finish(addr) {
+      try {
+        /* 기존 map.html 이 쓰던 규약 그대로 : { area, pts, mode } */
+        localStorage.setItem(CC_MEAS_RESULT_KEY, JSON.stringify({
+          area: Math.round(t.totalM2 * 10) / 10,
+          pts: pts, mode: 'area', savedAt: kstNowStr(),
+          /* [v44-17][v45-7] 추가 정보 (구버전 청취조사표는 area/pts 만 읽으므로 호환됨) */
+          totalPyeong: Math.round(t.totalPyeong * 10) / 10,
+          region: surveyMeasureState.measRegion || _ctx.region || '',
+          crop: surveyMeasureState.measCrop || _ctx.crop || '',
+          surveyDate: _ctx.surveyDate || _today,
+          jibunAddress: addr || ''
+        }));
+      } catch (e) { showToast('전송 저장에 실패했습니다.', 3500); return; }
+      showToast('청취조사표로 면적을 전송했습니다.\n' + formatNumber(t.totalM2, 1) + '㎡', 2600, 'success');
+      try { if (window._tenarBeginTransition) window._tenarBeginTransition(); } catch (e) {}   /* [v109] 이동~계산기 적용완료까지 「진행중」 차단 */
+      /* [v108] 전송과 「거의 동시에」 이동 */
+      setTimeout(function () {
+        var back = 'chungchi.html';
+        try { back = new URL('chungchi.html', location.href).href; } catch (e) {}
+        var go = function(){ window.location.href = back; };
+        /* [v132] 이동 전 대기 중인 암호화 저장 반영(저장 사라짐 방지) */
+        if (window.__tenarSecureFlush) { try { window.__tenarSecureFlush().then(go, go); return; } catch (e) {} }
+        go();
+      }, 250);
+    }
+    /* 우선순위: 포구 지번 > 즐겨찾기 지번 > 좌표 역지오코딩 */
+    var _addr0 = fp.jibunAddress || (function () {
+      var f = pts.length ? findFavForLocation({ lat: pts[0][1], lng: pts[0][0] }) : { idx: -1 };
+      return (f.idx >= 0) ? (getFavs()[f.idx].jibunAddress || '') : '';
+    })();
+    if (_addr0 || !pts.length || typeof requestVWorldReverse !== 'function') { _finish(_addr0); return; }
+    /* [v169] 저장핀이 아니어서 주소가 없으면 좌표로 지번주소를 조회해 함께 전송(최대 대기 후에도 전송은 진행) */
+    var _sent = false;
+    var _guard = setTimeout(function () { if (!_sent) { _sent = true; _finish(''); } }, 1800);
+    requestVWorldReverse(pts[0][0], pts[0][1]).then(function (a) {
+      if (_sent) return; _sent = true; clearTimeout(_guard); _finish((a && a.jibunAddress) || '');
+    }).catch(function () { if (_sent) return; _sent = true; clearTimeout(_guard); _finish(''); });
+  }
+
+  /* [v169] 저장 안 한 측정을 조용히(시트 없이) 저장 — 자료 보존 + 조사표 전송을 「한 번」에 */
+  function quickSaveMeasure() {
     try {
-      /* 기존 map.html 이 쓰던 규약 그대로 : { area, pts, mode } */
-      var _ctx = ccMeasCtx() || {};
-      var _today = kstNowStr().slice(0, 10);
-      var _addr = fp.jibunAddress || (function () {
-        var f = pts.length ? findFavForLocation({ lat: pts[0][1], lng: pts[0][0] }) : { idx: -1 };
-        return (f.idx >= 0) ? (getFavs()[f.idx].jibunAddress || '') : '';
-      })();
-      localStorage.setItem(CC_MEAS_RESULT_KEY, JSON.stringify({
-        area: Math.round(t.totalM2 * 10) / 10,
-        pts: pts, mode: 'area', savedAt: kstNowStr(),
-        /* [v44-17][v45-7] 추가 정보 (구버전 청취조사표는 area/pts 만 읽으므로 호환됨) */
-        totalPyeong: Math.round(t.totalPyeong * 10) / 10,
-        region: surveyMeasureState.measRegion || _ctx.region || '',
-        crop: surveyMeasureState.measCrop || _ctx.crop || '',
-        surveyDate: _ctx.surveyDate || _today,
-        jibunAddress: _addr
-      }));
-    } catch (e) { showToast('전송 저장에 실패했습니다.', 3500); return; }
-    showToast('청취조사표로 면적을 전송했습니다.\n' + formatNumber(t.totalM2, 1) + '㎡', 2600, 'success');
-    try { if (window._tenarBeginTransition) window._tenarBeginTransition(); } catch (e) {}   /* [v109] 이동~계산기 적용완료까지 「진행중」 차단 */
-    /* [v108] 전송과 「거의 동시에」 이동 — 예전 900ms 지연을 250ms로 단축(암호화 flush는 수십ms면 끝남) */
-    setTimeout(function () {
-      var back = 'chungchi.html';
-      try { back = new URL('chungchi.html', location.href).href; } catch (e) {}
-      var go = function(){ window.location.href = back; };
-      /* [v132] 이동 전 대기 중인 암호화 저장 반영(저장 사라짐 방지) */
-      if (window.__tenarSecureFlush) { try { window.__tenarSecureFlush().then(go, go); return; } catch (e) {} }
-      go();
-    }, 250);
+      var s = surveyMeasureState;
+      var rec = buildMeasureRecord();
+      rec.name = (rec.crop || '측정') + ' ' + kstNowStr().slice(5, 16).replace('T', ' ');
+      var arr = getMeasSaves(); arr.unshift(rec);
+      if (!setMeasSaves(arr)) return;
+      s.editingSaveId = rec.id;
+      try { measSaveToLibrary(rec, { jibunAddress: rec.jibunAddress || '', roadAddress: '' }); } catch (e) {}
+      s._editingItemId = null;
+      /* 주소는 백그라운드로 채워 저장본에 반영(전송 payload 는 sendAreaToChungchi 가 별도 조회) */
+      var _fp = rec.firstPoint;
+      if (_fp && typeof requestVWorldReverse === 'function') {
+        requestVWorldReverse(_fp[0], _fp[1]).then(function (a) {
+          var a2 = getMeasSaves();
+          for (var i = 0; i < a2.length; i++) if (a2[i].id === rec.id) { a2[i].jibunAddress = (a && a.jibunAddress) || ''; a2[i].roadAddress = (a && a.roadAddress) || ''; }
+          setMeasSaves(a2);
+        }).catch(function () {});
+      }
+      try { renderMapItems(); } catch (e) {}
+    } catch (e) {}
   }
 
   function sendAreaToSurvey() {
-    /* [v127] 저장하지 않았으면 먼저 저장하도록 안내(저장 후 전송) */
     var _s = surveyMeasureState;
+    var t0 = measureTotals();
+    if (!(t0.totalM2 > 0)) { showToast('전송할 면적이 없습니다.\n먼저 면적을 측정해주세요.', 3500, 'info'); return; }
+    /* [v169] 저장 안 했으면 조용히 저장(자료 보존)한 뒤 「바로」 전송·이동 — 예전 「저장 후 전송」 2단계 안내 제거 */
     var _hasWork = !!(_s.fieldPoints.length || _s.distancePoints.length || (_s.areas && _s.areas.length) || (_s.lines && _s.lines.length));
-    if (_hasWork && !_s.editingSaveId) {
-      if (window.confirm('저장 후 조사표를 전송할 수 있습니다.\n지금 저장할까요?\n\n[확인] 저장하기   [취소] 닫기')) { openMeasSaveSheet(); }
-      return;
-    }
+    if (_hasWork && !_s.editingSaveId) { quickSaveMeasure(); }
     /* [v26-6] 청취계산기에서 들어왔으면 그쪽 규약으로 보낸다 */
     if (ccMeasCtx()) { sendAreaToChungchi(); return; }
     /* [v108] 지도에서 「바로」 측정도구로 시작한 경우에도(계산기 컨텍스트 없음) 청취조사표로
-       전송 + 이동되도록 — 첫 재배면적 행(idx:0)에 반영되는 합성 컨텍스트를 만들고 청취 규약으로 보낸다.
-       (예전엔 이 경우 저장만 하고 이동을 안 해 「전송해도 조사표로 안 넘어감」 현상이 있었다) */
-    var t0 = measureTotals();
-    if (!(t0.totalM2 > 0)) { showToast('전송할 면적이 없습니다.\n먼저 면적을 측정해주세요.', 3500, 'info'); return; }
+       전송 + 이동되도록 — 첫 재배면적 행(idx:0)에 반영되는 합성 컨텍스트를 만들고 청취 규약으로 보낸다. */
     try { localStorage.setItem(CC_MEAS_CTX_KEY, JSON.stringify({ app: 'chungchi', idx: 0, ts: Date.now() })); } catch (e) {}
     sendAreaToChungchi();
   }
