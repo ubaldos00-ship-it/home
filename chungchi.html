@@ -1,4 +1,5 @@
-<!-- chungchi.html (v108) · 저장: 2026-08-29 11:22 KST · [v108] 계산기↔지도 전환 「진행중」 차단 오버레이 — 지도로 이동/지도에서 측정값 전송·복귀할 때, 적용 완료 전 사용자가 선택·이동해 잘못 선택되던 문제 방지. 이동 시 세션 플래그를 세우고 도착 페이지 로드~적용 완료(또는 최대 3.5초)까지 「진행중입니다. 잠시만 기다려주세요.」 오버레이로 상호작용 차단. 계산 로직 무변경. -->
+<!-- chungchi.html (v109) · 저장: 2026-09-06 07:21 KST · [v109] 맥류(겉보리·쌀보리·밀) 수확단위 개선 — ①각 수량이력 행 위에 기본중량 빠른선택 칩(40 포대 / 300·500·800·1,000 톤백) 추가: 보고 눌러 바로 선택, 현재값 강조. ②기본중량을 수동으로 입력하면(예:250) 가까운 값으로 스냅하지 않고 사용자가 친 값을 그대로 유지(스크롤·칩은 지정목록으로 스냅). ③지도 측정도구에서 넘어온 지역·작물 자동선택(면적만 넘어오던 것 보완, 하위작물 포함). 계산 로직 무변경. (v108 이하 유지) -->
+<!-- (이전)  chungchi.html (v108) · 저장: 2026-08-29 11:22 KST · [v108] 계산기↔지도 전환 「진행중」 차단 오버레이 — 지도로 이동/지도에서 측정값 전송·복귀할 때, 적용 완료 전 사용자가 선택·이동해 잘못 선택되던 문제 방지. 이동 시 세션 플래그를 세우고 도착 페이지 로드~적용 완료(또는 최대 3.5초)까지 「진행중입니다. 잠시만 기다려주세요.」 오버레이로 상호작용 차단. 계산 로직 무변경. -->
 <!-- (이전)  chungchi.html (v107) · 저장: 2026-08-29 08:40 KST · [v107] 저장/불러오기 목록: 작물명 옆에 「읍면동 리 지번」을 작물명 글자크기로 함께 표기(예: 논벼, 논공읍 금포리 324) — 시도·시군구 앞부분은 빼고 읍면동부터. 기존 📍 전체주소 줄은 그대로 유지. 계산 로직 무변경. (v106 이하 유지) -->
 <!-- (이전)  chungchi.html (v106) · 저장: 2026-08-29 07:42 KST · [v106] ①초기화(🔄) 시 자동저장(복원용) 데이터도 즉시 삭제 — 초기화/홈 후 다시 들어오면 이전 값이 복원되던 버그 수정. ②저장/불러오기 목록 표시 정리: 메인줄=작물명만, 주소는 「전체주소」 한 줄(잘림 없음), 주소 중복(라벨+📍줄) 제거. ③항목 버튼(잠금·위치·불러오기·휴지통)을 둘째 줄에 가로 균등폭 정렬. + [v114] 저장목록 📍=지도 저장핀 「보기」 모드(viewKey) 포함. 계산서식 변경 없음. -->
 <!-- (이전)  chungchi.html (v104) · 저장: 2026-08-18 17:30 KST · [v104] 저장/불러오기 주소표시·버튼 다음줄·JSON 버튼 색 -->
@@ -594,6 +595,13 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
 .drum-arr.up{top:2px;}.drum-arr.dn{bottom:2px;}
 .drum-box:active{background:#d5f5e3;}
 .drum-inp{display:none;position:absolute;inset:0;width:100%;height:100%;text-align:center;font-size:16px;font-weight:700;color:#27500A;background:#fff;border:2px solid #27ae60;border-radius:10px;z-index:10;padding:0;box-sizing:border-box;-webkit-appearance:none;appearance:none;} /* v51 */
+/* [v109] 맥류 기본중량 빠른선택 칩 — 행 위에 40/300/500/800/1000(포대·톤백) 버튼으로 직관 선택 */
+.hr2.grain{flex-direction:column;align-items:stretch;gap:6px;}
+.hr2-line{display:flex;gap:4px;align-items:center;flex-wrap:nowrap;width:100%;}
+.grain-chips{display:flex;gap:5px;flex-wrap:wrap;}
+.gchip{flex:1 1 0;min-width:52px;padding:6px 3px;border:1.5px solid #bfe3c8;border-radius:9px;background:#f2fbf5;color:#27500A;font-size:11px;font-weight:800;font-family:inherit;line-height:1.15;cursor:pointer;text-align:center;-webkit-tap-highlight-color:transparent;}
+.gchip .gcw{font-size:14px;font-weight:900;display:block;}
+.gchip.on{background:#27500A;border-color:#27500A;color:#fff;}
 
 /* ── 계산기 팝업 (통합계산기 동일) v41 ── */
 .calc-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:4000;align-items:flex-end;justify-content:center;}
@@ -1202,13 +1210,16 @@ function selCrop(b){
       db.dataset.val=c.w;
       db.querySelector('.drum-cur').textContent=f(c.w);   /* v13: 천단위 콤마 */
     }
+    if(isBarleyCrop(sC)) syncGrainChips(row);   /* [v109] 빠른선택 칩 하이라이트 */
     rRow(row);
   });
   uHT();updateHeadStatus();uAll();
-  // drum 유무가 바뀌면 rebuild
+  // drum 유무 또는 맥류(빠른선택 칩) 여부가 바뀌면 rebuild
   const hadDrum=!!document.querySelector('#hRows .drum-box');
   const needDrum=(WO[sC]||[]).length>1;
-  if(hadDrum!==needDrum){document.getElementById('hRows').innerHTML='';bldHR();}
+  const hadGrain=!!document.querySelector('#hRows .hr2.grain');   /* [v109] */
+  const needGrain=isBarleyCrop(sC);                               /* [v109] */
+  if(hadDrum!==needDrum || hadGrain!==needGrain){document.getElementById('hRows').innerHTML='';bldHR();}
 }
 
 function cA(inp){_fmtIntInput(inp);const row=inp.closest('.ar');const p=numVal(inp.value);const si=row.querySelector('.si');si.value=p>0?Number(Math.round(p*3.3058)).toLocaleString('ko-KR'):'';uAT();}
@@ -1293,7 +1304,8 @@ function measRow(b){
           }
         }
       }catch(e){}
-      _measPending={ area:_area, idx:_idx };   /* v12: 정수 */
+      _measPending={ area:_area, idx:_idx,
+        region:(res.region||'').trim(), crop:(res.crop||'').trim() };   /* [v109] 지역·작물도 함께 반영 */
       /* v21: 측정 점(핀)을 이 조사표 데이터로 보관 → 저장/불러오기에 함께 유지, 이모지 재클릭 시 그대로 표시 */
       if(res.pts && res.pts.length){ window.__ccMeasAreaPts = { pts:res.pts, mode:res.mode||'area' }; }
       try{ localStorage.removeItem('tenar_meas_result'); localStorage.removeItem('tenar_meas_ctx'); }catch(e){}
@@ -1301,8 +1313,38 @@ function measRow(b){
     if(_measPending===undefined) return;   /* [v44-17] 확인창에서 취소함 */
     _putMeas(true);
   }
+  /* [v109] 지도 측정도구에서 넘어온 지역·작물을 청취조사표에 자동 선택한다.
+     (예전엔 면적만 반영되고 지역·작물은 무시됐음) 사용자가 이미 고른 값이 있으면 덮어쓰지 않는다.
+     복원이 값을 지울 수 있어 _putMeas 재적용 스케줄에 함께 태워 여러 번 시도한다. */
+  var _SUBCROP_PARENT={'노지봄무':'무','시설봄무':'무','노지봄배추':'배추','시설봄배추':'배추'};
+  function _applyRegionCrop(){
+    if(!_measPending || _measPending===undefined) return;
+    try{
+      var rgn=_measPending.region, crp=_measPending.crop;
+      if(rgn && !sR){
+        var rb=document.querySelector('.brg[data-region="'+rgn+'"]');
+        if(rb) selReg(rb);
+        else if(typeof selOtherReg==='function'){ selOtherReg({value:rgn}); }
+      }
+      if(crp && !sC){
+        if(_SUBCROP_PARENT[crp]){
+          var pk=_SUBCROP_PARENT[crp];
+          var pb=document.querySelector('.bc[data-crop="'+pk+'"]');
+          if(pb){
+            selParentCrop(pb, pk);
+            var subBtn=document.querySelector('#subcropBtns .sub-bc[data-crop="'+crp+'"]');
+            if(subBtn) selSubCrop(subBtn, crp);
+          }
+        }else{
+          var cb=document.querySelector('.bc[data-crop="'+crp+'"]');
+          if(cb) selCrop(cb);
+        }
+      }
+    }catch(e){}
+  }
   function _putMeas(showUi){
     if(!_measPending || _measPending===undefined) return;
+    _applyRegionCrop();   /* [v109] 지역·작물 반영 */
     var rows=document.querySelectorAll('#areaRows .ar');
     if(!rows.length) return;
     var idx=Math.min(_measPending.idx, rows.length-1);
@@ -1385,11 +1427,27 @@ function playClick(speed){
     osc.start(ctx.currentTime);osc.stop(ctx.currentTime+0.06);
   }catch(e){}
 }
+/* [v109] 맥류 기본중량 빠른선택 칩 — 현재 중량과 일치하는 칩만 강조 */
+function syncGrainChips(row){
+  if(!row) return;
+  var box=row.querySelector('.drum-box'); if(!box) return;
+  var cur=parseInt(box.dataset.val)||0;
+  row.querySelectorAll('.gchip').forEach(function(b){
+    b.classList.toggle('on', (parseInt(b.dataset.w)||0)===cur);
+  });
+}
+/* [v109] 칩을 누르면 그 행의 기본중량을 해당 값으로 설정(드럼과 동일 로직 재사용) */
+function grainPick(btn, v){
+  var row=btn.closest('.hr2'); if(!row) return;
+  var box=row.querySelector('.drum-box');
+  if(box && typeof box._setVal==='function') box._setVal(v);
+}
 function initDrum(box){
   const inp=box.parentNode.querySelector('.drum-inp');
   let lY=0,lT=0,moved=false;
-  function setVal(v){
-    if(isBarleyCrop(sC)) v=normalizeGrainWeight(v);   /* [v69] 맥류: 40 또는 100kg 단위 */
+  function setVal(v, keepRaw){
+    /* [v109] keepRaw(수동 입력)면 정규화(가까운 값 스냅)를 건너뛰고 사용자가 친 값을 그대로 유지 */
+    if(isBarleyCrop(sC)) v = keepRaw ? Math.max(1,Math.round(v)) : normalizeGrainWeight(v);   /* [v69] 맥류: 40 또는 100kg 단위 */
     else v=Math.max(1,Math.round(v)); /* v46: 상한 제거 */
     box.dataset.val=v;
     box.querySelector('.drum-cur').textContent=f(v);   /* v13: 천단위 콤마 (표시만, 값은 dataset.val) */
@@ -1401,10 +1459,12 @@ function initDrum(box){
         const ul=r.querySelector('.hul'); if(ul) ul.textContent=unit;   /* [v69] 40→포대, 그 외→톤백 */
         const du=document.getElementById('dUnit'); if(du) du.textContent=unit;   /* [v69] 상단 수확단위 */
         const dw=document.getElementById('dWeight'); if(dw) dw.textContent=f(v)+' kg';   /* [v69] 상단 기본중량 */
+        syncGrainChips(r);   /* [v109] 빠른선택 칩 하이라이트 동기화 */
       }
       rRow(r);uHT();
     }
   }
+  box._setVal=setVal;   /* [v109] 빠른선택 칩에서 같은 로직을 재사용 */
   function doStep(dir,dt){
     const cur=parseInt(box.dataset.val)||1;
     if(isBarleyCrop(sC)){   /* [v69] 맥류: 지정 목록[40,300,500,800,1000] 순서 이동 */
@@ -1430,7 +1490,7 @@ function initDrum(box){
   if(inp){
     inp.addEventListener('blur',()=>{
       const v=parseInt(inp.value);
-      if(!isNaN(v)&&v>=1)setVal(v); /* v46: 상한 제거 */
+      if(!isNaN(v)&&v>=1)setVal(v, true); /* v46: 상한 제거 · [v109] 수동입력값 그대로 유지(스냅 안 함) */
       inp.style.display='none';
     });
     inp.addEventListener('keydown',e=>{if(e.key==='Enter')inp.blur();});
@@ -1491,15 +1551,25 @@ function bldHR(){
       <input type="number" inputmode="numeric" min="${isBarleyCrop(crop)?40:1}" step="${isBarleyCrop(crop)?100:1}" class="drum-inp" value="${w}">
     </div>`:
     `<input type="text" inputmode="decimal" class="hw" autocomplete="off" value="${Number(w).toLocaleString('ko-KR')}" oninput="formatDecimalInput(this);this.dataset.m=1;rRow(this.closest('.hr2'));uHT()" style="${hwStyle}">`;
-  d.innerHTML=`<input type="text" inputmode="decimal" placeholder="수량" class="hq needs-input" autocomplete="off" enterkeyhint="done" oninput="formatDecimalInput(this);rRow(this.closest('.hr2'));uHT()" style="${hqStyle}">
+  const lineHtml=`<input type="text" inputmode="decimal" placeholder="수량" class="hq needs-input" autocomplete="off" enterkeyhint="done" oninput="formatDecimalInput(this);rRow(this.closest('.hr2'));uHT()" style="${hqStyle}">
   <span class="hl hul" style="padding:0 1px;font-size:11px">${u}</span><span class="hl">×</span>
   ${drumHtml}
   <span class="hl">kg =</span>
   <input type="text" inputmode="decimal" class="hres" autocomplete="off" placeholder="0" oninput="formatDecimalInput(this);uHT()" style="${hresStyle}">
   <span class="hl">kg</span>
   <button class="rb" onclick="rmHR(this)">−</button>`; /* v53: 행에 맞게 배분 · v13: 천단위 콤마 */
+  /* [v109] 맥류: 행 위에 기본중량 빠른선택 칩(40/300/500/800/1000)을 얹고, 입력줄은 .hr2-line 으로 감싼다 */
+  if(isBarleyCrop(crop)){
+    const chipsHtml='<div class="grain-chips">'+BARLEY_STEPS.map(function(s){
+      return '<button type="button" class="gchip" data-w="'+s+'" onclick="grainPick(this,'+s+')"><span class="gcw">'+Number(s).toLocaleString('ko-KR')+'</span>'+getHarvestUnit(crop,s)+'</button>';
+    }).join('')+'</div>';
+    d.className='hr2 grain';
+    d.innerHTML=chipsHtml+'<div class="hr2-line">'+lineHtml+'</div>';
+  }else{
+    d.innerHTML=lineHtml;
+  }
   document.getElementById('hRows').appendChild(d);
-  if(hasDrum){const box=d.querySelector('.drum-box');initDrum(box);}
+  if(hasDrum){const box=d.querySelector('.drum-box');initDrum(box); if(isBarleyCrop(crop)) syncGrainChips(d);}
 }
 function addHR(){
   bldHR();
@@ -2139,6 +2209,7 @@ function _ccApply(d){
         if(dinp) dinp.value = rowData.drumVal;
         var ul2 = newRow.querySelector('.hul');   /* [v69] 맥류: 중량으로 단위명 복원(40=포대, 그 외=톤백) */
         if(ul2 && isBarleyCrop(sC)) ul2.textContent = getHarvestUnit(sC, rowData.drumVal);
+        if(isBarleyCrop(sC)) syncGrainChips(newRow);   /* [v109] 복원 시 빠른선택 칩 하이라이트 */
       } else if(hw){
         hw.value = rowData.hw || '';
         hw.dataset.m = '1';
