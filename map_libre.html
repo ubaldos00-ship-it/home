@@ -1,4 +1,4 @@
-<!-- map_v171.html (v171 · TENAR V1.5) · 저장: 2026-09-06 10:56 KST · [v171] 축소(레벨13 미만=점, 13~15=작은핀)에서 핀 아래 「읍면동 리 지번」 라벨이 핀(점)을 가리던 문제 수정 — 위쪽 작물명이 핀을 안 가리는 것처럼, 아래 라벨을 점(중심=좌표) 밑으로 충분히 내려 항상 핀이 보이게 함. (v170 이하 유지) -->
+<!-- map_v172.html (v172 · TENAR V1.5) · 저장: 2026-09-07 02:50 KST · [v172] 생산량목록 연결자료 선택·삭제 개선 — ①포구도구·측정도구에서 어떤 연결자료를 편집(선택)하고 있으면, 생산량목록의 그 항목에 파란 테두리+「✓ 선택됨」 배지로 강조(같은 작물 여러 건일 때 어느 것이 선택됐는지 구분). ②도구 팝업 맨 아래에 「연결자료 삭제(🗑)」 버튼 추가 — 지금 선택된 중복·불필요 연결자료를 바로 삭제(선택 중일 때만 표시, 잠금자료는 목록에서 잠금해제 후). 대표위치·다른 연결자료는 유지. (v171 이하 유지) -->
 <!-- (v155) 저장: 2026-09-04 14:22 KST · [v155] 카카오 지도 「🔎확대」 버튼 추가 — 카카오 위성 최대(레벨1) 위를 CSS로 더 크게(1.5배·2.2배, 해상도 낮아도) 보이게(아이폰에서도 더 확대). 확대 중엔 드래그·줌 잠금(좌표 어긋남 방지)·현재위치 중앙. (v154 이하 유지) -->
 <!-- (v154) 저장: 2026-09-04 14:11 KST · [v154] 네이버 지도 로드 방식을 예전 작동 파일(0.지도/map.html)과 동일하게 수정 — oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=w8m4oe36ev (구형 openapi?ncpClientId 아님). 도메인 등록된 배포본에서 표시됨. (v153 이하 유지) -->
 <!-- (v153) 저장: 2026-09-04 14:05 KST · [v153] 네이버 지도 maxZoom 21로 상향 + 초기 확대 심화(zoom 20) — 해상도 낮아도(업스케일=흐릿) 더 확대되게. 카카오 위성은 최대 레벨 1(이미 최대·카카오 자체 한계). (v152 이하 유지) -->
@@ -1706,6 +1706,10 @@ TenarSecureStore.init('map',
       <!-- [v166] A/B포구 GPS 좌표(위도, 경도) + 복사 — 카카오·네이버 검색용 -->
       <div class="tp-sec">⑨ A/B포구 좌표</div>
       <div id="fpCoordBox"><div class="fp-coord-empty">가·나 지정 후 A/B포구가 계산되면 좌표가 표시됩니다.</div></div>
+
+      <!-- [v172] 생산량목록에서 불러온 연결자료(포구)를 편집 중일 때만 표시 — 중복·불필요 자료 삭제 -->
+      <div class="tp-sec" id="fpDeleteSec" style="display:none">⑩ 연결자료 삭제</div>
+      <button class="tool-btn danger one-line" type="button" id="fpDeleteLinked" style="width:100%;display:none">🗑 이 연결자료(포구) 삭제</button>
     </div>
   </div>
 
@@ -1751,6 +1755,10 @@ TenarSecureStore.init('map',
       <button class="tool-btn one-line" type="button" id="btnNewSurvey" style="width:100%;">＋ 새 조사 시작</button>
       <div id="resultToggle"><span>측정 결과</span><span id="resultArrow">▶</span></div>
       <div id="resultBox"><span class="res-empty">측정 결과가 없습니다.</span></div>
+
+      <!-- [v172] 생산량목록에서 불러온 연결자료(면적·길이)를 편집 중일 때만 표시 — 중복·불필요 자료 삭제 -->
+      <div class="tp-sec" id="measDeleteSec" style="display:none">⑥ 연결자료 삭제</div>
+      <button class="tool-btn danger one-line" type="button" id="measDeleteLinked" style="width:100%;display:none">🗑 이 연결자료(측정) 삭제</button>
     </div>
   </div>
 
@@ -1827,8 +1835,8 @@ TenarSecureStore.init('map',
      · 키는 HTML에 노출되므로 반드시 허용 도메인을 위 주소로 제한하세요.
        제한해 두면 타인이 키를 복사해도 다른 사이트에서는 쓸 수 없습니다.
      =================================================================== */
-  var MAP_VERSION = 'v171';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
-  var MAP_VERSION_TIME = '2026-09-06 10:56 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
+  var MAP_VERSION = 'v172';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
+  var MAP_VERSION_TIME = '2026-09-07 02:50 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
   var VWORLD_API_KEY = '00EB5BC0-22B4-3B7E-89D1-341699F7CE05';
   var VWORLD_DOMAIN  = 'ubaldos00-ship-it.github.io';   /* 호스트만 · 스킴 금지 */
 
@@ -2165,6 +2173,37 @@ TenarSecureStore.init('map',
     } catch (e) {}
     renderMapItems();                 /* FeatureCollection 새로 만들어 setData */
     try { map.triggerRepaint(); } catch (e) {}
+  }
+  /* [v172] 포구도구에서 지금 편집 중인 연결자료(포구)를 삭제 — 중복·불필요 자료 정리용 */
+  function fpDeleteLinkedItem() {
+    var id = (typeof fp !== 'undefined' && fp) ? fp._editingItemId : null;
+    if (!id) { showToast('삭제할 연결자료가 없습니다.\n(생산량목록에서 포구를 먼저 선택하세요)', 3000, 'info'); return; }
+    var it = getMapItems().filter(function (x) { return x.id === id; })[0];
+    if (it && it.locked) { showToast('잠긴 연결자료입니다.\n생산량목록에서 잠금을 먼저 풀어주세요.', 3600); return; }
+    if (!window.confirm('지금 선택된 연결자료(포구)를 삭제하시겠습니까?\n(대표 위치·다른 연결자료는 그대로 유지됩니다)')) return;
+    removeMapItemCompletely(id);
+    try { fp._editingItemId = null; fp.editingId = null; } catch (e) {}
+    var s = surveyMeasureState;
+    s.fieldPoints = []; s.fieldPolygon = null; s.fieldAreaM2 = 0; s.fieldPerimeterM = 0; s.isFieldComplete = false;
+    if (typeof clearSelectedParcelHighlight === 'function') clearSelectedParcelHighlight();
+    setSurveyMode('none');
+    updateMeasurementSources();
+    try { fpReset(); } catch (e) {}
+    try { applyMeasPointsVisibility(); } catch (e) {}
+    try { renderMapItems(); } catch (e) {}
+    try { fpSyncButtons(); } catch (e) {}
+    showToast('연결자료(포구)를 삭제했습니다.', 2400, 'success');
+  }
+  /* [v172] 측정도구에서 지금 편집 중인 연결자료(면적·길이)를 삭제 */
+  function measDeleteLinkedItem() {
+    var id = (surveyMeasureState && surveyMeasureState._editingItemId) || null;
+    if (!id) { showToast('삭제할 연결자료가 없습니다.\n(생산량목록에서 면적·길이를 먼저 선택하세요)', 3000, 'info'); return; }
+    var it = getMapItems().filter(function (x) { return x.id === id; })[0];
+    if (it && it.locked) { showToast('잠긴 연결자료입니다.\n생산량목록에서 잠금을 먼저 풀어주세요.', 3600); return; }
+    if (!window.confirm('지금 선택된 연결자료(측정)를 삭제하시겠습니까?\n(대표 위치·다른 연결자료는 그대로 유지됩니다)')) return;
+    removeMapItemCompletely(id);   /* 측정 편집상태·도형 정리 포함 */
+    try { measSyncButtons(); } catch (e) {}
+    showToast('연결자료(측정)를 삭제했습니다.', 2400, 'success');
   }
   /* [v47-3] 즐겨찾기(부모)와 그 아래 연결자료를 모두 지운다 */
   function removeFavoriteCompletely(favoriteId) {
@@ -5012,13 +5051,18 @@ TenarSecureStore.init('map',
   function buildFavChildren(box, favId) {
     box.innerHTML = '';
     var icons = { fieldplot: '🚩', area: '▱', distance: '↔' };
+    /* [v172] 지금 포구도구·측정도구에서 편집(선택) 중인 연결자료 id — 목록에서 테두리로 강조 */
+    var _selItemId = (typeof fp !== 'undefined' && fp && fp._editingItemId) ||
+                     (surveyMeasureState && surveyMeasureState._editingItemId) || null;
     itemsOfFav(favId).forEach(function (it) {
       /* [v63-5] 종류별 색으로 은은하게 구분 (테두리 왼쪽 + 옅은 배경) */
       var TYPECOL = { fieldplot: '#7c3aed', area: '#1f8a4c', distance: '#1a5fd0' };
       var TYPEBG  = { fieldplot: '#f5f3ff', area: '#f0faf4', distance: '#eff5ff' };
       var tcol = TYPECOL[it.type] || '#9ca3af';
       var row = el('div', 'fav-child-row');
-      row.style.cssText = 'display:flex;align-items:center;gap:5px;width:100%;box-sizing:border-box;padding:6px 8px;margin-top:4px;border-radius:7px;border-left:3px solid ' + tcol + ';background:' + (TYPEBG[it.type] || '#f7f7fa') + ';';
+      var _isSel = (_selItemId && it.id === _selItemId);   /* [v172] 도구에서 선택 중인 항목 */
+      row.style.cssText = 'display:flex;align-items:center;gap:5px;width:100%;box-sizing:border-box;padding:6px 8px;margin-top:4px;border-radius:7px;border-left:3px solid ' + tcol + ';background:' + (TYPEBG[it.type] || '#f7f7fa') + ';'
+        + (_isSel ? 'outline:2.5px solid #0078FF;outline-offset:1px;box-shadow:0 0 0 3px rgba(0,120,255,.18);' : '');   /* [v172] 선택 강조 테두리 */
       /* [v63-7·8] 이름(종류) · 작물 · 주소 · 저장일시(작게). 포구도 면적/길이와 같은 형식. */
       var pfav = getFavs().filter(function (f) { return f.id === favId; })[0];
       var meta = [];
@@ -5027,6 +5071,7 @@ TenarSecureStore.init('map',
       if (addr) meta.push('<span style="color:#888;">' + escapeHtml(mapItemShortAddr(addr)) + '</span>');
       var ts = (it.updatedAt || it.createdAt || '').slice(5, 16).replace('T', ' ');   /* MM-DD HH:MM */
       var nm = el('div', null,
+        (_isSel ? '<span style="display:inline-block;font-size:10px;font-weight:800;color:#fff;background:#0078FF;border-radius:6px;padding:1px 5px;margin-right:4px;">✓ 선택됨</span>' : '') +   /* [v172] 도구 선택 강조 */
         '<span style="font-size:13px;">' + (icons[it.type] || '•') + '</span> ' +
         '<span style="font-size:12.5px;font-weight:700;color:' + tcol + ';">' + escapeHtml(it.name || it.type) + '</span>' +
         (meta.length ? '<span style="font-size:11.5px;font-weight:600;color:#333;"> · ' + meta.join(' · ') + '</span>' : '') +
@@ -7363,6 +7408,10 @@ TenarSecureStore.init('map',
     if (!lock && typeof updateUndoRedoButtons === 'function') updateUndoRedoButtons();
     var f = document.getElementById('btnFinish');
     if (f) { f.textContent = lock ? '✓ 완료 ON' : '✓ 완료'; f.classList.toggle('active', lock); }
+    /* [v172] 연결자료(면적·길이) 편집 중일 때만 「연결자료 삭제」 버튼 표시 */
+    var _measHasLinked = !!(surveyMeasureState && surveyMeasureState._editingItemId);
+    var _md = document.getElementById('measDeleteLinked'); if (_md) _md.style.display = _measHasLinked ? '' : 'none';
+    var _mds = document.getElementById('measDeleteSec'); if (_mds) _mds.style.display = _measHasLinked ? '' : 'none';
   }
   /* [v46-9][v46-10] 잠금 토글 — 해제할 때는 확인창 */
   /* [v48-1] 「＋ 새 조사 시작」 — 잠금을 풀지 않고 다음 필지로 넘어간다.
@@ -11242,6 +11291,10 @@ TenarSecureStore.init('map',
     if (typeof fpUpdateGuide === 'function') fpUpdateGuide();   /* [v28-2] */
     if (typeof fpUpdateStepGuide === 'function') fpUpdateStepGuide();   /* [v138] 단계 안내 갱신 */
     if (typeof fpUpdateCoordBox === 'function') fpUpdateCoordBox();   /* [v166] A/B포구 좌표 갱신 */
+    /* [v172] 연결자료(포구) 편집 중일 때만 「연결자료 삭제」 버튼 표시 */
+    var _fpHasLinked = !!(fp && fp._editingItemId);
+    set('fpDeleteLinked', function (b) { b.style.display = _fpHasLinked ? '' : 'none'; });
+    var _fpDelSec = document.getElementById('fpDeleteSec'); if (_fpDelSec) _fpDelSec.style.display = _fpHasLinked ? '' : 'none';
   }
 
   /* [v17-1] 포구도구 열기/닫기 — 측정도구와 동시에 열리지 않게 한다 */
@@ -12036,6 +12089,8 @@ TenarSecureStore.init('map',
     on('fpTUndo', smartUndo);
     on('fpTRedo', geoRedo);
     on('fpTEdit', fpToggleEdit);
+    on('fpDeleteLinked', fpDeleteLinkedItem);   /* [v172] 연결자료(포구) 삭제 */
+    on('measDeleteLinked', measDeleteLinkedItem);   /* [v172] 연결자료(측정) 삭제 */
     on('fpTCenter', addCenterPoint);
     on('fpTReset', fpToolReset);
     on('fpTCancelArea', fpCancelArea);   /* [v22-4] */
