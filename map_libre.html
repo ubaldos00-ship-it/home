@@ -1,4 +1,4 @@
-<!-- map_v169.html (v169 · TENAR V1.5) · 저장: 2026-09-06 07:41 KST · [v169] 측정도구→청취조사표 전송 원터치화 — ①「저장 후 전송」 2단계 안내를 없애고, 저장 안 한 측정은 조용히 저장(자료 보존)한 뒤 곧바로 청취조사표로 이동. ②전송 시 지번(핀)주소를 확실히 함께 전송 — 저장핀이 아니어서 주소가 없으면 좌표로 역지오코딩해 채운 뒤 전송(최대 1.8초 대기 후에도 전송 진행). 지역·작물과 함께 청취조사표에 자동 반영. (v168 이하 유지) -->
+<!-- map_v170.html (v170 · TENAR V1.5) · 저장: 2026-09-06 10:44 KST · [v170] 작물핀 아래 라벨에 「리·지번」 추가 — 핀 위=작물명, 핀 아래=읍면동 옆에 리·지번까지 표기(예: 대가야읍 장기리 272-2). 저장핀의 지번주소에서 읍면동 뒤 리·지번(본번-부번·산번지)만 뽑아 표시. 「저장핀 표시」 설정에 「리·지번 표기」 on/off 토글 추가(기본 켜짐, 끄면 읍면동만). (v169 이하 유지) -->
 <!-- (v155) 저장: 2026-09-04 14:22 KST · [v155] 카카오 지도 「🔎확대」 버튼 추가 — 카카오 위성 최대(레벨1) 위를 CSS로 더 크게(1.5배·2.2배, 해상도 낮아도) 보이게(아이폰에서도 더 확대). 확대 중엔 드래그·줌 잠금(좌표 어긋남 방지)·현재위치 중앙. (v154 이하 유지) -->
 <!-- (v154) 저장: 2026-09-04 14:11 KST · [v154] 네이버 지도 로드 방식을 예전 작동 파일(0.지도/map.html)과 동일하게 수정 — oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=w8m4oe36ev (구형 openapi?ncpClientId 아님). 도메인 등록된 배포본에서 표시됨. (v153 이하 유지) -->
 <!-- (v153) 저장: 2026-09-04 14:05 KST · [v153] 네이버 지도 maxZoom 21로 상향 + 초기 확대 심화(zoom 20) — 해상도 낮아도(업스케일=흐릿) 더 확대되게. 카카오 위성은 최대 레벨 1(이미 최대·카카오 자체 한계). (v152 이하 유지) -->
@@ -1825,8 +1825,8 @@ TenarSecureStore.init('map',
      · 키는 HTML에 노출되므로 반드시 허용 도메인을 위 주소로 제한하세요.
        제한해 두면 타인이 키를 복사해도 다른 사이트에서는 쓸 수 없습니다.
      =================================================================== */
-  var MAP_VERSION = 'v169';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
-  var MAP_VERSION_TIME = '2026-09-06 07:41 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
+  var MAP_VERSION = 'v170';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
+  var MAP_VERSION_TIME = '2026-09-06 10:44 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
   var VWORLD_API_KEY = '00EB5BC0-22B4-3B7E-89D1-341699F7CE05';
   var VWORLD_DOMAIN  = 'ubaldos00-ship-it.github.io';   /* 호스트만 · 스킴 금지 */
 
@@ -2634,6 +2634,7 @@ TenarSecureStore.init('map',
     landuseOpacity: 0.45,   /* [v9] 토지이용계획 기본 투명도 45% */
     showFavPins: true,
     showCropName: true,   /* [v11-8] 작물명 표시 (기본 켜짐) */
+    showRiJibun: true,    /* [v170] 핀 아래 「읍면동」 옆에 리·지번 함께 표기 (기본 켜짐) */
     showAreaLabel: true,  /* [v28-7] 도형의 작물명·㎡·평 표시 */
     showFpValues: true,   /* [v28-7] 가-나 총길이·세로총길이·A/B 기점 값 표시 */
     showLandInfo: false,  /* [v40-8] 토지정보 조회 (지적도와 분리 · 기본 꺼짐) */
@@ -4055,8 +4056,15 @@ TenarSecureStore.init('map',
     var favs = getFavs();
     favs.forEach(function (f) {
       /* [v11-8] 작물별 필터 없음 — 저장핀은 모두 표시, 작물명만 켜고 끔 */
-      /* [v128] 핀 아래에 읍면동 표기(주소에서 추출) */
-      var _femd = ''; try { var _fa = parseAdminFromAddr(f.jibunAddress || f.name || ''); _femd = (_fa && _fa.eupmyeondong) || ''; } catch (e2) {}
+      /* [v128] 핀 아래에 읍면동 표기(주소에서 추출) · [v170] 설정 켜지면 리·지번까지(예: 대가야읍 장기리 272-2) */
+      var _femd = ''; try {
+        var _addrStr = f.jibunAddress || f.name || '';
+        var _fa = parseAdminFromAddr(_addrStr); _femd = (_fa && _fa.eupmyeondong) || '';
+        if (settings.showRiJibun !== false) {
+          var _rj = riJibunFromAddr(_addrStr, _femd);
+          if (_rj) _femd = (_femd ? (_femd + ' ') : '') + _rj;
+        }
+      } catch (e2) {}
       /* [v143] 핀 상단 작물명: 핀+연결자료의 모든 작물을 함께 표시(예: 감자 · 논벼 · 양파) */
       var _crops = favAllCrops(f);
       var _cropLabel = _crops.length ? _crops.join(' · ') : '없음';
@@ -5477,7 +5485,7 @@ TenarSecureStore.init('map',
 
   /* ================= 저장핀·작물 표시 ================= */
   /* [v11-8] 저장핀 시트 — 토글 2개만 (저장핀 표시/숨김, 작물명 표시/숨김). 작물별 필터 없음 */
-  var PIN_TOGGLE_KEYS = ['showFavPins', 'showCropName', 'showRidgeDots', 'showAreaLabel', 'showFpValues'];
+  var PIN_TOGGLE_KEYS = ['showFavPins', 'showCropName', 'showRiJibun', 'showRidgeDots', 'showAreaLabel', 'showFpValues'];   /* [v170] 리·지번 포함 */
   function pinsAllOn() { return PIN_TOGGLE_KEYS.every(function (k) { return settings[k] !== false; }); }
   function openPinsSheet() {
     var box = el('div');
@@ -5530,6 +5538,11 @@ TenarSecureStore.init('map',
       '작물명 표시', '핀 위에 작물명을 함께 표시합니다',
       function () { return !!settings.showCropName; },
       function (v) { settings.showCropName = v; }));
+
+    box.appendChild(toggleRow(
+      '리·지번 표기', '핀 아래 읍면동 옆에 리·지번을 함께 표시합니다 (예: 대가야읍 장기리 272-2)',   /* [v170] */
+      function () { return settings.showRiJibun !== false; },
+      function (v) { settings.showRiJibun = v; }));
 
     /* [v141] 현장모드 진동 on/off — A/B 도착 시 진동(배터리 절약하려면 끔) */
     box.appendChild((function () {
@@ -8999,7 +9012,7 @@ TenarSecureStore.init('map',
     Object.keys(settings.overlays).forEach(function (k) { settings.overlays[k] = false; });
     settings.cadastralOpacity = DEFAULT_SETTINGS.cadastralOpacity;
     settings.landuseOpacity = DEFAULT_SETTINGS.landuseOpacity;
-    settings.showFavPins = true; settings.showCropName = true;
+    settings.showFavPins = true; settings.showCropName = true; settings.showRiJibun = true;   /* [v170] */
     settings.showAreaLabel = true; settings.showFpValues = true; settings.showRidgeDots = true;
     settings.showLandInfo = false;
     saveSettings();
@@ -9359,6 +9372,7 @@ TenarSecureStore.init('map',
       if (typeof savedSettings.cropFilter === 'string') settings.cropFilter = savedSettings.cropFilter;
       /* [v40] 새 설정값 복원 (없으면 기본값 유지) */
       if (typeof savedSettings.showCropName === 'boolean') settings.showCropName = savedSettings.showCropName;
+      if (typeof savedSettings.showRiJibun === 'boolean') settings.showRiJibun = savedSettings.showRiJibun;   /* [v170] */
       if (typeof savedSettings.showAreaLabel === 'boolean') settings.showAreaLabel = savedSettings.showAreaLabel;
       if (typeof savedSettings.showFpValues === 'boolean') settings.showFpValues = savedSettings.showFpValues;
       if (typeof savedSettings.showLandInfo === 'boolean') settings.showLandInfo = savedSettings.showLandInfo;   /* [v40-8] */
@@ -12340,6 +12354,25 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     var end = (emdIdx >= 0) ? emdIdx : t.length;
     out.sigungu = t.slice(1, end).filter(function (x) { return /[시군구]$/.test(x); }).join(' ');
     return out;
+  }
+  /* [v170] 지번주소에서 「읍면동」 뒤에 오는 리·지번(예: 장기리 272-2)만 뽑아낸다.
+     - 읍면동 다음의 「리」 토큰 + 첫 지번(숫자/산번지)까지. 리가 없으면 지번만.
+     - 도로명 등은 지번주소가 아니어서 대상 아님(있어도 숫자 토큰에서 멈춤). */
+  function riJibunFromAddr(addr, emd) {
+    if (!addr) return '';
+    var t = String(addr).trim().split(/\s+/);
+    var idx = -1, i;
+    if (emd) { for (i = 0; i < t.length; i++) { if (t[i] === emd) { idx = i; break; } } }
+    if (idx < 0) { for (i = 1; i < t.length; i++) { if (/[읍면동]$/.test(t[i])) { idx = i; break; } } }
+    if (idx < 0) return '';
+    var rest = t.slice(idx + 1), parts = [];
+    for (var j = 0; j < rest.length; j++) {
+      var tok = rest[j];
+      if (/리$/.test(tok)) { parts.push(tok); continue; }          /* 리 이름 */
+      if (tok === '산') { parts.push(tok); continue; }             /* 산번지 표시(다음 토큰이 번지) */
+      if (/^산?\s*\d/.test(tok) || /\d+-?\d*$/.test(tok)) { parts.push(tok); break; }  /* 지번(본번-부번, 산번지) → 잡으면 끝 */
+    }
+    return parts.join(' ');
   }
   function areaRenumber(arr) {
     var cnt = {};
