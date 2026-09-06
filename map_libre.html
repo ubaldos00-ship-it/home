@@ -1,4 +1,4 @@
-<!-- map_v172.html (v172 · TENAR V1.5) · 저장: 2026-09-07 02:50 KST · [v172] 생산량목록 연결자료 선택·삭제 개선 — ①포구도구·측정도구에서 어떤 연결자료를 편집(선택)하고 있으면, 생산량목록의 그 항목에 파란 테두리+「✓ 선택됨」 배지로 강조(같은 작물 여러 건일 때 어느 것이 선택됐는지 구분). ②도구 팝업 맨 아래에 「연결자료 삭제(🗑)」 버튼 추가 — 지금 선택된 중복·불필요 연결자료를 바로 삭제(선택 중일 때만 표시, 잠금자료는 목록에서 잠금해제 후). 대표위치·다른 연결자료는 유지. (v171 이하 유지) -->
+<!-- map_v173.html (v173 · TENAR V1.5) · 저장: 2026-09-07 04:56 KST · [v173] 포구도구/측정도구 「수정모드에서 꼭짓점(핀) 선택이 안 되던」 문제 수정 — 원인: 눈에 보이는 꼭짓점 동그라미·번호는 DOM 마커(저장된 점 좌표)로 그려지는데, 탭(선택) 감지는 별도의 지도 GL 꼭짓점 레이어를 조회했다. 그 레이어가 숨김/미렌더 상태면 「핀은 보이는데 탭이 안 잡히는」 현상이 생김. 해결: 이제 보이는 점 좌표(fieldPoints 등)에서 화면좌표로 직접 가장 가까운 꼭짓점을 잡도록 바꿔, GL 렌더 상태와 무관하게 항상 선택되게 함(+수정 진입 시 소스 재동기화). (v172 이하 유지) -->
 <!-- (v155) 저장: 2026-09-04 14:22 KST · [v155] 카카오 지도 「🔎확대」 버튼 추가 — 카카오 위성 최대(레벨1) 위를 CSS로 더 크게(1.5배·2.2배, 해상도 낮아도) 보이게(아이폰에서도 더 확대). 확대 중엔 드래그·줌 잠금(좌표 어긋남 방지)·현재위치 중앙. (v154 이하 유지) -->
 <!-- (v154) 저장: 2026-09-04 14:11 KST · [v154] 네이버 지도 로드 방식을 예전 작동 파일(0.지도/map.html)과 동일하게 수정 — oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=w8m4oe36ev (구형 openapi?ncpClientId 아님). 도메인 등록된 배포본에서 표시됨. (v153 이하 유지) -->
 <!-- (v153) 저장: 2026-09-04 14:05 KST · [v153] 네이버 지도 maxZoom 21로 상향 + 초기 확대 심화(zoom 20) — 해상도 낮아도(업스케일=흐릿) 더 확대되게. 카카오 위성은 최대 레벨 1(이미 최대·카카오 자체 한계). (v152 이하 유지) -->
@@ -1835,8 +1835,8 @@ TenarSecureStore.init('map',
      · 키는 HTML에 노출되므로 반드시 허용 도메인을 위 주소로 제한하세요.
        제한해 두면 타인이 키를 복사해도 다른 사이트에서는 쓸 수 없습니다.
      =================================================================== */
-  var MAP_VERSION = 'v172';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
-  var MAP_VERSION_TIME = '2026-09-07 02:50 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
+  var MAP_VERSION = 'v173';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
+  var MAP_VERSION_TIME = '2026-09-07 04:56 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
   var VWORLD_API_KEY = '00EB5BC0-22B4-3B7E-89D1-341699F7CE05';
   var VWORLD_DOMAIN  = 'ubaldos00-ship-it.github.io';   /* 호스트만 · 스킴 금지 */
 
@@ -7286,6 +7286,10 @@ TenarSecureStore.init('map',
     var s = surveyMeasureState;
     if (s.locked) { showToast('잠금을 해제한 후 수정하세요.', 3000, 'info'); return; }   /* [v46-9] */
     if (!s.fieldPoints.length && !s.distancePoints.length) { showToast('수정할 측정 지점이 없습니다.', 3000, 'info'); return; }
+    /* [v173] 수정 진입 시 지도 소스를 상태와 다시 맞춘다 — 레이어 전환(setStyle) 등으로 GL 꼭짓점 소스가
+       비어 있어도(핀은 보이는데 GL은 빈 상태) 꼭짓점 히트테스트가 정상 동작하도록 보강 */
+    try { updateFieldGeometry(); } catch (e) {}
+    try { updateDistanceGeometry(); } catch (e) {}
     setSurveyMode('edit');
     var mb = document.getElementById('modeBadge');
     if (mb) { mb.textContent = '핀 수정 모드'; mb.className = 'm-edit'; mb.style.display = 'block'; }   /* [v44-15] */
@@ -7666,17 +7670,42 @@ TenarSecureStore.init('map',
   }
 
   var HIT_PAD = 22;
+  /* [v173] 꼭짓점 히트테스트를 「상태(fieldPoints/distancePoints/areas/lines)에서 화면좌표로 직접 계산」한다.
+     예전에는 GL 레이어(survey-field-vertices)를 queryRenderedFeatures 로만 찾았는데,
+     v168부터 눈에 보이는 동그라미(번호핀)는 DOM 마커로 그려지므로, 어떤 이유로 GL 소스가 비어 있으면
+     「핀은 보이는데 선택은 안 되는」 문제가 생겼다(특히 저장 포구 불러와 수정할 때). 이제 보이는 점 그대로
+     좌표로 계산해 가장 가까운 꼭짓점을 잡는다 — GL 렌더 상태와 무관하게 항상 선택된다. */
   function findVertexAt(point) {
-    var bbox = [[point.x - HIT_PAD, point.y - HIT_PAD], [point.x + HIT_PAD, point.y + HIT_PAD]];
+    var s = surveyMeasureState;
+    var best = null, bestD = HIT_PAD;
+    function consider(coords, kind, areaId, lineId) {
+      if (!coords) return;
+      for (var i = 0; i < coords.length; i++) {
+        var c = coords[i];
+        if (!c || !isFinite(c[0]) || !isFinite(c[1])) continue;
+        var sp;
+        try { sp = map.project(c); } catch (e) { continue; }
+        var dx = sp.x - point.x, dy = sp.y - point.y;
+        var d = Math.sqrt(dx * dx + dy * dy);
+        if (d <= bestD) { bestD = d; best = { kind: kind, index: i, areaId: areaId || null, lineId: lineId || null }; }
+      }
+    }
+    /* 지금 작업 중인 필지·거리 꼭짓점(가장 흔한 편집 대상) */
+    consider(s.fieldPoints, 'field', null, null);
+    consider(s.distancePoints, 'distance', null, null);
+    /* [v7-9] 완료(연속 측정)된 면적·거리의 꼭짓점도 소속(areaId/lineId)과 함께 잡는다 */
+    (s.areas || []).forEach(function (ar) { consider(ar.points, 'field', ar.id, null); });
+    (s.lines || []).forEach(function (ln) { consider(ln.points, 'distance', null, ln.id); });
+    if (best) return best;
+    /* 폴백: 예전 방식(렌더된 GL 꼭짓점 질의) — 만약을 위해 남겨 둔다 */
     var layers = [];
     if (map.getLayer('survey-field-vertices')) layers.push('survey-field-vertices');
     if (map.getLayer('survey-distance-vertices')) layers.push('survey-distance-vertices');
     if (!layers.length) return null;
+    var bbox = [[point.x - HIT_PAD, point.y - HIT_PAD], [point.x + HIT_PAD, point.y + HIT_PAD]];
     var hits = map.queryRenderedFeatures(bbox, { layers: layers });
     if (!hits.length) return null;
     var f = hits[0];
-    /* [v7-9] 완료된 측정(areas[]/lines[])의 꼭짓점도 잡아서 옮길 수 있게 소속을 함께 넘긴다.
-       (areaId/lineId 가 없으면 지금 작업 중인 측정의 점) */
     return {
       kind: f.properties.type === 'field-vertex' ? 'field' : 'distance',
       index: f.properties.index,
