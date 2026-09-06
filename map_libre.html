@@ -1,4 +1,4 @@
-<!-- map_v173.html (v173 · TENAR V1.5) · 저장: 2026-09-07 04:56 KST · [v173] 포구도구/측정도구 「수정모드에서 꼭짓점(핀) 선택이 안 되던」 문제 수정 — 원인: 눈에 보이는 꼭짓점 동그라미·번호는 DOM 마커(저장된 점 좌표)로 그려지는데, 탭(선택) 감지는 별도의 지도 GL 꼭짓점 레이어를 조회했다. 그 레이어가 숨김/미렌더 상태면 「핀은 보이는데 탭이 안 잡히는」 현상이 생김. 해결: 이제 보이는 점 좌표(fieldPoints 등)에서 화면좌표로 직접 가장 가까운 꼭짓점을 잡도록 바꿔, GL 렌더 상태와 무관하게 항상 선택되게 함(+수정 진입 시 소스 재동기화). (v172 이하 유지) -->
+<!-- map_v174.html (v174 · TENAR V1.5) · 저장: 2026-09-07 05:18 KST · [v174] 포구도구/생산량목록 4건 — ①조사설정 작물 콤보 「논벼」를 맨 위로. ②비율선택(파란창): 포구도구를 오른쪽 버튼으로 새로 열 때 조사설정·완료상태를 초기화해 배너가 항상 뜨고 1/2번 비율이 바로 눌리게(완료/저장 뒤 먹통·닫았다 열면 되던 문제 해소)+열 때 pointer-events 복구. ③새로 시작하거나 다른 핀에서 포구도구를 열면 이전 작물·비율이 자동으로 남지 않도록 초기화(계산기·저장포구 불러오기 값은 유지). ④생산량목록 연결자료에 「🔀 핀변경」 추가 — 잘못된 핀에 연결됐을 때 삭제하지 않고 올바른 대표핀으로 옮김. (v173 이하 유지) -->
 <!-- (v155) 저장: 2026-09-04 14:22 KST · [v155] 카카오 지도 「🔎확대」 버튼 추가 — 카카오 위성 최대(레벨1) 위를 CSS로 더 크게(1.5배·2.2배, 해상도 낮아도) 보이게(아이폰에서도 더 확대). 확대 중엔 드래그·줌 잠금(좌표 어긋남 방지)·현재위치 중앙. (v154 이하 유지) -->
 <!-- (v154) 저장: 2026-09-04 14:11 KST · [v154] 네이버 지도 로드 방식을 예전 작동 파일(0.지도/map.html)과 동일하게 수정 — oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=w8m4oe36ev (구형 openapi?ncpClientId 아님). 도메인 등록된 배포본에서 표시됨. (v153 이하 유지) -->
 <!-- (v153) 저장: 2026-09-04 14:05 KST · [v153] 네이버 지도 maxZoom 21로 상향 + 초기 확대 심화(zoom 20) — 해상도 낮아도(업스케일=흐릿) 더 확대되게. 카카오 위성은 최대 레벨 1(이미 최대·카카오 자체 한계). (v152 이하 유지) -->
@@ -1835,8 +1835,8 @@ TenarSecureStore.init('map',
      · 키는 HTML에 노출되므로 반드시 허용 도메인을 위 주소로 제한하세요.
        제한해 두면 타인이 키를 복사해도 다른 사이트에서는 쓸 수 없습니다.
      =================================================================== */
-  var MAP_VERSION = 'v173';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
-  var MAP_VERSION_TIME = '2026-09-07 04:56 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
+  var MAP_VERSION = 'v174';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
+  var MAP_VERSION_TIME = '2026-09-07 05:18 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
   var VWORLD_API_KEY = '00EB5BC0-22B4-3B7E-89D1-341699F7CE05';
   var VWORLD_DOMAIN  = 'ubaldos00-ship-it.github.io';   /* 호스트만 · 스킴 금지 */
 
@@ -5091,6 +5091,14 @@ TenarSecureStore.init('map',
         lk.className = 'icon-btn ' + (it.locked ? 'lock-on' : 'lock-off');
         lk.textContent = it.locked ? '🔒' : '🔓';
       });
+      /* [v174] 핀(대표핀) 변경 — 잘못된 핀에 연결됐을 때 삭제하지 않고 올바른 핀으로 옮긴다 */
+      var ch = el('button', 'icon-btn', '🔀');
+      ch.title = '연결된 핀 변경';
+      ch.style.cssText = 'width:30px;height:28px;padding:0;font-size:14px;flex:0 0 auto;';
+      ch.addEventListener('click', function () {
+        if (it.locked) { showToast('잠긴 요도입니다. 잠금을 풀어주세요.', 3000); return; }
+        changeMapItemFavorite(it, favId, function () { box.dataset.built = ''; buildFavChildren(box, favId); renderFavList(); });
+      });
       var dl = el('button', 'icon-btn del-on', '🗑');
       dl.style.cssText = 'width:30px;height:28px;padding:0;font-size:14px;flex:0 0 auto;';
       dl.addEventListener('click', function () {
@@ -5102,7 +5110,7 @@ TenarSecureStore.init('map',
         showToast('요도를 삭제했습니다.', 2000, 'success');
       });
       row.appendChild(nm);
-      row.appendChild(lk); row.appendChild(dl);
+      row.appendChild(lk); row.appendChild(ch); row.appendChild(dl);
       box.appendChild(row);
       /* [v166] 각 A/B포구(fieldplot) 항목 아래에 작은 「🧭 현장모드」 버튼 — 오른쪽 정렬(연결자료 하위메뉴처럼),
          실수로 눌리지 않게 작게. */
@@ -5122,6 +5130,56 @@ TenarSecureStore.init('map',
         box.appendChild(fwrap);
       }
     });
+  }
+
+  /* [v174] 연결자료(포구·면적·길이)를 다른 대표핀(생산량목록)으로 옮긴다 —
+     핀을 잘못 골라 엉뚱한 필지에 연결됐을 때, 삭제하지 않고 올바른 핀으로 재연결한다.
+     도형 좌표는 그대로 두고 소속(favoriteId)만 바꾼다. */
+  function changeMapItemFavorite(it, curFavId, onDone) {
+    var favs = getFavs();
+    var others = favs.filter(function (f) { return f.id !== it.favoriteId; });
+    var cur = favs.filter(function (f) { return f.id === it.favoriteId; })[0];
+    var ov = document.createElement('div');
+    ov.style.cssText = 'position:fixed;inset:0;z-index:2147483646;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center;';
+    var sheet = document.createElement('div');
+    sheet.style.cssText = 'background:#fff;border-radius:16px 16px 0 0;width:100%;max-width:520px;max-height:78vh;overflow:auto;padding:16px 14px calc(16px + env(safe-area-inset-bottom,0px));box-shadow:0 -6px 24px rgba(0,0,0,.3);';
+    function esc(s) { return escapeHtml(String(s || '')); }
+    var curName = cur ? (cur.name || cur.jibunAddress || '현재 핀') : '현재 핀';
+    sheet.innerHTML = '<div style="font-size:16px;font-weight:800;color:#222;margin-bottom:4px;">🔀 연결자료 핀 변경</div>' +
+      '<div style="font-size:12.5px;color:#555;line-height:1.5;margin-bottom:12px;">「' + esc(it.name || it.type) + '」을(를) 옮길 대표핀(생산량목록)을 고르세요.<br>현재 연결: <b>' + esc(curName) + '</b></div>';
+    var list = document.createElement('div');
+    if (!others.length) {
+      list.innerHTML = '<div style="color:#999;font-size:13px;padding:10px 4px;">옮길 다른 핀이 없습니다.\n먼저 지도에서 올바른 위치에 핀을 저장한 뒤 다시 시도하세요.</div>';
+    }
+    others.forEach(function (f) {
+      var b = document.createElement('button');
+      b.style.cssText = 'display:block;width:100%;text-align:left;border:1.5px solid #e2e2ea;border-radius:11px;background:#fafafc;padding:11px 12px;margin-bottom:7px;font-family:inherit;cursor:pointer;';
+      var nm = f.name || f.jibunAddress || '이름 없음';
+      var ad = f.jibunAddress && f.jibunAddress !== nm ? f.jibunAddress : '';
+      b.innerHTML = '<div style="font-size:14px;font-weight:800;color:#14612f;">📍 ' + esc(nm) + '</div>' +
+        (ad ? '<div style="font-size:11.5px;color:#888;margin-top:2px;">' + esc(ad) + '</div>' : '');
+      b.addEventListener('click', function () {
+        if (!window.confirm('이 연결자료를 「' + (f.name || f.jibunAddress || '선택한 핀') + '」(으)로 옮기시겠습니까?')) return;
+        var arr = getMapItems();
+        for (var k = 0; k < arr.length; k++) if (arr[k].id === it.id) { arr[k].favoriteId = f.id; break; }
+        if (!setMapItems(arr)) return;
+        it.favoriteId = f.id;
+        try { document.body.removeChild(ov); } catch (e) {}
+        try { renderMapItems(); } catch (e) {}
+        if (typeof onDone === 'function') onDone();
+        showToast('연결자료를 「' + (f.name || f.jibunAddress || '선택한 핀') + '」(으)로 옮겼습니다.', 3000, 'success');
+      });
+      list.appendChild(b);
+    });
+    sheet.appendChild(list);
+    var cancel = document.createElement('button');
+    cancel.textContent = '취소';
+    cancel.style.cssText = 'display:block;width:100%;border:1.5px solid #d0d0d6;border-radius:11px;background:#f5f5f7;padding:12px;font-size:14px;font-weight:800;font-family:inherit;margin-top:4px;cursor:pointer;';
+    cancel.addEventListener('click', function () { try { document.body.removeChild(ov); } catch (e) {} });
+    sheet.appendChild(cancel);
+    ov.appendChild(sheet);
+    ov.addEventListener('click', function (e) { if (e.target === ov) { try { document.body.removeChild(ov); } catch (er) {} } });
+    document.body.appendChild(ov);
   }
 
   /* [v37] 요도로 지도 이동 + 강조 표시 */
@@ -10660,7 +10718,9 @@ TenarSecureStore.init('map',
     var f1 = el('div', 'fld', '<label>작물</label>');
     var inCrop = el('select');
     inCrop.appendChild(new Option('선택 안 함', ''));
-    FP_CROP_NAMES.forEach(function (n) { inCrop.appendChild(new Option(n, n)); });   /* [v83-3] 실측 작물만 */
+    /* [v174] 논벼를 콤보 맨 위로 (가장 많이 쓰는 작물) — 나머지는 기존 순서 유지 */
+    var _fpCropOrder = ['논벼'].concat(FP_CROP_NAMES.filter(function (n) { return n !== '논벼'; }));
+    _fpCropOrder.forEach(function (n) { inCrop.appendChild(new Option(n, n)); });   /* [v83-3] 실측 작물만 */
     if (c.crop) { if (!Array.prototype.some.call(inCrop.options, function (o) { return o.value === c.crop; })) inCrop.appendChild(new Option(c.crop, c.crop)); inCrop.value = c.crop; }
     f1.appendChild(inCrop);
 
@@ -11336,6 +11396,18 @@ TenarSecureStore.init('map',
     b.style.pointerEvents = show ? '' : 'none';
     if (show) { try { fpRenderBanner(); } catch (e) {} }
   }
+  /* [v174] 포구도구를 「새로(오른쪽 FAB로 직접)」 열 때 조사설정(작물·기준·비율)·완료상태를 초기화한다.
+     - 이전 필지/이전 세션의 작물·비율이 자동으로 남아 다른 필지를 그 값으로 잘못 조사하던 문제 해소(요청3).
+     - 완료/저장 뒤 비율버튼이 먹통(완료잠금 잔존)이던 것을 새로 열면 바로 풀리게 한다(요청2).
+     - 계산기(?fieldplot=1)·저장 포구 불러오기(loadFpSave) 경로는 이 함수를 거치지 않으므로 그 값은 유지된다. */
+  function fpResetSetupForFreshOpen() {
+    fp.ctx = null; fp.ratio = 1; fp._autoTo2 = false; fp._saved = false;
+    fp._ctxRetained = false; fp.finished = false;
+    fp.editingId = null; fp._editingItemId = null;
+    try { fpMarkRatioButtons(); } catch (e) {}
+    try { fpRenderBanner(); } catch (e) {}
+  }
+  function openFpToolFresh() { fpResetSetupForFreshOpen(); openFpTool(); }
   function openFpTool() {
     fpToolPanelEl.classList.add('show');
     document.body.classList.add('tool-open');   /* [v158] 즉시 상단 퀵버튼(quickSurvey) 숨김 — 파란 비율창 버튼(초기화·포구표시·1/2번)이 가려 안 눌리던 문제 해결(관찰자 지연 틈 제거) */
@@ -11343,9 +11415,9 @@ TenarSecureStore.init('map',
     fp.toolOpen = true;
     toolPanelEl.classList.remove('show');
     document.getElementById('btnMeasure').classList.remove('active');
-    /* [v18-7] 계산기를 거치지 않고 열어도 설정을 넣을 수 있게 배너를 띄운다 */
+    /* [v18-7] 계산기를 거치지 않고 열어도 설정을 넣을 수 있게 배너를 띄운다 · [v174] 열 때마다 탭 가능하도록 pointer-events 복구 */
     var b = document.getElementById('fpBanner');
-    if (b) { b.style.display = 'flex'; fpRenderBanner(); }
+    if (b) { b.style.display = 'flex'; b.style.pointerEvents = ''; fpRenderBanner(); }
     if (!fp.ctx || !(parseFloat(((fp.ctx.r1 || {}).ga)) > 0 || parseFloat(((fp.ctx.r2 || {}).ga)) > 0)) {
       showToast('먼저 ⓪ 「작물·기준·비율」을 눌러 설정해주세요.', 4200, 'info');
     }
@@ -12087,11 +12159,11 @@ TenarSecureStore.init('map',
           confirmToolClose('현재 측정 작업을 닫으시겠습니까?').then(function (c) {
             if (c !== 'close') return;
             closeMeasurePanel(true);
-            openFpTool();
+            openFpToolFresh();   /* [v174] 새로 열 때 조사설정 초기화 */
           });
           return;
         }
-        openFpTool();
+        openFpToolFresh();   /* [v174] 새로 열 때 조사설정 초기화 */
         return;
       }
       /* [v18-9] 작업 중인 자료가 있으면 측정도구와 똑같은 확인창을 띄운다 */
