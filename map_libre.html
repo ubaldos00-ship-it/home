@@ -1,4 +1,4 @@
-<!-- map_v175.html (v175 · TENAR V1.5) · 저장: 2026-09-07 19:03 KST · [v175] 포구/측정 연결 대상 정리 + 조사설정 비율선택 — ①핀을 고르지 않고 도구를 새로 열어 작업하면 「처음 찍은 필지(지번)」 기준으로 연결(이전에 고른 핀 연결을 지워 엉뚱한 작물핀에 붙던 문제 방지). 저장위치에서 포구/측정도구를 시작하면 그 작물핀에 확실히 연결 + 조사설정(작물·기준·비율/지역·작물) 초기화. 측정도구도 저장위치 핀에 연결되도록 보강. ②조사설정에 「사용 비율(1번/2번)」 선택 추가(기본 1번)·파란창과 양방향 연동(조사설정↔파란창 어느 쪽에서 바꿔도 반영). (v174 이하 유지) -->
+<!-- map_v176.html (v176 · TENAR V1.5) · 저장: 2026-09-07 21:00 KST · [v176] 포구도구 A/B포구 세로기점 계산 반올림 오차 수정 — 세로기점을 「지도에서 잰 소수 원값」이 아니라 「화면에 보이는(반올림된) 세로총길이 정수」에 비율을 곱하도록 바꿔 통합계산기와 완전히 일치시킴. (예: A세로 2256×0.72=1624.32→1624, 이전 1625 / B세로 1467×0.98=1437.66→1438, 이전 1437). 가로기점은 이미 정수 가-나길이로 계산되어 변화 없음. (v175 이하 유지) -->
 <!-- (v155) 저장: 2026-09-04 14:22 KST · [v155] 카카오 지도 「🔎확대」 버튼 추가 — 카카오 위성 최대(레벨1) 위를 CSS로 더 크게(1.5배·2.2배, 해상도 낮아도) 보이게(아이폰에서도 더 확대). 확대 중엔 드래그·줌 잠금(좌표 어긋남 방지)·현재위치 중앙. (v154 이하 유지) -->
 <!-- (v154) 저장: 2026-09-04 14:11 KST · [v154] 네이버 지도 로드 방식을 예전 작동 파일(0.지도/map.html)과 동일하게 수정 — oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=w8m4oe36ev (구형 openapi?ncpClientId 아님). 도메인 등록된 배포본에서 표시됨. (v153 이하 유지) -->
 <!-- (v153) 저장: 2026-09-04 14:05 KST · [v153] 네이버 지도 maxZoom 21로 상향 + 초기 확대 심화(zoom 20) — 해상도 낮아도(업스케일=흐릿) 더 확대되게. 카카오 위성은 최대 레벨 1(이미 최대·카카오 자체 한계). (v152 이하 유지) -->
@@ -1835,8 +1835,8 @@ TenarSecureStore.init('map',
      · 키는 HTML에 노출되므로 반드시 허용 도메인을 위 주소로 제한하세요.
        제한해 두면 타인이 키를 복사해도 다른 사이트에서는 쓸 수 없습니다.
      =================================================================== */
-  var MAP_VERSION = 'v175';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
-  var MAP_VERSION_TIME = '2026-09-07 19:03 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
+  var MAP_VERSION = 'v176';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
+  var MAP_VERSION_TIME = '2026-09-07 21:00 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
   var VWORLD_API_KEY = '00EB5BC0-22B4-3B7E-89D1-341699F7CE05';
   var VWORLD_DOMAIN  = 'ubaldos00-ship-it.github.io';   /* 호스트만 · 스킴 금지 */
 
@@ -9801,7 +9801,7 @@ TenarSecureStore.init('map',
       fp.aEnd = cm ? cm.end : null; fp.bEnd = fp.aEnd;
       fp.heightA = cm ? cm.len_cm : 0; fp.heightB = fp.heightA;
       fp.aBrg = cm ? cm.bearing : null; fp.bBrg = fp.aBrg;
-      var H = fp.heightA;
+      var H = Math.round(fp.heightA);   /* [v176] 통합계산기처럼 보이는(반올림) 세로총길이 정수로 계산 */
       fp.aPoLen = (rv.na > 0) ? (H / 2) * rv.na : 0;
       fp.bPoLen = (rv.da > 0) ? (H / 2) * rv.da + (H / 2) : 0;
       fp.aPo = (cm && fp.aPoLen > 0) ? turf.destination(turf.point(fp.aBase), fp.aPoLen / 100000, cm.bearing, { units: 'kilometers' }).geometry.coordinates : null;
@@ -9859,9 +9859,12 @@ TenarSecureStore.init('map',
     fp.aEnd = ca ? ca.end : null; fp.heightA = ca ? ca.len_cm : 0;
     fp.bEnd = cb ? cb.end : null; fp.heightB = cb ? cb.len_cm : 0;
 
-    /* A/B포구 지점 = 세로총길이 × (나·다)비율 */
-    fp.aPoLen = (rv.na > 0) ? fp.heightA * rv.na : 0;
-    fp.bPoLen = (rv.da > 0) ? fp.heightB * rv.da : 0;
+    /* A/B포구 지점 = 세로총길이 × (나·다)비율
+       [v176] 통합계산기와 동일하게 「화면에 보이는(반올림된) 세로총길이 정수」를 곱한다.
+       예전엔 지도에서 잰 소수 원값(예: 2256.3)을 곱해 반올림이 1 어긋났다
+       (2256.3×0.72=1624.5→1625). 이제 round(2256)×0.72=1624.32→1624 로 통합계산기와 일치. */
+    fp.aPoLen = (rv.na > 0) ? Math.round(fp.heightA) * rv.na : 0;
+    fp.bPoLen = (rv.da > 0) ? Math.round(fp.heightB) * rv.da : 0;
     fp.aPo = (ca && fp.aPoLen > 0) ? turf.destination(turf.point(fp.aBase), fp.aPoLen / 100000, ca.bearing, { units: 'kilometers' }).geometry.coordinates : null;
     fp.bPo = (cb && fp.bPoLen > 0) ? turf.destination(turf.point(fp.bBase), fp.bPoLen / 100000, cb.bearing, { units: 'kilometers' }).geometry.coordinates : null;
     fp.aBrg = ca ? ca.bearing : null;
