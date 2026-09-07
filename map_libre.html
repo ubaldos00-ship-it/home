@@ -1,4 +1,4 @@
-<!-- map_v174.html (v174 · TENAR V1.5) · 저장: 2026-09-07 05:18 KST · [v174] 포구도구/생산량목록 4건 — ①조사설정 작물 콤보 「논벼」를 맨 위로. ②비율선택(파란창): 포구도구를 오른쪽 버튼으로 새로 열 때 조사설정·완료상태를 초기화해 배너가 항상 뜨고 1/2번 비율이 바로 눌리게(완료/저장 뒤 먹통·닫았다 열면 되던 문제 해소)+열 때 pointer-events 복구. ③새로 시작하거나 다른 핀에서 포구도구를 열면 이전 작물·비율이 자동으로 남지 않도록 초기화(계산기·저장포구 불러오기 값은 유지). ④생산량목록 연결자료에 「🔀 핀변경」 추가 — 잘못된 핀에 연결됐을 때 삭제하지 않고 올바른 대표핀으로 옮김. (v173 이하 유지) -->
+<!-- map_v175.html (v175 · TENAR V1.5) · 저장: 2026-09-07 19:03 KST · [v175] 포구/측정 연결 대상 정리 + 조사설정 비율선택 — ①핀을 고르지 않고 도구를 새로 열어 작업하면 「처음 찍은 필지(지번)」 기준으로 연결(이전에 고른 핀 연결을 지워 엉뚱한 작물핀에 붙던 문제 방지). 저장위치에서 포구/측정도구를 시작하면 그 작물핀에 확실히 연결 + 조사설정(작물·기준·비율/지역·작물) 초기화. 측정도구도 저장위치 핀에 연결되도록 보강. ②조사설정에 「사용 비율(1번/2번)」 선택 추가(기본 1번)·파란창과 양방향 연동(조사설정↔파란창 어느 쪽에서 바꿔도 반영). (v174 이하 유지) -->
 <!-- (v155) 저장: 2026-09-04 14:22 KST · [v155] 카카오 지도 「🔎확대」 버튼 추가 — 카카오 위성 최대(레벨1) 위를 CSS로 더 크게(1.5배·2.2배, 해상도 낮아도) 보이게(아이폰에서도 더 확대). 확대 중엔 드래그·줌 잠금(좌표 어긋남 방지)·현재위치 중앙. (v154 이하 유지) -->
 <!-- (v154) 저장: 2026-09-04 14:11 KST · [v154] 네이버 지도 로드 방식을 예전 작동 파일(0.지도/map.html)과 동일하게 수정 — oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=w8m4oe36ev (구형 openapi?ncpClientId 아님). 도메인 등록된 배포본에서 표시됨. (v153 이하 유지) -->
 <!-- (v153) 저장: 2026-09-04 14:05 KST · [v153] 네이버 지도 maxZoom 21로 상향 + 초기 확대 심화(zoom 20) — 해상도 낮아도(업스케일=흐릿) 더 확대되게. 카카오 위성은 최대 레벨 1(이미 최대·카카오 자체 한계). (v152 이하 유지) -->
@@ -1835,8 +1835,8 @@ TenarSecureStore.init('map',
      · 키는 HTML에 노출되므로 반드시 허용 도메인을 위 주소로 제한하세요.
        제한해 두면 타인이 키를 복사해도 다른 사이트에서는 쓸 수 없습니다.
      =================================================================== */
-  var MAP_VERSION = 'v174';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
-  var MAP_VERSION_TIME = '2026-09-07 05:18 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
+  var MAP_VERSION = 'v175';   /* [v122] 지도 버전 — ⓘ 지도 출처 정보에 표시(버전 올릴 때 함께 변경) */
+  var MAP_VERSION_TIME = '2026-09-07 19:03 KST';   /* [v127] 저장(빌드) 일시 — 버전 옆에 표기 */
   var VWORLD_API_KEY = '00EB5BC0-22B4-3B7E-89D1-341699F7CE05';
   var VWORLD_DOMAIN  = 'ubaldos00-ship-it.github.io';   /* 호스트만 · 스킴 금지 */
 
@@ -4392,18 +4392,22 @@ TenarSecureStore.init('map',
     closeSheet();
     if (isFinite(f.latitude) && isFinite(f.longitude)) { try { map.flyTo({ center: [f.longitude, f.latitude], zoom: Math.max(map.getZoom(), 18), essential: true }); } catch (e) {} }
     if (which === 'fp') {
-      fp._sessionFavId = f.id;                 /* 저장 시 이 핀에 연결(다른 필지가 딴 핀으로 안 가게) */
+      /* [v175] 핀에서 시작하면 조사설정(작물·기준·비율)을 초기화한 뒤 이 핀에 연결한다(요청1). */
+      try { fpResetSetupForFreshOpen(); } catch (e) {}
+      fp._sessionFavId = f.id;                 /* 저장 시 반드시 이 핀에 연결(다른 필지가 딴 핀으로 안 가게) */
       fp.jibunAddress = f.jibunAddress || '';
-      if (f.crop && (!fp.ctx || !fp.ctx.crop)) { fp.ctx = fp.ctx || {}; fp.ctx.crop = f.crop; }
       try { openFpTool(); } catch (e) {}
-      showToast('이 핀에 연결해 포구도구를 시작합니다.\n「필지선택」부터 진행하세요. 저장하면 이 핀에 연결됩니다.', 4500, 'info');
+      showToast('이 핀에 연결해 포구도구를 시작합니다.\n조사설정은 초기화했습니다 — 「작물·기준·비율」부터 입력하세요.\n저장하면 이 핀에 연결됩니다.', 5000, 'info');
     } else {
       try {
         fpToolPanelEl.classList.remove('show'); document.getElementById('btnFpTool').classList.remove('active');
         toolPanelEl.classList.add('show'); document.getElementById('btnMeasure').classList.add('active');
       } catch (e) {}
-      if (f.crop) { surveyMeasureState.measCrop = f.crop; try { measSetupLabel(); } catch (e) {} }
-      showToast('이 위치에서 측정도구를 시작합니다.\n면적/길이를 재고 저장하면 이 핀에 연결됩니다.', 4500, 'info');
+      /* [v175] 측정도구도 이 핀에 연결 + 지역·작물(조사설정) 초기화 */
+      surveyMeasureState._sessionFavId = f.id;
+      surveyMeasureState.measRegion = ''; surveyMeasureState.measCrop = '';
+      try { measSetupLabel(); } catch (e) {}
+      showToast('이 위치에서 측정도구를 시작합니다.\n지역·작물은 초기화했습니다.\n면적/길이를 재고 저장하면 이 핀에 연결됩니다.', 5000, 'info');
     }
   }
   /* [v140] 저장위치 팝업 → 현장모드: 저장된 A/B포구를 도구로 불러온 뒤 GPS·진행방향 추적 시작 */
@@ -5207,6 +5211,7 @@ TenarSecureStore.init('map',
         try { surveyMeasureState._editingItemId = null; } catch (e) {}   /* [v63-1] 측정쪽 참조 해제 */
         loadFpSave(it.fieldPlotData);
         fp._editingItemId = it.id;   /* [v63-1] 편집 중 원본을 회색 참조로 표시 */
+        fp._sessionFavId = it.favoriteId || fp._sessionFavId;   /* [v175] 편집 후 다시 저장해도 원래 핀 유지 */
         fp.finished = true;          /* [v63-3] 기존 포구 자료는 완료ON — 수정하려면 완료 해제 */
         try { fpSyncButtons(); } catch (e) {}
         try { applyMeasPointsVisibility(); } catch (e) {}
@@ -5231,6 +5236,7 @@ TenarSecureStore.init('map',
             loadMeasure(rec, true);
             try { fp._editingItemId = null; } catch (e) {}   /* [v63-2] 포구쪽 참조 해제 */
             surveyMeasureState._editingItemId = it.id;   /* 어느 요도를 편집 중인지 */
+            surveyMeasureState._sessionFavId = it.favoriteId || surveyMeasureState._sessionFavId;   /* [v175] 편집 후 다시 저장해도 원래 핀 유지 */
             surveyMeasureState.locked = true;   /* [v63-3] 기존 자료는 완료ON 으로 — 수정하려면 완료 해제 */
             try { measSyncButtons(); } catch (e) {}
             try { applyMeasPointsVisibility(); } catch (e) {}
@@ -6733,6 +6739,7 @@ TenarSecureStore.init('map',
     areas: [],            /* [{id, points, areaM2, perimeterM}] 완료된 면적들 */
     lines: [],            /* [{id, points, segs, totalM}]       완료된 거리들 */
     editingSaveId: null,  /* 저장본을 불러와 수정 중이면 그 ID */
+    _sessionFavId: null,  /* [v175] 저장위치(핀)에서 측정도구를 시작했으면 그 핀에 연결 */
     measRegion: '',       /* [v44-14] 측정도구 지역 */
     measCrop: '',         /* [v44-14] 측정도구 작물 */
     locked: false         /* [v46-9] 측정 잠금 (수정모드와 별개 상태) */
@@ -7492,6 +7499,7 @@ TenarSecureStore.init('map',
     s.distancePoints = []; s.segmentDistances = []; s.totalDistanceM = 0;
     s.isFieldComplete = false; s.dragging = null;
     s.areas = []; s.lines = []; s.editingSaveId = null; s._editingItemId = null;
+    s._sessionFavId = null;   /* [v175] 새 조사는 「처음 찍은 점」 기준으로 연결 */
     try { renderMapItems(); } catch (e) {}   /* [v62-4] 원본 복원 */
     s.fieldKind = 'field';
     s.locked = false;                       /* 새 작업이므로 잠금 해제 */
@@ -7907,6 +7915,8 @@ TenarSecureStore.init('map',
     var first = rec.firstPoint;
     if (!first) return;
     var loc = {
+      /* [v175] 저장위치(핀)에서 측정도구를 시작했으면 그 핀에 연결. 아니면 「처음 찍은 점」 좌표·지번 기준. */
+      favoriteId: (surveyMeasureState && surveyMeasureState._sessionFavId) || '',
       lat: first[1], lng: first[0], addr: (addr && addr.jibunAddress) || rec.jibunAddress || '',
       crop: rec.crop || '', color: 'green', name: (addr && addr.jibunAddress) || rec.name || '측정 위치'
     };
@@ -9260,6 +9270,7 @@ TenarSecureStore.init('map',
       }
       toolPanelEl.classList.add('show');
       this.classList.add('active');
+      surveyMeasureState._sessionFavId = null;   /* [v175] 핀 안 고르고 새로 열면 「처음 찍은 점」 기준으로 연결(엉뚱한 핀 방지) */
       updateFpBannerVisibility();   /* [v45-2] 측정도구 열면 비율패널 숨김 */
       try { measSyncButtons(); } catch (e) {}   /* [v46-9] */
       return;
@@ -10303,6 +10314,8 @@ TenarSecureStore.init('map',
     fp.ratio = n;
     fp._autoTo2 = false;   /* [v157] 수동 선택 시 자동전환 플래그 해제(통합계산기 selectRatio와 동일) — 골라도 되돌아가던 문제 수정 */
     fp._saved = false;     /* [v157] 비율 바꾸면 저장상태 해제 */
+    /* [v175] 파란창에서 비율을 바꾸면 조사설정(fp.ctx)에도 반영 → 조사설정을 다시 열면 그 값이 보인다 */
+    if (fp.ctx) { fp.ctx.ratio = n; try { saveJSON(FP_CTX_KEY, fp.ctx); } catch (e) {} }
     var b1 = document.getElementById('fpR1'), b2 = document.getElementById('fpR2');
     if (b1) b1.classList.toggle('active', n === 1);
     if (b2) b2.classList.toggle('active', n === 2);
@@ -10792,6 +10805,23 @@ TenarSecureStore.init('map',
     var R1 = ratioRow('1번 비율', c.r1);
     var R2 = ratioRow('2번 비율', c.r2);
 
+    /* [v175] 기본으로 사용할 비율(1번/2번) 선택 — 기본은 1번, 파란창과 양방향 연동 */
+    var selRatio = (c.ratio === 2 || (!c.ratio && fp.ratio === 2)) ? 2 : 1;
+    var rsWrap = el('div', 'fld', '<label>사용 비율 (파란창과 연동)</label>');
+    var rsRow = el('div'); rsRow.style.cssText = 'display:flex;gap:8px;';
+    function _mkRatioBtn(n, label) {
+      var b = el('button', 'sheet-btn' + (selRatio === n ? ' primary' : ''), label);
+      b.type = 'button'; b.style.cssText = 'flex:1;';
+      b.addEventListener('click', function () {
+        selRatio = n;
+        Array.prototype.forEach.call(rsRow.querySelectorAll('button'), function (x) { x.classList.remove('primary'); });
+        b.classList.add('primary');
+      });
+      return b;
+    }
+    rsRow.appendChild(_mkRatioBtn(1, '1번 비율')); rsRow.appendChild(_mkRatioBtn(2, '2번 비율'));
+    rsWrap.appendChild(rsRow);
+
     var note = el('div', null,
       '<div class="lyr-desc" style="margin:2px 0 10px;line-height:1.6;">' +
       '가 = 가로기점 비율, 나 = A포구 세로 비율, 다 = B포구 세로 비율<br>' +
@@ -10814,6 +10844,8 @@ TenarSecureStore.init('map',
       if (!window.confirm('조사 설정을 모두 비우시겠습니까?')) return;
       inCrop.value = ''; inL.value = '';
       allRatioInputs.forEach(function (i) { i.value = ''; });
+      selRatio = 1;   /* [v175] 사용 비율도 기본(1번)으로 */
+      Array.prototype.forEach.call(rsRow.querySelectorAll('button'), function (x, idx) { x.classList.toggle('primary', idx === 0); });
       syncMode();
       showToast('조사 설정을 비웠습니다.', 2200, 'info');
     });
@@ -10826,7 +10858,7 @@ TenarSecureStore.init('map',
         mode: inMode.value,
         L: (inMode.value === '이랑') ? (parseFloat(inL.value) || '') : '',
         r1: r1, r2: r2,
-        ratio: fp.ratio,
+        ratio: selRatio,   /* [v175] 조사설정에서 고른 사용 비율(1/2) */
         surveyKey: (fp.ctx && fp.ctx.surveyKey) || ''
       };
       if (!(parseFloat(r1.ga) > 0) && !(parseFloat(r2.ga) > 0)) {
@@ -10836,10 +10868,13 @@ TenarSecureStore.init('map',
         showToast('이랑 작물은 「가-나 총이랑수」가 있어야 계산됩니다.', 4200, 'info'); return;
       }
       fp.ctx = next;
+      fp.ratio = selRatio;   /* [v175] 고른 비율을 실제 계산 비율로 반영 */
       fp._autoTo2 = false;
       fp._ctxRetained = false;   /* [v138] 이 필지용으로 방금 직접 입력/확인함 → 재사용 경고 해제 */
       try { saveJSON(FP_CTX_KEY, next); } catch (e) {}
+      /* 고른 비율의 「가」가 비어 있으면 값이 있는 쪽으로 자동 보정 */
       if (!(parseFloat(next['r' + fp.ratio].ga) > 0)) fp.ratio = (fp.ratio === 1) ? 2 : 1;
+      next.ratio = fp.ratio;
       var banner = document.getElementById('fpBanner');
       if (banner) banner.style.display = 'flex';
       fpSetRatio(fp.ratio);
@@ -10852,6 +10887,7 @@ TenarSecureStore.init('map',
 
     box.appendChild(f1); box.appendChild(f2); box.appendChild(f3);
     box.appendChild(R1.wrap); box.appendChild(R2.wrap);
+    box.appendChild(rsWrap);   /* [v175] 사용 비율 선택 */
     box.appendChild(note); box.appendChild(btnRow);
     openSheet('⓪ 조사 설정 (작물·기준·비율)', box, 90);
     syncMode();
@@ -11404,6 +11440,9 @@ TenarSecureStore.init('map',
     fp.ctx = null; fp.ratio = 1; fp._autoTo2 = false; fp._saved = false;
     fp._ctxRetained = false; fp.finished = false;
     fp.editingId = null; fp._editingItemId = null;
+    /* [v175] 핀을 고르지 않고 「새로」 여는 경우엔 이전에 고른 핀 연결을 지운다 →
+       저장 시 「처음 찍은 필지(지번)」 기준으로 연결되어, 엉뚱한 다른 작물핀에 붙던 문제 방지. */
+    fp._sessionFavId = null; fp.jibunAddress = ''; fp.parcelPnu = ''; fp.parcelCenter = null;
     try { fpMarkRatioButtons(); } catch (e) {}
     try { fpRenderBanner(); } catch (e) {}
   }
