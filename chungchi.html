@@ -1,4 +1,5 @@
-<!-- chungchi.html (v111) · 저장: 2026-09-06 07:50 KST · [v111] 맥류 빠른선택 칩 표기 변경 — 버튼 라벨을 「40 포대·300 톤백」이 아닌 단위 kg 표기(40kg·300kg·500kg·800kg·1,000kg)로 바꾸고, 칩 세로 크기를 약간 키움. (v110 이하 유지) -->
+<!-- chungchi.html (v112) · 저장: 2026-09-09 19:50 KST · [v112] 지역 선택 전국 17개 시도로 확대 — 대구·경북·강원 버튼 유지 + 그 외 14개 시도 콤보박스(드롭다운) 추가. 비교 데이터(KOSIS)는 이미 전국 17개 시도가 들어 있어 데이터 추가 없이 UI만 확대. 복원 시 콤보 선택도 반영. 계산 로직 무변경. (v111 이하 유지) -->
+<!-- (이전)  chungchi.html (v111) · 저장: 2026-09-06 07:50 KST · [v111] 맥류 빠른선택 칩 표기 변경 — 버튼 라벨을 「40 포대·300 톤백」이 아닌 단위 kg 표기(40kg·300kg·500kg·800kg·1,000kg)로 바꾸고, 칩 세로 크기를 약간 키움. (v110 이하 유지) -->
 <!-- chungchi.html (v110) · 저장: 2026-09-06 07:41 KST · [v110] 맥류 빠른선택 칩 개선 + 측정 전송 반영 — ①추가한 행이 바로 붙어 보이지 않도록 행 사이에 여백·점선 구분선 추가. ②기본중량 빠른선택 칩을 세로로 더 작게(입력란과 헷갈리지 않게) + 「40 포대」식 한 줄 표기. ③지도 측정도구에서 전송된 「핀 지번주소」를 필지주소칸에 자동 입력(비어 있을 때만). 지역·작물·면적 자동반영은 유지. 계산 로직 무변경. (v109 이하 유지) -->
 <!-- chungchi.html (v109) · 저장: 2026-09-06 07:21 KST · [v109] 맥류(겉보리·쌀보리·밀) 수확단위 개선 — ①각 수량이력 행 위에 기본중량 빠른선택 칩(40 포대 / 300·500·800·1,000 톤백) 추가: 보고 눌러 바로 선택, 현재값 강조. ②기본중량을 수동으로 입력하면(예:250) 가까운 값으로 스냅하지 않고 사용자가 친 값을 그대로 유지(스크롤·칩은 지정목록으로 스냅). ③지도 측정도구에서 넘어온 지역·작물 자동선택(면적만 넘어오던 것 보완, 하위작물 포함). 계산 로직 무변경. (v108 이하 유지) -->
 <!-- (이전)  chungchi.html (v108) · 저장: 2026-08-29 11:22 KST · [v108] 계산기↔지도 전환 「진행중」 차단 오버레이 — 지도로 이동/지도에서 측정값 전송·복귀할 때, 적용 완료 전 사용자가 선택·이동해 잘못 선택되던 문제 방지. 이동 시 세션 플래그를 세우고 도착 페이지 로드~적용 완료(또는 최대 3.5초)까지 「진행중입니다. 잠시만 기다려주세요.」 오버레이로 상호작용 차단. 계산 로직 무변경. -->
@@ -726,10 +727,29 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
   <p class="desc">지역 및 작물을 선택하세요.</p>
   <p style="font-size:12px;color:#555;margin-bottom:5px">■ 지역 선택</p>
   <div class="bg" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
-    <button class="brg" data-region="대구" onclick="selReg(this)">대구</button>
-    <button class="brg" data-region="경북" onclick="selReg(this)">경북</button>
-    <button class="brg" data-region="강원" onclick="selReg(this)">강원</button>
+    <button class="brg" data-region="대구" onclick="selReg(this);var s=document.getElementById('cc-region-sel');if(s)s.value=''">대구</button>
+    <button class="brg" data-region="경북" onclick="selReg(this);var s=document.getElementById('cc-region-sel');if(s)s.value=''">경북</button>
+    <button class="brg" data-region="강원" onclick="selReg(this);var s=document.getElementById('cc-region-sel');if(s)s.value=''">강원</button>
   </div>
+  <!-- [v112] 그 외 시도(전국 17개 시도 확대) — 콤보박스로 선택 -->
+  <select id="cc-region-sel" onchange="if(this.value)selOtherReg(this)"
+    style="width:100%;margin-top:8px;padding:11px 10px;font-size:15px;font-weight:700;border:2px solid #d5d8dc;border-radius:12px;background:#faf7f0;font-family:inherit;color:#3d3c39;">
+    <option value="">그 외 시도 선택 ▾</option>
+    <option value="서울">서울</option>
+    <option value="부산">부산</option>
+    <option value="인천">인천</option>
+    <option value="광주">광주</option>
+    <option value="대전">대전</option>
+    <option value="울산">울산</option>
+    <option value="세종">세종</option>
+    <option value="경기">경기</option>
+    <option value="충북">충북</option>
+    <option value="충남">충남</option>
+    <option value="전북">전북</option>
+    <option value="전남">전남</option>
+    <option value="경남">경남</option>
+    <option value="제주">제주</option>
+  </select>
   <p style="font-size:12px;color:#555;margin-bottom:5px;margin-top:9px">■ 작물 선택</p>
   <div class="bg" style="flex-direction:column;gap:5px;">
     <div class="crop-row">
@@ -2148,7 +2168,9 @@ function _ccApply(d){
   if(d.__sR){
     var regBtn = document.querySelector('.brg[data-region="'+d.__sR+'"]');
     document.querySelectorAll('.brg').forEach(function(b){ b.classList.remove('on'); });
-    if(regBtn){ regBtn.classList.add('on'); }
+    var _ccSel=document.getElementById('cc-region-sel');
+    if(regBtn){ regBtn.classList.add('on'); if(_ccSel) _ccSel.value=''; }
+    else if(_ccSel){ _ccSel.value=d.__sR; }   /* [v112] 그 외 시도면 콤보박스에 반영 */
     sR = d.__sR;
     updateHeadStatus();
   }

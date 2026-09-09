@@ -1,4 +1,5 @@
-<!-- tonghab.html (v119) · 저장: 2026-09-07 21:22 KST · [v119] 논벼 ⑥ B포구에 「B포구 베는 방향 포기당 이삭수(3포기·선택)」 입력란 추가 — 예취길이 다음에 5번·중심·6번 3포기 이삭수를 세어 합계·평균 표시(예상량↔실수확량 괴리 확인용, 보통은 미조사·필요한 조사원만). AB포구 계산하기 시 결과 카드의 A포구 이삭수(대표주수) 아래에 B포구 이삭수 합계·평균 표시(입력했을 때만) + 결과 이미지에도 포함. ※ 기존 계산 함수는 일절 변경하지 않음(표시·신규 함수만 추가). (v118 이하 유지) -->
+<!-- tonghab.html (v120) · 저장: 2026-09-09 19:50 KST · [v120] 지역 데이터 전국 17개 시도로 확대 — ①마늘·양파 「건조율」 17개 시도 반영(원자료 표). ②「10a 생산량 비교(전년·평년)」 데이터를 graph의 전국 KOSIS 자료로 17개 시도 확대(마늘·양파·감자·고랭지감자·무=노지가을무·배추=노지가을배추·총각무=가을총각무·콩). ③지역 선택 = 대구·경북·강원 버튼 유지 + 그 외 14개 시도 콤보박스 추가(선택 시 건조율 자동입력·전년/평년 대비 반영). ※ 계산 함수 무변경(데이터·UI만). ※ 논벼 도별비교(NB_PROVINCE_HIST)와 지역별 참고 막대/선그래프(대구·경북·강원 기준)는 이번 범위 밖. (v119 이하 유지) -->
+<!-- (이전)  tonghab.html (v119) · 저장: 2026-09-07 21:22 KST · [v119] 논벼 ⑥ B포구에 「B포구 베는 방향 포기당 이삭수(3포기·선택)」 입력란 추가 — 예취길이 다음에 5번·중심·6번 3포기 이삭수를 세어 합계·평균 표시(예상량↔실수확량 괴리 확인용, 보통은 미조사·필요한 조사원만). AB포구 계산하기 시 결과 카드의 A포구 이삭수(대표주수) 아래에 B포구 이삭수 합계·평균 표시(입력했을 때만) + 결과 이미지에도 포함. ※ 기존 계산 함수는 일절 변경하지 않음(표시·신규 함수만 추가). (v118 이하 유지) -->
 <!-- (이전)  tonghab.html (v118) · 저장: 2026-09-04 09:40 KST · [v118] 논벼 ⑤ 이삭수(초기화·이전·다음) 아래에 「🧭 지도에서 A/B포구 위치(현장모드)」 버튼 추가 — 누르면 연결된 핀 정보를 넘겨 지도 map_libre.html 로 이동, 지도가 그 핀의 현장모드(GPS·진행방향)를 자동 시작(B포구 GPS로 깃대). 계산 로직 무변경. (v117 유지) -->
 <!-- (v117) [v117] 계산기↔지도 전환 「진행중」 차단 오버레이 — 지도로 이동/지도에서 계산기로 전송·복귀할 때, 데이터 적용이 「완료되기 전」 사용자가 작물·항목을 선택하거나 이동해 잘못 선택되던 문제 방지. 이동 시 세션 플래그를 세우고, 도착 페이지 로드~적용 완료(또는 최대 3.5초)까지 전체화면 「진행중입니다. 잠시만 기다려주세요.」 오버레이로 상호작용을 막음(확인 팝업 z-index 9500보다 낮은 9400이라 「이전 자료」 선택 팝업은 그대로 사용 가능). 계산 로직 무변경. -->
 <!-- (이전)  tonghab.html (v116) · 저장: 2026-08-29 08:40 KST · [v116] 저장/불러오기 목록: 작물명 옆에 「읍면동 리 지번」을 작물명 글자크기로 함께 표기(예: 논벼, 논공읍 금포리 324) — 시도·시군구 앞부분은 빼고 읍면동부터. 기존 📍 전체주소 줄은 그대로 유지. 계산 로직 무변경. (v115 이하 유지) -->
@@ -3201,10 +3202,29 @@ select,
       <div class="prod-zone" style="margin-bottom:12px;">
         <label id="prod-region-label" style="display:block;font-size:12px;font-weight:600;color:#2A2A28;margin-bottom:5px;">지역 선택 <span style="font-size:11px;font-weight:400;color:#999">(선택 시 건조율 자동 입력)</span></label>
         <div class="ptog-row">
-          <button class="ptog-btn" id="prod-btn-daegu" onclick="prodSelectRegion('daegu')">대구</button>
-          <button class="ptog-btn" id="prod-btn-gyeongbuk" onclick="prodSelectRegion('gyeongbuk')">경북</button>
-          <button class="ptog-btn" id="prod-btn-gangwon" onclick="prodSelectRegion('gangwon')">강원</button>
+          <button class="ptog-btn" id="prod-btn-daegu" onclick="prodSelectRegion('daegu');var s=document.getElementById('prod-region-sel');if(s)s.value=''">대구</button>
+          <button class="ptog-btn" id="prod-btn-gyeongbuk" onclick="prodSelectRegion('gyeongbuk');var s=document.getElementById('prod-region-sel');if(s)s.value=''">경북</button>
+          <button class="ptog-btn" id="prod-btn-gangwon" onclick="prodSelectRegion('gangwon');var s=document.getElementById('prod-region-sel');if(s)s.value=''">강원</button>
         </div>
+        <!-- [v120] 그 외 시도(전국 17개 시도 확대) — 콤보박스로 선택 -->
+        <select id="prod-region-sel" onchange="if(this.value)prodSelectRegion(this.value)"
+          style="width:100%;margin-top:7px;padding:9px 10px;font-size:14px;font-weight:600;border:1.5px solid #d7d4cc;border-radius:9px;background:#fafaf7;font-family:inherit;color:#2A2A28;">
+          <option value="">그 외 시도 선택 ▾</option>
+          <option value="seoul">서울</option>
+          <option value="busan">부산</option>
+          <option value="incheon">인천</option>
+          <option value="gwangju">광주</option>
+          <option value="daejeon">대전</option>
+          <option value="ulsan">울산</option>
+          <option value="sejong">세종</option>
+          <option value="gyeonggi">경기</option>
+          <option value="chungbuk">충북</option>
+          <option value="chungnam">충남</option>
+          <option value="jeonbuk">전북</option>
+          <option value="jeonnam">전남</option>
+          <option value="gyeongnam">경남</option>
+          <option value="jeju">제주</option>
+        </select>
       </div>
       <div id="prod-variety-section" class="pvar-section">
         <label id="prod-variety-label" style="display:block;font-size:12px;font-weight:600;color:#2A2A28;margin-bottom:5px;">품종 선택</label>
@@ -6294,11 +6314,25 @@ async function shareCaptureFromModal(){
    10a당 생산량 계산기 (prod_ 네임스페이스)
 ═════════════════════════════════════════ */
 const PROD_DRYRATE = {
-  daegu:    {garlic:68.1, onion:95.3},
+  daegu:{garlic:68.1, onion:95.3},
   gyeongbuk:{garlic:70.6, onion:95.8},
-  gangwon:  {garlic:69.5, onion:95.0}
+  gangwon:{garlic:69.1, onion:95.4},
+  seoul:{garlic:68.7, onion:93.7},
+  busan:{garlic:68.8, onion:93.3},
+  incheon:{garlic:68.4, onion:94.6},
+  gwangju:{garlic:67.0, onion:94.5},
+  daejeon:{garlic:68.4, onion:94.5},
+  ulsan:{garlic:67.6, onion:92.9},
+  sejong:{garlic:68.3, onion:94.5},
+  gyeonggi:{garlic:68.7, onion:93.7},
+  chungbuk:{garlic:65.1, onion:93.9},
+  chungnam:{garlic:68.3, onion:94.5},
+  jeonbuk:{garlic:67.1, onion:95.5},
+  jeonnam:{garlic:64.1, onion:93.8},
+  gyeongnam:{garlic:67.0, onion:93.3},
+  jeju:{garlic:61.4, onion:89.8}
 };
-const PROD_REGION_KO = {daegu:'대구', gyeongbuk:'경북', gangwon:'강원'};
+const PROD_REGION_KO = {daegu:'대구', gyeongbuk:'경북', gangwon:'강원', seoul:'서울', busan:'부산', incheon:'인천', gwangju:'광주', daejeon:'대전', ulsan:'울산', sejong:'세종', gyeonggi:'경기', chungbuk:'충북', chungnam:'충남', jeonbuk:'전북', jeonnam:'전남', gyeongnam:'경남', jeju:'제주'};
 const PROD_CROP_KO   = {garlic:'마늘', onion:'양파', potato:'감자', cabbage:'배추', radish:'무', tongak:'총각무', soybean:'콩', rice:'논벼'};
 const PROD_CROP_EMOJI= {garlic:'🧄', onion:'🧅', potato:'🥔', cabbage:'🥬', radish:'🌱', tongak:'🌿', soybean:'🫛', rice:'🌾'};
 const PROD_CROP_MAP  = {'마늘':'garlic','양파':'onion','무':'radish','총각무':'tongak','배추':'cabbage','감자':'potato','콩':'soybean','논벼':'rice'};
@@ -6307,55 +6341,167 @@ const PROD_VARIETIES = {garlic:['난지형','한지형'],onion:['조생종','중
 
 const PROD_HISTORY = {
   garlic:{
-    daegu:    [{y:'2021',v:1686},{y:'2022',v:1288},{y:'2023',v:1745},{y:'2024',v:1590},{y:'2025',v:1681}],
+    daegu:[{y:'2021',v:1686},{y:'2022',v:1288},{y:'2023',v:1745},{y:'2024',v:1590},{y:'2025',v:1681}],
     gyeongbuk:[{y:'2021',v:1477},{y:'2022',v:1373},{y:'2023',v:1466},{y:'2024',v:1407},{y:'2025',v:1552}],
-    gangwon:  [{y:'2021',v:922}, {y:'2022',v:819}, {y:'2023',v:855}, {y:'2024',v:894}, {y:'2025',v:998}]
+    gangwon:[{y:'2021',v:922},{y:'2022',v:819},{y:'2023',v:855},{y:'2024',v:894},{y:'2025',v:998}],
+    seoul:[{y:'2021',v:1048},{y:'2022',v:921},{y:'2023',v:992},{y:'2024',v:1125},{y:'2025',v:1159}],
+    busan:[{y:'2021',v:1260},{y:'2022',v:1203},{y:'2023',v:1284},{y:'2024',v:1200},{y:'2025',v:1340}],
+    incheon:[{y:'2021',v:1144},{y:'2022',v:885},{y:'2023',v:1223},{y:'2024',v:1365},{y:'2025',v:1379}],
+    gwangju:[{y:'2021',v:1292},{y:'2022',v:1049},{y:'2023',v:1283},{y:'2024',v:1047},{y:'2025',v:1045}],
+    daejeon:[{y:'2021',v:1131},{y:'2022',v:913},{y:'2023',v:979},{y:'2024',v:971},{y:'2025',v:985}],
+    ulsan:[{y:'2021',v:927},{y:'2022',v:1176},{y:'2023',v:976},{y:'2024',v:1292},{y:'2025',v:979}],
+    sejong:[{y:'2021',v:1362},{y:'2022',v:866},{y:'2023',v:1105},{y:'2024',v:1268},{y:'2025',v:1032}],
+    gyeonggi:[{y:'2021',v:1101},{y:'2022',v:953},{y:'2023',v:1007},{y:'2024',v:1153},{y:'2025',v:1169}],
+    chungbuk:[{y:'2021',v:972},{y:'2022',v:913},{y:'2023',v:1002},{y:'2024',v:1056},{y:'2025',v:1086}],
+    chungnam:[{y:'2021',v:1728},{y:'2022',v:1282},{y:'2023',v:1371},{y:'2024',v:1255},{y:'2025',v:1358}],
+    jeonbuk:[{y:'2021',v:1154},{y:'2022',v:1106},{y:'2023',v:1021},{y:'2024',v:945},{y:'2025',v:1261}],
+    jeonnam:[{y:'2021',v:1219},{y:'2022',v:1102},{y:'2023',v:1080},{y:'2024',v:855},{y:'2025',v:1185}],
+    gyeongnam:[{y:'2021',v:1406},{y:'2022',v:1227},{y:'2023',v:1292},{y:'2024',v:1344},{y:'2025',v:1339}],
+    jeju:[{y:'2021',v:1452},{y:'2022',v:1316},{y:'2023',v:1400},{y:'2024',v:893},{y:'2025',v:1169}]
   },
   onion:{
-    daegu:    [{y:'2021',v:7968},{y:'2022',v:9610},{y:'2023',v:8316},{y:'2024',v:7729},{y:'2025',v:8063}],
+    daegu:[{y:'2021',v:7968},{y:'2022',v:9610},{y:'2023',v:8316},{y:'2024',v:7729},{y:'2025',v:8063}],
     gyeongbuk:[{y:'2021',v:9739},{y:'2022',v:7542},{y:'2023',v:7860},{y:'2024',v:7346},{y:'2025',v:7507}],
-    gangwon:  [{y:'2021',v:6484},{y:'2022',v:5046},{y:'2023',v:5278},{y:'2024',v:6805},{y:'2025',v:6340}]
+    gangwon:[{y:'2021',v:6484},{y:'2022',v:5046},{y:'2023',v:5278},{y:'2024',v:6805},{y:'2025',v:6340}],
+    seoul:[{y:'2021',v:5921},{y:'2022',v:4257},{y:'2023',v:5950},{y:'2024',v:6519},{y:'2025',v:6216}],
+    busan:[{y:'2021',v:6173},{y:'2022',v:4261},{y:'2023',v:4560},{y:'2024',v:2974},{y:'2025',v:5662}],
+    incheon:[{y:'2021',v:7460},{y:'2022',v:6420},{y:'2023',v:7159},{y:'2024',v:5288},{y:'2025',v:6584}],
+    gwangju:[{y:'2021',v:7347},{y:'2022',v:5248},{y:'2023',v:6612},{y:'2024',v:4343},{y:'2025',v:5415}],
+    daejeon:[{y:'2021',v:7046},{y:'2022',v:5193},{y:'2023',v:6555},{y:'2024',v:6102},{y:'2025',v:5967}],
+    ulsan:[{y:'2021',v:7015},{y:'2022',v:4270},{y:'2023',v:5485},{y:'2024',v:5395},{y:'2025',v:4644}],
+    sejong:[{y:'2021',v:7046},{y:'2022',v:5193},{y:'2023',v:6555},{y:'2024',v:6102},{y:'2025',v:6304}],
+    gyeonggi:[{y:'2021',v:5921},{y:'2022',v:4257},{y:'2023',v:5950},{y:'2024',v:6519},{y:'2025',v:6216}],
+    chungbuk:[{y:'2021',v:9094},{y:'2022',v:5997},{y:'2023',v:5406},{y:'2024',v:5628},{y:'2025',v:7271}],
+    chungnam:[{y:'2021',v:7046},{y:'2022',v:5193},{y:'2023',v:6555},{y:'2024',v:6102},{y:'2025',v:5707}],
+    jeonbuk:[{y:'2021',v:8314},{y:'2022',v:6437},{y:'2023',v:5891},{y:'2024',v:6160},{y:'2025',v:7327}],
+    jeonnam:[{y:'2021',v:8547},{y:'2022',v:7014},{y:'2023',v:6478},{y:'2024',v:5449},{y:'2025',v:6090}],
+    gyeongnam:[{y:'2021',v:8423},{y:'2022',v:6276},{y:'2023',v:7182},{y:'2024',v:7120},{y:'2025',v:7078}],
+    jeju:[{y:'2021',v:8265},{y:'2022',v:7135},{y:'2023',v:6085},{y:'2024',v:6075},{y:'2025',v:5902}]
   },
   potato:{
-    daegu:    [{y:'2021',v:2096},{y:'2022',v:2436},{y:'2023',v:1987},{y:'2024',v:2804},{y:'2025',v:1991}],
+    daegu:[{y:'2021',v:2096},{y:'2022',v:2436},{y:'2023',v:1987},{y:'2024',v:2804},{y:'2025',v:1991}],
     gyeongbuk:[{y:'2021',v:2617},{y:'2022',v:2052},{y:'2023',v:2463},{y:'2024',v:2517},{y:'2025',v:2380}],
-    gangwon:  [{y:'2021',v:3009},{y:'2022',v:2835},{y:'2023',v:2980},{y:'2024',v:2765},{y:'2025',v:2761}]
+    gangwon:[{y:'2021',v:3009},{y:'2022',v:2835},{y:'2023',v:2980},{y:'2024',v:2765},{y:'2025',v:2761}],
+    seoul:[{y:'2021',v:3348},{y:'2022',v:1857},{y:'2023',v:2353},{y:'2024',v:2690},{y:'2025',v:3424}],
+    busan:[{y:'2021',v:2869},{y:'2022',v:2417},{y:'2023',v:2009},{y:'2024',v:2826},{y:'2025',v:2910}],
+    incheon:[{y:'2021',v:2923},{y:'2022',v:2374},{y:'2023',v:2727},{y:'2024',v:2719},{y:'2025',v:2940}],
+    gwangju:[{y:'2021',v:2036},{y:'2022',v:1899},{y:'2023',v:2473},{y:'2024',v:1571},{y:'2025',v:2175}],
+    daejeon:[{y:'2021',v:1985},{y:'2022',v:2081},{y:'2023',v:2343},{y:'2024',v:2021},{y:'2025',v:2571}],
+    ulsan:[{y:'2021',v:2881},{y:'2022',v:2242},{y:'2023',v:2509},{y:'2024',v:2720},{y:'2025',v:2972}],
+    sejong:[{y:'2021',v:2220},{y:'2022',v:1962},{y:'2023',v:1744},{y:'2024',v:2340},{y:'2025',v:3114}],
+    gyeonggi:[{y:'2021',v:2889},{y:'2022',v:2571},{y:'2023',v:2776},{y:'2024',v:2725},{y:'2025',v:2352}],
+    chungbuk:[{y:'2021',v:2548},{y:'2022',v:2265},{y:'2023',v:2438},{y:'2024',v:2709},{y:'2025',v:2469}],
+    chungnam:[{y:'2021',v:2643},{y:'2022',v:2279},{y:'2023',v:2217},{y:'2024',v:2510},{y:'2025',v:2316}],
+    jeonbuk:[{y:'2021',v:2225},{y:'2022',v:2038},{y:'2023',v:1792},{y:'2024',v:2454},{y:'2025',v:2412}],
+    jeonnam:[{y:'2021',v:2369},{y:'2022',v:2266},{y:'2023',v:2263},{y:'2024',v:2148},{y:'2025',v:2197}],
+    gyeongnam:[{y:'2021',v:2578},{y:'2022',v:1945},{y:'2023',v:2243},{y:'2024',v:2631},{y:'2025',v:2255}],
+    jeju:[{y:'2021',v:3034},{y:'2022',v:3121},{y:'2023',v:2837},{y:'2024',v:3159},{y:'2025',v:2168}]
   },
   potato_highland:{
-    daegu:    [{y:'2021',v:0},   {y:'2022',v:0},   {y:'2023',v:0},   {y:'2024',v:null},{y:'2025',v:null}],
+    daegu:[{y:'2021',v:0},{y:'2022',v:0},{y:'2023',v:0},{y:'2024',v:null},{y:'2025',v:null}],
     gyeongbuk:[{y:'2021',v:3037},{y:'2022',v:3562},{y:'2023',v:3304},{y:'2024',v:3218},{y:'2025',v:3171}],
-    gangwon:  [{y:'2021',v:3037},{y:'2022',v:3562},{y:'2023',v:3304},{y:'2024',v:3218},{y:'2025',v:3171}]
+    gangwon:[{y:'2021',v:3037},{y:'2022',v:3562},{y:'2023',v:3304},{y:'2024',v:3218},{y:'2025',v:3171}],
+    seoul:[{y:'2021',v:0},{y:'2022',v:0},{y:'2023',v:0},{y:'2024',v:null},{y:'2025',v:null}],
+    busan:[{y:'2021',v:0},{y:'2022',v:0},{y:'2023',v:0},{y:'2024',v:null},{y:'2025',v:null}],
+    incheon:[{y:'2021',v:0},{y:'2022',v:0},{y:'2023',v:0},{y:'2024',v:null},{y:'2025',v:null}],
+    gwangju:[{y:'2021',v:0},{y:'2022',v:0},{y:'2023',v:0},{y:'2024',v:null},{y:'2025',v:null}],
+    daejeon:[{y:'2021',v:0},{y:'2022',v:0},{y:'2023',v:0},{y:'2024',v:null},{y:'2025',v:null}],
+    ulsan:[{y:'2021',v:0},{y:'2022',v:0},{y:'2023',v:0},{y:'2024',v:null},{y:'2025',v:null}],
+    sejong:[{y:'2021',v:0},{y:'2022',v:0},{y:'2023',v:0},{y:'2024',v:null},{y:'2025',v:null}],
+    gyeonggi:[{y:'2021',v:0},{y:'2022',v:0},{y:'2023',v:0},{y:'2024',v:null},{y:'2025',v:null}],
+    chungbuk:[{y:'2021',v:0},{y:'2022',v:0},{y:'2023',v:0},{y:'2024',v:null},{y:'2025',v:null}],
+    chungnam:[{y:'2021',v:0},{y:'2022',v:0},{y:'2023',v:0},{y:'2024',v:null},{y:'2025',v:null}],
+    jeonbuk:[{y:'2021',v:0},{y:'2022',v:0},{y:'2023',v:0},{y:'2024',v:null},{y:'2025',v:null}],
+    jeonnam:[{y:'2021',v:0},{y:'2022',v:0},{y:'2023',v:0},{y:'2024',v:null},{y:'2025',v:null}],
+    gyeongnam:[{y:'2021',v:0},{y:'2022',v:0},{y:'2023',v:0},{y:'2024',v:null},{y:'2025',v:null}],
+    jeju:[{y:'2021',v:0},{y:'2022',v:0},{y:'2023',v:0},{y:'2024',v:null},{y:'2025',v:null}]
   },
   soybean:{
-    daegu:    [{y:'2021',v:154},{y:'2022',v:104},{y:'2023',v:117},{y:'2024',v:167},{y:'2025',v:164}],
+    daegu:[{y:'2021',v:154},{y:'2022',v:104},{y:'2023',v:117},{y:'2024',v:167},{y:'2025',v:164}],
     gyeongbuk:[{y:'2021',v:232},{y:'2022',v:194},{y:'2023',v:193},{y:'2024',v:191},{y:'2025',v:164}],
-    gangwon:  [{y:'2021',v:222},{y:'2022',v:178},{y:'2023',v:221},{y:'2024',v:206},{y:'2025',v:240}]
+    gangwon:[{y:'2021',v:222},{y:'2022',v:178},{y:'2023',v:221},{y:'2024',v:206},{y:'2025',v:240}],
+    seoul:[{y:'2021',v:163},{y:'2022',v:181},{y:'2023',v:205},{y:'2024',v:194},{y:'2025',v:203}],
+    busan:[{y:'2021',v:169},{y:'2022',v:124},{y:'2023',v:127},{y:'2024',v:229},{y:'2025',v:186}],
+    incheon:[{y:'2021',v:181},{y:'2022',v:180},{y:'2023',v:194},{y:'2024',v:160},{y:'2025',v:180}],
+    gwangju:[{y:'2021',v:226},{y:'2022',v:182},{y:'2023',v:166},{y:'2024',v:216},{y:'2025',v:179}],
+    daejeon:[{y:'2021',v:210},{y:'2022',v:285},{y:'2023',v:244},{y:'2024',v:182},{y:'2025',v:181}],
+    ulsan:[{y:'2021',v:171},{y:'2022',v:120},{y:'2023',v:153},{y:'2024',v:105},{y:'2025',v:140}],
+    sejong:[{y:'2021',v:183},{y:'2022',v:199},{y:'2023',v:161},{y:'2024',v:191},{y:'2025',v:157}],
+    gyeonggi:[{y:'2021',v:163},{y:'2022',v:181},{y:'2023',v:205},{y:'2024',v:194},{y:'2025',v:203}],
+    chungbuk:[{y:'2021',v:181},{y:'2022',v:201},{y:'2023',v:232},{y:'2024',v:207},{y:'2025',v:235}],
+    chungnam:[{y:'2021',v:234},{y:'2022',v:215},{y:'2023',v:236},{y:'2024',v:221},{y:'2025',v:200}],
+    jeonbuk:[{y:'2021',v:248},{y:'2022',v:267},{y:'2023',v:227},{y:'2024',v:256},{y:'2025',v:246}],
+    jeonnam:[{y:'2021',v:181},{y:'2022',v:193},{y:'2023',v:199},{y:'2024',v:182},{y:'2025',v:213}],
+    gyeongnam:[{y:'2021',v:172},{y:'2022',v:174},{y:'2023',v:184},{y:'2024',v:171},{y:'2025',v:186}],
+    jeju:[{y:'2021',v:121},{y:'2022',v:135},{y:'2023',v:145},{y:'2024',v:136},{y:'2025',v:121}]
   },
   radish:{
-    daegu:    [{y:'2021',v:9138},{y:'2022',v:7246},{y:'2023',v:6075},{y:'2024',v:5985},{y:'2025',v:5708}],
+    daegu:[{y:'2021',v:9138},{y:'2022',v:7246},{y:'2023',v:6075},{y:'2024',v:5985},{y:'2025',v:5708}],
     gyeongbuk:[{y:'2021',v:5945},{y:'2022',v:7356},{y:'2023',v:6585},{y:'2024',v:6297},{y:'2025',v:4862}],
-    gangwon:  [{y:'2021',v:5464},{y:'2022',v:5913},{y:'2023',v:6562},{y:'2024',v:6049},{y:'2025',v:4877}]
+    gangwon:[{y:'2021',v:5464},{y:'2022',v:5913},{y:'2023',v:6562},{y:'2024',v:6049},{y:'2025',v:4877}],
+    seoul:[{y:'2021',v:6800},{y:'2022',v:7242},{y:'2023',v:8471},{y:'2024',v:6274},{y:'2025',v:6160}],
+    busan:[{y:'2021',v:8673},{y:'2022',v:7682},{y:'2023',v:6108},{y:'2024',v:10458},{y:'2025',v:8573}],
+    incheon:[{y:'2021',v:8572},{y:'2022',v:8132},{y:'2023',v:8716},{y:'2024',v:8591},{y:'2025',v:7532}],
+    gwangju:[{y:'2021',v:7718},{y:'2022',v:10333},{y:'2023',v:10131},{y:'2024',v:10005},{y:'2025',v:9725}],
+    daejeon:[{y:'2021',v:6884},{y:'2022',v:6506},{y:'2023',v:8733},{y:'2024',v:8099},{y:'2025',v:5983}],
+    ulsan:[{y:'2021',v:7709},{y:'2022',v:7685},{y:'2023',v:8102},{y:'2024',v:8225},{y:'2025',v:6635}],
+    sejong:[{y:'2021',v:6285},{y:'2022',v:5703},{y:'2023',v:5991},{y:'2024',v:5543},{y:'2025',v:3624}],
+    gyeonggi:[{y:'2021',v:6751},{y:'2022',v:6876},{y:'2023',v:7670},{y:'2024',v:6348},{y:'2025',v:6072}],
+    chungbuk:[{y:'2021',v:4848},{y:'2022',v:6280},{y:'2023',v:6983},{y:'2024',v:6016},{y:'2025',v:5845}],
+    chungnam:[{y:'2021',v:7933},{y:'2022',v:7540},{y:'2023',v:7704},{y:'2024',v:7087},{y:'2025',v:5537}],
+    jeonbuk:[{y:'2021',v:7958},{y:'2022',v:7741},{y:'2023',v:8142},{y:'2024',v:7478},{y:'2025',v:6926}],
+    jeonnam:[{y:'2021',v:7826},{y:'2022',v:9188},{y:'2023',v:9117},{y:'2024',v:8615},{y:'2025',v:8149}],
+    gyeongnam:[{y:'2021',v:9427},{y:'2022',v:8987},{y:'2023',v:8392},{y:'2024',v:7773},{y:'2025',v:7867}],
+    jeju:[{y:'2021',v:11694},{y:'2022',v:0},{y:'2023',v:0},{y:'2024',v:8014},{y:'2025',v:8626}]
   },
   cabbage:{
-    daegu:    [{y:'2021',v:7248},{y:'2022',v:8596},{y:'2023',v:8684},{y:'2024',v:7825},{y:'2025',v:7950}],
+    daegu:[{y:'2021',v:7248},{y:'2022',v:8596},{y:'2023',v:8684},{y:'2024',v:7825},{y:'2025',v:7950}],
     gyeongbuk:[{y:'2021',v:7256},{y:'2022',v:8188},{y:'2023',v:7333},{y:'2024',v:8073},{y:'2025',v:6459}],
-    gangwon:  [{y:'2021',v:7906},{y:'2022',v:9238},{y:'2023',v:8341},{y:'2024',v:7737},{y:'2025',v:6693}]
+    gangwon:[{y:'2021',v:7906},{y:'2022',v:9238},{y:'2023',v:8341},{y:'2024',v:7737},{y:'2025',v:6693}],
+    seoul:[{y:'2021',v:12793},{y:'2022',v:11872},{y:'2023',v:7446},{y:'2024',v:8790},{y:'2025',v:6758}],
+    busan:[{y:'2021',v:11239},{y:'2022',v:11676},{y:'2023',v:5803},{y:'2024',v:8067},{y:'2025',v:8538}],
+    incheon:[{y:'2021',v:9664},{y:'2022',v:10846},{y:'2023',v:10463},{y:'2024',v:11027},{y:'2025',v:10228}],
+    gwangju:[{y:'2021',v:9772},{y:'2022',v:12752},{y:'2023',v:10998},{y:'2024',v:11492},{y:'2025',v:9659}],
+    daejeon:[{y:'2021',v:8143},{y:'2022',v:7446},{y:'2023',v:9606},{y:'2024',v:9215},{y:'2025',v:7386}],
+    ulsan:[{y:'2021',v:7767},{y:'2022',v:9238},{y:'2023',v:10248},{y:'2024',v:8784},{y:'2025',v:7689}],
+    sejong:[{y:'2021',v:9598},{y:'2022',v:9609},{y:'2023',v:8659},{y:'2024',v:9243},{y:'2025',v:5336}],
+    gyeonggi:[{y:'2021',v:8986},{y:'2022',v:9768},{y:'2023',v:10309},{y:'2024',v:8790},{y:'2025',v:6758}],
+    chungbuk:[{y:'2021',v:7321},{y:'2022',v:8119},{y:'2023',v:8253},{y:'2024',v:7123},{y:'2025',v:6842}],
+    chungnam:[{y:'2021',v:8676},{y:'2022',v:9644},{y:'2023',v:9807},{y:'2024',v:8752},{y:'2025',v:6834}],
+    jeonbuk:[{y:'2021',v:9304},{y:'2022',v:10472},{y:'2023',v:10599},{y:'2024',v:9777},{y:'2025',v:8162}],
+    jeonnam:[{y:'2021',v:9933},{y:'2022',v:11391},{y:'2023',v:11600},{y:'2024',v:10711},{y:'2025',v:10364}],
+    gyeongnam:[{y:'2021',v:9190},{y:'2022',v:10747},{y:'2023',v:9206},{y:'2024',v:10308},{y:'2025',v:8523}],
+    jeju:[{y:'2021',v:9933},{y:'2022',v:11391},{y:'2023',v:0},{y:'2024',v:10711},{y:'2025',v:10364}]
   },
   tongak:{
-    daegu:    [{y:'2021',v:3763},{y:'2022',v:0},   {y:'2023',v:0},   {y:'2024',v:4182},{y:'2025',v:0}],
+    daegu:[{y:'2021',v:3763},{y:'2022',v:0},{y:'2023',v:0},{y:'2024',v:4182},{y:'2025',v:0}],
     gyeongbuk:[{y:'2021',v:3763},{y:'2022',v:4427},{y:'2023',v:3058},{y:'2024',v:4182},{y:'2025',v:3954}],
-    gangwon:  [{y:'2021',v:3897},{y:'2022',v:3403},{y:'2023',v:4617},{y:'2024',v:3971},{y:'2025',v:4719}]
+    gangwon:[{y:'2021',v:3897},{y:'2022',v:3403},{y:'2023',v:4617},{y:'2024',v:3971},{y:'2025',v:4719}],
+    seoul:[{y:'2021',v:5424},{y:'2022',v:5161},{y:'2023',v:5568},{y:'2024',v:5451},{y:'2025',v:5267}],
+    busan:[{y:'2021',v:3763},{y:'2022',v:0},{y:'2023',v:4999},{y:'2024',v:4182},{y:'2025',v:0}],
+    incheon:[{y:'2021',v:5773},{y:'2022',v:5950},{y:'2023',v:6466},{y:'2024',v:6125},{y:'2025',v:6171}],
+    gwangju:[{y:'2021',v:0},{y:'2022',v:0},{y:'2023',v:0},{y:'2024',v:5605},{y:'2025',v:0}],
+    daejeon:[{y:'2021',v:5545},{y:'2022',v:5414},{y:'2023',v:5283},{y:'2024',v:6311},{y:'2025',v:4863}],
+    ulsan:[{y:'2021',v:3763},{y:'2022',v:4427},{y:'2023',v:4999},{y:'2024',v:4182},{y:'2025',v:0}],
+    sejong:[{y:'2021',v:5545},{y:'2022',v:3956},{y:'2023',v:5283},{y:'2024',v:6311},{y:'2025',v:4863}],
+    gyeonggi:[{y:'2021',v:5424},{y:'2022',v:5161},{y:'2023',v:5568},{y:'2024',v:5451},{y:'2025',v:5267}],
+    chungbuk:[{y:'2021',v:3763},{y:'2022',v:5177},{y:'2023',v:4999},{y:'2024',v:4182},{y:'2025',v:3954}],
+    chungnam:[{y:'2021',v:5545},{y:'2022',v:5414},{y:'2023',v:5283},{y:'2024',v:6311},{y:'2025',v:4863}],
+    jeonbuk:[{y:'2021',v:5873},{y:'2022',v:9120},{y:'2023',v:4052},{y:'2024',v:7864},{y:'2025',v:4549}],
+    jeonnam:[{y:'2021',v:4691},{y:'2022',v:4427},{y:'2023',v:4052},{y:'2024',v:5605},{y:'2025',v:4392}],
+    gyeongnam:[{y:'2021',v:3763},{y:'2022',v:0},{y:'2023',v:3058},{y:'2024',v:4182},{y:'2025',v:0}],
+    jeju:[{y:'2021',v:0},{y:'2022',v:0},{y:'2023',v:0},{y:'2024',v:5605},{y:'2025',v:0}]
   }
 };
 const PROD_STATS = {
-  garlic: {prev:{daegu:1681,gyeongbuk:1552,gangwon:998},   mean5:{daegu:1598,gyeongbuk:1455,gangwon:898}},
-  onion:  {prev:{daegu:8063,gyeongbuk:7507,gangwon:6340},  mean5:{daegu:8337,gyeongbuk:7999,gangwon:5991}},
-  potato: {prev:{daegu:1991,gyeongbuk:2380,gangwon:2761},  mean5:{daegu:2263,gyeongbuk:2406,gangwon:2870}},
-  potato_highland:{prev:{daegu:null,gyeongbuk:3171,gangwon:3171}, mean5:{daegu:0,gyeongbuk:3258,gangwon:3258}},
-  cabbage:{prev:{daegu:7950,gyeongbuk:6459,gangwon:6693},  mean5:{daegu:8061,gyeongbuk:7462,gangwon:7983}},
-  radish: {prev:{daegu:5708,gyeongbuk:4862,gangwon:4877},  mean5:{daegu:6830,gyeongbuk:6209,gangwon:5773}},
-  tongak: {prev:{daegu:0,gyeongbuk:3954,gangwon:4719},  mean5:{daegu:1589,gyeongbuk:3877,gangwon:4121}},
-  soybean:{prev:{daegu:164, gyeongbuk:164, gangwon:240},   mean5:{daegu:141, gyeongbuk:195, gangwon:213}}
+  garlic: {prev:{daegu:1681, gyeongbuk:1552, gangwon:998, seoul:1159, busan:1340, incheon:1379, gwangju:1045, daejeon:985, ulsan:979, sejong:1032, gyeonggi:1169, chungbuk:1086, chungnam:1358, jeonbuk:1261, jeonnam:1185, gyeongnam:1339, jeju:1169}, mean5:{daegu:1598, gyeongbuk:1455, gangwon:898, seoul:1049, busan:1257, incheon:1199, gwangju:1143, daejeon:996, ulsan:1070, sejong:1127, gyeonggi:1077, chungbuk:1006, chungnam:1399, jeonbuk:1097, jeonnam:1088, gyeongnam:1322, jeju:1246}},
+  onion: {prev:{daegu:8063, gyeongbuk:7507, gangwon:6340, seoul:6216, busan:5662, incheon:6584, gwangju:5415, daejeon:5967, ulsan:4644, sejong:6304, gyeonggi:6216, chungbuk:7271, chungnam:5707, jeonbuk:7327, jeonnam:6090, gyeongnam:7078, jeju:5902}, mean5:{daegu:8337, gyeongbuk:7999, gangwon:5991, seoul:5773, busan:4726, incheon:6582, gwangju:5793, daejeon:6173, ulsan:5362, sejong:6240, gyeonggi:5773, chungbuk:6679, chungnam:6121, jeonbuk:6826, jeonnam:6716, gyeongnam:7216, jeju:6692}},
+  potato: {prev:{daegu:1991, gyeongbuk:2380, gangwon:2761, seoul:3424, busan:2910, incheon:2940, gwangju:2175, daejeon:2571, ulsan:2972, sejong:3114, gyeonggi:2352, chungbuk:2469, chungnam:2316, jeonbuk:2412, jeonnam:2197, gyeongnam:2255, jeju:2168}, mean5:{daegu:2263, gyeongbuk:2406, gangwon:2870, seoul:2734, busan:2606, incheon:2737, gwangju:2031, daejeon:2200, ulsan:2665, sejong:2276, gyeonggi:2663, chungbuk:2486, chungnam:2393, jeonbuk:2184, jeonnam:2249, gyeongnam:2330, jeju:2864}},
+  potato_highland: {prev:{daegu:null, gyeongbuk:3171, gangwon:3171, seoul:null, busan:null, incheon:null, gwangju:null, daejeon:null, ulsan:null, sejong:null, gyeonggi:null, chungbuk:null, chungnam:null, jeonbuk:null, jeonnam:null, gyeongnam:null, jeju:null}, mean5:{daegu:0, gyeongbuk:3258, gangwon:3258, seoul:0, busan:0, incheon:0, gwangju:0, daejeon:0, ulsan:0, sejong:0, gyeonggi:0, chungbuk:0, chungnam:0, jeonbuk:0, jeonnam:0, gyeongnam:0, jeju:0}},
+  soybean: {prev:{daegu:164, gyeongbuk:164, gangwon:240, seoul:203, busan:186, incheon:180, gwangju:179, daejeon:181, ulsan:140, sejong:157, gyeonggi:203, chungbuk:235, chungnam:200, jeonbuk:246, jeonnam:213, gyeongnam:186, jeju:121}, mean5:{daegu:141, gyeongbuk:195, gangwon:213, seoul:189, busan:167, incheon:179, gwangju:194, daejeon:220, ulsan:138, sejong:178, gyeonggi:189, chungbuk:211, chungnam:221, jeonbuk:249, jeonnam:194, gyeongnam:177, jeju:132}},
+  radish: {prev:{daegu:5708, gyeongbuk:4862, gangwon:4877, seoul:6160, busan:8573, incheon:7532, gwangju:9725, daejeon:5983, ulsan:6635, sejong:3624, gyeonggi:6072, chungbuk:5845, chungnam:5537, jeonbuk:6926, jeonnam:8149, gyeongnam:7867, jeju:8626}, mean5:{daegu:6830, gyeongbuk:6209, gangwon:5773, seoul:6989, busan:8299, incheon:8309, gwangju:9582, daejeon:7241, ulsan:7671, sejong:5429, gyeonggi:6743, chungbuk:5994, chungnam:7160, jeonbuk:7649, jeonnam:8579, gyeongnam:8489, jeju:5667}},
+  cabbage: {prev:{daegu:7950, gyeongbuk:6459, gangwon:6693, seoul:6758, busan:8538, incheon:10228, gwangju:9659, daejeon:7386, ulsan:7689, sejong:5336, gyeonggi:6758, chungbuk:6842, chungnam:6834, jeonbuk:8162, jeonnam:10364, gyeongnam:8523, jeju:10364}, mean5:{daegu:8061, gyeongbuk:7462, gangwon:7983, seoul:9532, busan:9065, incheon:10446, gwangju:10935, daejeon:8359, ulsan:8745, sejong:8489, gyeonggi:8922, chungbuk:7532, chungnam:8743, jeonbuk:9663, jeonnam:10800, gyeongnam:9595, jeju:8480}},
+  tongak: {prev:{daegu:0, gyeongbuk:3954, gangwon:4719, seoul:5267, busan:0, incheon:6171, gwangju:0, daejeon:4863, ulsan:0, sejong:4863, gyeonggi:5267, chungbuk:3954, chungnam:4863, jeonbuk:4549, jeonnam:4392, gyeongnam:0, jeju:0}, mean5:{daegu:1589, gyeongbuk:3877, gangwon:4121, seoul:5374, busan:2589, incheon:6097, gwangju:1121, daejeon:5483, ulsan:3474, sejong:5192, gyeonggi:5374, chungbuk:4415, chungnam:5483, jeonbuk:6292, jeonnam:4633, gyeongnam:2201, jeju:1121}}
 };
 
 let prodCrop = null, prodVariety = null, prodRegion = null;
