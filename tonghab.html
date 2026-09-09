@@ -1,4 +1,5 @@
-<!-- tonghab.html (v125) · 저장: 2026-09-10 03:13 KST · [v125] 저장/불러오기 「저장목록」 조회·정렬 UI 정리 — ①조회 콤보(시도·시군구·읍면동·작물)와 정렬을 한 줄로 배치, 「정렬」 글자 제거(정렬 콤보만, 파란 배경으로 구분). ②전역 select{font-size:16px!important} 때문에 콤보가 커 보이던 문제 수정(콤보 전용 font-size !important + 모바일 반응형). ③모바일 화면폭에 맞춰 콤보 크기 자동 축소(auto-fit, 좁으면 줄바꿈). ※ 청취계산기와 동일 크기. 계산 함수 무변경. (v124 이하 유지) -->
+<!-- tonghab.html (v126) · 저장: 2026-09-10 06:21 KST · [v126] 「지역별 참고 선그래프」 전국 선을 그레이 점선으로 통일(색 #9ca3af + borderDash) — 다른 계산기·그래프와 동일 표기. ※ 계산 함수 무변경(표시만). (v125 이하 유지) -->
+<!-- (이전)  tonghab.html (v125) · 저장: 2026-09-10 03:13 KST · [v125] 저장/불러오기 「저장목록」 조회·정렬 UI 정리 — ①조회 콤보(시도·시군구·읍면동·작물)와 정렬을 한 줄로 배치, 「정렬」 글자 제거(정렬 콤보만, 파란 배경으로 구분). ②전역 select{font-size:16px!important} 때문에 콤보가 커 보이던 문제 수정(콤보 전용 font-size !important + 모바일 반응형). ③모바일 화면폭에 맞춰 콤보 크기 자동 축소(auto-fit, 좁으면 줄바꿈). ※ 청취계산기와 동일 크기. 계산 함수 무변경. (v124 이하 유지) -->
 <!-- (이전)  tonghab.html (v124) · 저장: 2026-09-10 02:48 KST · [v124] ①「지역별 10a 생산량 비교」 참고 그래프(막대·선·표)에 「전국」 항상 표시 + 선택 지역이 속한 지방청(경인=서울·인천·경기 / 충청=대전·세종·충북·충남 / 동북=대구·경북·강원 / 동남=부산·울산·경남 / 호남=광주·전남·전북·제주) 시도끼리 함께 비교(전국값은 graph의 KOSIS 전국 자료 이식). ②저장/불러오기 「저장목록」에 조회(시도·시군구·읍면동·작물) 콤보 + 정렬(최근 저장순·생산량 큰순·작물별) 추가(지도 생산량목록과 동일 방식, 주소→행정구역 파싱·정렬 기억). ※ 계산 산식(함수) 무변경(데이터·UI만). (v123 이하 유지) -->
 <!-- (이전)  tonghab.html (v123) · 저장: 2026-09-10 02:04 KST · [v123] 논벼 「시군별」 비교 전국 확대 — 제공 xlsx의 시군 자료로 경기·충북·충남·전북·전남·경남·제주 시군(총 110곳)을 논벼 시군별 비교에 추가(권역 드롭다운에 「경기/충북/충남/전북/전남/경남/제주 시군」). 각 시군은 시군 vs 도(시도) vs 전국 3선 비교, 도 기준선은 provKey로 올바른 시도 매핑. 시군명 충돌(고성군)은 「고성군(경남)」으로 구분. 기존 대구경북권·강원권 시군 및 도-단위(17시도) 유지. ※ 계산 산식(함수) 무변경. (v122 이하 유지) -->
 <!-- (이전)  tonghab.html (v122) · 저장: 2026-09-09 20:26 KST · [v122] 논벼 도(시도) 단위 비교 전국 17개 시도 완성 — 제공해 주신 「시군별 논벼 생산량조사(KOSIS 5년)」 xlsx의 도 소계로 17개 시도(서울~제주)의 논벼 10a 5년 추이·평년·전년을 채움. 논벼 비교의 권역 「시도(도 단위)」에서 17개 시도 선택 가능(도 전체 vs 전국). 기존 대구경북권·강원권 시군 비교 및 도 기준선 데이터는 그대로 유지. ※ 계산 산식(함수) 무변경(표시·데이터만). (v121 이하 유지) -->
@@ -7151,7 +7152,7 @@ function drawProdLineChart(crop,region){
   if(!hist)return;
   if(prodLineChartInst){prodLineChartInst.destroy();prodLineChartInst=null;}
   const rN=PROD_REGION_KO;   /* [v121] 전국 17개 시도 */
-  const colors={national:'#111827',daegu:'#0d6640',gyeongbuk:'#dc2626',gangwon:'#2563eb',
+  const colors={national:'#9ca3af',daegu:'#0d6640',gyeongbuk:'#dc2626',gangwon:'#2563eb',   /* [v126] 전국=그레이(점선) 통일 */
     seoul:'#7c3aed',busan:'#0891b2',incheon:'#c2410c',gwangju:'#0d9488',daejeon:'#b45309',
     ulsan:'#4f46e5',sejong:'#be185d',gyeonggi:'#15803d',chungbuk:'#a16207',chungnam:'#0369a1',
     jeonbuk:'#9333ea',jeonnam:'#db2777',gyeongnam:'#ea580c',jeju:'#0284c7'};
@@ -7171,6 +7172,7 @@ function drawProdLineChart(crop,region){
     borderColor:colors[r],
     backgroundColor:colors[r]+'20',
     borderWidth:r===region?3:2,
+    borderDash:r==='national'?[6,4]:[],   /* [v126] 전국은 그레이 점선 */
     pointRadius:4,pointHoverRadius:7,
     pointBackgroundColor:colors[r],pointBorderColor:'#fff',pointBorderWidth:2,
     tension:0.25
