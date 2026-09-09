@@ -1,4 +1,5 @@
-<!-- tonghab.html (v123) · 저장: 2026-09-10 02:04 KST · [v123] 논벼 「시군별」 비교 전국 확대 — 제공 xlsx의 시군 자료로 경기·충북·충남·전북·전남·경남·제주 시군(총 110곳)을 논벼 시군별 비교에 추가(권역 드롭다운에 「경기/충북/충남/전북/전남/경남/제주 시군」). 각 시군은 시군 vs 도(시도) vs 전국 3선 비교, 도 기준선은 provKey로 올바른 시도 매핑. 시군명 충돌(고성군)은 「고성군(경남)」으로 구분. 기존 대구경북권·강원권 시군 및 도-단위(17시도) 유지. ※ 계산 산식(함수) 무변경. (v122 이하 유지) -->
+<!-- tonghab.html (v124) · 저장: 2026-09-10 02:48 KST · [v124] ①「지역별 10a 생산량 비교」 참고 그래프(막대·선·표)에 「전국」 항상 표시 + 선택 지역이 속한 지방청(경인=서울·인천·경기 / 충청=대전·세종·충북·충남 / 동북=대구·경북·강원 / 동남=부산·울산·경남 / 호남=광주·전남·전북·제주) 시도끼리 함께 비교(전국값은 graph의 KOSIS 전국 자료 이식). ②저장/불러오기 「저장목록」에 조회(시도·시군구·읍면동·작물) 콤보 + 정렬(최근 저장순·생산량 큰순·작물별) 추가(지도 생산량목록과 동일 방식, 주소→행정구역 파싱·정렬 기억). ※ 계산 산식(함수) 무변경(데이터·UI만). (v123 이하 유지) -->
+<!-- (이전)  tonghab.html (v123) · 저장: 2026-09-10 02:04 KST · [v123] 논벼 「시군별」 비교 전국 확대 — 제공 xlsx의 시군 자료로 경기·충북·충남·전북·전남·경남·제주 시군(총 110곳)을 논벼 시군별 비교에 추가(권역 드롭다운에 「경기/충북/충남/전북/전남/경남/제주 시군」). 각 시군은 시군 vs 도(시도) vs 전국 3선 비교, 도 기준선은 provKey로 올바른 시도 매핑. 시군명 충돌(고성군)은 「고성군(경남)」으로 구분. 기존 대구경북권·강원권 시군 및 도-단위(17시도) 유지. ※ 계산 산식(함수) 무변경. (v122 이하 유지) -->
 <!-- (이전)  tonghab.html (v122) · 저장: 2026-09-09 20:26 KST · [v122] 논벼 도(시도) 단위 비교 전국 17개 시도 완성 — 제공해 주신 「시군별 논벼 생산량조사(KOSIS 5년)」 xlsx의 도 소계로 17개 시도(서울~제주)의 논벼 10a 5년 추이·평년·전년을 채움. 논벼 비교의 권역 「시도(도 단위)」에서 17개 시도 선택 가능(도 전체 vs 전국). 기존 대구경북권·강원권 시군 비교 및 도 기준선 데이터는 그대로 유지. ※ 계산 산식(함수) 무변경(표시·데이터만). (v121 이하 유지) -->
 <!-- (이전)  tonghab.html (v121) · 저장: 2026-09-09 20:13 KST · [v121] 지역 확대 마무리 — ①「지역별 참고 막대·선그래프·상세표」에 사용자가 고른 시도(대구·경북·강원 밖 14개 시도 포함)를 함께 표시(★). ②논벼 「시군별 생산량 비교」에 권역 「시도(도 단위)」 추가 — 도 전체 vs 전국 비교(도-단위는 도 참고선 생략, 2선). ※ 논벼 시도별 KOSIS 원자료는 현재 대구·경북·강원(+전국)만 존재 → 그 3개 도만 도-단위 제공, 나머지 14개 시도는 시도별 논벼 원자료를 받으면 동일 형식으로 추가 가능. ※ 계산 함수(수확량·10a 산식) 무변경(표시·데이터만). (v120 이하 유지) -->
 <!-- (이전)  tonghab.html (v120) · 저장: 2026-09-09 19:50 KST · [v120] 지역 데이터 전국 17개 시도로 확대 — ①마늘·양파 「건조율」 17개 시도 반영(원자료 표). ②「10a 생산량 비교(전년·평년)」 데이터를 graph의 전국 KOSIS 자료로 17개 시도 확대(마늘·양파·감자·고랭지감자·무=노지가을무·배추=노지가을배추·총각무=가을총각무·콩). ③지역 선택 = 대구·경북·강원 버튼 유지 + 그 외 14개 시도 콤보박스 추가(선택 시 건조율 자동입력·전년/평년 대비 반영). ※ 계산 함수 무변경(데이터·UI만). ※ 논벼 도별비교(NB_PROVINCE_HIST)와 지역별 참고 막대/선그래프(대구·경북·강원 기준)는 이번 범위 밖. (v119 이하 유지) -->
@@ -6343,7 +6344,27 @@ const PROD_DRYRATE = {
   gyeongnam:{garlic:67.0, onion:93.3},
   jeju:{garlic:61.4, onion:89.8}
 };
-const PROD_REGION_KO = {daegu:'대구', gyeongbuk:'경북', gangwon:'강원', seoul:'서울', busan:'부산', incheon:'인천', gwangju:'광주', daejeon:'대전', ulsan:'울산', sejong:'세종', gyeonggi:'경기', chungbuk:'충북', chungnam:'충남', jeonbuk:'전북', jeonnam:'전남', gyeongnam:'경남', jeju:'제주'};
+const PROD_REGION_KO = {national:'전국', daegu:'대구', gyeongbuk:'경북', gangwon:'강원', seoul:'서울', busan:'부산', incheon:'인천', gwangju:'광주', daejeon:'대전', ulsan:'울산', sejong:'세종', gyeonggi:'경기', chungbuk:'충북', chungnam:'충남', jeonbuk:'전북', jeonnam:'전남', gyeongnam:'경남', jeju:'제주'};
+/* [v124] 지방청(권역) 그룹 — 지역 선택 시 같은 청 소속 시도끼리 비교 */
+const PROD_CHEONG = {
+  seoul:'경인', incheon:'경인', gyeonggi:'경인',
+  daejeon:'충청', sejong:'충청', chungbuk:'충청', chungnam:'충청',
+  daegu:'동북', gyeongbuk:'동북', gangwon:'동북',
+  busan:'동남', ulsan:'동남', gyeongnam:'동남',
+  gwangju:'호남', jeonnam:'호남', jeonbuk:'호남', jeju:'호남'
+};
+const PROD_CHEONG_REGIONS = {
+  '경인':['seoul','incheon','gyeonggi'],
+  '충청':['daejeon','sejong','chungbuk','chungnam'],
+  '동북':['daegu','gyeongbuk','gangwon'],
+  '동남':['busan','ulsan','gyeongnam'],
+  '호남':['gwangju','jeonnam','jeonbuk','jeju']
+};
+/* 참고 그래프에 표시할 지역 목록: 항상 전국 + (선택 지역이 속한 청의 시도들, 미선택 시 동북청) */
+function prodAllR(region){
+  const base=(region&&PROD_CHEONG[region])?PROD_CHEONG_REGIONS[PROD_CHEONG[region]]:['daegu','gyeongbuk','gangwon'];
+  return ['national'].concat(base);
+}
 const PROD_CROP_KO   = {garlic:'마늘', onion:'양파', potato:'감자', cabbage:'배추', radish:'무', tongak:'총각무', soybean:'콩', rice:'논벼'};
 const PROD_CROP_EMOJI= {garlic:'🧄', onion:'🧅', potato:'🥔', cabbage:'🥬', radish:'🌱', tongak:'🌿', soybean:'🫛', rice:'🌾'};
 const PROD_CROP_MAP  = {'마늘':'garlic','양파':'onion','무':'radish','총각무':'tongak','배추':'cabbage','감자':'potato','콩':'soybean','논벼':'rice'};
@@ -6352,6 +6373,7 @@ const PROD_VARIETIES = {garlic:['난지형','한지형'],onion:['조생종','중
 
 const PROD_HISTORY = {
   garlic:{
+    national:[{y:'2021',v:1402},{y:'2022',v:1220},{y:'2023',v:1288},{y:'2024',v:1223},{y:'2025',v:1351}],
     daegu:[{y:'2021',v:1686},{y:'2022',v:1288},{y:'2023',v:1745},{y:'2024',v:1590},{y:'2025',v:1681}],
     gyeongbuk:[{y:'2021',v:1477},{y:'2022',v:1373},{y:'2023',v:1466},{y:'2024',v:1407},{y:'2025',v:1552}],
     gangwon:[{y:'2021',v:922},{y:'2022',v:819},{y:'2023',v:855},{y:'2024',v:894},{y:'2025',v:998}],
@@ -6371,6 +6393,7 @@ const PROD_HISTORY = {
     jeju:[{y:'2021',v:1452},{y:'2022',v:1316},{y:'2023',v:1400},{y:'2024',v:893},{y:'2025',v:1169}]
   },
   onion:{
+    national:[{y:'2021',v:8541},{y:'2022',v:6770},{y:'2023',v:6787},{y:'2024',v:6314},{y:'2025',v:6684}],
     daegu:[{y:'2021',v:7968},{y:'2022',v:9610},{y:'2023',v:8316},{y:'2024',v:7729},{y:'2025',v:8063}],
     gyeongbuk:[{y:'2021',v:9739},{y:'2022',v:7542},{y:'2023',v:7860},{y:'2024',v:7346},{y:'2025',v:7507}],
     gangwon:[{y:'2021',v:6484},{y:'2022',v:5046},{y:'2023',v:5278},{y:'2024',v:6805},{y:'2025',v:6340}],
@@ -6390,6 +6413,7 @@ const PROD_HISTORY = {
     jeju:[{y:'2021',v:8265},{y:'2022',v:7135},{y:'2023',v:6085},{y:'2024',v:6075},{y:'2025',v:5902}]
   },
   potato:{
+    national:[{y:'2021',v:2661},{y:'2022',v:2329},{y:'2023',v:2436},{y:'2024',v:2562},{y:'2025',v:2383}],
     daegu:[{y:'2021',v:2096},{y:'2022',v:2436},{y:'2023',v:1987},{y:'2024',v:2804},{y:'2025',v:1991}],
     gyeongbuk:[{y:'2021',v:2617},{y:'2022',v:2052},{y:'2023',v:2463},{y:'2024',v:2517},{y:'2025',v:2380}],
     gangwon:[{y:'2021',v:3009},{y:'2022',v:2835},{y:'2023',v:2980},{y:'2024',v:2765},{y:'2025',v:2761}],
@@ -6409,6 +6433,7 @@ const PROD_HISTORY = {
     jeju:[{y:'2021',v:3034},{y:'2022',v:3121},{y:'2023',v:2837},{y:'2024',v:3159},{y:'2025',v:2168}]
   },
   potato_highland:{
+    national:[{y:'2021',v:3037},{y:'2022',v:3562},{y:'2023',v:3304},{y:'2024',v:3218},{y:'2025',v:3171}],
     daegu:[{y:'2021',v:0},{y:'2022',v:0},{y:'2023',v:0},{y:'2024',v:null},{y:'2025',v:null}],
     gyeongbuk:[{y:'2021',v:3037},{y:'2022',v:3562},{y:'2023',v:3304},{y:'2024',v:3218},{y:'2025',v:3171}],
     gangwon:[{y:'2021',v:3037},{y:'2022',v:3562},{y:'2023',v:3304},{y:'2024',v:3218},{y:'2025',v:3171}],
@@ -6428,6 +6453,7 @@ const PROD_HISTORY = {
     jeju:[{y:'2021',v:0},{y:'2022',v:0},{y:'2023',v:0},{y:'2024',v:null},{y:'2025',v:null}]
   },
   soybean:{
+    national:[{y:'2021',v:203},{y:'2022',v:203},{y:'2023',v:209},{y:'2024',v:209},{y:'2025',v:211}],
     daegu:[{y:'2021',v:154},{y:'2022',v:104},{y:'2023',v:117},{y:'2024',v:167},{y:'2025',v:164}],
     gyeongbuk:[{y:'2021',v:232},{y:'2022',v:194},{y:'2023',v:193},{y:'2024',v:191},{y:'2025',v:164}],
     gangwon:[{y:'2021',v:222},{y:'2022',v:178},{y:'2023',v:221},{y:'2024',v:206},{y:'2025',v:240}],
@@ -6447,6 +6473,7 @@ const PROD_HISTORY = {
     jeju:[{y:'2021',v:121},{y:'2022',v:135},{y:'2023',v:145},{y:'2024',v:136},{y:'2025',v:121}]
   },
   radish:{
+    national:[{y:'2021',v:7359},{y:'2022',v:7631},{y:'2023',v:7841},{y:'2024',v:7243},{y:'2025',v:6423}],
     daegu:[{y:'2021',v:9138},{y:'2022',v:7246},{y:'2023',v:6075},{y:'2024',v:5985},{y:'2025',v:5708}],
     gyeongbuk:[{y:'2021',v:5945},{y:'2022',v:7356},{y:'2023',v:6585},{y:'2024',v:6297},{y:'2025',v:4862}],
     gangwon:[{y:'2021',v:5464},{y:'2022',v:5913},{y:'2023',v:6562},{y:'2024',v:6049},{y:'2025',v:4877}],
@@ -6466,6 +6493,7 @@ const PROD_HISTORY = {
     jeju:[{y:'2021',v:11694},{y:'2022',v:0},{y:'2023',v:0},{y:'2024',v:8014},{y:'2025',v:8626}]
   },
   cabbage:{
+    national:[{y:'2021',v:8598},{y:'2022',v:9692},{y:'2023',v:9447},{y:'2024',v:8902},{y:'2025',v:7768}],
     daegu:[{y:'2021',v:7248},{y:'2022',v:8596},{y:'2023',v:8684},{y:'2024',v:7825},{y:'2025',v:7950}],
     gyeongbuk:[{y:'2021',v:7256},{y:'2022',v:8188},{y:'2023',v:7333},{y:'2024',v:8073},{y:'2025',v:6459}],
     gangwon:[{y:'2021',v:7906},{y:'2022',v:9238},{y:'2023',v:8341},{y:'2024',v:7737},{y:'2025',v:6693}],
@@ -6485,6 +6513,7 @@ const PROD_HISTORY = {
     jeju:[{y:'2021',v:9933},{y:'2022',v:11391},{y:'2023',v:0},{y:'2024',v:10711},{y:'2025',v:10364}]
   },
   tongak:{
+    national:[{y:'2021',v:5017},{y:'2022',v:5299},{y:'2023',v:5080},{y:'2024',v:5847},{y:'2025',v:4889}],
     daegu:[{y:'2021',v:3763},{y:'2022',v:0},{y:'2023',v:0},{y:'2024',v:4182},{y:'2025',v:0}],
     gyeongbuk:[{y:'2021',v:3763},{y:'2022',v:4427},{y:'2023',v:3058},{y:'2024',v:4182},{y:'2025',v:3954}],
     gangwon:[{y:'2021',v:3897},{y:'2022',v:3403},{y:'2023',v:4617},{y:'2024',v:3971},{y:'2025',v:4719}],
@@ -6505,14 +6534,14 @@ const PROD_HISTORY = {
   }
 };
 const PROD_STATS = {
-  garlic: {prev:{daegu:1681, gyeongbuk:1552, gangwon:998, seoul:1159, busan:1340, incheon:1379, gwangju:1045, daejeon:985, ulsan:979, sejong:1032, gyeonggi:1169, chungbuk:1086, chungnam:1358, jeonbuk:1261, jeonnam:1185, gyeongnam:1339, jeju:1169}, mean5:{daegu:1598, gyeongbuk:1455, gangwon:898, seoul:1049, busan:1257, incheon:1199, gwangju:1143, daejeon:996, ulsan:1070, sejong:1127, gyeonggi:1077, chungbuk:1006, chungnam:1399, jeonbuk:1097, jeonnam:1088, gyeongnam:1322, jeju:1246}},
-  onion: {prev:{daegu:8063, gyeongbuk:7507, gangwon:6340, seoul:6216, busan:5662, incheon:6584, gwangju:5415, daejeon:5967, ulsan:4644, sejong:6304, gyeonggi:6216, chungbuk:7271, chungnam:5707, jeonbuk:7327, jeonnam:6090, gyeongnam:7078, jeju:5902}, mean5:{daegu:8337, gyeongbuk:7999, gangwon:5991, seoul:5773, busan:4726, incheon:6582, gwangju:5793, daejeon:6173, ulsan:5362, sejong:6240, gyeonggi:5773, chungbuk:6679, chungnam:6121, jeonbuk:6826, jeonnam:6716, gyeongnam:7216, jeju:6692}},
-  potato: {prev:{daegu:1991, gyeongbuk:2380, gangwon:2761, seoul:3424, busan:2910, incheon:2940, gwangju:2175, daejeon:2571, ulsan:2972, sejong:3114, gyeonggi:2352, chungbuk:2469, chungnam:2316, jeonbuk:2412, jeonnam:2197, gyeongnam:2255, jeju:2168}, mean5:{daegu:2263, gyeongbuk:2406, gangwon:2870, seoul:2734, busan:2606, incheon:2737, gwangju:2031, daejeon:2200, ulsan:2665, sejong:2276, gyeonggi:2663, chungbuk:2486, chungnam:2393, jeonbuk:2184, jeonnam:2249, gyeongnam:2330, jeju:2864}},
-  potato_highland: {prev:{daegu:null, gyeongbuk:3171, gangwon:3171, seoul:null, busan:null, incheon:null, gwangju:null, daejeon:null, ulsan:null, sejong:null, gyeonggi:null, chungbuk:null, chungnam:null, jeonbuk:null, jeonnam:null, gyeongnam:null, jeju:null}, mean5:{daegu:0, gyeongbuk:3258, gangwon:3258, seoul:0, busan:0, incheon:0, gwangju:0, daejeon:0, ulsan:0, sejong:0, gyeonggi:0, chungbuk:0, chungnam:0, jeonbuk:0, jeonnam:0, gyeongnam:0, jeju:0}},
-  soybean: {prev:{daegu:164, gyeongbuk:164, gangwon:240, seoul:203, busan:186, incheon:180, gwangju:179, daejeon:181, ulsan:140, sejong:157, gyeonggi:203, chungbuk:235, chungnam:200, jeonbuk:246, jeonnam:213, gyeongnam:186, jeju:121}, mean5:{daegu:141, gyeongbuk:195, gangwon:213, seoul:189, busan:167, incheon:179, gwangju:194, daejeon:220, ulsan:138, sejong:178, gyeonggi:189, chungbuk:211, chungnam:221, jeonbuk:249, jeonnam:194, gyeongnam:177, jeju:132}},
-  radish: {prev:{daegu:5708, gyeongbuk:4862, gangwon:4877, seoul:6160, busan:8573, incheon:7532, gwangju:9725, daejeon:5983, ulsan:6635, sejong:3624, gyeonggi:6072, chungbuk:5845, chungnam:5537, jeonbuk:6926, jeonnam:8149, gyeongnam:7867, jeju:8626}, mean5:{daegu:6830, gyeongbuk:6209, gangwon:5773, seoul:6989, busan:8299, incheon:8309, gwangju:9582, daejeon:7241, ulsan:7671, sejong:5429, gyeonggi:6743, chungbuk:5994, chungnam:7160, jeonbuk:7649, jeonnam:8579, gyeongnam:8489, jeju:5667}},
-  cabbage: {prev:{daegu:7950, gyeongbuk:6459, gangwon:6693, seoul:6758, busan:8538, incheon:10228, gwangju:9659, daejeon:7386, ulsan:7689, sejong:5336, gyeonggi:6758, chungbuk:6842, chungnam:6834, jeonbuk:8162, jeonnam:10364, gyeongnam:8523, jeju:10364}, mean5:{daegu:8061, gyeongbuk:7462, gangwon:7983, seoul:9532, busan:9065, incheon:10446, gwangju:10935, daejeon:8359, ulsan:8745, sejong:8489, gyeonggi:8922, chungbuk:7532, chungnam:8743, jeonbuk:9663, jeonnam:10800, gyeongnam:9595, jeju:8480}},
-  tongak: {prev:{daegu:0, gyeongbuk:3954, gangwon:4719, seoul:5267, busan:0, incheon:6171, gwangju:0, daejeon:4863, ulsan:0, sejong:4863, gyeonggi:5267, chungbuk:3954, chungnam:4863, jeonbuk:4549, jeonnam:4392, gyeongnam:0, jeju:0}, mean5:{daegu:1589, gyeongbuk:3877, gangwon:4121, seoul:5374, busan:2589, incheon:6097, gwangju:1121, daejeon:5483, ulsan:3474, sejong:5192, gyeonggi:5374, chungbuk:4415, chungnam:5483, jeonbuk:6292, jeonnam:4633, gyeongnam:2201, jeju:1121}}
+  garlic: {prev:{national:1351, daegu:1681, gyeongbuk:1552, gangwon:998, seoul:1159, busan:1340, incheon:1379, gwangju:1045, daejeon:985, ulsan:979, sejong:1032, gyeonggi:1169, chungbuk:1086, chungnam:1358, jeonbuk:1261, jeonnam:1185, gyeongnam:1339, jeju:1169}, mean5:{national:1297, daegu:1598, gyeongbuk:1455, gangwon:898, seoul:1049, busan:1257, incheon:1199, gwangju:1143, daejeon:996, ulsan:1070, sejong:1127, gyeonggi:1077, chungbuk:1006, chungnam:1399, jeonbuk:1097, jeonnam:1088, gyeongnam:1322, jeju:1246}},
+  onion: {prev:{national:6684, daegu:8063, gyeongbuk:7507, gangwon:6340, seoul:6216, busan:5662, incheon:6584, gwangju:5415, daejeon:5967, ulsan:4644, sejong:6304, gyeonggi:6216, chungbuk:7271, chungnam:5707, jeonbuk:7327, jeonnam:6090, gyeongnam:7078, jeju:5902}, mean5:{national:7019, daegu:8337, gyeongbuk:7999, gangwon:5991, seoul:5773, busan:4726, incheon:6582, gwangju:5793, daejeon:6173, ulsan:5362, sejong:6240, gyeonggi:5773, chungbuk:6679, chungnam:6121, jeonbuk:6826, jeonnam:6716, gyeongnam:7216, jeju:6692}},
+  potato: {prev:{national:2383, daegu:1991, gyeongbuk:2380, gangwon:2761, seoul:3424, busan:2910, incheon:2940, gwangju:2175, daejeon:2571, ulsan:2972, sejong:3114, gyeonggi:2352, chungbuk:2469, chungnam:2316, jeonbuk:2412, jeonnam:2197, gyeongnam:2255, jeju:2168}, mean5:{national:2474, daegu:2263, gyeongbuk:2406, gangwon:2870, seoul:2734, busan:2606, incheon:2737, gwangju:2031, daejeon:2200, ulsan:2665, sejong:2276, gyeonggi:2663, chungbuk:2486, chungnam:2393, jeonbuk:2184, jeonnam:2249, gyeongnam:2330, jeju:2864}},
+  potato_highland: {prev:{national:3171, daegu:null, gyeongbuk:3171, gangwon:3171, seoul:null, busan:null, incheon:null, gwangju:null, daejeon:null, ulsan:null, sejong:null, gyeonggi:null, chungbuk:null, chungnam:null, jeonbuk:null, jeonnam:null, gyeongnam:null, jeju:null}, mean5:{national:3258, daegu:0, gyeongbuk:3258, gangwon:3258, seoul:0, busan:0, incheon:0, gwangju:0, daejeon:0, ulsan:0, sejong:0, gyeonggi:0, chungbuk:0, chungnam:0, jeonbuk:0, jeonnam:0, gyeongnam:0, jeju:0}},
+  soybean: {prev:{national:211, daegu:164, gyeongbuk:164, gangwon:240, seoul:203, busan:186, incheon:180, gwangju:179, daejeon:181, ulsan:140, sejong:157, gyeonggi:203, chungbuk:235, chungnam:200, jeonbuk:246, jeonnam:213, gyeongnam:186, jeju:121}, mean5:{national:207, daegu:141, gyeongbuk:195, gangwon:213, seoul:189, busan:167, incheon:179, gwangju:194, daejeon:220, ulsan:138, sejong:178, gyeonggi:189, chungbuk:211, chungnam:221, jeonbuk:249, jeonnam:194, gyeongnam:177, jeju:132}},
+  radish: {prev:{national:6423, daegu:5708, gyeongbuk:4862, gangwon:4877, seoul:6160, busan:8573, incheon:7532, gwangju:9725, daejeon:5983, ulsan:6635, sejong:3624, gyeonggi:6072, chungbuk:5845, chungnam:5537, jeonbuk:6926, jeonnam:8149, gyeongnam:7867, jeju:8626}, mean5:{national:7299, daegu:6830, gyeongbuk:6209, gangwon:5773, seoul:6989, busan:8299, incheon:8309, gwangju:9582, daejeon:7241, ulsan:7671, sejong:5429, gyeonggi:6743, chungbuk:5994, chungnam:7160, jeonbuk:7649, jeonnam:8579, gyeongnam:8489, jeju:5667}},
+  cabbage: {prev:{national:7768, daegu:7950, gyeongbuk:6459, gangwon:6693, seoul:6758, busan:8538, incheon:10228, gwangju:9659, daejeon:7386, ulsan:7689, sejong:5336, gyeonggi:6758, chungbuk:6842, chungnam:6834, jeonbuk:8162, jeonnam:10364, gyeongnam:8523, jeju:10364}, mean5:{national:8881, daegu:8061, gyeongbuk:7462, gangwon:7983, seoul:9532, busan:9065, incheon:10446, gwangju:10935, daejeon:8359, ulsan:8745, sejong:8489, gyeonggi:8922, chungbuk:7532, chungnam:8743, jeonbuk:9663, jeonnam:10800, gyeongnam:9595, jeju:8480}},
+  tongak: {prev:{national:4889, daegu:0, gyeongbuk:3954, gangwon:4719, seoul:5267, busan:0, incheon:6171, gwangju:0, daejeon:4863, ulsan:0, sejong:4863, gyeonggi:5267, chungbuk:3954, chungnam:4863, jeonbuk:4549, jeonnam:4392, gyeongnam:0, jeju:0}, mean5:{national:5226, daegu:1589, gyeongbuk:3877, gangwon:4121, seoul:5374, busan:2589, incheon:6097, gwangju:1121, daejeon:5483, ulsan:3474, sejong:5192, gyeonggi:5374, chungbuk:4415, chungnam:5483, jeonbuk:6292, jeonnam:4633, gyeongnam:2201, jeju:1121}}
 };
 
 let prodCrop = null, prodVariety = null, prodRegion = null;
@@ -7060,7 +7089,7 @@ function prodCalculate() {
 
   // 지역별 막대그래프
   /* [v121] 선택한 시도가 대구·경북·강원 밖이면 참고 그래프에도 함께 표시 */
-  const allR=['daegu','gyeongbuk','gangwon'].concat((region&&['daegu','gyeongbuk','gangwon'].indexOf(region)<0)?[region]:[]);
+  const allR=prodAllR(region);
   let histKey=PROD_CROP_HIST_KEY[prodCrop]||prodCrop;
   if(prodCrop==='potato' && prodVariety==='고랭지감자') histKey='potato_highland';
   const hist=PROD_HISTORY[histKey];
@@ -7114,11 +7143,11 @@ function drawProdLineChart(crop,region){
   if(!hist)return;
   if(prodLineChartInst){prodLineChartInst.destroy();prodLineChartInst=null;}
   const rN=PROD_REGION_KO;   /* [v121] 전국 17개 시도 */
-  const colors={daegu:'#0d6640',gyeongbuk:'#dc2626',gangwon:'#2563eb',
+  const colors={national:'#111827',daegu:'#0d6640',gyeongbuk:'#dc2626',gangwon:'#2563eb',
     seoul:'#7c3aed',busan:'#0891b2',incheon:'#c2410c',gwangju:'#0d9488',daejeon:'#b45309',
     ulsan:'#4f46e5',sejong:'#be185d',gyeonggi:'#15803d',chungbuk:'#a16207',chungnam:'#0369a1',
     jeonbuk:'#9333ea',jeonnam:'#db2777',gyeongnam:'#ea580c',jeju:'#0284c7'};
-  const allR=['daegu','gyeongbuk','gangwon'].concat((region&&['daegu','gyeongbuk','gangwon'].indexOf(region)<0)?[region]:[]);
+  const allR=prodAllR(region);
   const years=['2021','2022','2023','2024','2025'];
   const allVals=allR.flatMap(r=>(hist[r]||[]).map(d=>d.v)).filter(v=>v>0);
   if(!allVals.length)return;
@@ -7195,7 +7224,7 @@ function prodBuildHistTable(crop,region){
   document.getElementById('prod-hist-table-body').style.display='none';
   const tBtn=document.getElementById('prod-hist-toggle-btn');if(tBtn)tBtn.textContent='▼ 펼치기';
   if(titleEl) titleEl.textContent='📋 '+(PROD_CROP_KO[crop]||crop)+' 지역별 5년 생산량 상세표 (kg/10a)';
-  const allR=['daegu','gyeongbuk','gangwon'].concat((region&&['daegu','gyeongbuk','gangwon'].indexOf(region)<0)?[region]:[]),rKO=PROD_REGION_KO;   /* [v121] 17개 시도 */
+  const allR=prodAllR(region),rKO=PROD_REGION_KO;   /* [v121] 17개 시도 */
   const years=['2021','2022','2023','2024','2025'];
   const mean=arr=>{const v=arr.filter(x=>x>0);return v.length?Math.round(v.reduce((a,b)=>a+b,0)/v.length):'-';};
   let tbl='<table class="phtbl"><thead><tr><th>지역</th>'+years.map(y=>'<th>'+y+'년</th>').join('')+'<th>평년</th></tr></thead><tbody>';
@@ -8151,6 +8180,16 @@ document.addEventListener('DOMContentLoaded', function(){
         <span class="sl-section" style="margin-bottom:0;flex:1;min-width:0;">저장된 자료 목록 <span style="color:#c0392b;font-size:10px;font-weight:700;letter-spacing:-.01em;">(버튼이 안 눌리면 새로고침)</span></span>
         <button onclick="slBulkToMap()" style="flex-shrink:0;background:none;border:1px solid #27500A;border-radius:7px;color:#27500A;font-size:11px;font-weight:700;padding:4px 9px;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;">🗺 지도반영</button>
         <button onclick="confirmDeleteAll_sl()" style="flex-shrink:0;background:none;border:1px solid #d93030;border-radius:7px;color:#d93030;font-size:11px;font-weight:700;padding:4px 9px;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;">전체삭제</button>
+      </div>
+      <!-- [v124] 저장목록 조회(시도·시군구·읍면동·작물) + 정렬 -->
+      <div id="sl-combos" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:4px;margin-bottom:6px;"></div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:7px;">
+        <span style="font-size:12px;color:#666;font-weight:700;flex:0 0 auto;">정렬</span>
+        <select id="sl-sort-sel" onchange="_slOnSortChange(this.value)" style="flex:1;padding:6px 8px;border:1px solid #d7dee7;border-radius:8px;background:#fff;font-size:13px;font-family:inherit;">
+          <option value="recent">최근 저장순</option>
+          <option value="area">생산량 큰순</option>
+          <option value="crop">작물별</option>
+        </select>
       </div>
       <div class="sl-list" id="sl-list"><div class="sl-empty">저장된 자료가 없습니다.</div></div>
       <!-- v126: 작물별 10a당 수량 집계 -->
@@ -9687,15 +9726,118 @@ function _slShortAddr(full){
   }
   return parts.length>2 ? parts.slice(2).join(' ') : parts.join(' ');
 }
+
+/* ══════ [v124] 저장목록 조회(시도·시군구·읍면동·작물) + 정렬 ══════ */
+var _SL_SIDO_NORM = {
+  '서울':'서울특별시','서울시':'서울특별시','부산':'부산광역시','부산시':'부산광역시',
+  '대구':'대구광역시','대구시':'대구광역시','인천':'인천광역시','인천시':'인천광역시',
+  '광주':'광주광역시','광주시':'광주광역시','대전':'대전광역시','대전시':'대전광역시',
+  '울산':'울산광역시','울산시':'울산광역시','세종':'세종특별자치시','세종시':'세종특별자치시',
+  '경기':'경기도','강원':'강원특별자치도','강원도':'강원특별자치도','충북':'충청북도','충남':'충청남도',
+  '전북':'전북특별자치도','전라북도':'전북특별자치도','전남':'전라남도','경북':'경상북도','경남':'경상남도',
+  '제주':'제주특별자치도','제주도':'제주특별자치도'
+};
+function _slNormSido(v){
+  v=String(v==null?'':v).trim(); if(!v)return v;
+  if(_SL_SIDO_NORM[v])return _SL_SIDO_NORM[v];
+  var ks=Object.keys(_SL_SIDO_NORM);
+  for(var i=0;i<ks.length;i++){ if(v.indexOf(ks[i])===0) return _SL_SIDO_NORM[ks[i]]; }
+  return v;
+}
+function _slAdminParse(addr){
+  var out={sido:'',sigungu:'',eupmyeondong:''};
+  if(!addr)return out;
+  var t=String(addr).trim().split(/\s+/); if(!t.length)return out;
+  out.sido=_slNormSido(t[0]);
+  var idx=-1;
+  for(var i=1;i<t.length;i++){ if(/[읍면동]$/.test(t[i])){ out.eupmyeondong=t[i]; idx=i; break; } }
+  var end=(idx>=0)?idx:t.length;
+  out.sigungu=t.slice(1,end).filter(function(x){return /[시군구]$/.test(x);}).join(' ');
+  return out;
+}
+/* 항목 → 전체주소(데이터 블록 우선, 없으면 목록 addr) */
+function _slItemFullAddr(it){
+  try{ var d=JSON.parse(localStorage.getItem(SL_DATA_PFX+it.key)||'null'); if(d&&d.address) return (d.address+'').trim(); }catch(e){}
+  return it.addr||'';
+}
+/* 정렬용 「크기」 값 — 통합계산기는 10a 생산량(예상·실수확·A·B 중 최댓값) */
+function _slItemMagnitude(it){
+  var y=it.yields||{}; var vals=[y.nbExpect,y.nbReal,y.genA,y.genB].map(Number).filter(function(v){return isFinite(v)&&v>0;});
+  return vals.length?Math.max.apply(null,vals):0;
+}
+var _slSel={sido:'',sigungu:'',eupmyeondong:'',crop:''};
+var _slSort='recent';
+try{ var _s0=localStorage.getItem('tonghab_sl_sort'); if(_s0==='recent'||_s0==='area'||_s0==='crop')_slSort=_s0; }catch(e){}
+function _slMatchesSel(it){
+  var a=_slAdminParse(_slItemFullAddr(it));
+  if(_slSel.sido && a.sido!==_slSel.sido) return false;
+  if(_slSel.sigungu && a.sigungu!==_slSel.sigungu) return false;
+  if(_slSel.eupmyeondong && a.eupmyeondong!==_slSel.eupmyeondong) return false;
+  if(_slSel.crop && (it.crop||'')!==_slSel.crop) return false;
+  return true;
+}
+function _slUniqSorted(arr){ var seen={},out=[]; arr.forEach(function(v){ if(v&&!seen[v]){seen[v]=1;out.push(v);} }); return out.sort(function(a,b){return a.localeCompare(b,'ko');}); }
+function _slRenderCombos(){
+  var host=document.getElementById('sl-combos'); if(!host)return;
+  var all=_slGetList();
+  function optsFor(level){
+    var f2=all.filter(function(it){
+      var a=_slAdminParse(_slItemFullAddr(it));
+      if(level!=='sido' && _slSel.sido && a.sido!==_slSel.sido) return false;
+      if((level==='eupmyeondong'||level==='crop') && _slSel.sigungu && a.sigungu!==_slSel.sigungu) return false;
+      if(level==='crop' && _slSel.eupmyeondong && a.eupmyeondong!==_slSel.eupmyeondong) return false;
+      return true;
+    });
+    if(level==='crop') return _slUniqSorted(f2.map(function(it){return it.crop||'';}).filter(Boolean));
+    return _slUniqSorted(f2.map(function(it){return _slAdminParse(_slItemFullAddr(it))[level]||'';}).filter(Boolean));
+  }
+  host.innerHTML='';
+  [['sido','전체 시도'],['sigungu','전체 시군구'],['eupmyeondong','전체 읍면동'],['crop','전체 작물']].forEach(function(c){
+    var sel=document.createElement('select');
+    sel.style.cssText='padding:7px 3px;border:1px solid #d7d7de;border-radius:8px;font-size:12px;background:#fff;font-family:inherit;min-width:0;';
+    sel.appendChild(new Option(c[1],''));
+    optsFor(c[0]).forEach(function(v){ sel.appendChild(new Option(v,v)); });
+    sel.value=_slSel[c[0]]||'';
+    if(sel.value){ sel.style.borderColor='#1f8a4c'; sel.style.background='#e8f6ee'; sel.style.color='#14612f'; sel.style.fontWeight='800'; }
+    sel.addEventListener('change',function(){
+      _slSel[c[0]]=sel.value;
+      if(c[0]==='sido'){ _slSel.sigungu=''; _slSel.eupmyeondong=''; }
+      else if(c[0]==='sigungu'){ _slSel.eupmyeondong=''; }
+      _slRenderCombos(); _slRenderList();
+    });
+    host.appendChild(sel);
+  });
+}
+function _slOnSortChange(v){
+  _slSort=v;
+  try{ localStorage.setItem('tonghab_sl_sort',v); }catch(e){}
+  _slRenderList();
+}
+function _slApplySortSelUI(){ var s=document.getElementById('sl-sort-sel'); if(s)s.value=_slSort; }
+
 function _slRenderList(){
-  var list=_slGetList();
+  var fullList=_slGetList();
   var el=document.getElementById('sl-list');
   if(document.getElementById('sl-agg-body') && document.getElementById('sl-agg-body').style.display!=='none'){ _slRenderAgg(); }
   if(!el)return;
-  if(!list.length){el.innerHTML='<div class="sl-empty">저장된 자료가 없습니다.</div>';return;}
-  /* v111: 잠금 여부와 관계없이 원래 순서 유지 */
-  el.innerHTML=list.map(function(it,idx){
-    var num=list.length-idx;
+  if(!fullList.length){el.innerHTML='<div class="sl-empty">저장된 자료가 없습니다.</div>';return;}
+  /* [v124] 조회 콤보 채우기 + 정렬 UI 동기화 */
+  _slRenderCombos(); _slApplySortSelUI();
+  /* 저장 순번은 원래 저장 순서 기준으로 고정(정렬·필터와 무관) */
+  var _numByKey={}; fullList.forEach(function(it,idx){ _numByKey[it.key]=fullList.length-idx; });
+  /* [v124] 조회 필터 */
+  var list=fullList.filter(_slMatchesSel);
+  /* [v124] 정렬 */
+  if(_slSort==='area'){
+    list=list.slice().sort(function(a,b){ return (_slItemMagnitude(b)-_slItemMagnitude(a)) || (Number(b.key)-Number(a.key)); });
+  } else if(_slSort==='crop'){
+    list=list.slice().sort(function(a,b){ return String(a.crop||'힣').localeCompare(String(b.crop||'힣'),'ko') || (Number(b.key)-Number(a.key)); });
+  } else {
+    list=list.slice().sort(function(a,b){ return Number(b.key)-Number(a.key); });   /* 최근 저장순 */
+  }
+  if(!list.length){ el.innerHTML='<div class="sl-empty">조건에 맞는 자료가 없습니다.</div>'; return; }
+  el.innerHTML=list.map(function(it){
+    var num=_numByKey[it.key];
     /* [v114] 목록 표시 정리: 메인줄=작물명만, 주소는 전체주소(저장 데이터에서 읽어 잘리지 않게) 한 줄로,
        기존 라벨(작물·주소·날짜)과 아래 📍주소 줄의 「주소 중복」을 제거한다. */
     var fullAddr='';

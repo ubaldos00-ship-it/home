@@ -1,4 +1,5 @@
-<!-- chungchi.html (v112) · 저장: 2026-09-09 19:50 KST · [v112] 지역 선택 전국 17개 시도로 확대 — 대구·경북·강원 버튼 유지 + 그 외 14개 시도 콤보박스(드롭다운) 추가. 비교 데이터(KOSIS)는 이미 전국 17개 시도가 들어 있어 데이터 추가 없이 UI만 확대. 복원 시 콤보 선택도 반영. 계산 로직 무변경. (v111 이하 유지) -->
+<!-- chungchi.html (v113) · 저장: 2026-09-10 02:48 KST · [v113] 저장/불러오기 「저장목록」에 조회(시도·시군구·읍면동·작물) 콤보 + 정렬(최근 저장순·면적 큰순·작물별) 추가 — 지도 생산량목록과 동일 방식(주소→행정구역 파싱, 면적=재배면적 ㎡ 합계 기준, 정렬 기억). ※ 계산 로직 무변경(UI만). ※ 「지역별 참고 그래프 청 분류」는 다음 버전 예정(사용자 요청). (v112 이하 유지) -->
+<!-- (이전)  chungchi.html (v112) · 저장: 2026-09-09 19:50 KST · [v112] 지역 선택 전국 17개 시도로 확대 — 대구·경북·강원 버튼 유지 + 그 외 14개 시도 콤보박스(드롭다운) 추가. 비교 데이터(KOSIS)는 이미 전국 17개 시도가 들어 있어 데이터 추가 없이 UI만 확대. 복원 시 콤보 선택도 반영. 계산 로직 무변경. (v111 이하 유지) -->
 <!-- (이전)  chungchi.html (v111) · 저장: 2026-09-06 07:50 KST · [v111] 맥류 빠른선택 칩 표기 변경 — 버튼 라벨을 「40 포대·300 톤백」이 아닌 단위 kg 표기(40kg·300kg·500kg·800kg·1,000kg)로 바꾸고, 칩 세로 크기를 약간 키움. (v110 이하 유지) -->
 <!-- chungchi.html (v110) · 저장: 2026-09-06 07:41 KST · [v110] 맥류 빠른선택 칩 개선 + 측정 전송 반영 — ①추가한 행이 바로 붙어 보이지 않도록 행 사이에 여백·점선 구분선 추가. ②기본중량 빠른선택 칩을 세로로 더 작게(입력란과 헷갈리지 않게) + 「40 포대」식 한 줄 표기. ③지도 측정도구에서 전송된 「핀 지번주소」를 필지주소칸에 자동 입력(비어 있을 때만). 지역·작물·면적 자동반영은 유지. 계산 로직 무변경. (v109 이하 유지) -->
 <!-- chungchi.html (v109) · 저장: 2026-09-06 07:21 KST · [v109] 맥류(겉보리·쌀보리·밀) 수확단위 개선 — ①각 수량이력 행 위에 기본중량 빠른선택 칩(40 포대 / 300·500·800·1,000 톤백) 추가: 보고 눌러 바로 선택, 현재값 강조. ②기본중량을 수동으로 입력하면(예:250) 가까운 값으로 스냅하지 않고 사용자가 친 값을 그대로 유지(스크롤·칩은 지정목록으로 스냅). ③지도 측정도구에서 넘어온 지역·작물 자동선택(면적만 넘어오던 것 보완, 하위작물 포함). 계산 로직 무변경. (v108 이하 유지) -->
@@ -962,6 +963,16 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
         <span class="sl-section" style="margin-bottom:0;flex:1;min-width:0;">저장된 자료 목록 <span style="color:#c0392b;font-size:10px;font-weight:700;letter-spacing:-.01em;">(버튼이 안 눌리면 새로고침)</span></span>
         <button onclick="slBulkToMap()" style="flex-shrink:0;background:none;border:1px solid #1558D6;border-radius:7px;color:#1558D6;font-size:11px;font-weight:700;padding:4px 9px;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;">🗺 지도반영</button>
         <button onclick="confirmDeleteAll_sl()" style="flex-shrink:0;background:none;border:1px solid #d93030;border-radius:7px;color:#d93030;font-size:11px;font-weight:700;padding:4px 9px;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;">전체삭제</button>
+      </div>
+      <!-- [v113] 저장목록 조회(시도·시군구·읍면동·작물) + 정렬 -->
+      <div id="sl-combos" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:4px;margin-bottom:6px;"></div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:7px;">
+        <span style="font-size:12px;color:#666;font-weight:700;flex:0 0 auto;">정렬</span>
+        <select id="sl-sort-sel" onchange="_slOnSortChange(this.value)" style="flex:1;padding:6px 8px;border:1px solid #d7dee7;border-radius:8px;background:#fff;font-size:13px;font-family:inherit;">
+          <option value="recent">최근 저장순</option>
+          <option value="area">면적 큰순</option>
+          <option value="crop">작물별</option>
+        </select>
       </div>
       <div class="sl-list" id="sl-list"><div class="sl-empty">저장된 자료가 없습니다.</div></div>
       <!-- v60: 작물별 10a당 수량 집계 -->
@@ -2668,6 +2679,100 @@ function _slShortAddr(full){
   }
   return parts.length>2 ? parts.slice(2).join(' ') : parts.join(' ');
 }
+
+/* ══════ [v113] 저장목록 조회(시도·시군구·읍면동·작물) + 정렬 ══════ */
+var _SL_SIDO_NORM = {
+  '서울':'서울특별시','서울시':'서울특별시','부산':'부산광역시','부산시':'부산광역시',
+  '대구':'대구광역시','대구시':'대구광역시','인천':'인천광역시','인천시':'인천광역시',
+  '광주':'광주광역시','광주시':'광주광역시','대전':'대전광역시','대전시':'대전광역시',
+  '울산':'울산광역시','울산시':'울산광역시','세종':'세종특별자치시','세종시':'세종특별자치시',
+  '경기':'경기도','강원':'강원특별자치도','강원도':'강원특별자치도','충북':'충청북도','충남':'충청남도',
+  '전북':'전북특별자치도','전라북도':'전북특별자치도','전남':'전라남도','경북':'경상북도','경남':'경상남도',
+  '제주':'제주특별자치도','제주도':'제주특별자치도'
+};
+function _slNormSido(v){
+  v=String(v==null?'':v).trim(); if(!v)return v;
+  if(_SL_SIDO_NORM[v])return _SL_SIDO_NORM[v];
+  var ks=Object.keys(_SL_SIDO_NORM);
+  for(var i=0;i<ks.length;i++){ if(v.indexOf(ks[i])===0) return _SL_SIDO_NORM[ks[i]]; }
+  return v;
+}
+function _slAdminParse(addr){
+  var out={sido:'',sigungu:'',eupmyeondong:''};
+  if(!addr)return out;
+  var t=String(addr).trim().split(/\s+/); if(!t.length)return out;
+  out.sido=_slNormSido(t[0]);
+  var idx=-1;
+  for(var i=1;i<t.length;i++){ if(/[읍면동]$/.test(t[i])){ out.eupmyeondong=t[i]; idx=i; break; } }
+  var end=(idx>=0)?idx:t.length;
+  out.sigungu=t.slice(1,end).filter(function(x){return /[시군구]$/.test(x);}).join(' ');
+  return out;
+}
+function _slItemFullAddr(it){
+  try{ var d=JSON.parse(localStorage.getItem(CC_DATA_PFX+it.key)||'null'); if(d&&d.address) return (d.address+'').trim(); }catch(e){}
+  return it.addr||'';
+}
+/* 정렬용 「면적」 값 — 청취계산기는 재배면적(㎡) 합계(저장 데이터의 __aRows[i][1]) */
+function _slItemArea(it){
+  try{
+    var d=JSON.parse(localStorage.getItem(CC_DATA_PFX+it.key)||'null');
+    if(d&&Array.isArray(d.__aRows)){
+      var s=0; d.__aRows.forEach(function(r){ var v=parseFloat(String((r&&r[1])||'').replace(/[^0-9.]/g,'')); if(isFinite(v)&&v>0)s+=v; });
+      return s;
+    }
+  }catch(e){}
+  return 0;
+}
+var _slSel={sido:'',sigungu:'',eupmyeondong:'',crop:''};
+var _slSort='recent';
+try{ var _s0=localStorage.getItem('chungchi_sl_sort'); if(_s0==='recent'||_s0==='area'||_s0==='crop')_slSort=_s0; }catch(e){}
+function _slMatchesSel(it){
+  var a=_slAdminParse(_slItemFullAddr(it));
+  if(_slSel.sido && a.sido!==_slSel.sido) return false;
+  if(_slSel.sigungu && a.sigungu!==_slSel.sigungu) return false;
+  if(_slSel.eupmyeondong && a.eupmyeondong!==_slSel.eupmyeondong) return false;
+  if(_slSel.crop && (it.crop||'')!==_slSel.crop) return false;
+  return true;
+}
+function _slUniqSorted(arr){ var seen={},out=[]; arr.forEach(function(v){ if(v&&!seen[v]){seen[v]=1;out.push(v);} }); return out.sort(function(a,b){return a.localeCompare(b,'ko');}); }
+function _slRenderCombos(){
+  var host=document.getElementById('sl-combos'); if(!host)return;
+  var all=_ccGetList();
+  function optsFor(level){
+    var f2=all.filter(function(it){
+      var a=_slAdminParse(_slItemFullAddr(it));
+      if(level!=='sido' && _slSel.sido && a.sido!==_slSel.sido) return false;
+      if((level==='eupmyeondong'||level==='crop') && _slSel.sigungu && a.sigungu!==_slSel.sigungu) return false;
+      if(level==='crop' && _slSel.eupmyeondong && a.eupmyeondong!==_slSel.eupmyeondong) return false;
+      return true;
+    });
+    if(level==='crop') return _slUniqSorted(f2.map(function(it){return it.crop||'';}).filter(Boolean));
+    return _slUniqSorted(f2.map(function(it){return _slAdminParse(_slItemFullAddr(it))[level]||'';}).filter(Boolean));
+  }
+  host.innerHTML='';
+  [['sido','전체 시도'],['sigungu','전체 시군구'],['eupmyeondong','전체 읍면동'],['crop','전체 작물']].forEach(function(c){
+    var sel=document.createElement('select');
+    sel.style.cssText='padding:7px 3px;border:1px solid #d7d7de;border-radius:8px;font-size:12px;background:#fff;font-family:inherit;min-width:0;';
+    sel.appendChild(new Option(c[1],''));
+    optsFor(c[0]).forEach(function(v){ sel.appendChild(new Option(v,v)); });
+    sel.value=_slSel[c[0]]||'';
+    if(sel.value){ sel.style.borderColor='#1f8a4c'; sel.style.background='#e8f6ee'; sel.style.color='#14612f'; sel.style.fontWeight='800'; }
+    sel.addEventListener('change',function(){
+      _slSel[c[0]]=sel.value;
+      if(c[0]==='sido'){ _slSel.sigungu=''; _slSel.eupmyeondong=''; }
+      else if(c[0]==='sigungu'){ _slSel.eupmyeondong=''; }
+      _slRenderCombos(); _slRenderList();
+    });
+    host.appendChild(sel);
+  });
+}
+function _slOnSortChange(v){
+  _slSort=v;
+  try{ localStorage.setItem('chungchi_sl_sort',v); }catch(e){}
+  _slRenderList();
+}
+function _slApplySortSelUI(){ var s=document.getElementById('sl-sort-sel'); if(s)s.value=_slSort; }
+
 function _slRenderList(){
   var raw = _ccGetList();
   var el = document.getElementById('sl-list');
@@ -2675,9 +2780,23 @@ function _slRenderList(){
   if(aggBody && aggBody.style.display!=='none') _slRenderAgg(); /* v60: 집계 열려있으면 갱신 */
   if(!el) return;
   if(!raw.length){ el.innerHTML='<div class="sl-empty">저장된 자료가 없습니다.</div>'; return; }
-  /* v44: 순서 변경 없이 원래 순서 유지 */
-  el.innerHTML = raw.map(function(it, idx){
-    var num = raw.length - idx;
+  /* [v113] 조회 콤보 채우기 + 정렬 UI 동기화 */
+  _slRenderCombos(); _slApplySortSelUI();
+  /* 저장 순번은 원래 저장 순서 기준으로 고정(정렬·필터와 무관) */
+  var _numByKey={}; raw.forEach(function(it,idx){ _numByKey[it.key]=raw.length-idx; });
+  /* [v113] 조회 필터 */
+  var flt=raw.filter(_slMatchesSel);
+  /* [v113] 정렬 */
+  if(_slSort==='area'){
+    flt=flt.slice().sort(function(a,b){ return (_slItemArea(b)-_slItemArea(a)) || (Number(b.key)-Number(a.key)); });
+  } else if(_slSort==='crop'){
+    flt=flt.slice().sort(function(a,b){ return String(a.crop||'힣').localeCompare(String(b.crop||'힣'),'ko') || (Number(b.key)-Number(a.key)); });
+  } else {
+    flt=flt.slice().sort(function(a,b){ return Number(b.key)-Number(a.key); });   /* 최근 저장순 */
+  }
+  if(!flt.length){ el.innerHTML='<div class="sl-empty">조건에 맞는 자료가 없습니다.</div>'; return; }
+  el.innerHTML = flt.map(function(it){
+    var num = _numByKey[it.key];
     /* [v105] 목록 표시 정리: 메인줄=작물명만, 주소는 전체주소(저장 데이터에서 읽어 잘리지 않게) 한 줄로,
        기존 라벨(작물·주소·날짜)과 아래 📍주소 줄의 「주소 중복」을 제거한다. */
     var fullAddr='';
