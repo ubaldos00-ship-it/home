@@ -1,4 +1,5 @@
-<!-- index.html (v107) · 저장: 2026-08-25 05:56 KST · [v107] cattle.html을 v6로 갱신(뒤로=홈이동·라벨단축·출하차수자동제거·백업암호입력창·복원초록체크박스·개월수반올림·수정시신고이력표시). index 링크는 v105 그대로 · 그 외 변경 없음 -->
+<!-- index.html (v108) · 저장: 2026-09-10 07:03 KST · [v108] 홈 화면 정리 — ①LED 전광판이 알림창을 가리던 문제 수정: 본문 상단 여백을 LED 높이(--led-h:36px)만큼 더 내려 알림이 LED 바로 아래 딱 맞게(LED 닫으면 body.led-off로 원위치). ②LED 문구를 관리자(🔐)가 직접 수정·전체 동기화 — 관리자 바 「📢 LED 수정」 → Firestore(notices/__led__) 저장, 모든 사용자 반영(문구|주소 형식, 주소자리 CHAT=채팅 열기). ③LED 기본 문구를 「고추·참깨·과수는 청취조사 빠른실행에서 계산」으로 변경(맥류 안내 종료). ④「개별 조사도구 바로가기」→「개별 조사도구」로 단축 + 작은 모바일에서 섹션 제목 자동 축소(두 줄 방지). ⑤하단 버전 「v1.8-r2pdf」→「v1.8」. (v107 이하 유지) -->
+<!-- (이전)  index.html (v107) · 저장: 2026-08-25 05:56 KST · [v107] cattle.html을 v6로 갱신(뒤로=홈이동·라벨단축·출하차수자동제거·백업암호입력창·복원초록체크박스·개월수반올림·수정시신고이력표시). index 링크는 v105 그대로 · 그 외 변경 없음 -->
 <!-- (이전)  index.html (v106) · 저장: 2026-08-24 20:36 KST · [v106] cattle.html을 v5로 갱신 · index 링크는 v105 그대로 -->
 <!-- (이전)  index.html (v105) · 저장: 2026-08-20 02:46 KST · [v105] 「개별 조사도구 바로가기」 맨 아래(면적환산 다음)에 🐄 소 이력·출하·판매 관리(cattle.html) 링크 추가 · 그 외 변경 없음 -->
 <!-- (이전)  index.html (v104) · 저장: 2026-08-18 17:30 KST · [v104] 변경 없음 · 버전표기만 -->
@@ -91,6 +92,7 @@
 
     --header-h: 88px;
     --footer-nav-h: 64px;
+    --led-h: 36px;   /* LED 전광판 높이 — 본문을 이만큼 더 내려 알림창이 가려지지 않게 */
   }
 
   * {
@@ -118,7 +120,7 @@
 
   body {
     min-height: 100vh;
-    padding-top: var(--header-h);
+    padding-top: calc(var(--header-h) + var(--led-h));   /* 헤더 + LED 전광판 */
     padding-bottom: calc(var(--footer-nav-h) + env(safe-area-inset-bottom));
     background-image:
       radial-gradient(circle at 10% 0%, rgba(31, 81, 50, 0.04) 0%, transparent 40%),
@@ -1156,6 +1158,16 @@
     header.app-header .clock { font-size: 11.5px; padding: 4px 8px; }
     .menu-item .menu-label { font-size: 13.5px; }
   }
+  /* 작은 모바일: 섹션 제목·펼치기 버튼을 자동 축소해 「개별 조사도구」가 두 줄로 접히지 않게 */
+  @media (max-width: 400px) {
+    .section-title { font-size: 15px; gap: 7px; padding: 9px 9px 9px 8px; }
+    .section-title .icon { width: 27px; height: 27px; font-size: 15px; }
+    #toolsToggleBtn { font-size: 12px; padding: 3px 8px; }
+  }
+  @media (max-width: 340px) {
+    .section-title { font-size: 13.5px; }
+    #toolsToggleBtn { font-size: 11px; padding: 3px 7px; }
+  }
   /* ===== LED 전광판 (헤더 아래 팝업 · 우→좌 흐름) ===== */
   #ledBoard{
     position:fixed; top:calc(var(--header-h) + env(safe-area-inset-top)); left:0; right:0;
@@ -1165,6 +1177,8 @@
     box-shadow:0 5px 14px rgba(0,0,0,.32);
   }
   #ledBoard.led-hidden{ display:none; }
+  /* LED 전광판을 닫으면 본문 상단 여백에서 LED 높이만큼 되돌린다 */
+  body.led-off{ padding-top: var(--header-h); }
   .led-tag{ flex-shrink:0; display:flex; align-items:center; justify-content:center; padding:0 10px;
     background:var(--color-accent); color:#241800; font-size:16px; }
   .led-vp{ flex:1; overflow:hidden; position:relative; }
@@ -1205,12 +1219,12 @@
   <span class="led-tag">📢</span>
   <div class="led-vp">
     <div class="led-track" id="ledTrack">
-      <a href="https://ubaldos00-ship-it.github.io/home/chungchi.html">📣 맥류(겉보리·쌀보리·밀)은 「청취조사 빠른실행」에서 계산해 보세요</a><span class="sep">◆</span>
+      <a href="https://ubaldos00-ship-it.github.io/home/chungchi.html">📣 고추·참깨·과수는 「청취조사 빠른실행」에서 계산해 보세요</a><span class="sep">◆</span>
       <a href="https://ubaldos00-ship-it.github.io/home/graph.html">📊 10a당 생산량이 궁금하면 「작물별 10a당 생산량 조회」를 이용하세요</a><span class="sep">◆</span>
       <a href="https://ubaldos00-ship-it.github.io/home/game_center.html">⚾ NEW! 「작물 홈런왕」이 추가되었습니다</a><span class="sep">◆</span>
       <a href="https://ubaldos00-ship-it.github.io/home/map_libre.html">🗺 지도와 실측·청취 조사표를 연동해 보세요</a><span class="sep">◆</span>
       <a href="javascript:void(0)" onclick="var f=document.getElementById('chatFab'); if(f) f.click();">💬 궁금한 점은 「말풍선(채팅)」에서 물어보세요</a><span class="sep">◆</span>
-      <a href="https://ubaldos00-ship-it.github.io/home/chungchi.html">📣 맥류(겉보리·쌀보리·밀)은 「청취조사 빠른실행」에서 계산해 보세요</a><span class="sep">◆</span>
+      <a href="https://ubaldos00-ship-it.github.io/home/chungchi.html">📣 고추·참깨·과수는 「청취조사 빠른실행」에서 계산해 보세요</a><span class="sep">◆</span>
       <a href="https://ubaldos00-ship-it.github.io/home/graph.html">📊 10a당 생산량이 궁금하면 「작물별 10a당 생산량 조회」를 이용하세요</a><span class="sep">◆</span>
       <a href="https://ubaldos00-ship-it.github.io/home/game_center.html">⚾ NEW! 「작물 홈런왕」이 추가되었습니다</a><span class="sep">◆</span>
       <a href="https://ubaldos00-ship-it.github.io/home/map_libre.html">🗺 지도와 실측·청취 조사표를 연동해 보세요</a><span class="sep">◆</span>
@@ -1237,6 +1251,7 @@
     </div>
     <div class="notice-admin-bar" id="noticeAdminBar">
       <button class="notice-add-btn" id="noticeAddBtn">+ 공지 추가</button>
+      <button class="notice-add-btn" id="ledEditBtn" style="background:#1d1d1d;">📢 LED 수정</button>
       <button class="notice-logout-btn" id="noticeLogoutBtn">🚪 로그아웃</button>
     </div>
   </div>
@@ -1308,9 +1323,9 @@
     <h2 class="section-title"
         style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;margin-bottom:0;"
         onclick="toggleTools()">
-      <span style="display:flex;align-items:center;gap:10px;">
+      <span style="display:flex;align-items:center;gap:10px;white-space:nowrap;min-width:0;">
         <span class="icon">🔗</span>
-        개별 조사도구 바로가기
+        개별 조사도구
       </span>
       <span id="toolsToggleBtn"
             style="font-size:13px;font-weight:600;color:#27500A;background:#eaf3e6;border-radius:8px;padding:4px 10px;user-select:none;flex-shrink:0;">
@@ -1513,7 +1528,7 @@
   <!-- 푸터 -->
   <footer class="info">
     <div class="source">출처 / 참고자료: 국가데이터처 통계설명자료, KOSIS 등</div>
-    <div class="brand-line">농작물생산조사 통합시스템 · 텐아르 v1.8-r2pdf</div>
+    <div class="brand-line">농작물생산조사 통합시스템 · 텐아르 v1.8</div>
     <div class="meta" style="display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px;">
       실시간 <strong id="realtimeCount">…</strong>명
       &nbsp;·&nbsp;
@@ -1661,6 +1676,21 @@
     <input type="text" id="noticeInputTitle" placeholder="제목" />
     <textarea id="noticeInputContent" placeholder="내용"></textarea>
     <button class="notice-save-btn" id="noticeSaveBtn">저장</button>
+  </div>
+</div>
+
+<!-- LED 전광판 편집 (관리자) — 저장 시 모든 사용자에게 반영(Firestore) -->
+<div class="notice-write-modal" id="ledEditModal">
+  <div class="notice-write-box">
+    <button class="notice-write-close" id="ledEditClose">✕</button>
+    <div class="notice-write-h">📢 LED 전광판 수정</div>
+    <div style="font-size:11.5px;color:#a07020;line-height:1.5;margin-bottom:8px;">
+      한 줄에 하나씩 입력합니다. 링크가 필요하면 문구 뒤에 <b>|주소</b>를 붙이세요.<br>
+      (채팅을 여는 줄은 주소 자리에 <b>CHAT</b> 이라고 적으세요)<br>
+      예) 📊 10a 생산량 조회 |https://ubaldos00-ship-it.github.io/home/graph.html
+    </div>
+    <textarea id="ledInput" placeholder="한 줄에 하나씩 입력" style="min-height:150px;"></textarea>
+    <button class="notice-save-btn" id="ledSaveBtn">전체 반영 저장</button>
   </div>
 </div>
 
@@ -2588,7 +2618,7 @@
     getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged
   } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
   import {
-    getFirestore, collection, getDocs, addDoc, deleteDoc, updateDoc, doc,
+    getFirestore, collection, getDocs, addDoc, deleteDoc, updateDoc, doc, getDoc, setDoc,
     query, orderBy, limit, serverTimestamp
   } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
@@ -2831,8 +2861,78 @@
     signOut(auth);
   });
 
+  /* ══════ LED 전광판: 관리자 편집 + 전체 동기화(Firestore: notices/__led__) ══════ */
+  /* 기본 문구(Firestore 문서가 없을 때) — href가 'CHAT'이면 클릭 시 채팅 열림 */
+  const LED_DEFAULT = [
+    { text: '📣 고추·참깨·과수는 「청취조사 빠른실행」에서 계산해 보세요', href: 'https://ubaldos00-ship-it.github.io/home/chungchi.html' },
+    { text: '📊 10a당 생산량이 궁금하면 「작물별 10a당 생산량 조회」를 이용하세요', href: 'https://ubaldos00-ship-it.github.io/home/graph.html' },
+    { text: '⚾ NEW! 「작물 홈런왕」이 추가되었습니다', href: 'https://ubaldos00-ship-it.github.io/home/game_center.html' },
+    { text: '🗺 지도와 실측·청취 조사표를 연동해 보세요', href: 'https://ubaldos00-ship-it.github.io/home/map_libre.html' },
+    { text: '💬 궁금한 점은 「말풍선(채팅)」에서 물어보세요', href: 'CHAT' }
+  ];
+  let ledLines = LED_DEFAULT.slice();
+
+  function ledAnchor(l) {
+    const txt = escHtml(l.text || '');
+    const href = (l.href || '').trim();
+    if (href === 'CHAT') {
+      return `<a href="javascript:void(0)" onclick="var f=document.getElementById('chatFab'); if(f) f.click();">${txt}</a>`;
+    }
+    if (href) return `<a href="${escHtml(href)}">${txt}</a>`;
+    return `<a href="javascript:void(0)">${txt}</a>`;
+  }
+  function renderLed(lines) {
+    const track = document.getElementById('ledTrack');
+    if (!track || !lines || !lines.length) return;
+    const one = lines.map(l => ledAnchor(l) + '<span class="sep">◆</span>').join('');
+    track.innerHTML = one + one;   /* 끊김 없는 흐름을 위해 2벌 반복 */
+  }
+  async function loadLed() {
+    try {
+      const s = await withTimeout(getDoc(doc(db, 'notices', '__led__')));
+      if (s.exists() && Array.isArray(s.data().lines) && s.data().lines.length) {
+        ledLines = s.data().lines;
+        renderLed(ledLines);
+      }
+    } catch (e) { /* 실패 시 하드코딩 기본 문구 유지 */ }
+  }
+  function linesToText(lines) {
+    return lines.map(l => (l.href && l.href.trim()) ? `${l.text} |${l.href.trim()}` : `${l.text}`).join('\n');
+  }
+  function textToLines(t) {
+    return t.split('\n').map(s => s.trim()).filter(Boolean).map(line => {
+      const i = line.lastIndexOf('|');
+      if (i >= 0) return { text: line.slice(0, i).trim(), href: line.slice(i + 1).trim() };
+      return { text: line, href: '' };
+    });
+  }
+  const ledEditBtn = document.getElementById('ledEditBtn');
+  if (ledEditBtn) ledEditBtn.addEventListener('click', () => {
+    document.getElementById('ledInput').value = linesToText(ledLines);
+    document.getElementById('ledEditModal').classList.add('show');
+  });
+  document.getElementById('ledEditClose').addEventListener('click', () => {
+    document.getElementById('ledEditModal').classList.remove('show');
+  });
+  document.getElementById('ledEditModal').addEventListener('click', e => {
+    if (e.target === document.getElementById('ledEditModal'))
+      document.getElementById('ledEditModal').classList.remove('show');
+  });
+  document.getElementById('ledSaveBtn').addEventListener('click', async () => {
+    if (!isAdmin) { alert('관리자만 수정할 수 있습니다.'); return; }
+    const lines = textToLines(document.getElementById('ledInput').value);
+    if (!lines.length) { alert('최소 한 줄 이상 입력하세요.'); return; }
+    try {
+      await withTimeout(setDoc(doc(db, 'notices', '__led__'), { lines, updatedAt: serverTimestamp() }));
+      ledLines = lines;
+      renderLed(ledLines);
+      document.getElementById('ledEditModal').classList.remove('show');
+    } catch (e) { alert('저장 실패: ' + e.message); }
+  });
+
   /* ── 초기 로드 ── */
   loadNotices();
+  loadLed();
 </script>
 
 <!-- GoatCounter 방문자 추적 -->
@@ -2862,9 +2962,10 @@ if(window.wcs) {
   (function(){
     var board = document.getElementById('ledBoard'), btn = document.getElementById('ledClose');
     if(!board) return;
-    try{ if(sessionStorage.getItem('tenarLedClosed')==='1') board.classList.add('led-hidden'); }catch(e){}
+    try{ if(sessionStorage.getItem('tenarLedClosed')==='1'){ board.classList.add('led-hidden'); document.body.classList.add('led-off'); } }catch(e){}
     if(btn) btn.addEventListener('click', function(){
       board.classList.add('led-hidden');
+      document.body.classList.add('led-off');
       try{ sessionStorage.setItem('tenarLedClosed','1'); }catch(e){}
     });
   })();
