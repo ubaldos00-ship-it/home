@@ -1,4 +1,5 @@
-<!-- tonghab.html (v120) · 저장: 2026-09-09 19:50 KST · [v120] 지역 데이터 전국 17개 시도로 확대 — ①마늘·양파 「건조율」 17개 시도 반영(원자료 표). ②「10a 생산량 비교(전년·평년)」 데이터를 graph의 전국 KOSIS 자료로 17개 시도 확대(마늘·양파·감자·고랭지감자·무=노지가을무·배추=노지가을배추·총각무=가을총각무·콩). ③지역 선택 = 대구·경북·강원 버튼 유지 + 그 외 14개 시도 콤보박스 추가(선택 시 건조율 자동입력·전년/평년 대비 반영). ※ 계산 함수 무변경(데이터·UI만). ※ 논벼 도별비교(NB_PROVINCE_HIST)와 지역별 참고 막대/선그래프(대구·경북·강원 기준)는 이번 범위 밖. (v119 이하 유지) -->
+<!-- tonghab.html (v121) · 저장: 2026-09-09 20:13 KST · [v121] 지역 확대 마무리 — ①「지역별 참고 막대·선그래프·상세표」에 사용자가 고른 시도(대구·경북·강원 밖 14개 시도 포함)를 함께 표시(★). ②논벼 「시군별 생산량 비교」에 권역 「시도(도 단위)」 추가 — 도 전체 vs 전국 비교(도-단위는 도 참고선 생략, 2선). ※ 논벼 시도별 KOSIS 원자료는 현재 대구·경북·강원(+전국)만 존재 → 그 3개 도만 도-단위 제공, 나머지 14개 시도는 시도별 논벼 원자료를 받으면 동일 형식으로 추가 가능. ※ 계산 함수(수확량·10a 산식) 무변경(표시·데이터만). (v120 이하 유지) -->
+<!-- (이전)  tonghab.html (v120) · 저장: 2026-09-09 19:50 KST · [v120] 지역 데이터 전국 17개 시도로 확대 — ①마늘·양파 「건조율」 17개 시도 반영(원자료 표). ②「10a 생산량 비교(전년·평년)」 데이터를 graph의 전국 KOSIS 자료로 17개 시도 확대(마늘·양파·감자·고랭지감자·무=노지가을무·배추=노지가을배추·총각무=가을총각무·콩). ③지역 선택 = 대구·경북·강원 버튼 유지 + 그 외 14개 시도 콤보박스 추가(선택 시 건조율 자동입력·전년/평년 대비 반영). ※ 계산 함수 무변경(데이터·UI만). ※ 논벼 도별비교(NB_PROVINCE_HIST)와 지역별 참고 막대/선그래프(대구·경북·강원 기준)는 이번 범위 밖. (v119 이하 유지) -->
 <!-- (이전)  tonghab.html (v119) · 저장: 2026-09-07 21:22 KST · [v119] 논벼 ⑥ B포구에 「B포구 베는 방향 포기당 이삭수(3포기·선택)」 입력란 추가 — 예취길이 다음에 5번·중심·6번 3포기 이삭수를 세어 합계·평균 표시(예상량↔실수확량 괴리 확인용, 보통은 미조사·필요한 조사원만). AB포구 계산하기 시 결과 카드의 A포구 이삭수(대표주수) 아래에 B포구 이삭수 합계·평균 표시(입력했을 때만) + 결과 이미지에도 포함. ※ 기존 계산 함수는 일절 변경하지 않음(표시·신규 함수만 추가). (v118 이하 유지) -->
 <!-- (이전)  tonghab.html (v118) · 저장: 2026-09-04 09:40 KST · [v118] 논벼 ⑤ 이삭수(초기화·이전·다음) 아래에 「🧭 지도에서 A/B포구 위치(현장모드)」 버튼 추가 — 누르면 연결된 핀 정보를 넘겨 지도 map_libre.html 로 이동, 지도가 그 핀의 현장모드(GPS·진행방향)를 자동 시작(B포구 GPS로 깃대). 계산 로직 무변경. (v117 유지) -->
 <!-- (v117) [v117] 계산기↔지도 전환 「진행중」 차단 오버레이 — 지도로 이동/지도에서 계산기로 전송·복귀할 때, 데이터 적용이 「완료되기 전」 사용자가 작물·항목을 선택하거나 이동해 잘못 선택되던 문제 방지. 이동 시 세션 플래그를 세우고, 도착 페이지 로드~적용 완료(또는 최대 3.5초)까지 전체화면 「진행중입니다. 잠시만 기다려주세요.」 오버레이로 상호작용을 막음(확인 팝업 z-index 9500보다 낮은 9400이라 「이전 자료」 선택 팝업은 그대로 사용 가능). 계산 로직 무변경. -->
@@ -3137,6 +3138,7 @@ select,
               <option value="">권역 선택</option>
               <option value="daegu">대구경북권</option>
               <option value="gangwon">강원권</option>
+              <option value="province">시도(도 단위)</option>
             </select>
             <select id="nbDistrict" onchange="nbCompareCalc(true)" style="font-size:14px;padding:9px 8px;border:1.5px solid #b9d49a;border-radius:8px;background:#f0f7ea;color:#1f4408;font-weight:700;-webkit-appearance:none;appearance:none;">
               <option value="">시군 선택</option>
@@ -7048,7 +7050,8 @@ function prodCalculate() {
   })();
 
   // 지역별 막대그래프
-  const allR=['daegu','gyeongbuk','gangwon'];
+  /* [v121] 선택한 시도가 대구·경북·강원 밖이면 참고 그래프에도 함께 표시 */
+  const allR=['daegu','gyeongbuk','gangwon'].concat((region&&['daegu','gyeongbuk','gangwon'].indexOf(region)<0)?[region]:[]);
   let histKey=PROD_CROP_HIST_KEY[prodCrop]||prodCrop;
   if(prodCrop==='potato' && prodVariety==='고랭지감자') histKey='potato_highland';
   const hist=PROD_HISTORY[histKey];
@@ -7057,11 +7060,11 @@ function prodCalculate() {
   } else if(!region){
     document.getElementById('prod-history-content').innerHTML='<p class="pstat-note">※ 지역 선택 시 지역별 비교 그래프가 표시됩니다.</p>';
   } else {
-    const rN={daegu:'대구',gyeongbuk:'경북',gangwon:'강원'};
+    const rN=PROD_REGION_KO;   /* [v121] 전국 17개 시도 이름 */
     const m5v={},pvv={};
     const _sk2=(prodCrop==='potato'&&prodVariety==='고랭지감자')?'potato_highland':prodCrop;
     allR.forEach(r=>{m5v[r]=PROD_STATS[_sk2]?.mean5[r]||0;pvv[r]=PROD_STATS[_sk2]?.prev[r]||0;});
-    const sA={daegu:0,gyeongbuk:0,gangwon:0},sB={daegu:0,gyeongbuk:0,gangwon:0};
+    const sA={},sB={};   /* [v121] allR 기준으로 동적 구성 */
     allR.forEach(r=>{sA[r]=A?A.kg10a:0; sB[r]=B?B.kg10a:0;});
     const allVals=allR.flatMap(r=>[m5v[r],pvv[r],sA[r],sB[r]]).filter(v=>v>0);
     const maxBar=Math.max(...allVals)*1.15||1;
@@ -7101,9 +7104,12 @@ function drawProdLineChart(crop,region){
   const hist=PROD_HISTORY[histKey];
   if(!hist)return;
   if(prodLineChartInst){prodLineChartInst.destroy();prodLineChartInst=null;}
-  const rN={daegu:'대구',gyeongbuk:'경북',gangwon:'강원'};
-  const colors={daegu:'#0d6640',gyeongbuk:'#dc2626',gangwon:'#2563eb'};
-  const allR=['daegu','gyeongbuk','gangwon'];
+  const rN=PROD_REGION_KO;   /* [v121] 전국 17개 시도 */
+  const colors={daegu:'#0d6640',gyeongbuk:'#dc2626',gangwon:'#2563eb',
+    seoul:'#7c3aed',busan:'#0891b2',incheon:'#c2410c',gwangju:'#0d9488',daejeon:'#b45309',
+    ulsan:'#4f46e5',sejong:'#be185d',gyeonggi:'#15803d',chungbuk:'#a16207',chungnam:'#0369a1',
+    jeonbuk:'#9333ea',jeonnam:'#db2777',gyeongnam:'#ea580c',jeju:'#0284c7'};
+  const allR=['daegu','gyeongbuk','gangwon'].concat((region&&['daegu','gyeongbuk','gangwon'].indexOf(region)<0)?[region]:[]);
   const years=['2021','2022','2023','2024','2025'];
   const allVals=allR.flatMap(r=>(hist[r]||[]).map(d=>d.v)).filter(v=>v>0);
   if(!allVals.length)return;
@@ -7180,7 +7186,7 @@ function prodBuildHistTable(crop,region){
   document.getElementById('prod-hist-table-body').style.display='none';
   const tBtn=document.getElementById('prod-hist-toggle-btn');if(tBtn)tBtn.textContent='▼ 펼치기';
   if(titleEl) titleEl.textContent='📋 '+(PROD_CROP_KO[crop]||crop)+' 지역별 5년 생산량 상세표 (kg/10a)';
-  const allR=['daegu','gyeongbuk','gangwon'],rKO={daegu:'대구',gyeongbuk:'경북',gangwon:'강원'};
+  const allR=['daegu','gyeongbuk','gangwon'].concat((region&&['daegu','gyeongbuk','gangwon'].indexOf(region)<0)?[region]:[]),rKO=PROD_REGION_KO;   /* [v121] 17개 시도 */
   const years=['2021','2022','2023','2024','2025'];
   const mean=arr=>{const v=arr.filter(x=>x>0);return v.length?Math.round(v.reduce((a,b)=>a+b,0)/v.length):'-';};
   let tbl='<table class="phtbl"><thead><tr><th>지역</th>'+years.map(y=>'<th>'+y+'년</th>').join('')+'<th>평년</th></tr></thead><tbody>';
@@ -7547,7 +7553,8 @@ function nbJusuNav(dir){
 /* ════ 논벼 시군 선택 (v87) ════ */
 var NB_DISTRICTS = {
   daegu: ['대구시','포항시','경주시','김천시','안동시','구미시','영주시','영천시','상주시','문경시','경산시','의성군','군위군','청송군','영양군','영덕군','청도군','고령군','성주군','칠곡군','예천군','봉화군','울진군','울릉군'],
-  gangwon: ['춘천시','원주시','강릉시','동해시','태백시','속초시','삼척시','홍천군','횡성군','영월군','평창군','정선군','철원군','화천군','양구군','인제군','고성군','양양군']
+  gangwon: ['춘천시','원주시','강릉시','동해시','태백시','속초시','삼척시','홍천군','횡성군','영월군','평창군','정선군','철원군','화천군','양구군','인제군','고성군','양양군'],
+  province: ['경북','대구','강원']   /* [v121] 도(시도) 단위 — 자료 있는 시도만(추후 확대) */
 };
 function nbUpdateDistrict(){
   var rg=document.getElementById('nbRegionGroup');
@@ -7619,7 +7626,12 @@ var NB_SIGUN_DATA = {
   '양구군':  {prev:509,mean5:501,province:'gangwon',hist:[{y:'2021',v:522},{y:'2022',v:495},{y:'2023',v:495},{y:'2024',v:486},{y:'2025',v:509}]},
   '인제군':  {prev:494,mean5:497,province:'gangwon',hist:[{y:'2021',v:526},{y:'2022',v:462},{y:'2023',v:503},{y:'2024',v:502},{y:'2025',v:494}]},
   '고성군':  {prev:511,mean5:507,province:'gangwon',hist:[{y:'2021',v:507},{y:'2022',v:506},{y:'2023',v:505},{y:'2024',v:508},{y:'2025',v:511}]},
-  '양양군':  {prev:523,mean5:501,province:'gangwon',hist:[{y:'2021',v:516},{y:'2022',v:479},{y:'2023',v:481},{y:'2024',v:507},{y:'2025',v:523}]}
+  '양양군':  {prev:523,mean5:501,province:'gangwon',hist:[{y:'2021',v:516},{y:'2022',v:479},{y:'2023',v:481},{y:'2024',v:507},{y:'2025',v:523}]},
+  /* [v121] 도(시도) 단위 비교 — 현재 KOSIS 시도 논벼 자료는 대구·경북·강원(+전국)만 존재.
+     나머지 14개 시도는 시도별 논벼 원자료를 받으면 아래에 같은 형식으로 추가하면 됨(도 전체 vs 전국). */
+  '경북': {prev:547,mean5:541,province:'경북',isProvince:true,hist:[{y:'2021',v:541},{y:'2022',v:540},{y:'2023',v:538},{y:'2024',v:537},{y:'2025',v:547}]},
+  '대구': {prev:502,mean5:510,province:'대구',isProvince:true,hist:[{y:'2021',v:523},{y:'2022',v:529},{y:'2023',v:493},{y:'2024',v:501},{y:'2025',v:502}]},
+  '강원': {prev:526,mean5:524,province:'강원',isProvince:true,hist:[{y:'2021',v:538},{y:'2022',v:501},{y:'2023',v:528},{y:'2024',v:528},{y:'2025',v:526}]}
 };
 
 /* 전국·도별 논벼 기준 데이터 — KOSIS 실측 (v94) */
@@ -7762,13 +7774,14 @@ function nbCompareCalc(silent){
   /* ④ 5년 추이 선그래프 — 전국 / 도 / 시군 */
   /* years, prevYearShort 는 함수 상단에서 이미 선언됨 */
   var sigunVals=d.hist.map(function(h){return h.v;});
-  /* 도별 기준 결정 */
+  /* 도별 기준 결정 · [v121] 도(시도) 단위 선택이면 「도」 참고선은 생략(시군=도로 중복이므로) */
+  var isProv=!!d.isProvince;
   var provKey=d.province==='gangwon'?'강원':(sigun==='대구시'?'대구':(sigun==='군위군'?'군위군':'경북'));
-  var provLabel=sigun==='군위군'?'군위군(구 경북)':provKey;
+  var provLabel=isProv?'':(sigun==='군위군'?'군위군(구 경북)':provKey);
   var natData=NB_PROVINCE_HIST['전국'];
-  var provData=NB_PROVINCE_HIST[provKey]||NB_PROVINCE_HIST['경북'];
+  var provData=isProv?null:(NB_PROVINCE_HIST[provKey]||NB_PROVINCE_HIST['경북']);
   var natVals=natData?natData.hist.map(function(h){return h.v;}):[0,0,0,0,0];
-  var provVals=provData?provData.hist.map(function(h){return h.v;}):[0,0,0,0,0];
+  var provVals=provData?provData.hist.map(function(h){return h.v;}):[null,null,null,null,null];
   var ctx=document.getElementById('nbCompareCanvas');
   if(_nbCmpChart){_nbCmpChart.destroy();_nbCmpChart=null;}
   if(ctx&&typeof Chart!=='undefined'){
@@ -7842,7 +7855,7 @@ function nbCompareCalc(silent){
   /* 범례 */
   document.getElementById('nbCompareLegend').innerHTML=
     '<span style="display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:24px;height:2px;background:#888;border-radius:1px;border-top:2px dashed #888;"></span>전국</span>'
-    +'<span style="display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:24px;height:2.5px;background:#C0392B;border-radius:1px;"></span>'+provLabel+'</span>'
+    +(isProv?'':'<span style="display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:24px;height:2.5px;background:#C0392B;border-radius:1px;"></span>'+provLabel+'</span>')
     +'<span style="display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:24px;height:3px;background:#1558D6;border-radius:1px;"></span>'+sigun+'</span>';
 
   /* ⑤ 5년 상세 통계표 (연도 가로, 마지막열=평년, 조사결과 미포함) (v94) */
@@ -7865,7 +7878,7 @@ function nbCompareCalc(silent){
     +'<th style="padding:6px 4px;text-align:right;border-bottom:1.5px solid #b9d49a;font-size:12px;color:#27500A;">평년</th>'
     +'</tr></thead><tbody>';
   tbl+=stRow('전국',natVals,natData?natData.mean5:null,'#555',false);
-  tbl+=stRow(provLabel,provVals,provData?provData.mean5:null,'#C0392B',true);
+  if(!isProv) tbl+=stRow(provLabel,provVals,provData?provData.mean5:null,'#C0392B',true);
   /* v104: 시군 파랑 */
   tbl+=stRow(sigun,sigunVals,mean5,'#1558D6',true);
   /* ※ 조사결과는 표에서 제외 — 2021~2025 연도별 통계표와 혼용 방지 */
