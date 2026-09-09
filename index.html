@@ -1,4 +1,5 @@
-<!-- index.html (v108) · 저장: 2026-09-10 07:03 KST · [v108] 홈 화면 정리 — ①LED 전광판이 알림창을 가리던 문제 수정: 본문 상단 여백을 LED 높이(--led-h:36px)만큼 더 내려 알림이 LED 바로 아래 딱 맞게(LED 닫으면 body.led-off로 원위치). ②LED 문구를 관리자(🔐)가 직접 수정·전체 동기화 — 관리자 바 「📢 LED 수정」 → Firestore(notices/__led__) 저장, 모든 사용자 반영(문구|주소 형식, 주소자리 CHAT=채팅 열기). ③LED 기본 문구를 「고추·참깨·과수는 청취조사 빠른실행에서 계산」으로 변경(맥류 안내 종료). ④「개별 조사도구 바로가기」→「개별 조사도구」로 단축 + 작은 모바일에서 섹션 제목 자동 축소(두 줄 방지). ⑤하단 버전 「v1.8-r2pdf」→「v1.8」. (v107 이하 유지) -->
+<!-- index.html (v109) · 저장: 2026-09-10 07:11 KST · [v109] 홈 공지 목록 즉시 표시 + 레이아웃 밀림(오탭) 방지 — ①공지 영역 높이 예약(min-height:72px)으로 늦게 로드돼도 아래 「빠른조사 메뉴」가 안 밀림. ②지난 방문 공지를 localStorage 캐시로 Firestore 로딩 전에 즉시 표시(다음 방문부터 바로 보임). ③로드 실패(오프라인)여도 캐시 목록 유지. ④gstatic/firestore preconnect로 공지 모듈 첫 로드 가속. (v108 이하 유지) -->
+<!-- (이전)  index.html (v108) · 저장: 2026-09-10 07:03 KST · [v108] 홈 화면 정리 — ①LED 전광판이 알림창을 가리던 문제 수정: 본문 상단 여백을 LED 높이(--led-h:36px)만큼 더 내려 알림이 LED 바로 아래 딱 맞게(LED 닫으면 body.led-off로 원위치). ②LED 문구를 관리자(🔐)가 직접 수정·전체 동기화 — 관리자 바 「📢 LED 수정」 → Firestore(notices/__led__) 저장, 모든 사용자 반영(문구|주소 형식, 주소자리 CHAT=채팅 열기). ③LED 기본 문구를 「고추·참깨·과수는 청취조사 빠른실행에서 계산」으로 변경(맥류 안내 종료). ④「개별 조사도구 바로가기」→「개별 조사도구」로 단축 + 작은 모바일에서 섹션 제목 자동 축소(두 줄 방지). ⑤하단 버전 「v1.8-r2pdf」→「v1.8」. (v107 이하 유지) -->
 <!-- (이전)  index.html (v107) · 저장: 2026-08-25 05:56 KST · [v107] cattle.html을 v6로 갱신(뒤로=홈이동·라벨단축·출하차수자동제거·백업암호입력창·복원초록체크박스·개월수반올림·수정시신고이력표시). index 링크는 v105 그대로 · 그 외 변경 없음 -->
 <!-- (이전)  index.html (v106) · 저장: 2026-08-24 20:36 KST · [v106] cattle.html을 v5로 갱신 · index 링크는 v105 그대로 -->
 <!-- (이전)  index.html (v105) · 저장: 2026-08-20 02:46 KST · [v105] 「개별 조사도구 바로가기」 맨 아래(면적환산 다음)에 🐄 소 이력·출하·판매 관리(cattle.html) 링크 추가 · 그 외 변경 없음 -->
@@ -64,6 +65,9 @@
 <meta name="twitter:title"      content="농작물생산조사 통합시스템 · 텐아르v1.5" />
 <meta name="twitter:description" content="실측조사·청취조사·10a당 생산량 조회까지 농작물생산조사 통합 모바일 도구" />
 
+<!-- [v109] 공지(Firestore) 모듈을 더 빨리 받도록 gstatic/firestore 사전 연결 -->
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin />
+<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin />
 <!-- Pretendard 한국어 웹폰트 -->
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
@@ -235,6 +239,8 @@
   }
   .notice-item-row:last-of-type { border-bottom: none; }
   .notice-item-row:active { opacity: 0.7; }
+  /* [v109] 공지 목록 영역 높이 예약 — 늦게 로드돼도 아래 「빠른조사 메뉴」가 밀리지 않게(오탭 방지) */
+  #noticeListHome { min-height: 72px; }
   .notice-dot { color: var(--color-accent); font-weight: 700; flex-shrink: 0; margin-top: 1px; }
   .notice-item-title {
     flex: 1; font-weight: 600; color: #6b4f0a; font-size: 13px; line-height: 1.35;
@@ -1249,6 +1255,26 @@
     <div id="noticeListHome">
       <div style="color:#a07020;font-size:12px;">공지를 불러오는 중...</div>
     </div>
+    <!-- [v109] 지난 방문 때 저장한 공지를 즉시 표시(Firestore 로딩 전) → 목록이 바로 보이고 레이아웃도 안정 -->
+    <script>
+      (function(){
+        try{
+          var raw = localStorage.getItem('tenarNoticeCacheV1');
+          if(!raw) return;
+          var arr = JSON.parse(raw);
+          if(!Array.isArray(arr) || !arr.length) return;
+          var esc = function(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
+          var html = arr.slice(0,3).map(function(n){
+            var lead = n.pinned ? '<span class="notice-pin-badge">📌</span>' : '<span class="notice-dot">•</span>';
+            return '<div class="notice-item-row" data-open-id="'+esc(n.id)+'">'+lead+
+              '<span class="notice-item-title">'+esc(n.title||'(제목 없음)')+'</span>'+
+              '<span class="notice-item-date">'+esc(n.date||'')+'</span></div>';
+          }).join('');
+          var el = document.getElementById('noticeListHome');
+          if(el && html){ el.innerHTML = html; el.setAttribute('data-cached','1'); }
+        }catch(e){}
+      })();
+    </script>
     <div class="notice-admin-bar" id="noticeAdminBar">
       <button class="notice-add-btn" id="noticeAddBtn">+ 공지 추가</button>
       <button class="notice-add-btn" id="ledEditBtn" style="background:#1d1d1d;">📢 LED 수정</button>
@@ -2727,6 +2753,16 @@
     if (document.getElementById('noticeListModal').classList.contains('show')) renderFullList();
   }
 
+  /* [v109] 다음 방문 때 즉시 표시할 수 있도록 상위 공지를 localStorage에 저장 */
+  function cacheNoticesTop() {
+    try {
+      const top = sortNotices(noticesCache).slice(0, 3).map(d => ({
+        id: d.id, title: d.data.title || '', date: fmtDate(d.data.createdAt), pinned: !!d.data.pinned
+      }));
+      localStorage.setItem('tenarNoticeCacheV1', JSON.stringify(top));
+    } catch (e) {}
+  }
+
   /* ── 공지 로드 ── */
   async function loadNotices() {
     try {
@@ -2734,9 +2770,13 @@
       const qs = await withTimeout(getDocs(q));
       noticesCache = qs.docs.map(d => ({ id: d.id, data: d.data() }));
       refreshNoticeViews();
+      cacheNoticesTop();   /* 최신 목록을 캐시에 저장 */
     } catch (e) {
+      /* 실패 시: 이미 캐시로 표시 중이면 그대로 두고(오프라인·지연 대비), 아니면 안내 문구 */
       const el = document.getElementById('noticeListHome');
-      if (el) el.innerHTML = '<div style="color:#a07020;font-size:12px;">• 베타 시험서비스 중입니다. 오류 발견 시 채팅으로 문의해주세요.</div>';
+      if (el && el.getAttribute('data-cached') !== '1' && !el.querySelector('.notice-item-row')) {
+        el.innerHTML = '<div style="color:#a07020;font-size:12px;">• 베타 시험서비스 중입니다. 오류 발견 시 채팅으로 문의해주세요.</div>';
+      }
     }
   }
 
