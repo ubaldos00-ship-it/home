@@ -1,4 +1,5 @@
-<!-- map_v178.html (v178 · TENAR V1.5) · 저장: 2026-09-10 22:02 KST · [v178] 조사표 전송 주소를 「카카오 지번」으로 통일 — 브이월드 지적도 밀림(현풍·고령 등)으로 실제와 다른 지번(예: 봉산리 1313)이 실측·청취 조사표에 전송되던 문제 근본 수정. ①공통 역지오코딩 헬퍼 reverseGeocodePreferKakao(카카오 우선→브이월드 폴백) 신설. ②포구도구 전송(fpSubmit): 전송 직전 가(A포구) 지점을 카카오로 재조회해 정확한 지번으로 덮어씀(필지선택 시 브이월드 필지속성 지번이 잡히던 것 보정). 저장 핀에 주소 있으면 그 핀 주소 우선(v177). ③필지선택 주소도 카카오로 조회(경계 도형은 브이월드 지적 유지). ④측정도구→청취 전송·측정/포구 저장핀·핀 위치변경 주소도 카카오 우선. 카카오 불가(오프라인) 시 브이월드 자동 폴백. ※ 계산 무변경(주소값 정확도만 개선). (v177 이하 유지) -->
+<!-- map_v179.html (v179 · TENAR V1.5) · 저장: 2026-09-10 22:16 KST · [v179] 계산기 「공통사항 핀으로 주소 저장(조사위치 저장 모드)」도 카카오 지번 사용 — 실측·청취·이삭수 계산기가 📍(지도)로 위치를 찍어 주소를 저장할 때, 지도 저장모드의 지도클릭·현재위치·주소검색 역지오코딩을 모두 카카오 우선(reverseGeocodePreferKakao)으로 전환. 그동안 이 경로만 브이월드 지번이라 조사표 저장 주소가 밀린 지번으로 들어가던 것 정정. 카카오 불가 시 브이월드 폴백. ※ 계산 무변경. (v178 이하 유지) -->
+<!-- (이전)  map_v178.html (v178 · TENAR V1.5) · 저장: 2026-09-10 22:02 KST · [v178] 조사표 전송 주소를 「카카오 지번」으로 통일 — 브이월드 지적도 밀림(현풍·고령 등)으로 실제와 다른 지번(예: 봉산리 1313)이 실측·청취 조사표에 전송되던 문제 근본 수정. ①공통 역지오코딩 헬퍼 reverseGeocodePreferKakao(카카오 우선→브이월드 폴백) 신설. ②포구도구 전송(fpSubmit): 전송 직전 가(A포구) 지점을 카카오로 재조회해 정확한 지번으로 덮어씀(필지선택 시 브이월드 필지속성 지번이 잡히던 것 보정). 저장 핀에 주소 있으면 그 핀 주소 우선(v177). ③필지선택 주소도 카카오로 조회(경계 도형은 브이월드 지적 유지). ④측정도구→청취 전송·측정/포구 저장핀·핀 위치변경 주소도 카카오 우선. 카카오 불가(오프라인) 시 브이월드 자동 폴백. ※ 계산 무변경(주소값 정확도만 개선). (v177 이하 유지) -->
 <!-- (이전)  map_v177.html (v177 · TENAR V1.5) · 저장: 2026-09-10 20:03 KST · [v177] 조사표 전송 주소 오류 수정 — A/B포구 작업이 저장 핀(생산량목록)에 연결돼 있으면, 조사표로 보내는 필지주소를 「그 핀의 주소」로 우선 사용한다. 그동안은 그리는 도중 필지선택·가지점 역지오코딩으로 fp.jibunAddress가 A/B포구 필지 지번(예: 봉산리 1313)으로 바뀌어, 저장 핀 주소(예: 봉산리 366-2)와 다른 지번이 실측조사표에 전송되던 문제. ※ 계산 무변경(전송 주소값만 보정). (v176 이하 유지) -->
 <!-- (이전)  map_v176.html (v176 · TENAR V1.5) · 저장: 2026-09-07 21:00 KST · [v176] 포구도구 A/B포구 세로기점 계산 반올림 오차 수정 — 세로기점을 「지도에서 잰 소수 원값」이 아니라 「화면에 보이는(반올림된) 세로총길이 정수」에 비율을 곱하도록 바꿔 통합계산기와 완전히 일치시킴. (예: A세로 2256×0.72=1624.32→1624, 이전 1625 / B세로 1467×0.98=1437.66→1438, 이전 1437). 가로기점은 이미 정수 가-나길이로 계산되어 변화 없음. (v175 이하 유지) -->
 <!-- (v155) 저장: 2026-09-04 14:22 KST · [v155] 카카오 지도 「🔎확대」 버튼 추가 — 카카오 위성 최대(레벨1) 위를 CSS로 더 크게(1.5배·2.2배, 해상도 낮아도) 보이게(아이폰에서도 더 확대). 확대 중엔 드래그·줌 잠금(좌표 어긋남 방지)·현재위치 중앙. (v154 이하 유지) -->
@@ -12118,7 +12119,7 @@ TenarSecureStore.init('map',
       var lat = pos.coords.latitude, lng = pos.coords.longitude;
       map.jumpTo({ center: [lng, lat], zoom: 18 });
       saveModeSetPoint(lng, lat, saveMode.addr || '');
-      requestVWorldReverse(lng, lat).then(function (a) {
+      reverseGeocodePreferKakao(lng, lat).then(function (a) {   /* [v178] 카카오 지번 우선 */
         toastEl.style.display = 'none';
         if (a && a.jibunAddress) saveModeSetFullAddr(a.jibunAddress);
         else showToast('현재 위치입니다. 주소를 못 찾았지만 좌표는 잡혔습니다.', 3500, 'info');
@@ -12140,8 +12141,8 @@ TenarSecureStore.init('map',
         if (!hit) { showToast('주소를 찾지 못했습니다.\n지도를 눌러 위치를 정해주세요.', 4500, 'info'); return null; }
         if (moveMap) map.jumpTo({ center: [hit.lng, hit.lat], zoom: 18 });
         saveModeSetPoint(hit.lng, hit.lat, saveMode.addr);
-        /* 그 좌표의 전체 지번주소를 다시 받아 제목·전체주소를 하나로 맞춘다 */
-        return requestVWorldReverse(hit.lng, hit.lat).then(function (a) {
+        /* 그 좌표의 전체 지번주소를 다시 받아 제목·전체주소를 하나로 맞춘다 [v178] 카카오 지번 우선 */
+        return reverseGeocodePreferKakao(hit.lng, hit.lat).then(function (a) {
           if (a && a.jibunAddress) { saveModeSetFullAddr(a.jibunAddress); }
           return hit;
         }).catch(function () { return hit; });

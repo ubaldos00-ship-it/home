@@ -1,4 +1,5 @@
-<!-- jusu.html (이삭수 계산기) v111 · 저장: 2026-08-19 03:18 KST · [v111] ①JSON 내보내기/공유를 「현재 입력자료 1건」이 아니라 「저장목록 전체」로 변경(통합계산기와 동일 번들 방식). ②JSON 불러오기도 「목록 전체」를 추가/교체 선택해 복원하고 불러오기 후 저장/불러오기 창 그대로 유지(구버전 1건 파일도 호환). ③저장/불러오기 모달이 화면보다 길어 아래(JSON 버튼)가 잘리던 문제 → 뷰포트 높이(100dvh)에 맞춰 flex 컬럼 구성, 목록만 내부 스크롤. v110(내보내기 후 홈이탈 방지)·v105 암호화·계산 로직 무변경. -->
+<!-- jusu.html (이삭수 계산기) v112 · 저장: 2026-09-10 22:16 KST · [v112] 필지 주소 입력란 아래에 「작은 글씨 풀주소」 표시 추가(입력란이 좁아 잘리던 전체 지번주소를 📍로 한 줄 표시 — 실측·청취계산기와 동일). 지도에서 핀 선택→지번 저장 시 지도(map v179)가 카카오 지번을 돌려주므로 정확한 지번이 채워짐. 계산 로직 무변경. (v111 이하 유지) -->
+<!-- (이전)  jusu.html (이삭수 계산기) v111 · 저장: 2026-08-19 03:18 KST · [v111] ①JSON 내보내기/공유를 「현재 입력자료 1건」이 아니라 「저장목록 전체」로 변경(통합계산기와 동일 번들 방식). ②JSON 불러오기도 「목록 전체」를 추가/교체 선택해 복원하고 불러오기 후 저장/불러오기 창 그대로 유지(구버전 1건 파일도 호환). ③저장/불러오기 모달이 화면보다 길어 아래(JSON 버튼)가 잘리던 문제 → 뷰포트 높이(100dvh)에 맞춰 flex 컬럼 구성, 목록만 내부 스크롤. v110(내보내기 후 홈이탈 방지)·v105 암호화·계산 로직 무변경. -->
 <!-- (이전)  jusu.html (이삭수 계산기) v104 · 저장: 2026-08-18 17:30 KST · [v104] ①필지주소 옆 📍지도 버튼(지도에서 핀 선택→지번 자동입력, 통합계산기와 동일) ②저장/불러오기 항목: 주소 전체표시+잠금·불러오기·휴지통 버튼을 다음 줄로 ③JSON 공유/내보내기/불러오기 버튼을 통합계산기와 동일하게 작게+공유 파랑·내보내기/불러오기 초록. ※암호화(기본2026)는 v105 예정 -->
 <!-- (이전)  이삭포기계산기_V21.html · 저장: 2026-06-18 06:06 KST -->
 <!DOCTYPE html>
@@ -807,6 +808,17 @@ header p  { font-size: 11px; opacity: 0.72; margin-top: 2px; }
       <input type="date" id="surveyDate">
     </div>
   </div>
+  <!-- [v105] 입력란에서 잘리는 필지주소 전체를 작은 글씨로 표시 -->
+  <div id="addrFull" style="display:none;font-size:11px;color:#4a5b6b;line-height:1.4;margin-top:6px;word-break:break-all;background:#eef3f8;border:1px solid #d9e3ee;border-radius:7px;padding:5px 8px;"></div>
+  <script>
+  (function(){
+    var ai=document.getElementById('address'), af=document.getElementById('addrFull');
+    if(!ai||!af) return;
+    function sync(){ var v=(ai.value||'').trim(); af.textContent=v?('📍 '+v):''; af.style.display=v?'block':'none'; }
+    ai.addEventListener('input',sync); ai.addEventListener('change',sync);
+    setTimeout(sync,1200); setTimeout(sync,3200);
+  })();
+  </script>
 </div>
 
 <div class="section">
