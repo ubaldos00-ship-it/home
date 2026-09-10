@@ -1,4 +1,5 @@
-<!-- tonghab.html (v127) · 저장: 2026-09-10 20:03 KST · [v127] 논벼 「B포구 베는 방향 포기당 이삭수(3포기)」 입력 개선 — ①두 자리 입력 시 다음 칸 자동 이동, ②포커스/클릭 시 전체선택(바로 입력하면 기존값 교체), ③빈 칸에서 백스페이스는 이전 칸으로(한 자씩 삭제는 기본). ④합계·평균 아래에 「A포구 평균이삭수(참고)」를 함께 표시(예상량↔실수확량 비교용). ※ 계산 함수 무변경(입력 UX·표시만). (v126 이하 유지) -->
+<!-- tonghab.html (v128) · 저장: 2026-09-11 00:13 KST · [v128] ①저장/불러오기 「작물별 10a당 수량 집계」의 주소를 전체(풀주소)로 표시 — 15자로 잘리던 것을 저장 데이터의 전체 지번주소로, 줄바꿈되어 무조건 다 보이게. ②집계의 작물별 세부(주소·수량)를 기본 「펼침」으로 변경(기존 접힘). ③제목 「농작물생산 통합 계산기」→「농작물생산 실측 계산기」. ※ 계산 함수 무변경(표시만). (v127 이하 유지) -->
+<!-- (이전)  tonghab.html (v127) · 저장: 2026-09-10 20:03 KST · [v127] 논벼 「B포구 베는 방향 포기당 이삭수(3포기)」 입력 개선 — ①두 자리 입력 시 다음 칸 자동 이동, ②포커스/클릭 시 전체선택(바로 입력하면 기존값 교체), ③빈 칸에서 백스페이스는 이전 칸으로(한 자씩 삭제는 기본). ④합계·평균 아래에 「A포구 평균이삭수(참고)」를 함께 표시(예상량↔실수확량 비교용). ※ 계산 함수 무변경(입력 UX·표시만). (v126 이하 유지) -->
 <!-- (이전)  tonghab.html (v126) · 저장: 2026-09-10 06:21 KST · [v126] 「지역별 참고 선그래프」 전국 선을 그레이 점선으로 통일(색 #9ca3af + borderDash) — 다른 계산기·그래프와 동일 표기. ※ 계산 함수 무변경(표시만). (v125 이하 유지) -->
 <!-- (이전)  tonghab.html (v125) · 저장: 2026-09-10 03:13 KST · [v125] 저장/불러오기 「저장목록」 조회·정렬 UI 정리 — ①조회 콤보(시도·시군구·읍면동·작물)와 정렬을 한 줄로 배치, 「정렬」 글자 제거(정렬 콤보만, 파란 배경으로 구분). ②전역 select{font-size:16px!important} 때문에 콤보가 커 보이던 문제 수정(콤보 전용 font-size !important + 모바일 반응형). ③모바일 화면폭에 맞춰 콤보 크기 자동 축소(auto-fit, 좁으면 줄바꿈). ※ 청취계산기와 동일 크기. 계산 함수 무변경. (v124 이하 유지) -->
 <!-- (이전)  tonghab.html (v124) · 저장: 2026-09-10 02:48 KST · [v124] ①「지역별 10a 생산량 비교」 참고 그래프(막대·선·표)에 「전국」 항상 표시 + 선택 지역이 속한 지방청(경인=서울·인천·경기 / 충청=대전·세종·충북·충남 / 동북=대구·경북·강원 / 동남=부산·울산·경남 / 호남=광주·전남·전북·제주) 시도끼리 함께 비교(전국값은 graph의 KOSIS 전국 자료 이식). ②저장/불러오기 「저장목록」에 조회(시도·시군구·읍면동·작물) 콤보 + 정렬(최근 저장순·생산량 큰순·작물별) 추가(지도 생산량목록과 동일 방식, 주소→행정구역 파싱·정렬 기억). ※ 계산 산식(함수) 무변경(데이터·UI만). (v123 이하 유지) -->
@@ -336,7 +337,7 @@ TenarSecureStore.init('tonghab',
   gtag('js', new Date());
   gtag('config', 'G-B8ELP4S5PR');
 </script>
-<title>농작물생산 통합 계산기</title>
+<title>농작물생산 실측 계산기</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
 :root{
@@ -1631,10 +1632,11 @@ body.nonbye-mode .hide-nonbye { display:none !important; }
 .sl-agg-crop-btn{cursor:pointer;user-select:none;}
 .sl-agg-crop-btn .ai-arrow{font-size:10px;color:#0A3A8C;}
 .sl-agg-detail{margin-top:6px;border-top:1px dashed #d7e0ee;padding-top:6px;}
-.sl-agg-item{display:flex;justify-content:space-between;gap:8px;font-size:11.5px;padding:3px 0;line-height:1.5;border-bottom:1px solid #f0f3f8;}
+.sl-agg-item{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;font-size:11.5px;padding:3px 0;line-height:1.5;border-bottom:1px solid #f0f3f8;}
 .sl-agg-item:last-child{border-bottom:none;}
-.sl-agg-item .ai-addr{color:#3D3C39;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.sl-agg-item .ai-val{color:#1565c0;font-weight:800;flex-shrink:0;}
+/* [v128] 주소 전체 표시(잘림 없이 줄바꿈) */
+.sl-agg-item .ai-addr{color:#3D3C39;font-weight:600;min-width:0;flex:1;word-break:break-all;white-space:normal;line-height:1.45;}
+.sl-agg-item .ai-val{color:#1565c0;font-weight:800;flex-shrink:0;white-space:nowrap;}
 .sl-divider{flex-shrink:0;border:none;border-top:1px solid #e8e5de;margin:4px 0 14px;}
 .sl-file-row{flex-shrink:0;display:flex;gap:6px;}
 .sl-file-btn{flex:1 1 0;min-width:0;padding:12px 6px;border:2px solid #d0ccc4;border-radius:10px;background:#fff;color:#3D3C39;font-size:13px;font-weight:700;cursor:pointer;text-align:center;display:flex;align-items:center;justify-content:center;line-height:1;box-sizing:border-box;touch-action:manipulation;}
@@ -1906,7 +1908,7 @@ select,
 <div class="sticky-top">
   <div class="sticky-inner">
     <div class="hdr-ttl">
-      <span><svg width="28" height="28" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" style="vertical-align:middle;margin-right:4px;"><circle cx="11" cy="12" r="7.5" fill="#2e7a4e" stroke="#1f5132" stroke-width="0.8"/><path d="M6.5 6.5 Q11 4 15.5 6.5" stroke="rgba(255,255,255,0.25)" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="11" cy="12" r="4.2" fill="#f6f4ec" stroke="#1f5132" stroke-width="0.7"/><circle cx="11" cy="12" r="1.6" fill="#c9962b" stroke="#a07020" stroke-width="0.6"/><circle cx="11" cy="12" r="0.7" fill="#fff"/><rect x="18" y="10.8" width="4.5" height="2.4" rx="0.7" fill="#e6b955" stroke="#c9962b" stroke-width="0.7"/><line x1="19.3" y1="10.8" x2="19.3" y2="13.2" stroke="#a07020" stroke-width="0.7"/><line x1="20.6" y1="10.8" x2="20.6" y2="13.2" stroke="#a07020" stroke-width="0.7"/><line x1="21.8" y1="10.8" x2="21.8" y2="13.2" stroke="#a07020" stroke-width="0.7"/></svg> 농작물생산<br><span style="padding-left:33px;">통합 계산기</span></span>
+      <span><svg width="28" height="28" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" style="vertical-align:middle;margin-right:4px;"><circle cx="11" cy="12" r="7.5" fill="#2e7a4e" stroke="#1f5132" stroke-width="0.8"/><path d="M6.5 6.5 Q11 4 15.5 6.5" stroke="rgba(255,255,255,0.25)" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="11" cy="12" r="4.2" fill="#f6f4ec" stroke="#1f5132" stroke-width="0.7"/><circle cx="11" cy="12" r="1.6" fill="#c9962b" stroke="#a07020" stroke-width="0.6"/><circle cx="11" cy="12" r="0.7" fill="#fff"/><rect x="18" y="10.8" width="4.5" height="2.4" rx="0.7" fill="#e6b955" stroke="#c9962b" stroke-width="0.7"/><line x1="19.3" y1="10.8" x2="19.3" y2="13.2" stroke="#a07020" stroke-width="0.7"/><line x1="20.6" y1="10.8" x2="20.6" y2="13.2" stroke="#a07020" stroke-width="0.7"/><line x1="21.8" y1="10.8" x2="21.8" y2="13.2" stroke="#a07020" stroke-width="0.7"/></svg> 농작물생산<br><span style="padding-left:33px;">실측 계산기</span></span>
       <span class="hdr-crop-badge" id="hdrCropBadge"></span>
       <div id="hdr-btns-wrap" style="display:flex;align-items:center;gap:6px;flex-shrink:0;overflow:hidden;transition:max-width .28s ease,opacity .25s ease;max-width:200px;opacity:1;">
         <a href="https://ubaldos00-ship-it.github.io/home/" class="home-btn" aria-label="홈" onclick="return goHomeAndReset();">
@@ -9729,17 +9731,17 @@ function _slRenderAgg(){
     if(items.some(function(i){return !i.yields;})) hasOld=true;
     /* v135: 작물 클릭 시 펼쳐지는 세부 목록(필지주소 + 생산량) */
     var detail=items.map(function(it){
-      var addr=it.addr?it.addr:'주소없음';
+      var addr=(typeof _slItemFullAddr==='function' && _slItemFullAddr(it)) || it.addr || '주소없음';   /* [v128] 전체주소 */
       var iv=_itemVal(it);
       var pv=(iv!=null)?iv.toLocaleString('ko-KR')+' kg':'—';
       return '<div class="sl-agg-item"><span class="ai-addr">📍 '+addr+'</span><span class="ai-val">'+pv+'</span></div>';
     }).join('');
     return '<div class="sl-agg-card">'
       +'<div class="sl-agg-crop sl-agg-crop-btn" onclick="slAggToggleCrop('+ci+')">'
-        +'<span>'+c+' <span class="ai-arrow" id="sl-agg-arr-'+ci+'">▼</span></span>'
+        +'<span>'+c+' <span class="ai-arrow" id="sl-agg-arr-'+ci+'">▲</span></span>'
         +'<span class="cnt">'+items.length+'건</span></div>'
       +rows
-      +'<div class="sl-agg-detail" id="sl-agg-detail-'+ci+'" style="display:none;">'+detail+'</div>'
+      +'<div class="sl-agg-detail" id="sl-agg-detail-'+ci+'" style="display:block;">'+detail+'</div>'   /* [v128] 기본 펼침 */
       +'</div>';
   }).join('');
   if(hasOld){ html+='<div class="sl-agg-note">※ 이 기능 적용 전 저장된 자료는 수량값이 없어 집계에서 제외될 수 있습니다. 해당 자료는 불러온 뒤 [덮어쓰기]하면 집계에 반영됩니다.</div>'; }
