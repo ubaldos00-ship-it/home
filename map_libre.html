@@ -1,4 +1,5 @@
-<!-- map_v177.html (v177 · TENAR V1.5) · 저장: 2026-09-10 20:03 KST · [v177] 조사표 전송 주소 오류 수정 — A/B포구 작업이 저장 핀(생산량목록)에 연결돼 있으면, 조사표로 보내는 필지주소를 「그 핀의 주소」로 우선 사용한다. 그동안은 그리는 도중 필지선택·가지점 역지오코딩으로 fp.jibunAddress가 A/B포구 필지 지번(예: 봉산리 1313)으로 바뀌어, 저장 핀 주소(예: 봉산리 366-2)와 다른 지번이 실측조사표에 전송되던 문제. ※ 계산 무변경(전송 주소값만 보정). (v176 이하 유지) -->
+<!-- map_v178.html (v178 · TENAR V1.5) · 저장: 2026-09-10 22:02 KST · [v178] 조사표 전송 주소를 「카카오 지번」으로 통일 — 브이월드 지적도 밀림(현풍·고령 등)으로 실제와 다른 지번(예: 봉산리 1313)이 실측·청취 조사표에 전송되던 문제 근본 수정. ①공통 역지오코딩 헬퍼 reverseGeocodePreferKakao(카카오 우선→브이월드 폴백) 신설. ②포구도구 전송(fpSubmit): 전송 직전 가(A포구) 지점을 카카오로 재조회해 정확한 지번으로 덮어씀(필지선택 시 브이월드 필지속성 지번이 잡히던 것 보정). 저장 핀에 주소 있으면 그 핀 주소 우선(v177). ③필지선택 주소도 카카오로 조회(경계 도형은 브이월드 지적 유지). ④측정도구→청취 전송·측정/포구 저장핀·핀 위치변경 주소도 카카오 우선. 카카오 불가(오프라인) 시 브이월드 자동 폴백. ※ 계산 무변경(주소값 정확도만 개선). (v177 이하 유지) -->
+<!-- (이전)  map_v177.html (v177 · TENAR V1.5) · 저장: 2026-09-10 20:03 KST · [v177] 조사표 전송 주소 오류 수정 — A/B포구 작업이 저장 핀(생산량목록)에 연결돼 있으면, 조사표로 보내는 필지주소를 「그 핀의 주소」로 우선 사용한다. 그동안은 그리는 도중 필지선택·가지점 역지오코딩으로 fp.jibunAddress가 A/B포구 필지 지번(예: 봉산리 1313)으로 바뀌어, 저장 핀 주소(예: 봉산리 366-2)와 다른 지번이 실측조사표에 전송되던 문제. ※ 계산 무변경(전송 주소값만 보정). (v176 이하 유지) -->
 <!-- (이전)  map_v176.html (v176 · TENAR V1.5) · 저장: 2026-09-07 21:00 KST · [v176] 포구도구 A/B포구 세로기점 계산 반올림 오차 수정 — 세로기점을 「지도에서 잰 소수 원값」이 아니라 「화면에 보이는(반올림된) 세로총길이 정수」에 비율을 곱하도록 바꿔 통합계산기와 완전히 일치시킴. (예: A세로 2256×0.72=1624.32→1624, 이전 1625 / B세로 1467×0.98=1437.66→1438, 이전 1437). 가로기점은 이미 정수 가-나길이로 계산되어 변화 없음. (v175 이하 유지) -->
 <!-- (v155) 저장: 2026-09-04 14:22 KST · [v155] 카카오 지도 「🔎확대」 버튼 추가 — 카카오 위성 최대(레벨1) 위를 CSS로 더 크게(1.5배·2.2배, 해상도 낮아도) 보이게(아이폰에서도 더 확대). 확대 중엔 드래그·줌 잠금(좌표 어긋남 방지)·현재위치 중앙. (v154 이하 유지) -->
 <!-- (v154) 저장: 2026-09-04 14:11 KST · [v154] 네이버 지도 로드 방식을 예전 작동 파일(0.지도/map.html)과 동일하게 수정 — oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=w8m4oe36ev (구형 openapi?ncpClientId 아님). 도메인 등록된 배포본에서 표시됨. (v153 이하 유지) -->
@@ -3687,6 +3688,18 @@ TenarSecureStore.init('map',
     }).catch(function () { return null; });
   }
 
+  /* [v178] 조사표 전송·저장핀 주소용 역지오코딩 — 카카오(정확) 우선, 실패 시 브이월드 폴백.
+     브이월드 지적도 밀림(현풍·고령 등)으로 엉뚱한 지번(예: 봉산리 1313)이 나오던 것을,
+     카카오 좌표→지번(예: 봉산리 366-2)으로 정확히 가져온다. 저장 팝업과 동일 기준. */
+  function reverseGeocodePreferKakao(lng, lat) {
+    return kakaoReverseGeocode(lng, lat).then(function (k) {
+      if (k && k.jibunAddress) return { jibunAddress: k.jibunAddress, roadAddress: k.roadAddress || '' };
+      return requestVWorldReverse(lng, lat);
+    }).catch(function () {
+      return requestVWorldReverse(lng, lat).catch(function () { return { jibunAddress: '', roadAddress: '' }; });
+    });
+  }
+
   function parseGeocode(data, type) {
     if (!data || !data.response || data.response.status !== 'OK') return null;
     var res = data.response.result;
@@ -4656,13 +4669,13 @@ TenarSecureStore.init('map',
     arr[idx].updatedAt = kstNowStr();
     setFavs(arr);
 
-    requestVWorldReverse(ctr.lng, ctr.lat).then(function (a) {
+    reverseGeocodePreferKakao(ctr.lng, ctr.lat).then(function (a) {   /* [v178] 핀 주소도 카카오 지번 우선 */
       var arr2 = getFavs();
       for (var k = 0; k < arr2.length; k++) {
         if (arr2[k].id !== f.id) continue;
-        if (a.jibunAddress) { arr2[k].jibunAddress = a.jibunAddress; arr2[k].addr = a.jibunAddress; }
-        arr2[k].roadAddress = a.roadAddress || '';
-        arr2[k].postalCode = a.postalCode || '';
+        if (a && a.jibunAddress) { arr2[k].jibunAddress = a.jibunAddress; arr2[k].addr = a.jibunAddress; }
+        arr2[k].roadAddress = (a && a.roadAddress) || '';
+        arr2[k].postalCode = (a && a.postalCode) || '';
         setFavs(arr2);
         endPinMove();
         showToast('핀 위치를 변경했습니다.', 2500, 'success');
@@ -7318,10 +7331,11 @@ TenarSecureStore.init('map',
       updateNewMeasureBtn();
 
       var p = f.properties || {};
-      /* [v20-1] 선택한 필지의 주소를 조사표 전송용으로 보관 */
-      var padr = p.addr || p.jibun || p.ADDR || p.JIBUN || '';
-      if (padr) { fp.jibunAddress = String(padr); }
-      else { fpLookupAddress(lng, lat); }
+      /* [v20-1] 선택한 필지의 주소를 조사표 전송용으로 보관
+         [v178] 경계(도형)는 브이월드 지적을 쓰되, 「주소(지번)」는 카카오로 조회한다.
+         브이월드 필지속성의 지번(p.addr)은 지적 밀림 지역에서 실제와 다를 수 있어 조사표에
+         잘못 전송되던 문제 → 탭한 지점을 카카오로 역지오코딩해 정확한 지번을 fp.jibunAddress에 담는다. */
+      fpLookupAddress(lng, lat);   /* 카카오 우선(reverseGeocodePreferKakao) */
       /* [v37] PNU·필지중심 보관 (통합 저장 시 같은 필지 판단·대표 좌표) */
       fp.parcelPnu = p.pnu || p.PNU || p.pnu_cd || '';
       try { var _c = turf.centerOfMass(f).geometry.coordinates; fp.parcelCenter = _c; } catch (e) { fp.parcelCenter = null; }
@@ -8082,11 +8096,11 @@ TenarSecureStore.init('map',
 
     var addr = { jibunAddress: '', roadAddress: '' };
     if (firstPt) {
-      requestVWorldReverse(firstPt[0], firstPt[1]).then(function (a) {
-        addr = a;
+      reverseGeocodePreferKakao(firstPt[0], firstPt[1]).then(function (a) {   /* [v178] 카카오 지번 우선 */
+        addr = a || addr;
         var t = document.getElementById('measAddr');
-        if (t) t.textContent = a.jibunAddress || '주소를 찾을 수 없습니다';
-        if (!inName.value) inName.value = (a.jibunAddress || '측정') + (rec.areas.length ? ' 면적' : ' 거리');
+        if (t) t.textContent = (a && a.jibunAddress) || '주소를 찾을 수 없습니다';
+        if (!inName.value) inName.value = ((a && a.jibunAddress) || '측정') + (rec.areas.length ? ' 면적' : ' 거리');
       }).catch(function () {
         var t = document.getElementById('measAddr');
         if (t) t.textContent = '주소 조회 실패 (좌표로 저장됩니다)';
@@ -8264,11 +8278,12 @@ TenarSecureStore.init('map',
       var f = pts.length ? findFavForLocation({ lat: pts[0][1], lng: pts[0][0] }) : { idx: -1 };
       return (f.idx >= 0) ? (getFavs()[f.idx].jibunAddress || '') : '';
     })();
-    if (_addr0 || !pts.length || typeof requestVWorldReverse !== 'function') { _finish(_addr0); return; }
-    /* [v169] 저장핀이 아니어서 주소가 없으면 좌표로 지번주소를 조회해 함께 전송(최대 대기 후에도 전송은 진행) */
+    if (_addr0 || !pts.length) { _finish(_addr0); return; }
+    /* [v169] 저장핀이 아니어서 주소가 없으면 좌표로 지번주소를 조회해 함께 전송(최대 대기 후에도 전송은 진행)
+       [v178] 카카오 지번 우선(브이월드 지적 밀림 보정) → 폴백 브이월드 */
     var _sent = false;
-    var _guard = setTimeout(function () { if (!_sent) { _sent = true; _finish(''); } }, 1800);
-    requestVWorldReverse(pts[0][0], pts[0][1]).then(function (a) {
+    var _guard = setTimeout(function () { if (!_sent) { _sent = true; _finish(''); } }, 2500);
+    reverseGeocodePreferKakao(pts[0][0], pts[0][1]).then(function (a) {
       if (_sent) return; _sent = true; clearTimeout(_guard); _finish((a && a.jibunAddress) || '');
     }).catch(function () { if (_sent) return; _sent = true; clearTimeout(_guard); _finish(''); });
   }
@@ -8286,8 +8301,9 @@ TenarSecureStore.init('map',
       s._editingItemId = null;
       /* 주소는 백그라운드로 채워 저장본에 반영(전송 payload 는 sendAreaToChungchi 가 별도 조회) */
       var _fp = rec.firstPoint;
-      if (_fp && typeof requestVWorldReverse === 'function') {
-        requestVWorldReverse(_fp[0], _fp[1]).then(function (a) {
+      if (_fp) {
+        /* [v178] 측정 저장핀 주소도 카카오 지번 우선 */
+        reverseGeocodePreferKakao(_fp[0], _fp[1]).then(function (a) {
           var a2 = getMeasSaves();
           for (var i = 0; i < a2.length; i++) if (a2[i].id === rec.id) { a2[i].jibunAddress = (a && a.jibunAddress) || ''; a2[i].roadAddress = (a && a.roadAddress) || ''; }
           setMeasSaves(a2);
@@ -10350,7 +10366,8 @@ TenarSecureStore.init('map',
   /* [v20-1] 좌표로 지번주소를 찾아 보관한다 (재배구역처럼 필지 정보가 없을 때) */
   function fpLookupAddress(lng, lat) {
     try {
-      return requestVWorldReverse(lng, lat).then(function (a) {
+      /* [v178] 카카오 지번 우선(브이월드 지적 밀림 보정) → 폴백 브이월드 */
+      return reverseGeocodePreferKakao(lng, lat).then(function (a) {
         if (a && a.jibunAddress) fp.jibunAddress = a.jibunAddress;
         if (a && a.roadAddress) fp.roadAddress = a.roadAddress;
         return fp.jibunAddress;
@@ -10565,9 +10582,10 @@ TenarSecureStore.init('map',
     /* [v37] 통합 즐겨찾기 목록에도 포구 요도로 연결 저장 */
     fpSaveToLibrary(rec);
     if (!rec.jibunAddress && rec.ga) {
-      requestVWorldReverse(rec.ga[0], rec.ga[1]).then(function (a) {
+      /* [v178] 저장핀 주소도 카카오 지번 우선(저장 팝업과 동일 기준) */
+      reverseGeocodePreferKakao(rec.ga[0], rec.ga[1]).then(function (a) {
         var a2 = getFpSaves();
-        for (var k = 0; k < a2.length; k++) if (a2[k].id === rec.id) a2[k].jibunAddress = a.jibunAddress || '';
+        for (var k = 0; k < a2.length; k++) if (a2[k].id === rec.id) a2[k].jibunAddress = (a && a.jibunAddress) || '';
         setFpSaves(a2);
       }).catch(function () {});
     }
@@ -10689,13 +10707,29 @@ TenarSecureStore.init('map',
       if (window.confirm('저장 후 조사표를 전송할 수 있습니다.\n지금 저장할까요?\n\n[확인] 저장하기   [취소] 닫기')) { openFpSaveSheet(); }
       return;
     }
-    /* [v20-1] 주소를 아직 못 받았으면 최대 2초만 기다렸다 보낸다 */
-    if (!fp.jibunAddress && fp.ga) {
-      showToast('필지 주소를 확인하는 중입니다…', 0, 'info');
+    /* [v178] 전송 직전, 필지 주소를 「카카오 지번」으로 재확정(브이월드 지적 밀림 보정).
+       - 필지선택으로 그리면 fp.jibunAddress가 브이월드 필지속성(밀린 지번)으로 잡혀 있을 수 있어,
+         전송 직전 가(A포구) 지점을 카카오로 다시 조회해 정확한 지번으로 덮어쓴다.
+       - 단, 저장 핀(생산량목록)에 연결돼 있고 그 핀에 주소가 있으면 그 핀 주소를 쓰므로 재조회 생략
+         (fpBuildResult가 연결 핀 주소를 우선 사용 — v177). */
+    var _pinHasAddr = false;
+    try {
+      if (fp._sessionFavId && typeof getFavs === 'function') {
+        var _pf = getFavs().filter(function (x) { return x && x.id === fp._sessionFavId; })[0];
+        _pinHasAddr = !!(_pf && _pf.jibunAddress);
+      }
+    } catch (e) {}
+    var _rep = fp.ga || fp.aBase || fp.parcelCenter || null;
+    if (!_pinHasAddr && _rep) {
+      showToast('필지 주소(카카오)를 확인하는 중입니다…', 0, 'info');
       var done = false;
-      var go = function () { if (done) return; done = true; toastEl.style.display = 'none'; fpSubmitNow(); };
-      fpLookupAddress(fp.ga[0], fp.ga[1]).then(go);
-      setTimeout(go, 2000);
+      var go = function () { if (done) return; done = true; try { toastEl.style.display = 'none'; } catch (e) {} fpSubmitNow(); };
+      reverseGeocodePreferKakao(_rep[0], _rep[1]).then(function (a) {
+        if (a && a.jibunAddress) fp.jibunAddress = a.jibunAddress;
+        if (a && a.roadAddress) fp.roadAddress = a.roadAddress;
+        go();
+      }).catch(go);
+      setTimeout(go, 2500);
       return;
     }
     fpSubmitNow();
@@ -12029,7 +12063,7 @@ TenarSecureStore.init('map',
       if (!saveMode) return;
       if (surveyMeasureState.mode !== 'none') return;   /* 측정 중에는 관여하지 않음 */
       saveModeSetPoint(e.lngLat.lng, e.lngLat.lat, saveMode.addr);
-      requestVWorldReverse(e.lngLat.lng, e.lngLat.lat).then(function (a) {
+      reverseGeocodePreferKakao(e.lngLat.lng, e.lngLat.lat).then(function (a) {   /* [v178] 카카오 지번 우선 */
         if (a && a.jibunAddress) saveModeSetFullAddr(a.jibunAddress);   /* [v34-1] 전체주소로 통일 */
       }).catch(function () {});
     });
