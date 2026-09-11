@@ -1,4 +1,5 @@
-<!-- tonghab.html (v128) · 저장: 2026-09-11 00:13 KST · [v128] ①저장/불러오기 「작물별 10a당 수량 집계」의 주소를 전체(풀주소)로 표시 — 15자로 잘리던 것을 저장 데이터의 전체 지번주소로, 줄바꿈되어 무조건 다 보이게. ②집계의 작물별 세부(주소·수량)를 기본 「펼침」으로 변경(기존 접힘). ③제목 「농작물생산 통합 계산기」→「농작물생산 실측 계산기」. ※ 계산 함수 무변경(표시만). (v127 이하 유지) -->
+<!-- tonghab.html (v129) · 저장: 2026-09-12 06:46 KST · [v129·버그수정] 논벼 「B포구 베는 방향 포기당 이삭수(3포기)」 입력 오작동 수정 — 불러오기(복원) 시 _slApply가 입력마다 input 이벤트를 강제 발생시키는데, B포구 3포기 입력이 이를 받아 「사용자가 없는데도」 자동으로 다음 칸(6번)으로 포커스를 옮겨, 복원 후 입력 선택 시 키패드가 안 뜨거나 중심↔6번으로 포커스가 튀고 간헐적으로 창이 닫히던 문제. → 자동 다음칸 이동을 「그 칸이 실제 포커스된 사용자 입력일 때(document.activeElement 가드)」로 제한하고, 80ms 뒤에도 여전히 그 칸에 있을 때만 이동하도록 이중 가드. 전체선택(포커스 시)·백스페이스 이전이동·두자리 자동이동 기능은 그대로. ※ 계산 함수 무변경. (v128 이하 유지) -->
+<!-- (이전)  tonghab.html (v128) · 저장: 2026-09-11 00:13 KST · [v128] ①저장/불러오기 「작물별 10a당 수량 집계」의 주소를 전체(풀주소)로 표시 — 15자로 잘리던 것을 저장 데이터의 전체 지번주소로, 줄바꿈되어 무조건 다 보이게. ②집계의 작물별 세부(주소·수량)를 기본 「펼침」으로 변경(기존 접힘). ③제목 「농작물생산 통합 계산기」→「농작물생산 실측 계산기」. ※ 계산 함수 무변경(표시만). (v127 이하 유지) -->
 <!-- (이전)  tonghab.html (v127) · 저장: 2026-09-10 20:03 KST · [v127] 논벼 「B포구 베는 방향 포기당 이삭수(3포기)」 입력 개선 — ①두 자리 입력 시 다음 칸 자동 이동, ②포커스/클릭 시 전체선택(바로 입력하면 기존값 교체), ③빈 칸에서 백스페이스는 이전 칸으로(한 자씩 삭제는 기본). ④합계·평균 아래에 「A포구 평균이삭수(참고)」를 함께 표시(예상량↔실수확량 비교용). ※ 계산 함수 무변경(입력 UX·표시만). (v126 이하 유지) -->
 <!-- (이전)  tonghab.html (v126) · 저장: 2026-09-10 06:21 KST · [v126] 「지역별 참고 선그래프」 전국 선을 그레이 점선으로 통일(색 #9ca3af + borderDash) — 다른 계산기·그래프와 동일 표기. ※ 계산 함수 무변경(표시만). (v125 이하 유지) -->
 <!-- (이전)  tonghab.html (v125) · 저장: 2026-09-10 03:13 KST · [v125] 저장/불러오기 「저장목록」 조회·정렬 UI 정리 — ①조회 콤보(시도·시군구·읍면동·작물)와 정렬을 한 줄로 배치, 「정렬」 글자 제거(정렬 콤보만, 파란 배경으로 구분). ②전역 select{font-size:16px!important} 때문에 콤보가 커 보이던 문제 수정(콤보 전용 font-size !important + 모바일 반응형). ③모바일 화면폭에 맞춰 콤보 크기 자동 축소(auto-fit, 좁으면 줄바꿈). ※ 청취계산기와 동일 크기. 계산 함수 무변경. (v124 이하 유지) -->
@@ -4281,23 +4282,31 @@ function nonbyeInitBJusuGrid(){
       var inp=document.getElementById('nbBJ-'+i);
       if(!inp) return;
       var idx=i-1;
-      /* 누르면/포커스하면 전체 선택 → 바로 입력하면 기존값이 지워지고 새 값이 들어감 */
-      inp.addEventListener('focus',function(){ var t=this; setTimeout(function(){ try{t.select();}catch(e){} },0); });
-      inp.addEventListener('click',function(){ try{this.select();}catch(e){} });
-      /* 숫자만·2자리, 두 자리 채우면 다음 칸으로 */
+      /* [v129] 포커스하면 전체 선택 → 바로 입력하면 기존값 교체. (프로그램적 포커스는 이미 focus가 옮겨간 뒤이므로 안전) */
+      inp.addEventListener('focus',function(){ var t=this; setTimeout(function(){ if(document.activeElement===t){ try{t.select();}catch(e){} } },0); });
+      /* 숫자만·2자리. [v129] 사용자가 「직접 그 칸에 입력」해서 두 자리가 됐을 때만 다음 칸으로.
+         (불러오기 복원은 _slApply가 input 이벤트를 강제 발생시키는데, 그때는 이 칸이 포커스되어 있지 않으므로
+          activeElement 가드로 자동이동을 막는다 → 복원 후 키패드 안뜸/중심↔6번 튐/튕김 문제 해결) */
       inp.addEventListener('input',function(){
-        this.value=this.value.replace(/[^0-9]/g,'').slice(0,2);
+        var nv=this.value.replace(/[^0-9]/g,'').slice(0,2);
+        if(nv!==this.value) this.value=nv;
         nbBJusuCalc();
-        if(this.value.length>=2&&idx<2){
-          setTimeout(function(){ var n=document.getElementById('nbBJ-'+(idx+2)); if(n){n.focus({preventScroll:true});n.select();} },80);
+        if(document.activeElement===this && this.value.length>=2 && idx<2){
+          var srcId=this.id;
+          setTimeout(function(){
+            /* 80ms 뒤에도 사용자가 여전히 이 칸에 있을 때만 이동(그새 다른 칸을 탭했으면 이동 안 함) */
+            if(document.activeElement && document.activeElement.id===srcId){
+              var n=document.getElementById('nbBJ-'+(idx+2)); if(n){ n.focus({preventScroll:true}); }
+            }
+          },80);
         }
       });
       inp.addEventListener('keydown',function(e){
-        if(e.key==='Enter'){ var n=document.getElementById('nbBJ-'+(idx+2)); if(n){n.focus({preventScroll:true});n.select();} }
+        if(e.key==='Enter'){ e.preventDefault(); var n=document.getElementById('nbBJ-'+(idx+2)); if(n){ n.focus({preventScroll:true}); } }
         /* 빈 칸에서 백스페이스 → 이전 칸으로 이동(한 자씩 삭제는 기본 동작) */
         if(e.key==='Backspace'&&this.value===''&&idx>0){
           e.preventDefault();
-          var p=document.getElementById('nbBJ-'+idx); if(p){p.focus({preventScroll:true});p.select();}
+          var p=document.getElementById('nbBJ-'+idx); if(p){ p.focus({preventScroll:true}); }
         }
       });
     })(i);
