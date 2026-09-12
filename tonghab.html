@@ -1,4 +1,5 @@
-<!-- tonghab.html (v130) · 저장: 2026-09-12 10:35 KST · [v130] 논벼 예상량 「작물별 10a당 수량 집계」에 엑셀(CSV/클립보드) 내보내기 추가 — ①집계 맨 위에 「📋 엑셀 복사(붙여넣기용 TSV)」·「⬇ CSV 저장」 버튼(저장/불러오기의 JSON 내보내기와 별개, PC 엑셀 집계 양식용). ②잠금(🔒)된 논벼 항목들을 42개 열(주소·A/B 가로세로·1㎡당 포기수·이삭수·낟알수·10a예상량·피해·품종·1~10번주·5/중심/6번 등)로 출력. ③값은 저장 시 스냅샷(__nbExport) 우선, 옛 자료는 저장데이터로 재구성(합계·평균은 즉석계산). ④「내보내기 잠금」: 처음 사용 시 비밀번호 설정, 이후 맞아야 복사/저장(🔑로 해제). ※ 계산 함수 무변경(표시·저장 스냅샷·내보내기만 추가). (v129 이하 유지) -->
+<!-- tonghab.html (v131) · 저장: 2026-09-12 11:49 KST · [v131] 논벼 집계 엑셀 내보내기 개편 — ①누락되던 결과값(A/B/평균 1㎡당 포기수·1㎡당 완전낟알수·완전낟알비율·이삭당 낟알수)을 저장 데이터의 입력값으로 재계산해 채움(스냅샷 없는 옛 자료도 채워짐). ②주소 옆에 시도·시군·읍면동·층·조사구·동리·지번 컬럼 추가(주소 자동분해, 층·조사구는 추후 입력란). ③파일 맨 아래에 「시군별」 합계·평균 행 추가. ④「엑셀 복사」 제거 → 엑셀 파일(.xls)로 저장 + CSV 저장. ⑤비밀번호를 자체 입력창(모달)로 교체해 확실히 잠기게(설정·검증·해제). ⑥헤더의 부제·버전·날짜 삭제 → 현재 조사 위치(층·조사구·시군·읍면동·지번) 표시. ※ 계산 함수 무변경(내보내기·표시·저장 스냅샷만). (v130 이하 유지) -->
+<!-- (이전)  tonghab.html (v130) · 저장: 2026-09-12 10:35 KST · [v130] 논벼 예상량 「작물별 10a당 수량 집계」에 엑셀(CSV/클립보드) 내보내기 추가 — ①집계 맨 위에 「📋 엑셀 복사(붙여넣기용 TSV)」·「⬇ CSV 저장」 버튼(저장/불러오기의 JSON 내보내기와 별개, PC 엑셀 집계 양식용). ②잠금(🔒)된 논벼 항목들을 42개 열(주소·A/B 가로세로·1㎡당 포기수·이삭수·낟알수·10a예상량·피해·품종·1~10번주·5/중심/6번 등)로 출력. ③값은 저장 시 스냅샷(__nbExport) 우선, 옛 자료는 저장데이터로 재구성(합계·평균은 즉석계산). ④「내보내기 잠금」: 처음 사용 시 비밀번호 설정, 이후 맞아야 복사/저장(🔑로 해제). ※ 계산 함수 무변경(표시·저장 스냅샷·내보내기만 추가). (v129 이하 유지) -->
 <!-- (이전)  tonghab.html (v129) · 저장: 2026-09-12 06:46 KST · [v129·버그수정] 논벼 「B포구 베는 방향 포기당 이삭수(3포기)」 입력 오작동 수정 — 불러오기(복원) 시 _slApply가 입력마다 input 이벤트를 강제 발생시키는데, B포구 3포기 입력이 이를 받아 「사용자가 없는데도」 자동으로 다음 칸(6번)으로 포커스를 옮겨, 복원 후 입력 선택 시 키패드가 안 뜨거나 중심↔6번으로 포커스가 튀고 간헐적으로 창이 닫히던 문제. → 자동 다음칸 이동을 「그 칸이 실제 포커스된 사용자 입력일 때(document.activeElement 가드)」로 제한하고, 80ms 뒤에도 여전히 그 칸에 있을 때만 이동하도록 이중 가드. 전체선택(포커스 시)·백스페이스 이전이동·두자리 자동이동 기능은 그대로. ※ 계산 함수 무변경. (v128 이하 유지) -->
 <!-- (이전)  tonghab.html (v128) · 저장: 2026-09-11 00:13 KST · [v128] ①저장/불러오기 「작물별 10a당 수량 집계」의 주소를 전체(풀주소)로 표시 — 15자로 잘리던 것을 저장 데이터의 전체 지번주소로, 줄바꿈되어 무조건 다 보이게. ②집계의 작물별 세부(주소·수량)를 기본 「펼침」으로 변경(기존 접힘). ③제목 「농작물생산 통합 계산기」→「농작물생산 실측 계산기」. ※ 계산 함수 무변경(표시만). (v127 이하 유지) -->
 <!-- (이전)  tonghab.html (v127) · 저장: 2026-09-10 20:03 KST · [v127] 논벼 「B포구 베는 방향 포기당 이삭수(3포기)」 입력 개선 — ①두 자리 입력 시 다음 칸 자동 이동, ②포커스/클릭 시 전체선택(바로 입력하면 기존값 교체), ③빈 칸에서 백스페이스는 이전 칸으로(한 자씩 삭제는 기본). ④합계·평균 아래에 「A포구 평균이삭수(참고)」를 함께 표시(예상량↔실수확량 비교용). ※ 계산 함수 무변경(입력 UX·표시만). (v126 이하 유지) -->
@@ -1927,7 +1928,8 @@ select,
         </button>
       </div>
     </div>
-    <div class="hdr-sub">A/B포구 선정 + 계통추출 + 10a당 생산량 · Crop Production Survey<br><span style="opacity:.75;">(v26 심플 UI · 저장: 2026-07-16 10:52)</span></div>
+    <!-- [v131] 버전·부제 삭제 → 현재 조사 위치(층·조사구·시군·읍면동·지번) 표시 -->
+    <div class="hdr-sub" id="hdrAddr" style="min-height:12px;">—</div>
   </div>
 </div>
 
@@ -2073,6 +2075,7 @@ select,
         var v=(ai.value||'').trim();
         if(v){ af.textContent='📍 '+v; af.style.background='#f3f7ef'; af.style.borderColor='#e3ecdb'; }
         else { af.textContent=''; af.style.background='transparent'; af.style.borderColor='transparent'; }
+        try{ if(typeof _nbUpdateHdrAddr==='function') _nbUpdateHdrAddr(); }catch(e){}   /* [v131] 헤더 주소 갱신 */
       }
       ai.addEventListener('input',sync); ai.addEventListener('change',sync);
       setTimeout(sync,1200); setTimeout(sync,3200);
@@ -9764,11 +9767,11 @@ function _slRenderAgg(){
     var bar='<div style="border:1.5px solid #b3c8f0;background:#f2f7ff;border-radius:9px;padding:9px 10px;margin-bottom:9px;">'
       +'<div style="font-size:12px;color:#0A3A8C;font-weight:800;margin-bottom:7px;">📊 논벼 예상량 → 엑셀 집계 내보내기</div>'
       +'<div style="display:flex;gap:6px;align-items:stretch;">'
-        +'<button type="button" onclick="nbExportCopy()" style="'+_btnCss+'background:#0A3A8C;color:#fff;border:1.5px solid #0A3A8C;">📋 엑셀 복사</button>'
-        +'<button type="button" onclick="nbExportCSV()" style="'+_btnCss+'background:#1f8a4c;color:#fff;border:1.5px solid #1f8a4c;">⬇ CSV 저장</button>'
+        +'<button type="button" onclick="nbExportXLS()" style="'+_btnCss+'background:#1D6F42;color:#fff;border:1.5px solid #1D6F42;">⬇ 엑셀 저장</button>'
+        +'<button type="button" onclick="nbExportCSV()" style="'+_btnCss+'background:#0A3A8C;color:#fff;border:1.5px solid #0A3A8C;">⬇ CSV 저장</button>'
         +'<button type="button" onclick="nbExportResetPw()" title="비밀번호 해제" style="flex:0 0 auto;padding:9px 10px;border-radius:8px;font-size:14px;cursor:pointer;font-family:inherit;background:#fff;border:1.5px solid #c7d3e6;color:#33507d;">🔑</button>'
       +'</div>'
-      +'<div style="font-size:10px;color:#7a869a;margin-top:6px;line-height:1.5;">잠금(🔒)된 논벼 자료 '+_riceN+'건 · PC 엑셀 양식에 붙여넣기(복사) 또는 CSV 저장 · 처음 사용 시 비밀번호를 설정합니다.</div>'
+      +'<div style="font-size:10px;color:#7a869a;margin-top:6px;line-height:1.5;">잠금(🔒)된 논벼 자료 '+_riceN+'건 · 엑셀(.xls) 또는 CSV 파일로 저장(주소·시군·읍면동·지번 + 42항목 + 시군별 합계·평균) · 처음 저장 시 비밀번호를 설정합니다.</div>'
       +'</div>';
     html=bar+html;
   }
@@ -9785,12 +9788,13 @@ function slAggToggleCrop(ci){
 }
 
 /* ══════════════════════════════════════════════════════════════
-   [v130] 논벼 예상량 「작물별 10a당 수량 집계」 → 엑셀(CSV/클립보드) 내보내기
-   · PC 엑셀 집계 양식에 붙여넣기용. 저장목록(잠금)된 논벼 항목들을 42개 열로.
-   · 값은 저장 시 스냅샷(__nbExport)을 우선 사용, 없으면 저장 데이터에서 재구성.
-   · 「내보내기 잠금」: 비밀번호 설정 후, 맞아야 복사/저장 가능(계산·데이터 무변경).
+   [v131] 논벼 예상량 「작물별 10a당 수량 집계」 → 엑셀(.xls)/CSV 내보내기
+   · 주소 다음에 시도·시군·읍면동·층·조사구·동리·지번 컬럼 추가
+   · 결과값(1㎡당 포기수·완전립비율 등)은 저장 스냅샷 우선, 없으면 입력값으로 재계산
+   · 파일 맨 아래에 「시군별」 합계·평균 행 추가
+   · 「내보내기 잠금」: 자체 비밀번호 모달(설정 후 맞아야 저장)
    ══════════════════════════════════════════════════════════════ */
-/* [라벨, 소스 id, 모드]  모드: v=입력값 / t=결과표시(textContent) / s=셀렉트 선택텍스트 */
+/* [라벨, 소스 id, 모드]  v=입력값 / t=결과표시(textContent) / s=셀렉트 선택텍스트 */
 var NB_EXPORT_COLS = [
   ['주소','address','v'],
   ['A포구 가로길이','nbAWidth','v'],
@@ -9803,8 +9807,8 @@ var NB_EXPORT_COLS = [
   ['1포기당 이삭수 평균','nbAJusuAvg','t'],
   ['유효이삭수','nbEffEars','v'],
   ['조사이삭수','nbAJusuSum','t'],
-  ['총낱알수','nbTotalGrains','v'],
-  ['완전낱알수','nbCompleteGrains','v'],
+  ['총낟알수','nbTotalGrains','v'],
+  ['완전낟알수','nbCompleteGrains','v'],
   ['10a당 예상량','nbYield10a','t'],
   ['천립중','nbThousandWeight','v'],
   ['A피해명','nbADmgCode','s'],
@@ -9814,9 +9818,9 @@ var NB_EXPORT_COLS = [
   ['품종','nbAVariety','v'],
   ['모내기','nbATransplant','v'],
   ['비고','nbARemark','v'],
-  ['1㎡당 완전낱알수','nbCompleteGrainsPerM2','t'],
-  ['완전낱알비율','nbCompleteRatePct','t'],
-  ['이삭당 낱알수','nbGrainRateFrac','t'],
+  ['1㎡당 완전낟알수','nbCompleteGrainsPerM2','t'],
+  ['완전낟알비율','nbCompleteRatePct','t'],
+  ['이삭당 낟알수','nbGrainRateFrac','t'],
   ['이삭합계','nbAJusuSum','t'],
   ['1번주','nbJ-1','v'],['2번주','nbJ-2','v'],['3번주','nbJ-3','v'],['4번주','nbJ-4','v'],['5번주','nbJ-5','v'],
   ['6번주','nbJ-6','v'],['7번주','nbJ-7','v'],['8번주','nbJ-8','v'],['9번주','nbJ-9','v'],['10번주','nbJ-10','v'],
@@ -9824,6 +9828,27 @@ var NB_EXPORT_COLS = [
   ['5번','nbBJ-1','v'],['중심','nbBJ-2','v'],['6번','nbBJ-3','v'],
   ['합계','nbBJusuSum','t'],['평균','nbBJusuAvg','t']
 ];
+/* 주소 다음에 끼워 넣을 컬럼 */
+var NB_ADDR_EXTRA = ['시도','시군','읍면동','층','조사구','동리','지번'];
+/* 소계(합계·평균)에서 제외할 텍스트/식별 컬럼 라벨 */
+var NB_NONAGG = {'주소':1,'시도':1,'시군':1,'읍면동':1,'층':1,'조사구':1,'동리':1,'지번':1,'A피해명':1,'B피해명':1,'품종':1,'모내기':1,'비고':1};
+
+function _nbMround(n,m){ return Math.round(n/m)*m; }
+/* 주소 → 행정구역 분해 */
+function _nbParseAddr(full){
+  var out={sido:'',sigungu:'',eupmyeondong:'',ri:'',jibun:''};
+  if(!full) return out;
+  var t=String(full).replace(/번지/g,'').trim().split(/\s+/).filter(Boolean);
+  if(!t.length) return out;
+  out.sido=(typeof _slNormSido==='function')?_slNormSido(t[0]):t[0];
+  var emd=-1;
+  for(var i=1;i<t.length;i++){ if(/[읍면동]$/.test(t[i])){ out.eupmyeondong=t[i]; emd=i; break; } }
+  var end=(emd>=0)?emd:t.length;
+  out.sigungu=t.slice(1,end).filter(function(x){return /[시군구]$/.test(x);}).join(' ');
+  for(var j=1;j<t.length;j++){ if(/리$/.test(t[j])){ out.ri=t[j]; } }
+  for(var k=t.length-1;k>=0;k--){ if(/^\d+(-\d+)?$/.test(t[k])){ out.jibun=t[k]; break; } }
+  return out;
+}
 /* 한 칸 값을 「지금 화면」에서 읽기(저장 스냅샷용) */
 function _nbReadCell(col){
   var el=document.getElementById(col[1]); if(!el) return '';
@@ -9832,104 +9857,199 @@ function _nbReadCell(col){
   if(mode==='v'){ return (el.value||'').trim(); }
   var t=(el.textContent||'').trim(); return (t==='—'||t==='-')?'':t;
 }
-/* 저장 시 42개 값 스냅샷(논벼일 때만 _slCollect에서 호출) */
 function _nbExportSnapshot(){ return NB_EXPORT_COLS.map(_nbReadCell); }
-/* 숫자만 추출 */
-function _nbNum(v){ var n=parseFloat(String(v==null?'':v).replace(/[^0-9.\-]/g,'')); return isFinite(n)?n:null; }
-/* 저장 데이터(d)에서 42개 값 재구성 — 스냅샷 있으면 그대로 사용 */
-function _nbRowFromData(d){
-  if(d && Array.isArray(d.__nbExport) && d.__nbExport.length===NB_EXPORT_COLS.length) return d.__nbExport.slice();
+/* 저장 데이터(입력값)로 결과값 재계산 — 스냅샷 없거나 비어있을 때 */
+function _nbComputed(d){
   d=d||{};
-  /* 옛 자료: 입력값은 그대로, 집계(합계·평균)는 즉석 계산, 결과표시는 가능한 것만 */
-  var js=[]; for(var i=1;i<=10;i++){ var v=_nbNum(d['nbJ-'+i]); if(v!=null) js.push(v); }
-  var jsum=js.length?js.reduce(function(a,b){return a+b;},0):null;
-  var javg=js.length?Math.round((jsum/js.length)*10)/10:null;
-  var bs=[]; ['nbBJ-1','nbBJ-2','nbBJ-3'].forEach(function(k){ var v=_nbNum(d[k]); if(v!=null) bs.push(v); });
-  var bsum=bs.length?bs.reduce(function(a,b){return a+b;},0):null;
-  var bavg=bs.length?Math.round((bsum/bs.length)*10)/10:null;
-  var yld=(d['__res_nbYield10a']!=null)?d['__res_nbYield10a']:'';
-  return NB_EXPORT_COLS.map(function(col){
-    var id=col[1], mode=col[2];
+  var num=function(k){ var v=parseFloat(String(d[k]==null?'':d[k]).replace(/[^0-9.\-]/g,'')); return isFinite(v)?v:NaN; };
+  var aw=num('nbAWidth'),ah=num('nbAHeight'),bw=num('nbBWidth'),bh=num('nbBHeight');
+  var aM2=(aw>0&&ah>0)?Math.round(10000/(_nbMround(aw,0.5)*_nbMround(ah,0.5))*10)/10:NaN;
+  var bM2=(bw>0&&bh>0)?Math.round(10000/(_nbMround(bw,0.5)*_nbMround(bh,0.5))*10)/10:NaN;
+  var avgM2=(!isNaN(aM2)&&!isNaN(bM2))?Math.round((aM2+bM2)/2*100)/100:(!isNaN(aM2)?aM2:NaN);
+  var total=num('nbTotalGrains'),comp=num('nbCompleteGrains'),eff=num('nbEffEars');
+  var js=[]; for(var i=1;i<=10;i++){ var v=num('nbJ-'+i); if(isFinite(v)) js.push(v); }
+  var jsum=js.length?js.reduce(function(a,b){return a+b;},0):NaN;
+  var javg=js.length?Math.round((jsum/js.length)*10)/10:NaN;
+  var effAvg=isFinite(javg)?javg:eff;
+  var ratePct=(total>0)?Math.round(comp/total*1000)/10:NaN;
+  var perEar=(eff>0)?Math.round(comp/eff*10)/10:NaN;
+  var m2grain=(isFinite(avgM2)&&isFinite(effAvg)&&eff>0)?Math.round(avgM2*effAvg*(comp/eff)):NaN;
+  var bs=[]; ['nbBJ-1','nbBJ-2','nbBJ-3'].forEach(function(k){var v=num(k);if(isFinite(v))bs.push(v);});
+  var bsum=bs.length?bs.reduce(function(a,b){return a+b;},0):NaN;
+  var bavg=bs.length?Math.round((bsum/bs.length)*10)/10:NaN;
+  var f=function(x){ return isFinite(x)?x:''; };
+  return {nbAM2:f(aM2),nbBM2:f(bM2),nbAvgM2:f(avgM2),nbAJusuSum:f(jsum),nbAJusuAvg:f(javg),
+          nbCompleteRatePct:f(ratePct),nbGrainRateFrac:f(perEar),nbCompleteGrainsPerM2:f(m2grain),
+          nbBJusuSum:f(bsum),nbBJusuAvg:f(bavg),
+          nbYield10a:(d['__res_nbYield10a']!=null?d['__res_nbYield10a']:'')};
+}
+/* 한 항목 → 42개 원본값(스냅샷 우선, 빈 결과값은 재계산으로 보완) */
+function _nbRowCore(d){
+  d=d||{};
+  var snap=(Array.isArray(d.__nbExport)&&d.__nbExport.length===NB_EXPORT_COLS.length)?d.__nbExport:null;
+  var comp=_nbComputed(d);
+  return NB_EXPORT_COLS.map(function(col,i){
+    var id=col[1],mode=col[2];
+    if(snap){ var sv=snap[i]; if(sv!==''&&sv!=null) return sv; }
     if(mode==='v'||mode==='s') return (d[id]!=null?d[id]:'');
-    /* 결과표시(t) — 재구성 가능한 것만 */
-    if(id==='nbAJusuSum') return jsum!=null?jsum:'';
-    if(id==='nbAJusuAvg') return javg!=null?javg:'';
-    if(id==='nbBJusuSum') return bsum!=null?bsum:'';
-    if(id==='nbBJusuAvg') return bavg!=null?bavg:'';
-    if(id==='nbYield10a') return yld;
-    return '';
+    return (comp[id]!=null&&comp[id]!=='')?comp[id]:'';
   });
 }
-/* 잠금된 논벼 항목 → 표(header+rows) */
+function _nbFullHeader(){
+  var h=[NB_EXPORT_COLS[0][0]].concat(NB_ADDR_EXTRA);
+  for(var i=1;i<NB_EXPORT_COLS.length;i++) h.push(NB_EXPORT_COLS[i][0]);
+  return h;
+}
+function _nbFullRow(d){
+  var core=_nbRowCore(d);
+  var addr=core[0]||'';
+  var p=_nbParseAddr(addr);
+  var floor=(d&&d['nbFloor']!=null?d['nbFloor']:'')||'';       /* 층(추후 입력란) */
+  var plot=(d&&d['nbSurveyPlot']!=null?d['nbSurveyPlot']:'')||''; /* 조사구(추후 입력란) */
+  return [core[0], p.sido,p.sigungu,p.eupmyeondong,floor,plot,p.ri,p.jibun].concat(core.slice(1));
+}
+/* 헤더의 조사 위치 표시 */
+function _nbUpdateHdrAddr(){
+  var el=document.getElementById('hdrAddr'); if(!el) return;
+  var ai=document.getElementById('address'); var addr=ai?(ai.value||'').trim():'';
+  var fEl=document.getElementById('nbFloor'), pEl=document.getElementById('nbSurveyPlot');
+  var floor=fEl?(fEl.value||'').trim():'', plot=pEl?(pEl.value||'').trim():'';
+  var p=_nbParseAddr(addr);
+  var parts=[];
+  if(floor||plot){ parts.push('층·조사구 '+((floor||'--')+'-'+(plot||'----'))); }
+  var loc=[p.sigungu,p.eupmyeondong,p.ri,p.jibun].filter(Boolean).join(' ');
+  if(loc) parts.push(loc);
+  el.textContent = parts.length?('📍 '+parts.join('  ·  ')):'—';
+}
+/* 잠금된 논벼 항목 → 표(header + 데이터행 + 시군별 합계/평균) */
 function _nbBuildExportTable(){
   var list=(typeof _slGetList==='function')?_slGetList():[];
   var rice=list.filter(function(it){ return it && it.fav && (it.crop==='논벼'); });
-  var rows=rice.map(function(it){
+  var header=_nbFullHeader();
+  var SIGUN=header.indexOf('시군');
+  var recs=rice.map(function(it){
     var d=null; try{ d=JSON.parse(localStorage.getItem(SL_DATA_PFX+it.key)||'null'); }catch(e){}
-    return _nbRowFromData(d);
+    var row=_nbFullRow(d||{});
+    return { row:row, sigun:(row[SIGUN]||'(시군미상)') };
   });
-  return { header:NB_EXPORT_COLS.map(function(c){return c[0];}), rows:rows, count:rice.length };
+  recs.sort(function(a,b){ return String(a.sigun).localeCompare(String(b.sigun),'ko'); });
+  var rows=recs.map(function(r){ return r.row; });
+  /* 시군별 그룹 */
+  var groups={}, order=[];
+  recs.forEach(function(r){ if(!groups[r.sigun]){ groups[r.sigun]=[]; order.push(r.sigun); } groups[r.sigun].push(r.row); });
+  var numOf=function(v){ var s=String(v==null?'':v).replace(/,/g,''); if(!/^-?\d+(\.\d+)?$/.test(s.trim())) return null; var n=parseFloat(s); return isFinite(n)?n:null; };
+  if(order.length){
+    rows.push(header.map(function(){return '';}));   /* 빈 구분줄 */
+    order.forEach(function(sg){
+      var g=groups[sg];
+      var sumRow=header.map(function(){return '';});
+      var avgRow=header.map(function(){return '';});
+      sumRow[0]='['+sg+'] 합계 ('+g.length+'건)'; avgRow[0]='['+sg+'] 평균';
+      if(SIGUN>=0){ sumRow[SIGUN]=sg; avgRow[SIGUN]=sg; }
+      for(var c=1;c<header.length;c++){
+        if(NB_NONAGG[header[c]]) continue;
+        var nums=[]; g.forEach(function(row){ var n=numOf(row[c]); if(n!=null) nums.push(n); });
+        if(nums.length){
+          var s=nums.reduce(function(a,b){return a+b;},0);
+          sumRow[c]=Math.round(s*100)/100;
+          avgRow[c]=Math.round((s/nums.length)*100)/100;
+        }
+      }
+      rows.push(sumRow); rows.push(avgRow);
+    });
+  }
+  return { header:header, rows:rows, count:rice.length };
 }
+/* ── 파일 생성 ── */
 function _nbCsvCell(v){ v=(v==null?'':String(v)); if(/[",\n\r]/.test(v)){ v='"'+v.replace(/"/g,'""')+'"'; } return v; }
 function _nbToCSV(t){ var L=[t.header.map(_nbCsvCell).join(',')]; t.rows.forEach(function(r){ L.push(r.map(_nbCsvCell).join(',')); }); return '﻿'+L.join('\r\n'); }
-function _nbToTSV(t){ function c(v){ v=(v==null?'':String(v)); return v.replace(/[\t\r\n]/g,' '); } var L=[t.header.map(c).join('\t')]; t.rows.forEach(function(r){ L.push(r.map(c).join('\t')); }); return L.join('\r\n'); }
-/* ── 내보내기 잠금(비밀번호) ── */
+function _nbXlsEsc(v){ return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function _nbToXLS(t){
+  var h='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">'
+    +'<head><meta charset="utf-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>'
+    +'<x:Name>논벼예상량</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet>'
+    +'</x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body><table border="1" cellspacing="0">';
+  h+='<tr style="background:#dbe7ff;font-weight:bold;">'+t.header.map(function(x){return '<th>'+_nbXlsEsc(x)+'</th>';}).join('')+'</tr>';
+  t.rows.forEach(function(r){
+    var isSub=/합계|평균/.test(String(r[0]||''));
+    h+='<tr'+(isSub?' style="background:#fff7e0;font-weight:bold;"':'')+'>'+r.map(function(c){return '<td>'+_nbXlsEsc(c)+'</td>';}).join('')+'</tr>';
+  });
+  h+='</table></body></html>';
+  return h;
+}
+function _nbDownload(content,fname,mime){
+  try{
+    var blob=new Blob([content],{type:mime});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a'); a.href=url; a.download=fname; document.body.appendChild(a); a.click();
+    setTimeout(function(){ try{document.body.removeChild(a);}catch(e){} URL.revokeObjectURL(url); },500);
+    return true;
+  }catch(e){ alert('파일 저장에 실패했습니다: '+e.message); return false; }
+}
+function _nbFileName(ext){ var now=new Date(), kst=new Date(now.getTime()+9*3600000); return '논벼예상량_집계_'+kst.toISOString().slice(0,10)+'.'+ext; }
+/* ── 내보내기 잠금(자체 비밀번호 모달) ── */
 function _nbPwHash(s){ var h=5381; for(var i=0;i<s.length;i++){ h=((h<<5)+h)+s.charCodeAt(i); h=h&0xffffffff; } return 'h'+(h>>>0).toString(16); }
-function _nbExportGate(cb){
-  var KEY='tonghab_export_pw';
-  var stored=null; try{ stored=localStorage.getItem(KEY); }catch(e){}
+function _nbAskPw(title, sub){
+  return new Promise(function(resolve){
+    var ov=document.getElementById('nbPwOverlay');
+    if(!ov){
+      ov=document.createElement('div'); ov.id='nbPwOverlay';
+      ov.style.cssText='position:fixed;inset:0;z-index:2147483000;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;padding:24px;';
+      ov.innerHTML='<div style="background:#fff;border-radius:16px;max-width:340px;width:100%;padding:20px 18px;box-shadow:0 12px 40px rgba(0,0,0,.35);">'
+        +'<div id="nbPwTitle" style="font-size:15px;font-weight:800;color:#0A3A8C;margin-bottom:4px;"></div>'
+        +'<div id="nbPwSub" style="font-size:11.5px;color:#888;margin-bottom:12px;line-height:1.5;"></div>'
+        +'<input id="nbPwInput" type="password" inputmode="numeric" autocomplete="off" style="width:100%;box-sizing:border-box;padding:11px 12px;border:1.5px solid #c7d3e6;border-radius:10px;font-size:16px;font-family:inherit;margin-bottom:12px;">'
+        +'<div style="display:flex;gap:8px;"><button id="nbPwCancel" type="button" style="flex:1;padding:11px;border-radius:10px;border:1.5px solid #d7d7de;background:#fff;color:#555;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;">취소</button>'
+        +'<button id="nbPwOk" type="button" style="flex:1;padding:11px;border-radius:10px;border:none;background:#0A3A8C;color:#fff;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer;">확인</button></div></div>';
+      document.body.appendChild(ov);
+    }
+    var input=ov.querySelector('#nbPwInput');
+    ov.querySelector('#nbPwTitle').textContent=title||'비밀번호';
+    ov.querySelector('#nbPwSub').textContent=sub||'';
+    input.value=''; ov.style.display='flex';
+    var ok=ov.querySelector('#nbPwOk'), cancel=ov.querySelector('#nbPwCancel');
+    function close(val){ ov.style.display='none'; ok.onclick=null; cancel.onclick=null; input.onkeydown=null; resolve(val); }
+    ok.onclick=function(){ close(input.value); };
+    cancel.onclick=function(){ close(null); };
+    input.onkeydown=function(e){ if(e.key==='Enter'){ e.preventDefault(); close(input.value); } };
+    setTimeout(function(){ try{ input.focus(); }catch(e){} },60);
+  });
+}
+async function _nbExportGate(cb){
+  var KEY='tonghab_export_pw'; var stored=null; try{ stored=localStorage.getItem(KEY); }catch(e){}
   if(!stored){
-    var p1=prompt('📋 내보내기 비밀번호를 설정하세요.\n(이후 복사/저장 시 이 비밀번호가 필요합니다)');
+    var p1=await _nbAskPw('내보내기 비밀번호 설정','앞으로 엑셀/CSV 저장 시 이 비밀번호가 필요합니다.');
     if(p1==null||p1==='') return;
-    var p2=prompt('비밀번호를 한 번 더 입력하세요.');
+    var p2=await _nbAskPw('비밀번호 확인','같은 비밀번호를 한 번 더 입력하세요.');
     if(p2!==p1){ alert('비밀번호가 일치하지 않습니다.'); return; }
     try{ localStorage.setItem(KEY,_nbPwHash(p1)); }catch(e){}
-    alert('내보내기 비밀번호가 설정되었습니다.');
-    cb(); return;
+    alert('내보내기 비밀번호가 설정되었습니다.'); cb(); return;
   }
-  var inp=prompt('🔒 내보내기 비밀번호를 입력하세요.');
+  var inp=await _nbAskPw('내보내기 비밀번호','저장하려면 비밀번호를 입력하세요.');
   if(inp==null) return;
   if(_nbPwHash(inp)!==stored){ alert('비밀번호가 올바르지 않습니다.'); return; }
   cb();
 }
 function nbExportResetPw(){
   var stored=null; try{ stored=localStorage.getItem('tonghab_export_pw'); }catch(e){}
-  if(!stored){ alert('아직 내보내기 비밀번호가 설정되지 않았습니다.\n복사/저장을 누르면 새로 설정할 수 있습니다.'); return; }
-  var inp=prompt('현재 내보내기 비밀번호를 입력하세요.\n(맞으면 비밀번호를 해제합니다)');
-  if(inp==null) return;
-  if(_nbPwHash(inp)!==stored){ alert('비밀번호가 올바르지 않습니다.'); return; }
-  try{ localStorage.removeItem('tonghab_export_pw'); }catch(e){}
-  alert('내보내기 비밀번호를 해제했습니다.');
-}
-/* ── 복사 / CSV 저장 ── */
-function nbExportCopy(){
-  var t=_nbBuildExportTable();
-  if(!t.count){ alert('내보낼 논벼(잠금) 자료가 없습니다.\n집계에 넣을 논벼 자료를 🔒 잠금하세요.'); return; }
-  _nbExportGate(function(){
-    var tsv=_nbToTSV(t);
-    function done(ok){ alert(ok?('엑셀용으로 복사했습니다. ('+t.count+'건)\n엑셀 셀에 붙여넣기(Ctrl+V) 하세요.'):'복사에 실패했습니다. CSV 저장을 이용하세요.'); }
-    if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(tsv).then(function(){done(true);},function(){ _nbCopyFallback(tsv,done); }); }
-    else _nbCopyFallback(tsv,done);
+  if(!stored){ alert('아직 내보내기 비밀번호가 설정되지 않았습니다.\n엑셀/CSV 저장을 누르면 새로 설정할 수 있습니다.'); return; }
+  _nbAskPw('비밀번호 해제','현재 비밀번호를 입력하면 해제합니다.').then(function(inp){
+    if(inp==null) return;
+    if(_nbPwHash(inp)!==stored){ alert('비밀번호가 올바르지 않습니다.'); return; }
+    try{ localStorage.removeItem('tonghab_export_pw'); }catch(e){}
+    alert('내보내기 비밀번호를 해제했습니다.');
   });
 }
-function _nbCopyFallback(text,cb){
-  try{ var ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.focus(); ta.select(); var ok=document.execCommand('copy'); document.body.removeChild(ta); cb(!!ok); }
-  catch(e){ cb(false); }
+/* ── 엑셀(.xls) / CSV 저장 ── */
+function nbExportXLS(){
+  var t=_nbBuildExportTable();
+  if(!t.count){ alert('내보낼 논벼(잠금) 자료가 없습니다.\n집계에 넣을 논벼 자료를 🔒 잠금하세요.'); return; }
+  _nbExportGate(function(){ _nbDownload(_nbToXLS(t), _nbFileName('xls'), 'application/vnd.ms-excel;charset=utf-8;'); });
 }
 function nbExportCSV(){
   var t=_nbBuildExportTable();
   if(!t.count){ alert('내보낼 논벼(잠금) 자료가 없습니다.\n집계에 넣을 논벼 자료를 🔒 잠금하세요.'); return; }
-  _nbExportGate(function(){
-    var csv=_nbToCSV(t);
-    var now=new Date(); var kst=new Date(now.getTime()+9*3600000);
-    var fn='논벼예상량_집계_'+kst.toISOString().slice(0,10)+'.csv';
-    try{
-      var blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
-      var url=URL.createObjectURL(blob);
-      var a=document.createElement('a'); a.href=url; a.download=fn; document.body.appendChild(a); a.click();
-      setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); },400);
-    }catch(e){ alert('CSV 저장에 실패했습니다: '+e.message); }
-  });
+  _nbExportGate(function(){ _nbDownload(_nbToCSV(t), _nbFileName('csv'), 'text/csv;charset=utf-8;'); });
 }
 
 /* 저장목록 항목별 실제 캐시 암호화 여부 아이콘 (🟢 암호화 / 🔴 평문) */
