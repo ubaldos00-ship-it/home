@@ -1,4 +1,5 @@
-<!-- chungchi.html (v116) · 저장: 2026-09-11 00:13 KST · [v116] ①저장/불러오기 「작물별 10a당 수량 집계」의 주소를 전체(풀주소)로 표시(15자 잘림 → 전체 지번주소, 줄바꿈으로 무조건 다 보이게). ②집계 작물별 세부(주소·수량) 기본 「펼침」으로 변경. ③제목 「청취 10a당 생산량 계산기」→「농작물생산 청취 계산기」. ※ 계산 로직 무변경(표시만). (v115 이하 유지) -->
+<!-- chungchi.html (v117) · 저장: 2026-09-14 05:14 KST · [v117] ①필지주소 아래 층(2자리)·조사구(4자리) 입력란 추가 + 헤더에 층·조사구·주소 표기. ②작물별 10a당 수량 집계 주소 앞에 층-조사구(01-0011) 프리픽스. ③저장/불러오기 「목록 순서(↑↓)」 정렬 추가 — ▲▼로 저장목록 순서 변경(집계도 같은 순서). ※ 계산 로직 무변경(표시·입력만). (v116 이하 유지) -->
+<!-- (이전)  chungchi.html (v116) · 저장: 2026-09-11 00:13 KST · [v116] ①저장/불러오기 「작물별 10a당 수량 집계」의 주소를 전체(풀주소)로 표시(15자 잘림 → 전체 지번주소, 줄바꿈으로 무조건 다 보이게). ②집계 작물별 세부(주소·수량) 기본 「펼침」으로 변경. ③제목 「청취 10a당 생산량 계산기」→「농작물생산 청취 계산기」. ※ 계산 로직 무변경(표시만). (v115 이하 유지) -->
 <!-- (이전)  chungchi.html (v115) · 저장: 2026-09-10 06:21 KST · [v115] 맨 아래 「지역별 10a당 수량 비교(막대)」도 지방청 분류 적용 — 선택 지역이 속한 청의 시도끼리 비교(예: 세종 → 대전·세종·충북·충남). 기존엔 대구·경북·강원 고정이었음. 미선택 시 동북청(대구·경북·강원). ※ 표·선그래프(전국 그레이 점선)는 v114에서 반영. 계산 로직 무변경(표시만). (v114 이하 유지) -->
 <!-- (이전)  chungchi.html (v114) · 저장: 2026-09-10 03:13 KST · [v114] ①「지역별 참고 그래프(표·선그래프)」를 통합계산기와 동일하게 개편 — 「전국」 항상 표시 + 선택 지역이 속한 지방청 시도끼리 비교(경인=서울·인천·경기 / 충청=대전·세종·충북·충남 / 동북=대구·경북·강원 / 동남=부산·울산·경남 / 호남=광주·전남·전북·제주). 예) 인천 선택 → 전국·서울·인천·경기. ②저장/불러오기 저장목록 조회·정렬 UI 정리 — 조회 콤보(시도·시군구·읍면동·작물)+정렬을 한 줄로, 「정렬」 글자 제거, 모바일 반응형 크기(auto-fit). ※ 계산 로직 무변경(표시·UI만). (v113 이하 유지) -->
 <!-- (이전)  chungchi.html (v113) · 저장: 2026-09-10 02:48 KST · [v113] 저장/불러오기 「저장목록」에 조회(시도·시군구·읍면동·작물) 콤보 + 정렬(최근 저장순·면적 큰순·작물별) 추가 — 지도 생산량목록과 동일 방식(주소→행정구역 파싱, 면적=재배면적 ㎡ 합계 기준, 정렬 기억). ※ 계산 로직 무변경(UI만). (v112 이하 유지) -->
@@ -682,7 +683,7 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
     <div class="hd-t">
       <h1>농작물생산 청취 계산기</h1>
       <span class="hd-status-row"><span class="hd-status" id="headStatus">경북 · 사과</span></span>
-      <span class="hd-ver">(v115 저장: 2026-07-03 21:29 · 맥류 조곡)</span>
+      <span class="hd-ver" id="ccHdrAddr" style="display:none;"></span>
     </div>
   </div>
   <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
@@ -721,12 +722,25 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
   </div>
   <!-- v89: 입력란에서 잘리는 필지주소 전체를 작은 글씨로 표시 -->
   <div id="addrFull" style="display:none;font-size:11px;color:#4a5b6b;line-height:1.4;margin-top:6px;word-break:break-all;background:#eef3f8;border:1px solid #d9e3ee;border-radius:7px;padding:5px 8px;"></div>
+  <!-- [v117] 층(2자리)·조사구(4자리) -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px;">
+    <div style="min-width:0"><div class="s1l" style="margin-bottom:4px">층 <span style="font-size:10px;color:#999;">2자리</span></div>
+      <input type="text" id="nbFloor" inputmode="numeric" pattern="[0-9]*" maxlength="2" placeholder="예) 01" autocomplete="off" style="width:100%;box-sizing:border-box;font-size:15px;padding:10px 6px;"></div>
+    <div style="min-width:0"><div class="s1l" style="margin-bottom:4px">조사구 <span style="font-size:10px;color:#999;">4자리</span></div>
+      <input type="text" id="nbSurveyPlot" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="예) 0011" autocomplete="off" style="width:100%;box-sizing:border-box;font-size:15px;padding:10px 6px;"></div>
+  </div>
   <script>
   (function(){
     var ai=document.getElementById('address'), af=document.getElementById('addrFull');
-    if(!ai||!af) return;
-    function sync(){ var v=(ai.value||'').trim(); af.textContent=v?('📍 '+v):''; af.style.display=v?'block':'none'; }
-    ai.addEventListener('input',sync); ai.addEventListener('change',sync);
+    var fl=document.getElementById('nbFloor'), sp=document.getElementById('nbSurveyPlot');
+    /* [v117] 헤더에 층·조사구·주소 표시 */
+    function ccParse(a){ var t=String(a||'').replace(/번지/g,'').trim().split(/\s+/).filter(Boolean); var o={sg:'',emd:'',ri:'',jb:''}; for(var i=1;i<t.length;i++){ if(/[읍면동]$/.test(t[i])){o.emd=t[i];break;} } for(var i=1;i<t.length;i++){ if(/리$/.test(t[i]))o.ri=t[i]; } o.sg=t.filter(function(x){return /[시군구]$/.test(x);}).slice(0,1).join(''); for(var k=t.length-1;k>=0;k--){ if(/^\d+(-\d+)?$/.test(t[k])){o.jb=t[k];break;} } return o; }
+    function ccHdr(){ var el=document.getElementById('ccHdrAddr'); if(!el) return; var a=ai?(ai.value||'').trim():''; var f=fl?(fl.value||'').trim():'', s=sp?(sp.value||'').trim():''; var p=ccParse(a); var parts=[]; if(f||s) parts.push((f||'--')+'-'+(s||'----')); var loc=[p.sg,p.emd,p.ri,p.jb].filter(Boolean).join(' '); if(loc)parts.push(loc); el.textContent=parts.length?('📍 '+parts.join('  ·  ')):''; el.style.display=parts.length?'block':'none'; }
+    window._ccHdrUpd=ccHdr;
+    function sync(){ var v=(ai&&ai.value||'').trim(); if(af){af.textContent=v?('📍 '+v):''; af.style.display=v?'block':'none';} ccHdr(); }
+    if(ai){ ai.addEventListener('input',sync); ai.addEventListener('change',sync); }
+    if(fl) fl.addEventListener('input',function(){ this.value=this.value.replace(/[^0-9]/g,'').slice(0,2); ccHdr(); });
+    if(sp) sp.addEventListener('input',function(){ this.value=this.value.replace(/[^0-9]/g,'').slice(0,4); ccHdr(); });
     setTimeout(sync,1200); setTimeout(sync,3200);
   })();
   </script>
@@ -2787,7 +2801,7 @@ function _slRenderCombos(){
   });
   /* 정렬 콤보(같은 행, 라벨 없이) — 최근 저장순·면적 큰순·작물별 */
   var ss=document.createElement('select'); ss.className='sl-sort';
-  [['recent','최근 저장순'],['area','면적 큰순'],['crop','작물별']].forEach(function(o){ ss.appendChild(new Option(o[1],o[0])); });
+  [['recent','최근 저장순'],['area','면적 큰순'],['crop','작물별'],['manual','목록 순서(↑↓)']].forEach(function(o){ ss.appendChild(new Option(o[1],o[0])); });
   ss.value=_slSort;
   ss.addEventListener('change',function(){ _slOnSortChange(ss.value); });
   host.appendChild(ss);
@@ -2817,9 +2831,12 @@ function _slRenderList(){
     flt=flt.slice().sort(function(a,b){ return (_slItemArea(b)-_slItemArea(a)) || (Number(b.key)-Number(a.key)); });
   } else if(_slSort==='crop'){
     flt=flt.slice().sort(function(a,b){ return String(a.crop||'힣').localeCompare(String(b.crop||'힣'),'ko') || (Number(b.key)-Number(a.key)); });
+  } else if(_slSort==='manual'){
+    flt=flt.slice();   /* [v117] 목록(저장) 순서 그대로 */
   } else {
     flt=flt.slice().sort(function(a,b){ return Number(b.key)-Number(a.key); });   /* 최근 저장순 */
   }
+  var _slManual=(_slSort==='manual');
   if(!flt.length){ el.innerHTML='<div class="sl-empty">조건에 맞는 자료가 없습니다.</div>'; return; }
   el.innerHTML = flt.map(function(it){
     var num = _numByKey[it.key];
@@ -2850,6 +2867,10 @@ function _slRenderList(){
         +'<div class="sl-item-date">'+(it.ymd||'')+' '+(it.hm||'')+'</div>'
       +'</div>'
       +'<div class="sl-item-btns">'
+        +(_slManual
+           ? '<button class="sl-item-load" style="background:#eef3fb;color:#0A3A8C;border-color:#c7d3e6;" onclick="slMoveItem(\''+it.key+'\',-1)" aria-label="위로">▲</button>'
+            +'<button class="sl-item-load" style="background:#eef3fb;color:#0A3A8C;border-color:#c7d3e6;" onclick="slMoveItem(\''+it.key+'\',1)" aria-label="아래로">▼</button>'
+           : '')
         +'<button class="'+lockCls+'" onclick="toggleFav(\''+it.key+'\')" aria-label="잠금">'+lockIcon+'</button>'
         +mapBtn
         +'<button class="sl-item-load" onclick="loadSavedData(\''+it.key+'\')" aria-label="불러오기">📂</button>'
@@ -2857,6 +2878,17 @@ function _slRenderList(){
       +'</div>'
       +'</div>';
   }).join('');
+}
+/* [v117] 저장목록 수동 순서변경 */
+function slMoveItem(key, dir){
+  var list=_ccGetList();
+  var i=-1; for(var k=0;k<list.length;k++){ if(list[k].key===key){ i=k; break; } }
+  if(i<0) return;
+  var j=i+dir; if(j<0||j>=list.length) return;
+  var tmp=list[i]; list[i]=list[j]; list[j]=tmp;
+  _ccSetList(list);
+  _slSort='manual'; try{ localStorage.setItem('chungchi_sl_sort','manual'); }catch(e){}
+  _slRenderList();
 }
 
 
@@ -3272,8 +3304,11 @@ function _slRenderAgg(){
     /* v63: 작물 클릭 시 펼쳐지는 세부 목록(필지주소 + 10a당 수량) */
     var detail=items.map(function(it){
       var addr=(typeof _slItemFullAddr==='function' && _slItemFullAddr(it)) || it.addr || '주소없음';   /* [v116] 전체주소 */
+      /* [v117] 주소 앞에 층-조사구 프리픽스 */
+      var fp='';
+      try{ var _d=JSON.parse(localStorage.getItem(CC_DATA_PFX+it.key)||'null'); if(_d){ var f=(_d.nbFloor||'').trim(), s=(_d.nbSurveyPlot||'').trim(); if(f||s) fp=(f?f.padStart(2,'0'):'--')+'-'+(s?s.padStart(4,'0'):'----'); } }catch(e){}
       var pv=(typeof it.per10a==='number'&&it.per10a>0)?it.per10a.toLocaleString('ko-KR')+' kg':'—';
-      return '<div class="sl-agg-item"><span class="ai-addr">📍 '+addr+'</span><span class="ai-val">'+pv+'</span></div>';
+      return '<div class="sl-agg-item"><span class="ai-addr">📍 '+(fp?('<b style="color:#0A3A8C;">'+fp+'</b> '):'')+addr+'</span><span class="ai-val">'+pv+'</span></div>';
     }).join('');
     return '<div class="sl-agg-card">'
       +'<div class="sl-agg-crop sl-agg-crop-btn" onclick="slAggToggleCrop('+ci+')">'
