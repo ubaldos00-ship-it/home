@@ -1,4 +1,5 @@
-<!-- chungchi.html (v117) · 저장: 2026-09-14 05:14 KST · [v117] ①필지주소 아래 층(2자리)·조사구(4자리) 입력란 추가 + 헤더에 층·조사구·주소 표기. ②작물별 10a당 수량 집계 주소 앞에 층-조사구(01-0011) 프리픽스. ③저장/불러오기 「목록 순서(↑↓)」 정렬 추가 — ▲▼로 저장목록 순서 변경(집계도 같은 순서). ※ 계산 로직 무변경(표시·입력만). (v116 이하 유지) -->
+<!-- chungchi.html (v118) · 저장: 2026-09-14 06:38 KST · [v118] ①층·조사구를 저장/복원에 포함(_ccCollect/_ccApply) — 불러오기 시 미저장 자료면 빈칸으로(잔상 제거). ②저장/불러오기 목록에 작물 뒤 층-조사구(파랑) 표기 + 지번만 빨강. ※ 계산 로직 무변경. (v117 이하 유지) -->
+<!-- (이전)  chungchi.html (v117) · 저장: 2026-09-14 05:14 KST · [v117] ①필지주소 아래 층(2자리)·조사구(4자리) 입력란 추가 + 헤더에 층·조사구·주소 표기. ②작물별 10a당 수량 집계 주소 앞에 층-조사구(01-0011) 프리픽스. ③저장/불러오기 「목록 순서(↑↓)」 정렬 추가 — ▲▼로 저장목록 순서 변경(집계도 같은 순서). ※ 계산 로직 무변경(표시·입력만). (v116 이하 유지) -->
 <!-- (이전)  chungchi.html (v116) · 저장: 2026-09-11 00:13 KST · [v116] ①저장/불러오기 「작물별 10a당 수량 집계」의 주소를 전체(풀주소)로 표시(15자 잘림 → 전체 지번주소, 줄바꿈으로 무조건 다 보이게). ②집계 작물별 세부(주소·수량) 기본 「펼침」으로 변경. ③제목 「청취 10a당 생산량 계산기」→「농작물생산 청취 계산기」. ※ 계산 로직 무변경(표시만). (v115 이하 유지) -->
 <!-- (이전)  chungchi.html (v115) · 저장: 2026-09-10 06:21 KST · [v115] 맨 아래 「지역별 10a당 수량 비교(막대)」도 지방청 분류 적용 — 선택 지역이 속한 청의 시도끼리 비교(예: 세종 → 대전·세종·충북·충남). 기존엔 대구·경북·강원 고정이었음. 미선택 시 동북청(대구·경북·강원). ※ 표·선그래프(전국 그레이 점선)는 v114에서 반영. 계산 로직 무변경(표시만). (v114 이하 유지) -->
 <!-- (이전)  chungchi.html (v114) · 저장: 2026-09-10 03:13 KST · [v114] ①「지역별 참고 그래프(표·선그래프)」를 통합계산기와 동일하게 개편 — 「전국」 항상 표시 + 선택 지역이 속한 지방청 시도끼리 비교(경인=서울·인천·경기 / 충청=대전·세종·충북·충남 / 동북=대구·경북·강원 / 동남=부산·울산·경남 / 호남=광주·전남·전북·제주). 예) 인천 선택 → 전국·서울·인천·경기. ②저장/불러오기 저장목록 조회·정렬 UI 정리 — 조회 콤보(시도·시군구·읍면동·작물)+정렬을 한 줄로, 「정렬」 글자 제거, 모바일 반응형 크기(auto-fit). ※ 계산 로직 무변경(표시·UI만). (v113 이하 유지) -->
@@ -2133,7 +2134,7 @@ function _tenarGetMapColorFromSaved(d){
 function _ccCollect(){
   var d = {};
   // 정적 입력
-  ['address','surveyDate','memo'].forEach(function(id){
+  ['address','surveyDate','memo','nbFloor','nbSurveyPlot'].forEach(function(id){   /* [v117] 층·조사구 저장 */
     var el = document.getElementById(id);
     if(el) d[id] = el.value;
   });
@@ -2205,6 +2206,9 @@ function _ccApply(d){
     var el = document.getElementById(id);
     if(el && d[id] !== undefined) el.value = d[id];
   });
+  /* [v117] 층·조사구 — 저장 안 된 자료는 빈칸으로(잔상 제거) + 헤더 갱신 */
+  ['nbFloor','nbSurveyPlot'].forEach(function(id){ var e=document.getElementById(id); if(e){ e.value=(d[id]!==undefined&&d[id]!=='')?d[id]:''; } });
+  try{ if(typeof window._ccHdrUpd==='function') window._ccHdrUpd(); }catch(e){}
   // v47: 피해부호/피해율 복원
   if(d.__dmgCode!==undefined){var dc=document.getElementById('ccDmgCode');if(dc){dc.value=d.__dmgCode;ccDmgUpdate();}}
   if(d.__dmgRate!==undefined){var dr=document.getElementById('ccDmgRate');if(dr)dr.value=d.__dmgRate;}
@@ -2848,7 +2852,12 @@ function _slRenderList(){
     var cropName = it.crop || (it.label ? it.label.split(' · ')[0] : '');
     /* [v107] 작물명 옆에 「읍면동 리 지번」을 작물명 글자크기로 함께 표기 (예: 논벼, 논공읍 금포리 324). 기존 📍 전체주소 줄은 유지. */
     var shortAddr = _slShortAddr(fullAddr);
-    var labelMain = cropName + (shortAddr ? ', <span class="sl-item-addr2">'+shortAddr+'</span>' : '');
+    /* [v117] 작물 다음 층-조사구 표기 + 지번만 빨강 */
+    var _fp=''; try{ if(_dd){ var _f=(_dd.nbFloor||'').trim(),_s=(_dd.nbSurveyPlot||'').trim(); if(_f||_s)_fp=(_f?_f.padStart(2,'0'):'--')+'-'+(_s?_s.padStart(4,'0'):'----'); } }catch(e){}
+    var shortAddrHtml = shortAddr.replace(/(\d+(?:-\d+)?)\s*$/, '<span style="color:#d33;font-weight:800;">$1</span>');
+    var labelMain = cropName
+      + (_fp ? ' <span style="color:#0A3A8C;font-weight:800;">'+_fp+'</span>' : '')
+      + (shortAddr ? ', <span class="sl-item-addr2">'+shortAddrHtml+'</span>' : '');
     var addrLine = fullAddr ? '<div class="sl-item-addr">📍 '+fullAddr+'</div>' : '';
     var locked = !!it.fav;
     var lockCls = locked?'sl-item-fav fav-on':'sl-item-fav';
