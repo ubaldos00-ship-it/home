@@ -1,4 +1,5 @@
-<!-- tonghab.html (v133) · 저장: 2026-09-14 06:38 KST · [v133] 논벼 엑셀·목록 보완 — ①불러오기 시 층·조사구 미저장 자료면 빈칸으로(잔상 제거). ②10a당 예상량 소수1자리에서 반올림(정수). ③1㎡당 완전낟알수를 통합계산기와 동일 값으로(정밀 평균 사용). ④유효이삭수 비율 1.000 형식. ⑤완전낟알비율 소수3자리. ⑥이삭당 낟알수 소수1자리. ⑦천립중 옆 「예상 10a수량」 입력란 추가 → 엑셀 「예상 10a수량」 열 연동. ⑧저장/불러오기 목록에 작물 뒤 층-조사구(파랑) 표기 + 지번만 빨강. ※ 계산 함수 무변경. (v132 이하 유지) -->
+<!-- tonghab.html (v134) · 저장: 2026-09-14 06:54 KST · [v134] 층·조사구 0채움 + 엑셀 지번 분리 — ①층 입력 1→01, 조사구 23→0023(입력란 blur·엑셀 모두 0채움, 텍스트로 저장해 앞 0 유지). ②엑셀에 「본지번·부지번」 열 추가(4자리 0채움): 27-3→본0027/부0003, 27→본0027/부0000. ※ 계산 함수 무변경(입력표시·엑셀만). (v133 이하 유지) -->
+<!-- (이전)  tonghab.html (v133) · 저장: 2026-09-14 06:38 KST · [v133] 논벼 엑셀·목록 보완 — ①불러오기 시 층·조사구 미저장 자료면 빈칸으로(잔상 제거). ②10a당 예상량 소수1자리에서 반올림(정수). ③1㎡당 완전낟알수를 통합계산기와 동일 값으로(정밀 평균 사용). ④유효이삭수 비율 1.000 형식. ⑤완전낟알비율 소수3자리. ⑥이삭당 낟알수 소수1자리. ⑦천립중 옆 「예상 10a수량」 입력란 추가 → 엑셀 「예상 10a수량」 열 연동. ⑧저장/불러오기 목록에 작물 뒤 층-조사구(파랑) 표기 + 지번만 빨강. ※ 계산 함수 무변경. (v132 이하 유지) -->
 <!-- (이전)  tonghab.html (v132) · 저장: 2026-09-14 05:14 KST · [v132] 논벼 집계 엑셀 대개편(자체계산 수식) + 층·조사구 + 저장목록 순서변경 — ①지번 텍스트화(27-2가 날짜로 바뀌던 것 방지). ②A/B 가로·세로를 mm(입력×10)로. ③평균 1㎡당 포기수 소수1자리. ④유효이삭수=평균값, ⑤조사이삭수=대표(선택)값. ⑥검산계 열 추가(조사이삭수+총낟알수+완전낟알수+10a예상량). ⑦A/B피해명 한글만. ⑧1㎡당완전낟알수 뒤 「천립중 계산식」·「유효이삭수 비율(기본1.000)」 추가. ⑨이삭당낟알수 뒤 「예상10a수량·전년10a수량」 빈열. ⑩「시스템 입력」 범례행. ⑪~㉒엑셀에 실제 수식(1㎡당포기수=ROUND(1000000/(MROUND()..)), 10a예상량, 검산계, 이삭당낟알수, 합계 등) 내장 → 파일 자체 재계산. ㉕필지주소 아래 층(2자리)·조사구(4자리) 입력 + 헤더에 표기. ㉖집계 주소 앞 01-0011 프리픽스. ㉗저장목록 「목록 순서(↑↓)」 정렬로 순서변경. ㉘엑셀도 목록 순서대로. ※ 계산 함수 무변경(내보내기·표시만). (v131 이하 유지) -->
 <!-- (이전)  tonghab.html (v131) · 저장: 2026-09-12 11:49 KST · [v131] 논벼 집계 엑셀 내보내기 개편 — ①누락되던 결과값(A/B/평균 1㎡당 포기수·1㎡당 완전낟알수·완전낟알비율·이삭당 낟알수)을 저장 데이터의 입력값으로 재계산해 채움(스냅샷 없는 옛 자료도 채워짐). ②주소 옆에 시도·시군·읍면동·층·조사구·동리·지번 컬럼 추가(주소 자동분해, 층·조사구는 추후 입력란). ③파일 맨 아래에 「시군별」 합계·평균 행 추가. ④「엑셀 복사」 제거 → 엑셀 파일(.xls)로 저장 + CSV 저장. ⑤비밀번호를 자체 입력창(모달)로 교체해 확실히 잠기게(설정·검증·해제). ⑥헤더의 부제·버전·날짜 삭제 → 현재 조사 위치(층·조사구·시군·읍면동·지번) 표시. ※ 계산 함수 무변경(내보내기·표시·저장 스냅샷만). (v130 이하 유지) -->
 
@@ -2086,8 +2087,10 @@ select,
       /* [v132] 층·조사구 → 숫자만, 헤더 주소 갱신 */
       var fl=document.getElementById('nbFloor'), sp=document.getElementById('nbSurveyPlot');
       function hupd(){ try{ if(typeof _nbUpdateHdrAddr==='function') _nbUpdateHdrAddr(); }catch(e){} }
-      if(fl) fl.addEventListener('input',function(){ this.value=this.value.replace(/[^0-9]/g,'').slice(0,2); hupd(); });
-      if(sp) sp.addEventListener('input',function(){ this.value=this.value.replace(/[^0-9]/g,'').slice(0,4); hupd(); });
+      if(fl){ fl.addEventListener('input',function(){ this.value=this.value.replace(/[^0-9]/g,'').slice(0,2); hupd(); });
+              fl.addEventListener('blur',function(){ if(this.value) this.value=this.value.padStart(2,'0').slice(-2); hupd(); }); }   /* [v134] 1→01 */
+      if(sp){ sp.addEventListener('input',function(){ this.value=this.value.replace(/[^0-9]/g,'').slice(0,4); hupd(); });
+              sp.addEventListener('blur',function(){ if(this.value) this.value=this.value.padStart(4,'0').slice(-4); hupd(); }); }   /* [v134] 23→0023 */
       /* v106(A안): display 토글 없이 텍스트만 갱신 + 값 있을 때만 배경/테두리 표시(바깥 높이는 그대로) → 레이아웃 밀림 제거 */
       function sync(){
         var v=(ai.value||'').trim();
@@ -9851,10 +9854,12 @@ var NB_COLS = [
   {k:'sido',   h:'시도',                   kind:'p'},
   {k:'sigun',  h:'시군',                   kind:'p'},
   {k:'emd',    h:'읍면동',                 kind:'p'},
-  {k:'floor',  h:'층',                     kind:'t'},
-  {k:'plot',   h:'조사구',                 kind:'t'},
+  {k:'floor',  h:'층',                     kind:'txt'},
+  {k:'plot',   h:'조사구',                 kind:'txt'},
   {k:'ri',     h:'동리',                   kind:'p'},
   {k:'jibun',  h:'지번',                   kind:'txt'},
+  {k:'jibunMain', h:'본지번',              kind:'txt'},
+  {k:'jibunSub',  h:'부지번',              kind:'txt'},
   {k:'aw',     h:'A포기간 가로(mm)',        kind:'in'},
   {k:'ah',     h:'A포기간 세로(mm)',        kind:'in'},
   {k:'am2',    h:'A포구 1㎡당 포기수',       kind:'f'},
@@ -9922,7 +9927,12 @@ function _nbCompute(d){
   d=d||{}; var V={};
   var addr=(d.address||'').trim(); var p=_nbParseAddr(addr);
   V.addr=addr; V.sido=p.sido; V.sigun=p.sigungu; V.emd=p.eupmyeondong; V.ri=p.ri; V.jibun=p.jibun;
-  V.floor=(d.nbFloor==null?'':String(d.nbFloor)); V.plot=(d.nbSurveyPlot==null?'':String(d.nbSurveyPlot));
+  /* [v134] 층 2자리·조사구 4자리 0채움 */
+  var _fl=(d.nbFloor==null?'':String(d.nbFloor).replace(/[^0-9]/g,'')); var _sp=(d.nbSurveyPlot==null?'':String(d.nbSurveyPlot).replace(/[^0-9]/g,''));
+  V.floor=_fl?_fl.padStart(2,'0').slice(-2):''; V.plot=_sp?_sp.padStart(4,'0').slice(-4):'';
+  /* [v134] 지번 → 본지번(4자리)·부지번(4자리). 27-3→0027/0003, 27→0027/0000 */
+  V.jibunMain=''; V.jibunSub='';
+  if(p.jibun){ var jm=String(p.jibun).match(/^(\d+)(?:-(\d+))?$/); if(jm){ V.jibunMain=jm[1].padStart(4,'0').slice(-4); V.jibunSub=(jm[2]||'0').padStart(4,'0').slice(-4); } }
   var awc=_nbNum(d,'nbAWidth'),ahc=_nbNum(d,'nbAHeight'),bwc=_nbNum(d,'nbBWidth'),bhc=_nbNum(d,'nbBHeight');
   V.aw=(awc!=='')?Math.round(awc*10):''; V.ah=(ahc!=='')?Math.round(ahc*10):'';
   V.bw=(bwc!=='')?Math.round(bwc*10):''; V.bh=(bhc!=='')?Math.round(bhc*10):'';
@@ -10001,7 +10011,7 @@ function _nbSubtotals(t){
   var SIGUN=NB_IDX['sigun'];
   var groups={}, order=[];
   t.rows.forEach(function(r){ var sg=r[SIGUN]||'(시군미상)'; if(!groups[sg]){groups[sg]=[];order.push(sg);} groups[sg].push(r); });
-  var NONAGG={addr:1,sido:1,sigun:1,emd:1,floor:1,plot:1,ri:1,jibun:1,admg:1,bdmg:1,variety:1,transplant:1,remark:1};
+  var NONAGG={addr:1,sido:1,sigun:1,emd:1,floor:1,plot:1,ri:1,jibun:1,jibunMain:1,jibunSub:1,admg:1,bdmg:1,variety:1,transplant:1,remark:1};
   var subs=[];
   order.forEach(function(sg){
     var g=groups[sg];

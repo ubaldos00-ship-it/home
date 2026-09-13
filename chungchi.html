@@ -1,4 +1,5 @@
-<!-- chungchi.html (v118) · 저장: 2026-09-14 06:38 KST · [v118] ①층·조사구를 저장/복원에 포함(_ccCollect/_ccApply) — 불러오기 시 미저장 자료면 빈칸으로(잔상 제거). ②저장/불러오기 목록에 작물 뒤 층-조사구(파랑) 표기 + 지번만 빨강. ※ 계산 로직 무변경. (v117 이하 유지) -->
+<!-- chungchi.html (v119) · 저장: 2026-09-14 06:54 KST · [v119] 층·조사구 입력 0채움 — 층 1→01, 조사구 23→0023(입력란에서 벗어날 때 자동 0채움). ※ 계산 로직 무변경. (v118 이하 유지) -->
+<!-- (이전)  chungchi.html (v118) · 저장: 2026-09-14 06:38 KST · [v118] ①층·조사구를 저장/복원에 포함(_ccCollect/_ccApply) — 불러오기 시 미저장 자료면 빈칸으로(잔상 제거). ②저장/불러오기 목록에 작물 뒤 층-조사구(파랑) 표기 + 지번만 빨강. ※ 계산 로직 무변경. (v117 이하 유지) -->
 <!-- (이전)  chungchi.html (v117) · 저장: 2026-09-14 05:14 KST · [v117] ①필지주소 아래 층(2자리)·조사구(4자리) 입력란 추가 + 헤더에 층·조사구·주소 표기. ②작물별 10a당 수량 집계 주소 앞에 층-조사구(01-0011) 프리픽스. ③저장/불러오기 「목록 순서(↑↓)」 정렬 추가 — ▲▼로 저장목록 순서 변경(집계도 같은 순서). ※ 계산 로직 무변경(표시·입력만). (v116 이하 유지) -->
 <!-- (이전)  chungchi.html (v116) · 저장: 2026-09-11 00:13 KST · [v116] ①저장/불러오기 「작물별 10a당 수량 집계」의 주소를 전체(풀주소)로 표시(15자 잘림 → 전체 지번주소, 줄바꿈으로 무조건 다 보이게). ②집계 작물별 세부(주소·수량) 기본 「펼침」으로 변경. ③제목 「청취 10a당 생산량 계산기」→「농작물생산 청취 계산기」. ※ 계산 로직 무변경(표시만). (v115 이하 유지) -->
 <!-- (이전)  chungchi.html (v115) · 저장: 2026-09-10 06:21 KST · [v115] 맨 아래 「지역별 10a당 수량 비교(막대)」도 지방청 분류 적용 — 선택 지역이 속한 청의 시도끼리 비교(예: 세종 → 대전·세종·충북·충남). 기존엔 대구·경북·강원 고정이었음. 미선택 시 동북청(대구·경북·강원). ※ 표·선그래프(전국 그레이 점선)는 v114에서 반영. 계산 로직 무변경(표시만). (v114 이하 유지) -->
@@ -740,8 +741,10 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
     window._ccHdrUpd=ccHdr;
     function sync(){ var v=(ai&&ai.value||'').trim(); if(af){af.textContent=v?('📍 '+v):''; af.style.display=v?'block':'none';} ccHdr(); }
     if(ai){ ai.addEventListener('input',sync); ai.addEventListener('change',sync); }
-    if(fl) fl.addEventListener('input',function(){ this.value=this.value.replace(/[^0-9]/g,'').slice(0,2); ccHdr(); });
-    if(sp) sp.addEventListener('input',function(){ this.value=this.value.replace(/[^0-9]/g,'').slice(0,4); ccHdr(); });
+    if(fl){ fl.addEventListener('input',function(){ this.value=this.value.replace(/[^0-9]/g,'').slice(0,2); ccHdr(); });
+            fl.addEventListener('blur',function(){ if(this.value) this.value=this.value.padStart(2,'0').slice(-2); ccHdr(); }); }   /* [v118] 1→01 */
+    if(sp){ sp.addEventListener('input',function(){ this.value=this.value.replace(/[^0-9]/g,'').slice(0,4); ccHdr(); });
+            sp.addEventListener('blur',function(){ if(this.value) this.value=this.value.padStart(4,'0').slice(-4); ccHdr(); }); }   /* [v118] 23→0023 */
     setTimeout(sync,1200); setTimeout(sync,3200);
   })();
   </script>
