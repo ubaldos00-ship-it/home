@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>텐아르 운영매뉴얼</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@500;700&display=swap">
+<style>
+  :root{
+    --ground:#f6f5ef; --surface:#fffefb; --surface-2:#f1efe5;
+    --ink:#22281d; --ink-soft:#586150; --ink-faint:#8b917f;
+    --line:#e4e1d5; --line-strong:#d3cfbf;
+    --primary:#2f5e18; --primary-ink:#284f14; --primary-soft:#ecf2e4;
+    --accent:#a9781a; --accent-soft:#f6edd5;
+    --danger:#a83a2c; --danger-soft:#f7e7e3;
+    --info:#255f8c; --info-soft:#e5eef5;
+    --mono:"SF Mono",ui-monospace,"JetBrains Mono","Cascadia Code",Menlo,Consolas,monospace;
+    --sans:"Noto Sans KR",-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+    --serif:"Noto Serif KR",Georgia,serif;
+    --wrap:1180px;
+    --shadow:0 1px 2px rgba(30,40,20,.05),0 8px 24px -12px rgba(30,40,20,.14);
+  }
+  :root:not([data-theme="light"]){ }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ground:#14170e; --surface:#1d2114; --surface-2:#232817;
+      --ink:#ebe8d9; --ink-soft:#a7ad97; --ink-faint:#767c68;
+      --line:#2f3423; --line-strong:#3b4130;
+      --primary:#95c163; --primary-ink:#a9d179; --primary-soft:#232e18;
+      --accent:#e3b04a; --accent-soft:#2c2510;
+      --danger:#e08b7f; --danger-soft:#2f1c18;
+      --info:#87b9df; --info-soft:#17242e;
+      --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px -14px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --ground:#14170e; --surface:#1d2114; --surface-2:#232817;
+    --ink:#ebe8d9; --ink-soft:#a7ad97; --ink-faint:#767c68;
+    --line:#2f3423; --line-strong:#3b4130;
+    --primary:#95c163; --primary-ink:#a9d179; --primary-soft:#232e18;
+    --accent:#e3b04a; --accent-soft:#2c2510;
+    --danger:#e08b7f; --danger-soft:#2f1c18;
+    --info:#87b9df; --info-soft:#17242e;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px -14px rgba(0,0,0,.6);
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{
+    margin:0; background:var(--ground); color:var(--ink);
+    font-family:var(--sans); font-size:16px; line-height:1.72;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  }
+
+  /* ── Masthead ── */
+  .masthead{
+    border-bottom:1px solid var(--line);
+    background:
+      radial-gradient(120% 140% at 88% -10%, color-mix(in srgb, var(--primary) 12%, transparent) 0%, transparent 55%),
+      var(--surface);
+  }
+  .masthead-in{max-width:var(--wrap); margin:0 auto; padding:44px 24px 34px; display:flex; flex-wrap:wrap; gap:24px 40px; align-items:flex-end; justify-content:space-between}
+  .brand-eyebrow{font-size:12.5px; letter-spacing:.22em; text-transform:uppercase; color:var(--accent); font-weight:700; margin:0 0 10px}
+  .brand-title{font-family:var(--serif); font-weight:700; font-size:clamp(30px,5vw,46px); line-height:1.12; margin:0; color:var(--ink); text-wrap:balance; letter-spacing:-.01em}
+  .brand-sub{margin:12px 0 0; color:var(--ink-soft); font-size:15.5px; max-width:52ch}
+  .brand-meta{display:flex; flex-direction:column; gap:9px; font-size:13.5px; min-width:220px}
+  .brand-meta .row{display:flex; justify-content:space-between; gap:16px; padding-bottom:8px; border-bottom:1px dashed var(--line-strong)}
+  .brand-meta .row:last-child{border-bottom:none; padding-bottom:0}
+  .brand-meta .k{color:var(--ink-faint)}
+  .brand-meta .v{color:var(--ink); font-weight:600; font-family:var(--mono); font-size:12.5px}
+  .theme-btn{
+    margin-top:4px; align-self:flex-start; border:1px solid var(--line-strong); background:var(--surface); color:var(--ink-soft);
+    font-family:var(--sans); font-size:12.5px; font-weight:600; padding:6px 12px; border-radius:999px; cursor:pointer; display:inline-flex; gap:7px; align-items:center;
+  }
+  .theme-btn:hover{border-color:var(--primary); color:var(--primary-ink)}
+  .theme-btn:focus-visible{outline:2px solid var(--primary); outline-offset:2px}
+
+  /* ── Layout ── */
+  .shell{max-width:var(--wrap); margin:0 auto; padding:0 24px; display:grid; grid-template-columns:246px minmax(0,1fr); gap:52px; align-items:start}
+  nav.toc{position:sticky; top:0; max-height:100vh; overflow-y:auto; padding:34px 0 40px; border-right:1px solid var(--line)}
+  .toc h2{font-size:11.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-faint); margin:0 0 12px; font-weight:700}
+  .toc ol{list-style:none; margin:0 0 22px; padding:0; counter-reset:toc}
+  .toc li{counter-increment:toc}
+  .toc a{
+    display:flex; gap:10px; align-items:baseline; text-decoration:none; color:var(--ink-soft);
+    font-size:14px; padding:5px 10px 5px 8px; border-radius:7px; border-left:2px solid transparent; line-height:1.4;
+  }
+  .toc a::before{content:counter(toc,decimal-leading-zero); font-family:var(--mono); font-size:11px; color:var(--ink-faint); flex:0 0 auto}
+  .toc a:hover{background:var(--surface-2); color:var(--ink)}
+  .toc a.active{color:var(--primary-ink); border-left-color:var(--accent); background:var(--primary-soft); font-weight:600}
+  .toc a.active::before{color:var(--accent)}
+
+  main{padding:34px 0 96px; min-width:0}
+
+  /* ── Sections ── */
+  section{scroll-margin-top:18px; padding-bottom:14px}
+  section + section{margin-top:46px; border-top:1px solid var(--line); padding-top:40px}
+  .sec-num{font-family:var(--mono); font-size:13px; color:var(--accent); font-weight:700}
+  h2.sec-title{font-family:var(--serif); font-weight:700; font-size:clamp(23px,3.4vw,30px); line-height:1.2; margin:6px 0 0; letter-spacing:-.01em; text-wrap:balance}
+  .sec-lede{color:var(--ink-soft); font-size:15.5px; margin:12px 0 4px; max-width:66ch}
+  h3{font-family:var(--sans); font-weight:700; font-size:18px; margin:32px 0 8px; color:var(--ink); letter-spacing:-.005em}
+  h3 .h3-num{font-family:var(--mono); font-size:13px; color:var(--ink-faint); font-weight:600; margin-right:8px}
+  p{margin:10px 0; max-width:68ch}
+  main a{color:var(--primary-ink); text-underline-offset:2px}
+  strong{font-weight:700; color:var(--ink)}
+  ul,ol.steps{max-width:68ch}
+  ul{padding-left:20px; margin:10px 0}
+  li{margin:5px 0}
+  code{font-family:var(--mono); font-size:.86em; background:var(--surface-2); border:1px solid var(--line); border-radius:5px; padding:1px 6px; color:var(--primary-ink); white-space:nowrap}
+  .kbd{font-family:var(--sans); font-weight:600; font-size:.9em; background:var(--surface); border:1px solid var(--line-strong); border-bottom-width:2px; border-radius:6px; padding:1px 7px; color:var(--ink)}
+
+  /* Ordered steps */
+  ol.steps{counter-reset:step; list-style:none; padding:0; margin:14px 0}
+  ol.steps>li{position:relative; padding:2px 0 12px 40px; margin:0}
+  ol.steps>li::before{
+    counter-increment:step; content:counter(step); position:absolute; left:0; top:0;
+    width:26px; height:26px; border-radius:50%; background:var(--primary-soft); color:var(--primary-ink);
+    border:1px solid color-mix(in srgb,var(--primary) 35%,transparent);
+    font-family:var(--mono); font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center;
+  }
+  ol.steps>li:not(:last-child)::after{content:""; position:absolute; left:13px; top:28px; bottom:2px; width:1px; background:var(--line-strong)}
+
+  /* ── Module lead card (tool identity) ── */
+  .tool-head{display:flex; gap:16px; align-items:flex-start; margin:18px 0 6px; padding:16px 18px; background:var(--surface); border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow)}
+  .tool-badge{flex:0 0 auto; width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:22px; background:var(--primary-soft); border:1px solid color-mix(in srgb,var(--primary) 25%,transparent)}
+  .tool-head .file{font-family:var(--mono); font-size:12px; color:var(--ink-faint); margin:2px 0 0}
+  .tool-head .who{font-size:13px; color:var(--accent); font-weight:700; margin:0}
+  .tool-head p{margin:6px 0 0; font-size:14.5px; color:var(--ink-soft)}
+
+  /* ── Callouts (by role, not uniform cards) ── */
+  .call{border-left:3px solid var(--line-strong); background:var(--surface-2); padding:12px 16px; border-radius:0 10px 10px 0; margin:16px 0; font-size:14.5px}
+  .call p{margin:4px 0; max-width:64ch}
+  .call .lab{font-weight:700; font-size:12px; letter-spacing:.06em; text-transform:uppercase; display:block; margin-bottom:3px}
+  .call.tip{border-color:var(--primary); background:var(--primary-soft)} .call.tip .lab{color:var(--primary-ink)}
+  .call.warn{border-color:var(--danger); background:var(--danger-soft)} .call.warn .lab{color:var(--danger)}
+  .call.admin{border-color:var(--accent); background:var(--accent-soft)} .call.admin .lab{color:var(--accent)}
+  .call.info{border-color:var(--info); background:var(--info-soft)} .call.info .lab{color:var(--info)}
+
+  /* ── Tables ── */
+  .tw{overflow-x:auto; margin:16px 0; border:1px solid var(--line); border-radius:12px; background:var(--surface)}
+  table{border-collapse:collapse; width:100%; font-size:14px; min-width:440px}
+  th,td{text-align:left; padding:10px 14px; border-bottom:1px solid var(--line); vertical-align:top}
+  thead th{background:var(--surface-2); font-size:12px; letter-spacing:.04em; text-transform:uppercase; color:var(--ink-soft); font-weight:700; white-space:nowrap}
+  tbody tr:last-child td{border-bottom:none}
+  td.field{font-family:var(--mono); font-size:12.5px; color:var(--primary-ink); white-space:nowrap; font-variant-numeric:tabular-nums}
+  td.num{font-variant-numeric:tabular-nums}
+
+  /* Feature grid (home tiles / crops) */
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:12px; margin:16px 0}
+  .cell{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:14px 15px}
+  .cell .ct{font-weight:700; font-size:14.5px; display:flex; align-items:center; gap:8px}
+  .cell .cd{font-size:13px; color:var(--ink-soft); margin-top:5px; line-height:1.55}
+  .cell .em{font-size:17px}
+
+  .pill{display:inline-block; font-size:12px; font-weight:700; padding:2px 9px; border-radius:999px; background:var(--primary-soft); color:var(--primary-ink); border:1px solid color-mix(in srgb,var(--primary) 22%,transparent); letter-spacing:.01em}
+  .chips{display:flex; flex-wrap:wrap; gap:6px; margin:10px 0}
+  .chip{font-size:12.5px; font-weight:600; padding:3px 10px; border-radius:8px; background:var(--surface-2); border:1px solid var(--line); color:var(--ink-soft)}
+
+  footer.doc-foot{max-width:var(--wrap); margin:0 auto; padding:30px 24px 60px; border-top:1px solid var(--line); color:var(--ink-faint); font-size:13px; display:flex; flex-wrap:wrap; gap:8px 26px; justify-content:space-between}
+
+  @media (max-width:860px){
+    .shell{grid-template-columns:1fr; gap:0; padding:0 20px}
+    nav.toc{position:static; max-height:none; border-right:none; border-bottom:1px solid var(--line); padding:18px 0}
+    nav.toc details{border:1px solid var(--line); border-radius:12px; background:var(--surface); padding:6px 12px}
+    nav.toc summary{cursor:pointer; font-weight:700; font-size:14px; padding:6px 0; color:var(--ink)}
+    .toc ol{margin:8px 0 6px}
+    main{padding:26px 0 72px}
+    .masthead-in{padding:32px 20px 26px}
+  }
+  @media (min-width:861px){ nav.toc summary{display:none} }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-in">
+    <div>
+      <p class="brand-eyebrow">농작물생산조사 · 운영매뉴얼</p>
+      <h1 class="brand-title">텐아르(TEN-AR)<br>현장조사 도구 운영매뉴얼</h1>
+      <p class="brand-sub">농작물생산조사 현장 조사원과 관리자를 위한 텐아르 사용 안내. 빌드 도구 없이 브라우저에서 바로 쓰는 모바일 웹 도구 모음의 구성·조작·저장·백업·관리 방법을 한곳에 정리한 기초자료입니다.</p>
+    </div>
+    <div class="brand-meta">
+      <div class="row"><span class="k">문서 종류</span><span class="v">운영매뉴얼(기초)</span></div>
+      <div class="row"><span class="k">대상</span><span class="v">조사원 · 관리자</span></div>
+      <div class="row"><span class="k">접속 주소</span><span class="v">ubaldos00-ship-it.github.io/home</span></div>
+      <div class="row"><span class="k">플랫폼</span><span class="v">모바일 웹 (설치 불필요)</span></div>
+      <button class="theme-btn" id="themeBtn" type="button" aria-label="화면 밝기 전환">◐ 밝기 전환</button>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+  <nav class="toc" aria-label="목차">
+    <details id="tocDetails">
+      <summary>목차 열기</summary>
+      <div>
+        <h2>목차</h2>
+        <ol id="tocList">
+          <li><a href="#s1">개요 — 텐아르란</a></li>
+          <li><a href="#s2">홈 화면</a></li>
+          <li><a href="#s3">실측조사 (실측계산기)</a></li>
+          <li><a href="#s4">청취조사 (청취계산기)</a></li>
+          <li><a href="#s5">논벼 이삭수 계산기</a></li>
+          <li><a href="#s6">작물별 10a 생산량 조회</a></li>
+          <li><a href="#s7">지도</a></li>
+          <li><a href="#s8">저장 · 불러오기 · 엑셀</a></li>
+          <li><a href="#s9">관리자 기능</a></li>
+          <li><a href="#s10">문제해결 · 주의</a></li>
+          <li><a href="#s11">용어 풀이</a></li>
+        </ol>
+        <h2>안전 원칙</h2>
+        <p style="font-size:13px;color:var(--ink-soft);margin:0;line-height:1.6">저장은 <strong>기기 안에만</strong> 있습니다. 중요한 자료는 <strong>내보내기</strong>로 파일 백업하세요.</p>
+      </div>
+    </details>
+  </nav>
+
+  <main>
+    <!-- 1 -->
+    <section id="s1">
+      <span class="sec-num">01</span>
+      <h2 class="sec-title">개요 — 텐아르란</h2>
+      <p class="sec-lede">텐아르(TEN-AR)는 농작물생산조사 현장 조사원을 위한 모바일 웹 도구 모음입니다. 설치·회원가입 없이 주소만 열면 바로 쓰며, 실측·청취 조사 계산부터 지도 위치 선정, 통계 조회, 자료 저장·엑셀 내보내기까지 한 화면에서 이어집니다.</p>
+
+      <h3><span class="h3-num">1.1</span>접속과 설치</h3>
+      <ol class="steps">
+        <li>브라우저(아이폰 Safari·안드로이드 Chrome)에서 <code>https://ubaldos00-ship-it.github.io/home/</code> 를 엽니다.</li>
+        <li>홈 화면이 <strong>「텐아르(10a) · TEN-AR」</strong> 로 열리면 정상입니다.</li>
+        <li>자주 쓰면 브라우저의 <span class="kbd">홈 화면에 추가</span> 로 아이콘을 만들어 두면 앱처럼 바로 실행됩니다.</li>
+        <li>QR로 공유: 홈 → 개별 조사도구 → <strong>QR코드 공유</strong>.</li>
+      </ol>
+      <div class="call info"><span class="lab">이름의 뜻</span><p>10a(에이아르, are) 당 생산량을 다루는 도구라서 <strong>10a → 텐아르(TEN-AR)</strong> 입니다. 이 문서에서 <code>10a</code> 는 1,000㎡(약 302.5평) 기준을 뜻합니다.</p></div>
+
+      <h3><span class="h3-num">1.2</span>도구 구성</h3>
+      <div class="tw"><table>
+        <thead><tr><th>도구</th><th>파일</th><th>하는 일</th></tr></thead>
+        <tbody>
+          <tr><td><strong>홈</strong></td><td class="field">index.html</td><td>전체 도구 진입 · 공지 · 전광판 · 하단 메뉴</td></tr>
+          <tr><td><strong>실측계산기</strong></td><td class="field">tonghab.html</td><td>A/B포구 선정 + 계통추출 + 10a당 실측·예상 생산량</td></tr>
+          <tr><td><strong>청취계산기</strong></td><td class="field">chungchi.html</td><td>재배면적·수확량 청취 → 10a당 생산량 환산</td></tr>
+          <tr><td><strong>이삭수 계산기</strong></td><td class="field">jusu.html</td><td>논벼 10포기 이삭수 → 대표주수 산출</td></tr>
+          <tr><td><strong>생산량 조회</strong></td><td class="field">graph.html</td><td>KOSIS 기준 작물별 10a 생산량(시도·시군)</td></tr>
+          <tr><td><strong>지도</strong></td><td class="field">map_libre.html</td><td>위치·필지·토지정보 · 포구/측정 도구 · 조사표 연동</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3><span class="h3-num">1.3</span>꼭 알아둘 공통 규칙</h3>
+      <ul>
+        <li><strong>자료는 이 기기에만 저장됩니다.</strong> 서버 계정이 아니라 브라우저 로컬 저장을 씁니다. 기기·브라우저가 바뀌면 자료가 따라오지 않습니다.</li>
+        <li><strong>보안 저장(암호화):</strong> 저장 자료는 기기에서 AES-256-GCM으로 암호화되어 보관됩니다(배지로 상태 표시).</li>
+        <li><strong>백업은 내보내기로:</strong> 브라우저 캐시·데이터를 지우면 저장이 사라집니다. 중요 자료는 <strong>JSON 내보내기</strong>(팀 전달) 또는 <strong>엑셀/CSV</strong>(집계)로 파일 백업하세요.</li>
+        <li><strong>계산식은 공식 산식 고정.</strong> 화면 표시·정렬·내보내기는 개선되어도 수확량·10a 산식은 바뀌지 않습니다.</li>
+      </ul>
+    </section>
+
+    <!-- 2 -->
+    <section id="s2">
+      <span class="sec-num">02</span>
+      <h2 class="sec-title">홈 화면</h2>
+      <p class="sec-lede">홈은 모든 도구의 출입구입니다. 위에서부터 헤더 → LED 전광판 → 알림(공지) → 빠른조사 메뉴 → 개별 조사도구 → 하단 고정 메뉴 순서로 구성됩니다.</p>
+      <div class="grid">
+        <div class="cell"><div class="ct"><span class="em">📢</span> LED 전광판</div><div class="cd">헤더 아래에서 안내가 가로로 흐릅니다. ✕로 닫을 수 있고, 문구는 관리자가 수정합니다(9장).</div></div>
+        <div class="cell"><div class="ct"><span class="em">🔔</span> 알림(공지)</div><div class="cd">최근 공지 3건을 바로 보여줍니다. 「전체보기」로 목록, 지난 방문 공지는 즉시 표시(캐시).</div></div>
+        <div class="cell"><div class="ct"><span class="em">⚡</span> 빠른조사 메뉴</div><div class="cd">실측조사 · 청취조사 · 작물별 10a 생산량 조회로 바로 이동.</div></div>
+        <div class="cell"><div class="ct"><span class="em">🔗</span> 개별 조사도구</div><div class="cd">이삭수 계산기·면적환산·QR공유·오프라인 앱 등. 기본은 접힘, 눌러서 펼침.</div></div>
+        <div class="cell"><div class="ct"><span class="em">🧭</span> 하단 고정 메뉴</div><div class="cd">게임센터 · PDF센터 · 지도 · 카메라 · 계산기.</div></div>
+      </div>
+      <div class="call tip"><span class="lab">팁</span><p>홈을 열면 공지 목록이 <strong>바로</strong> 뜨도록 지난 목록을 기억합니다. 목록이 늦게 떠 아래 메뉴를 잘못 누르는 일이 없도록 자리도 미리 잡아둡니다.</p></div>
+    </section>
+
+    <!-- 3 -->
+    <section id="s3">
+      <span class="sec-num">03</span>
+      <h2 class="sec-title">실측조사 — 실측계산기</h2>
+      <div class="tool-head">
+        <div class="tool-badge">📐</div>
+        <div>
+          <p class="who">현장 실측조사원</p>
+          <div style="font-weight:700;font-size:15px">A/B포구 선정 + 계통추출 + 10a당 생산량</div>
+          <p class="file">tonghab.html</p>
+          <p>포구를 골라 실제로 재고 세어 10a당 생산량을 산출합니다. 논벼는 예상량(낟알수·천립중)과 실수확량을 함께 다룹니다.</p>
+        </div>
+      </div>
+
+      <h3><span class="h3-num">3.1</span>① 공통사항 — 작물·필지·날짜</h3>
+      <ul>
+        <li><strong>작물 선택(1종):</strong> 실측 대상 8종.
+          <div class="chips"><span class="chip">마늘</span><span class="chip">양파</span><span class="chip">감자</span><span class="chip">논벼</span><span class="chip">콩</span><span class="chip">배추</span><span class="chip">무</span><span class="chip">총각무</span></div>
+        </li>
+        <li><strong>필지 주소:</strong> 직접 입력하거나 옆의 <span class="kbd">📍 지도</span> 로 지도에서 위치를 찍어 지번을 받아옵니다(지번은 카카오 기준).</li>
+        <li><strong>층 · 조사구:</strong> 층은 2자리, 조사구는 4자리. 입력 후 칸을 벗어나면 <code>1 → 01</code>, <code>23 → 0023</code> 으로 0이 채워집니다.</li>
+        <li><strong>조사 날짜.</strong> 헤더에는 현재 조사 위치(층·조사구·시군·읍면동·지번)가 표시됩니다.</li>
+      </ul>
+
+      <h3><span class="h3-num">3.2</span>② 비율 설정 · ③ A/B포구</h3>
+      <p>포구 선정을 위해 1번·2번 비율(가·나·다)을 입력하고, A포구·B포구의 면적·중량(작물별 입력 항목)을 넣으면 계통추출 포기수와 10a당 생산량이 산출됩니다. 지도의 <strong>포구도구</strong>로 실측한 값을 조사표로 전송할 수도 있습니다(7장).</p>
+      <div class="call info"><span class="lab">건조율</span><p>마늘·양파는 시도별 건조율이 반영됩니다. 「그 외 시도」는 드롭다운에서 고르면 건조율·전년/평년 대비가 자동 적용됩니다.</p></div>
+
+      <h3><span class="h3-num">3.3</span>논벼 전용 — 10a당 예상량</h3>
+      <p>논벼를 고르면 낟알수 기반 예상량 조사표가 열립니다. 입력·산출 항목:</p>
+      <div class="tw"><table>
+        <thead><tr><th>구분</th><th>항목</th><th>설명</th></tr></thead>
+        <tbody>
+          <tr><td>포기간격</td><td class="field">가로 · 세로 (cm)</td><td>1㎡당 포기수 = <code>ROUND(10000/(가로×세로),1)</code></td></tr>
+          <tr><td>포기수</td><td>A·B 1㎡당 포기수, 평균</td><td>평균은 소수 둘째자리에서 반올림해 1자리로 표시</td></tr>
+          <tr><td>이삭수</td><td class="field">10포기 이삭수</td><td>합계·평균 자동, 평균에 가장 가까운 포기를 <strong>대표주수</strong>로 선정</td></tr>
+          <tr><td>낟알수</td><td>총낟알수 · 완전낟알수</td><td>완전립 비율·이삭당 낟알수 자동</td></tr>
+          <tr><td>천립중</td><td class="field">g</td><td>정곡(백미) 기준</td></tr>
+          <tr><td>결과</td><td><strong>10a당 예상량</strong></td><td>공문 산식으로 산출(백미 92.9% 기준)</td></tr>
+        </tbody>
+      </table></div>
+      <div class="call tip"><span class="lab">B포구 3포기 이삭수(선택)</span><p>예상량과 실수확량의 괴리 확인이 필요한 조사원만 <strong>5번·중심·6번</strong> 3포기 이삭수를 입력합니다(본 계산에는 미반영). 두 자리 입력 시 다음 칸 자동 이동, 칸을 누르면 전체 선택되어 바로 교체됩니다.</p></div>
+
+      <h3><span class="h3-num">3.4</span>지도 연동</h3>
+      <p>이삭수 아래 <span class="kbd">🧭 지도에서 A/B포구 위치(현장모드)</span> 를 누르면, 연결된 핀 위치의 현장모드(GPS·진행방향)가 지도에서 자동으로 열립니다. 반대로 지도에서 포구를 실측해 조사표로 보낼 수도 있습니다.</p>
+    </section>
+
+    <!-- 4 -->
+    <section id="s4">
+      <span class="sec-num">04</span>
+      <h2 class="sec-title">청취조사 — 청취계산기</h2>
+      <div class="tool-head">
+        <div class="tool-badge">🎙️</div>
+        <div>
+          <p class="who">청취조사원</p>
+          <div style="font-weight:700;font-size:15px">재배면적·수확량 → 10a당 생산량</div>
+          <p class="file">chungchi.html</p>
+          <p>농가에게 들은 재배면적과 수확량으로 10a당 생산량을 환산하고, 지역 평년·전년과 비교합니다.</p>
+        </div>
+      </div>
+      <ol class="steps">
+        <li><strong>공통사항:</strong> 필지 주소, 층·조사구(2·4자리), 조사일.</li>
+        <li><strong>지역·작물 선택:</strong> 대구·경북·강원 버튼 + 그 외 14개 시도 드롭다운. 작물은 청취 대상(과수·특작·맥류 등).</li>
+        <li><strong>재배면적:</strong> 응답자의 평을 입력하면 ㎡로 환산(1평=3.3㎡). 여러 행 추가 가능.</li>
+        <li><strong>수확량:</strong> 조사자료 A/H로 동적 입력. 맥류는 조곡 기준.</li>
+        <li><strong>결과:</strong> <code>수확량합계(kg) ÷ 재배면적(㎡) × 1,000 = kg/10a</code>. 아래에 평년·전년 대비와 지방청별 시도 비교 그래프가 나옵니다.</li>
+      </ol>
+      <div class="call info"><span class="lab">지방청 비교</span><p>지역을 고르면 그 지역이 속한 청의 시도끼리(전국 포함) 비교합니다. 예) 인천 → 전국·서울·인천·경기(경인청).</p></div>
+    </section>
+
+    <!-- 5 -->
+    <section id="s5">
+      <span class="sec-num">05</span>
+      <h2 class="sec-title">논벼 이삭수 계산기</h2>
+      <div class="tool-head">
+        <div class="tool-badge">🌾</div>
+        <div>
+          <p class="who">논벼 조사원</p>
+          <div style="font-weight:700;font-size:15px">10포기 이삭수 → 대표주수</div>
+          <p class="file">jusu.html</p>
+          <p>논벼 10포기의 이삭수를 세어 합계·평균을 구하고, 평균에 가장 가까운 대표주수를 뽑습니다. 실측계산기와 같은 방식이라 결과를 그대로 이어 쓸 수 있습니다.</p>
+        </div>
+      </div>
+      <ul>
+        <li>1~10번 포기 이삭수를 입력(두 자리 채우면 다음 칸 자동 이동, 빈 칸 백스페이스는 이전 칸).</li>
+        <li>합계·평균·대표주수가 자동 표시.</li>
+        <li>필지 주소는 <span class="kbd">📍 지도</span> 로 채우고, 잘린 주소는 아래 작은 글씨로 전체 표시.</li>
+      </ul>
+    </section>
+
+    <!-- 6 -->
+    <section id="s6">
+      <span class="sec-num">06</span>
+      <h2 class="sec-title">작물별 10a 생산량 조회</h2>
+      <div class="tool-head">
+        <div class="tool-badge">📊</div>
+        <div>
+          <p class="who">전 조사원 · 참고</p>
+          <div style="font-weight:700;font-size:15px">KOSIS 기준 시도·시군 생산량</div>
+          <p class="file">graph.html</p>
+          <p>작물을 고르고 지역을 선택하면 연도별 10a당 생산량을 막대+꺾은선으로 보여줍니다(KOSIS 2021~2025).</p>
+        </div>
+      </div>
+      <ol class="steps">
+        <li><strong>작물 선택</strong> → <strong>지역 선택</strong>(최대 8개, 논벼는 24개).</li>
+        <li>논벼는 「시도 보기 / 시군별 보기」 토글. 시군별은 6개 권역으로 조회:
+          <div class="chips"><span class="chip">대구경북권</span><span class="chip">강원권</span><span class="chip">서울경기권</span><span class="chip">대전충청권</span><span class="chip">광주호남권</span><span class="chip">부산경남권</span></div>
+        </li>
+        <li>연도별 값·평균·전년/평년 대비를 표와 그래프로 확인.</li>
+      </ol>
+    </section>
+
+    <!-- 7 -->
+    <section id="s7">
+      <span class="sec-num">07</span>
+      <h2 class="sec-title">지도</h2>
+      <div class="tool-head">
+        <div class="tool-badge">🗺️</div>
+        <div>
+          <p class="who">전 조사원</p>
+          <div style="font-weight:700;font-size:15px">위치 · 필지 · 포구/측정 · 조사표 연동</div>
+          <p class="file">map_libre.html</p>
+          <p>MapLibre·브이월드 기반 지도. 현재 위치·필지 경계·토지정보를 보고, 포구·면적을 실측해 조사표로 전송합니다.</p>
+        </div>
+      </div>
+
+      <h3><span class="h3-num">7.1</span>주요 도구</h3>
+      <div class="grid">
+        <div class="cell"><div class="ct"><span class="em">📍</span> 현재위치 · 검색</div><div class="cd">GPS 위치·정확도 표시, 주소/지번/장소 검색.</div></div>
+        <div class="cell"><div class="ct"><span class="em">🏷️</span> 토지정보</div><div class="cd">꾹 눌러 필지의 지번·지목·면적·공시지가·용도지역 조회.</div></div>
+        <div class="cell"><div class="ct"><span class="em">⭐</span> 생산량목록(핀)</div><div class="cd">위치를 핀으로 저장·분류(시도/시군구/읍면동/작물), 정렬(최근·면적·작물).</div></div>
+        <div class="cell"><div class="ct"><span class="em">📐</span> 포구도구</div><div class="cd">A/B포구 가·나 지점·각도·세로총길이 실측 → 실측계산기로 전송.</div></div>
+        <div class="cell"><div class="ct"><span class="em">📏</span> 측정도구</div><div class="cd">면적·거리 측정 → 청취계산기 재배면적으로 전송.</div></div>
+        <div class="cell"><div class="ct"><span class="em">🌾</span> 조사구목록</div><div class="cd">작물재배·가축·축비·농비 등 조사구 핀 관리·엑셀 가져오기.</div></div>
+      </div>
+
+      <h3><span class="h3-num">7.2</span>지번은 카카오 기준</h3>
+      <div class="call info"><span class="lab">왜 카카오?</span><p>브이월드 지적도가 일부 지역(현풍·고령 등)에서 실제와 밀려 있어, 좌표→지번은 <strong>카카오 지도 API</strong>를 우선 사용합니다(실패 시 브이월드 자동 폴백). 「이 위치에 저장」·「조사표 전송」·계산기 핀 저장 모두 카카오 지번으로 통일했습니다.</p></div>
+
+      <h3><span class="h3-num">7.3</span>조사표로 전송</h3>
+      <ol class="steps">
+        <li>포구/측정을 완료하고 <strong>저장</strong>합니다(저장 안 하면 「저장 후 전송」 안내).</li>
+        <li><span class="kbd">📤 조사표 전송</span> 을 누릅니다.</li>
+        <li>포구는 실측계산기(tonghab), 측정은 청취계산기(chungchi)로 값이 채워지며 화면이 그 계산기로 이동합니다.</li>
+        <li>전송 주소는 연결된 저장 핀의 카카오 지번을 씁니다.</li>
+      </ol>
+    </section>
+
+    <!-- 8 -->
+    <section id="s8">
+      <span class="sec-num">08</span>
+      <h2 class="sec-title">저장 · 불러오기 · 엑셀</h2>
+      <p class="sec-lede">실측·청취 계산기 모두 저장/불러오기 창을 갖습니다. 자료 저장·목록 관리·백업(JSON)·집계·엑셀 내보내기를 여기서 합니다.</p>
+
+      <h3><span class="h3-num">8.1</span>저장목록 다루기</h3>
+      <ul>
+        <li><strong>새로 저장 / 덮어쓰기 / 불러오기(📂) / 삭제(🗑) / 잠금(🔒).</strong> 잠근 자료만 집계·엑셀에 들어갑니다.</li>
+        <li><strong>조회:</strong> 시도·시군구·읍면동·작물 콤보로 걸러 보기.</li>
+        <li><strong>정렬:</strong> 최근 저장순 · 생산량/면적 큰순 · 작물별 · <strong>목록 순서(↑↓)</strong>.</li>
+        <li><strong>순서 변경:</strong> 「목록 순서(↑↓)」에서 각 항목의 ▲▼로 순서를 바꿉니다(엑셀도 이 순서대로 나옵니다).</li>
+        <li>목록 항목에는 작물 뒤에 <strong>층-조사구(파랑)</strong>, 주소의 <strong>지번(빨강)</strong>이 표시됩니다.</li>
+      </ul>
+
+      <h3><span class="h3-num">8.2</span>작물별 10a당 수량 집계</h3>
+      <p>잠금(🔒)한 자료를 작물별로 묶어 평균 생산량을 보여줍니다. 각 항목은 <code>01-0011</code> 식 층-조사구가 주소 앞에 붙어 표시됩니다.</p>
+
+      <h3><span class="h3-num">8.3</span>엑셀 내보내기 (논벼 예상량)</h3>
+      <ol class="steps">
+        <li>집계에서 <span class="kbd">⬇ 엑셀 저장</span> 또는 <span class="kbd">⬇ CSV 저장</span>.</li>
+        <li>처음 저장 시 <strong>비밀번호를 설정</strong>합니다. 이후에는 비밀번호가 맞아야 저장됩니다(🔑로 해제).</li>
+        <li>엑셀에는 주소·시도·시군·읍면동·층·조사구·동리·지번(본지번/부지번) + 42개 조사 항목 + <strong>시군별 합계·평균</strong>이 들어갑니다.</li>
+        <li>엑셀 안에 <strong>수식</strong>이 들어 있어 값을 고치면 스스로 재계산됩니다.</li>
+      </ol>
+      <div class="call warn"><span class="lab">주의</span><p>.xls를 열 때 「형식이 확장자와 다릅니다」 경고가 뜨면 <strong>[예]</strong>를 누르면 정상적으로 열립니다. 지번은 텍스트로 저장되어 <code>27-2</code>가 날짜로 바뀌지 않습니다.</p></div>
+      <div class="call tip"><span class="lab">팀 전달용 백업</span><p>집계 엑셀과 별개로, 저장/불러오기 하단의 <strong>JSON 공유·내보내기·불러오기</strong>는 텐아르끼리 자료를 그대로 옮길 때 씁니다(연결 요도·포구 기록 포함).</p></div>
+    </section>
+
+    <!-- 9 -->
+    <section id="s9">
+      <span class="sec-num">09</span>
+      <h2 class="sec-title">관리자 기능</h2>
+      <p class="sec-lede">공지와 전광판은 관리자만 수정할 수 있습니다. 관리자 계정으로 로그인하면 모든 사용자에게 반영됩니다(Firestore).</p>
+      <h3><span class="h3-num">9.1</span>공지 등록·수정</h3>
+      <ol class="steps">
+        <li>홈 알림의 <span class="kbd">🔐</span> 로 관리자(구글) 로그인.</li>
+        <li>관리자 바에서 <strong>+ 공지 추가</strong> → 제목·내용 저장.</li>
+        <li>목록의 📌 고정 · ✎ 수정 · ✕ 삭제로 관리.</li>
+      </ol>
+      <h3><span class="h3-num">9.2</span>LED 전광판 수정</h3>
+      <ol class="steps">
+        <li>관리자 바의 <span class="kbd">📢 LED 수정</span>.</li>
+        <li>한 줄에 한 문구씩 입력. 링크는 뒤에 <code>|주소</code>, 채팅 열기 줄은 주소 자리에 <code>CHAT</code>.</li>
+        <li><strong>전체 반영 저장</strong> → 모든 사용자 전광판에 반영.</li>
+      </ol>
+      <div class="call admin"><span class="lab">관리자 전용</span><p>공지·전광판 수정은 지정된 관리자 계정에서만 가능합니다. 저장 값은 모든 사용자에게 동기화되므로 오탈자·링크 주소를 확인 후 저장하세요.</p></div>
+    </section>
+
+    <!-- 10 -->
+    <section id="s10">
+      <span class="sec-num">10</span>
+      <h2 class="sec-title">문제해결 · 주의</h2>
+      <div class="tw"><table>
+        <thead><tr><th>증상</th><th>원인 · 해결</th></tr></thead>
+        <tbody>
+          <tr><td>바꾼 기능이 안 보임</td><td>브라우저에 옛 화면이 캐시됨 → <strong>새로고침</strong>(안 되면 브라우저 캐시 비우기).</td></tr>
+          <tr><td>저장 자료가 사라짐</td><td>브라우저 데이터 삭제·시크릿모드·다른 기기 → 저장은 <strong>기기 로컬</strong>. 미리 <strong>내보내기</strong>로 백업.</td></tr>
+          <tr><td>지도 지번이 실제와 다름</td><td>브이월드 지적 밀림 → 텐아르는 <strong>카카오 지번</strong> 우선 사용. 인터넷 필요.</td></tr>
+          <tr><td>버튼이 안 눌림</td><td>저장/불러오기 창 안내대로 <strong>새로고침</strong>.</td></tr>
+          <tr><td>키패드가 안 뜸 / 포커스가 튐</td><td>수정된 최신 버전에서 해결됨 → 캐시 새로고침 후 확인.</td></tr>
+          <tr><td>엑셀 열 때 형식 경고</td><td><strong>[예]</strong>를 누르면 정상 열림(수식·한글 유지).</td></tr>
+        </tbody>
+      </table></div>
+      <div class="call warn"><span class="lab">가장 중요한 원칙</span><p>현장에서 조사한 자료는 반드시 <strong>내보내기(엑셀/JSON)</strong>로 백업하세요. 기기 하나에만 있으면 분실·초기화 시 복구할 수 없습니다.</p></div>
+    </section>
+
+    <!-- 11 -->
+    <section id="s11">
+      <span class="sec-num">11</span>
+      <h2 class="sec-title">용어 풀이</h2>
+      <div class="tw"><table>
+        <thead><tr><th>용어</th><th>뜻</th></tr></thead>
+        <tbody>
+          <tr><td><strong>10a</strong></td><td>1,000㎡(약 302.5평). 생산량 통계의 기본 단위(kg/10a).</td></tr>
+          <tr><td><strong>포구(A/B포구)</strong></td><td>실측조사에서 표본으로 고르는 조사 지점. A·B 두 곳을 재어 평균.</td></tr>
+          <tr><td><strong>계통추출</strong></td><td>난수표 좌표로 일정 간격의 포기를 뽑는 표본 추출 방식.</td></tr>
+          <tr><td><strong>대표주수</strong></td><td>10포기 평균 이삭수에 가장 가까운 포기. 유효이삭수 기준값.</td></tr>
+          <tr><td><strong>천립중</strong></td><td>낟알 1,000개의 무게(g). 논벼는 정곡(백미) 기준.</td></tr>
+          <tr><td><strong>정곡 / 조곡</strong></td><td>정곡=도정한 알곡(백미). 조곡=도정 전(맥류 기준).</td></tr>
+          <tr><td><strong>층 · 조사구</strong></td><td>조사 필지 식별 번호. 층 2자리, 조사구 4자리(0채움).</td></tr>
+          <tr><td><strong>본지번 · 부지번</strong></td><td>지번의 앞·뒤 번호. 27-3 → 본 0027 / 부 0003, 27 → 본 0027 / 부 0000.</td></tr>
+          <tr><td><strong>KOSIS</strong></td><td>국가통계포털. 작물별 10a 생산량 참고 자료의 출처.</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+  </main>
+</div>
+
+<footer class="doc-foot">
+  <span>텐아르(TEN-AR) 운영매뉴얼 · 기초자료</span>
+  <span>농작물생산조사 현장조사 도구 모음</span>
+  <span>ubaldos00-ship-it.github.io/home</span>
+</footer>
+
+<script>
+  (function(){
+    /* 밝기 토글 (system → light → dark 순환) */
+    var btn=document.getElementById('themeBtn'), root=document.documentElement;
+    btn.addEventListener('click',function(){
+      var cur=root.getAttribute('data-theme');
+      var next = cur==='dark' ? 'light' : (cur==='light' ? 'dark' : (matchMedia('(prefers-color-scheme: dark)').matches ? 'light' : 'dark'));
+      root.setAttribute('data-theme',next);
+    });
+    /* 목차 현재 위치 하이라이트 */
+    var links=[].slice.call(document.querySelectorAll('#tocList a'));
+    var map={}; links.forEach(function(a){ map[a.getAttribute('href').slice(1)]=a; });
+    var secs=[].slice.call(document.querySelectorAll('main section'));
+    var io=new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        if(e.isIntersecting){
+          links.forEach(function(l){l.classList.remove('active');});
+          var a=map[e.target.id]; if(a) a.classList.add('active');
+        }
+      });
+    },{rootMargin:'-15% 0px -70% 0px', threshold:0});
+    secs.forEach(function(s){io.observe(s);});
+    /* 모바일 목차: 링크 누르면 접기 */
+    var det=document.getElementById('tocDetails');
+    links.forEach(function(a){ a.addEventListener('click',function(){ if(matchMedia('(max-width:860px)').matches) det.open=false; }); });
+  })();
+</script>
+
+</body>
+</html>

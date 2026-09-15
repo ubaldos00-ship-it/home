@@ -1,4 +1,5 @@
-<!-- index.html (v109) · 저장: 2026-09-10 07:11 KST · [v109] 홈 공지 목록 즉시 표시 + 레이아웃 밀림(오탭) 방지 — ①공지 영역 높이 예약(min-height:72px)으로 늦게 로드돼도 아래 「빠른조사 메뉴」가 안 밀림. ②지난 방문 공지를 localStorage 캐시로 Firestore 로딩 전에 즉시 표시(다음 방문부터 바로 보임). ③로드 실패(오프라인)여도 캐시 목록 유지. ④gstatic/firestore preconnect로 공지 모듈 첫 로드 가속. (v108 이하 유지) -->
+<!-- index.html (v110) · 저장: 2026-09-15 12:25 KST · [v110] 「빠른조사 메뉴」 헤더 오른쪽에 「📖 운영매뉴얼」 링크 추가(manual.html 새 탭). 운영매뉴얼 페이지(manual.html)를 업로드 폴더에 포함. 그 외 변경 없음. (v109 이하 유지) -->
+<!-- (이전)  index.html (v109) · 저장: 2026-09-10 07:11 KST · [v109] 홈 공지 목록 즉시 표시 + 레이아웃 밀림(오탭) 방지 — ①공지 영역 높이 예약(min-height:72px)으로 늦게 로드돼도 아래 「빠른조사 메뉴」가 안 밀림. ②지난 방문 공지를 localStorage 캐시로 Firestore 로딩 전에 즉시 표시(다음 방문부터 바로 보임). ③로드 실패(오프라인)여도 캐시 목록 유지. ④gstatic/firestore preconnect로 공지 모듈 첫 로드 가속. (v108 이하 유지) -->
 <!-- (이전)  index.html (v108) · 저장: 2026-09-10 07:03 KST · [v108] 홈 화면 정리 — ①LED 전광판이 알림창을 가리던 문제 수정: 본문 상단 여백을 LED 높이(--led-h:36px)만큼 더 내려 알림이 LED 바로 아래 딱 맞게(LED 닫으면 body.led-off로 원위치). ②LED 문구를 관리자(🔐)가 직접 수정·전체 동기화 — 관리자 바 「📢 LED 수정」 → Firestore(notices/__led__) 저장, 모든 사용자 반영(문구|주소 형식, 주소자리 CHAT=채팅 열기). ③LED 기본 문구를 「고추·참깨·과수는 청취조사 빠른실행에서 계산」으로 변경(맥류 안내 종료). ④「개별 조사도구 바로가기」→「개별 조사도구」로 단축 + 작은 모바일에서 섹션 제목 자동 축소(두 줄 방지). ⑤하단 버전 「v1.8-r2pdf」→「v1.8」. (v107 이하 유지) -->
 <!-- (이전)  index.html (v107) · 저장: 2026-08-25 05:56 KST · [v107] cattle.html을 v6로 갱신(뒤로=홈이동·라벨단축·출하차수자동제거·백업암호입력창·복원초록체크박스·개월수반올림·수정시신고이력표시). index 링크는 v105 그대로 · 그 외 변경 없음 -->
 <!-- (이전)  index.html (v106) · 저장: 2026-08-24 20:36 KST · [v106] cattle.html을 v5로 갱신 · index 링크는 v105 그대로 -->
@@ -367,6 +368,29 @@
     border-left: 4px solid var(--color-primary);
     letter-spacing: -0.01em;
   }
+
+  /* [v110] 운영매뉴얼 링크 — 헤더 오른쪽 정렬 */
+  .section-title .manual-link {
+    margin-left: auto;
+    flex-shrink: 0;
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: #27500A;
+    background: #fff;
+    border: 1.5px solid #cdd9c0;
+    border-radius: 999px;
+    padding: 5px 12px;
+    text-decoration: none;
+    white-space: nowrap;
+    box-shadow: 0 1px 2px rgba(31,81,50,0.08);
+    transition: background .12s, border-color .12s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .section-title .manual-link:hover,
+  .section-title .manual-link:active { background: #eaf3e6; border-color: #27500A; }
+  @media (max-width: 400px) { .section-title .manual-link { font-size: 11.5px; padding: 4px 9px; } }
+  @media (max-width: 340px) { .section-title .manual-link { font-size: 10.5px; padding: 4px 8px; } }
 
   .section-title .icon {
     width: 32px; height: 32px;
@@ -1287,6 +1311,8 @@
     <h2 class="section-title">
       <span class="icon">⚡</span>
       빠른조사 메뉴
+      <!-- [v110] 운영매뉴얼 링크 (오른쪽 정렬) -->
+      <a class="manual-link" href="manual.html" target="_blank" rel="noopener">📖 운영매뉴얼</a>
     </h2>
     <div class="menu-grid">
       <!-- 실측조사 빠른실행 -->
