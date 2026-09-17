@@ -1,4 +1,5 @@
-<!-- index.html (v112) · 저장: 2026-09-17 13:31 KST · [v112] 즐겨찾기/북마크 설명(페이지 제목)을 「농작물생산조사 통합시스템 · 텐아르v1.8」로 변경(기존 v1.5 → v1.8). og:title·twitter:title도 동일 반영. 그 외 변경 없음. (v111 이하 유지) -->
+<!-- index.html (v113) · 저장: 2026-09-17 14:09 KST · [v113] 북마크(즐겨찾기)에서 아이콘이 '두당'으로 나오던 문제 해결 — 북마크는 apple-touch-icon이 아니라 favicon을 사용하는데 favicon.ico가 없어 캐시된 다른 앱 아이콘이 표시됨. favicon.ico(16/32/48 '텐')·favicon-16/32.png·apple-touch-icon(-precomposed).png 추가하고 ?v=223로 캐시 무효화. ※ 기존 아이콘이 iOS에 캐시로 남아있으면: 옛 북마크 삭제 + 사파리 「방문 기록·웹사이트 데이터 지우기」 후 다시 추가. (v112 이하 유지) -->
+<!-- (이전)  index.html (v112) · 저장: 2026-09-17 13:31 KST · [v112] 즐겨찾기/북마크 설명(페이지 제목)을 「농작물생산조사 통합시스템 · 텐아르v1.8」로 변경(기존 v1.5 → v1.8). og:title·twitter:title도 동일 반영. 그 외 변경 없음. (v111 이하 유지) -->
 <!-- (이전)  index.html (v111) · 저장: 2026-09-17 13:03 KST · [v111] 홈화면 추가/즐겨찾기 시 '텐아르'로 표시 — apple-touch-icon·manifest·apple-mobile-web-app-title 추가(전용 아이콘 tenar-180/192/512.png + tenar.webmanifest). 이전엔 아이콘 미지정이라 같은 도메인의 '두당' 아이콘을 상속해 홈화면에 두당으로 나오던 문제 해결. 그 외 변경 없음. (v110 이하 유지) -->
 <!-- (이전)  index.html (v110) · 저장: 2026-09-15 12:25 KST · [v110] 「빠른조사 메뉴」 헤더 오른쪽에 「📖 운영매뉴얼」 링크 추가(manual.html 새 탭). 운영매뉴얼 페이지(manual.html)를 업로드 폴더에 포함. 그 외 변경 없음. (v109 이하 유지) -->
 <!-- (이전)  index.html (v109) · 저장: 2026-09-10 07:11 KST · [v109] 홈 공지 목록 즉시 표시 + 레이아웃 밀림(오탭) 방지 — ①공지 영역 높이 예약(min-height:72px)으로 늦게 로드돼도 아래 「빠른조사 메뉴」가 안 밀림. ②지난 방문 공지를 localStorage 캐시로 Firestore 로딩 전에 즉시 표시(다음 방문부터 바로 보임). ③로드 실패(오프라인)여도 캐시 목록 유지. ④gstatic/firestore preconnect로 공지 모듈 첫 로드 가속. (v108 이하 유지) -->
@@ -58,12 +59,17 @@
 <meta name="theme-color" content="#27500A" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<!-- [v111] 홈화면 추가/즐겨찾기 시 '텐아르' 이름·아이콘으로 나오도록 (다른 앱 '두당' 아이콘 상속 방지) -->
+<!-- [v113] 홈화면 추가/즐겨찾기·북마크 모두 '텐아르' 아이콘으로 (북마크는 favicon.ico를 쓰므로 추가) · ?v=223 캐시무효화 -->
 <meta name="apple-mobile-web-app-title" content="텐아르" />
 <meta name="application-name" content="텐아르" />
-<link rel="apple-touch-icon" sizes="180x180" href="tenar-180.png" />
-<link rel="icon" type="image/png" sizes="192x192" href="tenar-192.png" />
-<link rel="icon" type="image/png" sizes="512x512" href="tenar-512.png" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=223" />
+<link rel="apple-touch-icon-precomposed" href="apple-touch-icon-precomposed.png?v=223" />
+<link rel="icon" href="favicon.ico?v=223" sizes="any" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=223" />
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png?v=223" />
+<link rel="icon" type="image/png" sizes="192x192" href="tenar-192.png?v=223" />
+<link rel="icon" type="image/png" sizes="512x512" href="tenar-512.png?v=223" />
+<link rel="shortcut icon" href="favicon.ico?v=223" />
 <link rel="manifest" href="tenar.webmanifest" />
 <title>농작물생산조사 통합시스템 · 텐아르v1.8</title>
 <!-- OG 메타 (카카오톡/링크 공유용) -->
