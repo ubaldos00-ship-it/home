@@ -1,4 +1,5 @@
-<!-- tonghab.html (v137) · 저장: 2026-09-17 13:03 KST · [v137] 논벼 예상량 집계 내보내기 개선 — ①「엑셀 저장」을 진짜 .xlsx(OOXML) 파일로 교체 → 아이폰(Numbers)·안드로이드(구글 시트)·엑셀에서 정상적으로 열림(기존 .xls SpreadsheetML은 모바일에서 안 열리던 문제 해결). 수식(R1C1→A1 변환)+캐시값 내장은 그대로 유지(파일 자체 재계산). ②엑셀·CSV의 「이삭합계」 열을 「10번주」 다음 → 「1번주」 앞으로 이동(합계|1~10번주|평균 순). ※ 계산 함수 무변경(내보내기·열순서만). (v136 이하 유지) -->
+<!-- tonghab.html (v138) · 저장: 2026-09-17 13:31 KST · [v138] 논벼 예상량 집계에 「공유(전송)」 버튼 추가 — 「📤 엑셀 공유」·「📤 CSV 공유」로 파일을 카톡·메일 등에 바로 전송(navigator.share 파일 공유, 미지원 기기는 자동으로 파일 저장으로 폴백). 저장 버튼(⬇)은 그대로 유지. ※ 계산 함수 무변경(내보내기·공유만). (v137 이하 유지) -->
+<!-- (이전)  tonghab.html (v137) · 저장: 2026-09-17 13:03 KST · [v137] 논벼 예상량 집계 내보내기 개선 — ①「엑셀 저장」을 진짜 .xlsx(OOXML) 파일로 교체 → 아이폰(Numbers)·안드로이드(구글 시트)·엑셀에서 정상적으로 열림(기존 .xls SpreadsheetML은 모바일에서 안 열리던 문제 해결). 수식(R1C1→A1 변환)+캐시값 내장은 그대로 유지(파일 자체 재계산). ②엑셀·CSV의 「이삭합계」 열을 「10번주」 다음 → 「1번주」 앞으로 이동(합계|1~10번주|평균 순). ※ 계산 함수 무변경(내보내기·열순서만). (v136 이하 유지) -->
 <!-- (이전)  tonghab.html (v136) · 저장: 2026-09-15 04:22 KST · [v136] 「A·B포구 평균 1㎡당 포기수」 화면 표시 반올림 수정 — 예) 16.65가 부동소수점 오차로 16.6으로 잘려 보이던 것을, 소수 둘째자리에서 반올림해 16.7로 표기(표시값만 변경). ※ 정밀값(2자리)·수확량 계산식은 그대로(무변경). (v135 이하 유지) -->
 <!-- (이전)  tonghab.html (v135) · 저장: 2026-09-14 13:54 KST · [v135·버그수정] 「초기화」 시 층·조사구 입력란이 안 지워지던 문제 수정 — 공통사항 초기화(prodFullResetAll)에서 층·조사구를 먼저 비우고 헤더도 갱신(리로드가 지연/미발생해도 확실히 초기화). ※ 계산 함수 무변경. (v134 이하 유지) -->
 <!-- (이전)  tonghab.html (v134) · 저장: 2026-09-14 06:54 KST · [v134] 층·조사구 0채움 + 엑셀 지번 분리 — ①층 입력 1→01, 조사구 23→0023(입력란 blur·엑셀 모두 0채움, 텍스트로 저장해 앞 0 유지). ②엑셀에 「본지번·부지번」 열 추가(4자리 0채움): 27-3→본0027/부0003, 27→본0027/부0000. ※ 계산 함수 무변경(입력표시·엑셀만). (v133 이하 유지) -->
@@ -9803,12 +9804,16 @@ function _slRenderAgg(){
     var _btnCss='flex:1;padding:9px 6px;border-radius:8px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;';
     var bar='<div style="border:1.5px solid #b3c8f0;background:#f2f7ff;border-radius:9px;padding:9px 10px;margin-bottom:9px;">'
       +'<div style="font-size:12px;color:#0A3A8C;font-weight:800;margin-bottom:7px;">📊 논벼 예상량 → 엑셀 집계 내보내기</div>'
+      +'<div style="display:flex;gap:6px;align-items:stretch;margin-bottom:6px;">'
+        +'<button type="button" onclick="nbExportXLSX()" style="'+_btnCss+'background:#1D6F42;color:#fff;border:1.5px solid #1D6F42;">⬇ 엑셀 저장(.xlsx)</button>'
+        +'<button type="button" onclick="nbShareXLSX()" style="'+_btnCss+'background:#0A7EA4;color:#fff;border:1.5px solid #0A7EA4;">📤 엑셀 공유</button>'
+      +'</div>'
       +'<div style="display:flex;gap:6px;align-items:stretch;">'
-        +'<button type="button" onclick="nbExportXLSX()" style="'+_btnCss+'background:#1D6F42;color:#fff;border:1.5px solid #1D6F42;">⬇ 엑셀(.xlsx) 저장</button>'
         +'<button type="button" onclick="nbExportCSV()" style="'+_btnCss+'background:#0A3A8C;color:#fff;border:1.5px solid #0A3A8C;">⬇ CSV 저장</button>'
+        +'<button type="button" onclick="nbShareCSV()" style="'+_btnCss+'background:#3A6BC4;color:#fff;border:1.5px solid #3A6BC4;">📤 CSV 공유</button>'
         +'<button type="button" onclick="nbExportResetPw()" title="비밀번호 해제" style="flex:0 0 auto;padding:9px 10px;border-radius:8px;font-size:14px;cursor:pointer;font-family:inherit;background:#fff;border:1.5px solid #c7d3e6;color:#33507d;">🔑</button>'
       +'</div>'
-      +'<div style="font-size:10px;color:#7a869a;margin-top:6px;line-height:1.5;">잠금(🔒)된 논벼 자료 '+_riceN+'건 · 엑셀(.xlsx·아이폰/안드로이드에서 열림) 또는 CSV 파일로 저장(주소·시군·읍면동·지번 + 항목 + 시군별 합계·평균) · 처음 저장 시 비밀번호를 설정합니다.</div>'
+      +'<div style="font-size:10px;color:#7a869a;margin-top:6px;line-height:1.5;">잠금(🔒)된 논벼 자료 '+_riceN+'건 · 「저장」은 파일로 내려받기, 「공유」는 카톡·메일 등으로 바로 전송(.xlsx는 아이폰/안드로이드에서 열림) · 처음 저장 시 비밀번호를 설정합니다.</div>'
       +'</div>';
     html=bar+html;
   }
@@ -10306,6 +10311,36 @@ function nbExportCSV(){
   var t=_nbBuildData();
   if(!t.count){ alert('내보낼 논벼(잠금) 자료가 없습니다.\n집계에 넣을 논벼 자료를 🔒 잠금하세요.'); return; }
   _nbExportGate(function(){ _nbDownload(_nbToCSV(t), _nbFileName('csv'), 'text/csv;charset=utf-8;'); });
+}
+/* [v138] 파일 공유(전송) — 네이티브 공유 시트로 카톡·메일 등에 바로 전송. 미지원 시 다운로드로 폴백 */
+async function _nbShareFile(bytes, fname, mime, title){
+  var file; try{ file=new File([bytes], fname, {type:mime}); }catch(e){ file=null; }
+  try{
+    if(file && navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({ files:[file], title:title, text:title });
+      return true;   /* 공유 성공(또는 시트 표시) */
+    }
+  }catch(e){ if(e && e.name==='AbortError') return true; /* 사용자가 취소 → 다운로드로 떨어지지 않음 */ }
+  /* 폴백: 파일 저장 */
+  _nbDownload(bytes, fname, mime);
+  alert('이 기기에서는 바로 전송이 지원되지 않아 파일로 저장했습니다.\n저장된 파일을 카톡·메일에 첨부해 보내세요.');
+  return false;
+}
+function nbShareXLSX(){
+  var t=_nbBuildData();
+  if(!t.count){ alert('공유할 논벼(잠금) 자료가 없습니다.\n집계에 넣을 논벼 자료를 🔒 잠금하세요.'); return; }
+  _nbExportGate(function(){
+    try{ _nbShareFile(_nbToXLSX(t), _nbFileName('xlsx'), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', '논벼 예상량 집계 ('+t.count+'건)'); }
+    catch(e){ alert('엑셀 공유 실패: '+e.message); }
+  });
+}
+function nbShareCSV(){
+  var t=_nbBuildData();
+  if(!t.count){ alert('공유할 논벼(잠금) 자료가 없습니다.\n집계에 넣을 논벼 자료를 🔒 잠금하세요.'); return; }
+  _nbExportGate(function(){
+    try{ _nbShareFile(new TextEncoder().encode(_nbToCSV(t)), _nbFileName('csv'), 'text/csv;charset=utf-8;', '논벼 예상량 집계 ('+t.count+'건)'); }
+    catch(e){ alert('CSV 공유 실패: '+e.message); }
+  });
 }
 
 /* 저장목록 항목별 실제 캐시 암호화 여부 아이콘 (🟢 암호화 / 🔴 평문) */
