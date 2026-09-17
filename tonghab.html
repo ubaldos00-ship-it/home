@@ -1,4 +1,5 @@
-<!-- tonghab.html (v136) · 저장: 2026-09-15 04:22 KST · [v136] 「A·B포구 평균 1㎡당 포기수」 화면 표시 반올림 수정 — 예) 16.65가 부동소수점 오차로 16.6으로 잘려 보이던 것을, 소수 둘째자리에서 반올림해 16.7로 표기(표시값만 변경). ※ 정밀값(2자리)·수확량 계산식은 그대로(무변경). (v135 이하 유지) -->
+<!-- tonghab.html (v137) · 저장: 2026-09-17 13:03 KST · [v137] 논벼 예상량 집계 내보내기 개선 — ①「엑셀 저장」을 진짜 .xlsx(OOXML) 파일로 교체 → 아이폰(Numbers)·안드로이드(구글 시트)·엑셀에서 정상적으로 열림(기존 .xls SpreadsheetML은 모바일에서 안 열리던 문제 해결). 수식(R1C1→A1 변환)+캐시값 내장은 그대로 유지(파일 자체 재계산). ②엑셀·CSV의 「이삭합계」 열을 「10번주」 다음 → 「1번주」 앞으로 이동(합계|1~10번주|평균 순). ※ 계산 함수 무변경(내보내기·열순서만). (v136 이하 유지) -->
+<!-- (이전)  tonghab.html (v136) · 저장: 2026-09-15 04:22 KST · [v136] 「A·B포구 평균 1㎡당 포기수」 화면 표시 반올림 수정 — 예) 16.65가 부동소수점 오차로 16.6으로 잘려 보이던 것을, 소수 둘째자리에서 반올림해 16.7로 표기(표시값만 변경). ※ 정밀값(2자리)·수확량 계산식은 그대로(무변경). (v135 이하 유지) -->
 <!-- (이전)  tonghab.html (v135) · 저장: 2026-09-14 13:54 KST · [v135·버그수정] 「초기화」 시 층·조사구 입력란이 안 지워지던 문제 수정 — 공통사항 초기화(prodFullResetAll)에서 층·조사구를 먼저 비우고 헤더도 갱신(리로드가 지연/미발생해도 확실히 초기화). ※ 계산 함수 무변경. (v134 이하 유지) -->
 <!-- (이전)  tonghab.html (v134) · 저장: 2026-09-14 06:54 KST · [v134] 층·조사구 0채움 + 엑셀 지번 분리 — ①층 입력 1→01, 조사구 23→0023(입력란 blur·엑셀 모두 0채움, 텍스트로 저장해 앞 0 유지). ②엑셀에 「본지번·부지번」 열 추가(4자리 0채움): 27-3→본0027/부0003, 27→본0027/부0000. ※ 계산 함수 무변경(입력표시·엑셀만). (v133 이하 유지) -->
 <!-- (이전)  tonghab.html (v133) · 저장: 2026-09-14 06:38 KST · [v133] 논벼 엑셀·목록 보완 — ①불러오기 시 층·조사구 미저장 자료면 빈칸으로(잔상 제거). ②10a당 예상량 소수1자리에서 반올림(정수). ③1㎡당 완전낟알수를 통합계산기와 동일 값으로(정밀 평균 사용). ④유효이삭수 비율 1.000 형식. ⑤완전낟알비율 소수3자리. ⑥이삭당 낟알수 소수1자리. ⑦천립중 옆 「예상 10a수량」 입력란 추가 → 엑셀 「예상 10a수량」 열 연동. ⑧저장/불러오기 목록에 작물 뒤 층-조사구(파랑) 표기 + 지번만 빨강. ※ 계산 함수 무변경. (v132 이하 유지) -->
@@ -9803,11 +9804,11 @@ function _slRenderAgg(){
     var bar='<div style="border:1.5px solid #b3c8f0;background:#f2f7ff;border-radius:9px;padding:9px 10px;margin-bottom:9px;">'
       +'<div style="font-size:12px;color:#0A3A8C;font-weight:800;margin-bottom:7px;">📊 논벼 예상량 → 엑셀 집계 내보내기</div>'
       +'<div style="display:flex;gap:6px;align-items:stretch;">'
-        +'<button type="button" onclick="nbExportXLS()" style="'+_btnCss+'background:#1D6F42;color:#fff;border:1.5px solid #1D6F42;">⬇ 엑셀 저장</button>'
+        +'<button type="button" onclick="nbExportXLSX()" style="'+_btnCss+'background:#1D6F42;color:#fff;border:1.5px solid #1D6F42;">⬇ 엑셀(.xlsx) 저장</button>'
         +'<button type="button" onclick="nbExportCSV()" style="'+_btnCss+'background:#0A3A8C;color:#fff;border:1.5px solid #0A3A8C;">⬇ CSV 저장</button>'
         +'<button type="button" onclick="nbExportResetPw()" title="비밀번호 해제" style="flex:0 0 auto;padding:9px 10px;border-radius:8px;font-size:14px;cursor:pointer;font-family:inherit;background:#fff;border:1.5px solid #c7d3e6;color:#33507d;">🔑</button>'
       +'</div>'
-      +'<div style="font-size:10px;color:#7a869a;margin-top:6px;line-height:1.5;">잠금(🔒)된 논벼 자료 '+_riceN+'건 · 엑셀(.xls) 또는 CSV 파일로 저장(주소·시군·읍면동·지번 + 42항목 + 시군별 합계·평균) · 처음 저장 시 비밀번호를 설정합니다.</div>'
+      +'<div style="font-size:10px;color:#7a869a;margin-top:6px;line-height:1.5;">잠금(🔒)된 논벼 자료 '+_riceN+'건 · 엑셀(.xlsx·아이폰/안드로이드에서 열림) 또는 CSV 파일로 저장(주소·시군·읍면동·지번 + 항목 + 시군별 합계·평균) · 처음 저장 시 비밀번호를 설정합니다.</div>'
       +'</div>';
     html=bar+html;
   }
@@ -9895,10 +9896,10 @@ var NB_COLS = [
   {k:'grainPerEar', h:'이삭당 낟알수',       kind:'f', fmt:'n1'},
   {k:'estThis', h:'예상 10a수량',            kind:'in'},
   {k:'estPrev', h:'전년 10a수량',            kind:'b'},
+  {k:'earsum', h:'이삭합계',                kind:'f'},   /* [v137] 합계를 1번주 앞으로 이동 */
   {k:'ear1',h:'1번주',kind:'in'},{k:'ear2',h:'2번주',kind:'in'},{k:'ear3',h:'3번주',kind:'in'},
   {k:'ear4',h:'4번주',kind:'in'},{k:'ear5',h:'5번주',kind:'in'},{k:'ear6',h:'6번주',kind:'in'},
   {k:'ear7',h:'7번주',kind:'in'},{k:'ear8',h:'8번주',kind:'in'},{k:'ear9',h:'9번주',kind:'in'},{k:'ear10',h:'10번주',kind:'in'},
-  {k:'earsum', h:'이삭합계',                kind:'f'},
   {k:'earavg2',h:'평균',                    kind:'f'},
   {k:'b5',h:'5번',kind:'in'},{k:'bc',h:'중심',kind:'in'},{k:'b6',h:'6번',kind:'in'},
   {k:'bsum', h:'합계',  kind:'f'},
@@ -10107,6 +10108,123 @@ function _nbToXLS(t){
   x+='</Table></Worksheet></Workbook>';
   return x;
 }
+/* ── 진짜 .xlsx(OOXML) 생성 — 모바일(아이폰 Numbers·안드로이드 Sheets·엑셀)에서 열림 ──
+   순수 JS로 zip(무압축 store) + CRC32 직접 구현. 수식(R1C1→A1 변환) + 캐시값 내장. */
+var _NBCRC=(function(){var t=[];for(var n=0;n<256;n++){var c=n;for(var k=0;k<8;k++){c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1);}t[n]=c>>>0;}return t;})();
+function _nbCrc32(bytes){var c=0xFFFFFFFF;for(var i=0;i<bytes.length;i++){c=(_NBCRC[(c^bytes[i])&0xFF]^(c>>>8))>>>0;}return (c^0xFFFFFFFF)>>>0;}
+function _nbU16(a,v){a.push(v&255,(v>>8)&255);}
+function _nbU32(a,v){a.push(v&255,(v>>8)&255,(v>>16)&255,(v>>>24)&255);}
+function _nbZip(files){
+  var enc=new TextEncoder(); var out=[], central=[], offset=0;
+  files.forEach(function(f){
+    var nameB=enc.encode(f.name); var data=f.data; var crc=_nbCrc32(data);
+    var lh=[]; _nbU32(lh,0x04034b50);_nbU16(lh,20);_nbU16(lh,0);_nbU16(lh,0);_nbU16(lh,0);_nbU16(lh,0);
+    _nbU32(lh,crc);_nbU32(lh,data.length);_nbU32(lh,data.length);_nbU16(lh,nameB.length);_nbU16(lh,0);
+    var i;
+    for(i=0;i<lh.length;i++) out.push(lh[i]);
+    for(i=0;i<nameB.length;i++) out.push(nameB[i]);
+    for(i=0;i<data.length;i++) out.push(data[i]);
+    var ch=[]; _nbU32(ch,0x02014b50);_nbU16(ch,20);_nbU16(ch,20);_nbU16(ch,0);_nbU16(ch,0);_nbU16(ch,0);_nbU16(ch,0);
+    _nbU32(ch,crc);_nbU32(ch,data.length);_nbU32(ch,data.length);_nbU16(ch,nameB.length);_nbU16(ch,0);_nbU16(ch,0);
+    _nbU16(ch,0);_nbU16(ch,0);_nbU32(ch,0);_nbU32(ch,offset);
+    for(i=0;i<ch.length;i++) central.push(ch[i]);
+    for(i=0;i<nameB.length;i++) central.push(nameB[i]);
+    offset += lh.length + nameB.length + data.length;
+  });
+  var cdStart=offset, j;
+  for(j=0;j<central.length;j++) out.push(central[j]);
+  var eocd=[]; _nbU32(eocd,0x06054b50);_nbU16(eocd,0);_nbU16(eocd,0);_nbU16(eocd,files.length);_nbU16(eocd,files.length);
+  _nbU32(eocd,central.length);_nbU32(eocd,cdStart);_nbU16(eocd,0);
+  for(j=0;j<eocd.length;j++) out.push(eocd[j]);
+  return Uint8Array.from(out);
+}
+/* R1C1(같은 행 상대참조 RC[n]) → A1 (행 R 고정) */
+function _nbA1(fx, ci, R){ return String(fx).replace(/RC\[(-?\d+)\]/g, function(m,n){ return _nbColLetter(ci+parseInt(n,10))+R; }); }
+function _nbXcNum(ref,s,v){ return '<c r="'+ref+'"'+(s?(' s="'+s+'"'):'')+'><v>'+v+'</v></c>'; }
+function _nbXcStr(ref,s,txt){ return '<c r="'+ref+'"'+(s?(' s="'+s+'"'):'')+' t="inlineStr"><is><t xml:space="preserve">'+_nbXmlEsc(txt)+'</t></is></c>'; }
+function _nbXcFx(ref,s,fx,v){ return '<c r="'+ref+'"'+(s?(' s="'+s+'"'):'')+'><f>'+_nbXmlEsc(fx)+'</f><v>'+v+'</v></c>'; }
+function _nbXlsxDataRow(V,R){
+  var cells='';
+  NB_COLS.forEach(function(c,ci){
+    var ref=_nbColLetter(ci)+R;
+    if(c.kind==='f'){
+      var val=V[c.k];
+      if(val===''||val==null||!isFinite(val)) return;
+      var num=Math.round(Number(val)*10000)/10000;
+      var s=(c.fmt==='n3')?'4':((c.fmt==='n1')?'5':'');
+      if(NB_FX[c.k]) cells+=_nbXcFx(ref,s,_nbA1(NB_FX[c.k](c.k),ci,R),num);
+      else cells+=_nbXcNum(ref,s,num);
+      return;
+    }
+    var raw=V[c.k];
+    if(c.kind==='txt'){ if(raw===''||raw==null) return; cells+=_nbXcStr(ref,'6',String(raw)); return; }
+    if(raw===''||raw==null) return;
+    if(_nbIsNum(raw)) cells+=_nbXcNum(ref,'',Number(String(raw).replace(/,/g,'')));
+    else cells+=_nbXcStr(ref,'',String(raw));
+  });
+  return '<row r="'+R+'">'+cells+'</row>';
+}
+function _nbXlsxPlainRow(arr,R,styleIdx){
+  var cells='';
+  arr.forEach(function(v,ci){
+    if(v===''||v==null) return;
+    var ref=_nbColLetter(ci)+R;
+    if(_nbIsNum(v)) cells+=_nbXcNum(ref,styleIdx||'',Number(String(v).replace(/,/g,'')));
+    else cells+=_nbXcStr(ref,styleIdx||'',String(v));
+  });
+  return '<row r="'+R+'">'+cells+'</row>';
+}
+function _nbToXLSX(t){
+  var rows=[], R=1;
+  rows.push(_nbXlsxPlainRow(t.header,R,'1')); R++;
+  rows.push(_nbXlsxPlainRow(t.legend,R,'2')); R++;
+  t.Vs.forEach(function(V){ rows.push(_nbXlsxDataRow(V,R)); R++; });
+  var subs=_nbSubtotals(t);
+  if(subs.length){ R++; subs.forEach(function(r){ rows.push(_nbXlsxPlainRow(r,R,'3')); R++; }); }
+  var XH='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n';
+  var sheet=XH+'<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>'+rows.join('')+'</sheetData></worksheet>';
+  var ct=XH+'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+    +'<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
+    +'<Default Extension="xml" ContentType="application/xml"/>'
+    +'<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'
+    +'<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
+    +'<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>';
+  var rels=XH+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+    +'<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>';
+  var wb=XH+'<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
+    +'<sheets><sheet name="논벼예상량" sheetId="1" r:id="rId1"/></sheets><calcPr fullCalcOnLoad="1"/></workbook>';
+  var wbr=XH+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+    +'<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>'
+    +'<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>';
+  var sty=XH+'<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+    +'<numFmts count="2"><numFmt numFmtId="164" formatCode="0.000"/><numFmt numFmtId="165" formatCode="0.0"/></numFmts>'
+    +'<fonts count="3"><font><sz val="11"/><name val="맑은 고딕"/></font>'
+    +'<font><b/><sz val="11"/><name val="맑은 고딕"/></font>'
+    +'<font><i/><sz val="8"/><color rgb="FF7A869A"/><name val="맑은 고딕"/></font></fonts>'
+    +'<fills count="5"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill>'
+    +'<fill><patternFill patternType="solid"><fgColor rgb="FFDBE7FF"/></patternFill></fill>'
+    +'<fill><patternFill patternType="solid"><fgColor rgb="FFF1F5FB"/></patternFill></fill>'
+    +'<fill><patternFill patternType="solid"><fgColor rgb="FFFFF3E0"/></patternFill></fill></fills>'
+    +'<borders count="1"><border/></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'
+    +'<cellXfs count="7">'
+    +'<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>'
+    +'<xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment horizontal="center"/></xf>'
+    +'<xf numFmtId="0" fontId="2" fillId="3" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment horizontal="center"/></xf>'
+    +'<xf numFmtId="0" fontId="1" fillId="4" borderId="0" xfId="0" applyFont="1" applyFill="1"/>'
+    +'<xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/>'
+    +'<xf numFmtId="165" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/>'
+    +'<xf numFmtId="49" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/>'
+    +'</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
+  var e=new TextEncoder();
+  return _nbZip([
+    {name:'[Content_Types].xml', data:e.encode(ct)},
+    {name:'_rels/.rels', data:e.encode(rels)},
+    {name:'xl/workbook.xml', data:e.encode(wb)},
+    {name:'xl/_rels/workbook.xml.rels', data:e.encode(wbr)},
+    {name:'xl/styles.xml', data:e.encode(sty)},
+    {name:'xl/worksheets/sheet1.xml', data:e.encode(sheet)}
+  ]);
+}
 function _nbDownload(content,fname,mime){
   try{
     var blob=new Blob([content],{type:mime});
@@ -10174,6 +10292,15 @@ function nbExportXLS(){
   var t=_nbBuildData();
   if(!t.count){ alert('내보낼 논벼(잠금) 자료가 없습니다.\n집계에 넣을 논벼 자료를 🔒 잠금하세요.'); return; }
   _nbExportGate(function(){ _nbDownload(_nbToXLS(t), _nbFileName('xls'), 'application/vnd.ms-excel;charset=utf-8;'); });
+}
+/* [v137] 진짜 .xlsx — 모바일에서 열림 */
+function nbExportXLSX(){
+  var t=_nbBuildData();
+  if(!t.count){ alert('내보낼 논벼(잠금) 자료가 없습니다.\n집계에 넣을 논벼 자료를 🔒 잠금하세요.'); return; }
+  _nbExportGate(function(){
+    try{ _nbDownload(_nbToXLSX(t), _nbFileName('xlsx'), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'); }
+    catch(e){ alert('엑셀(.xlsx) 생성 실패: '+e.message); }
+  });
 }
 function nbExportCSV(){
   var t=_nbBuildData();
