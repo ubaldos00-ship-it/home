@@ -1,4 +1,4 @@
-<!-- game_center.html · v11 · 저장: 2026-08-05 12:10 KST · 이번주1위·챔피언 동점=나중달성 우선 -->
+<!-- game_center.html · v12 · 저장: 2026-09-27 00:30 KST · [v12] 두당 링크 대응 — 헤더 홈버튼(🏠) 제거 → 뒤로가기(‹) 버튼으로 교체. 뒤로가기는 진입한 곳(텐아르·두당 등)으로 복귀(같은 탭=history.back, 새 탭=referrer), 텐아르 홈으로 강제 이동 안 함. (이전) v11 · 이번주1위·챔피언 동점=나중달성 우선 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -87,6 +87,14 @@
     border-radius: 50%; background: rgba(255,255,255,0.12); flex-shrink: 0;
   }
   .home-link:active { background: rgba(255,255,255,0.25); }
+  .hd-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .nav-back {
+    color: #fff; background: rgba(255,255,255,0.12); border: none; cursor: pointer;
+    font-size: 1.5rem; font-weight: 800; line-height: 1;
+    width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; flex-shrink: 0; -webkit-tap-highlight-color: transparent;
+  }
+  .nav-back:active { background: rgba(255,255,255,0.25); }
   .admin-link { color: #fff; text-decoration: none; font-size: 1.15rem;
     width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;
     border-radius: 50%; background: rgba(255,255,255,0.12); flex-shrink: 0; cursor: pointer; border: none; }
@@ -297,15 +305,19 @@
 <!-- ===== 헤더 ===== -->
 <header class="app-header">
   <div class="hd-top">
-    <div>
-      <p class="hd-title">🎮 텐아르 게임센터</p>
-      <div class="hd-brand">
-        <span class="nm">GAME CENTER</span>
-        <span class="eng">TEN-AR</span>
+    <div class="hd-left">
+      <!-- [수정] 홈버튼(🏠) 제거 → 뒤로가기 버튼. 진입한 곳(텐아르·두당 등)으로 복귀, 텐아르 홈 강제 이동 안 함 -->
+      <button type="button" class="nav-back" title="뒤로가기" aria-label="뒤로가기"
+        onclick="if(history.length>1){history.back()}else{var r='';try{r=document.referrer||''}catch(e){}; if(/^https?:\/\//i.test(r)){location.href=r}else{history.back()}}">‹</button>
+      <div>
+        <p class="hd-title">🎮 텐아르 게임센터</p>
+        <div class="hd-brand">
+          <span class="nm">GAME CENTER</span>
+          <span class="eng">TEN-AR</span>
+        </div>
       </div>
     </div>
     <a href="game_admin.html" target="_blank" rel="noopener" class="admin-link" title="관리자">🔐</a>
-    <a href="https://ubaldos00-ship-it.github.io/home/" class="home-link" title="홈으로">🏠</a>
   </div>
   <div class="user-bar" id="userBar" style="display:none;">
     <span class="lv-badge" id="userBarLv">LV.1</span>
