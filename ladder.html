@@ -1,3 +1,4 @@
+<!-- [수정] 2026-09-27 KST · 두당 링크 대응: 뒤로가기(‹) 버튼 추가 — 같은 탭이면 history.back, 없으면 game_center.html로. 홈/게임센터 버튼은 게임센터로 이동(텐아르 홈 직행 제거). 뒤로가기 외 로직 무변경. -->
 <!-- ladder_v8.html · 저장: 2026-08-04 04:51 KST · 1등맞추기 기본2명·닉네임 자동등록·목적지 표시 제거·롱프레스 선택차단 -->
 <!DOCTYPE html>
 <html lang="ko">
@@ -222,8 +223,10 @@
     <span class="brand-sub">텐아르(10a) 게임센터 · 현장 배정 도구</span>
   </div>
   <div style="display:flex;gap:7px;flex-shrink:0;">
-    <a class="home-btn" href="game_center.html">🎮 게임센터</a>
-    <a class="home-btn" href="https://ubaldos00-ship-it.github.io/home/" id="homeBtn">🏠 홈</a>
+    <!-- [수정] 뒤로가기 추가 + '홈'을 텐아르 직행에서 게임센터로 변경(두당에서 열려도 텐아르로 안 튐) -->
+    <a class="home-btn" href="#" id="backBtn" title="뒤로가기" role="button"
+       onclick="if(history.length>1){history.back()}else{location.href='game_center.html'};return false;">‹ 뒤로</a>
+    <a class="home-btn" href="game_center.html" id="homeBtn">🎮 게임센터</a>
   </div>
 </header>
 

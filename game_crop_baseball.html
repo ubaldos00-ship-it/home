@@ -1,3 +1,4 @@
+<!-- [수정] 2026-09-27 KST · 두당 링크 대응: 뒤로가기(‹) 버튼 추가 — 같은 탭이면 history.back, 없으면 game_center.html로. 홈/게임센터 버튼은 게임센터로 이동(텐아르 홈 직행 제거). 뒤로가기 외 로직 무변경. -->
 <!-- game_crop_baseball.html · v3.7 · 저장: 2026-08-05 12:40 KST · 랭킹 기본 날짜만·제목 5번 터치 시 시간까지 표시(개인정보 보호) -->
 <!DOCTYPE html>
 <html lang="ko">
@@ -106,7 +107,10 @@
         <div class="btn-row">
           <button class="btn btn-gold btn-sm" id="rankBtn">🏆 주간랭킹</button>
         </div>
-        <button class="btn btn-ghost btn-sm mt" id="homeBtn">🎮 게임센터</button>
+        <div class="btn-row mt">
+          <button class="btn btn-ghost btn-sm" id="backBtn" onclick="if(history.length>1){history.back()}else{location.href='game_center.html'}">‹ 뒤로</button>
+          <button class="btn btn-ghost btn-sm" id="homeBtn">🎮 게임센터</button>
+        </div>
       </div>
     </div>
   </div>
