@@ -1,4 +1,5 @@
-<!-- chungchi.html (v120) · 저장: 2026-09-14 13:54 KST · [v120·버그수정] 「초기화」 시 층·조사구가 안 지워지던 문제 수정 — resetAll에서 층·조사구도 비우고 헤더 갱신. ※ 계산 로직 무변경. (v119 이하 유지) -->
+<!-- chungchi.html (v121) · 저장: 2026-10-01 11:10 KST · [v121] 「작물별 10a당 수량 집계」 목록에서 주소(항목)를 누르면 해당 조사표를 불러와 보기·수정 가능(기존 불러오기 동작 재사용 — 덮어쓰기 확인 후 복원·모달 닫힘). 항목에 › 표시·탭 피드백·상단 안내문구 추가. 실측계산기(tonghab)와 동일 적용(저장/불러오기 화면은 실측·청취 동일 유지). ※ 계산 로직 무변경(불러오기 재사용·표시만). (v120 이하 유지) -->
+<!-- (이전)  chungchi.html (v120) · 저장: 2026-09-14 13:54 KST · [v120·버그수정] 「초기화」 시 층·조사구가 안 지워지던 문제 수정 — resetAll에서 층·조사구도 비우고 헤더 갱신. ※ 계산 로직 무변경. (v119 이하 유지) -->
 <!-- (이전)  chungchi.html (v119) · 저장: 2026-09-14 06:54 KST · [v119] 층·조사구 입력 0채움 — 층 1→01, 조사구 23→0023(입력란에서 벗어날 때 자동 0채움). ※ 계산 로직 무변경. (v118 이하 유지) -->
 <!-- (이전)  chungchi.html (v118) · 저장: 2026-09-14 06:38 KST · [v118] ①층·조사구를 저장/복원에 포함(_ccCollect/_ccApply) — 불러오기 시 미저장 자료면 빈칸으로(잔상 제거). ②저장/불러오기 목록에 작물 뒤 층-조사구(파랑) 표기 + 지번만 빨강. ※ 계산 로직 무변경. (v117 이하 유지) -->
 <!-- (이전)  chungchi.html (v117) · 저장: 2026-09-14 05:14 KST · [v117] ①필지주소 아래 층(2자리)·조사구(4자리) 입력란 추가 + 헤더에 층·조사구·주소 표기. ②작물별 10a당 수량 집계 주소 앞에 층-조사구(01-0011) 프리픽스. ③저장/불러오기 「목록 순서(↑↓)」 정렬 추가 — ▲▼로 저장목록 순서 변경(집계도 같은 순서). ※ 계산 로직 무변경(표시·입력만). (v116 이하 유지) -->
@@ -545,8 +546,11 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
 .sl-agg-crop-btn{cursor:pointer;user-select:none;}
 .sl-agg-crop-btn .ai-arrow{font-size:10px;color:#0A3A8C;}
 .sl-agg-detail{margin-top:6px;border-top:1px dashed #d7e0ee;padding-top:6px;}
-.sl-agg-item{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;font-size:11.5px;padding:3px 0;line-height:1.5;border-bottom:1px solid #f0f3f8;}
+.sl-agg-item{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;font-size:11.5px;padding:5px 7px;line-height:1.5;border-bottom:1px solid #f0f3f8;cursor:pointer;border-radius:6px;-webkit-tap-highlight-color:transparent;transition:background .12s;}
 .sl-agg-item:last-child{border-bottom:none;}
+.sl-agg-item:hover,.sl-agg-item:active{background:#eef4ff;}
+.sl-agg-item .ai-go{color:#9bb0cf;font-weight:900;flex-shrink:0;align-self:center;font-size:15px;}
+.sl-agg-hint{font-size:11px;color:#2f66b5;background:#eef4ff;border:1px solid #d4e2f7;border-radius:7px;padding:6px 9px;margin-bottom:8px;font-weight:600;line-height:1.5;}
 /* [v116] 주소 전체 표시(잘림 없이 줄바꿈) */
 .sl-agg-item .ai-addr{color:#3D3C39;font-weight:600;min-width:0;flex:1;word-break:break-all;white-space:normal;line-height:1.45;}
 .sl-agg-item .ai-val{color:#1565c0;font-weight:800;flex-shrink:0;white-space:nowrap;}
@@ -3324,7 +3328,7 @@ function _slRenderAgg(){
       var fp='';
       try{ var _d=JSON.parse(localStorage.getItem(CC_DATA_PFX+it.key)||'null'); if(_d){ var f=(_d.nbFloor||'').trim(), s=(_d.nbSurveyPlot||'').trim(); if(f||s) fp=(f?f.padStart(2,'0'):'--')+'-'+(s?s.padStart(4,'0'):'----'); } }catch(e){}
       var pv=(typeof it.per10a==='number'&&it.per10a>0)?it.per10a.toLocaleString('ko-KR')+' kg':'—';
-      return '<div class="sl-agg-item"><span class="ai-addr">📍 '+(fp?('<b style="color:#0A3A8C;">'+fp+'</b> '):'')+addr+'</span><span class="ai-val">'+pv+'</span></div>';
+      return '<div class="sl-agg-item" onclick="loadSavedData(\''+it.key+'\')" title="눌러서 이 조사표 불러오기(보기·수정)"><span class="ai-addr">📍 '+(fp?('<b style="color:#0A3A8C;">'+fp+'</b> '):'')+addr+'</span><span class="ai-val">'+pv+'</span><span class="ai-go">›</span></div>';
     }).join('');
     return '<div class="sl-agg-card">'
       +'<div class="sl-agg-crop sl-agg-crop-btn" onclick="slAggToggleCrop('+ci+')">'
@@ -3334,6 +3338,7 @@ function _slRenderAgg(){
       +'<div class="sl-agg-detail" id="sl-agg-detail-'+ci+'" style="display:block;">'+detail+'</div>'   /* [v116] 기본 펼침 */
       +'</div>';
   }).join('');
+  html='<div class="sl-agg-hint">💡 주소를 누르면 그 조사표를 불러와 보기·수정할 수 있습니다.</div>'+html;
   if(hasOld){ html+='<div class="sl-agg-note">※ 수량값이 없는 옛 자료는 집계에서 제외될 수 있습니다. 불러온 뒤 [덮어쓰기]하면 반영됩니다.</div>'; }
   body.innerHTML=html;
 }

@@ -1,4 +1,5 @@
-<!-- tonghab.html (v139) · 저장: 2026-10-01 05:38 KST · [v139] 「논벼 예상량 → 엑셀 집계 내보내기」 바를 기본 숨김(보안) — 작물별 10a당 수량 집계에서 저장/불러오기 모달 제목(💾 저장 / 불러오기)을 5번 연속 탭해야 표시(일부 권한자만 사용). 미활성 시 내보내기·공유·비밀번호 버튼 자체가 보이지 않음. 활성화는 현재 세션 한정(새로고침 시 재입력). ※ 계산·내보내기 함수 무변경(표시 조건만). (v138 이하 유지) -->
+<!-- tonghab.html (v140) · 저장: 2026-10-01 11:10 KST · [v140] 「작물별 10a당 수량 집계」 목록에서 주소(항목)를 누르면 해당 조사표를 불러와 보기·수정 가능(기존 불러오기 동작 재사용 — 덮어쓰기 확인 후 복원·모달 닫힘). 항목에 › 표시·탭 피드백·상단 안내문구 추가. 청취계산기(chungchi)도 동일 적용(저장/불러오기 화면은 실측·청취 동일 유지). ※ 계산 함수 무변경(불러오기 재사용·표시만). (v139 이하 유지) -->
+<!-- (이전)  tonghab.html (v139) · 저장: 2026-10-01 05:38 KST · [v139] 「논벼 예상량 → 엑셀 집계 내보내기」 바를 기본 숨김(보안) — 작물별 10a당 수량 집계에서 저장/불러오기 모달 제목(💾 저장 / 불러오기)을 5번 연속 탭해야 표시(일부 권한자만 사용). 미활성 시 내보내기·공유·비밀번호 버튼 자체가 보이지 않음. 활성화는 현재 세션 한정(새로고침 시 재입력). ※ 계산·내보내기 함수 무변경(표시 조건만). (v138 이하 유지) -->
 <!-- (이전)  tonghab.html (v138) · 저장: 2026-09-17 13:31 KST · [v138] 논벼 예상량 집계에 「공유(전송)」 버튼 추가 — 「📤 엑셀 공유」·「📤 CSV 공유」로 파일을 카톡·메일 등에 바로 전송(navigator.share 파일 공유, 미지원 기기는 자동으로 파일 저장으로 폴백). 저장 버튼(⬇)은 그대로 유지. ※ 계산 함수 무변경(내보내기·공유만). (v137 이하 유지) -->
 <!-- (이전)  tonghab.html (v137) · 저장: 2026-09-17 13:03 KST · [v137] 논벼 예상량 집계 내보내기 개선 — ①「엑셀 저장」을 진짜 .xlsx(OOXML) 파일로 교체 → 아이폰(Numbers)·안드로이드(구글 시트)·엑셀에서 정상적으로 열림(기존 .xls SpreadsheetML은 모바일에서 안 열리던 문제 해결). 수식(R1C1→A1 변환)+캐시값 내장은 그대로 유지(파일 자체 재계산). ②엑셀·CSV의 「이삭합계」 열을 「10번주」 다음 → 「1번주」 앞으로 이동(합계|1~10번주|평균 순). ※ 계산 함수 무변경(내보내기·열순서만). (v136 이하 유지) -->
 <!-- (이전)  tonghab.html (v136) · 저장: 2026-09-15 04:22 KST · [v136] 「A·B포구 평균 1㎡당 포기수」 화면 표시 반올림 수정 — 예) 16.65가 부동소수점 오차로 16.6으로 잘려 보이던 것을, 소수 둘째자리에서 반올림해 16.7로 표기(표시값만 변경). ※ 정밀값(2자리)·수확량 계산식은 그대로(무변경). (v135 이하 유지) -->
@@ -1643,8 +1644,11 @@ body.nonbye-mode .hide-nonbye { display:none !important; }
 .sl-agg-crop-btn{cursor:pointer;user-select:none;}
 .sl-agg-crop-btn .ai-arrow{font-size:10px;color:#0A3A8C;}
 .sl-agg-detail{margin-top:6px;border-top:1px dashed #d7e0ee;padding-top:6px;}
-.sl-agg-item{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;font-size:11.5px;padding:3px 0;line-height:1.5;border-bottom:1px solid #f0f3f8;}
+.sl-agg-item{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;font-size:11.5px;padding:5px 7px;line-height:1.5;border-bottom:1px solid #f0f3f8;cursor:pointer;border-radius:6px;-webkit-tap-highlight-color:transparent;transition:background .12s;}
 .sl-agg-item:last-child{border-bottom:none;}
+.sl-agg-item:hover,.sl-agg-item:active{background:#eef4ff;}
+.sl-agg-item .ai-go{color:#9bb0cf;font-weight:900;flex-shrink:0;align-self:center;font-size:15px;}
+.sl-agg-hint{font-size:11px;color:#2f66b5;background:#eef4ff;border:1px solid #d4e2f7;border-radius:7px;padding:6px 9px;margin-bottom:8px;font-weight:600;line-height:1.5;}
 /* [v128] 주소 전체 표시(잘림 없이 줄바꿈) */
 .sl-agg-item .ai-addr{color:#3D3C39;font-weight:600;min-width:0;flex:1;word-break:break-all;white-space:normal;line-height:1.45;}
 .sl-agg-item .ai-val{color:#1565c0;font-weight:800;flex-shrink:0;white-space:nowrap;}
@@ -9805,7 +9809,7 @@ function _slRenderAgg(){
       try{ var _d=JSON.parse(localStorage.getItem(SL_DATA_PFX+it.key)||'null'); if(_d&&typeof _nbFloorPlot==='function') fp=_nbFloorPlot(_d); }catch(e){}
       var iv=_itemVal(it);
       var pv=(iv!=null)?iv.toLocaleString('ko-KR')+' kg':'—';
-      return '<div class="sl-agg-item"><span class="ai-addr">📍 '+(fp?('<b style="color:#0A3A8C;">'+fp+'</b> '):'')+addr+'</span><span class="ai-val">'+pv+'</span></div>';
+      return '<div class="sl-agg-item" onclick="loadSavedData(\''+it.key+'\')" title="눌러서 이 조사표 불러오기(보기·수정)"><span class="ai-addr">📍 '+(fp?('<b style="color:#0A3A8C;">'+fp+'</b> '):'')+addr+'</span><span class="ai-val">'+pv+'</span><span class="ai-go">›</span></div>';
     }).join('');
     return '<div class="sl-agg-card">'
       +'<div class="sl-agg-crop sl-agg-crop-btn" onclick="slAggToggleCrop('+ci+')">'
@@ -9815,6 +9819,7 @@ function _slRenderAgg(){
       +'<div class="sl-agg-detail" id="sl-agg-detail-'+ci+'" style="display:block;">'+detail+'</div>'   /* [v128] 기본 펼침 */
       +'</div>';
   }).join('');
+  html='<div class="sl-agg-hint">💡 주소를 누르면 그 조사표를 불러와 보기·수정할 수 있습니다.</div>'+html;
   if(hasOld){ html+='<div class="sl-agg-note">※ 이 기능 적용 전 저장된 자료는 수량값이 없어 집계에서 제외될 수 있습니다. 해당 자료는 불러온 뒤 [덮어쓰기]하면 집계에 반영됩니다.</div>'; }
   /* [v130] 논벼(잠금) 항목이 있으면 「엑셀 내보내기」 바를 맨 위에 추가 */
   if(order.indexOf('논벼')>=0 && window._nbExportUnlocked===true){   /* [v139] 5회 연속 탭으로 활성화된 경우에만 표시(보안) */
