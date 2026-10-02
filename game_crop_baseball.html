@@ -1,3 +1,4 @@
+<!-- [수정] 2026-10-03 06:31 KST (v233) · 게임센터/홈 버튼 이동을 location.href(히스토리 추가)→"진입처에서 왔으면 history.back, 아니면 location.replace"로 변경. 게임센터에서 뒤로가기 시 게임으로 안 돌아가고 진입처(두당·PDF센터·텐아르)로 복귀. 그 외 무변경. -->
 <!-- [수정] 2026-09-27 KST · 두당 링크 대응: 뒤로가기(‹) 버튼 추가 — 같은 탭이면 history.back, 없으면 game_center.html로. 홈/게임센터 버튼은 게임센터로 이동(텐아르 홈 직행 제거). 뒤로가기 외 로직 무변경. -->
 <!-- game_crop_baseball.html · v3.7 · 저장: 2026-08-05 12:40 KST · 랭킹 기본 날짜만·제목 5번 터치 시 시간까지 표시(개인정보 보호) -->
 <!DOCTYPE html>
@@ -245,7 +246,7 @@
   }
 
   function showScreen(name){ ['start','game','result'].forEach(s=>$(s+'Screen').classList.toggle('hidden', s!==name)); }
-  function goCenter(){ location.href='game_center.html'; }
+  function goCenter(){ var _fc=false;try{_fc=/game_center\.html/i.test(document.referrer||'')}catch(e){} if(_fc&&history.length>1){history.back()}else{location.replace('game_center.html')} }
 
   function init(){
     $('nickBox').textContent = `${USER.nickname}님, 타석에 서보세요!`;
