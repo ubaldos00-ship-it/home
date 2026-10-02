@@ -1,4 +1,6 @@
-<!-- tonghab.html (v143) · 저장: 2026-10-03 07:42 KST · [v143] 논벼 실수확량 조사표 헤더(글자 오른쪽)에 「↺ 초기화」 버튼 추가 — 실수확량 입력값(조제벼·건조벼·생볏짚·총량·현미·수분·피해·비고)만 초기화하고, 예취포기수·결주수는 그대로 유지, 예상량은 건드리지 않음. 확인창: "실수확량 조사표 초기화됩니다.(단, 예취포기수 , 결주는 그대로 유지됨)". ※ 하단 「전체 초기화」(ryieldReset) 버튼은 그대로 유지. 계산 함수 무변경. (v142 이하 유지) -->
+<!-- tonghab.html (v145) · 저장: 2026-10-03 08:25 KST · [v145] 저장목록 JSON 백업 불러오기 버그 2건 수정 — ①불러오면 순서가 반대로 뒤집히던 문제(항목마다 unshift → 백업 순서 그대로 유지하도록 변경). ②여러 건(예:24건) 불러올 때 1건이 빠지던 문제(중복키 재배정 난수가 0~999 범위라 같은 ms에 충돌 → 레코드 덮어써짐). 고유키(난수 0~999999 + 중복검사 루프) 보장으로 해결. ※ chungchi(청취)도 동일 수정. 계산 함수 무변경. (v144 이하 유지) -->
+<!-- (이전)  tonghab.html (v144) · 저장: 2026-10-03 08:05 KST · [v144] 불러오기 버그 수정 — 실수확량이 없는(또는 적은) 저장 자료를 불러올 때 이전에 보던 자료의 실수확량 값이 그대로 남던(복사되던) 문제 해결. 불러오기 시 실수확량 입력(조제벼·건조벼·건조율·생볏짚·총량·현미·수분·비고·예취포기수·결주수)과 피해부호/율을 저장값이 있으면 그 값으로, 없으면 빈칸/기본값(01 정상·0%)으로 확정. _slApply에서 nbFloor·조사구처럼 잔상 제거. ※ 계산 함수 무변경. (v143 이하 유지) -->
+<!-- (이전)  tonghab.html (v143) · 저장: 2026-10-03 07:42 KST · [v143] 논벼 실수확량 조사표 헤더(글자 오른쪽)에 「↺ 초기화」 버튼 추가 — 실수확량 입력값(조제벼·건조벼·생볏짚·총량·현미·수분·피해·비고)만 초기화하고, 예취포기수·결주수는 그대로 유지, 예상량은 건드리지 않음. 확인창: "실수확량 조사표 초기화됩니다.(단, 예취포기수 , 결주는 그대로 유지됨)". ※ 하단 「전체 초기화」(ryieldReset) 버튼은 그대로 유지. 계산 함수 무변경. (v142 이하 유지) -->
 <!-- (이전)  tonghab.html (v142) · 저장: 2026-10-03 07:24 KST · [v142] 논벼 실수확량 조사표·엑셀 집계 보완 — ①실수확량 조사표 '3㎡ 포기수 확인' 표 맨 위에 「3줄 예취길이(cm)」 행 추가. ②포기수확인과 ①조제벼 사이에 「A·B포구 피해상황(피해부호/피해율)·비고」 입력 추가(예상량과 동일 양식, 실수확량 자체 입력 → ④표·엑셀에 반영). ③저장/불러오기 집계에 「🌾 논벼 실수확량 → 엑셀 집계 내보내기」 바 추가(예상량과 동일 동작·5회탭 잠금·비밀번호 공용) — 수식 내장 .xlsx/CSV(O=N/8, Q=P/O, S=검산계, X=Z/P, Y=SUM(Z:AA), AD=SUM(AB:AC), AE=AD/2, AF=생산량, AG=AF/AH, AI=AF-AH). ④필지주소 입력 시 논벼 시군별 비교의 권역·시군 자동선택(주소 없으면 수동, 이미 선택 시 유지). ※ 기존 계산 함수 무변경(신규 함수·표시만). (v141 이하 유지) -->
 <!-- (이전)  tonghab.html (v141) · 저장: 2026-10-01 13:46 KST · [v141] 「작물별 10a당 수량 집계」 목록에서 논벼 항목의 10a당 수량을 「예상량(파랑)·실수확량(초록)」 두 줄로 따로 표시(없으면 —). 일반 작물은 기존대로 A·B 평균 단일 표시. 집계 세부목록에 가로 스크롤 허용(좁은 화면 대비). ※ 계산 함수 무변경(표시만). (v140 이하 유지) -->
 <!-- (이전)  tonghab.html (v140) · 저장: 2026-10-01 11:10 KST · [v140] 「작물별 10a당 수량 집계」 목록에서 주소(항목)를 누르면 해당 조사표를 불러와 보기·수정 가능(기존 불러오기 동작 재사용 — 덮어쓰기 확인 후 복원·모달 닫힘). 항목에 › 표시·탭 피드백·상단 안내문구 추가. 청취계산기(chungchi)도 동일 적용(저장/불러오기 화면은 실측·청취 동일 유지). ※ 계산 함수 무변경(불러오기 재사용·표시만). (v139 이하 유지) -->
@@ -9338,6 +9340,15 @@ function _slApply(d, _onDone){
       });
       /* [v132] 층·조사구는 저장 안 된 자료를 불러오면 반드시 빈칸으로(이전 값 잔상 제거) */
       ['nbFloor','nbSurveyPlot'].forEach(function(id){ var e=document.getElementById(id); if(e){ e.value=(d[id]!==undefined&&d[id]!=='')?d[id]:''; } });
+      /* [v144] 논벼 실수확량 입력도 저장 안 된 자료를 불러오면 빈칸/기본값으로(이전 실수확량 잔상·복사 제거) */
+      ['rsJeje','rsJeje8','rsGeon8','rsGeonRate','rsStraw','rsTotal','rsHyeonmi','rsMoist1','rsMoist2','rsRemark',
+       'ryAHarvPlants','ryBHarvPlants','ryAMissPlants','ryBMissPlants'].forEach(function(id){
+        var e=document.getElementById(id); if(e){ e.value=(d[id]!==undefined&&d[id]!=='')?d[id]:''; }
+      });
+      [['rsADmgCode','01'],['rsBDmgCode','01'],['rsADmgRate','0'],['rsBDmgRate','0']].forEach(function(p){
+        var e=document.getElementById(p[0]); if(e){ e.value=(d[p[0]]!==undefined&&d[p[0]]!=='')?d[p[0]]:p[1]; }
+      });
+      try{ if(typeof riceRealYieldCalc==='function') riceRealYieldCalc(); if(typeof riceLoadDamage==='function') riceLoadDamage(); }catch(e){}
       try{ if(typeof _nbUpdateHdrAddr==='function') _nbUpdateHdrAddr(); }catch(e){}
       // 다중중량 필드 UI 복원
       if(typeof _pmwRestoreAll==='function') _pmwRestoreAll(d);
@@ -11660,7 +11671,14 @@ function _slRestoreBackupBundle(pkg){
       }
       var cur=_slGetList();
       var exist={}; cur.forEach(function(i){ if(i&&i.key) exist[i.key]=true; });
-      var added=0;
+      /* [v145] 중복키 재배정은 반드시 고유키로(기존 난수 1000범위 충돌로 1건 덮어써지던 문제 방지) */
+      function _slUniqueKey(){
+        var k;
+        do{ k=String(Date.now())+'_'+String(Math.floor(Math.random()*1000000)); }
+        while(exist[k] || localStorage.getItem(SL_DATA_PFX+k)!=null);
+        return k;
+      }
+      var newItems=[]; var added=0;
       incoming.forEach(function(it){
         if(!it || !it.key) return;
         if(!selKeys[it.key]) return;   /* [v94-3] 선택된 항목만 */
@@ -11668,14 +11686,15 @@ function _slRestoreBackupBundle(pkg){
         if(!rec) return;
         if(typeof rec==='string'){ try{rec=JSON.parse(rec);}catch(e){return;} }
         var item=it, key=it.key;
-        if(exist[key]){ key=String(Date.now())+String(Math.floor(Math.random()*1000)); item=Object.assign({}, it, {key:key}); }
+        if(exist[key]){ key=_slUniqueKey(); item=Object.assign({}, it, {key:key}); }
         exist[key]=true;
         localStorage.setItem(SL_DATA_PFX+key, JSON.stringify(rec));
-        cur.unshift(item);
+        newItems.push(item);   /* [v145] 원래 순서 유지(항목마다 unshift → 순서 반전되던 문제 방지) */
         _queueMapSync(key);
         added++;
       });
-      _slSetList(cur);
+      /* [v145] 불러온 항목을 백업 순서 그대로 맨 위에, 기존 항목은 그 아래 */
+      _slSetList(newItems.concat(cur));
       _slSelectedKey=null; _slLastLoadedKey=null;
       _slRenderList(); _slUpdateSaveBtn();
       openSaveLoadModal();   /* 불러오기 후 저장/불러오기 화면을 열어 결과 확인 */

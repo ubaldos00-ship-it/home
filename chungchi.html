@@ -1,4 +1,5 @@
-<!-- chungchi.html (v122) · 저장: 2026-10-01 13:46 KST · [v122] 집계 세부목록 가로 스크롤 허용(좁은 화면 대비) + 집계 값 스타일 동기화. ※ 청취는 10a당 수량이 단일값(청취값)이라 실측의 예상량/실수확량 구분은 없음(해당 없음). 계산 로직 무변경(표시만). (v121 이하 유지) -->
+<!-- chungchi.html (v123) · 저장: 2026-10-03 08:25 KST · [v123] 저장목록 JSON 백업 불러오기 버그 2건 수정(tonghab v145와 동일) — ①불러오면 순서가 반대로 뒤집히던 문제 해결(백업 순서 유지). ②여러 건 불러올 때 중복키 재배정 난수(0~999) 충돌로 1건이 빠지던 문제 해결(고유키 보장). 계산 함수 무변경. (v122 이하 유지) -->
+<!-- (이전)  chungchi.html (v122) · 저장: 2026-10-01 13:46 KST · [v122]집계 세부목록 가로 스크롤 허용(좁은 화면 대비) + 집계 값 스타일 동기화. ※ 청취는 10a당 수량이 단일값(청취값)이라 실측의 예상량/실수확량 구분은 없음(해당 없음). 계산 로직 무변경(표시만). (v121 이하 유지) -->
 <!-- (이전)  chungchi.html (v121) · 저장: 2026-10-01 11:10 KST · [v121] 「작물별 10a당 수량 집계」 목록에서 주소(항목)를 누르면 해당 조사표를 불러와 보기·수정 가능(기존 불러오기 동작 재사용 — 덮어쓰기 확인 후 복원·모달 닫힘). 항목에 › 표시·탭 피드백·상단 안내문구 추가. 실측계산기(tonghab)와 동일 적용(저장/불러오기 화면은 실측·청취 동일 유지). ※ 계산 로직 무변경(불러오기 재사용·표시만). (v120 이하 유지) -->
 <!-- (이전)  chungchi.html (v120) · 저장: 2026-09-14 13:54 KST · [v120·버그수정] 「초기화」 시 층·조사구가 안 지워지던 문제 수정 — resetAll에서 층·조사구도 비우고 헤더 갱신. ※ 계산 로직 무변경. (v119 이하 유지) -->
 <!-- (이전)  chungchi.html (v119) · 저장: 2026-09-14 06:54 KST · [v119] 층·조사구 입력 0채움 — 층 1→01, 조사구 23→0023(입력란에서 벗어날 때 자동 0채움). ※ 계산 로직 무변경. (v118 이하 유지) -->
@@ -3081,7 +3082,14 @@ function _ccRestoreBackupBundle(pkg){
       }
       var cur=_ccGetList();
       var exist={}; cur.forEach(function(i){ if(i&&i.key) exist[i.key]=true; });
-      var added=0;
+      /* [v145] 중복키 재배정은 반드시 고유키로(기존 난수 1000범위 충돌로 1건 덮어써지던 문제 방지) */
+      function _ccUniqueKey(){
+        var k;
+        do{ k=String(Date.now())+'_'+String(Math.floor(Math.random()*1000000)); }
+        while(exist[k] || localStorage.getItem(CC_DATA_PFX+k)!=null);
+        return k;
+      }
+      var newItems=[]; var added=0;
       incoming.forEach(function(it){
         if(!it || !it.key) return;
         if(!selKeys[it.key]) return;   /* [v94-3] 선택된 항목만 */
@@ -3089,14 +3097,15 @@ function _ccRestoreBackupBundle(pkg){
         if(!rec) return;
         if(typeof rec==='string'){ try{rec=JSON.parse(rec);}catch(e){return;} }
         var item=it, key=it.key;
-        if(exist[key]){ key=String(Date.now())+String(Math.floor(Math.random()*1000)); item=Object.assign({}, it, {key:key}); }
+        if(exist[key]){ key=_ccUniqueKey(); item=Object.assign({}, it, {key:key}); }
         exist[key]=true;
         localStorage.setItem(CC_DATA_PFX+key, JSON.stringify(rec));
-        cur.unshift(item);
+        newItems.push(item);   /* [v145] 원래 순서 유지(항목마다 unshift → 순서 반전되던 문제 방지) */
         _queueMapSync(key);
         added++;
       });
-      _ccSetList(cur);
+      /* [v145] 불러온 항목을 백업 순서 그대로 맨 위에, 기존 항목은 그 아래 */
+      _ccSetList(newItems.concat(cur));
       _slSelectedKey=null; _slLastLoadedKey=null;
       _slRenderList(); _slUpdateSaveBtn();
       openSaveLoadModal();   /* 불러오기 후 저장/불러오기 화면을 열어 결과 확인 */
