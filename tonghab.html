@@ -1,4 +1,5 @@
-<!-- tonghab.html (v141) · 저장: 2026-10-01 13:46 KST · [v141] 「작물별 10a당 수량 집계」 목록에서 논벼 항목의 10a당 수량을 「예상량(파랑)·실수확량(초록)」 두 줄로 따로 표시(없으면 —). 일반 작물은 기존대로 A·B 평균 단일 표시. 집계 세부목록에 가로 스크롤 허용(좁은 화면 대비). ※ 계산 함수 무변경(표시만). (v140 이하 유지) -->
+<!-- tonghab.html (v142) · 저장: 2026-10-03 07:24 KST · [v142] 논벼 실수확량 조사표·엑셀 집계 보완 — ①실수확량 조사표 '3㎡ 포기수 확인' 표 맨 위에 「3줄 예취길이(cm)」 행 추가. ②포기수확인과 ①조제벼 사이에 「A·B포구 피해상황(피해부호/피해율)·비고」 입력 추가(예상량과 동일 양식, 실수확량 자체 입력 → ④표·엑셀에 반영). ③저장/불러오기 집계에 「🌾 논벼 실수확량 → 엑셀 집계 내보내기」 바 추가(예상량과 동일 동작·5회탭 잠금·비밀번호 공용) — 수식 내장 .xlsx/CSV(O=N/8, Q=P/O, S=검산계, X=Z/P, Y=SUM(Z:AA), AD=SUM(AB:AC), AE=AD/2, AF=생산량, AG=AF/AH, AI=AF-AH). ④필지주소 입력 시 논벼 시군별 비교의 권역·시군 자동선택(주소 없으면 수동, 이미 선택 시 유지). ※ 기존 계산 함수 무변경(신규 함수·표시만). (v141 이하 유지) -->
+<!-- (이전)  tonghab.html (v141) · 저장: 2026-10-01 13:46 KST · [v141] 「작물별 10a당 수량 집계」 목록에서 논벼 항목의 10a당 수량을 「예상량(파랑)·실수확량(초록)」 두 줄로 따로 표시(없으면 —). 일반 작물은 기존대로 A·B 평균 단일 표시. 집계 세부목록에 가로 스크롤 허용(좁은 화면 대비). ※ 계산 함수 무변경(표시만). (v140 이하 유지) -->
 <!-- (이전)  tonghab.html (v140) · 저장: 2026-10-01 11:10 KST · [v140] 「작물별 10a당 수량 집계」 목록에서 주소(항목)를 누르면 해당 조사표를 불러와 보기·수정 가능(기존 불러오기 동작 재사용 — 덮어쓰기 확인 후 복원·모달 닫힘). 항목에 › 표시·탭 피드백·상단 안내문구 추가. 청취계산기(chungchi)도 동일 적용(저장/불러오기 화면은 실측·청취 동일 유지). ※ 계산 함수 무변경(불러오기 재사용·표시만). (v139 이하 유지) -->
 <!-- (이전)  tonghab.html (v139) · 저장: 2026-10-01 05:38 KST · [v139] 「논벼 예상량 → 엑셀 집계 내보내기」 바를 기본 숨김(보안) — 작물별 10a당 수량 집계에서 저장/불러오기 모달 제목(💾 저장 / 불러오기)을 5번 연속 탭해야 표시(일부 권한자만 사용). 미활성 시 내보내기·공유·비밀번호 버튼 자체가 보이지 않음. 활성화는 현재 세션 한정(새로고침 시 재입력). ※ 계산·내보내기 함수 무변경(표시 조건만). (v138 이하 유지) -->
 <!-- (이전)  tonghab.html (v138) · 저장: 2026-09-17 13:31 KST · [v138] 논벼 예상량 집계에 「공유(전송)」 버튼 추가 — 「📤 엑셀 공유」·「📤 CSV 공유」로 파일을 카톡·메일 등에 바로 전송(navigator.share 파일 공유, 미지원 기기는 자동으로 파일 저장으로 폴백). 저장 버튼(⬇)은 그대로 유지. ※ 계산 함수 무변경(내보내기·공유만). (v137 이하 유지) -->
@@ -2110,6 +2111,7 @@ select,
         if(v){ af.textContent='📍 '+v; af.style.background='#f3f7ef'; af.style.borderColor='#e3ecdb'; }
         else { af.textContent=''; af.style.background='transparent'; af.style.borderColor='transparent'; }
         try{ if(typeof _nbUpdateHdrAddr==='function') _nbUpdateHdrAddr(); }catch(e){}   /* [v131] 헤더 주소 갱신 */
+        try{ if(typeof nbAutoDistrictFromAddr==='function') nbAutoDistrictFromAddr(); }catch(e){}   /* [v142] 주소→시군 자동선택 */
       }
       ai.addEventListener('input',sync); ai.addEventListener('change',sync);
       setTimeout(sync,1200); setTimeout(sync,3200);
@@ -3052,6 +3054,11 @@ select,
           </thead>
           <tbody>
             <tr>
+              <td class="lbl">3줄 예취길이 (cm)</td>
+              <td class="col-a" id="ryTopHarvA">—</td>
+              <td class="col-b" id="ryTopHarvB">—</td>
+            </tr>
+            <tr>
               <td class="lbl">3㎡ 포기수 (계산)</td>
               <td class="col-a" id="ryA_calcPlants">—</td>
               <td class="col-b" id="ryB_calcPlants">—</td>
@@ -3085,6 +3092,71 @@ select,
           </tbody>
         </table>
         <div style="font-size:10.5px;color:#888;margin-bottom:12px;">※ 예취 시 결주 등으로 계산값과 다를 경우 실제 포기수·결주수를 입력하세요.</div>
+
+        <!-- [v142] 실수확량 자체 피해상황(부호/율) · 비고 입력 (예상량과 같은 양식) -->
+        <div class="ryield-sub">📋 A·B포구 피해상황 · 비고</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px;">
+          <div style="border:2px solid var(--ac);border-radius:8px;overflow:hidden;">
+            <div style="background:var(--ac);color:#fff;font-size:11px;font-weight:800;padding:6px 10px;">A포구</div>
+            <div style="padding:10px;">
+              <label style="display:block;font-size:11px;font-weight:600;color:#2A2A28;margin-bottom:4px;">피해부호 / 피해율</label>
+              <div style="display:flex;gap:4px;">
+                <select class="dmg-select" id="rsADmgCode" onchange="if(typeof riceLoadDamage==='function')riceLoadDamage()">
+                  <option value="">선택</option>
+                  <option value="01" selected>01 정상</option>
+                  <option value="02">02 병해</option><option value="03">03 충해</option>
+                  <option value="04">04 수해</option><option value="05">05 한해</option>
+                  <option value="06">06 냉해</option><option value="07">07 풍해</option>
+                  <option value="08">08 약해</option><option value="09">09 조수해</option>
+                  <option value="10">10 습해</option><option value="11">11 우박해</option>
+                  <option value="12">12 기타</option>
+                </select>
+                <select class="dmg-rate" id="rsADmgRate" onchange="if(typeof riceLoadDamage==='function')riceLoadDamage()">
+                  <option value="0" selected>0%</option>
+                  <option value="5">5%</option><option value="10">10%</option><option value="15">15%</option>
+                  <option value="20">20%</option><option value="25">25%</option><option value="30">30%</option>
+                  <option value="35">35%</option><option value="40">40%</option><option value="45">45%</option>
+                  <option value="50">50%</option><option value="55">55%</option><option value="60">60%</option>
+                  <option value="65">65%</option><option value="70">70%</option><option value="75">75%</option>
+                  <option value="80">80%</option><option value="85">85%</option><option value="90">90%</option>
+                  <option value="95">95%</option><option value="100">100%</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div style="border:2px solid var(--bc);border-radius:8px;overflow:hidden;">
+            <div style="background:var(--bc);color:#fff;font-size:11px;font-weight:800;padding:6px 10px;">B포구</div>
+            <div style="padding:10px;">
+              <label style="display:block;font-size:11px;font-weight:600;color:#2A2A28;margin-bottom:4px;">피해부호 / 피해율</label>
+              <div style="display:flex;gap:4px;">
+                <select class="dmg-select" id="rsBDmgCode" onchange="if(typeof riceLoadDamage==='function')riceLoadDamage()">
+                  <option value="">선택</option>
+                  <option value="01" selected>01 정상</option>
+                  <option value="02">02 병해</option><option value="03">03 충해</option>
+                  <option value="04">04 수해</option><option value="05">05 한해</option>
+                  <option value="06">06 냉해</option><option value="07">07 풍해</option>
+                  <option value="08">08 약해</option><option value="09">09 조수해</option>
+                  <option value="10">10 습해</option><option value="11">11 우박해</option>
+                  <option value="12">12 기타</option>
+                </select>
+                <select class="dmg-rate" id="rsBDmgRate" onchange="if(typeof riceLoadDamage==='function')riceLoadDamage()">
+                  <option value="0" selected>0%</option>
+                  <option value="5">5%</option><option value="10">10%</option><option value="15">15%</option>
+                  <option value="20">20%</option><option value="25">25%</option><option value="30">30%</option>
+                  <option value="35">35%</option><option value="40">40%</option><option value="45">45%</option>
+                  <option value="50">50%</option><option value="55">55%</option><option value="60">60%</option>
+                  <option value="65">65%</option><option value="70">70%</option><option value="75">75%</option>
+                  <option value="80">80%</option><option value="85">85%</option><option value="90">90%</option>
+                  <option value="95">95%</option><option value="100">100%</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="ryield-fg" style="margin-bottom:14px;">
+          <label style="display:block;font-size:11px;font-weight:600;color:#2A2A28;margin-bottom:4px;">비고</label>
+          <textarea id="rsRemark" rows="2" placeholder="피해상황 등 기타 사항" style="font-size:13px;padding:8px 10px;width:100%;border:1.5px solid #d7d4cc;border-radius:8px;resize:none;font-family:inherit;box-sizing:border-box;"></textarea>
+        </div>
 
         <div class="ryield-sub">① 조제벼 · 건조벼 · 생볏짚 중량</div>
         <div class="ryield-grid2">
@@ -5935,16 +6007,16 @@ function scrollToNbYield(){
 function riceLoadDamage(){
   function setT(id,v){ var e=document.getElementById(id); if(e) e.textContent=v; }
   function nbDmgText(ab){
-    /* 논벼용: nbADmgCode/nbBDmgCode select (v84) */
+    /* [v142] 실수확량 자체 피해부호(rsADmgCode/rsBDmgCode) 사용 */
     var AB=ab.toUpperCase();
-    var sel=document.getElementById('nb'+AB+'DmgCode');
+    var sel=document.getElementById('rs'+AB+'DmgCode');
     if(!sel||!sel.value) return '—';
     var info=(typeof DMG_CODES!=='undefined')?DMG_CODES[sel.value]:null;
     return info? (info.name+' ('+sel.value+')') : sel.value;
   }
   function nbRateText(ab){
     var AB=ab.toUpperCase();
-    var sel=document.getElementById('nb'+AB+'DmgRate');
+    var sel=document.getElementById('rs'+AB+'DmgRate');
     return (sel&&sel.value!=='')? sel.value+' %':'—';
   }
   function plantsText(id){
@@ -5971,6 +6043,8 @@ function riceLoadDamage(){
   setT('rlA_missPlants', ryHarvVal('ryAMissPlants'));
   setT('rlB_missPlants', ryHarvVal('ryBMissPlants'));
   setT('rl2A_harv', harvText('nbAHarvestLen')); setT('rl2B_harv', harvText('nbBHarvestLen'));
+  /* [v142] 포기수 확인 표 상단 '3줄 예취길이' 행에도 표시 */
+  setT('ryTopHarvA', harvText('nbAHarvestLen')); setT('ryTopHarvB', harvText('nbBHarvestLen'));
 }
 
 /* 예취포기수 입력 시 ④테이블 동기화 (v90) */
@@ -7734,6 +7808,59 @@ function nbUpdateDistrict(){
   var emptyDiv=document.getElementById('nbCompareEmpty');
   if(resultDiv) resultDiv.style.display='none';
   if(emptyDiv)  emptyDiv.style.display='';
+}
+
+/* [v142] 필지주소 → 논벼 시군별 비교 '권역·시군' 자동선택
+   · 주소에서 시군을 찾아 권역+시군 자동 선택(고성군 등 중복은 시도로 구분)
+   · 이미 시군이 선택돼 있으면 건드리지 않음(수동 우선) · 주소 없으면 수동선택 */
+var _NB_SIGUN_LOOKUP=null;
+function _nbBuildSigunLookup(){
+  if(_NB_SIGUN_LOOKUP) return _NB_SIGUN_LOOKUP;
+  var map={};
+  Object.keys(NB_DISTRICTS).forEach(function(g){
+    if(g==='province') return;   /* 도(시도) 단위는 자동선택 대상에서 제외(시군만) */
+    NB_DISTRICTS[g].forEach(function(name){
+      var key=name.replace(/\(.*?\)/,'').trim();   /* '고성군(경남)' → '고성군' */
+      (map[key]=map[key]||[]).push({group:g, value:name});
+    });
+  });
+  _NB_SIGUN_LOOKUP=map; return map;
+}
+function _nbSidoToGroup(sido){
+  var s=String(sido||'');
+  if(/경북|경상북/.test(s)||/대구/.test(s)) return 'daegu';
+  if(/강원/.test(s)) return 'gangwon';
+  if(/경기/.test(s)) return 'gyeonggi';
+  if(/충북|충청북/.test(s)) return 'chungbuk';
+  if(/충남|충청남/.test(s)) return 'chungnam';
+  if(/전북|전라북/.test(s)) return 'jeonbuk';
+  if(/전남|전라남/.test(s)) return 'jeonnam';
+  if(/경남|경상남/.test(s)) return 'gyeongnam';
+  if(/제주/.test(s)) return 'jeju';
+  return '';
+}
+function nbAutoDistrictFromAddr(){
+  var rg=document.getElementById('nbRegionGroup'), dc=document.getElementById('nbDistrict');
+  if(!rg||!dc) return;
+  if(dc.value) return;            /* 이미 선택됨 → 자동선택 안 함(수동 우선) */
+  var ai=document.getElementById('address'); var addr=ai?(ai.value||'').trim():'';
+  if(!addr) return;               /* 주소 없으면 수동선택 */
+  var p=(typeof _nbParseAddr==='function')?_nbParseAddr(addr):null;
+  if(!p||!p.sigungu) return;
+  var look=_nbBuildSigunLookup();
+  var sgTokens=String(p.sigungu).split(/\s+/).filter(Boolean);
+  var cand=null;
+  for(var i=0;i<sgTokens.length;i++){ var tk=sgTokens[i]; if(look[tk]){ cand=look[tk]; if(/[시군]$/.test(tk)) break; } }
+  if(!cand||!cand.length) return;
+  var pick=cand[0];
+  if(cand.length>1){           /* 동일 시군명(고성군) → 시도로 구분 */
+    var g=_nbSidoToGroup(p.sido);
+    for(var j=0;j<cand.length;j++){ if(cand[j].group===g){ pick=cand[j]; break; } }
+  }
+  rg.value=pick.group;
+  if(typeof nbUpdateDistrict==='function') nbUpdateDistrict();
+  dc.value=pick.value;
+  if(typeof nbCompareCalc==='function'){ try{ nbCompareCalc(true); }catch(e){} }
 }
 
 /* ════ 논벼 시군별 KOSIS 데이터 (v91) ════
@@ -9849,7 +9976,21 @@ function _slRenderAgg(){
       +'</div>'
       +'<div style="font-size:10px;color:#7a869a;margin-top:6px;line-height:1.5;">잠금(🔒)된 논벼 자료 '+_riceN+'건 · 「저장」은 파일로 내려받기, 「공유」는 카톡·메일 등으로 바로 전송(.xlsx는 아이폰/안드로이드에서 열림) · 처음 저장 시 비밀번호를 설정합니다.</div>'
       +'</div>';
-    html=bar+html;
+    /* [v142] 논벼 실수확량 엑셀 집계 내보내기 바 (예상량과 동일 양식, 초록 계열) */
+    var rsBar='<div style="border:1.5px solid #a8d3b4;background:#f1faf3;border-radius:9px;padding:9px 10px;margin-bottom:9px;">'
+      +'<div style="font-size:12px;color:#1D6F42;font-weight:800;margin-bottom:7px;">🌾 논벼 실수확량 → 엑셀 집계 내보내기</div>'
+      +'<div style="display:flex;gap:6px;align-items:stretch;margin-bottom:6px;">'
+        +'<button type="button" onclick="rsExportXLSX()" style="'+_btnCss+'background:#1D6F42;color:#fff;border:1.5px solid #1D6F42;">⬇ 엑셀 저장(.xlsx)</button>'
+        +'<button type="button" onclick="rsShareXLSX()" style="'+_btnCss+'background:#0A7EA4;color:#fff;border:1.5px solid #0A7EA4;">📤 엑셀 공유</button>'
+      +'</div>'
+      +'<div style="display:flex;gap:6px;align-items:stretch;">'
+        +'<button type="button" onclick="rsExportCSV()" style="'+_btnCss+'background:#2E7D4F;color:#fff;border:1.5px solid #2E7D4F;">⬇ CSV 저장</button>'
+        +'<button type="button" onclick="rsShareCSV()" style="'+_btnCss+'background:#4CA86A;color:#fff;border:1.5px solid #4CA86A;">📤 CSV 공유</button>'
+        +'<button type="button" onclick="nbExportResetPw()" title="비밀번호 해제" style="flex:0 0 auto;padding:9px 10px;border-radius:8px;font-size:14px;cursor:pointer;font-family:inherit;background:#fff;border:1.5px solid #bcdcc6;color:#2e7d4f;">🔑</button>'
+      +'</div>'
+      +'<div style="font-size:10px;color:#6b8a76;margin-top:6px;line-height:1.5;">잠금(🔒)된 논벼 자료 '+_riceN+'건 · 실수확량조사 결과(조제벼·건조율·제현율·수분·생산량 등) 집계 · 「공유」는 카톡·메일 등으로 바로 전송 · 비밀번호는 예상량과 공용입니다.</div>'
+      +'</div>';
+    html=bar+rsBar+html;
   }
   body.innerHTML=html;
 }
@@ -10373,6 +10514,271 @@ function nbShareCSV(){
   if(!t.count){ alert('공유할 논벼(잠금) 자료가 없습니다.\n집계에 넣을 논벼 자료를 🔒 잠금하세요.'); return; }
   _nbExportGate(function(){
     try{ _nbShareFile(new TextEncoder().encode(_nbToCSV(t)), _nbFileName('csv'), 'text/csv;charset=utf-8;', '논벼 예상량 집계 ('+t.count+'건)'); }
+    catch(e){ alert('CSV 공유 실패: '+e.message); }
+  });
+}
+
+/* ══════════════════════════════════════════════════════════════
+   [v142] 논벼 실수확량(실수확량조사) → 자체계산 엑셀(.xlsx)/CSV 집계
+   · 컬럼: A~J 주소블록(예상량과 동일) · K 여백 · L/M 예취길이 · N부터 계산열
+     (사용자 지정 수식: O=N/8, Q=P/O, S=검산계, X=Z/P, Y=SUM(Z:AA),
+      AD=SUM(AB:AC), AE=AD/2, AF=생산량, AG=AF/AH, AI=AF-AH)
+   · 수식(R1C1→A1) + 캐시값 내장 → 파일 자체 재계산. 저장목록 순서 유지.
+   ══════════════════════════════════════════════════════════════ */
+var RS_COLS = [
+  {k:'addr',   h:'주소',                 kind:'t'},
+  {k:'sido',   h:'시도',                 kind:'p'},
+  {k:'sigun',  h:'시군',                 kind:'p'},
+  {k:'emd',    h:'읍면동',               kind:'p'},
+  {k:'floor',  h:'층',                   kind:'txt'},
+  {k:'plot',   h:'조사구',               kind:'txt'},
+  {k:'ri',     h:'동리',                 kind:'p'},
+  {k:'jibun',  h:'지번',                 kind:'txt'},
+  {k:'jibunMain', h:'본지번',            kind:'txt'},
+  {k:'jibunSub',  h:'부지번',            kind:'txt'},
+  {k:'spacer', h:'',                     kind:'b'},                 /* K: 여백(예취길이를 L열에 맞춤) */
+  {k:'harvA',  h:'A포구 예취길이(cm)',    kind:'f', fmt:'n1'},       /* L: 값 */
+  {k:'harvB',  h:'B포구 예취길이(cm)',    kind:'f', fmt:'n1'},       /* M: 값 */
+  {k:'jeje6',  h:'6㎡당 조제벼중량(g)',   kind:'in'},                /* N */
+  {k:'jeje8',  h:'1/8 조제벼중량(g)',     kind:'f'},                 /* O =N/8 */
+  {k:'geon8',  h:'1/8 건조벼중량(g)',     kind:'in'},                /* P */
+  {k:'geonRate', h:'건조율',              kind:'f', fmt:'pct1'},     /* Q =IF(P="","",P/O) */
+  {k:'straw',  h:'6㎡당 생볏짚(g)',       kind:'in'},                /* R */
+  {k:'checksum', h:'검산계',              kind:'f'},                 /* S =N+ROUND(N/8,0)+P+R */
+  {k:'admg',   h:'A피해명',               kind:'in'},                /* T */
+  {k:'admgr',  h:'A피해율',               kind:'in'},                /* U */
+  {k:'bdmg',   h:'B피해명',               kind:'in'},                /* V */
+  {k:'bdmgr',  h:'B피해율',               kind:'in'},                /* W */
+  {k:'jehyeon', h:'제현율',               kind:'f', fmt:'pct0'},     /* X =IF(Z="","",Z/P) */
+  {k:'wtTotal', h:'중량총량',             kind:'f'},                 /* Y =SUM(Z:AA) */
+  {k:'hyeonmi', h:'1.6mm이상(현미)',      kind:'in'},                /* Z */
+  {k:'seolmi',  h:'1.6mm미만(설미)',      kind:'in'},                /* AA */
+  {k:'moist1', h:'수분 1회',              kind:'in'},                /* AB */
+  {k:'moist2', h:'수분 2회',              kind:'in'},                /* AC */
+  {k:'moistSum', h:'수분 합계',           kind:'f', fmt:'n1'},       /* AD =SUM(AB:AC) */
+  {k:'moistAvg', h:'수분 평균',           kind:'f', fmt:'n1'},       /* AE =AD/2 */
+  {k:'yield10a', h:'10A당 생산량',        kind:'f', fmt:'n0'},       /* AF */
+  {k:'vsExpect', h:'10A당 예상량대비',    kind:'f', fmt:'pct0'},     /* AG =AF/AH */
+  {k:'expect10a', h:'10A당 예상량',       kind:'in'},                /* AH */
+  {k:'diff',   h:'생산량-예상량',         kind:'f', fmt:'n0'},       /* AI =AF-AH */
+  {k:'remark', h:'비고',                  kind:'in'}                 /* AJ */
+];
+var RS_IDX={}; RS_COLS.forEach(function(c,i){ RS_IDX[c.k]=i; });
+function _rsRC(fromKey,toKey){ return 'RC['+(RS_IDX[toKey]-RS_IDX[fromKey])+']'; }
+function _rsRCr(fromKey,k1,k2){ return 'RC['+(RS_IDX[k1]-RS_IDX[fromKey])+']:RC['+(RS_IDX[k2]-RS_IDX[fromKey])+']'; }
+var RS_FX={
+  jeje8:function(s){ return _rsRC(s,'jeje6')+'/8'; },
+  geonRate:function(s){ return 'IF('+_rsRC(s,'geon8')+'="","",'+_rsRC(s,'geon8')+'/'+_rsRC(s,'jeje8')+')'; },
+  checksum:function(s){ return _rsRC(s,'jeje6')+'+ROUND('+_rsRC(s,'jeje6')+'/8,0)+'+_rsRC(s,'geon8')+'+'+_rsRC(s,'straw'); },
+  jehyeon:function(s){ return 'IF('+_rsRC(s,'hyeonmi')+'="","",'+_rsRC(s,'hyeonmi')+'/'+_rsRC(s,'geon8')+')'; },
+  wtTotal:function(s){ return 'SUM('+_rsRCr(s,'hyeonmi','seolmi')+')'; },
+  moistSum:function(s){ return 'SUM('+_rsRCr(s,'moist1','moist2')+')'; },
+  moistAvg:function(s){ return _rsRC(s,'moistSum')+'/2'; },
+  yield10a:function(s){ return 'IF(OR('+_rsRC(s,'jeje6')+'="",'+_rsRC(s,'hyeonmi')+'=""),"",'+_rsRC(s,'hyeonmi')+'*8/6*(100-'+_rsRC(s,'moistAvg')+')/85*0.929)'; },
+  vsExpect:function(s){ return 'IF('+_rsRC(s,'yield10a')+'="","",'+_rsRC(s,'yield10a')+'/'+_rsRC(s,'expect10a')+')'; },
+  diff:function(s){ return 'IF('+_rsRC(s,'yield10a')+'="","",'+_rsRC(s,'yield10a')+'-'+_rsRC(s,'expect10a')+')'; }
+};
+/* 저장 데이터 → 실수확량 값 객체(엑셀 캐시값·CSV 값) */
+function _rsCompute(d){
+  d=d||{}; var V={};
+  var addr=(d.address||'').trim(); var p=_nbParseAddr(addr);
+  V.addr=addr; V.sido=p.sido; V.sigun=p.sigungu; V.emd=p.eupmyeondong; V.ri=p.ri; V.jibun=p.jibun;
+  var _fl=(d.nbFloor==null?'':String(d.nbFloor).replace(/[^0-9]/g,'')); var _sp=(d.nbSurveyPlot==null?'':String(d.nbSurveyPlot).replace(/[^0-9]/g,''));
+  V.floor=_fl?_fl.padStart(2,'0').slice(-2):''; V.plot=_sp?_sp.padStart(4,'0').slice(-4):'';
+  V.jibunMain=''; V.jibunSub='';
+  if(p.jibun){ var jm=String(p.jibun).match(/^(\d+)(?:-(\d+))?$/); if(jm){ V.jibunMain=jm[1].padStart(4,'0').slice(-4); V.jibunSub=(jm[2]||'0').padStart(4,'0').slice(-4); } }
+  V.spacer='';
+  /* 예취길이 = round(10000/포기간가로(cm),1) (A/B) */
+  var aw=_nbNum(d,'nbAWidth'), bw=_nbNum(d,'nbBWidth');
+  V.harvA=(aw!==''&&aw>0)?Math.round(10000/aw*10)/10:'';
+  V.harvB=(bw!==''&&bw>0)?Math.round(10000/bw*10)/10:'';
+  /* ① 중량 */
+  V.jeje6=_nbNum(d,'rsJeje');
+  V.jeje8=(V.jeje6!=='')?Math.round(V.jeje6/8*10000)/10000:'';
+  V.geon8=_nbNum(d,'rsGeon8');
+  V.geonRate=(V.geon8!==''&&V.jeje8!==''&&V.jeje8>0)?Math.round(V.geon8/V.jeje8*10000)/10000:'';
+  V.straw=_nbNum(d,'rsStraw');
+  V.checksum=(V.jeje6!=='')?(V.jeje6+Math.round(V.jeje6/8)+(V.geon8!==''?V.geon8:0)+(V.straw!==''?V.straw:0)):'';
+  /* 피해(실수확량 자체 입력) */
+  V.admg=_nbHangul(_nbSelText(d,'rsADmgCode'));
+  V.admgr=_nbSelText(d,'rsADmgRate');
+  V.bdmg=_nbHangul(_nbSelText(d,'rsBDmgCode'));
+  V.bdmgr=_nbSelText(d,'rsBDmgRate');
+  /* ② 크기별 중량 (설미 = 총량 − 현미) */
+  V.hyeonmi=_nbNum(d,'rsHyeonmi');
+  var _tot=_nbNum(d,'rsTotal');
+  V.seolmi=(_tot!==''&&V.hyeonmi!=='')?Math.round((_tot-V.hyeonmi)*10000)/10000:'';
+  V.jehyeon=(V.hyeonmi!==''&&V.geon8!==''&&V.geon8>0)?Math.round(V.hyeonmi/V.geon8*10000)/10000:'';
+  V.wtTotal=(V.hyeonmi!==''||V.seolmi!=='')?((V.hyeonmi!==''?V.hyeonmi:0)+(V.seolmi!==''?V.seolmi:0)):'';
+  /* ③ 수분 */
+  V.moist1=_nbNum(d,'rsMoist1'); V.moist2=_nbNum(d,'rsMoist2');
+  V.moistSum=(V.moist1!==''||V.moist2!=='')?Math.round(((V.moist1!==''?V.moist1:0)+(V.moist2!==''?V.moist2:0))*10)/10:'';
+  V.moistAvg=(V.moistSum!=='')?Math.round(V.moistSum/2*100)/100:'';
+  /* 10a 생산량 = 현미*8/6*(100-수분평균)/85*0.929 */
+  V.yield10a=(V.jeje6!==''&&V.hyeonmi!==''&&V.moistAvg!=='')
+     ? Math.round(V.hyeonmi*8/6*(100-V.moistAvg)/85*0.929*100)/100 : '';
+  /* 10a 예상량(예상량 조사 결과) */
+  var ex=_nbNum(d,'__res_nbYield10a'); if(ex==='') ex=_nbNum(d,'nbEstYield10a');
+  V.expect10a=ex;
+  V.vsExpect=(V.yield10a!==''&&V.expect10a!==''&&V.expect10a>0)?Math.round(V.yield10a/V.expect10a*10000)/10000:'';
+  V.diff=(V.yield10a!==''&&V.expect10a!=='')?Math.round((V.yield10a-V.expect10a)*100)/100:'';
+  V.remark=(d.rsRemark==null?'':d.rsRemark);
+  return V;
+}
+function _rsBuildData(){
+  var list=(typeof _slGetList==='function')?_slGetList():[];
+  var rice=list.filter(function(it){ return it && it.fav && (it.crop==='논벼'); });
+  var header=RS_COLS.map(function(c){return c.h;});
+  var legend=RS_COLS.map(function(c){ return c.kind==='in'?'입력':(c.kind==='f'?(RS_FX[c.k]?'수식':'값'):''); });
+  var Vs=rice.map(function(it){
+    var d=null; try{ d=JSON.parse(localStorage.getItem(SL_DATA_PFX+it.key)||'null'); }catch(e){}
+    return _rsCompute(d||{});
+  });
+  var rows=Vs.map(function(V){ return RS_COLS.map(function(c){ var v=V[c.k]; return (v==null?'':v); }); });
+  return { header:header, legend:legend, rows:rows, Vs:Vs, count:rice.length };
+}
+function _rsSubtotals(t){
+  var SIGUN=RS_IDX['sigun'];
+  var groups={}, order=[];
+  t.rows.forEach(function(r){ var sg=r[SIGUN]||'(시군미상)'; if(!groups[sg]){groups[sg]=[];order.push(sg);} groups[sg].push(r); });
+  var NONAGG={addr:1,sido:1,sigun:1,emd:1,floor:1,plot:1,ri:1,jibun:1,jibunMain:1,jibunSub:1,spacer:1,harvA:1,harvB:1,admg:1,bdmg:1,remark:1};
+  var subs=[];
+  order.forEach(function(sg){
+    var g=groups[sg];
+    var sumRow=RS_COLS.map(function(){return '';}), avgRow=RS_COLS.map(function(){return '';});
+    sumRow[0]='['+sg+'] 합계 ('+g.length+'건)'; avgRow[0]='['+sg+'] 평균';
+    sumRow[SIGUN]=sg; avgRow[SIGUN]=sg;
+    RS_COLS.forEach(function(c,ci){
+      if(ci===0||ci===SIGUN||NONAGG[c.k]) return;
+      var nums=[]; g.forEach(function(r){ var s=String(r[ci]==null?'':r[ci]).replace(/,/g,''); if(/^-?\d+(\.\d+)?$/.test(s.trim())){ nums.push(parseFloat(s)); } });
+      if(nums.length){ var s=nums.reduce(function(a,b){return a+b;},0); sumRow[ci]=Math.round(s*100)/100; avgRow[ci]=Math.round((s/nums.length)*100)/100; }
+    });
+    subs.push(sumRow); subs.push(avgRow);
+  });
+  return subs;
+}
+function _rsFmtVal(ci,v){
+  var c=RS_COLS[ci]; if(!c||!c.fmt) return v;
+  var s=String(v==null?'':v).replace(/,/g,'').trim();
+  if(s===''||!/^-?\d+(\.\d+)?$/.test(s)) return v;
+  var n=parseFloat(s);
+  if(c.fmt==='n3') return n.toFixed(3);
+  if(c.fmt==='n1') return n.toFixed(1);
+  if(c.fmt==='pct1') return (n*100).toFixed(1)+'%';
+  if(c.fmt==='pct0') return Math.round(n*100)+'%';
+  if(c.fmt==='n0') return String(Math.round(n));
+  return v;
+}
+function _rsCsvRow(r){ return r.map(function(v,ci){ return _nbCsvCell(_rsFmtVal(ci,v)); }).join(','); }
+function _rsToCSV(t){
+  var L=[t.header.map(_nbCsvCell).join(','), t.legend.map(_nbCsvCell).join(',')];
+  t.rows.forEach(function(r){ L.push(_rsCsvRow(r)); });
+  var subs=_rsSubtotals(t);
+  if(subs.length){ L.push(''); subs.forEach(function(r){ L.push(_rsCsvRow(r)); }); }
+  return '﻿'+L.join('\r\n');
+}
+function _rsXlsxDataRow(V,R){
+  var cells='';
+  RS_COLS.forEach(function(c,ci){
+    var ref=_nbColLetter(ci)+R;
+    if(c.kind==='f'){
+      var val=V[c.k];
+      if(val===''||val==null||!isFinite(val)) return;
+      var num=Math.round(Number(val)*10000)/10000;
+      var s=(c.fmt==='n3')?'4':((c.fmt==='n1')?'5':((c.fmt==='pct1')?'7':((c.fmt==='pct0')?'8':((c.fmt==='n0')?'9':''))));
+      if(RS_FX[c.k]) cells+=_nbXcFx(ref,s,_nbA1(RS_FX[c.k](c.k),ci,R),num);
+      else cells+=_nbXcNum(ref,s,num);
+      return;
+    }
+    var raw=V[c.k];
+    if(c.kind==='txt'){ if(raw===''||raw==null) return; cells+=_nbXcStr(ref,'6',String(raw)); return; }
+    if(raw===''||raw==null) return;
+    if(_nbIsNum(raw)) cells+=_nbXcNum(ref,'',Number(String(raw).replace(/,/g,'')));
+    else cells+=_nbXcStr(ref,'',String(raw));
+  });
+  return '<row r="'+R+'">'+cells+'</row>';
+}
+function _rsToXLSX(t){
+  var rows=[], R=1;
+  rows.push(_nbXlsxPlainRow(t.header,R,'1')); R++;
+  rows.push(_nbXlsxPlainRow(t.legend,R,'2')); R++;
+  t.Vs.forEach(function(V){ rows.push(_rsXlsxDataRow(V,R)); R++; });
+  var subs=_rsSubtotals(t);
+  if(subs.length){ R++; subs.forEach(function(r){ rows.push(_nbXlsxPlainRow(r,R,'3')); R++; }); }
+  var XH='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n';
+  var sheet=XH+'<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>'+rows.join('')+'</sheetData></worksheet>';
+  var ct=XH+'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+    +'<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
+    +'<Default Extension="xml" ContentType="application/xml"/>'
+    +'<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'
+    +'<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
+    +'<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>';
+  var rels=XH+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+    +'<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>';
+  var wb=XH+'<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
+    +'<sheets><sheet name="논벼실수확량" sheetId="1" r:id="rId1"/></sheets><calcPr fullCalcOnLoad="1"/></workbook>';
+  var wbr=XH+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+    +'<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>'
+    +'<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>';
+  var sty=XH+'<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+    +'<numFmts count="5"><numFmt numFmtId="164" formatCode="0.000"/><numFmt numFmtId="165" formatCode="0.0"/><numFmt numFmtId="166" formatCode="0.0%"/><numFmt numFmtId="167" formatCode="0%"/><numFmt numFmtId="168" formatCode="0"/></numFmts>'
+    +'<fonts count="3"><font><sz val="11"/><name val="맑은 고딕"/></font>'
+    +'<font><b/><sz val="11"/><name val="맑은 고딕"/></font>'
+    +'<font><i/><sz val="8"/><color rgb="FF7A869A"/><name val="맑은 고딕"/></font></fonts>'
+    +'<fills count="5"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill>'
+    +'<fill><patternFill patternType="solid"><fgColor rgb="FFDBE7FF"/></patternFill></fill>'
+    +'<fill><patternFill patternType="solid"><fgColor rgb="FFF1F5FB"/></patternFill></fill>'
+    +'<fill><patternFill patternType="solid"><fgColor rgb="FFFFF3E0"/></patternFill></fill></fills>'
+    +'<borders count="1"><border/></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'
+    +'<cellXfs count="10">'
+    +'<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>'
+    +'<xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment horizontal="center"/></xf>'
+    +'<xf numFmtId="0" fontId="2" fillId="3" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment horizontal="center"/></xf>'
+    +'<xf numFmtId="0" fontId="1" fillId="4" borderId="0" xfId="0" applyFont="1" applyFill="1"/>'
+    +'<xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/>'
+    +'<xf numFmtId="165" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/>'
+    +'<xf numFmtId="49" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/>'
+    +'<xf numFmtId="166" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/>'
+    +'<xf numFmtId="167" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/>'
+    +'<xf numFmtId="168" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/>'
+    +'</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
+  var e=new TextEncoder();
+  return _nbZip([
+    {name:'[Content_Types].xml', data:e.encode(ct)},
+    {name:'_rels/.rels', data:e.encode(rels)},
+    {name:'xl/workbook.xml', data:e.encode(wb)},
+    {name:'xl/_rels/workbook.xml.rels', data:e.encode(wbr)},
+    {name:'xl/styles.xml', data:e.encode(sty)},
+    {name:'xl/worksheets/sheet1.xml', data:e.encode(sheet)}
+  ]);
+}
+function _rsFileName(ext){ var now=new Date(), kst=new Date(now.getTime()+9*3600000); return '논벼실수확량_집계_'+kst.toISOString().slice(0,10)+'.'+ext; }
+function rsExportXLSX(){
+  var t=_rsBuildData();
+  if(!t.count){ alert('내보낼 논벼(잠금) 자료가 없습니다.\n집계에 넣을 논벼 자료를 🔒 잠금하세요.'); return; }
+  _nbExportGate(function(){
+    try{ _nbDownload(_rsToXLSX(t), _rsFileName('xlsx'), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'); }
+    catch(e){ alert('엑셀(.xlsx) 생성 실패: '+e.message); }
+  });
+}
+function rsShareXLSX(){
+  var t=_rsBuildData();
+  if(!t.count){ alert('공유할 논벼(잠금) 자료가 없습니다.\n집계에 넣을 논벼 자료를 🔒 잠금하세요.'); return; }
+  _nbExportGate(function(){
+    try{ _nbShareFile(_rsToXLSX(t), _rsFileName('xlsx'), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', '논벼 실수확량 집계 ('+t.count+'건)'); }
+    catch(e){ alert('엑셀 공유 실패: '+e.message); }
+  });
+}
+function rsExportCSV(){
+  var t=_rsBuildData();
+  if(!t.count){ alert('내보낼 논벼(잠금) 자료가 없습니다.\n집계에 넣을 논벼 자료를 🔒 잠금하세요.'); return; }
+  _nbExportGate(function(){ _nbDownload(_rsToCSV(t), _rsFileName('csv'), 'text/csv;charset=utf-8;'); });
+}
+function rsShareCSV(){
+  var t=_rsBuildData();
+  if(!t.count){ alert('공유할 논벼(잠금) 자료가 없습니다.\n집계에 넣을 논벼 자료를 🔒 잠금하세요.'); return; }
+  _nbExportGate(function(){
+    try{ _nbShareFile(new TextEncoder().encode(_rsToCSV(t)), _rsFileName('csv'), 'text/csv;charset=utf-8;', '논벼 실수확량 집계 ('+t.count+'건)'); }
     catch(e){ alert('CSV 공유 실패: '+e.message); }
   });
 }
