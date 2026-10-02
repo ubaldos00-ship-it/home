@@ -1,4 +1,5 @@
-<!-- tonghab.html (v142) · 저장: 2026-10-03 07:24 KST · [v142] 논벼 실수확량 조사표·엑셀 집계 보완 — ①실수확량 조사표 '3㎡ 포기수 확인' 표 맨 위에 「3줄 예취길이(cm)」 행 추가. ②포기수확인과 ①조제벼 사이에 「A·B포구 피해상황(피해부호/피해율)·비고」 입력 추가(예상량과 동일 양식, 실수확량 자체 입력 → ④표·엑셀에 반영). ③저장/불러오기 집계에 「🌾 논벼 실수확량 → 엑셀 집계 내보내기」 바 추가(예상량과 동일 동작·5회탭 잠금·비밀번호 공용) — 수식 내장 .xlsx/CSV(O=N/8, Q=P/O, S=검산계, X=Z/P, Y=SUM(Z:AA), AD=SUM(AB:AC), AE=AD/2, AF=생산량, AG=AF/AH, AI=AF-AH). ④필지주소 입력 시 논벼 시군별 비교의 권역·시군 자동선택(주소 없으면 수동, 이미 선택 시 유지). ※ 기존 계산 함수 무변경(신규 함수·표시만). (v141 이하 유지) -->
+<!-- tonghab.html (v143) · 저장: 2026-10-03 07:42 KST · [v143] 논벼 실수확량 조사표 헤더(글자 오른쪽)에 「↺ 초기화」 버튼 추가 — 실수확량 입력값(조제벼·건조벼·생볏짚·총량·현미·수분·피해·비고)만 초기화하고, 예취포기수·결주수는 그대로 유지, 예상량은 건드리지 않음. 확인창: "실수확량 조사표 초기화됩니다.(단, 예취포기수 , 결주는 그대로 유지됨)". ※ 하단 「전체 초기화」(ryieldReset) 버튼은 그대로 유지. 계산 함수 무변경. (v142 이하 유지) -->
+<!-- (이전)  tonghab.html (v142) · 저장: 2026-10-03 07:24 KST · [v142] 논벼 실수확량 조사표·엑셀 집계 보완 — ①실수확량 조사표 '3㎡ 포기수 확인' 표 맨 위에 「3줄 예취길이(cm)」 행 추가. ②포기수확인과 ①조제벼 사이에 「A·B포구 피해상황(피해부호/피해율)·비고」 입력 추가(예상량과 동일 양식, 실수확량 자체 입력 → ④표·엑셀에 반영). ③저장/불러오기 집계에 「🌾 논벼 실수확량 → 엑셀 집계 내보내기」 바 추가(예상량과 동일 동작·5회탭 잠금·비밀번호 공용) — 수식 내장 .xlsx/CSV(O=N/8, Q=P/O, S=검산계, X=Z/P, Y=SUM(Z:AA), AD=SUM(AB:AC), AE=AD/2, AF=생산량, AG=AF/AH, AI=AF-AH). ④필지주소 입력 시 논벼 시군별 비교의 권역·시군 자동선택(주소 없으면 수동, 이미 선택 시 유지). ※ 기존 계산 함수 무변경(신규 함수·표시만). (v141 이하 유지) -->
 <!-- (이전)  tonghab.html (v141) · 저장: 2026-10-01 13:46 KST · [v141] 「작물별 10a당 수량 집계」 목록에서 논벼 항목의 10a당 수량을 「예상량(파랑)·실수확량(초록)」 두 줄로 따로 표시(없으면 —). 일반 작물은 기존대로 A·B 평균 단일 표시. 집계 세부목록에 가로 스크롤 허용(좁은 화면 대비). ※ 계산 함수 무변경(표시만). (v140 이하 유지) -->
 <!-- (이전)  tonghab.html (v140) · 저장: 2026-10-01 11:10 KST · [v140] 「작물별 10a당 수량 집계」 목록에서 주소(항목)를 누르면 해당 조사표를 불러와 보기·수정 가능(기존 불러오기 동작 재사용 — 덮어쓰기 확인 후 복원·모달 닫힘). 항목에 › 표시·탭 피드백·상단 안내문구 추가. 청취계산기(chungchi)도 동일 적용(저장/불러오기 화면은 실측·청취 동일 유지). ※ 계산 함수 무변경(불러오기 재사용·표시만). (v139 이하 유지) -->
 <!-- (이전)  tonghab.html (v139) · 저장: 2026-10-01 05:38 KST · [v139] 「논벼 예상량 → 엑셀 집계 내보내기」 바를 기본 숨김(보안) — 작물별 10a당 수량 집계에서 저장/불러오기 모달 제목(💾 저장 / 불러오기)을 5번 연속 탭해야 표시(일부 권한자만 사용). 미활성 시 내보내기·공유·비밀번호 버튼 자체가 보이지 않음. 활성화는 현재 세션 한정(새로고침 시 재입력). ※ 계산·내보내기 함수 무변경(표시 조건만). (v138 이하 유지) -->
@@ -3043,7 +3044,11 @@ select,
 
     <!-- ════ 논벼 전용: 실수확량 조사표 (v81) ════ -->
     <div class="ryield-card nonbye-only" id="ryieldCard">
-      <div class="ryield-hdr">🌾 논벼 실수확량 조사표</div>
+      <div class="ryield-hdr" style="justify-content:space-between;">
+        <span style="display:flex;align-items:center;gap:8px;">🌾 논벼 실수확량 조사표</span>
+        <button type="button" onclick="ryieldResetOnly()" title="실수확량만 초기화(예취포기수·결주 유지)"
+          style="flex:0 0 auto;padding:6px 11px;background:rgba(255,255,255,0.16);border:1px solid rgba(255,255,255,0.55);border-radius:8px;color:#fff;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;white-space:nowrap;">↺ 초기화</button>
+      </div>
       <div class="ryield-body">
 
         <!-- A/B포구 3㎡ 포기수 표시 + 예취포기수 입력 (v90) -->
@@ -5997,6 +6002,19 @@ function ryieldReset(){
            'ryAHarvPlants','ryBHarvPlants','ryAMissPlants','ryBMissPlants'];
   ids.forEach(function(id){ var e=document.getElementById(id); if(e) e.value=''; });
   if(typeof riceRealYieldCalc==='function') riceRealYieldCalc();
+}
+/* [v143] 실수확량만 초기화 — 예취포기수·결주수는 유지, 예상량은 건드리지 않음 */
+function ryieldResetOnly(){
+  if(!confirm('실수확량 조사표 초기화됩니다.(단, 예취포기수 , 결주는 그대로 유지됨)')) return;
+  /* 비울 실수확량 입력 (예취포기수 ryA/BHarvPlants·결주수 ryA/BMissPlants 제외) */
+  var ids=['rsJeje','rsJeje8','rsGeon8','rsGeonRate','rsStraw','rsTotal','rsHyeonmi','rsSeolmi','rsMoist1','rsMoist2','rsRemark'];
+  ids.forEach(function(id){ var e=document.getElementById(id); if(e) e.value=''; });
+  /* 피해부호/피해율 → 기본값(01 정상 / 0%) */
+  [['rsADmgCode','01'],['rsADmgRate','0'],['rsBDmgCode','01'],['rsBDmgRate','0']].forEach(function(p){
+    var e=document.getElementById(p[0]); if(e) e.value=p[1];
+  });
+  if(typeof riceRealYieldCalc==='function') riceRealYieldCalc();
+  if(typeof riceLoadDamage==='function') riceLoadDamage();
 }
 /* ════ 예상량 섹션 바로가기 (v95) ════ */
 function scrollToNbYield(){
