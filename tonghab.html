@@ -1,4 +1,5 @@
-<!-- tonghab.html (v146) · 저장: 2026-10-03 08:43 KST · [v146] 논벼 하단에 「🧾 논벼 생산량 조사표(한장) 보기」 추가 — 입력된 텐아르 자료를 공식 「논벼 생산량 조사표」 양식 한 장으로 자동 작성(머리말·표본구역선정요도·①예상량조사·②실수확량조사·비고·10a생산량·3㎡예취포기수 등). 표본구역 선정요도는 지도 A/B포구 선정요도(#fieldSvg)를 복제해 표시(없으면 안내). 화면 보기 + 이미지(PNG) 저장/공유(html2canvas) + 인쇄/PDF(A4 가로) 지원. 앱에 없는 항목(경작자·조사담당자·전화·검산계·일부 기준지점 값)은 빈칸(손기입). ※ 계산 함수 무변경(표시·신규 함수만). (v145 이하 유지) -->
+<!-- tonghab.html (v147) · 저장: 2026-10-03 10:48 KST · [v147] 논벼 생산량 조사표 연도 수정 가능 — 상단 제목/머리말 연도가 기본은 현재 연도로 자동 표기되고, 머리말 「연도」 칸을 눌러 직접 수정하면 제목도 함께 바뀜(그 세션 동안 유지). ※ 계산 함수 무변경. (v146 이하 유지) -->
+<!-- (이전)  tonghab.html (v146) · 저장: 2026-10-03 08:43 KST · [v146] 논벼 하단에 「🧾 논벼 생산량 조사표(한장) 보기」 추가 — 입력된 텐아르 자료를 공식 「논벼 생산량 조사표」 양식 한 장으로 자동 작성(머리말·표본구역선정요도·①예상량조사·②실수확량조사·비고·10a생산량·3㎡예취포기수 등). 표본구역 선정요도는 지도 A/B포구 선정요도(#fieldSvg)를 복제해 표시(없으면 안내). 화면 보기 + 이미지(PNG) 저장/공유(html2canvas) + 인쇄/PDF(A4 가로) 지원. 앱에 없는 항목(경작자·조사담당자·전화·검산계·일부 기준지점 값)은 빈칸(손기입). ※ 계산 함수 무변경(표시·신규 함수만). (v145 이하 유지) -->
 <!-- (이전)  tonghab.html (v145) · 저장: 2026-10-03 08:25 KST · [v145] 저장목록 JSON 백업 불러오기 버그 2건 수정 — ①불러오면 순서가 반대로 뒤집히던 문제(항목마다 unshift → 백업 순서 그대로 유지하도록 변경). ②여러 건(예:24건) 불러올 때 1건이 빠지던 문제(중복키 재배정 난수가 0~999 범위라 같은 ms에 충돌 → 레코드 덮어써짐). 고유키(난수 0~999999 + 중복검사 루프) 보장으로 해결. ※ chungchi(청취)도 동일 수정. 계산 함수 무변경. (v144 이하 유지) -->
 <!-- (이전)  tonghab.html (v144) · 저장: 2026-10-03 08:05 KST · [v144] 불러오기 버그 수정 — 실수확량이 없는(또는 적은) 저장 자료를 불러올 때 이전에 보던 자료의 실수확량 값이 그대로 남던(복사되던) 문제 해결. 불러오기 시 실수확량 입력(조제벼·건조벼·건조율·생볏짚·총량·현미·수분·비고·예취포기수·결주수)과 피해부호/율을 저장값이 있으면 그 값으로, 없으면 빈칸/기본값(01 정상·0%)으로 확정. _slApply에서 nbFloor·조사구처럼 잔상 제거. ※ 계산 함수 무변경. (v143 이하 유지) -->
 <!-- (이전)  tonghab.html (v143) · 저장: 2026-10-03 07:42 KST · [v143] 논벼 실수확량 조사표 헤더(글자 오른쪽)에 「↺ 초기화」 버튼 추가 — 실수확량 입력값(조제벼·건조벼·생볏짚·총량·현미·수분·피해·비고)만 초기화하고, 예취포기수·결주수는 그대로 유지, 예상량은 건드리지 않음. 확인창: "실수확량 조사표 초기화됩니다.(단, 예취포기수 , 결주는 그대로 유지됨)". ※ 하단 「전체 초기화」(ryieldReset) 버튼은 그대로 유지. 계산 함수 무변경. (v142 이하 유지) -->
@@ -8456,7 +8457,7 @@ document.addEventListener('DOMContentLoaded', function(){
           </tr>
           <tr><th>산번</th><th>본지번</th><th>부지번</th><th>분번</th></tr>
           <tr>
-            <td rowspan="2" class="val" id="sf_year">2025</td>
+            <td rowspan="2" class="val" id="sf_year" contenteditable="true" spellcheck="false" oninput="_sfYearChange()" title="연도를 눌러 수정할 수 있습니다" style="outline:none;border-bottom:1.5px dashed #0b3d91;cursor:text;">2025</td>
             <td colspan="2" class="val" id="sf_crop">논벼</td>
             <td class="val" id="sf_sido">—</td><td class="val" id="sf_sigun">—</td><td class="val" id="sf_emd">—</td>
             <td class="val" id="sf_floor">—</td><td class="val" id="sf_plot">—</td>
@@ -8603,6 +8604,13 @@ function openSurveyForm(){
   var m=document.getElementById('surveyFormModal'); if(m){ m.style.display='block'; m.scrollTop=0; }
 }
 function closeSurveyForm(){ var m=document.getElementById('surveyFormModal'); if(m) m.style.display='none'; }
+/* [v147] 조사표 연도 수동 변경(기본=현재연도, 필요 시 변경) */
+function _sfYearChange(){
+  var e=document.getElementById('sf_year'); if(!e) return;
+  var y=(e.textContent||'').replace(/[^0-9]/g,'').slice(0,4);
+  window._sfYearOverride=y;
+  var t=document.getElementById('sf_titleYear'); if(t) t.textContent=(y||'')+'년 논벼 생산량 조사표';
+}
 function _sfGet(id){
   var e=document.getElementById(id); if(!e) return '';
   var v=(e.tagName==='INPUT'||e.tagName==='SELECT'||e.tagName==='TEXTAREA')?e.value:e.textContent;
@@ -8615,7 +8623,7 @@ function _sfDmgName(code){ try{ if(typeof DMG_CODES!=='undefined' && DMG_CODES[c
 function _sfCode(id){ var e=document.getElementById(id); return e?(e.value||''):''; }
 function _sfRate(id){ var e=document.getElementById(id); return (e&&e.value!=='')?(e.value+'%'):''; }
 function fillSurveyForm(){
-  var yr=(new Date()).getFullYear();
+  var yr=(window._sfYearOverride!=null && window._sfYearOverride!=='')?window._sfYearOverride:(new Date()).getFullYear();
   _sfSet('sf_year', yr);
   var t=document.getElementById('sf_titleYear'); if(t) t.textContent=yr+'년 논벼 생산량 조사표';
   _sfSet('sf_crop','논벼');

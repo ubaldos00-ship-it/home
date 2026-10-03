@@ -1,4 +1,5 @@
-<!-- chungchi.html (v123) · 저장: 2026-10-03 08:25 KST · [v123] 저장목록 JSON 백업 불러오기 버그 2건 수정(tonghab v145와 동일) — ①불러오면 순서가 반대로 뒤집히던 문제 해결(백업 순서 유지). ②여러 건 불러올 때 중복키 재배정 난수(0~999) 충돌로 1건이 빠지던 문제 해결(고유키 보장). 계산 함수 무변경. (v122 이하 유지) -->
+<!-- chungchi.html (v124) · 저장: 2026-10-03 10:56 KST · [v124] 하단에 「🧾 농작물생산량 청취 조사표(한장) 보기」 추가 — 입력값(작물·주소·층/조사구·지번·재배면적·생산량·10a당생산량·피해상황·비고)을 공식 청취 조사표 양식 한 장으로 자동 작성. 연도 기본=현재연도(머리말 「연도」 칸 눌러 수정 가능, 제목 연동). 화면보기+이미지(PNG)저장/공유(html2canvas)+인쇄/PDF(A4 세로). 수확여러차례·출하형태·과거연도·경작자·담당자·검산계는 빈칸(손기입). ※ 계산 함수 무변경. (v123 이하 유지) -->
+<!-- (이전)  chungchi.html (v123) · 저장: 2026-10-03 08:25 KST · [v123] 저장목록 JSON 백업 불러오기 버그 2건 수정(tonghab v145와 동일) — ①불러오면 순서가 반대로 뒤집히던 문제 해결(백업 순서 유지). ②여러 건 불러올 때 중복키 재배정 난수(0~999) 충돌로 1건이 빠지던 문제 해결(고유키 보장). 계산 함수 무변경. (v122 이하 유지) -->
 <!-- (이전)  chungchi.html (v122) · 저장: 2026-10-01 13:46 KST · [v122]집계 세부목록 가로 스크롤 허용(좁은 화면 대비) + 집계 값 스타일 동기화. ※ 청취는 10a당 수량이 단일값(청취값)이라 실측의 예상량/실수확량 구분은 없음(해당 없음). 계산 로직 무변경(표시만). (v121 이하 유지) -->
 <!-- (이전)  chungchi.html (v121) · 저장: 2026-10-01 11:10 KST · [v121] 「작물별 10a당 수량 집계」 목록에서 주소(항목)를 누르면 해당 조사표를 불러와 보기·수정 가능(기존 불러오기 동작 재사용 — 덮어쓰기 확인 후 복원·모달 닫힘). 항목에 › 표시·탭 피드백·상단 안내문구 추가. 실측계산기(tonghab)와 동일 적용(저장/불러오기 화면은 실측·청취 동일 유지). ※ 계산 로직 무변경(불러오기 재사용·표시만). (v120 이하 유지) -->
 <!-- (이전)  chungchi.html (v120) · 저장: 2026-09-14 13:54 KST · [v120·버그수정] 「초기화」 시 층·조사구가 안 지워지던 문제 수정 — resetAll에서 층·조사구도 비우고 헤더 갱신. ※ 계산 로직 무변경. (v119 이하 유지) -->
@@ -985,7 +986,180 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
     <button class="bottom-reset" onclick="resetAll(true)">🔄 초기화</button>
     <button class="bottom-save" onclick="saveImg()">🖼️ 결과 이미지로 저장</button>
   </div>
+  <!-- [v124] 공식 청취 조사표 한장 보기 -->
+  <button type="button" onclick="openCcForm()" style="width:100%;margin-top:8px;padding:15px;background:#5a3d8a;border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 3px 12px rgba(90,61,138,.35);-webkit-tap-highlight-color:transparent;box-sizing:border-box;">
+    🧾&nbsp; 농작물생산량 청취 조사표(한장) 보기
+  </button>
 </div>
+
+<!-- ════ [v124] 농작물생산량 청취 조사표 (공식 양식 한장 보기) ════ -->
+<style>
+#ccFormModal{display:none;position:fixed;inset:0;z-index:2147483500;background:rgba(0,0,0,.55);overflow:auto;-webkit-overflow-scrolling:touch;}
+#ccFormModal .cf-wrap{min-height:100%;padding:12px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;gap:10px;}
+#ccFormModal .cf-bar{position:sticky;top:0;z-index:5;display:flex;gap:7px;flex-wrap:wrap;justify-content:center;width:100%;max-width:800px;}
+#ccFormModal .cf-bar button{padding:10px 13px;border:none;border-radius:10px;font-size:13px;font-weight:800;font-family:inherit;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.3);}
+#ccFormModal .cf-scroll{width:100%;max-width:800px;overflow-x:auto;-webkit-overflow-scrolling:touch;background:#fff;border-radius:8px;}
+#ccFormSheet{width:760px;background:#fff;color:#2a1a46;font-family:'맑은 고딕','Malgun Gothic',sans-serif;padding:14px 14px 18px;box-sizing:border-box;}
+#ccFormSheet *{box-sizing:border-box;}
+#ccFormSheet .cf-title{text-align:center;font-size:23px;font-weight:900;color:#6b3fa0;letter-spacing:1px;padding:4px 0 10px;}
+#ccFormSheet table{border-collapse:collapse;width:100%;}
+#ccFormSheet td,#ccFormSheet th{border:1px solid #9a7fc4;font-size:11px;padding:3px 4px;text-align:center;vertical-align:middle;line-height:1.3;color:#3a2563;}
+#ccFormSheet th,#ccFormSheet .lbl{background:#efeaf7;font-weight:800;}
+#ccFormSheet .val{font-weight:800;color:#5a2a8a;background:#fff;}
+#ccFormSheet .lt{text-align:left;}
+#ccFormSheet .note{font-size:10px;color:#777;text-align:left;padding:3px 2px 0;}
+#ccFormSheet .cfref{font-size:10.5px;text-align:left;padding:4px 2px;font-weight:700;color:#3a2563;}
+#ccFormSheet .emptyrow td{height:20px;}
+</style>
+<div id="ccFormModal" role="dialog" aria-modal="true">
+  <div class="cf-wrap">
+    <div class="cf-bar">
+      <button onclick="saveCcFormImage()" style="background:#111;color:#fff;">📷 이미지 저장/공유</button>
+      <button onclick="printCcForm()" style="background:#6b3fa0;color:#fff;">🖨 인쇄 / PDF</button>
+      <button onclick="closeCcForm()" style="background:#fff;color:#444;border:1.5px solid #ccc;">✕ 닫기</button>
+    </div>
+    <div class="cf-scroll">
+      <div id="ccFormSheet">
+        <div class="cf-title" id="ccf_titleYear">농작물생산량 청취 조사표</div>
+        <table>
+          <tr>
+            <th rowspan="2" style="width:48px;">연 도</th><th rowspan="2" style="width:80px;">작 물</th>
+            <th rowspan="2">시도</th><th rowspan="2">시군구</th><th rowspan="2">읍면동</th><th rowspan="2">층번호</th><th rowspan="2">조사구 번호</th>
+            <th colspan="4">지 번</th><th rowspan="2">논밭</th><th rowspan="2" style="width:80px;">검 산 계<br>(층번호~논밭)</th>
+          </tr>
+          <tr><th>산구분</th><th>본지번</th><th>부지번</th><th>분번</th></tr>
+          <tr>
+            <td class="val" id="ccf_year" contenteditable="true" spellcheck="false" oninput="_ccfYearChange()" title="연도를 눌러 수정" style="outline:none;border-bottom:1.5px dashed #5a2a8a;cursor:text;">2026</td>
+            <td class="val" id="ccf_crop">—</td>
+            <td class="val" id="ccf_sido">—</td><td class="val" id="ccf_sigun">—</td><td class="val" id="ccf_emd">—</td>
+            <td class="val" id="ccf_floor">—</td><td class="val" id="ccf_plot">—</td>
+            <td class="val" id="ccf_sanbun"></td><td class="val" id="ccf_jibunMain">—</td><td class="val" id="ccf_jibunSub">—</td><td class="val" id="ccf_bunbun"></td><td class="val" id="ccf_nonbat"></td>
+            <td class="val" id="ccf_hdrChecksum"></td>
+          </tr>
+        </table>
+        <div class="cfref">〈작물부호〉 겉보리 : 12106, 쌀보리 : 12301, 맥주보리 : 12203, 참깨 : 31330, 고추 : 24121, 사과 : 41106, 배 : 42102</div>
+        <table>
+          <tr>
+            <th rowspan="2" style="width:70px;">필지구분</th><th rowspan="2">재 배 면 적<br>(㎡)</th><th rowspan="2">생 산 량<br>(kg)</th><th rowspan="2">10a당 생산량<br>(kg)</th>
+            <th colspan="2">피해상황</th><th rowspan="2" style="width:120px;">검 산 계<br>(필지구분~피해부호)</th>
+          </tr>
+          <tr><th>피해명</th><th>부호</th></tr>
+          <tr>
+            <td class="val" id="ccf_plotType"></td>
+            <td class="val" id="ccf_area">—</td><td class="val" id="ccf_prod">—</td><td class="val" id="ccf_per10a">—</td>
+            <td class="val" id="ccf_dmgName">—</td><td class="val" id="ccf_dmgCode">—</td>
+            <td class="val" id="ccf_csum"></td>
+          </tr>
+        </table>
+        <div class="note">* 10a당 생산량(kg) = 생산량(kg) ÷ 재배면적(㎡) × 1,000</div>
+        <table style="margin-top:6px;">
+          <tr>
+            <td style="width:34%;padding:0;vertical-align:top;">
+              <table style="width:100%;border:none;">
+                <tr><td colspan="2" class="lbl lt" style="font-size:10px;">· 사과, 배, 고추 등과 같이 수확이 여러 차례에 걸쳐 이루어지는 경우</td></tr>
+                <tr><th style="width:50%;">조사월일</th><th>수확량(kg)</th></tr>
+                <tr class="emptyrow"><td></td><td></td></tr><tr class="emptyrow"><td></td><td></td></tr><tr class="emptyrow"><td></td><td></td></tr><tr class="emptyrow"><td></td><td></td></tr>
+              </table>
+            </td>
+            <td style="width:30%;padding:0;vertical-align:top;">
+              <table style="width:100%;border:none;">
+                <tr><td colspan="2" class="lbl lt" style="font-size:10px;">· 보리, 참깨와 같이 출하형태가 다양한 경우(RPC, 친인척 증여, 직접출하, 자가소비 등)</td></tr>
+                <tr><th style="width:50%;">출하처</th><th>출하량(kg)</th></tr>
+                <tr class="emptyrow"><td></td><td></td></tr><tr class="emptyrow"><td></td><td></td></tr><tr class="emptyrow"><td></td><td></td></tr><tr class="emptyrow"><td></td><td></td></tr>
+              </table>
+            </td>
+            <td style="width:36%;padding:0;vertical-align:top;">
+              <table style="width:100%;border:none;">
+                <tr><td colspan="6" class="lbl lt" style="font-size:10px;">· 과거연도 조사 결과</td></tr>
+                <tr><th>연도</th><th>필지<br>구분</th><th>재배<br>면적</th><th>생산량</th><th>10a당</th><th>피해</th></tr>
+                <tr class="emptyrow"><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr class="emptyrow"><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr class="emptyrow"><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+        <table style="margin-top:6px;">
+          <tr><td class="lbl lt">◎ 비 고 〈 기상, 생육상황, 피해, 기타 특이사항 등을 기입 〉</td></tr>
+          <tr><td class="val lt" id="ccf_remark" style="height:90px;vertical-align:top;padding:6px;"></td></tr>
+        </table>
+        <table style="margin-top:6px;">
+          <tr>
+            <td class="lbl" style="width:70px;">경 작 자</td><td class="val" id="ccf_farmer"></td>
+            <td class="lbl" style="width:50px;">주 소</td><td class="val lt" id="ccf_farmerAddr"></td>
+            <td class="lbl" style="width:70px;">전화번호</td><td class="val" id="ccf_phone"></td>
+          </tr>
+          <tr>
+            <td class="lbl" rowspan="2">조사담당자</td>
+            <td class="lbl">직 급</td><td class="val" id="ccf_rank1"></td><td class="lbl">성 명</td><td class="val" colspan="2" id="ccf_name1"></td>
+          </tr>
+          <tr><td class="lbl">직 급</td><td class="val" id="ccf_rank2"></td><td class="lbl">성 명</td><td class="val" colspan="2" id="ccf_name2"></td></tr>
+        </table>
+        <div class="note">※ 텐아르(청취)에 입력된 자료로 자동 작성되었습니다. 빈칸(경작자·조사담당자·검산계·수확/출하/과거연도 등)은 필요 시 손으로 기입하세요.</div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+/* [v124] 농작물생산량 청취 조사표(공식 양식 한장) */
+function openCcForm(){ try{ fillCcForm(); }catch(e){ try{console.warn(e);}catch(_){} } var m=document.getElementById('ccFormModal'); if(m){ m.style.display='block'; m.scrollTop=0; } }
+function closeCcForm(){ var m=document.getElementById('ccFormModal'); if(m) m.style.display='none'; }
+function _ccfYearChange(){ var e=document.getElementById('ccf_year'); if(!e) return; var y=(e.textContent||'').replace(/[^0-9]/g,'').slice(0,4); window._ccfYearOverride=y; var t=document.getElementById('ccf_titleYear'); if(t) t.textContent=(y||'')+'년 농작물생산량 청취 조사표'; }
+function _ccfGet(id){ var e=document.getElementById(id); if(!e) return ''; var v=(e.tagName==='INPUT'||e.tagName==='SELECT'||e.tagName==='TEXTAREA')?e.value:e.textContent; v=(v==null?'':String(v)).trim(); if(v==='—'||v==='-')v=''; return v; }
+function _ccfSet(id,v){ var e=document.getElementById(id); if(e) e.textContent=(v==null?'':String(v)); }
+function fillCcForm(){
+  var yr=(window._ccfYearOverride!=null && window._ccfYearOverride!=='')?window._ccfYearOverride:(new Date()).getFullYear();
+  _ccfSet('ccf_year', yr);
+  var t=document.getElementById('ccf_titleYear'); if(t) t.textContent=yr+'년 농작물생산량 청취 조사표';
+  /* 작물 */
+  var crop=''; try{ var cb=document.querySelector('.bc.on'); crop=cb?(cb.dataset.crop||''):(typeof sC!=='undefined'?sC:''); }catch(e){}
+  _ccfSet('ccf_crop', crop||'');
+  /* 주소 */
+  var addr=(document.getElementById('address')?document.getElementById('address').value:'')||''; addr=addr.trim();
+  var p=(typeof _slAdminParse==='function')?_slAdminParse(addr):{sido:'',sigungu:'',eupmyeondong:''};
+  _ccfSet('ccf_sido',p.sido); _ccfSet('ccf_sigun',p.sigungu); _ccfSet('ccf_emd',p.eupmyeondong);
+  _ccfSet('ccf_farmerAddr', addr);
+  _ccfSet('ccf_floor', _ccfGet('nbFloor')); _ccfSet('ccf_plot', _ccfGet('nbSurveyPlot'));
+  /* 지번 → 본/부지번 */
+  var jm='', js='';
+  var toks=addr.split(/\s+/); for(var k=toks.length-1;k>=0;k--){ var mm=toks[k].replace('번지','').match(/^(\d+)(?:-(\d+))?$/); if(mm){ jm=mm[1]; js=mm[2]||''; break; } }
+  _ccfSet('ccf_jibunMain', jm); _ccfSet('ccf_jibunSub', js);
+  /* 재배면적·생산량·10a */
+  _ccfSet('ccf_area', _ccfGet('tSm'));
+  _ccfSet('ccf_prod', _ccfGet('tHK'));
+  var per=_ccfGet('resPer10a').replace(/[^0-9.]/g,''); _ccfSet('ccf_per10a', per);
+  /* 피해 */
+  var dc=''; try{ var ds=document.getElementById('ccDmgCode'); dc=ds?(ds.value||''):''; }catch(e){}
+  var dname=''; try{ if(typeof CC_DMG!=='undefined' && CC_DMG[dc]) dname=CC_DMG[dc].name; }catch(e){}
+  _ccfSet('ccf_dmgName', dname); _ccfSet('ccf_dmgCode', dc);
+  /* 비고 */
+  _ccfSet('ccf_remark', _ccfGet('memo'));
+}
+function _ccfDownloadBlob(blob,fname){ try{ var url=URL.createObjectURL(blob); var a=document.createElement('a'); a.href=url; a.download=fname; document.body.appendChild(a); a.click(); setTimeout(function(){try{document.body.removeChild(a);}catch(e){} URL.revokeObjectURL(url);},800); }catch(e){ alert('저장 실패: '+e.message); } }
+function saveCcFormImage(){
+  var sheet=document.getElementById('ccFormSheet'); if(!sheet) return;
+  if(typeof html2canvas!=='function'){ alert('이미지 생성 모듈을 불러오지 못했습니다.'); return; }
+  html2canvas(sheet,{scale:2,useCORS:true,backgroundColor:'#ffffff'}).then(function(canvas){
+    canvas.toBlob(function(blob){
+      if(!blob){ alert('이미지 생성 실패'); return; }
+      var now=new Date(), kst=new Date(now.getTime()+9*3600000);
+      var fname='청취조사표_'+kst.toISOString().slice(0,10)+'.png';
+      var file=null; try{ file=new File([blob],fname,{type:'image/png'}); }catch(e){}
+      if(file && navigator.canShare && navigator.canShare({files:[file]})){
+        navigator.share({files:[file],title:'농작물생산량 청취 조사표'}).catch(function(err){ if(err&&err.name==='AbortError')return; _ccfDownloadBlob(blob,fname); });
+      } else { _ccfDownloadBlob(blob,fname); }
+    }, 'image/png');
+  }).catch(function(e){ alert('이미지 생성 실패: '+e.message); });
+}
+function _ccfPrintCSS(){
+  return "#ccFormSheet{width:100%;font-family:'맑은 고딕',sans-serif;color:#2a1a46;padding:0;}#ccFormSheet *{box-sizing:border-box;}#ccFormSheet .cf-title{text-align:center;font-size:19px;font-weight:900;color:#6b3fa0;padding:4px 0 8px;}#ccFormSheet table{border-collapse:collapse;width:100%;}#ccFormSheet td,#ccFormSheet th{border:1px solid #9a7fc4;font-size:9px;padding:2px 3px;text-align:center;color:#3a2563;}#ccFormSheet th,#ccFormSheet .lbl{background:#efeaf7;font-weight:800;}#ccFormSheet .val{font-weight:800;color:#5a2a8a;}#ccFormSheet .lt{text-align:left;}#ccFormSheet .note{font-size:8px;color:#777;text-align:left;}#ccFormSheet .cfref{font-size:9px;text-align:left;font-weight:700;}#ccFormSheet .emptyrow td{height:18px;}";
+}
+function printCcForm(){
+  var sheet=document.getElementById('ccFormSheet'); if(!sheet) return;
+  var w=window.open('','_blank'); if(!w){ alert('팝업이 차단되었습니다. 브라우저에서 팝업을 허용해 주세요.'); return; }
+  w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>농작물생산량 청취 조사표</title><style>@page{size:A4 portrait;margin:10mm;}body{margin:0;}'+_ccfPrintCSS()+'</style></head><body>'+sheet.outerHTML+'</body></html>');
+  w.document.close();
+  setTimeout(function(){ try{ w.focus(); w.print(); }catch(e){} }, 500);
+}
+</script>
 
 <!-- ══ 저장/불러오기 모달 (tonghab 스타일) ══ -->
 <div class="sl-modal" id="sl-modal">
