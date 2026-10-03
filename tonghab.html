@@ -1,4 +1,5 @@
-<!-- tonghab.html (v145) · 저장: 2026-10-03 08:25 KST · [v145] 저장목록 JSON 백업 불러오기 버그 2건 수정 — ①불러오면 순서가 반대로 뒤집히던 문제(항목마다 unshift → 백업 순서 그대로 유지하도록 변경). ②여러 건(예:24건) 불러올 때 1건이 빠지던 문제(중복키 재배정 난수가 0~999 범위라 같은 ms에 충돌 → 레코드 덮어써짐). 고유키(난수 0~999999 + 중복검사 루프) 보장으로 해결. ※ chungchi(청취)도 동일 수정. 계산 함수 무변경. (v144 이하 유지) -->
+<!-- tonghab.html (v146) · 저장: 2026-10-03 08:43 KST · [v146] 논벼 하단에 「🧾 논벼 생산량 조사표(한장) 보기」 추가 — 입력된 텐아르 자료를 공식 「논벼 생산량 조사표」 양식 한 장으로 자동 작성(머리말·표본구역선정요도·①예상량조사·②실수확량조사·비고·10a생산량·3㎡예취포기수 등). 표본구역 선정요도는 지도 A/B포구 선정요도(#fieldSvg)를 복제해 표시(없으면 안내). 화면 보기 + 이미지(PNG) 저장/공유(html2canvas) + 인쇄/PDF(A4 가로) 지원. 앱에 없는 항목(경작자·조사담당자·전화·검산계·일부 기준지점 값)은 빈칸(손기입). ※ 계산 함수 무변경(표시·신규 함수만). (v145 이하 유지) -->
+<!-- (이전)  tonghab.html (v145) · 저장: 2026-10-03 08:25 KST · [v145] 저장목록 JSON 백업 불러오기 버그 2건 수정 — ①불러오면 순서가 반대로 뒤집히던 문제(항목마다 unshift → 백업 순서 그대로 유지하도록 변경). ②여러 건(예:24건) 불러올 때 1건이 빠지던 문제(중복키 재배정 난수가 0~999 범위라 같은 ms에 충돌 → 레코드 덮어써짐). 고유키(난수 0~999999 + 중복검사 루프) 보장으로 해결. ※ chungchi(청취)도 동일 수정. 계산 함수 무변경. (v144 이하 유지) -->
 <!-- (이전)  tonghab.html (v144) · 저장: 2026-10-03 08:05 KST · [v144] 불러오기 버그 수정 — 실수확량이 없는(또는 적은) 저장 자료를 불러올 때 이전에 보던 자료의 실수확량 값이 그대로 남던(복사되던) 문제 해결. 불러오기 시 실수확량 입력(조제벼·건조벼·건조율·생볏짚·총량·현미·수분·비고·예취포기수·결주수)과 피해부호/율을 저장값이 있으면 그 값으로, 없으면 빈칸/기본값(01 정상·0%)으로 확정. _slApply에서 nbFloor·조사구처럼 잔상 제거. ※ 계산 함수 무변경. (v143 이하 유지) -->
 <!-- (이전)  tonghab.html (v143) · 저장: 2026-10-03 07:42 KST · [v143] 논벼 실수확량 조사표 헤더(글자 오른쪽)에 「↺ 초기화」 버튼 추가 — 실수확량 입력값(조제벼·건조벼·생볏짚·총량·현미·수분·피해·비고)만 초기화하고, 예취포기수·결주수는 그대로 유지, 예상량은 건드리지 않음. 확인창: "실수확량 조사표 초기화됩니다.(단, 예취포기수 , 결주는 그대로 유지됨)". ※ 하단 「전체 초기화」(ryieldReset) 버튼은 그대로 유지. 계산 함수 무변경. (v142 이하 유지) -->
 <!-- (이전)  tonghab.html (v142) · 저장: 2026-10-03 07:24 KST · [v142] 논벼 실수확량 조사표·엑셀 집계 보완 — ①실수확량 조사표 '3㎡ 포기수 확인' 표 맨 위에 「3줄 예취길이(cm)」 행 추가. ②포기수확인과 ①조제벼 사이에 「A·B포구 피해상황(피해부호/피해율)·비고」 입력 추가(예상량과 동일 양식, 실수확량 자체 입력 → ④표·엑셀에 반영). ③저장/불러오기 집계에 「🌾 논벼 실수확량 → 엑셀 집계 내보내기」 바 추가(예상량과 동일 동작·5회탭 잠금·비밀번호 공용) — 수식 내장 .xlsx/CSV(O=N/8, Q=P/O, S=검산계, X=Z/P, Y=SUM(Z:AA), AD=SUM(AB:AC), AE=AD/2, AF=생산량, AG=AF/AH, AI=AF-AH). ④필지주소 입력 시 논벼 시군별 비교의 권역·시군 자동선택(주소 없으면 수동, 이미 선택 시 유지). ※ 기존 계산 함수 무변경(신규 함수·표시만). (v141 이하 유지) -->
@@ -8405,7 +8406,302 @@ document.addEventListener('DOMContentLoaded', function(){
   <button class="full-cap-btn" id="btnCaptureAll" onclick="captureAllNonbye()">
     📋&nbsp; 전체 조사 결과 이미지 저장
   </button>
+  <!-- [v146] 4행: 공식 조사표 한장 보기 -->
+  <button type="button" id="btnSurveyForm" onclick="openSurveyForm()"
+    style="width:100%;margin-top:8px;padding:15px;background:#27500A;border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 3px 12px rgba(39,80,10,.35);-webkit-tap-highlight-color:transparent;box-sizing:border-box;">
+    🧾&nbsp; 논벼 생산량 조사표(한장) 보기
+  </button>
 </div>
+
+<!-- ════════════════════════════════════════════
+     [v146] 논벼 생산량 조사표 (공식 양식 한장 보기)
+════════════════════════════════════════════ -->
+<style>
+#surveyFormModal{display:none;position:fixed;inset:0;z-index:2147483500;background:rgba(0,0,0,.55);overflow:auto;-webkit-overflow-scrolling:touch;}
+#surveyFormModal .sf-wrap{min-height:100%;padding:12px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;gap:10px;}
+#surveyFormModal .sf-bar{position:sticky;top:0;z-index:5;display:flex;gap:7px;flex-wrap:wrap;justify-content:center;background:rgba(20,30,15,.0);padding:2px 0;width:100%;max-width:1000px;}
+#surveyFormModal .sf-bar button{padding:10px 13px;border:none;border-radius:10px;font-size:13px;font-weight:800;font-family:inherit;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.3);}
+#surveyFormModal .sf-scroll{width:100%;max-width:1000px;overflow-x:auto;-webkit-overflow-scrolling:touch;background:#fff;border-radius:8px;}
+#surveyFormSheet{width:980px;background:#fff;color:#111;font-family:'맑은 고딕','Malgun Gothic',sans-serif;padding:14px 14px 18px;box-sizing:border-box;}
+#surveyFormSheet *{box-sizing:border-box;}
+#surveyFormSheet .sf-title{text-align:center;font-size:24px;font-weight:900;color:#2f6510;letter-spacing:2px;padding:4px 0 10px;}
+#surveyFormSheet table{border-collapse:collapse;width:100%;}
+#surveyFormSheet td,#surveyFormSheet th{border:1px solid #6f9f5a;font-size:11px;padding:3px 4px;text-align:center;vertical-align:middle;line-height:1.3;color:#153a08;}
+#surveyFormSheet th{background:#eef5e7;font-weight:800;}
+#surveyFormSheet .lbl{background:#eef5e7;font-weight:800;white-space:nowrap;}
+#surveyFormSheet .sec{background:#2f6510;color:#fff;font-weight:900;font-size:13px;width:20px;}
+#surveyFormSheet .val{font-weight:800;color:#0b3d91;background:#fff;}
+#surveyFormSheet .lt{text-align:left;}
+#surveyFormSheet .diagbox{height:150px;position:relative;padding:0;}
+#surveyFormSheet .diagbox svg{width:100%;height:150px;}
+#surveyFormSheet .note{font-size:10px;color:#777;text-align:left;padding:2px 2px 0;}
+@media (max-width:720px){ #surveyFormModal .sf-scroll{border-radius:6px;} }
+</style>
+<div id="surveyFormModal" role="dialog" aria-modal="true">
+  <div class="sf-wrap">
+    <div class="sf-bar">
+      <button onclick="saveSurveyFormImage()" style="background:#111;color:#fff;">📷 이미지 저장/공유</button>
+      <button onclick="printSurveyForm()" style="background:#1a73e8;color:#fff;">🖨 인쇄 / PDF</button>
+      <button onclick="closeSurveyForm()" style="background:#fff;color:#444;border:1.5px solid #ccc;">✕ 닫기</button>
+    </div>
+    <div class="sf-scroll">
+      <div id="surveyFormSheet">
+        <div class="sf-title" id="sf_titleYear">논벼 생산량 조사표</div>
+        <!-- ── 머리말 ── -->
+        <table>
+          <tr>
+            <th rowspan="2" style="width:52px;">연 도</th><th colspan="2" style="width:90px;">작 물</th>
+            <th rowspan="2">시도</th><th rowspan="2">시군구</th><th rowspan="2">읍면동</th><th rowspan="2">층번호</th><th rowspan="2">조사구번호</th>
+            <th colspan="4">지 번</th><th rowspan="2" style="width:92px;">검 산 계<br>(층번호~분번)</th>
+          </tr>
+          <tr><th>산번</th><th>본지번</th><th>부지번</th><th>분번</th></tr>
+          <tr>
+            <td rowspan="2" class="val" id="sf_year">2025</td>
+            <td colspan="2" class="val" id="sf_crop">논벼</td>
+            <td class="val" id="sf_sido">—</td><td class="val" id="sf_sigun">—</td><td class="val" id="sf_emd">—</td>
+            <td class="val" id="sf_floor">—</td><td class="val" id="sf_plot">—</td>
+            <td class="val" id="sf_sanbun"></td><td class="val" id="sf_jibunMain">—</td><td class="val" id="sf_jibunSub">—</td><td class="val" id="sf_bunbun"></td>
+            <td class="val" id="sf_hdrChecksum"></td>
+          </tr>
+          <tr><td colspan="2" class="lbl">(층-조사구)</td><td colspan="9" class="val lt" id="sf_floorPlot" style="padding-left:8px;">—</td></tr>
+        </table>
+        <!-- ── 표본구역 선정요도 + 기준지점/기점/예취길이 ── -->
+        <table style="margin-top:3px;">
+          <tr>
+            <td class="lbl" style="width:90px;">표본구역<br>선정요도</td>
+            <td style="width:70px;" class="lbl">방향</td>
+            <td colspan="2" class="diagbox"><div style="position:absolute;top:2px;left:4px;font-size:10px;color:#888;">상세주소: <b id="sf_addr" style="color:#0b3d91;"></b></div><div id="sf_diag" style="height:150px;"></div></td>
+            <td colspan="2" class="lt" style="vertical-align:top;padding:5px 6px;width:430px;">
+              <div style="font-weight:800;margin-bottom:3px;">■ 기준지점 선정</div>
+              <div>① 추출간격 : <b class="v" id="sf_interval">—</b> cm(이랑)/2 = <b class="v" id="sf_intervalHalf">—</b></div>
+              <div>② 표본구역비율(1번): 가 <b id="sf_r1ga">—</b>, 나 <b id="sf_r1na">—</b>, 다 <b id="sf_r1da">—</b></div>
+              <div style="padding-left:14px;">표본구역비율(2번): 가 <b id="sf_r2ga">—</b>, 나 <b id="sf_r2na">—</b>, 다 <b id="sf_r2da">—</b></div>
+              <div>③ A 지점 세로 총 길이 : <b class="v" id="sf_vtotalA">—</b> cm</div>
+              <div>④ B 지점 세로 총 길이 : <b class="v" id="sf_vtotalB">—</b> cm</div>
+              <div style="font-weight:800;margin:5px 0 3px;">■ 표본구역(포구)기점 선정</div>
+              <div>① A 가로 : <b class="v" id="sf_baseAh">—</b> cm / 세로 : <b class="v" id="sf_baseAv">—</b> cm</div>
+              <div>② B 가로 : <b class="v" id="sf_baseBh">—</b> cm / 세로 : <b class="v" id="sf_baseBv">—</b> cm</div>
+              <div style="font-weight:800;margin:5px 0 3px;">■ 3줄 예취길이</div>
+              <div>① A 표본구역 : <b class="v" id="sf_harv3A">—</b> cm &nbsp; ② B 표본구역 : <b class="v" id="sf_harv3B">—</b> cm</div>
+            </td>
+          </tr>
+        </table>
+        <!-- ── ① 예상량조사 ── -->
+        <table style="margin-top:3px;">
+          <tr>
+            <td class="sec" rowspan="6">예<br>상<br>량<br>조<br>사</td>
+            <td class="lbl" style="width:52px;">1</td><td class="lbl" style="width:50px;">표본<br>구역</td>
+            <td class="lbl" colspan="2">포기간 길이</td><td class="lbl" style="width:52px;">1㎡당<br>포기수</td>
+            <td class="lbl" colspan="11">포기당 이삭수 ( A 표본구역 )</td>
+          </tr>
+          <tr>
+            <td class="lbl" colspan="2" style="background:#fff;border:none;"></td>
+            <td class="lbl">가로</td><td class="lbl">세로</td><td class="lbl"></td>
+            <td class="lbl">1</td><td class="lbl">2</td><td class="lbl">3</td><td class="lbl">4</td><td class="lbl">5</td><td class="lbl">6</td><td class="lbl">7</td><td class="lbl">8</td><td class="lbl">9</td><td class="lbl">10</td><td class="lbl">합계</td>
+          </tr>
+          <tr>
+            <td class="lbl" colspan="2">A</td>
+            <td class="val" id="sf_aw">—</td><td class="val" id="sf_ah">—</td><td class="val" id="sf_am2">—</td>
+            <td class="val" id="sf_j1"></td><td class="val" id="sf_j2"></td><td class="val" id="sf_j3"></td><td class="val" id="sf_j4"></td><td class="val" id="sf_j5"></td><td class="val" id="sf_j6"></td><td class="val" id="sf_j7"></td><td class="val" id="sf_j8"></td><td class="val" id="sf_j9"></td><td class="val" id="sf_j10"></td><td class="val" id="sf_jsum"></td>
+          </tr>
+          <tr>
+            <td class="lbl" colspan="2">B</td>
+            <td class="val" id="sf_bw">—</td><td class="val" id="sf_bh">—</td><td class="val" id="sf_bm2">—</td>
+            <td colspan="10" class="lbl" style="background:#fff;">평균</td><td class="val" id="sf_avg"></td>
+          </tr>
+          <tr>
+            <td class="lbl" colspan="2" style="height:4px;background:#fff;border-left:none;border-right:none;"></td><td colspan="14" style="height:4px;background:#fff;border:none;"></td>
+          </tr>
+          <tr>
+            <td class="lbl" colspan="2">낟알수<br>조사</td>
+            <td colspan="14" style="padding:0;">
+              <table style="width:100%;border:none;">
+                <tr>
+                  <th style="width:46px;">유효<br>이삭수</th><th>총 낟알수</th><th>완전 낟알수</th><th>10a당 예상생산량<br>(백미기준)</th><th>검산계</th>
+                  <th style="width:40px;">표본<br>구역</th><th>피해명</th><th>부호</th><th>피해율</th><th>품종명</th><th>부호</th><th>모내기<br>방법</th><th>월</th><th>일</th>
+                </tr>
+                <tr>
+                  <td class="val" id="sf_eff" rowspan="2">—</td><td class="val" id="sf_totgr" rowspan="2">—</td><td class="val" id="sf_compgr" rowspan="2">—</td><td class="val" id="sf_est10a" rowspan="2">—</td><td class="val" id="sf_cs1" rowspan="2"></td>
+                  <td class="lbl">A</td><td class="val" id="sf_dmgAname">—</td><td class="val" id="sf_dmgAcode">—</td><td class="val" id="sf_dmgArate">—</td>
+                  <td class="val" id="sf_varName" rowspan="2">—</td><td class="val" id="sf_varCode" rowspan="2"></td><td class="val" id="sf_plantM" rowspan="2"></td><td class="val" id="sf_plantMon" rowspan="2">—</td><td class="val" id="sf_plantDay" rowspan="2">—</td>
+                </tr>
+                <tr>
+                  <td class="lbl">B</td><td class="val" id="sf_dmgBname">—</td><td class="val" id="sf_dmgBcode">—</td><td class="val" id="sf_dmgBrate">—</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+        <!-- ── ② 실수확량조사 ── -->
+        <table style="margin-top:3px;">
+          <tr>
+            <td class="sec" rowspan="4">실<br>수<br>확<br>량<br>조<br>사</td>
+            <td class="lbl" style="width:52px;">2</td>
+            <td class="lbl">6㎡당 조제벼 중량</td><td class="lbl">1/8 조제벼</td><td class="lbl">1/8 건조벼</td><td class="lbl">6㎡당 생볏짚</td><td class="lbl" colspan="2">검산계(조제벼중량~생볏짚)</td>
+          </tr>
+          <tr>
+            <td class="lbl"></td>
+            <td class="val" id="sf_jeje6">—</td><td class="val" id="sf_jeje8">—</td><td class="val" id="sf_geon8">—</td><td class="val" id="sf_straw">—</td><td class="val" colspan="2" id="sf_cs2">—</td>
+          </tr>
+          <tr>
+            <td class="lbl">표본<br>구역</td>
+            <td colspan="6" style="padding:0;">
+              <table style="width:100%;border:none;">
+                <tr><th style="width:40px;">구역</th><th>피해명</th><th>부호</th><th>피해율</th><th>총 량</th><th>1.6mm이상<br>(현미)</th><th>1.6mm미만<br>(설미)</th><th>1회 측정</th><th>2회 측정</th><th>합 계</th></tr>
+                <tr><td class="lbl">A</td><td class="val" id="sf_rdmgAname">—</td><td class="val" id="sf_rdmgAcode">—</td><td class="val" id="sf_rdmgArate">—</td>
+                  <td class="val" id="sf_total" rowspan="2">—</td><td class="val" id="sf_hyeonmi" rowspan="2">—</td><td class="val" id="sf_seolmi" rowspan="2">—</td><td class="val" id="sf_moist1" rowspan="2">—</td><td class="val" id="sf_moist2" rowspan="2">—</td><td class="val" id="sf_moistsum" rowspan="2">—</td></tr>
+                <tr><td class="lbl">B</td><td class="val" id="sf_rdmgBname">—</td><td class="val" id="sf_rdmgBcode">—</td><td class="val" id="sf_rdmgBrate">—</td></tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="7" style="padding:0;">
+              <table style="width:100%;border:none;">
+                <tr>
+                  <td class="lbl lt" style="width:48%;">◎ 비 고 〈 기상, 생육상황, 피해, 기타 특이사항 등을 기입 〉</td>
+                  <td class="lbl" style="width:140px;">10a당 생산량(kg)<br>(92.9%기준)</td>
+                  <td class="lbl" style="width:40px;">구역</td><td class="lbl">3㎡당<br>예취포기수</td>
+                </tr>
+                <tr>
+                  <td class="val lt" id="sf_remark" rowspan="2" style="vertical-align:top;padding:5px;min-height:40px;"></td>
+                  <td class="val" id="sf_yield929" rowspan="2" style="font-size:15px;">—</td>
+                  <td class="lbl">A</td><td class="val" id="sf_harv3plantA">—</td>
+                </tr>
+                <tr><td class="lbl">B</td><td class="val" id="sf_harv3plantB">—</td></tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+        <!-- ── 하단 행정정보 ── -->
+        <table style="margin-top:3px;">
+          <tr>
+            <td class="lbl" style="width:80px;">수확예정일</td><td class="val" id="sf_harvestDate"></td>
+            <td class="lbl" style="width:60px;">조사일</td><td class="val" id="sf_surveyDate"></td>
+            <td class="lbl" style="width:70px;">경작자</td><td class="val" id="sf_farmer"></td>
+          </tr>
+          <tr>
+            <td class="lbl">주소</td><td class="val lt" colspan="3" id="sf_farmerAddr"></td>
+            <td class="lbl">전화번호</td><td class="val" id="sf_phone"></td>
+          </tr>
+          <tr>
+            <td class="lbl" rowspan="3">조사담당자</td>
+            <td class="lbl">직급</td><td class="val" id="sf_staffRank1"></td><td class="lbl">성명</td><td class="val" colspan="2" id="sf_staffName1"></td>
+          </tr>
+          <tr><td class="lbl">직급</td><td class="val" id="sf_staffRank2"></td><td class="lbl">성명</td><td class="val" colspan="2" id="sf_staffName2"></td></tr>
+          <tr><td class="lbl">직급</td><td class="val" id="sf_staffRank3"></td><td class="lbl">성명</td><td class="val" colspan="2" id="sf_staffName3"></td></tr>
+        </table>
+        <div class="note">※ 텐아르에 입력된 자료로 자동 작성되었습니다. 빈칸(경작자·조사담당자·검산계·일부 기준지점 값 등)은 필요 시 손으로 기입하세요.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* [v146] 논벼 생산량 조사표(공식 양식 한장) — 입력값 자동 채움 + 이미지/인쇄 */
+function openSurveyForm(){
+  try{ fillSurveyForm(); }catch(e){ try{console.warn(e);}catch(_){} }
+  var m=document.getElementById('surveyFormModal'); if(m){ m.style.display='block'; m.scrollTop=0; }
+}
+function closeSurveyForm(){ var m=document.getElementById('surveyFormModal'); if(m) m.style.display='none'; }
+function _sfGet(id){
+  var e=document.getElementById(id); if(!e) return '';
+  var v=(e.tagName==='INPUT'||e.tagName==='SELECT'||e.tagName==='TEXTAREA')?e.value:e.textContent;
+  v=(v==null?'':String(v)).trim();
+  if(v==='—'||v==='-') v='';
+  return v;
+}
+function _sfSet(id,v){ var e=document.getElementById(id); if(e) e.textContent=(v==null?'':String(v)); }
+function _sfDmgName(code){ try{ if(typeof DMG_CODES!=='undefined' && DMG_CODES[code]) return DMG_CODES[code].name; }catch(e){} return ''; }
+function _sfCode(id){ var e=document.getElementById(id); return e?(e.value||''):''; }
+function _sfRate(id){ var e=document.getElementById(id); return (e&&e.value!=='')?(e.value+'%'):''; }
+function fillSurveyForm(){
+  var yr=(new Date()).getFullYear();
+  _sfSet('sf_year', yr);
+  var t=document.getElementById('sf_titleYear'); if(t) t.textContent=yr+'년 논벼 생산량 조사표';
+  _sfSet('sf_crop','논벼');
+  var addr=(document.getElementById('address')?document.getElementById('address').value:'')||''; addr=addr.trim();
+  var p=(typeof _nbParseAddr==='function')?_nbParseAddr(addr):{sido:'',sigungu:'',eupmyeondong:'',jibun:''};
+  _sfSet('sf_sido',p.sido); _sfSet('sf_sigun',p.sigungu); _sfSet('sf_emd',p.eupmyeondong); _sfSet('sf_addr',addr);
+  _sfSet('sf_floor', _sfGet('nbFloor')); _sfSet('sf_plot', _sfGet('nbSurveyPlot'));
+  var jm='',js='';
+  if(p.jibun){ var mm=String(p.jibun).match(/^(\d+)(?:-(\d+))?$/); if(mm){ jm=mm[1]; js=mm[2]||''; } }
+  _sfSet('sf_jibunMain',jm); _sfSet('sf_jibunSub',js);
+  var fp=(typeof _nbFloorPlot==='function')?_nbFloorPlot({nbFloor:_sfGet('nbFloor'),nbSurveyPlot:_sfGet('nbSurveyPlot')}):'';
+  _sfSet('sf_floorPlot', fp||'');
+  /* 기준지점 */
+  _sfSet('sf_interval', _sfGet('lenGaNa'));
+  _sfSet('sf_intervalHalf', _sfGet('halfVal'));
+  _sfSet('sf_vtotalA', _sfGet('heightA'));
+  _sfSet('sf_vtotalB', _sfGet('heightB'));
+  _sfSet('sf_harv3A', _sfGet('nbAHarvestLen'));
+  _sfSet('sf_harv3B', _sfGet('nbBHarvestLen'));
+  /* ① 예상량 */
+  _sfSet('sf_aw', _sfGet('nbAWidth')); _sfSet('sf_ah', _sfGet('nbAHeight'));
+  _sfSet('sf_bw', _sfGet('nbBWidth')); _sfSet('sf_bh', _sfGet('nbBHeight'));
+  _sfSet('sf_am2', _sfGet('nbAM2')); _sfSet('sf_bm2', _sfGet('nbBM2'));
+  var sum=0, hasAny=false;
+  for(var i=1;i<=10;i++){ var raw=_sfGet('nbJ-'+i); _sfSet('sf_j'+i, raw); var n=parseFloat(raw); if(isFinite(n)){ sum+=n; hasAny=true; } }
+  _sfSet('sf_jsum', hasAny?String(Math.round(sum*10)/10):'');
+  _sfSet('sf_avg', hasAny?String(Math.round(sum/10*10)/10):'');
+  _sfSet('sf_eff', _sfGet('nbEffEars')); _sfSet('sf_totgr', _sfGet('nbTotalGrains')); _sfSet('sf_compgr', _sfGet('nbCompleteGrains'));
+  var est=_sfGet('nbYield10a'); if(!est) est=_sfGet('nbEstYield10a'); _sfSet('sf_est10a', est);
+  var ac=_sfCode('nbADmgCode'), bc=_sfCode('nbBDmgCode');
+  _sfSet('sf_dmgAname', _sfDmgName(ac)); _sfSet('sf_dmgAcode', ac); _sfSet('sf_dmgArate', _sfRate('nbADmgRate'));
+  _sfSet('sf_dmgBname', _sfDmgName(bc)); _sfSet('sf_dmgBcode', bc); _sfSet('sf_dmgBrate', _sfRate('nbBDmgRate'));
+  _sfSet('sf_varName', _sfGet('nbAVariety'));
+  var tp=_sfGet('nbATransplant'), mon='', day='';
+  if(tp){ var tm=tp.split('.'); mon=(tm[0]||'').trim(); day=(tm[1]||'').trim(); }
+  _sfSet('sf_plantMon',mon); _sfSet('sf_plantDay',day);
+  /* ② 실수확량 */
+  _sfSet('sf_jeje6', _sfGet('rsJeje')); _sfSet('sf_jeje8', _sfGet('rsJeje8'));
+  _sfSet('sf_geon8', _sfGet('rsGeon8')); _sfSet('sf_straw', _sfGet('rsStraw')); _sfSet('sf_cs2', _sfGet('rsCheckSum1'));
+  var rac=_sfCode('rsADmgCode'), rbc=_sfCode('rsBDmgCode');
+  _sfSet('sf_rdmgAname', _sfDmgName(rac)); _sfSet('sf_rdmgAcode', rac); _sfSet('sf_rdmgArate', _sfRate('rsADmgRate'));
+  _sfSet('sf_rdmgBname', _sfDmgName(rbc)); _sfSet('sf_rdmgBcode', rbc); _sfSet('sf_rdmgBrate', _sfRate('rsBDmgRate'));
+  _sfSet('sf_total', _sfGet('rsTotal')); _sfSet('sf_hyeonmi', _sfGet('rsHyeonmi')); _sfSet('sf_seolmi', _sfGet('rsSeolmi'));
+  _sfSet('sf_moist1', _sfGet('rsMoist1')); _sfSet('sf_moist2', _sfGet('rsMoist2')); _sfSet('sf_moistsum', _sfGet('rsMoistSum'));
+  var rem=_sfGet('rsRemark'); if(!rem) rem=_sfGet('nbARemark'); _sfSet('sf_remark', rem);
+  _sfSet('sf_yield929', _sfGet('rsBaengmi'));
+  _sfSet('sf_harv3plantA', _sfGet('ryAHarvPlants')); _sfSet('sf_harv3plantB', _sfGet('ryBHarvPlants'));
+  /* 선정요도 SVG 복제 */
+  var src=document.getElementById('fieldSvg'), dst=document.getElementById('sf_diag');
+  if(dst){
+    if(src && src.innerHTML && src.innerHTML.trim().length>20){
+      dst.innerHTML='<svg viewBox="'+(src.getAttribute('viewBox')||'0 -10 360 320')+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:150px;">'+src.innerHTML+'</svg>';
+    } else {
+      dst.innerHTML='<div style="color:#bbb;font-size:11px;padding-top:58px;line-height:1.5;">선정요도 없음<br>(지도에서 A/B포구 선정 시 표시)</div>';
+    }
+  }
+}
+function _sfDownloadBlob(blob,fname){
+  try{ var url=URL.createObjectURL(blob); var a=document.createElement('a'); a.href=url; a.download=fname; document.body.appendChild(a); a.click(); setTimeout(function(){try{document.body.removeChild(a);}catch(e){} URL.revokeObjectURL(url);},800); }catch(e){ alert('저장 실패: '+e.message); }
+}
+function saveSurveyFormImage(){
+  var sheet=document.getElementById('surveyFormSheet'); if(!sheet) return;
+  if(typeof html2canvas!=='function'){ alert('이미지 생성 모듈을 불러오지 못했습니다.'); return; }
+  html2canvas(sheet,{scale:2,useCORS:true,backgroundColor:'#ffffff'}).then(function(canvas){
+    canvas.toBlob(function(blob){
+      if(!blob){ alert('이미지 생성 실패'); return; }
+      var now=new Date(), kst=new Date(now.getTime()+9*3600000);
+      var fname='논벼조사표_'+kst.toISOString().slice(0,10)+'.png';
+      var file=null; try{ file=new File([blob],fname,{type:'image/png'}); }catch(e){}
+      if(file && navigator.canShare && navigator.canShare({files:[file]})){
+        navigator.share({files:[file],title:'논벼 생산량 조사표'}).catch(function(err){ if(err&&err.name==='AbortError')return; _sfDownloadBlob(blob,fname); });
+      } else { _sfDownloadBlob(blob,fname); }
+    }, 'image/png');
+  }).catch(function(e){ alert('이미지 생성 실패: '+e.message); });
+}
+function _sfPrintCSS(){
+  return "#surveyFormSheet{width:100%;font-family:'맑은 고딕',sans-serif;color:#111;padding:0;}#surveyFormSheet *{box-sizing:border-box;}#surveyFormSheet .sf-title{text-align:center;font-size:20px;font-weight:900;color:#2f6510;padding:4px 0 8px;}#surveyFormSheet table{border-collapse:collapse;width:100%;}#surveyFormSheet td,#surveyFormSheet th{border:1px solid #6f9f5a;font-size:9px;padding:2px 3px;text-align:center;color:#153a08;}#surveyFormSheet th,#surveyFormSheet .lbl{background:#eef5e7;font-weight:800;}#surveyFormSheet .sec{background:#2f6510;color:#fff;}#surveyFormSheet .val{font-weight:800;color:#0b3d91;}#surveyFormSheet .lt{text-align:left;}#surveyFormSheet .diagbox{height:150px;}#surveyFormSheet .diagbox svg{width:100%;height:150px;}#surveyFormSheet .note{font-size:8px;color:#777;text-align:left;}";
+}
+function printSurveyForm(){
+  var sheet=document.getElementById('surveyFormSheet'); if(!sheet) return;
+  var w=window.open('','_blank'); if(!w){ alert('팝업이 차단되었습니다. 브라우저에서 팝업을 허용해 주세요.'); return; }
+  w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>논벼 생산량 조사표</title><style>@page{size:A4 landscape;margin:8mm;}body{margin:0;}'+_sfPrintCSS()+'</style></head><body>'+sheet.outerHTML+'</body></html>');
+  w.document.close();
+  setTimeout(function(){ try{ w.focus(); w.print(); }catch(e){} }, 500);
+}
+</script>
 
 <!-- 10a 생산량 계산기 결과 이미지 저장 모달 -->
 <div class="prod-cap-modal" id="prod-cap-modal">
