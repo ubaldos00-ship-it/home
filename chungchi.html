@@ -1,4 +1,5 @@
-<!-- chungchi.html (v125) · 저장: 2026-10-03 11:35 KST · [v125] 청취 조사표 인쇄/PDF 창에 「🖨인쇄·✕닫기」 버튼 추가(인쇄 시 자동 숨김) + A4 세로 용지에 맞게 설정. ※ 계산 함수 무변경. (v124 이하 유지) -->
+<!-- chungchi.html (v126) · 저장: 2026-10-04 09:25 KST · [v126] 「🧾 농작물생산량 청취 조사표(한장) 보기」 버튼을 평가기간 동안 숨김 처리(display:none) — 기능·모달·코드는 그대로 유지(10월말 발표 때 해당 button style의 display:none→display:flex 로 바꾸면 다시 노출). ※ 그 외 무변경. (v125 이하 유지) -->
+<!-- (이전)  chungchi.html (v125) · 저장: 2026-10-03 11:35 KST · [v125] 청취 조사표 인쇄/PDF 창에 「🖨인쇄·✕닫기」 버튼 추가(인쇄 시 자동 숨김) + A4 세로 용지에 맞게 설정. ※ 계산 함수 무변경. (v124 이하 유지) -->
 <!-- (이전)  chungchi.html (v124) · 저장: 2026-10-03 10:56 KST · [v124] 하단에 「🧾 농작물생산량 청취 조사표(한장) 보기」 추가 — 입력값(작물·주소·층/조사구·지번·재배면적·생산량·10a당생산량·피해상황·비고)을 공식 청취 조사표 양식 한 장으로 자동 작성. 연도 기본=현재연도(머리말 「연도」 칸 눌러 수정 가능, 제목 연동). 화면보기+이미지(PNG)저장/공유(html2canvas)+인쇄/PDF(A4 세로). 수확여러차례·출하형태·과거연도·경작자·담당자·검산계는 빈칸(손기입). ※ 계산 함수 무변경. (v123 이하 유지) -->
 <!-- (이전)  chungchi.html (v123) · 저장: 2026-10-03 08:25 KST · [v123] 저장목록 JSON 백업 불러오기 버그 2건 수정(tonghab v145와 동일) — ①불러오면 순서가 반대로 뒤집히던 문제 해결(백업 순서 유지). ②여러 건 불러올 때 중복키 재배정 난수(0~999) 충돌로 1건이 빠지던 문제 해결(고유키 보장). 계산 함수 무변경. (v122 이하 유지) -->
 <!-- (이전)  chungchi.html (v122) · 저장: 2026-10-01 13:46 KST · [v122]집계 세부목록 가로 스크롤 허용(좁은 화면 대비) + 집계 값 스타일 동기화. ※ 청취는 10a당 수량이 단일값(청취값)이라 실측의 예상량/실수확량 구분은 없음(해당 없음). 계산 로직 무변경(표시만). (v121 이하 유지) -->
@@ -987,8 +988,8 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
     <button class="bottom-reset" onclick="resetAll(true)">🔄 초기화</button>
     <button class="bottom-save" onclick="saveImg()">🖼️ 결과 이미지로 저장</button>
   </div>
-  <!-- [v124] 공식 청취 조사표 한장 보기 -->
-  <button type="button" onclick="openCcForm()" style="width:100%;margin-top:8px;padding:15px;background:#5a3d8a;border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 3px 12px rgba(90,61,138,.35);-webkit-tap-highlight-color:transparent;box-sizing:border-box;">
+  <!-- [v124] 공식 청취 조사표 한장 보기 · [v126] 평가기간 숨김(10월말 발표 때 아래 style의 display:none 을 display:flex 로 바꾸면 다시 노출). 기능·코드는 그대로 유지. -->
+  <button type="button" onclick="openCcForm()" style="display:none;width:100%;margin-top:8px;padding:15px;background:#5a3d8a;border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer;align-items:center;justify-content:center;gap:8px;box-shadow:0 3px 12px rgba(90,61,138,.35);-webkit-tap-highlight-color:transparent;box-sizing:border-box;">
     🧾&nbsp; 농작물생산량 청취 조사표(한장) 보기
   </button>
 </div>

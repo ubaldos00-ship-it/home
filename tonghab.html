@@ -1,4 +1,5 @@
-<!-- tonghab.html (v149) · 저장: 2026-10-03 11:58 KST · [v149] 논벼 조사표 열 때 A/B포구 계산을 자동 갱신(runFullCalculation) → ①표본구역(포구)기점 가로/세로 길이가 실제로 채워짐(A가로=가~나길이×비율가, B가로=A가로기점+추출간격, A세로=세로총길이×비율나, B세로=세로총길이×비율다 = 통합계산기의 가로기점·세로기점 결과값). ②표본구역 선정요도에 지도 가-나·AB포구 기점 선정 요도(#fieldSvg)가 그려져 표시됨(이전엔 미계산 시 비어있던 문제 해결). 계산값 부족 시 조용히 건너뜀(에러·스크롤 억제). ※ 계산 함수 무변경. (v148 이하 유지) -->
+<!-- tonghab.html (v150) · 저장: 2026-10-04 09:25 KST · [v150] 「🧾 논벼 생산량 조사표(한장) 보기」 버튼을 평가기간 동안 숨김 처리(display:none) — 기능·모달·코드는 그대로 유지(10월말 발표 때 해당 button style의 display:none→display:flex 로 바꾸면 다시 노출). ※ 그 외 무변경. (v149 이하 유지) -->
+<!-- (이전)  tonghab.html (v149) · 저장: 2026-10-03 11:58 KST · [v149] 논벼 조사표 열 때 A/B포구 계산을 자동 갱신(runFullCalculation) → ①표본구역(포구)기점 가로/세로 길이가 실제로 채워짐(A가로=가~나길이×비율가, B가로=A가로기점+추출간격, A세로=세로총길이×비율나, B세로=세로총길이×비율다 = 통합계산기의 가로기점·세로기점 결과값). ②표본구역 선정요도에 지도 가-나·AB포구 기점 선정 요도(#fieldSvg)가 그려져 표시됨(이전엔 미계산 시 비어있던 문제 해결). 계산값 부족 시 조용히 건너뜀(에러·스크롤 억제). ※ 계산 함수 무변경. (v148 이하 유지) -->
 <!-- (이전)  tonghab.html (v148) · 저장: 2026-10-03 11:35 KST · [v148] 논벼 조사표 보완 — ①그동안 비어있던 「표본구역비율 1·2번(가/나/다)」·「표본구역(포구)기점 A/B 가로·세로 길이」·「검산계(머리말 층번호~분번, 예상량 유효이삭수~10a예상생산량, 실수확량 조제벼~생볏짚)」를 입력값에서 자동 채움. ②인쇄/PDF 창에 「🖨인쇄·✕닫기」 버튼 추가(인쇄 시 자동 숨김) + A4 가로 용지에 맞게 설정(캡처·인쇄 모두 A4). ※ 계산 함수 무변경. (v147 이하 유지) -->
 <!-- (이전)  tonghab.html (v147) · 저장: 2026-10-03 10:48 KST · [v147] 논벼 생산량 조사표 연도 수정 가능 — 상단 제목/머리말 연도가 기본은 현재 연도로 자동 표기되고, 머리말 「연도」 칸을 눌러 직접 수정하면 제목도 함께 바뀜(그 세션 동안 유지). ※ 계산 함수 무변경. (v146 이하 유지) -->
 <!-- (이전)  tonghab.html (v146) · 저장: 2026-10-03 08:43 KST · [v146] 논벼 하단에 「🧾 논벼 생산량 조사표(한장) 보기」 추가 — 입력된 텐아르 자료를 공식 「논벼 생산량 조사표」 양식 한 장으로 자동 작성(머리말·표본구역선정요도·①예상량조사·②실수확량조사·비고·10a생산량·3㎡예취포기수 등). 표본구역 선정요도는 지도 A/B포구 선정요도(#fieldSvg)를 복제해 표시(없으면 안내). 화면 보기 + 이미지(PNG) 저장/공유(html2canvas) + 인쇄/PDF(A4 가로) 지원. 앱에 없는 항목(경작자·조사담당자·전화·검산계·일부 기준지점 값)은 빈칸(손기입). ※ 계산 함수 무변경(표시·신규 함수만). (v145 이하 유지) -->
@@ -8409,9 +8410,9 @@ document.addEventListener('DOMContentLoaded', function(){
   <button class="full-cap-btn" id="btnCaptureAll" onclick="captureAllNonbye()">
     📋&nbsp; 전체 조사 결과 이미지 저장
   </button>
-  <!-- [v146] 4행: 공식 조사표 한장 보기 -->
+  <!-- [v146] 4행: 공식 조사표 한장 보기 · [v150] 평가기간 숨김(10월말 발표 때 아래 style의 display:none 을 display:flex 로 바꾸면 다시 노출). 기능·코드는 그대로 유지. -->
   <button type="button" id="btnSurveyForm" onclick="openSurveyForm()"
-    style="width:100%;margin-top:8px;padding:15px;background:#27500A;border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 3px 12px rgba(39,80,10,.35);-webkit-tap-highlight-color:transparent;box-sizing:border-box;">
+    style="display:none;width:100%;margin-top:8px;padding:15px;background:#27500A;border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer;align-items:center;justify-content:center;gap:8px;box-shadow:0 3px 12px rgba(39,80,10,.35);-webkit-tap-highlight-color:transparent;box-sizing:border-box;">
     🧾&nbsp; 논벼 생산량 조사표(한장) 보기
   </button>
 </div>
