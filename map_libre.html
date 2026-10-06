@@ -1,4 +1,5 @@
-<!-- map_v182.html (v182 · TENAR V1.8) · 저장: 2026-10-07 05:14 KST · [v182] 저장핀↔조사표 연결 보완 — ①저장핀의 「조사표」에서 조사표 유형(실측/청취)만 표시돼 있고 저장된 조사표 key가 없으면(연결 끊김) 「열기·수정」을 숨기고(빈 조사표 열림 방지), 안내 + 「📎 저장된 조사표에 연결」을 권장 표시. ②「📎 저장된 조사표에 연결」 신설 — 실측(tonghabSaveList)·청취(chungchiSaveList) 저장목록을 보여주고 고르면 그 조사표를 이 핀에 연결(이후 「열기·수정」으로 바로 열림). 미연결/자동연결 끊김을 수동 복구 가능. ③「연결자료 핀 변경」 시트: 제목 줄을 상단 고정(sticky)하고 「취소」를 제목 옆으로 이동(목록이 길어도 항상 보임). ※ 지도·계산·기존 자동연결(_tenarLinkPinToSurvey) 로직은 무변경. (v181 이하 유지) -->
+<!-- map_v183.html (v183 · TENAR V1.8) · 저장: 2026-10-07 05:43 KST · [v183] 「📎 저장된 조사표에 연결」 목록이 비어 보이던 문제 수정 — 실측(tonghabSaveList)·청취(chungchiSaveList) 저장목록은 각 계산기에서 「기기키 암호화」로 저장되는데, map은 그 키를 관리하지 않아 암호문이 그대로 읽혀 목록이 비어 보였음. 같은 기기키로 복호화(TenarCrypto.decryptFromDeviceCache)해서 저장목록을 정상 표시하도록 수정(암호화 미사용 환경은 평문 그대로 처리). ※ 지도·계산·자동연결 로직 무변경. (v182 이하 유지) -->
+<!-- (이전)  map_v182.html (v182 · TENAR V1.8) · 저장: 2026-10-07 05:14 KST · [v182] 저장핀↔조사표 연결 보완 — ①저장핀의 「조사표」에서 조사표 유형(실측/청취)만 표시돼 있고 저장된 조사표 key가 없으면(연결 끊김) 「열기·수정」을 숨기고(빈 조사표 열림 방지), 안내 + 「📎 저장된 조사표에 연결」을 권장 표시. ②「📎 저장된 조사표에 연결」 신설 — 실측(tonghabSaveList)·청취(chungchiSaveList) 저장목록을 보여주고 고르면 그 조사표를 이 핀에 연결(이후 「열기·수정」으로 바로 열림). 미연결/자동연결 끊김을 수동 복구 가능. ③「연결자료 핀 변경」 시트: 제목 줄을 상단 고정(sticky)하고 「취소」를 제목 옆으로 이동(목록이 길어도 항상 보임). ※ 지도·계산·기존 자동연결(_tenarLinkPinToSurvey) 로직은 무변경. (v181 이하 유지) -->
 <!-- (이전)  map_v181.html (v181 · TENAR V1.8) · 저장: 2026-09-27 00:30 KST · [v181] 뒤로가기 최후 폴백도 텐아르 홈 강제 이동 제거 — 출처(history·referrer)가 전혀 없을 때 텐아르 홈으로 가던 것을 브라우저 뒤로가기 시도로 변경(두당에서 열렸을 때 텐아르로 튀지 않도록). ①같은 탭=history.back ②새 탭=referrer 복귀는 그대로. ※ 지도·계산·핀 무변경. (v180 이하 유지) -->
 <!-- (이전)  map_v180.html (v180 · TENAR V1.8) · 저장: 2026-09-23 05:01 KST · [v180] 뒤로가기 버튼을 「진입한 곳으로 복귀」로 개선 — ①같은 탭 링크면 브라우저 뒤로가기(진입 페이지로 정확히 복귀). ②새 탭(target=_blank)·직접 진입이면 참조 페이지(document.referrer)로 복귀 → 텐아르에서 열면 텐아르 홈, 두당에서 열면 두당 홈으로 감(기존엔 항상 텐아르 홈으로 고정). ③참조 정보가 없으면 텐아르 홈. ※ 지도·계산·핀 로직 무변경(뒤로가기만). (v179 이하 유지) -->
 <!-- (이전)  map_v179.html (v179 · TENAR V1.5) · 저장: 2026-09-10 22:16 KST · [v179] 계산기 「공통사항 핀으로 주소 저장(조사위치 저장 모드)」도 카카오 지번 사용 — 실측·청취·이삭수 계산기가 📍(지도)로 위치를 찍어 주소를 저장할 때, 지도 저장모드의 지도클릭·현재위치·주소검색 역지오코딩을 모두 카카오 우선(reverseGeocodePreferKakao)으로 전환. 그동안 이 경로만 브이월드 지번이라 조사표 저장 주소가 밀린 지번으로 들어가던 것 정정. 카카오 불가 시 브이월드 폴백. ※ 계산 무변경. (v178 이하 유지) -->
@@ -6431,19 +6432,29 @@ TenarSecureStore.init('map',
 
   /* [v175] 이 핀을 「이미 저장된 조사표」에 수동으로 연결 — 자동연결이 끊겼거나 안 됐을 때 복구용.
      실측(tonghabSaveList)·청취(chungchiSaveList) 저장목록을 읽어 고르면 그 조사표 key 를 핀에 기록한다. */
-  function _readSavedSurveys(listKey, app) {
+  /* 실측/청취 저장목록은 각 계산기에서 「기기키로 암호화」되어 저장됨(TenarSecureStore).
+     map 은 그 키를 관리하지 않아 암호문이 그대로 읽히므로, 같은 기기키로 복호화한다(async). */
+  async function _readSavedSurveys(listKey, app) {
     var out = [];
-    try {
-      var arr = JSON.parse(localStorage.getItem(listKey) || '[]'); if (!Array.isArray(arr)) arr = [];
-      arr.forEach(function (it) {
-        if (it && it.key) out.push({ app: app, key: it.key, label: it.label || '(이름없음)', addr: it.addr || '', ymd: it.ymd || '', hm: it.hm || '', crop: it.crop || '' });
-      });
-    } catch (e) {}
+    var raw = null; try { raw = localStorage.getItem(listKey); } catch (e) {}
+    if (!raw) return out;
+    var val = null; try { val = JSON.parse(raw); } catch (e) { return out; }
+    if (val && val.tenarSecure === true && val.secureType === 'device-cache') {
+      try {
+        if (window.TenarCrypto && TenarCrypto.ok) { val = JSON.parse(await TenarCrypto.decryptFromDeviceCache(val)); }
+        else return out;
+      } catch (e) { return out; }
+    }
+    if (!Array.isArray(val)) return out;
+    val.forEach(function (it) {
+      if (it && it.key) out.push({ app: app, key: it.key, label: it.label || '(이름없음)', addr: it.addr || '', ymd: it.ymd || '', hm: it.hm || '', crop: it.crop || '' });
+    });
     return out;
   }
-  function linkPinToSavedSurvey(favId, info, onDone) {
+  async function linkPinToSavedSurvey(favId, info, onDone) {
     if (!favId) { showToast('먼저 이 위치에 핀을 저장한 뒤 연결해 주세요.', 3200, 'info'); return; }
-    var items = _readSavedSurveys('tonghabSaveList', 'tonghab').concat(_readSavedSurveys('chungchiSaveList', 'chungchi'));
+    var items = [];
+    try { items = (await _readSavedSurveys('tonghabSaveList', 'tonghab')).concat(await _readSavedSurveys('chungchiSaveList', 'chungchi')); } catch (e) {}
     function esc(s) { return escapeHtml(String(s || '')); }
     var ov = document.createElement('div');
     ov.style.cssText = 'position:fixed;inset:0;z-index:2147483646;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center;';
