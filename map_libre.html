@@ -1,4 +1,5 @@
-<!-- map_v183.html (v183 · TENAR V1.8) · 저장: 2026-10-07 05:43 KST · [v183] 「📎 저장된 조사표에 연결」 목록이 비어 보이던 문제 수정 — 실측(tonghabSaveList)·청취(chungchiSaveList) 저장목록은 각 계산기에서 「기기키 암호화」로 저장되는데, map은 그 키를 관리하지 않아 암호문이 그대로 읽혀 목록이 비어 보였음. 같은 기기키로 복호화(TenarCrypto.decryptFromDeviceCache)해서 저장목록을 정상 표시하도록 수정(암호화 미사용 환경은 평문 그대로 처리). ※ 지도·계산·자동연결 로직 무변경. (v182 이하 유지) -->
+<!-- map_v184.html (v184 · TENAR V1.8) · 저장: 2026-10-07 05:51 KST · [v184] 「📎 저장된 조사표에 연결」 목록 보완 — ①주소가 잘려 보이던 문제: 목록에 저장된 주소는 15자 축약본이라, 조사표 데이터(tonghabSave_/chungchiSave_의 address)에서 전체 주소를 읽어 📍줄에 전부 표시(줄바꿈 허용). ②청취조사표(chungchiSaveList)도 실측과 동일하게 복호화되어 목록에 정상 표시됨 확인. ※ 지도·계산 로직 무변경. (v183 이하 유지) -->
+<!-- (이전)  map_v183.html (v183 · TENAR V1.8) · 저장: 2026-10-07 05:43 KST · [v183] 「📎 저장된 조사표에 연결」 목록이 비어 보이던 문제 수정 — 실측(tonghabSaveList)·청취(chungchiSaveList) 저장목록은 각 계산기에서 「기기키 암호화」로 저장되는데, map은 그 키를 관리하지 않아 암호문이 그대로 읽혀 목록이 비어 보였음. 같은 기기키로 복호화(TenarCrypto.decryptFromDeviceCache)해서 저장목록을 정상 표시하도록 수정(암호화 미사용 환경은 평문 그대로 처리). ※ 지도·계산·자동연결 로직 무변경. (v182 이하 유지) -->
 <!-- (이전)  map_v182.html (v182 · TENAR V1.8) · 저장: 2026-10-07 05:14 KST · [v182] 저장핀↔조사표 연결 보완 — ①저장핀의 「조사표」에서 조사표 유형(실측/청취)만 표시돼 있고 저장된 조사표 key가 없으면(연결 끊김) 「열기·수정」을 숨기고(빈 조사표 열림 방지), 안내 + 「📎 저장된 조사표에 연결」을 권장 표시. ②「📎 저장된 조사표에 연결」 신설 — 실측(tonghabSaveList)·청취(chungchiSaveList) 저장목록을 보여주고 고르면 그 조사표를 이 핀에 연결(이후 「열기·수정」으로 바로 열림). 미연결/자동연결 끊김을 수동 복구 가능. ③「연결자료 핀 변경」 시트: 제목 줄을 상단 고정(sticky)하고 「취소」를 제목 옆으로 이동(목록이 길어도 항상 보임). ※ 지도·계산·기존 자동연결(_tenarLinkPinToSurvey) 로직은 무변경. (v181 이하 유지) -->
 <!-- (이전)  map_v181.html (v181 · TENAR V1.8) · 저장: 2026-09-27 00:30 KST · [v181] 뒤로가기 최후 폴백도 텐아르 홈 강제 이동 제거 — 출처(history·referrer)가 전혀 없을 때 텐아르 홈으로 가던 것을 브라우저 뒤로가기 시도로 변경(두당에서 열렸을 때 텐아르로 튀지 않도록). ①같은 탭=history.back ②새 탭=referrer 복귀는 그대로. ※ 지도·계산·핀 무변경. (v180 이하 유지) -->
 <!-- (이전)  map_v180.html (v180 · TENAR V1.8) · 저장: 2026-09-23 05:01 KST · [v180] 뒤로가기 버튼을 「진입한 곳으로 복귀」로 개선 — ①같은 탭 링크면 브라우저 뒤로가기(진입 페이지로 정확히 복귀). ②새 탭(target=_blank)·직접 진입이면 참조 페이지(document.referrer)로 복귀 → 텐아르에서 열면 텐아르 홈, 두당에서 열면 두당 홈으로 감(기존엔 항상 텐아르 홈으로 고정). ③참조 정보가 없으면 텐아르 홈. ※ 지도·계산·핀 로직 무변경(뒤로가기만). (v179 이하 유지) -->
@@ -6447,9 +6448,24 @@ TenarSecureStore.init('map',
     }
     if (!Array.isArray(val)) return out;
     val.forEach(function (it) {
-      if (it && it.key) out.push({ app: app, key: it.key, label: it.label || '(이름없음)', addr: it.addr || '', ymd: it.ymd || '', hm: it.hm || '', crop: it.crop || '' });
+      if (it && it.key) {
+        var full = _fullSurveyAddr(app, it.key);   /* 목록의 addr 은 저장 시 15자로 잘린 축약본 → 조사표 데이터에서 전체 주소 읽기 */
+        out.push({ app: app, key: it.key, label: it.label || '(이름없음)', addr: (full || it.addr || ''), ymd: it.ymd || '', hm: it.hm || '', crop: it.crop || '' });
+      }
     });
     return out;
+  }
+  /* 저장 조사표 데이터(tonghabSave_<key>/chungchiSave_<key>)에서 전체 주소 읽기.
+     이 데이터 키는 map 의 보안관리 대상(prefix)이라 getItem 이 복호화된 평문을 돌려줌. */
+  function _fullSurveyAddr(app, key) {
+    try {
+      var pfx = (app === 'chungchi') ? 'chungchiSave_' : 'tonghabSave_';
+      var raw = localStorage.getItem(pfx + key);
+      if (!raw) return '';
+      var d = JSON.parse(raw);
+      if (d && d.tenarSecure === true) return '';   /* 아직 복호화 전이면 폴백(축약본) 사용 */
+      return (d && d.address != null) ? String(d.address).trim() : '';
+    } catch (e) { return ''; }
   }
   async function linkPinToSavedSurvey(favId, info, onDone) {
     if (!favId) { showToast('먼저 이 위치에 핀을 저장한 뒤 연결해 주세요.', 3200, 'info'); return; }
@@ -6479,7 +6495,7 @@ TenarSecureStore.init('map',
       b.style.cssText = 'display:block;width:100%;text-align:left;border:1.5px solid #e2e2ea;border-radius:11px;background:#fafafc;padding:11px 12px;margin-bottom:7px;font-family:inherit;cursor:pointer;';
       var badge = it.app === 'tonghab' ? '<span style="display:inline-block;background:#e8f0ff;color:#1a5fd0;font-size:10px;font-weight:800;border-radius:6px;padding:1px 6px;margin-right:5px;">📐 실측</span>' : '<span style="display:inline-block;background:#f3ecff;color:#6b3fa0;font-size:10px;font-weight:800;border-radius:6px;padding:1px 6px;margin-right:5px;">🎧 청취</span>';
       b.innerHTML = '<div style="font-size:13.5px;font-weight:800;color:#222;">' + badge + esc(it.label) + '</div>' +
-        (it.addr ? '<div style="font-size:11.5px;color:#888;margin-top:2px;">📍 ' + esc(it.addr) + '</div>' : '');
+        (it.addr ? '<div style="font-size:12px;color:#555;margin-top:3px;line-height:1.45;word-break:break-all;white-space:normal;">📍 ' + esc(it.addr) + '</div>' : '');
       b.addEventListener('click', function () {
         if (!window.confirm('이 핀을「' + it.label + '」조사표에 연결할까요?')) return;
         var arr = getFavs(); var done = false;
