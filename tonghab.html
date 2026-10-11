@@ -1,4 +1,5 @@
-<!-- tonghab.html (v150) · 저장: 2026-10-04 09:25 KST · [v150] 「🧾 논벼 생산량 조사표(한장) 보기」 버튼을 평가기간 동안 숨김 처리(display:none) — 기능·모달·코드는 그대로 유지(10월말 발표 때 해당 button style의 display:none→display:flex 로 바꾸면 다시 노출). ※ 그 외 무변경. (v149 이하 유지) -->
+<!-- tonghab.html (v151) · 저장: 2026-10-12 00:02 KST · [v151] 보안강화(평가기간) — 공유/내보내기/백업(JSON) 암호 체계 개편: ①기본암호 2026 완전 삭제. ②암호를 사용자가 직접 입력해야 하며, 빈칸이면 내보내기·공유·저장이 되지 않음(중단). ③입력한 암호는 저장하지 않고 「이 세션(RAM) 동안만」 기억해 반복 내보내기 시 편리하게 사용(새로고침 시 사라짐·localStorage 미저장이라 외부에서 알 수 없음). ④암호화 미지원 기기는 평문 반출을 막아 내보내기 차단. 암호화는 기존 PBKDF2(210,000회)+AES-GCM 그대로 — 사용자 암호를 모르면 복호화 불가. ※ 계산·저장 로직 무변경. (v150 이하 유지) -->
+<!-- (이전)  tonghab.html (v150) · 저장: 2026-10-04 09:25 KST · [v150] 「🧾 논벼 생산량 조사표(한장) 보기」 버튼을 평가기간 동안 숨김 처리(display:none) — 기능·모달·코드는 그대로 유지(10월말 발표 때 해당 button style의 display:none→display:flex 로 바꾸면 다시 노출). ※ 그 외 무변경. (v149 이하 유지) -->
 <!-- (이전)  tonghab.html (v149) · 저장: 2026-10-03 11:58 KST · [v149] 논벼 조사표 열 때 A/B포구 계산을 자동 갱신(runFullCalculation) → ①표본구역(포구)기점 가로/세로 길이가 실제로 채워짐(A가로=가~나길이×비율가, B가로=A가로기점+추출간격, A세로=세로총길이×비율나, B세로=세로총길이×비율다 = 통합계산기의 가로기점·세로기점 결과값). ②표본구역 선정요도에 지도 가-나·AB포구 기점 선정 요도(#fieldSvg)가 그려져 표시됨(이전엔 미계산 시 비어있던 문제 해결). 계산값 부족 시 조용히 건너뜀(에러·스크롤 억제). ※ 계산 함수 무변경. (v148 이하 유지) -->
 <!-- (이전)  tonghab.html (v148) · 저장: 2026-10-03 11:35 KST · [v148] 논벼 조사표 보완 — ①그동안 비어있던 「표본구역비율 1·2번(가/나/다)」·「표본구역(포구)기점 A/B 가로·세로 길이」·「검산계(머리말 층번호~분번, 예상량 유효이삭수~10a예상생산량, 실수확량 조제벼~생볏짚)」를 입력값에서 자동 채움. ②인쇄/PDF 창에 「🖨인쇄·✕닫기」 버튼 추가(인쇄 시 자동 숨김) + A4 가로 용지에 맞게 설정(캡처·인쇄 모두 A4). ※ 계산 함수 무변경. (v147 이하 유지) -->
 <!-- (이전)  tonghab.html (v147) · 저장: 2026-10-03 10:48 KST · [v147] 논벼 생산량 조사표 연도 수정 가능 — 상단 제목/머리말 연도가 기본은 현재 연도로 자동 표기되고, 머리말 「연도」 칸을 눌러 직접 수정하면 제목도 함께 바뀜(그 세션 동안 유지). ※ 계산 함수 무변경. (v146 이하 유지) -->
@@ -275,16 +276,17 @@
     var isImport=(mode==='import');
     var base=isImport
       ? 'JSON 파일 가져오기\n\n저장할 때 사용한 암호를 입력하세요.'
-      : 'JSON 파일 내보내기\n\n이 파일은 외부로 공유될 수 있어 암호가 필요합니다.\n기본 암호는 2026입니다. 원하시면 다른 암호로 변경할 수 있습니다.\n암호를 잊으면 파일을 복구할 수 없습니다.';
+      : 'JSON 파일 내보내기\n\n이 파일은 외부로 공유될 수 있어 암호가 꼭 필요합니다.\n암호를 직접 정해 입력하세요. (빈칸이면 내보내기·저장이 되지 않습니다)\n※ 기본 암호는 없습니다. 암호를 잊으면 파일을 복구할 수 없으니 꼭 기억하세요.';
     var head=(retryNote? '❌ 암호가 맞지 않습니다. 다시 입력해 주세요.\n(취소하면 불러오기를 중단합니다)\n\n' : '') + base;
-    var def = isImport ? '' : '2026';   /* 복호화(가져오기)는 기본 암호를 미리 넣지 않음 */
+    var def = (window._tenarSessionPw!=null ? window._tenarSessionPw : '');   /* [v151] 이 세션 동안만 기억(RAM, 저장 안 함) */
     var pw;
     try{ pw=window.prompt(head, def); }
-    catch(e){ pw=def; }                  /* 일부 인앱 브라우저는 prompt 미지원 */
+    catch(e){ return null; }             /* [v151] prompt 미지원 → 안전하게 중단(평문 반출 방지) */
     if(pw===null) return null;           /* 사용자 취소 */
     if(pw===undefined) pw=def;
     pw=String(pw);
-    if(!isImport && pw.trim()==='') pw='2026';   /* 내보내기만 빈칸→기본 2026 */
+    if(pw.trim()===''){ if(isImport) return ''; return null; }   /* [v151] 내보내기 빈칸→중단(기본암호 2026 폐지) */
+    if(!isImport){ try{ window._tenarSessionPw=pw; }catch(e){} }   /* 입력한 암호를 이 세션 동안만 기억(RAM) */
     return pw;
   };
 
@@ -297,7 +299,8 @@
       return TenarCrypto.encryptForPasswordFile(dataObj, pw, appName)
         .then(function(secure){ return {text:JSON.stringify(secure,null,2), encrypted:true}; });
     }
-    return Promise.resolve({text:JSON.stringify(dataObj,null,2), encrypted:false});
+    try{ alert('이 기기(브라우저)는 보안 암호화를 지원하지 않아\n내보내기·공유·백업을 할 수 없습니다.\n최신 브라우저에서 다시 시도해 주세요.'); }catch(e){}
+    return Promise.resolve(null);
   };
   /* 가져오기 파싱 — 암호화 파일이면 복호화, 평문이면 그대로. 반환: Promise<data>
      실패 시 reject({code:'APP_MISMATCH'|'NO_CRYPTO'|'CANCELLED'|'BAD_PW', app}) */

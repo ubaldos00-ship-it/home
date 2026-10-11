@@ -1,4 +1,5 @@
-<!-- map_v186.html (v186 · TENAR V1.8) · 저장: 2026-10-07 07:16 KST · [v186] 우수사례 평가기간 보안 — 조사구 저장·불러오기의 「📤 엑셀 내보내기」(평문)를 숨김 처리. 6개 조사종류(작물재배·가축·축비·농비·쌀값·농판)가 공용 파일 팝업을 쓰므로 한 곳만 가려도 전부 적용됨. 「엑셀 가져오기·JSON 내보내기(비번 암호화)·JSON 가져오기·전체 백업/복원·엑셀 양식 다운로드」는 그대로 유지(평문 엑셀 반출만 차단). 코드는 남겨둬 재노출 쉬움(해당 줄 주석 복구). ※ 그 외 무변경. (v185 이하 유지) -->
+<!-- map_v187.html (v187 · TENAR V1.8) · 저장: 2026-10-12 00:02 KST · [v187] 보안강화(평가기간) — 지도·조사구의 공유/내보내기/백업(JSON) 암호: 기본암호 2026 삭제·사용자 직접입력 필수(빈칸이면 중단)·입력암호는 이 세션(RAM)만 기억(미저장)·암호화 미지원 기기 반출 차단. 조사구 6종·연결자료 공유 모두 공용 _tenarAskPassword 사용이라 일괄 적용. 암호화는 PBKDF2(210,000회)+AES-GCM 유지(사용자 암호 없이는 복호화 불가). ※ 계산·저장·지도 로직 무변경. (v186 이하 유지) -->
+<!-- (이전)  map_v186.html (v186 · TENAR V1.8) · 저장: 2026-10-07 07:16 KST · [v186] 우수사례 평가기간 보안 — 조사구 저장·불러오기의 「📤 엑셀 내보내기」(평문)를 숨김 처리. 6개 조사종류(작물재배·가축·축비·농비·쌀값·농판)가 공용 파일 팝업을 쓰므로 한 곳만 가려도 전부 적용됨. 「엑셀 가져오기·JSON 내보내기(비번 암호화)·JSON 가져오기·전체 백업/복원·엑셀 양식 다운로드」는 그대로 유지(평문 엑셀 반출만 차단). 코드는 남겨둬 재노출 쉬움(해당 줄 주석 복구). ※ 그 외 무변경. (v185 이하 유지) -->
 <!-- (이전)  map_v185.html (v185 · TENAR V1.8) · 저장: 2026-10-07 06:48 KST · [v185] ①「📎 저장된 조사표에 연결」 목록에 시도·시군구·읍면동·작물 드롭다운(콤보박스) 필터 추가 — 저장 조사표의 전체주소를 파싱해 골라서 좁혀 찾을 수 있게(총 건수 표시). ②생산량목록의 연결자료(포구·면적·길이) 표시 순서를 「작물명 · 주소(동리+지번) · 일시」로 변경하고 주소(지번)를 빨강으로 강조 — 지번으로 연결확인이 쉽도록(종류는 아이콘으로 구분). ※ 지도·계산 로직 무변경. (v184 이하 유지) -->
 <!-- (이전)  map_v184.html (v184 · TENAR V1.8) · 저장: 2026-10-07 05:51 KST · [v184] 「📎 저장된 조사표에 연결」 목록 보완 — ①주소가 잘려 보이던 문제: 목록에 저장된 주소는 15자 축약본이라, 조사표 데이터(tonghabSave_/chungchiSave_의 address)에서 전체 주소를 읽어 📍줄에 전부 표시(줄바꿈 허용). ②청취조사표(chungchiSaveList)도 실측과 동일하게 복호화되어 목록에 정상 표시됨 확인. ※ 지도·계산 로직 무변경. (v183 이하 유지) -->
 <!-- (이전)  map_v183.html (v183 · TENAR V1.8) · 저장: 2026-10-07 05:43 KST · [v183] 「📎 저장된 조사표에 연결」 목록이 비어 보이던 문제 수정 — 실측(tonghabSaveList)·청취(chungchiSaveList) 저장목록은 각 계산기에서 「기기키 암호화」로 저장되는데, map은 그 키를 관리하지 않아 암호문이 그대로 읽혀 목록이 비어 보였음. 같은 기기키로 복호화(TenarCrypto.decryptFromDeviceCache)해서 저장목록을 정상 표시하도록 수정(암호화 미사용 환경은 평문 그대로 처리). ※ 지도·계산·자동연결 로직 무변경. (v182 이하 유지) -->
@@ -336,16 +337,17 @@
     var isImport=(mode==='import');
     var base=isImport
       ? 'JSON 파일 가져오기\n\n저장할 때 사용한 암호를 입력하세요.'
-      : 'JSON 파일 내보내기\n\n이 파일은 외부로 공유될 수 있어 암호가 필요합니다.\n기본 암호는 2026입니다. 원하시면 다른 암호로 변경할 수 있습니다.\n암호를 잊으면 파일을 복구할 수 없습니다.';
+      : 'JSON 파일 내보내기\n\n이 파일은 외부로 공유될 수 있어 암호가 꼭 필요합니다.\n암호를 직접 정해 입력하세요. (빈칸이면 내보내기·저장이 되지 않습니다)\n※ 기본 암호는 없습니다. 암호를 잊으면 파일을 복구할 수 없으니 꼭 기억하세요.';
     var head=(retryNote? '❌ 암호가 맞지 않습니다. 다시 입력해 주세요.\n(취소하면 불러오기를 중단합니다)\n\n' : '') + base;
-    var def = isImport ? '' : '2026';   /* 복호화(가져오기)는 기본 암호를 미리 넣지 않음 */
+    var def = (window._tenarSessionPw!=null ? window._tenarSessionPw : '');   /* [v151] 이 세션 동안만 기억(RAM, 저장 안 함) */
     var pw;
     try{ pw=window.prompt(head, def); }
-    catch(e){ pw=def; }                  /* 일부 인앱 브라우저는 prompt 미지원 */
+    catch(e){ return null; }             /* [v151] prompt 미지원 → 안전하게 중단(평문 반출 방지) */
     if(pw===null) return null;           /* 사용자 취소 */
     if(pw===undefined) pw=def;
     pw=String(pw);
-    if(!isImport && pw.trim()==='') pw='2026';   /* 내보내기만 빈칸→기본 2026 */
+    if(pw.trim()===''){ if(isImport) return ''; return null; }   /* [v151] 내보내기 빈칸→중단(기본암호 2026 폐지) */
+    if(!isImport){ try{ window._tenarSessionPw=pw; }catch(e){} }   /* 입력한 암호를 이 세션 동안만 기억(RAM) */
     return pw;
   };
 
@@ -356,7 +358,8 @@
       return TenarCrypto.encryptForPasswordFile(dataObj, pw, appName)
         .then(function(secure){ return {text:JSON.stringify(secure,null,2), encrypted:true}; });
     }
-    return Promise.resolve({text:JSON.stringify(dataObj,null,2), encrypted:false});
+    try{ alert('이 기기(브라우저)는 보안 암호화를 지원하지 않아\n내보내기·공유·백업을 할 수 없습니다.\n최신 브라우저에서 다시 시도해 주세요.'); }catch(e){}
+    return Promise.resolve(null);
   };
   window._tenarParseImport=function(obj, appName){
     if(window.TenarCrypto && TenarCrypto.isSecureObject(obj) && obj.secureType==='password-file'){
