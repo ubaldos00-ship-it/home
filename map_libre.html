@@ -1,4 +1,5 @@
-<!-- map_v187.html (v187 · TENAR V1.8) · 저장: 2026-10-12 00:02 KST · [v187] 보안강화(평가기간) — 지도·조사구의 공유/내보내기/백업(JSON) 암호: 기본암호 2026 삭제·사용자 직접입력 필수(빈칸이면 중단)·입력암호는 이 세션(RAM)만 기억(미저장)·암호화 미지원 기기 반출 차단. 조사구 6종·연결자료 공유 모두 공용 _tenarAskPassword 사용이라 일괄 적용. 암호화는 PBKDF2(210,000회)+AES-GCM 유지(사용자 암호 없이는 복호화 불가). ※ 계산·저장·지도 로직 무변경. (v186 이하 유지) -->
+<!-- map_v188.html (v188 · TENAR V1.8) · 저장: 2026-10-12 00:44 KST · [v188] 내보내기(JSON 공유/백업) 암호 규칙 강화 — ①9자리 이상이어야 저장(프롬프트에 "9자리 이상으로 저장하세요" 안내). ②공백(띄어쓰기)이 들어가면 저장 안 됨(안내 멘트 추가). 규칙 위반 시 그 자리에서 다시 입력. 빈칸/취소는 중단. ※ 가져오기는 옛 파일 호환 위해 길이·공백 검증 없음. 조사구 6종·연결자료 공유 공용함수 적용. 계산 로직 무변경. (v187 이하 유지) -->
+<!-- (이전)  map_v187.html (v187 · TENAR V1.8) · 저장: 2026-10-12 00:02 KST · [v187] 보안강화(평가기간) — 지도·조사구의 공유/내보내기/백업(JSON) 암호: 기본암호 2026 삭제·사용자 직접입력 필수(빈칸이면 중단)·입력암호는 이 세션(RAM)만 기억(미저장)·암호화 미지원 기기 반출 차단. 조사구 6종·연결자료 공유 모두 공용 _tenarAskPassword 사용이라 일괄 적용. 암호화는 PBKDF2(210,000회)+AES-GCM 유지(사용자 암호 없이는 복호화 불가). ※ 계산·저장·지도 로직 무변경. (v186 이하 유지) -->
 <!-- (이전)  map_v186.html (v186 · TENAR V1.8) · 저장: 2026-10-07 07:16 KST · [v186] 우수사례 평가기간 보안 — 조사구 저장·불러오기의 「📤 엑셀 내보내기」(평문)를 숨김 처리. 6개 조사종류(작물재배·가축·축비·농비·쌀값·농판)가 공용 파일 팝업을 쓰므로 한 곳만 가려도 전부 적용됨. 「엑셀 가져오기·JSON 내보내기(비번 암호화)·JSON 가져오기·전체 백업/복원·엑셀 양식 다운로드」는 그대로 유지(평문 엑셀 반출만 차단). 코드는 남겨둬 재노출 쉬움(해당 줄 주석 복구). ※ 그 외 무변경. (v185 이하 유지) -->
 <!-- (이전)  map_v185.html (v185 · TENAR V1.8) · 저장: 2026-10-07 06:48 KST · [v185] ①「📎 저장된 조사표에 연결」 목록에 시도·시군구·읍면동·작물 드롭다운(콤보박스) 필터 추가 — 저장 조사표의 전체주소를 파싱해 골라서 좁혀 찾을 수 있게(총 건수 표시). ②생산량목록의 연결자료(포구·면적·길이) 표시 순서를 「작물명 · 주소(동리+지번) · 일시」로 변경하고 주소(지번)를 빨강으로 강조 — 지번으로 연결확인이 쉽도록(종류는 아이콘으로 구분). ※ 지도·계산 로직 무변경. (v184 이하 유지) -->
 <!-- (이전)  map_v184.html (v184 · TENAR V1.8) · 저장: 2026-10-07 05:51 KST · [v184] 「📎 저장된 조사표에 연결」 목록 보완 — ①주소가 잘려 보이던 문제: 목록에 저장된 주소는 15자 축약본이라, 조사표 데이터(tonghabSave_/chungchiSave_의 address)에서 전체 주소를 읽어 📍줄에 전부 표시(줄바꿈 허용). ②청취조사표(chungchiSaveList)도 실측과 동일하게 복호화되어 목록에 정상 표시됨 확인. ※ 지도·계산 로직 무변경. (v183 이하 유지) -->
@@ -335,20 +336,31 @@
      retryNote=true 이면 "암호 틀림, 다시 입력" 안내를 앞에 붙임(여러 번 재시도 지원) */
   window._tenarAskPassword=function(mode, retryNote){
     var isImport=(mode==='import');
-    var base=isImport
-      ? 'JSON 파일 가져오기\n\n저장할 때 사용한 암호를 입력하세요.'
-      : 'JSON 파일 내보내기\n\n이 파일은 외부로 공유될 수 있어 암호가 꼭 필요합니다.\n암호를 직접 정해 입력하세요. (빈칸이면 내보내기·저장이 되지 않습니다)\n※ 기본 암호는 없습니다. 암호를 잊으면 파일을 복구할 수 없으니 꼭 기억하세요.';
-    var head=(retryNote? '❌ 암호가 맞지 않습니다. 다시 입력해 주세요.\n(취소하면 불러오기를 중단합니다)\n\n' : '') + base;
-    var def = (window._tenarSessionPw!=null ? window._tenarSessionPw : '');   /* [v151] 이 세션 동안만 기억(RAM, 저장 안 함) */
-    var pw;
-    try{ pw=window.prompt(head, def); }
-    catch(e){ return null; }             /* [v151] prompt 미지원 → 안전하게 중단(평문 반출 방지) */
-    if(pw===null) return null;           /* 사용자 취소 */
-    if(pw===undefined) pw=def;
-    pw=String(pw);
-    if(pw.trim()===''){ if(isImport) return ''; return null; }   /* [v151] 내보내기 빈칸→중단(기본암호 2026 폐지) */
-    if(!isImport){ try{ window._tenarSessionPw=pw; }catch(e){} }   /* 입력한 암호를 이 세션 동안만 기억(RAM) */
-    return pw;
+    if(isImport){
+      var baseI='JSON 파일 가져오기\n\n저장할 때 사용한 암호를 입력하세요.';
+      var headI=(retryNote? '❌ 암호가 맞지 않습니다. 다시 입력해 주세요.\n(취소하면 불러오기를 중단합니다)\n\n' : '') + baseI;
+      var defI=(window._tenarSessionPw!=null ? window._tenarSessionPw : '');
+      var pwI; try{ pwI=window.prompt(headI, defI); }catch(e){ return null; }
+      if(pwI===null) return null;
+      return String(pwI);
+    }
+    /* [v152] 내보내기 암호 규칙: 9자리 이상·공백 없음·빈칸/취소 중단. 틀리면 그 자리에서 다시 입력(세션 RAM만 기억). */
+    var note=(retryNote? '❌ 이전 암호가 맞지 않습니다.\n\n' : '');
+    while(true){
+      var base='JSON 파일 내보내기\n\n이 파일은 외부로 공유될 수 있어 암호가 꼭 필요합니다.\n'
+        + '• 암호는 9자리 이상으로 저장하세요.\n'
+        + '• 공백(띄어쓰기)이 들어가 있으면 저장이 안 됩니다.\n'
+        + '※ 기본 암호는 없습니다. 암호를 잊으면 파일을 복구할 수 없으니 꼭 기억하세요.';
+      var def=(window._tenarSessionPw!=null ? window._tenarSessionPw : '');
+      var pw; try{ pw=window.prompt(note+base, def); }catch(e){ return null; }
+      if(pw===null) return null;
+      pw=String(pw);
+      if(pw.trim()===''){ return null; }
+      if(/\s/.test(pw)){ note='❌ 암호에 공백(띄어쓰기)이 있습니다. 공백 없이 다시 입력하세요.\n\n'; continue; }
+      if(pw.length<9){ note='❌ 암호가 너무 짧습니다. 9자리 이상으로 입력하세요. (현재 '+pw.length+'자)\n\n'; continue; }
+      try{ window._tenarSessionPw=pw; }catch(e){}
+      return pw;
+    }
   };
 
   window._tenarBuildExport=function(dataObj, appName){

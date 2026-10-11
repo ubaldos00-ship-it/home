@@ -1,4 +1,5 @@
-<!-- tonghab.html (v151) · 저장: 2026-10-12 00:02 KST · [v151] 보안강화(평가기간) — 공유/내보내기/백업(JSON) 암호 체계 개편: ①기본암호 2026 완전 삭제. ②암호를 사용자가 직접 입력해야 하며, 빈칸이면 내보내기·공유·저장이 되지 않음(중단). ③입력한 암호는 저장하지 않고 「이 세션(RAM) 동안만」 기억해 반복 내보내기 시 편리하게 사용(새로고침 시 사라짐·localStorage 미저장이라 외부에서 알 수 없음). ④암호화 미지원 기기는 평문 반출을 막아 내보내기 차단. 암호화는 기존 PBKDF2(210,000회)+AES-GCM 그대로 — 사용자 암호를 모르면 복호화 불가. ※ 계산·저장 로직 무변경. (v150 이하 유지) -->
+<!-- tonghab.html (v152) · 저장: 2026-10-12 00:44 KST · [v152] 내보내기(JSON 공유/백업) 암호 규칙 강화 — ①9자리 이상이어야 저장(프롬프트에 "9자리 이상으로 저장하세요" 안내). ②공백(띄어쓰기)이 들어가면 저장 안 됨(안내 멘트 추가). 규칙 위반 시 그 자리에서 다시 입력. 빈칸/취소는 중단. ※ 가져오기는 옛 파일 호환 위해 길이·공백 검증 없음. 통합·청취·지도·주수 공통 적용. 계산 로직 무변경. (v151 이하 유지) -->
+<!-- (이전)  tonghab.html (v151) · 저장: 2026-10-12 00:02 KST · [v151] 보안강화(평가기간) — 공유/내보내기/백업(JSON) 암호 체계 개편: ①기본암호 2026 완전 삭제. ②암호를 사용자가 직접 입력해야 하며, 빈칸이면 내보내기·공유·저장이 되지 않음(중단). ③입력한 암호는 저장하지 않고 「이 세션(RAM) 동안만」 기억해 반복 내보내기 시 편리하게 사용(새로고침 시 사라짐·localStorage 미저장이라 외부에서 알 수 없음). ④암호화 미지원 기기는 평문 반출을 막아 내보내기 차단. 암호화는 기존 PBKDF2(210,000회)+AES-GCM 그대로 — 사용자 암호를 모르면 복호화 불가. ※ 계산·저장 로직 무변경. (v150 이하 유지) -->
 <!-- (이전)  tonghab.html (v150) · 저장: 2026-10-04 09:25 KST · [v150] 「🧾 논벼 생산량 조사표(한장) 보기」 버튼을 평가기간 동안 숨김 처리(display:none) — 기능·모달·코드는 그대로 유지(10월말 발표 때 해당 button style의 display:none→display:flex 로 바꾸면 다시 노출). ※ 그 외 무변경. (v149 이하 유지) -->
 <!-- (이전)  tonghab.html (v149) · 저장: 2026-10-03 11:58 KST · [v149] 논벼 조사표 열 때 A/B포구 계산을 자동 갱신(runFullCalculation) → ①표본구역(포구)기점 가로/세로 길이가 실제로 채워짐(A가로=가~나길이×비율가, B가로=A가로기점+추출간격, A세로=세로총길이×비율나, B세로=세로총길이×비율다 = 통합계산기의 가로기점·세로기점 결과값). ②표본구역 선정요도에 지도 가-나·AB포구 기점 선정 요도(#fieldSvg)가 그려져 표시됨(이전엔 미계산 시 비어있던 문제 해결). 계산값 부족 시 조용히 건너뜀(에러·스크롤 억제). ※ 계산 함수 무변경. (v148 이하 유지) -->
 <!-- (이전)  tonghab.html (v148) · 저장: 2026-10-03 11:35 KST · [v148] 논벼 조사표 보완 — ①그동안 비어있던 「표본구역비율 1·2번(가/나/다)」·「표본구역(포구)기점 A/B 가로·세로 길이」·「검산계(머리말 층번호~분번, 예상량 유효이삭수~10a예상생산량, 실수확량 조제벼~생볏짚)」를 입력값에서 자동 채움. ②인쇄/PDF 창에 「🖨인쇄·✕닫기」 버튼 추가(인쇄 시 자동 숨김) + A4 가로 용지에 맞게 설정(캡처·인쇄 모두 A4). ※ 계산 함수 무변경. (v147 이하 유지) -->
@@ -274,20 +275,31 @@
      retryNote=true 이면 "암호 틀림, 다시 입력" 안내를 앞에 붙임(여러 번 재시도 지원) */
   window._tenarAskPassword=function(mode, retryNote){
     var isImport=(mode==='import');
-    var base=isImport
-      ? 'JSON 파일 가져오기\n\n저장할 때 사용한 암호를 입력하세요.'
-      : 'JSON 파일 내보내기\n\n이 파일은 외부로 공유될 수 있어 암호가 꼭 필요합니다.\n암호를 직접 정해 입력하세요. (빈칸이면 내보내기·저장이 되지 않습니다)\n※ 기본 암호는 없습니다. 암호를 잊으면 파일을 복구할 수 없으니 꼭 기억하세요.';
-    var head=(retryNote? '❌ 암호가 맞지 않습니다. 다시 입력해 주세요.\n(취소하면 불러오기를 중단합니다)\n\n' : '') + base;
-    var def = (window._tenarSessionPw!=null ? window._tenarSessionPw : '');   /* [v151] 이 세션 동안만 기억(RAM, 저장 안 함) */
-    var pw;
-    try{ pw=window.prompt(head, def); }
-    catch(e){ return null; }             /* [v151] prompt 미지원 → 안전하게 중단(평문 반출 방지) */
-    if(pw===null) return null;           /* 사용자 취소 */
-    if(pw===undefined) pw=def;
-    pw=String(pw);
-    if(pw.trim()===''){ if(isImport) return ''; return null; }   /* [v151] 내보내기 빈칸→중단(기본암호 2026 폐지) */
-    if(!isImport){ try{ window._tenarSessionPw=pw; }catch(e){} }   /* 입력한 암호를 이 세션 동안만 기억(RAM) */
-    return pw;
+    if(isImport){
+      var baseI='JSON 파일 가져오기\n\n저장할 때 사용한 암호를 입력하세요.';
+      var headI=(retryNote? '❌ 암호가 맞지 않습니다. 다시 입력해 주세요.\n(취소하면 불러오기를 중단합니다)\n\n' : '') + baseI;
+      var defI=(window._tenarSessionPw!=null ? window._tenarSessionPw : '');
+      var pwI; try{ pwI=window.prompt(headI, defI); }catch(e){ return null; }
+      if(pwI===null) return null;
+      return String(pwI);
+    }
+    /* [v152] 내보내기 암호 규칙: 9자리 이상·공백 없음·빈칸/취소 중단. 틀리면 그 자리에서 다시 입력(세션 RAM만 기억). */
+    var note=(retryNote? '❌ 이전 암호가 맞지 않습니다.\n\n' : '');
+    while(true){
+      var base='JSON 파일 내보내기\n\n이 파일은 외부로 공유될 수 있어 암호가 꼭 필요합니다.\n'
+        + '• 암호는 9자리 이상으로 저장하세요.\n'
+        + '• 공백(띄어쓰기)이 들어가 있으면 저장이 안 됩니다.\n'
+        + '※ 기본 암호는 없습니다. 암호를 잊으면 파일을 복구할 수 없으니 꼭 기억하세요.';
+      var def=(window._tenarSessionPw!=null ? window._tenarSessionPw : '');
+      var pw; try{ pw=window.prompt(note+base, def); }catch(e){ return null; }
+      if(pw===null) return null;
+      pw=String(pw);
+      if(pw.trim()===''){ return null; }
+      if(/\s/.test(pw)){ note='❌ 암호에 공백(띄어쓰기)이 있습니다. 공백 없이 다시 입력하세요.\n\n'; continue; }
+      if(pw.length<9){ note='❌ 암호가 너무 짧습니다. 9자리 이상으로 입력하세요. (현재 '+pw.length+'자)\n\n'; continue; }
+      try{ window._tenarSessionPw=pw; }catch(e){}
+      return pw;
+    }
   };
 
   /* 내보내기 텍스트 생성 — 보안 가능하면 암호화, 불가 환경이면 평문(경고).
