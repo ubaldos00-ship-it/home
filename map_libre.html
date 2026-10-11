@@ -1,4 +1,5 @@
-<!-- map_v188.html (v188 · TENAR V1.8) · 저장: 2026-10-12 00:44 KST · [v188] 내보내기(JSON 공유/백업) 암호 규칙 강화 — ①9자리 이상이어야 저장(프롬프트에 "9자리 이상으로 저장하세요" 안내). ②공백(띄어쓰기)이 들어가면 저장 안 됨(안내 멘트 추가). 규칙 위반 시 그 자리에서 다시 입력. 빈칸/취소는 중단. ※ 가져오기는 옛 파일 호환 위해 길이·공백 검증 없음. 조사구 6종·연결자료 공유 공용함수 적용. 계산 로직 무변경. (v187 이하 유지) -->
+<!-- map_v189.html (v189 · TENAR V1.8) · 저장: 2026-10-12 01:07 KST · [v189] ①공유(JSON) 폴백 먼저 뜨던 문제 수정 — 「📤공유하기 버튼(새 제스처)」 모달로 한 번에 공유(생산량목록·조사구 공통). ②조사구 저장/불러오기에 공유 버튼 추가 — 파일 팝업 「JSON 가져오기」 옆에 「📤 공유」(현재 종류), 전체 백업·복원 옆에 「📤 전체 공유」(6종 전체). 공유도 _tenarBuildExport 암호화(사용자 암호) 적용. 지도·계산 로직 무변경. (v188 이하 유지) -->
+<!-- (이전)  map_v188.html (v188 · TENAR V1.8) · 저장: 2026-10-12 00:44 KST · [v188] 내보내기(JSON 공유/백업) 암호 규칙 강화 — ①9자리 이상이어야 저장(프롬프트에 "9자리 이상으로 저장하세요" 안내). ②공백(띄어쓰기)이 들어가면 저장 안 됨(안내 멘트 추가). 규칙 위반 시 그 자리에서 다시 입력. 빈칸/취소는 중단. ※ 가져오기는 옛 파일 호환 위해 길이·공백 검증 없음. 조사구 6종·연결자료 공유 공용함수 적용. 계산 로직 무변경. (v187 이하 유지) -->
 <!-- (이전)  map_v187.html (v187 · TENAR V1.8) · 저장: 2026-10-12 00:02 KST · [v187] 보안강화(평가기간) — 지도·조사구의 공유/내보내기/백업(JSON) 암호: 기본암호 2026 삭제·사용자 직접입력 필수(빈칸이면 중단)·입력암호는 이 세션(RAM)만 기억(미저장)·암호화 미지원 기기 반출 차단. 조사구 6종·연결자료 공유 모두 공용 _tenarAskPassword 사용이라 일괄 적용. 암호화는 PBKDF2(210,000회)+AES-GCM 유지(사용자 암호 없이는 복호화 불가). ※ 계산·저장·지도 로직 무변경. (v186 이하 유지) -->
 <!-- (이전)  map_v186.html (v186 · TENAR V1.8) · 저장: 2026-10-07 07:16 KST · [v186] 우수사례 평가기간 보안 — 조사구 저장·불러오기의 「📤 엑셀 내보내기」(평문)를 숨김 처리. 6개 조사종류(작물재배·가축·축비·농비·쌀값·농판)가 공용 파일 팝업을 쓰므로 한 곳만 가려도 전부 적용됨. 「엑셀 가져오기·JSON 내보내기(비번 암호화)·JSON 가져오기·전체 백업/복원·엑셀 양식 다운로드」는 그대로 유지(평문 엑셀 반출만 차단). 코드는 남겨둬 재노출 쉬움(해당 줄 주석 복구). ※ 그 외 무변경. (v185 이하 유지) -->
 <!-- (이전)  map_v185.html (v185 · TENAR V1.8) · 저장: 2026-10-07 06:48 KST · [v185] ①「📎 저장된 조사표에 연결」 목록에 시도·시군구·읍면동·작물 드롭다운(콤보박스) 필터 추가 — 저장 조사표의 전체주소를 파싱해 골라서 좁혀 찾을 수 있게(총 건수 표시). ②생산량목록의 연결자료(포구·면적·길이) 표시 순서를 「작물명 · 주소(동리+지번) · 일시」로 변경하고 주소(지번)를 빨강으로 강조 — 지번으로 연결확인이 쉽도록(종류는 아이콘으로 구분). ※ 지도·계산 로직 무변경. (v184 이하 유지) -->
@@ -363,6 +364,27 @@
     }
   };
 
+  /* [공유] 암호입력·암호화를 끝낸 뒤 「공유하기」 버튼을 띄워, 그 탭(새 사용자제스처)에서 navigator.share 실행
+     → iOS에서 공유가 폴백(복사/다운로드)으로 먼저 빠지고 두 번째에야 되던 문제 해결. file=File, downloadFn=폴백저장 */
+  window._tenarSharePrepared=function(file, title, downloadFn){
+    var canF=false; try{ canF=!!(navigator.canShare && navigator.canShare({files:[file]})); }catch(e){}
+    if(!canF){ if(typeof downloadFn==='function') downloadFn(); return; }
+    var ov=document.createElement('div');
+    ov.style.cssText='position:fixed;inset:0;z-index:2147483600;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:24px;';
+    var box=document.createElement('div');
+    box.style.cssText='background:#fff;border-radius:16px;max-width:340px;width:100%;padding:20px 18px;box-shadow:0 12px 40px rgba(0,0,0,.35);text-align:center;font-family:inherit;';
+    box.innerHTML='<div style="font-size:15px;font-weight:800;color:#1f5132;margin-bottom:6px;">\ud83d\udce4 \uacf5\uc720 \uc900\ube44 \uc644\ub8cc</div><div style="font-size:12.5px;color:#666;line-height:1.5;margin-bottom:14px;">\uc544\ub798 \u300c\uacf5\uc720\ud558\uae30\u300d\ub97c \ub204\ub974\uba74 \uce74\ud1a1\u00b7\uba54\uc2dc\uc9c0 \ub4f1\uc73c\ub85c \ubc14\ub85c \uacf5\uc720\ub429\ub2c8\ub2e4.'+((/secure/.test(file.name||''))?'<br>\ud83d\udd12 \uc554\ud638\ud654\ub41c \ud30c\uc77c\uc785\ub2c8\ub2e4.':'')+'</div>';
+    function mk(txt,css){ var b=document.createElement('button'); b.textContent=txt; b.style.cssText=css; return b; }
+    var bS=mk('\ud83d\udce4 \uacf5\uc720\ud558\uae30','width:100%;padding:13px;border:none;border-radius:11px;background:#1f5132;color:#fff;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer;margin-bottom:8px;');
+    var bD=mk('\u2b07 \ud30c\uc77c\ub85c \uc800\uc7a5','width:100%;padding:11px;border:1.5px solid #ccc;border-radius:11px;background:#fff;color:#555;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;margin-bottom:8px;');
+    var bC=mk('\ucde8\uc18c','width:100%;padding:9px;border:none;background:none;color:#999;font-size:13px;font-family:inherit;cursor:pointer;');
+    function close(){ try{document.body.removeChild(ov);}catch(e){} }
+    bS.addEventListener('click', function(){ try{ navigator.share({files:[file], title:title, text:title}).then(close).catch(function(err){ close(); if(!(err&&err.name==='AbortError') && typeof downloadFn==='function') downloadFn(); }); }catch(e){ close(); if(typeof downloadFn==='function') downloadFn(); } });
+    bD.addEventListener('click', function(){ close(); if(typeof downloadFn==='function') downloadFn(); });
+    bC.addEventListener('click', close);
+    box.appendChild(bS); box.appendChild(bD); box.appendChild(bC);
+    ov.appendChild(box); document.body.appendChild(ov);
+  };
   window._tenarBuildExport=function(dataObj, appName){
     if(window.TenarCrypto && TenarCrypto.ok){
       var pw=window._tenarAskPassword('export');
@@ -5359,14 +5381,11 @@ TenarSecureStore.init('map',
         }
         var file = null;
         try { file = new File([out.text], fname, { type: 'application/json' }); } catch (e) {}
-        /* ① 파일 공유(아이폰 등) */
-        if (file && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-          navigator.share({ files: [file], title: '텐아르 생산량목록', text: '텐아르 생산량목록(연결자료 포함)' })
-            .catch(function (err) { if (err && err.name === 'AbortError') return; fallbackDownload('share-file'); });
+        /* [v189] 암호화(비동기) 뒤 제스처가 풀려 공유가 폴백으로 빠지던 문제 → 「공유하기」 버튼으로 새 제스처에서 실행 */
+        if (file && window._tenarSharePrepared) {
+          window._tenarSharePrepared(file, '텐아르 생산량목록(연결자료 포함)', function () { fallbackDownload('share-file'); });
           return;
         }
-        /* ② 파일 공유가 안 되면(안드로이드 등) → 바로 파일 다운로드
-           (대용량 JSON을 텍스트로 공유하면 잘리거나 실패하므로 텍스트 공유는 쓰지 않음) */
         fallbackDownload('no-file-share');
       })
       .catch(function (e) { console.error('공유 실패', e); showToast('공유 준비 중 오류가 발생했습니다.', 4000); });
@@ -13778,7 +13797,8 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     [['📥 엑셀 가져오기', function () { areaPickFile('xlsx'); }],
      /* ['📤 엑셀 내보내기', areaExportExcel], */
      ['🔒 JSON 내보내기', areaExportJSON],
-     ['📥 JSON 가져오기', function () { areaPickFile('json'); }]].forEach(function (x) {
+     ['📥 JSON 가져오기', function () { areaPickFile('json'); }],
+     ['📤 공유', areaShareJSON]].forEach(function (x) {   /* [v189] 조사구(현재 종류) 공유 */
       var b = el('button', 'sheet-btn', x[0]); b.style.cssText = 'padding:11px 4px;font-size:12.5px;';
       b.addEventListener('click', function () { x[1](); });
       g.appendChild(b);
@@ -13791,7 +13811,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     box.appendChild(backupHdr);
     box.appendChild(el('div', 'lyr-desc', '6개 조사 종류의 조사구를 하나의 파일로 백업하고, 복원할 때 원하는 종류만 골라 되살립니다.'));
     var gb = el('div'); gb.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:6px;';
-    [['🗄 전체 백업', areaBackupAllTypes], ['🗄 전체 복원(선택)', areaRestorePickFile]].forEach(function (x) {
+    [['🗄 전체 백업', areaBackupAllTypes], ['🗄 전체 복원(선택)', areaRestorePickFile], ['📤 전체 공유', areaShareAllTypes]].forEach(function (x) {   /* [v189] 전체 종류 공유 */
       var b = el('button', 'sheet-btn', x[0]); b.style.cssText = 'padding:12px 4px;font-size:13px;font-weight:800;';
       b.addEventListener('click', function () { x[1](); });
       gb.appendChild(b);
@@ -14784,6 +14804,36 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
       if (!res) return;
       areaDownloadBlob(new Blob([res.text], { type: 'application/json' }), 'tenar_area_backup_' + (res.encrypted ? 'enc_' : '') + kstNowStr().slice(0, 10) + '.json');
       showToast('전체 백업(' + total + '건)을 내보냈습니다.' + (res.encrypted ? ' (암호화)' : ''), 3200, 'success');
+    });
+  }
+  /* [v189] 조사구 공유 — 현재 종류(개별) / 전체 종류(백업). _tenarBuildExport(암호화) 후 「공유하기」 버튼으로 네이티브 공유, 미지원 시 파일저장 폴백. */
+  function areaShareJSON() {
+    var arr = getAreaPlots();
+    if (!arr.length) { showToast('공유할 조사구가 없습니다.', 3000, 'info'); return; }
+    var dataObj = { type: 'tenar-area-plots', version: 66, areaType: currentAreaType, areaTypeLabel: areaTypeCfg().label, exportedAt: kstNowStr(), plots: arr };
+    var build = (window._tenarBuildExport) ? window._tenarBuildExport(dataObj, AREA_APP) : Promise.resolve({ text: JSON.stringify(dataObj, null, 2), encrypted: false });
+    build.then(function (res) {
+      if (!res) return;
+      var fn = 'nongup_area_' + currentAreaType + '_' + (res.encrypted ? 'enc_' : '') + kstNowStr().slice(0, 10) + '.json';
+      var blob = new Blob([res.text], { type: 'application/json' });
+      var file = null; try { file = new File([blob], fn, { type: 'application/json' }); } catch (e) {}
+      if (file && window._tenarSharePrepared) { window._tenarSharePrepared(file, areaTypeCfg().label + ' 조사구 ' + arr.length + '건' + (res.encrypted ? '(암호화)' : ''), function () { areaDownloadBlob(blob, fn); showToast('파일로 저장했어요. 카톡 등 공유앱으로 보내세요.', 3800, 'info'); }); return; }
+      areaDownloadBlob(blob, fn);
+    });
+  }
+  function areaShareAllTypes() {
+    var types = {}, total = 0;
+    AREA_TYPES.forEach(function (t) { var a = getAreaPlotsFor(t.key); types[t.key] = a; total += a.length; });
+    if (!total) { showToast('공유할 조사구가 없습니다.', 3000, 'info'); return; }
+    var dataObj = { type: 'tenar-area-backup', app: AREA_APP, version: 1, exportedAt: kstNowStr(), types: types, areaTypeColors: settings.areaTypeColors || {}, areaEmdColors: settings.areaEmdColors || {} };
+    var build = (window._tenarBuildExport) ? window._tenarBuildExport(dataObj, AREA_APP) : Promise.resolve({ text: JSON.stringify(dataObj, null, 2), encrypted: false });
+    build.then(function (res) {
+      if (!res) return;
+      var fn = 'tenar_area_backup_' + (res.encrypted ? 'enc_' : '') + kstNowStr().slice(0, 10) + '.json';
+      var blob = new Blob([res.text], { type: 'application/json' });
+      var file = null; try { file = new File([blob], fn, { type: 'application/json' }); } catch (e) {}
+      if (file && window._tenarSharePrepared) { window._tenarSharePrepared(file, '조사구 전체 백업 ' + total + '건' + (res.encrypted ? '(암호화)' : ''), function () { areaDownloadBlob(blob, fn); showToast('파일로 저장했어요. 카톡 등 공유앱으로 보내세요.', 3800, 'info'); }); return; }
+      areaDownloadBlob(blob, fn);
     });
   }
   function areaRestorePickFile() {

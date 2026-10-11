@@ -1,4 +1,5 @@
-<!-- jusu.html (이삭수 계산기) v114 · 저장: 2026-10-12 00:44 KST · [v114] 내보내기(JSON 공유/백업) 암호 규칙 강화 — ①9자리 이상이어야 저장(프롬프트에 "9자리 이상으로 저장하세요" 안내). ②공백(띄어쓰기)이 들어가면 저장 안 됨(안내 멘트 추가). 규칙 위반 시 그 자리에서 다시 입력. 빈칸/취소는 중단. ※ 가져오기는 옛 파일 호환 위해 길이·공백 검증 없음. 통합·청취·지도·주수 공통 적용. 계산 로직 무변경. (v113 이하 유지) -->
+<!-- jusu.html (이삭수 계산기) v115 · 저장: 2026-10-12 01:07 KST · [v115] 공유(JSON) 폴백 먼저 뜨던 문제 수정 — 「📤공유하기 버튼」 모달로 한 번에 공유(tonghab v153과 동일). (v114 이하 유지) -->
+<!-- (이전)  jusu.html (이삭수 계산기) v114 · 저장: 2026-10-12 00:44 KST · [v114] 내보내기(JSON 공유/백업) 암호 규칙 강화 — ①9자리 이상이어야 저장(프롬프트에 "9자리 이상으로 저장하세요" 안내). ②공백(띄어쓰기)이 들어가면 저장 안 됨(안내 멘트 추가). 규칙 위반 시 그 자리에서 다시 입력. 빈칸/취소는 중단. ※ 가져오기는 옛 파일 호환 위해 길이·공백 검증 없음. 통합·청취·지도·주수 공통 적용. 계산 로직 무변경. (v113 이하 유지) -->
 <!-- (이전)  jusu.html (이삭수 계산기) v113 · 저장: 2026-10-12 00:12 KST · [v113] 보안강화(평가기간) — JSON 공유/내보내기 암호: 기본암호 2026 삭제·사용자 직접입력 필수(빈칸이면 중단)·입력암호는 이 세션(RAM)만 기억(미저장)·암호화 미지원 기기 반출 차단. 암호화는 PBKDF2(210,000회)+AES-GCM 유지. ※ tonghab v151 등과 동일 보안개편(v249에서 누락됐던 jusu 반영). 계산 로직 무변경. (v112 이하 유지) -->
 <!-- (이전)  jusu.html (이삭수 계산기) v112 · 저장: 2026-09-10 22:16 KST · [v112] 필지 주소 입력란 아래에 「작은 글씨 풀주소」 표시 추가(입력란이 좁아 잘리던 전체 지번주소를 📍로 한 줄 표시 — 실측·청취계산기와 동일). 지도에서 핀 선택→지번 저장 시 지도(map v179)가 카카오 지번을 돌려주므로 정확한 지번이 채워짐. 계산 로직 무변경. (v111 이하 유지) -->
 <!-- (이전)  jusu.html (이삭수 계산기) v111 · 저장: 2026-08-19 03:18 KST · [v111] ①JSON 내보내기/공유를 「현재 입력자료 1건」이 아니라 「저장목록 전체」로 변경(통합계산기와 동일 번들 방식). ②JSON 불러오기도 「목록 전체」를 추가/교체 선택해 복원하고 불러오기 후 저장/불러오기 창 그대로 유지(구버전 1건 파일도 호환). ③저장/불러오기 모달이 화면보다 길어 아래(JSON 버튼)가 잘리던 문제 → 뷰포트 높이(100dvh)에 맞춰 flex 컬럼 구성, 목록만 내부 스크롤. v110(내보내기 후 홈이탈 방지)·v105 암호화·계산 로직 무변경. -->
@@ -232,6 +233,27 @@
 
   /* 내보내기 텍스트 생성 — 보안 가능하면 암호화, 불가 환경이면 평문(경고).
      반환: Promise<{text, encrypted}> · 사용자가 취소하면 Promise<null> */
+  /* [공유] 암호입력·암호화를 끝낸 뒤 「공유하기」 버튼을 띄워, 그 탭(새 사용자제스처)에서 navigator.share 실행
+     → iOS에서 공유가 폴백(복사/다운로드)으로 먼저 빠지고 두 번째에야 되던 문제 해결. file=File, downloadFn=폴백저장 */
+  window._tenarSharePrepared=function(file, title, downloadFn){
+    var canF=false; try{ canF=!!(navigator.canShare && navigator.canShare({files:[file]})); }catch(e){}
+    if(!canF){ if(typeof downloadFn==='function') downloadFn(); return; }
+    var ov=document.createElement('div');
+    ov.style.cssText='position:fixed;inset:0;z-index:2147483600;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:24px;';
+    var box=document.createElement('div');
+    box.style.cssText='background:#fff;border-radius:16px;max-width:340px;width:100%;padding:20px 18px;box-shadow:0 12px 40px rgba(0,0,0,.35);text-align:center;font-family:inherit;';
+    box.innerHTML='<div style="font-size:15px;font-weight:800;color:#1f5132;margin-bottom:6px;">\ud83d\udce4 \uacf5\uc720 \uc900\ube44 \uc644\ub8cc</div><div style="font-size:12.5px;color:#666;line-height:1.5;margin-bottom:14px;">\uc544\ub798 \u300c\uacf5\uc720\ud558\uae30\u300d\ub97c \ub204\ub974\uba74 \uce74\ud1a1\u00b7\uba54\uc2dc\uc9c0 \ub4f1\uc73c\ub85c \ubc14\ub85c \uacf5\uc720\ub429\ub2c8\ub2e4.'+((/secure/.test(file.name||''))?'<br>\ud83d\udd12 \uc554\ud638\ud654\ub41c \ud30c\uc77c\uc785\ub2c8\ub2e4.':'')+'</div>';
+    function mk(txt,css){ var b=document.createElement('button'); b.textContent=txt; b.style.cssText=css; return b; }
+    var bS=mk('\ud83d\udce4 \uacf5\uc720\ud558\uae30','width:100%;padding:13px;border:none;border-radius:11px;background:#1f5132;color:#fff;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer;margin-bottom:8px;');
+    var bD=mk('\u2b07 \ud30c\uc77c\ub85c \uc800\uc7a5','width:100%;padding:11px;border:1.5px solid #ccc;border-radius:11px;background:#fff;color:#555;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;margin-bottom:8px;');
+    var bC=mk('\ucde8\uc18c','width:100%;padding:9px;border:none;background:none;color:#999;font-size:13px;font-family:inherit;cursor:pointer;');
+    function close(){ try{document.body.removeChild(ov);}catch(e){} }
+    bS.addEventListener('click', function(){ try{ navigator.share({files:[file], title:title, text:title}).then(close).catch(function(err){ close(); if(!(err&&err.name==='AbortError') && typeof downloadFn==='function') downloadFn(); }); }catch(e){ close(); if(typeof downloadFn==='function') downloadFn(); } });
+    bD.addEventListener('click', function(){ close(); if(typeof downloadFn==='function') downloadFn(); });
+    bC.addEventListener('click', close);
+    box.appendChild(bS); box.appendChild(bD); box.appendChild(bC);
+    ov.appendChild(box); document.body.appendChild(ov);
+  };
   window._tenarBuildExport=function(dataObj, appName){
     if(window.TenarCrypto && TenarCrypto.ok){
       var pw=window._tenarAskPassword('export');
@@ -1493,9 +1515,11 @@ function shareJSON_sl(){
   /* [v105] 공유도 암호화(기본 2026) 후 */
   (window._tenarBuildExport ? window._tenarBuildExport(d,'jusu') : Promise.resolve({text:JSON.stringify(d,null,2)}))
     .then(function(r){ if(!r) return; var text=r.text;
-      if(navigator.canShare){var blob=new Blob([text],{type:'application/json'});var file=new File([blob],fileName,{type:'application/json'});if(navigator.canShare({files:[file]})){navigator.share({files:[file],title:fileName}).catch(function(){});return;}}
-      if(navigator.share){navigator.share({title:fileName,text:text}).catch(function(){});return;}
-      navigator.clipboard.writeText(text).then(function(){alert('JSON이 클립보드에 복사됐습니다.');}).catch(function(){});
+      var blob=new Blob([text],{type:'application/json'});
+      var file; try{ file=new File([blob],fileName,{type:'application/json'}); }catch(e){ file=null; }
+      function dl(){ try{ var u=URL.createObjectURL(blob); var a=document.createElement('a'); a.href=u; a.download=fileName; document.body.appendChild(a); a.click(); setTimeout(function(){try{document.body.removeChild(a);}catch(e){} URL.revokeObjectURL(u);},1200); alert('📁 JSON 파일이 다운로드되었습니다.\n카카오톡 등에서 이 파일을 첨부해 공유하세요.'); }catch(e){ try{ navigator.clipboard.writeText(text); alert('📋 JSON이 클립보드에 복사됐습니다.'); }catch(e2){} } }
+      if(file && window._tenarSharePrepared){ window._tenarSharePrepared(file, '이삭수 저장목록 '+d.list.length+'건'+(r.encrypted?'(암호화)':''), dl); return; }
+      dl();
     });
 }
 </script>
