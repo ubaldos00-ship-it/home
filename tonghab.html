@@ -1,4 +1,5 @@
-<!-- tonghab.html (v153) · 저장: 2026-10-12 01:07 KST · [v153] 공유(JSON) 「처음엔 복사/다운로드 폴백이 뜨고 두 번째에야 공유되던」 문제 수정 — 암호입력·암호화(비동기) 뒤 iOS 사용자제스처가 풀려 navigator.share가 폴백으로 빠지던 것을, 「공유 준비 완료 → 📤공유하기 버튼(새 제스처)」 모달로 바꿔 한 번에 공유되게 함(미지원 시 파일저장 폴백). 계산 로직 무변경. (v152 이하 유지) -->
+<!-- tonghab.html (v154) · 저장: 2026-10-13 16:48 KST · [v154] 실측계산기 4건 보완(계산식 무변경) — ①불러오기 시 이전 「AB포구 계산하기」 결과가 그대로 남던(잔상) 문제 해결: 복원 완료 후 결과박스를 숨겨, AB포구 결과는 「AB포구 계산하기」 버튼을 눌렀을 때만 표시. ②논벼 실수확량 ②크기별 중량 양방향 입력: 기존(총량+1.6mm이상→1.6mm미만)은 그대로, 추가로 1.6mm이상+1.6mm미만을 넣으면 총량이 자동 표시(1.6mm미만을 입력칸으로 변경). ③수분함량 합계(자동)가 정수여도 소수점 첫째자리까지 표시(예: 30 → 30.0 %). ④논벼 전용 「바로가기 책갈피」 추가(난수표 조회기 스타일): 오른쪽 화살표 탭을 누르면 튀어나오며 「⬆맨 위로」·「🌾실수확량 조사표」 버튼 제공. (v153 이하 유지) -->
+<!-- (이전)  tonghab.html (v153) · 저장: 2026-10-12 01:07 KST · [v153] 공유(JSON) 「처음엔 복사/다운로드 폴백이 뜨고 두 번째에야 공유되던」 문제 수정 — 암호입력·암호화(비동기) 뒤 iOS 사용자제스처가 풀려 navigator.share가 폴백으로 빠지던 것을, 「공유 준비 완료 → 📤공유하기 버튼(새 제스처)」 모달로 바꿔 한 번에 공유되게 함(미지원 시 파일저장 폴백). 계산 로직 무변경. (v152 이하 유지) -->
 <!-- (이전)  tonghab.html (v152) · 저장: 2026-10-12 00:44 KST · [v152] 내보내기(JSON 공유/백업) 암호 규칙 강화 — ①9자리 이상이어야 저장(프롬프트에 "9자리 이상으로 저장하세요" 안내). ②공백(띄어쓰기)이 들어가면 저장 안 됨(안내 멘트 추가). 규칙 위반 시 그 자리에서 다시 입력. 빈칸/취소는 중단. ※ 가져오기는 옛 파일 호환 위해 길이·공백 검증 없음. 통합·청취·지도·주수 공통 적용. 계산 로직 무변경. (v151 이하 유지) -->
 <!-- (이전)  tonghab.html (v151) · 저장: 2026-10-12 00:02 KST · [v151] 보안강화(평가기간) — 공유/내보내기/백업(JSON) 암호 체계 개편: ①기본암호 2026 완전 삭제. ②암호를 사용자가 직접 입력해야 하며, 빈칸이면 내보내기·공유·저장이 되지 않음(중단). ③입력한 암호는 저장하지 않고 「이 세션(RAM) 동안만」 기억해 반복 내보내기 시 편리하게 사용(새로고침 시 사라짐·localStorage 미저장이라 외부에서 알 수 없음). ④암호화 미지원 기기는 평문 반출을 막아 내보내기 차단. 암호화는 기존 PBKDF2(210,000회)+AES-GCM 그대로 — 사용자 암호를 모르면 복호화 불가. ※ 계산·저장 로직 무변경. (v150 이하 유지) -->
 <!-- (이전)  tonghab.html (v150) · 저장: 2026-10-04 09:25 KST · [v150] 「🧾 논벼 생산량 조사표(한장) 보기」 버튼을 평가기간 동안 숨김 처리(display:none) — 기능·모달·코드는 그대로 유지(10월말 발표 때 해당 button style의 display:none→display:flex 로 바꾸면 다시 노출). ※ 그 외 무변경. (v149 이하 유지) -->
@@ -3244,7 +3245,7 @@ select,
           </div>
           <div class="ryield-fg">
             <label>1.6mm미만 (설미)</label>
-            <div class="ryield-auto ryield-iwrap" style="min-height:42px;"><span class="ra-val" id="rsSeolmi">—</span></div>
+            <div class="ryield-iwrap"><input type="number" inputmode="numeric" id="rsSeolmi" placeholder="예)6" oninput="riceRealYieldCalc()" class="nb-req-inp"><span class="ryield-unit">g</span></div>
           </div>
         </div>
 
@@ -5844,15 +5845,21 @@ function riceRealYieldCalc(){
   // 검산계 = 조제벼 + 1/8조제벼 + 1/8건조벼 + 생볏짚
   var cs1=[jeje,jeje8,geon8,straw].filter(function(x){return !isNaN(x);});
   setT('rsCheckSum1', cs1.length? cs1.reduce(function(a,b){return a+b;},0).toLocaleString('ko-KR')+' g':'—');
-  // v102: 총량(입력) + 현미(입력) → 설미 자동계산
-  var total=num('rsTotal'), hm=num('rsHyeonmi');
-  var sm=(!isNaN(total)&&!isNaN(hm))? total-hm : NaN;
-  setT('rsSeolmi', !isNaN(sm)? sm.toLocaleString('ko-KR')+' g':'—');
+  // [v154] 크기별 중량 양방향: ①총량+현미 → 설미(기존) ②총량 비었고 현미+설미 → 총량
+  var total=num('rsTotal'), hm=num('rsHyeonmi'), smIn=num('rsSeolmi');
+  var seEl=document.getElementById('rsSeolmi'), teEl=document.getElementById('rsTotal');
+  if(!isNaN(total)&&!isNaN(hm)){
+    var sm=Math.round((total-hm)*100)/100;
+    if(seEl && String(seEl.value).trim()!==String(sm)) seEl.value=sm;          // 총량+현미 → 설미
+  } else if(isNaN(total)&&!isNaN(hm)&&!isNaN(smIn)){
+    var tt=Math.round((hm+smIn)*100)/100;
+    if(teEl && String(teEl.value).trim()==='') teEl.value=tt;                  // 현미+설미 → 총량
+  }
   // 수분 합계 = 1회 + 2회
   var m1=num('rsMoist1'), m2=num('rsMoist2');
   var hasM=(!isNaN(m1)||!isNaN(m2));
   var msum=(!isNaN(m1)?m1:0)+(!isNaN(m2)?m2:0);
-  setT('rsMoistSum', hasM? (Math.round(msum*10)/10)+' %':'—');
+  setT('rsMoistSum', hasM? (Math.round(msum*10)/10).toFixed(1)+' %':'—');   /* [v154] 정수여도 소수1자리 표시(예: 30.0 %) */
   // v103: 수분 평균값 (소수2자리) 표시
   var mAvgEl=document.getElementById('rsMoistAvg');
   if(mAvgEl) mAvgEl.textContent=hasM? (Math.round(msum/2*100)/100).toFixed(2):'—';
@@ -9726,6 +9733,9 @@ function _slApply(d, _onDone){
         ['waAvg','wbAvg','heightA','heightB','aN','bN'].forEach(function(id){
           var el=document.getElementById(id);if(el&&el.value)el.dispatchEvent(new Event('input',{bubbles:true}));
         });
+        /* [v154] 불러오기 시 이전 AB포구 「계산하기」 결과가 그대로 남던(잔상) 문제 해결 —
+           결과 박스를 숨겨, 「AB포구 계산하기」 버튼을 눌렀을 때만 결과가 나오도록 함. ※ 계산식 무변경 */
+        try{ var _rb=document.getElementById('resultBox'); if(_rb) _rb.classList.remove('show'); }catch(e){}
         // 복원 완료 후 맨 위 스크롤 (Android·iOS 공통)
         _slScrollToTop();
         /* [v22-1] 저장된 지도 A/B포구 작업이 함께 복원되었으므로
@@ -12724,6 +12734,55 @@ if(window.wcs) {
   if(document.readyState==='complete') run();
   else window.addEventListener('load', run);
 })();
+</script>
+
+<!-- [v154] 논벼 전용 바로가기 책갈피 (난수표 조회기 스타일: 화살표 탭을 누르면 버튼이 튀어나옴) -->
+<style>
+#rsBookmark{position:fixed;right:0;top:38%;z-index:1500;display:none;align-items:stretch;
+  transform:translateX(calc(100% - 36px));transition:transform .28s ease;}
+body.nonbye-mode #rsBookmark{display:flex;}
+#rsBookmark.open{transform:translateX(0);}
+#rsBookmark .bm-tab{flex:0 0 36px;width:36px;background:#d32f2f;color:#fff;border:none;cursor:pointer;
+  border-radius:12px 0 0 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  box-shadow:-3px 2px 10px rgba(0,0,0,.28);font-weight:800;padding:12px 0;}
+#rsBookmark .bm-tab .bm-arrow{font-size:16px;line-height:1;}
+#rsBookmark .bm-tab .bm-label{writing-mode:vertical-rl;font-size:12px;letter-spacing:3px;}
+#rsBookmark .bm-panel{background:#fff;border:2px solid #d32f2f;border-right:none;border-radius:12px 0 0 12px;
+  box-shadow:-4px 3px 14px rgba(0,0,0,.2);padding:10px;display:flex;flex-direction:column;gap:8px;}
+#rsBookmark .bm-panel button{white-space:nowrap;border:none;border-radius:10px;padding:11px 15px;
+  font-size:13px;font-weight:700;cursor:pointer;color:#fff;}
+#rsBookmark .bm-top{background:#37474f;}
+#rsBookmark .bm-go{background:#2e7d32;}
+#rsBookmark .bm-panel button:active{transform:scale(.97);}
+</style>
+<div id="rsBookmark" aria-hidden="true">
+  <button type="button" class="bm-tab" onclick="toggleRsBookmark()" aria-label="바로가기 책갈피">
+    <span class="bm-arrow" id="rsBmArrow">◀</span>
+    <span class="bm-label">바로가기</span>
+  </button>
+  <div class="bm-panel">
+    <button type="button" class="bm-top" onclick="rsBmTop()">⬆ 맨 위로</button>
+    <button type="button" class="bm-go" onclick="rsBmGoYield()">🌾 실수확량 조사표</button>
+  </div>
+</div>
+<script>
+/* [v154] 논벼 바로가기 책갈피 토글/이동 (화면 이동만, 계산식 무관) */
+function toggleRsBookmark(){
+  var b=document.getElementById('rsBookmark'); if(!b) return;
+  var open=b.classList.toggle('open');
+  var a=document.getElementById('rsBmArrow'); if(a) a.textContent=open?'▶':'◀';
+}
+function _rsBmClose(){
+  var b=document.getElementById('rsBookmark'); if(b){ b.classList.remove('open');
+    var a=document.getElementById('rsBmArrow'); if(a) a.textContent='◀'; }
+}
+function rsBmTop(){ try{ window.scrollTo({top:0,behavior:'smooth'}); }catch(e){ window.scrollTo(0,0); } _rsBmClose(); }
+function rsBmGoYield(){
+  try{ if(document.body.classList.contains('nonbye-mode') && typeof riceLoadDamage==='function') riceLoadDamage(); }catch(e){}
+  var t=document.getElementById('ryieldCard')||document.getElementById('prodZone');
+  if(t){ if(typeof scrollWithOffset==='function') scrollWithOffset(t); else t.scrollIntoView({behavior:'smooth',block:'start'}); }
+  _rsBmClose();
+}
 </script>
 </body>
 </html>
