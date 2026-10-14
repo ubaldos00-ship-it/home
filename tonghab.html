@@ -1,4 +1,5 @@
-<!-- tonghab.html (v156) · 저장: 2026-10-14 02:39 KST · [v156] 바로가기 책갈피 탭의 세로 「바로가기」 글씨를 작게 조정(깨짐 방지) — 글자 12px→10px·자간 3px→1px·줄간격 1.1, 화살표 16px→14px. 기능·동작·위치 무변경. ※ 계산식 무변경. (v155 이하 유지) -->
+<!-- tonghab.html (v157) · 저장: 2026-10-14 08:59 KST · [v157] 논벼 실수확량 조사표에 「🌾 수분 기준 역산」 영역 추가(보조기능·기존 10a 계산식 무변경). 위에서 계산된 10a당 수량(백미)을 그대로 고정한 채, 사용자가 기준수분(기본 15.0%, 수정가능)을 넣으면 그 수분으로 환산 시 필요한 1.6㎜이상(현미) 중량을 역산해 보여줌. 역산식: 1.6㎜이상 = 실제현미 × (100−실제수분) ÷ (100−기준수분) (10a수량 ∝ 현미중량×(100−수분) 관계 이용, 조제벼·건조벼는 백미 10a수량에 무관). rsReverseCalc()는 riceRealYieldCalc 끝에서 호출되어 입력 변경 시 자동 갱신. ※ 기존 산출 로직 무변경. (v156 이하 유지) -->
+<!-- (이전)  tonghab.html (v156) · 저장: 2026-10-14 02:39 KST · [v156] 바로가기 책갈피 탭의 세로 「바로가기」 글씨를 작게 조정(깨짐 방지) — 글자 12px→10px·자간 3px→1px·줄간격 1.1, 화살표 16px→14px. 기능·동작·위치 무변경. ※ 계산식 무변경. (v155 이하 유지) -->
 <!-- (이전)  tonghab.html (v155) · 저장: 2026-10-13 17:24 KST · [v155] 바로가기 책갈피를 전 작물로 확장 — 논벼 외 마늘·양파·감자·콩·배추·무·총각무를 선택하면 동일한 「바로가기」 책갈피가 나타나며, 아래 버튼이 「⬆ 맨 위로」와 「📊 생산량 계산기」(10a당 생산량 계산기 #prodZone로 이동)로 표시됨. 논벼는 기존대로 「⬆ 맨 위로」·「🌾 실수확량 조사표」 유지. (작물 선택 시 body.crop-picked 부여로 표시, _rsBmSync가 버튼 라벨/이동 대상 동기화) ※ 계산식 무변경. (v154 이하 유지) -->
 <!-- (이전)  tonghab.html (v154) · 저장: 2026-10-13 16:48 KST · [v154] 실측계산기 4건 보완(계산식 무변경) — ①불러오기 시 이전 「AB포구 계산하기」 결과가 그대로 남던(잔상) 문제 해결: 복원 완료 후 결과박스를 숨겨, AB포구 결과는 「AB포구 계산하기」 버튼을 눌렀을 때만 표시. ②논벼 실수확량 ②크기별 중량 양방향 입력: 기존(총량+1.6mm이상→1.6mm미만)은 그대로, 추가로 1.6mm이상+1.6mm미만을 넣으면 총량이 자동 표시(1.6mm미만을 입력칸으로 변경). ③수분함량 합계(자동)가 정수여도 소수점 첫째자리까지 표시(예: 30 → 30.0 %). ④논벼 전용 「바로가기 책갈피」 추가(난수표 조회기 스타일): 오른쪽 화살표 탭을 누르면 튀어나오며 「⬆맨 위로」·「🌾실수확량 조사표」 버튼 제공. (v153 이하 유지) -->
 <!-- (이전)  tonghab.html (v153) · 저장: 2026-10-12 01:07 KST · [v153] 공유(JSON) 「처음엔 복사/다운로드 폴백이 뜨고 두 번째에야 공유되던」 문제 수정 — 암호입력·암호화(비동기) 뒤 iOS 사용자제스처가 풀려 navigator.share가 폴백으로 빠지던 것을, 「공유 준비 완료 → 📤공유하기 버튼(새 제스처)」 모달로 바꿔 한 번에 공유되게 함(미지원 시 파일저장 폴백). 계산 로직 무변경. (v152 이하 유지) -->
@@ -3292,6 +3293,40 @@ select,
           <div class="ryield-rate-cell"><div class="rc-lbl">현백률 (백미/현미) <button class="formula-info-btn" onclick="showFormulaPopup('현백률')">ℹ</button></div><div class="rc-val" id="rsHyeonbaek">—</div></div>
         </div>
 
+        <!-- [v157] 🌾 수분 기준 역산 — 위에서 계산된 10a 수량을 고정하고, 기준수분 적용 시 필요한 1.6㎜이상(현미) 중량을 역산. 기존 10a 계산식은 무변경. -->
+        <div id="rsRevCard" style="margin-top:16px;border:1.8px solid #2e7d32;border-radius:12px;background:#f3f9f3;padding:13px 14px;">
+          <div style="font-size:14px;font-weight:800;color:#1f5132;">🌾 수분 기준 역산 <span style="font-size:11px;font-weight:700;color:#2e7d32;">(10a 수량 고정)</span></div>
+          <div style="font-size:11.5px;color:#5b6358;margin:4px 0 10px;line-height:1.55;">
+            위에서 계산된 <b>10a당 수량을 그대로 고정</b>한 채, 기준 수분으로 환산했을 때 필요한
+            <b>1.6㎜ 이상(현미) 중량</b>을 역으로 계산합니다. (수량은 바뀌지 않습니다)
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;background:#fff;border:1px solid #cfe3cf;border-radius:9px;padding:9px 11px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+              <span style="font-size:12.5px;color:#555;">계산된 10a당 수량 🔒</span>
+              <span style="font-size:14px;font-weight:800;color:#1f5132;" id="rsRevYield">—</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+              <span style="font-size:12.5px;color:#555;">실제 수분</span>
+              <span style="font-size:13.5px;font-weight:700;color:#333;" id="rsRevCurMoist">—</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+              <span style="font-size:12.5px;color:#555;">실제 1.6㎜ 이상</span>
+              <span style="font-size:13.5px;font-weight:700;color:#333;" id="rsRevCurW16">—</span>
+            </div>
+          </div>
+          <div class="ryield-fg" style="margin-top:11px;">
+            <label>기준 수분 (%)</label>
+            <div class="ryield-iwrap"><input type="text" inputmode="decimal" id="rsRevTargetMoist" placeholder="예)15.0" value="15.0" oninput="moistFmt(this)" autocomplete="off" class="nb-req-inp"><span class="ryield-unit">%</span></div>
+          </div>
+          <div style="margin-top:11px;background:#2e7d32;border-radius:10px;padding:11px 14px;text-align:center;color:#fff;">
+            <div style="font-size:12px;font-weight:600;opacity:.92;">→ 기준수분 적용 시 <b>1.6㎜ 이상 중량</b></div>
+            <div style="font-size:24px;font-weight:900;margin-top:3px;letter-spacing:.01em;" id="rsRevResult">—</div>
+          </div>
+          <div style="font-size:11px;color:#8a938a;margin-top:7px;line-height:1.5;">
+            ※ 수량 ∝ 현미중량 × (100−수분) 관계를 이용: 1.6㎜이상 = 실제현미 × (100−실제수분) ÷ (100−기준수분).
+          </div>
+        </div>
+
         <div class="ryield-sub" style="margin-top:16px;">④ A·B포구별 피해상황 · 3㎡ 포기수</div>
         <table class="ryield-load-tbl">
           <thead>
@@ -5930,6 +5965,36 @@ function riceRealYieldCalc(){
       '<span style="font-size:13px;color:#888;">('+sign+Math.round(diff).toLocaleString('ko-KR')+' kg)</span>'+
       '</div>';
   })();
+  /* [v157] 수분 기준 역산 표시 갱신 (기존 산출값 사용, 계산식 무변경) */
+  try{ if(typeof rsReverseCalc==='function') rsReverseCalc(); }catch(e){}
+}
+
+/* [v157] 🌾 수분 기준 역산
+   핵심: 10a 수량 ∝ (1.6㎜이상 현미중량) × (100 − 수분평균)  [백미=hm×8/6×(100−M)/85×0.929]
+   → 10a 수량을 고정하면  X(기준수분 1.6㎜이상) = 실제현미 × (100 − 실제수분) ÷ (100 − 기준수분).
+   조제벼·건조벼는 백미 10a 수량에 영향 없음(조곡·제현율에만 사용). 기존 계산식은 손대지 않음. */
+function rsReverseCalc(){
+  function num(id){ var e=document.getElementById(id); if(!e) return NaN; var v=parseFloat(e.value); return isNaN(v)?NaN:v; }
+  function setT(id,v){ var e=document.getElementById(id); if(e) e.textContent=v; }
+  var hm=num('rsHyeonmi');                                   // 실제 1.6㎜ 이상(현미) 중량 g
+  var m1=num('rsMoist1'), m2=num('rsMoist2');
+  var hasM=(!isNaN(m1)||!isNaN(m2));
+  var curMoist=hasM ? Math.round(((!isNaN(m1)?m1:0)+(!isNaN(m2)?m2:0))/2*100)/100 : NaN;   // 실제 수분평균(소수2자리)
+  // 고정 10a 수량(백미) — 위에서 계산·표시된 값 그대로 사용
+  var yieldTxt=((document.getElementById('rsBaengmi')||{}).textContent||'').replace(/[^\d.]/g,'');
+  var yieldVal=yieldTxt?parseFloat(yieldTxt):NaN;
+  setT('rsRevYield', !isNaN(yieldVal)? yieldVal.toLocaleString('ko-KR')+' kg/10a':'—');
+  setT('rsRevCurMoist', !isNaN(curMoist)? curMoist.toFixed(2)+' %':'—');
+  setT('rsRevCurW16', !isNaN(hm)? hm.toLocaleString('ko-KR')+' g':'—');
+  // 기준 수분(기본 15.0, 사용자 수정 가능)
+  var tgt=num('rsRevTargetMoist');
+  if(isNaN(tgt)) tgt=15.0;
+  var out=document.getElementById('rsRevResult');
+  if(!out) return;
+  if(isNaN(hm)||isNaN(curMoist)){ out.textContent='—'; return; }
+  if(tgt>=100){ out.textContent='—'; return; }
+  var X = hm * (100 - curMoist) / (100 - tgt);      // 수량 고정 → 기준수분 환산 1.6㎜이상 중량
+  out.textContent = (Math.round(X*10)/10).toLocaleString('ko-KR') + ' g';
 }
 
 /* ════ 실수확량 조사표 + 논벼 시군별 생산량 비교 이미지 저장 (v97) ════ */
