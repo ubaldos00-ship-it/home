@@ -1,4 +1,5 @@
-<!-- tonghab.html (v157) · 저장: 2026-10-14 08:59 KST · [v157] 논벼 실수확량 조사표에 「🌾 수분 기준 역산」 영역 추가(보조기능·기존 10a 계산식 무변경). 위에서 계산된 10a당 수량(백미)을 그대로 고정한 채, 사용자가 기준수분(기본 15.0%, 수정가능)을 넣으면 그 수분으로 환산 시 필요한 1.6㎜이상(현미) 중량을 역산해 보여줌. 역산식: 1.6㎜이상 = 실제현미 × (100−실제수분) ÷ (100−기준수분) (10a수량 ∝ 현미중량×(100−수분) 관계 이용, 조제벼·건조벼는 백미 10a수량에 무관). rsReverseCalc()는 riceRealYieldCalc 끝에서 호출되어 입력 변경 시 자동 갱신. ※ 기존 산출 로직 무변경. (v156 이하 유지) -->
+<!-- tonghab.html (v158) · 저장: 2026-10-16 05:59 KST · [v158] 바로가기 책갈피 2건 보완 — ①탭의 세로 「바로가기」 글자가 두 줄로 쪼개지던 것을 white-space:nowrap으로 한 줄 세로 고정. ②책갈피를 펼친(열린) 상태에서 화면을 상하로 스크롤하면 자동으로 닫혀(들어가게) 보이도록 scroll 리스너 추가(4px 이상 이동 시 _rsBmClose). 기능·버튼·위치 무변경. ※ 계산식 무변경. (v157 이하 유지) -->
+<!-- (이전)  tonghab.html (v157) · 저장: 2026-10-14 08:59 KST · [v157] 논벼 실수확량 조사표에 「🌾 수분 기준 역산」 영역 추가(보조기능·기존 10a 계산식 무변경). 위에서 계산된 10a당 수량(백미)을 그대로 고정한 채, 사용자가 기준수분(기본 15.0%, 수정가능)을 넣으면 그 수분으로 환산 시 필요한 1.6㎜이상(현미) 중량을 역산해 보여줌. 역산식: 1.6㎜이상 = 실제현미 × (100−실제수분) ÷ (100−기준수분) (10a수량 ∝ 현미중량×(100−수분) 관계 이용, 조제벼·건조벼는 백미 10a수량에 무관). rsReverseCalc()는 riceRealYieldCalc 끝에서 호출되어 입력 변경 시 자동 갱신. ※ 기존 산출 로직 무변경. (v156 이하 유지) -->
 <!-- (이전)  tonghab.html (v156) · 저장: 2026-10-14 02:39 KST · [v156] 바로가기 책갈피 탭의 세로 「바로가기」 글씨를 작게 조정(깨짐 방지) — 글자 12px→10px·자간 3px→1px·줄간격 1.1, 화살표 16px→14px. 기능·동작·위치 무변경. ※ 계산식 무변경. (v155 이하 유지) -->
 <!-- (이전)  tonghab.html (v155) · 저장: 2026-10-13 17:24 KST · [v155] 바로가기 책갈피를 전 작물로 확장 — 논벼 외 마늘·양파·감자·콩·배추·무·총각무를 선택하면 동일한 「바로가기」 책갈피가 나타나며, 아래 버튼이 「⬆ 맨 위로」와 「📊 생산량 계산기」(10a당 생산량 계산기 #prodZone로 이동)로 표시됨. 논벼는 기존대로 「⬆ 맨 위로」·「🌾 실수확량 조사표」 유지. (작물 선택 시 body.crop-picked 부여로 표시, _rsBmSync가 버튼 라벨/이동 대상 동기화) ※ 계산식 무변경. (v154 이하 유지) -->
 <!-- (이전)  tonghab.html (v154) · 저장: 2026-10-13 16:48 KST · [v154] 실측계산기 4건 보완(계산식 무변경) — ①불러오기 시 이전 「AB포구 계산하기」 결과가 그대로 남던(잔상) 문제 해결: 복원 완료 후 결과박스를 숨겨, AB포구 결과는 「AB포구 계산하기」 버튼을 눌렀을 때만 표시. ②논벼 실수확량 ②크기별 중량 양방향 입력: 기존(총량+1.6mm이상→1.6mm미만)은 그대로, 추가로 1.6mm이상+1.6mm미만을 넣으면 총량이 자동 표시(1.6mm미만을 입력칸으로 변경). ③수분함량 합계(자동)가 정수여도 소수점 첫째자리까지 표시(예: 30 → 30.0 %). ④논벼 전용 「바로가기 책갈피」 추가(난수표 조회기 스타일): 오른쪽 화살표 탭을 누르면 튀어나오며 「⬆맨 위로」·「🌾실수확량 조사표」 버튼 제공. (v153 이하 유지) -->
@@ -12815,7 +12816,7 @@ body.nonbye-mode #rsBookmark, body.crop-picked #rsBookmark{display:flex;}  /* [v
   border-radius:12px 0 0 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
   box-shadow:-3px 2px 10px rgba(0,0,0,.28);font-weight:800;padding:12px 0;}
 #rsBookmark .bm-tab .bm-arrow{font-size:14px;line-height:1;}
-#rsBookmark .bm-tab .bm-label{writing-mode:vertical-rl;font-size:10px;letter-spacing:1px;line-height:1.1;}  /* [v156] 글씨 작게·깨짐 방지 */
+#rsBookmark .bm-tab .bm-label{writing-mode:vertical-rl;white-space:nowrap;font-size:10px;letter-spacing:1px;line-height:1.1;}  /* [v156] 글씨 작게·깨짐 방지 [v158] 세로 한 줄 고정(nowrap) */
 #rsBookmark .bm-panel{background:#fff;border:2px solid #d32f2f;border-right:none;border-radius:12px 0 0 12px;
   box-shadow:-4px 3px 14px rgba(0,0,0,.2);padding:10px;display:flex;flex-direction:column;gap:8px;}
 #rsBookmark .bm-panel button{white-space:nowrap;border:none;border-radius:10px;padding:11px 15px;
@@ -12864,6 +12865,16 @@ function rsBmGoYield(){
   }
   _rsBmClose();
 }
+/* [v158] 책갈피가 열린 상태에서 화면을 상하로 스크롤하면 자동으로 닫아(들어가게) 함 */
+(function(){
+  var _lastY = (typeof window!=='undefined') ? (window.scrollY||window.pageYOffset||0) : 0;
+  window.addEventListener('scroll', function(){
+    var y = window.scrollY||window.pageYOffset||0;
+    var b = document.getElementById('rsBookmark');
+    if(b && b.classList.contains('open') && Math.abs(y - _lastY) > 4){ _rsBmClose(); }
+    _lastY = y;
+  }, {passive:true});
+})();
 </script>
 </body>
 </html>
