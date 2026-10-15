@@ -1,4 +1,5 @@
-<!-- chungchi.html (v129) · 저장: 2026-10-12 01:07 KST · [v129] 공유(JSON) 폴백 먼저 뜨던 문제 수정 — 「📤공유하기 버튼(새 제스처)」 모달로 한 번에 공유(tonghab v153과 동일). 계산 로직 무변경. (v128 이하 유지) -->
+<!-- chungchi.html (v130) · 저장: 2026-10-16 06:10 KST · [v130] 청취계산기에도 통합계산기와 동일한 「바로가기 책갈피」 추가(주황색) — 화면 오른쪽 주황 탭을 누르면 옆으로 펼쳐지며 「⬆ 맨 위로」·「🌾 수확량환산」(④ 수확량 환산 #harvestCard로 이동) 버튼 제공. 세로 「바로가기」 글자는 한 줄 고정(nowrap). 펼친 상태에서 상하 스크롤 시 자동으로 닫힘(들어감). 통합계산기 책갈피와 동작 동일. ②⑤ 간단 결과보기의 「10a당 생산량」 값 글자 강조(22px→36px·굵게). ※ 계산식 무변경. (v129 이하 유지) -->
+<!-- (이전)  chungchi.html (v129) · 저장: 2026-10-12 01:07 KST · [v129] 공유(JSON) 폴백 먼저 뜨던 문제 수정 — 「📤공유하기 버튼(새 제스처)」 모달로 한 번에 공유(tonghab v153과 동일). 계산 로직 무변경. (v128 이하 유지) -->
 <!-- (이전)  chungchi.html (v128) · 저장: 2026-10-12 00:44 KST · [v128] 내보내기(JSON 공유/백업) 암호 규칙 강화 — ①9자리 이상이어야 저장(프롬프트에 "9자리 이상으로 저장하세요" 안내). ②공백(띄어쓰기)이 들어가면 저장 안 됨(안내 멘트 추가). 규칙 위반 시 그 자리에서 다시 입력. 빈칸/취소는 중단. ※ 가져오기는 옛 파일 호환 위해 길이·공백 검증 없음. 통합·청취·지도·주수 공통 적용. 계산 로직 무변경. (v127 이하 유지) -->
 <!-- (이전)  chungchi.html (v127) · 저장: 2026-10-12 00:02 KST · [v127] 보안강화(평가기간) — 공유/내보내기/백업(JSON) 암호: 기본암호 2026 삭제·사용자 직접입력 필수(빈칸이면 중단)·입력암호는 이 세션(RAM)만 기억(미저장)·암호화 미지원 기기 반출 차단. 암호화는 PBKDF2(210,000회)+AES-GCM 유지. ※ tonghab v151과 동일 보안개편. 계산·저장 로직 무변경. (v126 이하 유지) -->
 <!-- (이전)  chungchi.html (v126) · 저장: 2026-10-04 09:25 KST · [v126] 「🧾 농작물생산량 청취 조사표(한장) 보기」 버튼을 평가기간 동안 숨김 처리(display:none) — 기능·모달·코드는 그대로 유지(10월말 발표 때 해당 button style의 display:none→display:flex 로 바꾸면 다시 노출). ※ 그 외 무변경. (v125 이하 유지) -->
@@ -437,7 +438,7 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
 .tv-line{display:flex;align-items:baseline;justify-content:center;gap:3px;flex-wrap:wrap;}
 .tu{font-size:13px;font-weight:800;color:#0f7a3a;}
 .sb{background:#eafaf1;border:2px solid #27ae60;border-radius:11px;padding:13px;margin-top:7px}
-.sv{font-size:22px;font-weight:800;color:#27500A;text-align:center}
+.sv{font-size:36px;font-weight:900;color:#27500A;text-align:center;letter-spacing:-.01em;line-height:1.15}  /* [v130] ⑤ 간단 결과보기 10a당 생산량 강조(글자 키움 22px→36px) */
 .fm{font-size:10px;color:#888;margin-top:4px;word-break:break-all;text-align:center}
 .dt{width:100%;border-collapse:collapse;font-size:11px;margin-top:7px}
 .dt th{background:#27500A;color:#fff;padding:6px 3px;text-align:center;font-weight:600}
@@ -883,7 +884,7 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
   </div>
 </div>
 
-<div class="card">
+<div class="card" id="harvestCard">
   <div class="ct"><span class="n">4</span>수확량 환산</div>
   <p class="desc">응답자의 수확단위가 맞는지 확인하고 환산하세요.</p>
   <div class="udr">
@@ -4080,6 +4081,70 @@ if(window.wcs) {
   }
   if(document.readyState==='complete') run();
   else window.addEventListener('load', run);
+})();
+</script>
+
+<!-- [v130] 청취 전용 바로가기 책갈피 (통합계산기와 동일 방식·주황색): 화살표 탭을 누르면 버튼이 튀어나옴, 스크롤 시 자동으로 닫힘 -->
+<style>
+#ccBookmark{position:fixed;right:0;top:40%;z-index:1500;display:flex;align-items:stretch;
+  transform:translateX(calc(100% - 36px));transition:transform .28s ease;}
+#ccBookmark.open{transform:translateX(0);}
+#ccBookmark .bm-tab{flex:0 0 36px;width:36px;background:#ef6c00;color:#fff;border:none;cursor:pointer;
+  border-radius:12px 0 0 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  box-shadow:-3px 2px 10px rgba(0,0,0,.28);font-weight:800;padding:12px 0;}
+#ccBookmark .bm-tab .bm-arrow{font-size:14px;line-height:1;}
+#ccBookmark .bm-tab .bm-label{writing-mode:vertical-rl;white-space:nowrap;font-size:10px;letter-spacing:1px;line-height:1.1;}
+#ccBookmark .bm-panel{background:#fff;border:2px solid #ef6c00;border-right:none;border-radius:12px 0 0 12px;
+  box-shadow:-4px 3px 14px rgba(0,0,0,.2);padding:10px;display:flex;flex-direction:column;gap:8px;}
+#ccBookmark .bm-panel button{white-space:nowrap;border:none;border-radius:10px;padding:11px 15px;
+  font-size:13px;font-weight:700;cursor:pointer;color:#fff;}
+#ccBookmark .bm-top{background:#37474f;}
+#ccBookmark .bm-go{background:#ef6c00;}
+#ccBookmark .bm-panel button:active{transform:scale(.97);}
+</style>
+<div id="ccBookmark" aria-hidden="true">
+  <button type="button" class="bm-tab" onclick="toggleCcBookmark()" aria-label="바로가기 책갈피">
+    <span class="bm-arrow" id="ccBmArrow">◀</span>
+    <span class="bm-label">바로가기</span>
+  </button>
+  <div class="bm-panel">
+    <button type="button" class="bm-top" onclick="ccBmTop()">⬆ 맨 위로</button>
+    <button type="button" class="bm-go" onclick="ccBmGoHarvest()">🌾 수확량환산</button>
+  </div>
+</div>
+<script>
+/* [v130] 청취 바로가기 책갈피 토글/이동 (화면 이동만, 계산식 무관) */
+function toggleCcBookmark(){
+  var b=document.getElementById('ccBookmark'); if(!b) return;
+  var open=b.classList.toggle('open');
+  var a=document.getElementById('ccBmArrow'); if(a) a.textContent=open?'▶':'◀';
+}
+function _ccBmClose(){
+  var b=document.getElementById('ccBookmark'); if(b){ b.classList.remove('open');
+    var a=document.getElementById('ccBmArrow'); if(a) a.textContent='◀'; }
+}
+function _ccBmScrollTo(el){
+  if(!el) return;
+  try{
+    var top=el.getBoundingClientRect().top + (window.pageYOffset||window.scrollY||0) - 6;
+    window.scrollTo({top:Math.max(0,top),behavior:'smooth'});
+  }catch(e){ el.scrollIntoView({behavior:'smooth',block:'start'}); }
+}
+function ccBmTop(){ try{ window.scrollTo({top:0,behavior:'smooth'}); }catch(e){ window.scrollTo(0,0); } _ccBmClose(); }
+function ccBmGoHarvest(){
+  var t=document.getElementById('harvestCard');
+  _ccBmScrollTo(t);
+  _ccBmClose();
+}
+/* [v130] 책갈피가 열린 상태에서 화면을 상하로 스크롤하면 자동으로 닫아(들어가게) 함 */
+(function(){
+  var _lastY=(typeof window!=='undefined')?(window.scrollY||window.pageYOffset||0):0;
+  window.addEventListener('scroll', function(){
+    var y=window.scrollY||window.pageYOffset||0;
+    var b=document.getElementById('ccBookmark');
+    if(b && b.classList.contains('open') && Math.abs(y-_lastY)>4){ _ccBmClose(); }
+    _lastY=y;
+  }, {passive:true});
 })();
 </script>
 </body>
