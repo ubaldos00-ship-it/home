@@ -1,4 +1,5 @@
-<!-- map_v189.html (v189 · TENAR V1.8) · 저장: 2026-10-12 01:07 KST · [v189] ①공유(JSON) 폴백 먼저 뜨던 문제 수정 — 「📤공유하기 버튼(새 제스처)」 모달로 한 번에 공유(생산량목록·조사구 공통). ②조사구 저장/불러오기에 공유 버튼 추가 — 파일 팝업 「JSON 가져오기」 옆에 「📤 공유」(현재 종류), 전체 백업·복원 옆에 「📤 전체 공유」(6종 전체). 공유도 _tenarBuildExport 암호화(사용자 암호) 적용. 지도·계산 로직 무변경. (v188 이하 유지) -->
+<!-- map_v191.html (v191 · TENAR V1.8) · 저장: 2026-10-19 06:51 KST · [v191] 통합계산기 「🧭 지도에서 A/B포구 위치(현장모드)」가 이전에 연결했던 '옛 핀'으로 가던 문제 수정 — consumeGoField에서 조사표가 넘긴 linkId를 최우선으로 조회(getFpSaves에서 linkId/id 일치하는 A/B포구 저장을 찾아 loadFpSave→현장모드 시작)해, 방금 작업·전송한 A/B포구로 바로 이동. linkId가 없거나 못 찾을 때만 기존 방식(favoriteId·주소·좌표 근접). (tonghab v159와 한 쌍) ※ 지도·계산 로직 무변경. (v190 이하 유지) -->
+<!-- (이전) map_v190.html (v190 · TENAR V1.8) · 저장: 2026-10-14 02:56 KST · [v190] 조사구(재배면적) 핀을 지도 열자마자 생산량(저장)핀과 함께 표시 — DEFAULT_SETTINGS.showAreaPins 기본 true(이전 false), 시작 복원(restoreWhenBothReady)에서 refreshFavPins 직후 areaUpdateSource() 호출해 조사구 소스 초기 렌더. (두당·텐아르 공용 지도 동일 오리진이라 두당에서 열어도 저장된 생산량핀+조사구핀 함께 표시됨). (이전) map_v189.html (v189 · TENAR V1.8) · 저장: 2026-10-12 01:07 KST · [v189] ①공유(JSON) 폴백 먼저 뜨던 문제 수정 — 「📤공유하기 버튼(새 제스처)」 모달로 한 번에 공유(생산량목록·조사구 공통). ②조사구 저장/불러오기에 공유 버튼 추가 — 파일 팝업 「JSON 가져오기」 옆에 「📤 공유」(현재 종류), 전체 백업·복원 옆에 「📤 전체 공유」(6종 전체). 공유도 _tenarBuildExport 암호화(사용자 암호) 적용. 지도·계산 로직 무변경. (v188 이하 유지) -->
 <!-- (이전)  map_v188.html (v188 · TENAR V1.8) · 저장: 2026-10-12 00:44 KST · [v188] 내보내기(JSON 공유/백업) 암호 규칙 강화 — ①9자리 이상이어야 저장(프롬프트에 "9자리 이상으로 저장하세요" 안내). ②공백(띄어쓰기)이 들어가면 저장 안 됨(안내 멘트 추가). 규칙 위반 시 그 자리에서 다시 입력. 빈칸/취소는 중단. ※ 가져오기는 옛 파일 호환 위해 길이·공백 검증 없음. 조사구 6종·연결자료 공유 공용함수 적용. 계산 로직 무변경. (v187 이하 유지) -->
 <!-- (이전)  map_v187.html (v187 · TENAR V1.8) · 저장: 2026-10-12 00:02 KST · [v187] 보안강화(평가기간) — 지도·조사구의 공유/내보내기/백업(JSON) 암호: 기본암호 2026 삭제·사용자 직접입력 필수(빈칸이면 중단)·입력암호는 이 세션(RAM)만 기억(미저장)·암호화 미지원 기기 반출 차단. 조사구 6종·연결자료 공유 모두 공용 _tenarAskPassword 사용이라 일괄 적용. 암호화는 PBKDF2(210,000회)+AES-GCM 유지(사용자 암호 없이는 복호화 불가). ※ 계산·저장·지도 로직 무변경. (v186 이하 유지) -->
 <!-- (이전)  map_v186.html (v186 · TENAR V1.8) · 저장: 2026-10-07 07:16 KST · [v186] 우수사례 평가기간 보안 — 조사구 저장·불러오기의 「📤 엑셀 내보내기」(평문)를 숨김 처리. 6개 조사종류(작물재배·가축·축비·농비·쌀값·농판)가 공용 파일 팝업을 쓰므로 한 곳만 가려도 전부 적용됨. 「엑셀 가져오기·JSON 내보내기(비번 암호화)·JSON 가져오기·전체 백업/복원·엑셀 양식 다운로드」는 그대로 유지(평문 엑셀 반출만 차단). 코드는 남겨둬 재노출 쉬움(해당 줄 주석 복구). ※ 그 외 무변경. (v185 이하 유지) -->
@@ -2729,7 +2730,7 @@ TenarSecureStore.init('map',
     showRidgeDots: true,  /* [v40-10] 이랑 점 표시 */
     fieldVibrate: true,   /* [v141] 현장모드 도착 시 진동 (배터리 절약하려면 끔) */
     fieldVoice: true,     /* [v142] 현장모드 도착 시 음성 안내 */
-    showAreaPins: false,  /* [v67-7] 작물재배조사구 핀 표시 (기본 꺼짐) */
+    showAreaPins: true,   /* [v190] 조사구(재배면적) 핀도 기본 표시 — 생산량(저장)핀과 함께 보이도록 (이전 v67-7: 기본 꺼짐) */
     showQuickBtns: true,  /* [v93] 주소창 아래 빠른버튼 표시 */
     fpAutoRotate: true,   /* [v40-12] 가·나 지정 시 지도 자동 회전 */
     fpRotateMode: 'h',    /* [v40-12] 'h' = 가 왼쪽·나 오른쪽 / 'v' = 가 아래·나 위 */
@@ -4496,6 +4497,21 @@ TenarSecureStore.init('map',
     if (!g) return;
     if (!secureReady) { if (tries < 25) setTimeout(function () { consumeGoField(tries + 1); }, 300); return; }
     try { localStorage.removeItem('tenar_go_field'); } catch (e) {}
+    /* [v191] 조사표에서 「방금 작업한 A/B포구(linkId)」를 최우선으로 찾아 그 포구로 현장모드 시작.
+       (이전엔 저장 핀(favoriteId)만 봐서, 이전에 연결했던 '옛 핀'으로 가던 문제) */
+    if (g.linkId) {
+      try {
+        var fpRec = (typeof getFpSaves === 'function' ? getFpSaves() : []).filter(function (x) {
+          return x && (x.linkId === g.linkId || x.id === g.linkId);
+        })[0];
+        if (fpRec && fpRec.polygon) {
+          try { closeSheet(); } catch (e) {}
+          try { loadFpSave(fpRec); } catch (e) {}
+          setTimeout(function () { try { fpEnterFieldMode(); } catch (e) {} }, 400);
+          return;
+        }
+      } catch (e) {}
+    }
     var favs = getFavs(), f = null;
     if (g.favoriteId) f = favs.filter(function (x) { return x && x.id === g.favoriteId; })[0];
     if (!f && g.surveyKey) f = favs.filter(function (x) { return x && (x.surveyId === g.surveyKey || x.surveyKey === g.surveyKey); })[0];
@@ -9766,6 +9782,7 @@ TenarSecureStore.init('map',
       updateBearing();
     }
     refreshFavPins();
+    try { areaUpdateSource(); } catch (e) {}   /* [v190] 조사구(재배면적) 핀도 시작 시 함께 렌더 — 생산량(저장)핀과 같이 표시 */
     restored = true;   /* 이 시점부터 저장 허용 */
     console.log('저장상태 복원 완료 (즐겨찾기 ' + getFavs().length + '개, 지적도 ' +
                 (settings.overlays.cadastral ? 'ON' : 'OFF') + ', 확대 ' + map.getZoom().toFixed(1) + ')');

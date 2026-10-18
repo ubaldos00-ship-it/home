@@ -1,4 +1,5 @@
-<!-- tonghab.html (v158) · 저장: 2026-10-16 05:59 KST · [v158] 바로가기 책갈피 2건 보완 — ①탭의 세로 「바로가기」 글자가 두 줄로 쪼개지던 것을 white-space:nowrap으로 한 줄 세로 고정. ②책갈피를 펼친(열린) 상태에서 화면을 상하로 스크롤하면 자동으로 닫혀(들어가게) 보이도록 scroll 리스너 추가(4px 이상 이동 시 _rsBmClose). 기능·버튼·위치 무변경. ※ 계산식 무변경. (v157 이하 유지) -->
+<!-- tonghab.html (v159) · 저장: 2026-10-19 06:51 KST · [v159] 「🧭 지도에서 A/B포구 위치(현장모드)」 버튼이 '이전에 연결했던 옛 핀'의 현장모드로 가던 문제 수정 — 이제 현재 조사표에 붙어 있는 지도작업(__thFieldPlotStore)의 linkId(+가지점 좌표)를 지도로 넘겨, 방금 작업·전송한 A/B포구로 바로 가도록 함. 현재 조사표에 지도작업이 없을 때만 기존 연결핀(tenar_pin_link) 방식 사용. (map v191의 consumeGoField linkId 우선조회와 한 쌍) ※ 계산식 무변경. (v158 이하 유지) -->
+<!-- (이전)  tonghab.html (v158) · 저장: 2026-10-16 05:59 KST · [v158] 바로가기 책갈피 2건 보완 — ①탭의 세로 「바로가기」 글자가 두 줄로 쪼개지던 것을 white-space:nowrap으로 한 줄 세로 고정. ②책갈피를 펼친(열린) 상태에서 화면을 상하로 스크롤하면 자동으로 닫혀(들어가게) 보이도록 scroll 리스너 추가(4px 이상 이동 시 _rsBmClose). 기능·버튼·위치 무변경. ※ 계산식 무변경. (v157 이하 유지) -->
 <!-- (이전)  tonghab.html (v157) · 저장: 2026-10-14 08:59 KST · [v157] 논벼 실수확량 조사표에 「🌾 수분 기준 역산」 영역 추가(보조기능·기존 10a 계산식 무변경). 위에서 계산된 10a당 수량(백미)을 그대로 고정한 채, 사용자가 기준수분(기본 15.0%, 수정가능)을 넣으면 그 수분으로 환산 시 필요한 1.6㎜이상(현미) 중량을 역산해 보여줌. 역산식: 1.6㎜이상 = 실제현미 × (100−실제수분) ÷ (100−기준수분) (10a수량 ∝ 현미중량×(100−수분) 관계 이용, 조제벼·건조벼는 백미 10a수량에 무관). rsReverseCalc()는 riceRealYieldCalc 끝에서 호출되어 입력 변경 시 자동 갱신. ※ 기존 산출 로직 무변경. (v156 이하 유지) -->
 <!-- (이전)  tonghab.html (v156) · 저장: 2026-10-14 02:39 KST · [v156] 바로가기 책갈피 탭의 세로 「바로가기」 글씨를 작게 조정(깨짐 방지) — 글자 12px→10px·자간 3px→1px·줄간격 1.1, 화살표 16px→14px. 기능·동작·위치 무변경. ※ 계산식 무변경. (v155 이하 유지) -->
 <!-- (이전)  tonghab.html (v155) · 저장: 2026-10-13 17:24 KST · [v155] 바로가기 책갈피를 전 작물로 확장 — 논벼 외 마늘·양파·감자·콩·배추·무·총각무를 선택하면 동일한 「바로가기」 책갈피가 나타나며, 아래 버튼이 「⬆ 맨 위로」와 「📊 생산량 계산기」(10a당 생산량 계산기 #prodZone로 이동)로 표시됨. 논벼는 기존대로 「⬆ 맨 위로」·「🌾 실수확량 조사표」 유지. (작물 선택 시 body.crop-picked 부여로 표시, _rsBmSync가 버튼 라벨/이동 대상 동기화) ※ 계산식 무변경. (v154 이하 유지) -->
@@ -11477,14 +11478,28 @@ function _tenarOpenMapUrl(u){
 /* [v145-map/tonghab] 조사표에서 바로 지도 「현장모드」로 이동 — 연결된 A/B포구를 GPS로 찾아가 깃대 */
 function tenarGoFieldFromSurvey(){
   var payload = { app:'tonghab', ts:Date.now() };
-  var lk=null; try{ lk=JSON.parse(localStorage.getItem('tenar_pin_link')||'null'); }catch(e){}
-  if(lk && lk.favoriteId){
-    payload.favoriteId = lk.favoriteId;
-    if(isFinite(Number(lk.lat))) payload.lat = Number(lk.lat);
-    if(isFinite(Number(lk.lng))) payload.lng = Number(lk.lng);
-    if(lk.addr) payload.addr = lk.addr;
+  /* [v159] 현재 조사표에서 「방금 작업한」 A/B포구로 바로 가도록 수정 —
+     __thFieldPlotStore(지금 조사표에 붙어 있는 지도작업 원본)의 linkId를 최우선 전달.
+     (이전엔 tenar_pin_link만 읽어, 이전에 연결했던 '옛 핀'의 현장모드로 가던 문제) */
+  var cur=null;
+  try{ var hs=document.getElementById('__thFieldPlotStore'); cur = hs && hs.value ? JSON.parse(hs.value) : null; }catch(e){}
+  var haveCur = !!(cur && (cur.linkId || (cur.ga && isFinite(Number(cur.ga[0])) && isFinite(Number(cur.ga[1])))));
+  if(haveCur){
+    if(cur.linkId) payload.linkId = cur.linkId;
+    try{ if(cur.ga && isFinite(Number(cur.ga[0])) && isFinite(Number(cur.ga[1]))){ payload.lng=Number(cur.ga[0]); payload.lat=Number(cur.ga[1]); } }catch(e){}
+    if(cur.jibunAddress) payload.addr = cur.jibunAddress;
+    if(cur.surveyKey) payload.surveyKey = cur.surveyKey;
+  } else {
+    /* 현재 조사표에 지도작업(A/B포구)이 없을 때만 기존 방식(연결 핀) 사용 */
+    var lk=null; try{ lk=JSON.parse(localStorage.getItem('tenar_pin_link')||'null'); }catch(e){}
+    if(lk && lk.favoriteId){
+      payload.favoriteId = lk.favoriteId;
+      if(isFinite(Number(lk.lat))) payload.lat = Number(lk.lat);
+      if(isFinite(Number(lk.lng))) payload.lng = Number(lk.lng);
+      if(lk.addr) payload.addr = lk.addr;
+    }
   }
-  try{ if(_slLastLoadedKey) payload.surveyKey = _slLastLoadedKey; }catch(e){}
+  try{ if(!payload.surveyKey && _slLastLoadedKey) payload.surveyKey = _slLastLoadedKey; }catch(e){}
   try{ localStorage.setItem('tenar_go_field', JSON.stringify(payload)); }catch(e){}
   _tenarOpenMapUrl(_tenarMapBase());
 }
