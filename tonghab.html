@@ -1,4 +1,6 @@
-<!-- tonghab.html (v161) · 저장: 2026-10-28 02:29 KST · [v161] 연락처란 개선 — ①접기/펼치기(기본 펼침). ②이름+전화를 한 줄에 배치(세로길이 절약). ③전화 자동 하이픈(01012341234→010-1234-1234, 0541112222→054-111-2222, 02→02-XXXX-XXXX). ④「주소」 라벨→「메모」, 예시 「연락처 주소」→「기타사항」(필드 id는 contactAddr 유지, 저장/표시 호환). ※ 계산식 무변경. (v160 이하 유지) -->
+<!-- tonghab.html (v163) · 저장: 2026-10-28 02:48 KST · [v163] 저장/불러오기 목록 2건 보완 — ①항목 표시를 줄바꿈 형태로: 작물·지번(라벨) / 전체주소 / 이름·전화·메모 / 날짜 를 각 줄(작은 글씨). ②번호를 「실제 보이는 목록(조회 필터 적용 후)」 기준으로 매겨 보이는 개수와 항상 일치(예: 22건이면 최대 22번). 이전엔 전체목록 기준이라, 조회 필터가 걸리면 보이는 개수보다 큰 번호가 나왔음. 정렬을 바꿔도 각 자료 번호는 유지(재번호 안 됨), 삭제 시엔 1..N로 다시 매겨짐. ※ 계산식 무변경. (v162 이하 유지) -->
+<!-- (이전)  tonghab.html (v162) · 저장: 2026-10-28 02:39 KST · [v162] 저장/불러오기 목록 촘촘하게 + 연락처 보완 — ①목록 항목의 주소(작게)·연락처(📇이름·☎전화)·메모(📝)·날짜를 「한 줄」로 합쳐 항목 높이 축소(한 화면에 더 많이 보임), 항목 여백도 축소. ②메모(contactAddr)도 목록에 표시. ③통합 연락처 전화 입력란이 이름칸과 모양이 달랐던 문제 수정(type tel→text로 전역 입력스타일 적용). ※ 계산식 무변경. (v161 이하 유지) -->
+<!-- (이전)  tonghab.html (v161) · 저장: 2026-10-28 02:29 KST · [v161] 연락처란 개선 — ①접기/펼치기(기본 펼침). ②이름+전화를 한 줄에 배치(세로길이 절약). ③전화 자동 하이픈(01012341234→010-1234-1234, 0541112222→054-111-2222, 02→02-XXXX-XXXX). ④「주소」 라벨→「메모」, 예시 「연락처 주소」→「기타사항」(필드 id는 contactAddr 유지, 저장/표시 호환). ※ 계산식 무변경. (v160 이하 유지) -->
 <!-- (이전)  tonghab.html (v160) · 저장: 2026-10-28 02:00 KST · [v160] 논벼 실수확량 보완 — ①②크기별 중량 양방향 입력 매끄럽게: 총량·현미 칸의 3자리 자동점프(rsAutoNext) 제거(설미 건너뛰던 문제·4자리 입력방해 해소), 자동계산이 「입력 중인 칸」은 덮어쓰지 않도록(activeElement 보호). ②설미(1.6㎜미만) 30g 이상이면 「30g 이상은 내검대상입니다」 경고 표시. ③수분측정값(1·2회)이 11.0% 이하 또는 17% 이상이면 경고 표시. ④공통사항 층/조사구 아래 「📇 연락처(이름·주소·전화)」 입력란 추가 — 저장/복원 포함(잔상·초기화 처리), 저장/불러오기 목록에 필지주소 아래 이름·전화 표시. ※ 10a 산출식 무변경. (v159 이하 유지) -->
 <!-- (이전)  tonghab.html (v159) · 저장: 2026-10-19 06:51 KST · [v159] 「🧭 지도에서 A/B포구 위치(현장모드)」 버튼이 '이전에 연결했던 옛 핀'의 현장모드로 가던 문제 수정 — 이제 현재 조사표에 붙어 있는 지도작업(__thFieldPlotStore)의 linkId(+가지점 좌표)를 지도로 넘겨, 방금 작업·전송한 A/B포구로 바로 가도록 함. 현재 조사표에 지도작업이 없을 때만 기존 연결핀(tenar_pin_link) 방식 사용. (map v191의 consumeGoField linkId 우선조회와 한 쌍) ※ 계산식 무변경. (v158 이하 유지) -->
 <!-- (이전)  tonghab.html (v158) · 저장: 2026-10-16 05:59 KST · [v158] 바로가기 책갈피 2건 보완 — ①탭의 세로 「바로가기」 글자가 두 줄로 쪼개지던 것을 white-space:nowrap으로 한 줄 세로 고정. ②책갈피를 펼친(열린) 상태에서 화면을 상하로 스크롤하면 자동으로 닫혀(들어가게) 보이도록 scroll 리스너 추가(4px 이상 이동 시 _rsBmClose). 기능·버튼·위치 무변경. ※ 계산식 무변경. (v157 이하 유지) -->
@@ -1638,7 +1640,7 @@ body.nonbye-mode .hide-nonbye { display:none !important; }
 .sl-save-now{flex-shrink:0;width:100%;padding:14px;background:#E07000;border:none;border-radius:10px;color:#fff;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:14px;letter-spacing:.02em;touch-action:manipulation;}
 .sl-save-now:active{opacity:.82;}
 .sl-section{flex-shrink:0;font-size:11px;font-weight:700;color:#888;letter-spacing:.06em;text-transform:uppercase;margin-bottom:7px;}
-.sl-list{display:flex;flex-direction:column;gap:7px;margin-bottom:14px;flex:1 1 auto;min-height:60px;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;}
+.sl-list{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;flex:1 1 auto;min-height:60px;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;}
 /* [v124] 저장목록 조회+정렬 콤보 — 한 줄, 모바일 반응형 (청취계산기와 동일 크기) */
 #sl-combos{display:grid;grid-template-columns:repeat(auto-fit,minmax(58px,1fr));gap:4px;margin-bottom:8px;}
 /* font-size는 전역 select{font-size:16px!important}를 이겨야 하므로 !important 지정 */
@@ -1662,7 +1664,7 @@ body.nonbye-mode .hide-nonbye { display:none !important; }
 .pmw-add-btn{background:#27500A;color:#fff;border:none;border-radius:8px;padding:5px 16px;font-size:18px;font-weight:700;cursor:pointer;font-family:inherit;line-height:1;}
 .pmw-add-btn:active{opacity:.8;}
 /* [v104] 항목: 정보 전체폭(주소 길게) + 잠금·핀·불러오기·휴지통 버튼은 다음 줄로 */
-.sl-item{background:#f8f6f1;border:1px solid #e0ddd6;border-radius:10px;padding:9px 10px;display:flex;flex-wrap:wrap;align-items:center;gap:7px;}
+.sl-item{background:#f8f6f1;border:1px solid #e0ddd6;border-radius:10px;padding:6px 10px;display:flex;flex-wrap:wrap;align-items:center;gap:7px;}
 .sl-item-num{min-width:22px;height:22px;background:#27500A;color:#fff;border-radius:50%;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .sl-item-info{flex:1 0 calc(100% - 40px);min-width:0;}
 .sl-item-label{font-size:13px;font-weight:700;color:#1a1918;white-space:normal;word-break:break-all;}
@@ -2156,7 +2158,7 @@ select,
       <div id="contactBody" style="margin-top:8px;">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:7px;">
           <div class="fg" style="margin-bottom:0;"><label>이름</label><input type="text" id="contactName" placeholder="성명" autocomplete="off" style="width:100%;box-sizing:border-box;"></div>
-          <div class="fg" style="margin-bottom:0;"><label>전화</label><input type="tel" id="contactPhone" inputmode="numeric" placeholder="010-0000-0000" oninput="fmtContactPhone(this)" autocomplete="off" style="width:100%;box-sizing:border-box;"></div>
+          <div class="fg" style="margin-bottom:0;"><label>전화</label><input type="text" id="contactPhone" inputmode="numeric" placeholder="010-0000-0000" oninput="fmtContactPhone(this)" autocomplete="off" style="width:100%;box-sizing:border-box;"></div>
         </div>
         <div class="fg" style="margin-bottom:0;"><label>메모</label><input type="text" id="contactAddr" placeholder="기타사항" autocomplete="off" style="width:100%;box-sizing:border-box;"></div>
       </div>
@@ -11442,10 +11444,11 @@ function _slRenderList(){
   if(!fullList.length){el.innerHTML='<div class="sl-empty">저장된 자료가 없습니다.</div>';return;}
   /* [v124] 조회 콤보 채우기 + 정렬 UI 동기화 */
   _slRenderCombos(); _slApplySortSelUI();
-  /* 저장 순번은 원래 저장 순서 기준으로 고정(정렬·필터와 무관) */
-  var _numByKey={}; fullList.forEach(function(it,idx){ _numByKey[it.key]=fullList.length-idx; });
   /* [v124] 조회 필터 */
   var list=fullList.filter(_slMatchesSel);
+  /* [v163] 번호를 「실제 보이는 목록(조회 필터 적용 후)」 기준으로 매김 → 보이는 개수와 항상 일치.
+     단 정렬(sort) 전의 저장순서로 번호를 매겨, 정렬을 바꿔도 각 자료의 번호는 그대로 유지(재번호 안 됨). */
+  var _numByKey={}; list.forEach(function(it,idx){ _numByKey[it.key]=list.length-idx; });
   /* [v124] 정렬 */
   if(_slSort==='area'){
     list=list.slice().sort(function(a,b){ return (_slItemMagnitude(b)-_slItemMagnitude(a)) || (Number(b.key)-Number(a.key)); });
@@ -11475,13 +11478,15 @@ function _slRenderList(){
     var labelMain = cropName
       + (_fp ? ' <span style="color:#0A3A8C;font-weight:800;">'+_fp+'</span>' : '')
       + (shortAddr ? ', <span class="sl-item-addr2">'+shortAddrHtml+'</span>' : '');
-    var addrLine = fullAddr ? '<div class="sl-item-addr">📍 '+fullAddr+'</div>' : '';
-    /* [v160] 저장목록에 연락처(이름·전화) 표시 — 저장데이터에서 읽음 */
-    var _cName='', _cPhone='';
-    try{ if(_dd){ _cName=(_dd.contactName||'').toString().trim(); _cPhone=(_dd.contactPhone||'').toString().trim(); } }catch(e){}
-    var contactLine = (_cName||_cPhone)
-      ? '<div class="sl-item-contact" style="font-size:11px;color:#8a5d00;font-weight:700;margin-top:1px;">📇 '+(_cName?('<b>'+_cName+'</b>'):'')+((_cName&&_cPhone)?' · ':'')+(_cPhone?('☎ '+_cPhone):'')+'</div>'
-      : '';
+    /* [v162] 저장목록 촘촘하게 — 주소(작게)·연락처·날짜를 한 줄로 합쳐 항목 높이 축소(목록 더 많이 보임) */
+    var _cName='', _cPhone='', _cMemo='';
+    try{ if(_dd){ _cName=(_dd.contactName||'').toString().trim(); _cPhone=(_dd.contactPhone||'').toString().trim(); _cMemo=(_dd.contactAddr||'').toString().trim(); } }catch(e){}
+    /* [v163] 목록 항목을 줄바꿈 표현: ①주소 ②이름·전화·메모 ③날짜 (각 줄, 작은 글씨) */
+    var _addrL = fullAddr ? '<div style="font-size:11px;color:#5a7a3a;font-weight:600;margin-top:3px;line-height:1.35;word-break:break-all;">'+fullAddr+'</div>' : '';
+    var _cStr = [(_cName?('<b>'+_cName+'</b>'):''), _cPhone, _cMemo].filter(Boolean).join(' ');
+    var _contactL = _cStr ? '<div style="font-size:11px;color:#8a5d00;font-weight:700;margin-top:1px;line-height:1.35;word-break:break-all;">'+_cStr+'</div>' : '';
+    var _dateL = '<div style="font-size:10px;color:#9aa39a;margin-top:1px;">'+it.ymd+' '+it.hm+'</div>';
+    var metaLine = _addrL + _contactL + _dateL;
     var locked=!!it.fav;
     var lockCls=locked?'sl-item-fav fav-on':'sl-item-fav';
     var lockIcon=locked?_LOCK_SVG:_UNLOCK_SVG;
@@ -11495,9 +11500,7 @@ function _slRenderList(){
       +'<div class="sl-item-num" style="'+numBg+'">'+num+'</div>'
       +'<div class="sl-item-info" onclick="slSelectItem(\''+it.key+'\')" style="cursor:pointer;">'
         +'<div class="sl-item-label">'+_slItemSecIcon(it.key)+labelMain+'</div>'
-        +addrLine
-        +contactLine
-        +'<div class="sl-item-date">'+it.ymd+' '+it.hm+'</div>'
+        +metaLine
       +'</div>'
       +'<div class="sl-item-btns">'
         +(_slManual
