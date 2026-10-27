@@ -1,4 +1,5 @@
-<!-- tonghab.html (v160) · 저장: 2026-10-28 02:00 KST · [v160] 논벼 실수확량 보완 — ①②크기별 중량 양방향 입력 매끄럽게: 총량·현미 칸의 3자리 자동점프(rsAutoNext) 제거(설미 건너뛰던 문제·4자리 입력방해 해소), 자동계산이 「입력 중인 칸」은 덮어쓰지 않도록(activeElement 보호). ②설미(1.6㎜미만) 30g 이상이면 「30g 이상은 내검대상입니다」 경고 표시. ③수분측정값(1·2회)이 11.0% 이하 또는 17% 이상이면 경고 표시. ④공통사항 층/조사구 아래 「📇 연락처(이름·주소·전화)」 입력란 추가 — 저장/복원 포함(잔상·초기화 처리), 저장/불러오기 목록에 필지주소 아래 이름·전화 표시. ※ 10a 산출식 무변경. (v159 이하 유지) -->
+<!-- tonghab.html (v161) · 저장: 2026-10-28 02:29 KST · [v161] 연락처란 개선 — ①접기/펼치기(기본 펼침). ②이름+전화를 한 줄에 배치(세로길이 절약). ③전화 자동 하이픈(01012341234→010-1234-1234, 0541112222→054-111-2222, 02→02-XXXX-XXXX). ④「주소」 라벨→「메모」, 예시 「연락처 주소」→「기타사항」(필드 id는 contactAddr 유지, 저장/표시 호환). ※ 계산식 무변경. (v160 이하 유지) -->
+<!-- (이전)  tonghab.html (v160) · 저장: 2026-10-28 02:00 KST · [v160] 논벼 실수확량 보완 — ①②크기별 중량 양방향 입력 매끄럽게: 총량·현미 칸의 3자리 자동점프(rsAutoNext) 제거(설미 건너뛰던 문제·4자리 입력방해 해소), 자동계산이 「입력 중인 칸」은 덮어쓰지 않도록(activeElement 보호). ②설미(1.6㎜미만) 30g 이상이면 「30g 이상은 내검대상입니다」 경고 표시. ③수분측정값(1·2회)이 11.0% 이하 또는 17% 이상이면 경고 표시. ④공통사항 층/조사구 아래 「📇 연락처(이름·주소·전화)」 입력란 추가 — 저장/복원 포함(잔상·초기화 처리), 저장/불러오기 목록에 필지주소 아래 이름·전화 표시. ※ 10a 산출식 무변경. (v159 이하 유지) -->
 <!-- (이전)  tonghab.html (v159) · 저장: 2026-10-19 06:51 KST · [v159] 「🧭 지도에서 A/B포구 위치(현장모드)」 버튼이 '이전에 연결했던 옛 핀'의 현장모드로 가던 문제 수정 — 이제 현재 조사표에 붙어 있는 지도작업(__thFieldPlotStore)의 linkId(+가지점 좌표)를 지도로 넘겨, 방금 작업·전송한 A/B포구로 바로 가도록 함. 현재 조사표에 지도작업이 없을 때만 기존 연결핀(tenar_pin_link) 방식 사용. (map v191의 consumeGoField linkId 우선조회와 한 쌍) ※ 계산식 무변경. (v158 이하 유지) -->
 <!-- (이전)  tonghab.html (v158) · 저장: 2026-10-16 05:59 KST · [v158] 바로가기 책갈피 2건 보완 — ①탭의 세로 「바로가기」 글자가 두 줄로 쪼개지던 것을 white-space:nowrap으로 한 줄 세로 고정. ②책갈피를 펼친(열린) 상태에서 화면을 상하로 스크롤하면 자동으로 닫혀(들어가게) 보이도록 scroll 리스너 추가(4px 이상 이동 시 _rsBmClose). 기능·버튼·위치 무변경. ※ 계산식 무변경. (v157 이하 유지) -->
 <!-- (이전)  tonghab.html (v157) · 저장: 2026-10-14 08:59 KST · [v157] 논벼 실수확량 조사표에 「🌾 수분 기준 역산」 영역 추가(보조기능·기존 10a 계산식 무변경). 위에서 계산된 10a당 수량(백미)을 그대로 고정한 채, 사용자가 기준수분(기본 15.0%, 수정가능)을 넣으면 그 수분으로 환산 시 필요한 1.6㎜이상(현미) 중량을 역산해 보여줌. 역산식: 1.6㎜이상 = 실제현미 × (100−실제수분) ÷ (100−기준수분) (10a수량 ∝ 현미중량×(100−수분) 관계 이용, 조제벼·건조벼는 백미 10a수량에 무관). rsReverseCalc()는 riceRealYieldCalc 끝에서 호출되어 입력 변경 시 자동 갱신. ※ 기존 산출 로직 무변경. (v156 이하 유지) -->
@@ -2146,13 +2147,35 @@ select,
         <input type="text" id="nbSurveyPlot" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="예) 0011" autocomplete="off" style="width:100%;box-sizing:border-box;">
       </div>
     </div>
-    <!-- [v160] 연락처 (이름·주소·전화) — 저장/복원 포함, 저장목록에 이름·전화 표시 -->
+    <!-- [v161] 연락처 — 접기/펼치기(기본 펼침), 이름+전화 한 줄, 전화 자동 하이픈, 메모(기타사항) -->
     <div style="margin-top:10px;padding:10px 11px;border:1px solid #e0ddd6;border-radius:9px;background:#faf9f5;">
-      <div style="font-size:12px;font-weight:800;color:#5a6b50;margin-bottom:7px;">📇 연락처 <span style="font-weight:600;color:#999;">(선택)</span></div>
-      <div class="fg" style="margin-bottom:7px;"><label>이름</label><input type="text" id="contactName" placeholder="성명" autocomplete="off" style="width:100%;box-sizing:border-box;"></div>
-      <div class="fg" style="margin-bottom:7px;"><label>주소</label><input type="text" id="contactAddr" placeholder="연락처 주소" autocomplete="off" style="width:100%;box-sizing:border-box;"></div>
-      <div class="fg" style="margin-bottom:0;"><label>전화</label><input type="tel" id="contactPhone" inputmode="tel" placeholder="010-0000-0000" autocomplete="off" style="width:100%;box-sizing:border-box;"></div>
+      <div onclick="toggleContactBox()" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;">
+        <span style="font-size:12px;font-weight:800;color:#5a6b50;">📇 연락처 <span style="font-weight:600;color:#999;">(선택)</span></span>
+        <span id="contactToggleArr" style="font-size:12px;color:#5a6b50;font-weight:800;">▲</span>
+      </div>
+      <div id="contactBody" style="margin-top:8px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:7px;">
+          <div class="fg" style="margin-bottom:0;"><label>이름</label><input type="text" id="contactName" placeholder="성명" autocomplete="off" style="width:100%;box-sizing:border-box;"></div>
+          <div class="fg" style="margin-bottom:0;"><label>전화</label><input type="tel" id="contactPhone" inputmode="numeric" placeholder="010-0000-0000" oninput="fmtContactPhone(this)" autocomplete="off" style="width:100%;box-sizing:border-box;"></div>
+        </div>
+        <div class="fg" style="margin-bottom:0;"><label>메모</label><input type="text" id="contactAddr" placeholder="기타사항" autocomplete="off" style="width:100%;box-sizing:border-box;"></div>
+      </div>
     </div>
+    <script>
+    /* [v161] 연락처 접기/펼치기(기본 펼침) + 전화 자동 하이픈 — tonghab/chungchi 공용 */
+    function toggleContactBox(){ var b=document.getElementById('contactBody'),a=document.getElementById('contactToggleArr'); if(!b)return; var open=b.style.display!=='none'; b.style.display=open?'none':''; if(a)a.textContent=open?'▼':'▲'; }
+    function fmtContactPhone(el){
+      if(!el) return; var d=(el.value||'').replace(/[^0-9]/g,'').slice(0,11); var out=d;
+      if(d.indexOf('02')===0){            /* 서울 02 */
+        if(d.length<=2) out=d; else if(d.length<=6) out='02-'+d.slice(2); else out='02-'+d.slice(2,d.length-4)+'-'+d.slice(d.length-4);
+      } else if(/^01[016789]/.test(d)){   /* 휴대폰 010 등 → 3-4-4 */
+        if(d.length<4) out=d; else if(d.length<=7) out=d.slice(0,3)+'-'+d.slice(3); else out=d.slice(0,3)+'-'+d.slice(3,7)+'-'+d.slice(7,11);
+      } else {                            /* 지역번호 3자리(054 등) → 3-3-4 */
+        if(d.length<4) out=d; else if(d.length<=6) out=d.slice(0,3)+'-'+d.slice(3); else if(d.length<=10) out=d.slice(0,3)+'-'+d.slice(3,6)+'-'+d.slice(6); else out=d.slice(0,3)+'-'+d.slice(3,7)+'-'+d.slice(7,11);
+      }
+      el.value=out;
+    }
+    </script>
     <script>
     (function(){
       var ai=document.getElementById('address'), af=document.getElementById('addrFull');
