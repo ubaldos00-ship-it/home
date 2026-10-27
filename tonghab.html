@@ -1,4 +1,5 @@
-<!-- tonghab.html (v159) · 저장: 2026-10-19 06:51 KST · [v159] 「🧭 지도에서 A/B포구 위치(현장모드)」 버튼이 '이전에 연결했던 옛 핀'의 현장모드로 가던 문제 수정 — 이제 현재 조사표에 붙어 있는 지도작업(__thFieldPlotStore)의 linkId(+가지점 좌표)를 지도로 넘겨, 방금 작업·전송한 A/B포구로 바로 가도록 함. 현재 조사표에 지도작업이 없을 때만 기존 연결핀(tenar_pin_link) 방식 사용. (map v191의 consumeGoField linkId 우선조회와 한 쌍) ※ 계산식 무변경. (v158 이하 유지) -->
+<!-- tonghab.html (v160) · 저장: 2026-10-28 02:00 KST · [v160] 논벼 실수확량 보완 — ①②크기별 중량 양방향 입력 매끄럽게: 총량·현미 칸의 3자리 자동점프(rsAutoNext) 제거(설미 건너뛰던 문제·4자리 입력방해 해소), 자동계산이 「입력 중인 칸」은 덮어쓰지 않도록(activeElement 보호). ②설미(1.6㎜미만) 30g 이상이면 「30g 이상은 내검대상입니다」 경고 표시. ③수분측정값(1·2회)이 11.0% 이하 또는 17% 이상이면 경고 표시. ④공통사항 층/조사구 아래 「📇 연락처(이름·주소·전화)」 입력란 추가 — 저장/복원 포함(잔상·초기화 처리), 저장/불러오기 목록에 필지주소 아래 이름·전화 표시. ※ 10a 산출식 무변경. (v159 이하 유지) -->
+<!-- (이전)  tonghab.html (v159) · 저장: 2026-10-19 06:51 KST · [v159] 「🧭 지도에서 A/B포구 위치(현장모드)」 버튼이 '이전에 연결했던 옛 핀'의 현장모드로 가던 문제 수정 — 이제 현재 조사표에 붙어 있는 지도작업(__thFieldPlotStore)의 linkId(+가지점 좌표)를 지도로 넘겨, 방금 작업·전송한 A/B포구로 바로 가도록 함. 현재 조사표에 지도작업이 없을 때만 기존 연결핀(tenar_pin_link) 방식 사용. (map v191의 consumeGoField linkId 우선조회와 한 쌍) ※ 계산식 무변경. (v158 이하 유지) -->
 <!-- (이전)  tonghab.html (v158) · 저장: 2026-10-16 05:59 KST · [v158] 바로가기 책갈피 2건 보완 — ①탭의 세로 「바로가기」 글자가 두 줄로 쪼개지던 것을 white-space:nowrap으로 한 줄 세로 고정. ②책갈피를 펼친(열린) 상태에서 화면을 상하로 스크롤하면 자동으로 닫혀(들어가게) 보이도록 scroll 리스너 추가(4px 이상 이동 시 _rsBmClose). 기능·버튼·위치 무변경. ※ 계산식 무변경. (v157 이하 유지) -->
 <!-- (이전)  tonghab.html (v157) · 저장: 2026-10-14 08:59 KST · [v157] 논벼 실수확량 조사표에 「🌾 수분 기준 역산」 영역 추가(보조기능·기존 10a 계산식 무변경). 위에서 계산된 10a당 수량(백미)을 그대로 고정한 채, 사용자가 기준수분(기본 15.0%, 수정가능)을 넣으면 그 수분으로 환산 시 필요한 1.6㎜이상(현미) 중량을 역산해 보여줌. 역산식: 1.6㎜이상 = 실제현미 × (100−실제수분) ÷ (100−기준수분) (10a수량 ∝ 현미중량×(100−수분) 관계 이용, 조제벼·건조벼는 백미 10a수량에 무관). rsReverseCalc()는 riceRealYieldCalc 끝에서 호출되어 입력 변경 시 자동 갱신. ※ 기존 산출 로직 무변경. (v156 이하 유지) -->
 <!-- (이전)  tonghab.html (v156) · 저장: 2026-10-14 02:39 KST · [v156] 바로가기 책갈피 탭의 세로 「바로가기」 글씨를 작게 조정(깨짐 방지) — 글자 12px→10px·자간 3px→1px·줄간격 1.1, 화살표 16px→14px. 기능·동작·위치 무변경. ※ 계산식 무변경. (v155 이하 유지) -->
@@ -2145,6 +2146,13 @@ select,
         <input type="text" id="nbSurveyPlot" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="예) 0011" autocomplete="off" style="width:100%;box-sizing:border-box;">
       </div>
     </div>
+    <!-- [v160] 연락처 (이름·주소·전화) — 저장/복원 포함, 저장목록에 이름·전화 표시 -->
+    <div style="margin-top:10px;padding:10px 11px;border:1px solid #e0ddd6;border-radius:9px;background:#faf9f5;">
+      <div style="font-size:12px;font-weight:800;color:#5a6b50;margin-bottom:7px;">📇 연락처 <span style="font-weight:600;color:#999;">(선택)</span></div>
+      <div class="fg" style="margin-bottom:7px;"><label>이름</label><input type="text" id="contactName" placeholder="성명" autocomplete="off" style="width:100%;box-sizing:border-box;"></div>
+      <div class="fg" style="margin-bottom:7px;"><label>주소</label><input type="text" id="contactAddr" placeholder="연락처 주소" autocomplete="off" style="width:100%;box-sizing:border-box;"></div>
+      <div class="fg" style="margin-bottom:0;"><label>전화</label><input type="tel" id="contactPhone" inputmode="tel" placeholder="010-0000-0000" autocomplete="off" style="width:100%;box-sizing:border-box;"></div>
+    </div>
     <script>
     (function(){
       var ai=document.getElementById('address'), af=document.getElementById('addrFull');
@@ -3242,17 +3250,19 @@ select,
         <div class="ryield-grid3">
           <div class="ryield-fg">
             <label>총량 (g)</label>
-            <div class="ryield-iwrap"><input type="number" inputmode="numeric" id="rsTotal" placeholder="예)459" oninput="riceRealYieldCalc();rsAutoNext(this,3,'rsHyeonmi')" class="nb-req-inp"><span class="ryield-unit">g</span></div>
+            <div class="ryield-iwrap"><input type="number" inputmode="numeric" id="rsTotal" placeholder="예)459" oninput="riceRealYieldCalc()" class="nb-req-inp"><span class="ryield-unit">g</span></div>
           </div>
           <div class="ryield-fg">
             <label>1.6mm이상 (현미)</label>
-            <div class="ryield-iwrap"><input type="number" inputmode="numeric" id="rsHyeonmi" placeholder="예)453" oninput="riceRealYieldCalc();rsAutoNext(this,3,'rsMoist1')" class="nb-req-inp"><span class="ryield-unit">g</span></div>
+            <div class="ryield-iwrap"><input type="number" inputmode="numeric" id="rsHyeonmi" placeholder="예)453" oninput="riceRealYieldCalc()" class="nb-req-inp"><span class="ryield-unit">g</span></div>
           </div>
           <div class="ryield-fg">
             <label>1.6mm미만 (설미)</label>
             <div class="ryield-iwrap"><input type="number" inputmode="numeric" id="rsSeolmi" placeholder="예)6" oninput="riceRealYieldCalc()" class="nb-req-inp"><span class="ryield-unit">g</span></div>
           </div>
         </div>
+        <!-- [v160] 설미 30g 이상 내검대상 경고 -->
+        <div id="rsSeolmiWarn" style="display:none;margin-top:8px;padding:8px 11px;border-radius:9px;background:#FFF3E0;border:1.5px solid #FB8C00;color:#8A4B00;font-size:12px;font-weight:700;line-height:1.5;"></div>
 
         <div class="ryield-sub" style="margin-top:14px;">③ 수분함량</div>
         <div class="ryield-grid3">
@@ -3273,6 +3283,8 @@ select,
         <div style="text-align:right;font-size:12px;color:#5b6358;margin-top:5px;padding-right:2px;">
           평균 수분율: <strong style="color:#C0392B;font-weight:800;" id="rsMoistAvg">—</strong> %
         </div>
+        <!-- [v160] 수분 11.0% 이하 / 17% 이상 경고 -->
+        <div id="rsMoistWarn" style="display:none;margin-top:8px;padding:8px 11px;border-radius:9px;background:#FFF3E0;border:1.5px solid #FB8C00;color:#8A4B00;font-size:12px;font-weight:700;line-height:1.5;"></div>
 
         <div class="ryield-divline"></div>
 
@@ -5886,16 +5898,29 @@ function riceRealYieldCalc(){
   // 검산계 = 조제벼 + 1/8조제벼 + 1/8건조벼 + 생볏짚
   var cs1=[jeje,jeje8,geon8,straw].filter(function(x){return !isNaN(x);});
   setT('rsCheckSum1', cs1.length? cs1.reduce(function(a,b){return a+b;},0).toLocaleString('ko-KR')+' g':'—');
-  // [v154] 크기별 중량 양방향: ①총량+현미 → 설미(기존) ②총량 비었고 현미+설미 → 총량
+  // [v160] 크기별 중량 양방향 — 사용자가 "입력 중인 칸"은 절대 덮어쓰지 않고 나머지만 자동계산(매끄러운 입력)
   var total=num('rsTotal'), hm=num('rsHyeonmi'), smIn=num('rsSeolmi');
-  var seEl=document.getElementById('rsSeolmi'), teEl=document.getElementById('rsTotal');
-  if(!isNaN(total)&&!isNaN(hm)){
-    var sm=Math.round((total-hm)*100)/100;
-    if(seEl && String(seEl.value).trim()!==String(sm)) seEl.value=sm;          // 총량+현미 → 설미
-  } else if(isNaN(total)&&!isNaN(hm)&&!isNaN(smIn)){
-    var tt=Math.round((hm+smIn)*100)/100;
-    if(teEl && String(teEl.value).trim()==='') teEl.value=tt;                  // 현미+설미 → 총량
+  var teEl=document.getElementById('rsTotal'), heEl=document.getElementById('rsHyeonmi'), seEl=document.getElementById('rsSeolmi');
+  var _act=document.activeElement;
+  function _setW(el,v){ if(el && el!==_act && String(el.value).trim()!==String(v)) el.value=v; }  /* 포커스된 칸은 건드리지 않음 */
+  if(_act===seEl){
+    // 설미 입력 중 → (현미+설미)로 총량 계산
+    if(!isNaN(hm)&&!isNaN(smIn)) _setW(teEl, Math.round((hm+smIn)*100)/100);
+  } else if(_act===teEl){
+    // 총량 입력 중 → (총량−현미)로 설미 계산
+    if(!isNaN(total)&&!isNaN(hm)) _setW(seEl, Math.round((total-hm)*100)/100);
+  } else {
+    // 현미 입력 중 또는 비포커스(복원 등): 총량 있으면 설미, 아니면 (현미+설미)로 총량
+    if(!isNaN(total)&&!isNaN(hm)) _setW(seEl, Math.round((total-hm)*100)/100);
+    else if(isNaN(total)&&!isNaN(hm)&&!isNaN(smIn)) _setW(teEl, Math.round((hm+smIn)*100)/100);
   }
+  // [v160] 설미(1.6mm미만) 30g 이상 → 내검대상 경고
+  (function(){
+    var w=document.getElementById('rsSeolmiWarn'); if(!w) return;
+    var sv=num('rsSeolmi');
+    if(!isNaN(sv) && sv>=30){ w.textContent='⚠ 설미(1.6㎜미만)가 '+sv.toLocaleString('ko-KR')+'g 입니다. 30g 이상은 내검대상입니다.'; w.style.display='block'; }
+    else { w.style.display='none'; w.textContent=''; }
+  })();
   // 수분 합계 = 1회 + 2회
   var m1=num('rsMoist1'), m2=num('rsMoist2');
   var hasM=(!isNaN(m1)||!isNaN(m2));
@@ -5904,6 +5929,15 @@ function riceRealYieldCalc(){
   // v103: 수분 평균값 (소수2자리) 표시
   var mAvgEl=document.getElementById('rsMoistAvg');
   if(mAvgEl) mAvgEl.textContent=hasM? (Math.round(msum/2*100)/100).toFixed(2):'—';
+  // [v160] 수분측정값 11.0% 이하 또는 17% 이상 → 경고 (측정값별 확인)
+  (function(){
+    var w=document.getElementById('rsMoistWarn'); if(!w) return;
+    var bad=[];
+    if(!isNaN(m1) && (m1<=11.0 || m1>=17.0)) bad.push('1회 '+m1.toFixed(1)+'%');
+    if(!isNaN(m2) && (m2<=11.0 || m2>=17.0)) bad.push('2회 '+m2.toFixed(1)+'%');
+    if(bad.length){ w.textContent='⚠ 수분측정값('+bad.join(' · ')+')이 11.0% 이하 또는 17% 이상입니다. 재확인하세요.'; w.style.display='block'; }
+    else { w.style.display='none'; w.textContent=''; }
+  })();
   // v102: 수분평균 소수2자리로 계산
   var moistAvg = hasM ? Math.round(msum/2*100)/100 : NaN;
   var factor = (!isNaN(moistAvg)) ? (100-moistAvg)/(100-15) : NaN;
@@ -8952,7 +8986,7 @@ function printSurveyForm(){
 function prodFullResetAll(){
   if(!confirm('전체 데이터가 초기화됩니다. 초기화 하시겠습니까?')) return;
   /* [v135] 층·조사구를 먼저 비운다 — 리로드가 지연/미발생(해시)해도, pagehide 재저장돼도 빈값이 되도록 */
-  try{ var _f=document.getElementById('nbFloor'); if(_f) _f.value=''; var _s=document.getElementById('nbSurveyPlot'); if(_s) _s.value=''; if(typeof _nbUpdateHdrAddr==='function') _nbUpdateHdrAddr(); }catch(e){}
+  try{ var _f=document.getElementById('nbFloor'); if(_f) _f.value=''; var _s=document.getElementById('nbSurveyPlot'); if(_s) _s.value=''; ['contactName','contactAddr','contactPhone'].forEach(function(id){var e=document.getElementById(id); if(e) e.value='';}); if(typeof _nbUpdateHdrAddr==='function') _nbUpdateHdrAddr(); }catch(e){}   /* [v160] 연락처도 초기화 */
   try{
     window._allowLeave = true;
     window._slBusy = true;
@@ -9787,7 +9821,7 @@ function _slApply(d, _onDone){
         else{if(d[el.id]!==undefined&&d[el.id]!==''){el.value=d[el.id];el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));}}
       });
       /* [v132] 층·조사구는 저장 안 된 자료를 불러오면 반드시 빈칸으로(이전 값 잔상 제거) */
-      ['nbFloor','nbSurveyPlot'].forEach(function(id){ var e=document.getElementById(id); if(e){ e.value=(d[id]!==undefined&&d[id]!=='')?d[id]:''; } });
+      ['nbFloor','nbSurveyPlot','contactName','contactAddr','contactPhone'].forEach(function(id){ var e=document.getElementById(id); if(e){ e.value=(d[id]!==undefined&&d[id]!=='')?d[id]:''; } });   /* [v160] 연락처 잔상 제거 */
       /* [v144] 논벼 실수확량 입력도 저장 안 된 자료를 불러오면 빈칸/기본값으로(이전 실수확량 잔상·복사 제거) */
       ['rsJeje','rsJeje8','rsGeon8','rsGeonRate','rsStraw','rsTotal','rsHyeonmi','rsMoist1','rsMoist2','rsRemark',
        'ryAHarvPlants','ryBHarvPlants','ryAMissPlants','ryBMissPlants'].forEach(function(id){
@@ -11419,6 +11453,12 @@ function _slRenderList(){
       + (_fp ? ' <span style="color:#0A3A8C;font-weight:800;">'+_fp+'</span>' : '')
       + (shortAddr ? ', <span class="sl-item-addr2">'+shortAddrHtml+'</span>' : '');
     var addrLine = fullAddr ? '<div class="sl-item-addr">📍 '+fullAddr+'</div>' : '';
+    /* [v160] 저장목록에 연락처(이름·전화) 표시 — 저장데이터에서 읽음 */
+    var _cName='', _cPhone='';
+    try{ if(_dd){ _cName=(_dd.contactName||'').toString().trim(); _cPhone=(_dd.contactPhone||'').toString().trim(); } }catch(e){}
+    var contactLine = (_cName||_cPhone)
+      ? '<div class="sl-item-contact" style="font-size:11px;color:#8a5d00;font-weight:700;margin-top:1px;">📇 '+(_cName?('<b>'+_cName+'</b>'):'')+((_cName&&_cPhone)?' · ':'')+(_cPhone?('☎ '+_cPhone):'')+'</div>'
+      : '';
     var locked=!!it.fav;
     var lockCls=locked?'sl-item-fav fav-on':'sl-item-fav';
     var lockIcon=locked?_LOCK_SVG:_UNLOCK_SVG;
@@ -11433,6 +11473,7 @@ function _slRenderList(){
       +'<div class="sl-item-info" onclick="slSelectItem(\''+it.key+'\')" style="cursor:pointer;">'
         +'<div class="sl-item-label">'+_slItemSecIcon(it.key)+labelMain+'</div>'
         +addrLine
+        +contactLine
         +'<div class="sl-item-date">'+it.ymd+' '+it.hm+'</div>'
       +'</div>'
       +'<div class="sl-item-btns">'

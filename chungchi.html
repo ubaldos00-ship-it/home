@@ -1,4 +1,5 @@
-<!-- chungchi.html (v130) · 저장: 2026-10-16 06:10 KST · [v130] 청취계산기에도 통합계산기와 동일한 「바로가기 책갈피」 추가(주황색) — 화면 오른쪽 주황 탭을 누르면 옆으로 펼쳐지며 「⬆ 맨 위로」·「🌾 수확량환산」(④ 수확량 환산 #harvestCard로 이동) 버튼 제공. 세로 「바로가기」 글자는 한 줄 고정(nowrap). 펼친 상태에서 상하 스크롤 시 자동으로 닫힘(들어감). 통합계산기 책갈피와 동작 동일. ②⑤ 간단 결과보기의 「10a당 생산량」 값 글자 강조(22px→36px·굵게). ※ 계산식 무변경. (v129 이하 유지) -->
+<!-- chungchi.html (v131) · 저장: 2026-10-28 02:00 KST · [v131] 공통사항 층/조사구 아래 「📇 연락처(이름·주소·전화)」 입력란 추가 — 저장/복원(_ccCollect/_ccApply) 포함, 불러오기 잔상 제거·초기화 반영, 저장/불러오기 목록에 필지주소 아래 이름·전화 표시(실측계산기와 동일). ※ 계산 로직 무변경. (v130 이하 유지) -->
+<!-- (이전)  chungchi.html (v130) · 저장: 2026-10-16 06:10 KST · [v130] 청취계산기에도 통합계산기와 동일한 「바로가기 책갈피」 추가(주황색) — 화면 오른쪽 주황 탭을 누르면 옆으로 펼쳐지며 「⬆ 맨 위로」·「🌾 수확량환산」(④ 수확량 환산 #harvestCard로 이동) 버튼 제공. 세로 「바로가기」 글자는 한 줄 고정(nowrap). 펼친 상태에서 상하 스크롤 시 자동으로 닫힘(들어감). 통합계산기 책갈피와 동작 동일. ②⑤ 간단 결과보기의 「10a당 생산량」 값 글자 강조(22px→36px·굵게). ※ 계산식 무변경. (v129 이하 유지) -->
 <!-- (이전)  chungchi.html (v129) · 저장: 2026-10-12 01:07 KST · [v129] 공유(JSON) 폴백 먼저 뜨던 문제 수정 — 「📤공유하기 버튼(새 제스처)」 모달로 한 번에 공유(tonghab v153과 동일). 계산 로직 무변경. (v128 이하 유지) -->
 <!-- (이전)  chungchi.html (v128) · 저장: 2026-10-12 00:44 KST · [v128] 내보내기(JSON 공유/백업) 암호 규칙 강화 — ①9자리 이상이어야 저장(프롬프트에 "9자리 이상으로 저장하세요" 안내). ②공백(띄어쓰기)이 들어가면 저장 안 됨(안내 멘트 추가). 규칙 위반 시 그 자리에서 다시 입력. 빈칸/취소는 중단. ※ 가져오기는 옛 파일 호환 위해 길이·공백 검증 없음. 통합·청취·지도·주수 공통 적용. 계산 로직 무변경. (v127 이하 유지) -->
 <!-- (이전)  chungchi.html (v127) · 저장: 2026-10-12 00:02 KST · [v127] 보안강화(평가기간) — 공유/내보내기/백업(JSON) 암호: 기본암호 2026 삭제·사용자 직접입력 필수(빈칸이면 중단)·입력암호는 이 세션(RAM)만 기억(미저장)·암호화 미지원 기기 반출 차단. 암호화는 PBKDF2(210,000회)+AES-GCM 유지. ※ tonghab v151과 동일 보안개편. 계산·저장 로직 무변경. (v126 이하 유지) -->
@@ -781,6 +782,16 @@ input[readonly]{background:#f5f5f5!important;color:#888!important;border-color:#
       <input type="text" id="nbFloor" inputmode="numeric" pattern="[0-9]*" maxlength="2" placeholder="예) 01" autocomplete="off" style="width:100%;box-sizing:border-box;font-size:15px;padding:10px 6px;"></div>
     <div style="min-width:0"><div class="s1l" style="margin-bottom:4px">조사구 <span style="font-size:10px;color:#999;">4자리</span></div>
       <input type="text" id="nbSurveyPlot" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="예) 0011" autocomplete="off" style="width:100%;box-sizing:border-box;font-size:15px;padding:10px 6px;"></div>
+  </div>
+  <!-- [v131] 연락처 (이름·주소·전화) — 저장/복원 포함, 저장목록에 이름·전화 표시 -->
+  <div style="margin-top:10px;padding:10px 11px;border:1px solid #e0ddd6;border-radius:9px;background:#faf9f5;">
+    <div style="font-size:12px;font-weight:800;color:#5a6b50;margin-bottom:7px;">📇 연락처 <span style="font-weight:600;color:#999;">(선택)</span></div>
+    <div style="margin-bottom:7px;"><div class="s1l" style="margin-bottom:4px">이름</div>
+      <input type="text" id="contactName" placeholder="성명" autocomplete="off" style="width:100%;box-sizing:border-box;font-size:15px;padding:10px 6px;"></div>
+    <div style="margin-bottom:7px;"><div class="s1l" style="margin-bottom:4px">주소</div>
+      <input type="text" id="contactAddr" placeholder="연락처 주소" autocomplete="off" style="width:100%;box-sizing:border-box;font-size:15px;padding:10px 6px;"></div>
+    <div><div class="s1l" style="margin-bottom:4px">전화</div>
+      <input type="tel" id="contactPhone" inputmode="tel" placeholder="010-0000-0000" autocomplete="off" style="width:100%;box-sizing:border-box;font-size:15px;padding:10px 6px;"></div>
   </div>
   <script>
   (function(){
@@ -2188,7 +2199,7 @@ function resetAll(scrollTop=false){
   if(!confirm('모든 입력을 초기화하시겠습니까?'))return;
   document.getElementById('address').value='';
   /* [v120] 층·조사구도 초기화 */
-  ['nbFloor','nbSurveyPlot'].forEach(function(id){ var e=document.getElementById(id); if(e) e.value=''; });
+  ['nbFloor','nbSurveyPlot','contactName','contactAddr','contactPhone'].forEach(function(id){ var e=document.getElementById(id); if(e) e.value=''; });   /* [v131] 연락처도 초기화 */
   try{ if(typeof window._ccHdrUpd==='function') window._ccHdrUpd(); }catch(e){}
   document.getElementById('surveyDate').valueAsDate=new Date();
   document.querySelectorAll('.bc').forEach(b=>b.classList.remove('on'));sC='';
@@ -2367,7 +2378,7 @@ function _tenarGetMapColorFromSaved(d){
 function _ccCollect(){
   var d = {};
   // 정적 입력
-  ['address','surveyDate','memo','nbFloor','nbSurveyPlot'].forEach(function(id){   /* [v117] 층·조사구 저장 */
+  ['address','surveyDate','memo','nbFloor','nbSurveyPlot','contactName','contactAddr','contactPhone'].forEach(function(id){   /* [v117] 층·조사구 [v131] 연락처 저장 */
     var el = document.getElementById(id);
     if(el) d[id] = el.value;
   });
@@ -2439,8 +2450,8 @@ function _ccApply(d){
     var el = document.getElementById(id);
     if(el && d[id] !== undefined) el.value = d[id];
   });
-  /* [v117] 층·조사구 — 저장 안 된 자료는 빈칸으로(잔상 제거) + 헤더 갱신 */
-  ['nbFloor','nbSurveyPlot'].forEach(function(id){ var e=document.getElementById(id); if(e){ e.value=(d[id]!==undefined&&d[id]!=='')?d[id]:''; } });
+  /* [v117] 층·조사구 [v131] 연락처 — 저장 안 된 자료는 빈칸으로(잔상 제거) + 헤더 갱신 */
+  ['nbFloor','nbSurveyPlot','contactName','contactAddr','contactPhone'].forEach(function(id){ var e=document.getElementById(id); if(e){ e.value=(d[id]!==undefined&&d[id]!=='')?d[id]:''; } });
   try{ if(typeof window._ccHdrUpd==='function') window._ccHdrUpd(); }catch(e){}
   // v47: 피해부호/피해율 복원
   if(d.__dmgCode!==undefined){var dc=document.getElementById('ccDmgCode');if(dc){dc.value=d.__dmgCode;ccDmgUpdate();}}
@@ -3082,6 +3093,12 @@ function _slRenderList(){
       + (_fp ? ' <span style="color:#0A3A8C;font-weight:800;">'+_fp+'</span>' : '')
       + (shortAddr ? ', <span class="sl-item-addr2">'+shortAddrHtml+'</span>' : '');
     var addrLine = fullAddr ? '<div class="sl-item-addr">📍 '+fullAddr+'</div>' : '';
+    /* [v131] 저장목록에 연락처(이름·전화) 표시 — 저장데이터에서 읽음 */
+    var _cName='', _cPhone='';
+    try{ if(_dd){ _cName=(_dd.contactName||'').toString().trim(); _cPhone=(_dd.contactPhone||'').toString().trim(); } }catch(e){}
+    var contactLine = (_cName||_cPhone)
+      ? '<div class="sl-item-contact" style="font-size:11px;color:#8a5d00;font-weight:700;margin-top:1px;">📇 '+(_cName?('<b>'+_cName+'</b>'):'')+((_cName&&_cPhone)?' · ':'')+(_cPhone?('☎ '+_cPhone):'')+'</div>'
+      : '';
     var locked = !!it.fav;
     var lockCls = locked?'sl-item-fav fav-on':'sl-item-fav';
     var lockIcon = locked?_LOCK_SVG:_UNLOCK_SVG;
@@ -3096,6 +3113,7 @@ function _slRenderList(){
       +'<div class="sl-item-info" onclick="slSelectItem(\''+it.key+'\')" style="cursor:pointer;">'
         +'<div class="sl-item-label">'+_slItemSecIcon(it.key)+labelMain+'</div>'
         +addrLine
+        +contactLine
         +'<div class="sl-item-date">'+(it.ymd||'')+' '+(it.hm||'')+'</div>'
       +'</div>'
       +'<div class="sl-item-btns">'
