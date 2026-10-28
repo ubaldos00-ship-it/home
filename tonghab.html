@@ -1,4 +1,5 @@
-<!-- tonghab.html (v163) · 저장: 2026-10-28 02:48 KST · [v163] 저장/불러오기 목록 2건 보완 — ①항목 표시를 줄바꿈 형태로: 작물·지번(라벨) / 전체주소 / 이름·전화·메모 / 날짜 를 각 줄(작은 글씨). ②번호를 「실제 보이는 목록(조회 필터 적용 후)」 기준으로 매겨 보이는 개수와 항상 일치(예: 22건이면 최대 22번). 이전엔 전체목록 기준이라, 조회 필터가 걸리면 보이는 개수보다 큰 번호가 나왔음. 정렬을 바꿔도 각 자료 번호는 유지(재번호 안 됨), 삭제 시엔 1..N로 다시 매겨짐. ※ 계산식 무변경. (v162 이하 유지) -->
+<!-- tonghab.html (v164) · 저장: 2026-10-28 13:34 KST · [v164] 연락처에 「수확예정일」 추가 — 메모 아래 텍스트 입력란(harvestDate), 저장/복원·초기화 포함. 저장/불러오기 목록의 저장일시 옆에 「🌾수확예정 …」 표시. 전화 자동 하이픈(01012345678→010-1234-5678)은 기존대로 동작. ※ 계산식 무변경. (v163 이하 유지) -->
+<!-- (이전)  tonghab.html (v163) · 저장: 2026-10-28 02:48 KST · [v163] 저장/불러오기 목록 2건 보완 — ①항목 표시를 줄바꿈 형태로: 작물·지번(라벨) / 전체주소 / 이름·전화·메모 / 날짜 를 각 줄(작은 글씨). ②번호를 「실제 보이는 목록(조회 필터 적용 후)」 기준으로 매겨 보이는 개수와 항상 일치(예: 22건이면 최대 22번). 이전엔 전체목록 기준이라, 조회 필터가 걸리면 보이는 개수보다 큰 번호가 나왔음. 정렬을 바꿔도 각 자료 번호는 유지(재번호 안 됨), 삭제 시엔 1..N로 다시 매겨짐. ※ 계산식 무변경. (v162 이하 유지) -->
 <!-- (이전)  tonghab.html (v162) · 저장: 2026-10-28 02:39 KST · [v162] 저장/불러오기 목록 촘촘하게 + 연락처 보완 — ①목록 항목의 주소(작게)·연락처(📇이름·☎전화)·메모(📝)·날짜를 「한 줄」로 합쳐 항목 높이 축소(한 화면에 더 많이 보임), 항목 여백도 축소. ②메모(contactAddr)도 목록에 표시. ③통합 연락처 전화 입력란이 이름칸과 모양이 달랐던 문제 수정(type tel→text로 전역 입력스타일 적용). ※ 계산식 무변경. (v161 이하 유지) -->
 <!-- (이전)  tonghab.html (v161) · 저장: 2026-10-28 02:29 KST · [v161] 연락처란 개선 — ①접기/펼치기(기본 펼침). ②이름+전화를 한 줄에 배치(세로길이 절약). ③전화 자동 하이픈(01012341234→010-1234-1234, 0541112222→054-111-2222, 02→02-XXXX-XXXX). ④「주소」 라벨→「메모」, 예시 「연락처 주소」→「기타사항」(필드 id는 contactAddr 유지, 저장/표시 호환). ※ 계산식 무변경. (v160 이하 유지) -->
 <!-- (이전)  tonghab.html (v160) · 저장: 2026-10-28 02:00 KST · [v160] 논벼 실수확량 보완 — ①②크기별 중량 양방향 입력 매끄럽게: 총량·현미 칸의 3자리 자동점프(rsAutoNext) 제거(설미 건너뛰던 문제·4자리 입력방해 해소), 자동계산이 「입력 중인 칸」은 덮어쓰지 않도록(activeElement 보호). ②설미(1.6㎜미만) 30g 이상이면 「30g 이상은 내검대상입니다」 경고 표시. ③수분측정값(1·2회)이 11.0% 이하 또는 17% 이상이면 경고 표시. ④공통사항 층/조사구 아래 「📇 연락처(이름·주소·전화)」 입력란 추가 — 저장/복원 포함(잔상·초기화 처리), 저장/불러오기 목록에 필지주소 아래 이름·전화 표시. ※ 10a 산출식 무변경. (v159 이하 유지) -->
@@ -2160,7 +2161,8 @@ select,
           <div class="fg" style="margin-bottom:0;"><label>이름</label><input type="text" id="contactName" placeholder="성명" autocomplete="off" style="width:100%;box-sizing:border-box;"></div>
           <div class="fg" style="margin-bottom:0;"><label>전화</label><input type="text" id="contactPhone" inputmode="numeric" placeholder="010-0000-0000" oninput="fmtContactPhone(this)" autocomplete="off" style="width:100%;box-sizing:border-box;"></div>
         </div>
-        <div class="fg" style="margin-bottom:0;"><label>메모</label><input type="text" id="contactAddr" placeholder="기타사항" autocomplete="off" style="width:100%;box-sizing:border-box;"></div>
+        <div class="fg" style="margin-bottom:7px;"><label>메모</label><input type="text" id="contactAddr" placeholder="기타사항" autocomplete="off" style="width:100%;box-sizing:border-box;"></div>
+        <div class="fg" style="margin-bottom:0;"><label>수확예정일</label><input type="text" id="harvestDate" placeholder="예) 10월 중순, 11/5" autocomplete="off" style="width:100%;box-sizing:border-box;"></div>
       </div>
     </div>
     <script>
@@ -9011,7 +9013,7 @@ function printSurveyForm(){
 function prodFullResetAll(){
   if(!confirm('전체 데이터가 초기화됩니다. 초기화 하시겠습니까?')) return;
   /* [v135] 층·조사구를 먼저 비운다 — 리로드가 지연/미발생(해시)해도, pagehide 재저장돼도 빈값이 되도록 */
-  try{ var _f=document.getElementById('nbFloor'); if(_f) _f.value=''; var _s=document.getElementById('nbSurveyPlot'); if(_s) _s.value=''; ['contactName','contactAddr','contactPhone'].forEach(function(id){var e=document.getElementById(id); if(e) e.value='';}); if(typeof _nbUpdateHdrAddr==='function') _nbUpdateHdrAddr(); }catch(e){}   /* [v160] 연락처도 초기화 */
+  try{ var _f=document.getElementById('nbFloor'); if(_f) _f.value=''; var _s=document.getElementById('nbSurveyPlot'); if(_s) _s.value=''; ['contactName','contactAddr','contactPhone','harvestDate'].forEach(function(id){var e=document.getElementById(id); if(e) e.value='';}); if(typeof _nbUpdateHdrAddr==='function') _nbUpdateHdrAddr(); }catch(e){}   /* [v160] 연락처도 초기화 */
   try{
     window._allowLeave = true;
     window._slBusy = true;
@@ -9846,7 +9848,7 @@ function _slApply(d, _onDone){
         else{if(d[el.id]!==undefined&&d[el.id]!==''){el.value=d[el.id];el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));}}
       });
       /* [v132] 층·조사구는 저장 안 된 자료를 불러오면 반드시 빈칸으로(이전 값 잔상 제거) */
-      ['nbFloor','nbSurveyPlot','contactName','contactAddr','contactPhone'].forEach(function(id){ var e=document.getElementById(id); if(e){ e.value=(d[id]!==undefined&&d[id]!=='')?d[id]:''; } });   /* [v160] 연락처 잔상 제거 */
+      ['nbFloor','nbSurveyPlot','contactName','contactAddr','contactPhone','harvestDate'].forEach(function(id){ var e=document.getElementById(id); if(e){ e.value=(d[id]!==undefined&&d[id]!=='')?d[id]:''; } });   /* [v160] 연락처 잔상 제거 */
       /* [v144] 논벼 실수확량 입력도 저장 안 된 자료를 불러오면 빈칸/기본값으로(이전 실수확량 잔상·복사 제거) */
       ['rsJeje','rsJeje8','rsGeon8','rsGeonRate','rsStraw','rsTotal','rsHyeonmi','rsMoist1','rsMoist2','rsRemark',
        'ryAHarvPlants','ryBHarvPlants','ryAMissPlants','ryBMissPlants'].forEach(function(id){
@@ -11485,7 +11487,8 @@ function _slRenderList(){
     var _addrL = fullAddr ? '<div style="font-size:11px;color:#5a7a3a;font-weight:600;margin-top:3px;line-height:1.35;word-break:break-all;">'+fullAddr+'</div>' : '';
     var _cStr = [(_cName?('<b>'+_cName+'</b>'):''), _cPhone, _cMemo].filter(Boolean).join(' ');
     var _contactL = _cStr ? '<div style="font-size:11px;color:#8a5d00;font-weight:700;margin-top:1px;line-height:1.35;word-break:break-all;">'+_cStr+'</div>' : '';
-    var _dateL = '<div style="font-size:10px;color:#9aa39a;margin-top:1px;">'+it.ymd+' '+it.hm+'</div>';
+    var _hv=''; try{ if(_dd) _hv=(_dd.harvestDate||'').toString().trim(); }catch(e){}
+    var _dateL = '<div style="font-size:10px;color:#9aa39a;margin-top:1px;">'+it.ymd+' '+it.hm+(_hv?('   <span style="color:#1f8a4c;font-weight:700;">🌾수확예정 '+_hv+'</span>'):'')+'</div>';
     var metaLine = _addrL + _contactL + _dateL;
     var locked=!!it.fav;
     var lockCls=locked?'sl-item-fav fav-on':'sl-item-fav';
