@@ -1,4 +1,5 @@
-<!-- map_v191.html (v191 · TENAR V1.8) · 저장: 2026-10-19 06:51 KST · [v191] 통합계산기 「🧭 지도에서 A/B포구 위치(현장모드)」가 이전에 연결했던 '옛 핀'으로 가던 문제 수정 — consumeGoField에서 조사표가 넘긴 linkId를 최우선으로 조회(getFpSaves에서 linkId/id 일치하는 A/B포구 저장을 찾아 loadFpSave→현장모드 시작)해, 방금 작업·전송한 A/B포구로 바로 이동. linkId가 없거나 못 찾을 때만 기존 방식(favoriteId·주소·좌표 근접). (tonghab v159와 한 쌍) ※ 지도·계산 로직 무변경. (v190 이하 유지) -->
+<!-- map_v192.html (v192 · TENAR V1.8) · 저장: 2026-10-29 16:32 KST · [v192] 조사구 종류에 「기타조사」 추가(7번째, 농판 다음) — 지도 꾹눌러 저장 시트·조사구목록 탭·저장/불러오기·전체백업/복원·핀(◉ 청록 #0891b2)·순서안내 모두 자동 연동(AREA_TYPES 1곳 추가로 전 도구 공유). 「기타조사」 선택 후 추가 폼은 농판형(성명·전화번호)이되 「성명」 칸 라벨을 「조사구이름」으로 표시(필수검증 안내문구도 동일). 저장키 tenarAreaPlots_etc_enc(자동 암호화). ※ 지도·계산 로직 무변경. (v191 이하 유지) -->
+<!-- (이전) map_v191.html (v191 · TENAR V1.8) · 저장: 2026-10-19 06:51 KST · [v191] 통합계산기 「🧭 지도에서 A/B포구 위치(현장모드)」가 이전에 연결했던 '옛 핀'으로 가던 문제 수정 — consumeGoField에서 조사표가 넘긴 linkId를 최우선으로 조회(getFpSaves에서 linkId/id 일치하는 A/B포구 저장을 찾아 loadFpSave→현장모드 시작)해, 방금 작업·전송한 A/B포구로 바로 이동. linkId가 없거나 못 찾을 때만 기존 방식(favoriteId·주소·좌표 근접). (tonghab v159와 한 쌍) ※ 지도·계산 로직 무변경. (v190 이하 유지) -->
 <!-- (이전) map_v190.html (v190 · TENAR V1.8) · 저장: 2026-10-14 02:56 KST · [v190] 조사구(재배면적) 핀을 지도 열자마자 생산량(저장)핀과 함께 표시 — DEFAULT_SETTINGS.showAreaPins 기본 true(이전 false), 시작 복원(restoreWhenBothReady)에서 refreshFavPins 직후 areaUpdateSource() 호출해 조사구 소스 초기 렌더. (두당·텐아르 공용 지도 동일 오리진이라 두당에서 열어도 저장된 생산량핀+조사구핀 함께 표시됨). (이전) map_v189.html (v189 · TENAR V1.8) · 저장: 2026-10-12 01:07 KST · [v189] ①공유(JSON) 폴백 먼저 뜨던 문제 수정 — 「📤공유하기 버튼(새 제스처)」 모달로 한 번에 공유(생산량목록·조사구 공통). ②조사구 저장/불러오기에 공유 버튼 추가 — 파일 팝업 「JSON 가져오기」 옆에 「📤 공유」(현재 종류), 전체 백업·복원 옆에 「📤 전체 공유」(6종 전체). 공유도 _tenarBuildExport 암호화(사용자 암호) 적용. 지도·계산 로직 무변경. (v188 이하 유지) -->
 <!-- (이전)  map_v188.html (v188 · TENAR V1.8) · 저장: 2026-10-12 00:44 KST · [v188] 내보내기(JSON 공유/백업) 암호 규칙 강화 — ①9자리 이상이어야 저장(프롬프트에 "9자리 이상으로 저장하세요" 안내). ②공백(띄어쓰기)이 들어가면 저장 안 됨(안내 멘트 추가). 규칙 위반 시 그 자리에서 다시 입력. 빈칸/취소는 중단. ※ 가져오기는 옛 파일 호환 위해 길이·공백 검증 없음. 조사구 6종·연결자료 공유 공용함수 적용. 계산 로직 무변경. (v187 이하 유지) -->
 <!-- (이전)  map_v187.html (v187 · TENAR V1.8) · 저장: 2026-10-12 00:02 KST · [v187] 보안강화(평가기간) — 지도·조사구의 공유/내보내기/백업(JSON) 암호: 기본암호 2026 삭제·사용자 직접입력 필수(빈칸이면 중단)·입력암호는 이 세션(RAM)만 기억(미저장)·암호화 미지원 기기 반출 차단. 조사구 6종·연결자료 공유 모두 공용 _tenarAskPassword 사용이라 일괄 적용. 암호화는 PBKDF2(210,000회)+AES-GCM 유지(사용자 암호 없이는 복호화 불가). ※ 계산·저장·지도 로직 무변경. (v186 이하 유지) -->
@@ -12657,7 +12658,8 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     { key: 'livecost',  label: '축비',     emoji: '🐖', store: 'tenarAreaPlots_livecost_enc',  shape: '◆', color: '#db2777', kindLabel: '축종', kinds: ['비육우', '번식우', '육우', '젖소', '비육돈', '산란계', '육계'] },
     { key: 'farmcost',  label: '농비',     emoji: '🚜', store: 'tenarAreaPlots_farmcost_enc',  shape: '▲', color: '#ea580c', kindLabel: '지목', kinds: ['논', '밭', '대지', '창고', '축사', '기타'] },
     { key: 'riceprice', label: '쌀값',     emoji: '🍚', store: 'tenarAreaPlots_riceprice_enc', shape: '★', color: '#eab308' },
-    { key: 'farmsale',  label: '농판',     emoji: '🧺', store: 'tenarAreaPlots_farmsale_enc',  shape: '▼', color: '#7c3aed' }
+    { key: 'farmsale',  label: '농판',     emoji: '🧺', store: 'tenarAreaPlots_farmsale_enc',  shape: '▼', color: '#7c3aed' },
+    { key: 'etc',       label: '기타조사',  emoji: '📋', store: 'tenarAreaPlots_etc_enc',       shape: '◉', color: '#0891b2' }   /* [v192] 기타조사 — 농판형(성명 칸을 '조사구이름'으로) */
   ];
   var currentAreaType = 'crop';
   function areaTypeCfg(t) { t = t || currentAreaType; for (var i = 0; i < AREA_TYPES.length; i++) { if (AREA_TYPES[i].key === t) return AREA_TYPES[i]; } return AREA_TYPES[0]; }
@@ -13386,7 +13388,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     } else {
       var _cfgKinds = areaTypeCfg();
       if (_cfgKinds.kinds) iKind = fldSelect(_cfgKinds.kindLabel, editing ? editing.kind : (pf ? (pf.kind || '') : ''), _cfgKinds.kinds);   /* [v116] 축종/지목 */
-      iName  = fld(_isLivestock ? '경영주명' : '성명', editing ? editing.name : (pf ? (pf.name || '') : ''), '', true);   /* [v120] 가축=경영주명 */
+      iName  = fld(_isLivestock ? '경영주명' : (currentAreaType === 'etc' ? '조사구이름' : '성명'), editing ? editing.name : (pf ? (pf.name || '') : ''), '', true);   /* [v120] 가축=경영주명 · [v192] 기타조사=조사구이름 */
       iPhone = fld('전화번호', editing ? editing.phone : (pf ? (pf.phone || '') : ''), '예: 010-0000-0000'); attachPhoneFormat(iPhone);   /* [v120] 하이픈 자동 */
       if (_isLivestock) {   /* [v120] 가축 추가 입력란 */
         iFarm = fld('농장명', editing ? editing.farmName : (pf ? (pf.farmName || '') : ''), '');
@@ -13486,7 +13488,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
         if (!iFloor.value.trim())  { showToast('「층」은 꼭 입력해 주세요.', 3200, 'info'); try { iFloor.focus(); } catch (e) {} return; }
         if (!iJosagu.value.trim()) { showToast('「조사구」는 꼭 입력해 주세요.', 3200, 'info'); try { iJosagu.focus(); } catch (e) {} return; }
       } else {
-        if (!iName.value.trim())   { showToast('「' + (_isLivestock ? '경영주명' : '성명') + '」은 꼭 입력해 주세요.', 3200, 'info'); try { iName.focus(); } catch (e) {} return; }
+        if (!iName.value.trim())   { showToast('「' + (_isLivestock ? '경영주명' : (currentAreaType === 'etc' ? '조사구이름' : '성명')) + '」은 꼭 입력해 주세요.', 3200, 'info'); try { iName.focus(); } catch (e) {} return; }
       }
       if (!addr && !(iLat.value && iLng.value)) { showToast('초입주소 또는 위도·경도 중 하나는 입력해 주세요.', 3800, 'info'); return; }
       var latStr = iLat.value.trim(), lngStr = iLng.value.trim();
