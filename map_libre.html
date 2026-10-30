@@ -1,4 +1,5 @@
-<!-- map_v192.html (v192 · TENAR V1.8) · 저장: 2026-10-29 16:32 KST · [v192] 조사구 종류에 「기타조사」 추가(7번째, 농판 다음) — 지도 꾹눌러 저장 시트·조사구목록 탭·저장/불러오기·전체백업/복원·핀(◉ 청록 #0891b2)·순서안내 모두 자동 연동(AREA_TYPES 1곳 추가로 전 도구 공유). 「기타조사」 선택 후 추가 폼은 농판형(성명·전화번호)이되 「성명」 칸 라벨을 「조사구이름」으로 표시(필수검증 안내문구도 동일). 저장키 tenarAreaPlots_etc_enc(자동 암호화). ※ 지도·계산 로직 무변경. (v191 이하 유지) -->
+<!-- map_v193.html (v193 · TENAR V1.8) · 저장: 2026-10-30 11:04 KST · [v193] 핀 팝업에 네이버/카카오 지도 바로보기 — ①조사구 핀 팝업: 초입주소(📍) 옆에 「복사」 버튼 추가 + 그 아래 작은 「N 네이버지도·K 카카오지도」 버튼(핀 주소·좌표로 앱/웹지도 열기). ②생산량(즐겨찾기) 핀 팝업: 기존 주소 「복사」 유지 + 작은 「N 네이버지도·K 카카오지도」 버튼 추가. 공용 openExtMap()로 앱(nmap/kakaomap 스킴)→웹지도 폴백(openAppOrWeb·현재 지도화면 유지). 공간이 작아 버튼 작게. ※ 길찾기(경로)와 별개 '위치 보기', 지도·계산 로직 무변경. (v192 이하 유지) -->
+<!-- (이전) map_v192.html (v192 · TENAR V1.8) · 저장: 2026-10-29 16:32 KST · [v192] 조사구 종류에 「기타조사」 추가(7번째, 농판 다음) — 지도 꾹눌러 저장 시트·조사구목록 탭·저장/불러오기·전체백업/복원·핀(◉ 청록 #0891b2)·순서안내 모두 자동 연동(AREA_TYPES 1곳 추가로 전 도구 공유). 「기타조사」 선택 후 추가 폼은 농판형(성명·전화번호)이되 「성명」 칸 라벨을 「조사구이름」으로 표시(필수검증 안내문구도 동일). 저장키 tenarAreaPlots_etc_enc(자동 암호화). ※ 지도·계산 로직 무변경. (v191 이하 유지) -->
 <!-- (이전) map_v191.html (v191 · TENAR V1.8) · 저장: 2026-10-19 06:51 KST · [v191] 통합계산기 「🧭 지도에서 A/B포구 위치(현장모드)」가 이전에 연결했던 '옛 핀'으로 가던 문제 수정 — consumeGoField에서 조사표가 넘긴 linkId를 최우선으로 조회(getFpSaves에서 linkId/id 일치하는 A/B포구 저장을 찾아 loadFpSave→현장모드 시작)해, 방금 작업·전송한 A/B포구로 바로 이동. linkId가 없거나 못 찾을 때만 기존 방식(favoriteId·주소·좌표 근접). (tonghab v159와 한 쌍) ※ 지도·계산 로직 무변경. (v190 이하 유지) -->
 <!-- (이전) map_v190.html (v190 · TENAR V1.8) · 저장: 2026-10-14 02:56 KST · [v190] 조사구(재배면적) 핀을 지도 열자마자 생산량(저장)핀과 함께 표시 — DEFAULT_SETTINGS.showAreaPins 기본 true(이전 false), 시작 복원(restoreWhenBothReady)에서 refreshFavPins 직후 areaUpdateSource() 호출해 조사구 소스 초기 렌더. (두당·텐아르 공용 지도 동일 오리진이라 두당에서 열어도 저장된 생산량핀+조사구핀 함께 표시됨). (이전) map_v189.html (v189 · TENAR V1.8) · 저장: 2026-10-12 01:07 KST · [v189] ①공유(JSON) 폴백 먼저 뜨던 문제 수정 — 「📤공유하기 버튼(새 제스처)」 모달로 한 번에 공유(생산량목록·조사구 공통). ②조사구 저장/불러오기에 공유 버튼 추가 — 파일 팝업 「JSON 가져오기」 옆에 「📤 공유」(현재 종류), 전체 백업·복원 옆에 「📤 전체 공유」(6종 전체). 공유도 _tenarBuildExport 암호화(사용자 암호) 적용. 지도·계산 로직 무변경. (v188 이하 유지) -->
 <!-- (이전)  map_v188.html (v188 · TENAR V1.8) · 저장: 2026-10-12 00:44 KST · [v188] 내보내기(JSON 공유/백업) 암호 규칙 강화 — ①9자리 이상이어야 저장(프롬프트에 "9자리 이상으로 저장하세요" 안내). ②공백(띄어쓰기)이 들어가면 저장 안 됨(안내 멘트 추가). 규칙 위반 시 그 자리에서 다시 입력. 빈칸/취소는 중단. ※ 가져오기는 옛 파일 호환 위해 길이·공백 검증 없음. 조사구 6종·연결자료 공유 공용함수 적용. 계산 로직 무변경. (v187 이하 유지) -->
@@ -1430,6 +1431,13 @@ TenarSecureStore.init('map',
     font-size: 11px; font-weight: 800; padding: 3px 8px; min-height: 26px; cursor: pointer; -webkit-appearance: none;
   }
   .copy-btn::after { content: ''; position: absolute; inset: -9px; }   /* 터치영역 44px 확보 */
+
+  /* [v193] 핀 팝업 — 네이버/카카오 지도 바로열기 작은 버튼 (공간 작아 축소) */
+  .mapbtn { position: relative; flex-shrink: 0; border: 1.5px solid transparent; border-radius: 7px; font-size: 11px; font-weight: 800; padding: 3px 7px; min-height: 26px; cursor: pointer; -webkit-appearance: none; margin-left: 4px; white-space: nowrap; }
+  .mapbtn.naver { background: #03c75a; color: #fff; border-color: #03c75a; }
+  .mapbtn.kakao { background: #fee500; color: #3c1e1e; border-color: #f2d900; }
+  .mapbtn:active { opacity: .8; }
+  .mapbtn::after { content: ''; position: absolute; inset: -9px; }   /* 터치영역 확보 */
 
   /* [v8-19] 즐겨찾기 보안 상태 배너 */
   .sec-banner {
@@ -4313,6 +4321,15 @@ TenarSecureStore.init('map',
     bCopy.addEventListener('click', function () { copyText(f.jibunAddress || ''); });
     addrRow.appendChild(bCopy);
     box.appendChild(addrRow);
+    /* [v193] 네이버/카카오 지도 바로 보기 (핀 주소·좌표로 앱 연결) */
+    var mapRow = el('div'); mapRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;';
+    var _fAddr = f.jibunAddress || f.roadAddress || f.name || '';
+    var bNmap = el('button', 'mapbtn naver', 'N 네이버지도'); bNmap.style.marginLeft = '0';
+    bNmap.addEventListener('click', function () { openExtMap('naver', _fAddr, f.latitude, f.longitude); });
+    var bKmap = el('button', 'mapbtn kakao', 'K 카카오지도');
+    bKmap.addEventListener('click', function () { openExtMap('kakao', _fAddr, f.latitude, f.longitude); });
+    mapRow.appendChild(bNmap); mapRow.appendChild(bKmap);
+    box.appendChild(mapRow);
 
     /* ② 도로명주소 */
     if (f.roadAddress) {
@@ -5885,6 +5902,25 @@ TenarSecureStore.init('map',
     c.addEventListener('click', closeSheet);
     box.appendChild(c);
     openSheet('🚗 길찾기', box, 50);
+  }
+
+  /* [v193] 핀 주소로 네이버/카카오 지도 「바로 보기」 — 길찾기(경로)가 아니라 위치 보기.
+     앱(스킴) → 없으면 웹지도. 좌표가 있으면 좌표 중심으로, 없으면 주소검색으로 연다.
+     현재 지도화면은 openAppOrWeb 로 유지(새 탭). */
+  function openExtMap(provider, addr, lat, lng) {
+    addr = (addr == null ? '' : String(addr)).trim();
+    var hasCoord = isFinite(lat) && isFinite(lng);
+    var q = encodeURIComponent(addr || '목적지');
+    if (provider === 'naver') {
+      /* 네이버: 앱=주소검색 / 웹=검색 결과 */
+      openAppOrWeb('nmap://search?query=' + q + '&appname=tenar',
+                   'https://map.naver.com/p/search/' + q);
+    } else {
+      /* 카카오: 앱=주소검색 / 웹=좌표있으면 마커표시, 없으면 검색 */
+      openAppOrWeb('kakaomap://search?q=' + q,
+                   hasCoord ? ('https://map.kakao.com/link/map/' + q + ',' + lat + ',' + lng)
+                            : ('https://map.kakao.com/?q=' + q));
+    }
   }
 
   /* ================= 조사표 전달 ================= */
@@ -13193,7 +13229,6 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     var head = el('div', null,
       '<div class="addr-label" style="margin-top:0;">' + escapeHtml(path) + '</div>' +
       '<div class="addr-value" style="font-weight:800;color:#b45309;">' + escapeHtml((p.number || '') + '번 · ' + areaPlotName(p)) + '</div>' +
-      (p.address1 ? '<div class="addr-value">📍 ' + escapeHtml(p.address1) + '</div>' : '') +
       /* [v120] 가축: 축종·농장명·관리인·전화(전화걸기) / 그 외 비작물: 전화(전화걸기) */
       (currentAreaType === 'livestock'
         ? ((p.kind ? '<div class="addr-value">🐄 축종: <b>' + escapeHtml(p.kind) + '</b></div>' : '') +
@@ -13205,6 +13240,25 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
       (p.note ? '<div class="addr-value" style="color:#777;">🏷 ' + escapeHtml(p.note) + '</div>' : '') +
       (areaCoordOk(p.latitude, p.longitude) ? '<div class="addr-value" style="font-size:12px;color:#999;">위도 ' + p.latitude.toFixed(6) + ' · 경도 ' + p.longitude.toFixed(6) + '</div>' : '<div class="addr-value" style="color:#c0392b;font-size:12px;">좌표 없음</div>'));
     box.appendChild(head);
+    /* [v193] 초입주소 + 복사 + 네이버/카카오 지도 바로보기 (공간 작아 작은 버튼) */
+    if (p.address1) {
+      var aRow = el('div', 'li-row'); aRow.style.cssText = 'align-items:center;margin-top:4px;';
+      var aTxt = el('div', 'li-grow', '<div class="addr-value">📍 ' + escapeHtml(p.address1) + '</div>');
+      aRow.appendChild(aTxt);
+      var aCopy = el('button', 'copy-btn copy-plain', '복사');
+      aCopy.addEventListener('click', function () { copyText(p.address1 || ''); });
+      aRow.appendChild(aCopy);
+      box.appendChild(aRow);
+      var aMapRow = el('div'); aMapRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;';
+      var _aLat = areaCoordOk(p.latitude, p.longitude) ? p.latitude : NaN;
+      var _aLng = areaCoordOk(p.latitude, p.longitude) ? p.longitude : NaN;
+      var aN = el('button', 'mapbtn naver', 'N 네이버지도'); aN.style.marginLeft = '0';
+      aN.addEventListener('click', function () { openExtMap('naver', p.address1, _aLat, _aLng); });
+      var aK = el('button', 'mapbtn kakao', 'K 카카오지도');
+      aK.addEventListener('click', function () { openExtMap('kakao', p.address1, _aLat, _aLng); });
+      aMapRow.appendChild(aN); aMapRow.appendChild(aK);
+      box.appendChild(aMapRow);
+    }
     /* [v88-3] 메모 내용 표시(핀 선택 시) */
     var _pmemo = areaGetMemo(p);
     if (_pmemo) {
