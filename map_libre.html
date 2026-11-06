@@ -1,4 +1,5 @@
-<!-- map_v194.html (v194 · TENAR V1.8) · 저장: 2026-11-06 17:06 KST · [v194] 현장모드 「📤 조사표로 전송」 동작 변경 — 현장모드에서 전송을 누르면 「조사표의 세로총길이 등을 덮어쓰기」 하지 않고 조사표(tonghab.html)로 바로 이동. (현장모드는 A/B포구를 이미 전송·저장한 뒤라, 재전송 시 세로총길이가 덮어써지던 것을 방지) 「조사표로 이동할까요?(확인/취소)」만 남기고, 확인 시 신규 fpFieldGoSurvey()로 즉시 이동. 카카오/네이버 뷰 전송도 현장모드 중이면 동일(아니면 기존 fpSubmit 유지). ※ 일반(비현장) 포구도구 전송·계산 로직 무변경. (v193 이하 유지) -->
+<!-- map_v195.html (v195 · TENAR V1.8) · 저장: 2026-11-07 01:39 KST · [v195] 지도 검색을 「어디고」처럼 카카오 기반 명칭(상호·아파트·건물·관공서 등 POI) 검색까지 지원 — 검색 순서: ①카카오 주소·지번(geocodeBest) → ②(없으면) 카카오 키워드 검색(requestKakaoKeyword·Places.keywordSearch, 지도중심 가까운 순) → ③브이월드 명칭 폴백. 결과 여러 개면 기존 「가까운 순 목록(areaOpenPlacePicker)」으로 선택. 검색창 placeholder·안내문구도 「주소·지번 또는 상호·아파트명」으로. ※ 지도·계산·전송 로직 무변경(검색 범위만 확장). (v194 이하 유지) -->
+<!-- (이전) map_v194.html (v194 · TENAR V1.8) · 저장: 2026-11-06 17:06 KST · [v194] 현장모드 「📤 조사표로 전송」 동작 변경 — 현장모드에서 전송을 누르면 「조사표의 세로총길이 등을 덮어쓰기」 하지 않고 조사표(tonghab.html)로 바로 이동. (현장모드는 A/B포구를 이미 전송·저장한 뒤라, 재전송 시 세로총길이가 덮어써지던 것을 방지) 「조사표로 이동할까요?(확인/취소)」만 남기고, 확인 시 신규 fpFieldGoSurvey()로 즉시 이동. 카카오/네이버 뷰 전송도 현장모드 중이면 동일(아니면 기존 fpSubmit 유지). ※ 일반(비현장) 포구도구 전송·계산 로직 무변경. (v193 이하 유지) -->
 <!-- (이전) map_v193.html (v193 · TENAR V1.8) · 저장: 2026-10-30 11:04 KST · [v193] 핀 팝업에 네이버/카카오 지도 바로보기 — ①조사구 핀 팝업: 초입주소(📍) 옆에 「복사」 버튼 추가 + 그 아래 작은 「N 네이버지도·K 카카오지도」 버튼(핀 주소·좌표로 앱/웹지도 열기). ②생산량(즐겨찾기) 핀 팝업: 기존 주소 「복사」 유지 + 작은 「N 네이버지도·K 카카오지도」 버튼 추가. 공용 openExtMap()로 앱(nmap/kakaomap 스킴)→웹지도 폴백(openAppOrWeb·현재 지도화면 유지). 공간이 작아 버튼 작게. ※ 길찾기(경로)와 별개 '위치 보기', 지도·계산 로직 무변경. (v192 이하 유지) -->
 <!-- (이전) map_v192.html (v192 · TENAR V1.8) · 저장: 2026-10-29 16:32 KST · [v192] 조사구 종류에 「기타조사」 추가(7번째, 농판 다음) — 지도 꾹눌러 저장 시트·조사구목록 탭·저장/불러오기·전체백업/복원·핀(◉ 청록 #0891b2)·순서안내 모두 자동 연동(AREA_TYPES 1곳 추가로 전 도구 공유). 「기타조사」 선택 후 추가 폼은 농판형(성명·전화번호)이되 「성명」 칸 라벨을 「조사구이름」으로 표시(필수검증 안내문구도 동일). 저장키 tenarAreaPlots_etc_enc(자동 암호화). ※ 지도·계산 로직 무변경. (v191 이하 유지) -->
 <!-- (이전) map_v191.html (v191 · TENAR V1.8) · 저장: 2026-10-19 06:51 KST · [v191] 통합계산기 「🧭 지도에서 A/B포구 위치(현장모드)」가 이전에 연결했던 '옛 핀'으로 가던 문제 수정 — consumeGoField에서 조사표가 넘긴 linkId를 최우선으로 조회(getFpSaves에서 linkId/id 일치하는 A/B포구 저장을 찾아 loadFpSave→현장모드 시작)해, 방금 작업·전송한 A/B포구로 바로 이동. linkId가 없거나 못 찾을 때만 기존 방식(favoriteId·주소·좌표 근접). (tonghab v159와 한 쌍) ※ 지도·계산 로직 무변경. (v190 이하 유지) -->
@@ -1547,7 +1548,7 @@ TenarSecureStore.init('map',
       <button id="backBtn" type="button" title="뒤로가기" aria-label="뒤로가기">‹</button>
       <input id="searchInput" type="search" inputmode="text" autocomplete="off"
              autocorrect="off" autocapitalize="off" spellcheck="false"
-             enterkeyhint="search" placeholder="주소 또는 지번을 입력하세요">
+             enterkeyhint="search" placeholder="주소·지번 또는 상호·아파트명 검색">
       <button id="clearBtn" type="button" aria-label="입력 지우기">✕</button>
       <button id="searchBtn" type="button">검색</button>
     </div>
@@ -3895,6 +3896,50 @@ TenarSecureStore.init('map',
       });
     }).catch(function () { return null; });
   }
+  /* [v195] 카카오 키워드(장소·상호·아파트·건물명 등) 검색 — "어디고"처럼 명칭으로 찾기.
+     카카오 로컬 키워드 검색(Places)으로 상호·아파트·관공서·건물 등 POI를 찾는다.
+     성공 시 [{lng,lat,place:true,title,parcel,road}], 실패/자료없음/키없음이면 [].
+     ※ 현재 지도 중심 기준 가까운 순으로 받아 호출부(가까운 순 목록)와도 맞춘다. */
+  function requestKakaoKeyword(query) {
+    query = (query || '').trim();
+    if (!query) return Promise.resolve([]);
+    return ensureKakaoSdk().then(function (ok) {
+      if (!ok || !(window.kakao && kakao.maps && kakao.maps.services && kakao.maps.services.Places)) return [];
+      return new Promise(function (resolve) {
+        var done = false;
+        var to = setTimeout(function () { if (!done) { done = true; resolve([]); } }, 6000);
+        try {
+          var ps = new kakao.maps.services.Places();
+          var opts = {};
+          try {
+            var c = map.getCenter();
+            if (c && isFinite(c.lat) && isFinite(c.lng)) {
+              opts.location = new kakao.maps.LatLng(c.lat, c.lng);
+              opts.sort = kakao.maps.services.SortBy.DISTANCE;   /* 지도 중심에서 가까운 순 */
+            }
+          } catch (e) {}
+          ps.keywordSearch(query, function (result, status) {
+            if (done) return; done = true; clearTimeout(to);
+            if (status === kakao.maps.services.Status.OK && result && result.length) {
+              var out = [];
+              result.forEach(function (r) {
+                var lng = parseFloat(r.x), lat = parseFloat(r.y);
+                if (!isFinite(lng) || !isFinite(lat)) return;
+                out.push({
+                  lng: lng, lat: lat, place: true,
+                  title: r.place_name || '',
+                  parcel: r.address_name || '',
+                  road: r.road_address_name || ''
+                });
+              });
+              resolve(out);
+            } else resolve([]);
+          }, opts);
+        } catch (e) { if (!done) { done = true; clearTimeout(to); resolve([]); } }
+      });
+    }).catch(function () { return []; });
+  }
+
   /* [v97] 통합 지오코딩 — 카카오 우선 → 브이월드(PARCEL→ROAD) 폴백. hit{lng,lat,parcel,road} 또는 null.
      브이월드 인증오류는 throw 'apikey' 로 전달(호출부 안내용). */
   function geocodeBest(query) {
@@ -3919,29 +3964,38 @@ TenarSecureStore.init('map',
 
   function searchAddress() {
     var query = searchInput.value.trim();
-    if (!query) { showToast('주소 또는 지번을 입력해주세요.', 3000, 'info'); return; }
+    if (!query) { showToast('주소·지번 또는 상호·아파트명을 입력해주세요.', 3000, 'info'); return; }
     if (!hasApiKey()) { showToast('브이월드 API 키를 입력해주세요.', 0); return; }
     if (searching) return;
     searching = true;
     showToast('주소를 검색하고 있습니다.', 0, 'info');
 
-    /* [v97] 카카오 우선(geocodeBest) → 실패 시 브이월드 명칭(장소·기관) 검색 폴백 */
+    /* [v97/v195] 카카오 주소·지번(geocodeBest) → (없으면) 카카오 키워드(상호·아파트·장소명) → 브이월드 명칭(기관) 폴백 */
     geocodeBest(query)
       .then(function (hit) {
         if (hit) return hit;
-        return requestVWorldPlaceSearch(query).then(function (pd) {
-          if (isKeyError(pd)) throw new Error('apikey');
-          var arr = parsePlaceSearchAll(pd);
-          if (!arr.length) return null;
-          if (arr.length === 1) return arr[0];
-          areaOpenPlacePicker(arr, query);   /* [v87-3] 여러 개 → 가까운 순 목록 */
-          return { picker: true };
+        /* [v195] 주소·지번이 아니면 카카오 키워드(POI) 검색 — 어디고처럼 상호·아파트·건물명으로 찾기 */
+        return requestKakaoKeyword(query).then(function (karr) {
+          if (karr && karr.length) {
+            if (karr.length === 1) return karr[0];
+            areaOpenPlacePicker(karr, query);   /* 여러 개 → 가까운 순 목록 */
+            return { picker: true };
+          }
+          /* 카카오 키워드도 없으면 브이월드 명칭(장소·기관) 검색 폴백 */
+          return requestVWorldPlaceSearch(query).then(function (pd) {
+            if (isKeyError(pd)) throw new Error('apikey');
+            var arr = parsePlaceSearchAll(pd);
+            if (!arr.length) return null;
+            if (arr.length === 1) return arr[0];
+            areaOpenPlacePicker(arr, query);   /* [v87-3] 여러 개 → 가까운 순 목록 */
+            return { picker: true };
+          });
         });
       })
       .then(function (hit) {
         searching = false;
         if (hit && hit.picker) return;   /* [v87-3] 명칭 결과 목록을 띄웠음 */
-        if (!hit) { showToast('검색 결과를 찾을 수 없습니다.\n주소·지번 또는 기관 명칭을 다시 확인해주세요.', 5000); return; }
+        if (!hit) { showToast('검색 결과를 찾을 수 없습니다.\n주소·지번 또는 상호·아파트·건물 명칭을 다시 확인해주세요.', 5000); return; }
         hit.query = query;
         map.flyTo({ center: [hit.lng, hit.lat], zoom: 18, essential: true }); /* 회전각 유지 */
         showSearchMarker(hit);

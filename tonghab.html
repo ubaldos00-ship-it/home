@@ -1,4 +1,5 @@
-<!-- tonghab.html (v165) · 저장: 2026-11-06 17:06 KST · [v165] 「🧭 지도에서 A/B포구 위치(현장모드)」 버튼을 논벼 외 작물(마늘·양파·감자·콩·배추·무·총각무)에도 추가 — 기존엔 논벼 ⑤ 이삭수 아래에만 있던 버튼을, 비논벼 작물에서는 「🗺 지도에서 위치 계산」 버튼 바로 아래(.hide-nonbye)에 함께 표시(같은 tenarGoFieldFromSurvey 호출). 논벼는 기존 위치 그대로. 작물별로 1개만 보임(중복 없음) 확인. ※ 계산식 무변경. (v164 이하 유지) -->
+<!-- tonghab.html (v166) · 저장: 2026-11-07 01:39 KST · [v166·버그수정] 저장자료를 불러올 때 「10a당 생산량 계산기(지역·품종 아래 조사데이터)」의 이전 조사 값이 남아 10a당 생산량이 이전 위치(예: 연경) 값으로 나오던 문제 수정 — 불러온 자료에 없는 prod 입력란(중량·포기수·개수·건조율·피해 등)을 빈칸/기본값으로 비우고 10a 결과를 숨기는 _prodClearStale()를 _slApply(불러오기)에 추가. 논벼 실수확량은 v144에서 이미 처리됐었고, 마늘·양파·감자·콩·배추·무·총각무 전반에 동일 적용. 다중중량(PMW) 필드도 없으면 UI 비움. ※ 계산식 무변경(잔상 제거·표시만). (v165 이하 유지) -->
+<!-- (이전)  tonghab.html (v165) · 저장: 2026-11-06 17:06 KST · [v165] 「🧭 지도에서 A/B포구 위치(현장모드)」 버튼을 논벼 외 작물(마늘·양파·감자·콩·배추·무·총각무)에도 추가 — 기존엔 논벼 ⑤ 이삭수 아래에만 있던 버튼을, 비논벼 작물에서는 「🗺 지도에서 위치 계산」 버튼 바로 아래(.hide-nonbye)에 함께 표시(같은 tenarGoFieldFromSurvey 호출). 논벼는 기존 위치 그대로. 작물별로 1개만 보임(중복 없음) 확인. ※ 계산식 무변경. (v164 이하 유지) -->
 <!-- (이전)  tonghab.html (v164) · 저장: 2026-10-28 13:34 KST · [v164] 연락처에 「수확예정일」 추가 — 메모 아래 텍스트 입력란(harvestDate), 저장/복원·초기화 포함. 저장/불러오기 목록의 저장일시 옆에 「🌾수확예정 …」 표시. 전화 자동 하이픈(01012345678→010-1234-5678)은 기존대로 동작. ※ 계산식 무변경. (v163 이하 유지) -->
 <!-- (이전)  tonghab.html (v163) · 저장: 2026-10-28 02:48 KST · [v163] 저장/불러오기 목록 2건 보완 — ①항목 표시를 줄바꿈 형태로: 작물·지번(라벨) / 전체주소 / 이름·전화·메모 / 날짜 를 각 줄(작은 글씨). ②번호를 「실제 보이는 목록(조회 필터 적용 후)」 기준으로 매겨 보이는 개수와 항상 일치(예: 22건이면 최대 22번). 이전엔 전체목록 기준이라, 조회 필터가 걸리면 보이는 개수보다 큰 번호가 나왔음. 정렬을 바꿔도 각 자료 번호는 유지(재번호 안 됨), 삭제 시엔 1..N로 다시 매겨짐. ※ 계산식 무변경. (v162 이하 유지) -->
 <!-- (이전)  tonghab.html (v162) · 저장: 2026-10-28 02:39 KST · [v162] 저장/불러오기 목록 촘촘하게 + 연락처 보완 — ①목록 항목의 주소(작게)·연락처(📇이름·☎전화)·메모(📝)·날짜를 「한 줄」로 합쳐 항목 높이 축소(한 화면에 더 많이 보임), 항목 여백도 축소. ②메모(contactAddr)도 목록에 표시. ③통합 연락처 전화 입력란이 이름칸과 모양이 달랐던 문제 수정(type tel→text로 전역 입력스타일 적용). ※ 계산식 무변경. (v161 이하 유지) -->
@@ -9685,6 +9686,50 @@ function _pmwRestoreAll(d){
   });
 }
 
+/* [v166] 불러오기 시 10a당 생산량 계산기(지역·품종 아래 조사데이터) 잔상 제거 —
+   저장 데이터에 없는 prod 입력란을 빈칸/기본값으로 비워, 이전 조사의 중량·포기수 등이
+   남아 10a당 생산량이 이전 값으로 나오던 문제 해결(논벼 실수확량 v144 처리와 동일 취지,
+   마늘·양파·감자·콩·배추·무·총각무 전반 적용). ※ 계산식 무변경(표시·잔상처리만). */
+function _prodClearStale(d){
+  try{
+    var zone = document.getElementById('prodZone');
+    if(!zone) return;
+    /* ① 다중중량(PMW) 필드: 저장 데이터에 없으면 UI를 비운다(복원된 값은 유지) */
+    if(typeof PMW_FIELDS !== 'undefined'){
+      PMW_FIELDS.forEach(function(f){
+        if(d[f.id] !== undefined && d[f.id] !== '') return;   /* 복원됨 → 유지 */
+        var hid = document.getElementById(f.id); if(hid) hid.value='';
+        var wrap = document.getElementById('pmw-'+f.id);
+        if(wrap){ wrap.innerHTML=''; if(typeof _pmwAddRowSilent==='function') _pmwAddRowSilent(f.id, f.ab, f.type); }
+        var sumEl = document.getElementById('pmw-sum-'+f.id); if(sumEl) sumEl.textContent='합계: —';
+        var pw = document.getElementById('pwrap-'+f.id.replace(/^p/,'')); if(pw) pw.classList.remove('pfilled');
+        var fmt = document.getElementById('pfmt-'+f.id); if(fmt) fmt.textContent='';
+      });
+    }
+    /* ② 그 외 prod 입력란(숫자·텍스트·셀렉트): 저장 데이터에 없으면 초기화(피해코드는 '01') */
+    var PMW_RE = /^p[ab]-(weight|cab-weight|rad-weight|tok-weight|potato-over)$/;
+    zone.querySelectorAll('input[id], select[id], textarea[id]').forEach(function(el){
+      if(el.readOnly || el.disabled) return;
+      var id = el.id;
+      if(PMW_RE.test(id)) return;                         /* PMW 숨김 input → ①에서 처리 */
+      if(el.type==='checkbox' || el.type==='radio') return;
+      if(d[id] !== undefined && d[id] !== '') return;      /* 복원됨 → 유지 */
+      var dflt = (id==='pa-dmg-code' || id==='pb-dmg-code') ? '01' : '';
+      if(el.value !== dflt){
+        el.value = dflt;
+        el.dispatchEvent(new Event('input',{bubbles:true}));
+        el.dispatchEvent(new Event('change',{bubbles:true}));
+      }
+    });
+    /* ③ 건조율 박스 재동기화(지역 기준 자동값) */
+    if(typeof prodUpdateDryBoxes==='function') prodUpdateDryBoxes();
+    /* ④ 10a당 생산량 결과/오류 숨김(잔상 제거) */
+    var rs=document.getElementById('prod-result-section'); if(rs) rs.classList.remove('show');
+    var eb=document.getElementById('prod-err-box'); if(eb) eb.classList.remove('show');
+    var elErr=document.getElementById('prod-err-list'); if(elErr) elErr.innerHTML='';
+  }catch(e){}
+}
+
 /* ══════════════════════════════════════════
    저장 / 불러오기 — 수동 슬롯 (localStorage)
    ══════════════════════════════════════════ */
@@ -9864,6 +9909,8 @@ function _slApply(d, _onDone){
       try{ if(typeof _nbUpdateHdrAddr==='function') _nbUpdateHdrAddr(); }catch(e){}
       // 다중중량 필드 UI 복원
       if(typeof _pmwRestoreAll==='function') _pmwRestoreAll(d);
+      /* [v166] 10a당 생산량 계산기 조사데이터 잔상 제거(저장 안 된 prod 입력란 초기화) */
+      if(typeof _prodClearStale==='function') _prodClearStale(d);
       setTimeout(function(){
         ['waAvg','wbAvg','heightA','heightB','aN','bN'].forEach(function(id){
           var el=document.getElementById(id);if(el&&el.value)el.dispatchEvent(new Event('input',{bubbles:true}));
