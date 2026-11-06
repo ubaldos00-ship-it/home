@@ -1,4 +1,5 @@
-<!-- map_v193.html (v193 · TENAR V1.8) · 저장: 2026-10-30 11:04 KST · [v193] 핀 팝업에 네이버/카카오 지도 바로보기 — ①조사구 핀 팝업: 초입주소(📍) 옆에 「복사」 버튼 추가 + 그 아래 작은 「N 네이버지도·K 카카오지도」 버튼(핀 주소·좌표로 앱/웹지도 열기). ②생산량(즐겨찾기) 핀 팝업: 기존 주소 「복사」 유지 + 작은 「N 네이버지도·K 카카오지도」 버튼 추가. 공용 openExtMap()로 앱(nmap/kakaomap 스킴)→웹지도 폴백(openAppOrWeb·현재 지도화면 유지). 공간이 작아 버튼 작게. ※ 길찾기(경로)와 별개 '위치 보기', 지도·계산 로직 무변경. (v192 이하 유지) -->
+<!-- map_v194.html (v194 · TENAR V1.8) · 저장: 2026-11-06 17:06 KST · [v194] 현장모드 「📤 조사표로 전송」 동작 변경 — 현장모드에서 전송을 누르면 「조사표의 세로총길이 등을 덮어쓰기」 하지 않고 조사표(tonghab.html)로 바로 이동. (현장모드는 A/B포구를 이미 전송·저장한 뒤라, 재전송 시 세로총길이가 덮어써지던 것을 방지) 「조사표로 이동할까요?(확인/취소)」만 남기고, 확인 시 신규 fpFieldGoSurvey()로 즉시 이동. 카카오/네이버 뷰 전송도 현장모드 중이면 동일(아니면 기존 fpSubmit 유지). ※ 일반(비현장) 포구도구 전송·계산 로직 무변경. (v193 이하 유지) -->
+<!-- (이전) map_v193.html (v193 · TENAR V1.8) · 저장: 2026-10-30 11:04 KST · [v193] 핀 팝업에 네이버/카카오 지도 바로보기 — ①조사구 핀 팝업: 초입주소(📍) 옆에 「복사」 버튼 추가 + 그 아래 작은 「N 네이버지도·K 카카오지도」 버튼(핀 주소·좌표로 앱/웹지도 열기). ②생산량(즐겨찾기) 핀 팝업: 기존 주소 「복사」 유지 + 작은 「N 네이버지도·K 카카오지도」 버튼 추가. 공용 openExtMap()로 앱(nmap/kakaomap 스킴)→웹지도 폴백(openAppOrWeb·현재 지도화면 유지). 공간이 작아 버튼 작게. ※ 길찾기(경로)와 별개 '위치 보기', 지도·계산 로직 무변경. (v192 이하 유지) -->
 <!-- (이전) map_v192.html (v192 · TENAR V1.8) · 저장: 2026-10-29 16:32 KST · [v192] 조사구 종류에 「기타조사」 추가(7번째, 농판 다음) — 지도 꾹눌러 저장 시트·조사구목록 탭·저장/불러오기·전체백업/복원·핀(◉ 청록 #0891b2)·순서안내 모두 자동 연동(AREA_TYPES 1곳 추가로 전 도구 공유). 「기타조사」 선택 후 추가 폼은 농판형(성명·전화번호)이되 「성명」 칸 라벨을 「조사구이름」으로 표시(필수검증 안내문구도 동일). 저장키 tenarAreaPlots_etc_enc(자동 암호화). ※ 지도·계산 로직 무변경. (v191 이하 유지) -->
 <!-- (이전) map_v191.html (v191 · TENAR V1.8) · 저장: 2026-10-19 06:51 KST · [v191] 통합계산기 「🧭 지도에서 A/B포구 위치(현장모드)」가 이전에 연결했던 '옛 핀'으로 가던 문제 수정 — consumeGoField에서 조사표가 넘긴 linkId를 최우선으로 조회(getFpSaves에서 linkId/id 일치하는 A/B포구 저장을 찾아 loadFpSave→현장모드 시작)해, 방금 작업·전송한 A/B포구로 바로 이동. linkId가 없거나 못 찾을 때만 기존 방식(favoriteId·주소·좌표 근접). (tonghab v159와 한 쌍) ※ 지도·계산 로직 무변경. (v190 이하 유지) -->
 <!-- (이전) map_v190.html (v190 · TENAR V1.8) · 저장: 2026-10-14 02:56 KST · [v190] 조사구(재배면적) 핀을 지도 열자마자 생산량(저장)핀과 함께 표시 — DEFAULT_SETTINGS.showAreaPins 기본 true(이전 false), 시작 복원(restoreWhenBothReady)에서 refreshFavPins 직후 areaUpdateSource() 호출해 조사구 소스 초기 렌더. (두당·텐아르 공용 지도 동일 오리진이라 두당에서 열어도 저장된 생산량핀+조사구핀 함께 표시됨). (이전) map_v189.html (v189 · TENAR V1.8) · 저장: 2026-10-12 01:07 KST · [v189] ①공유(JSON) 폴백 먼저 뜨던 문제 수정 — 「📤공유하기 버튼(새 제스처)」 모달로 한 번에 공유(생산량목록·조사구 공통). ②조사구 저장/불러오기에 공유 버튼 추가 — 파일 팝업 「JSON 가져오기」 옆에 「📤 공유」(현재 종류), 전체 백업·복원 옆에 「📤 전체 공유」(6종 전체). 공유도 _tenarBuildExport 암호화(사용자 암호) 적용. 지도·계산 로직 무변경. (v188 이하 유지) -->
@@ -11024,6 +11025,16 @@ TenarSecureStore.init('map',
       window.location.href = back;   /* 뒤로가기 차단(pushState) 때문에 history.back() 대신 주소 이동 */
     }, 250);
   }
+  /* [v194] 현장모드 「조사표로 전송」 — 세로총길이 등 조사표 값을 덮어쓰지 않고 조사표(tonghab)로 바로 이동.
+     (현장모드에서는 A/B포구를 이미 전송·저장한 상태라, 다시 전송하면 세로총길이가 덮어써지는 것을 막기 위함) */
+  function fpFieldGoSurvey() {
+    try { if (window._tenarBeginTransition) window._tenarBeginTransition(); } catch (e) {}   /* [v109] 이동~적용완료 「진행중」 차단 */
+    setTimeout(function () {
+      var back = 'tonghab.html';
+      try { back = new URL('tonghab.html', location.href).href; } catch (e) { back = 'tonghab.html'; }
+      window.location.href = back;
+    }, 150);
+  }
 
   /* ===================================================================
      [v18-7] 포구도구 조사 설정 — 작물 · 기준(길이/이랑) · 1번/2번 비율
@@ -12557,10 +12568,10 @@ TenarSecureStore.init('map',
     /* [v140] 현장모드 시작/종료 */
     on('fpFieldBtn', fpToggleFieldMode);
     on('fpFieldExit', function () { fpExitFieldMode(); });
-    /* [v145] 현장모드 중 좌하단 「조사표로 전송」 — 이동/취소 확인 후 바로 전송(이동) */
+    /* [v194] 현장모드 중 좌하단 「조사표로 전송」 — 이동/취소 확인 후, 세로총길이 덮어쓰기 없이 조사표로 바로 이동 */
     on('fpFieldSend', function () {
       if (window.confirm('조사표로 이동할까요?\n\n[확인] 이동   [취소] 취소')) {
-        try { fpSubmit(); } catch (e) {}
+        try { fpFieldGoSurvey(); } catch (e) {}
       }
     });
     /* [v146] 카카오 지도 대체 뷰 */
@@ -12569,8 +12580,15 @@ TenarSecureStore.init('map',
     on('kakaoClose', function () { closeKakaoView(); });
     on('kakaoRecenter', function () { _kRecenter(); });
     on('kakaoZoomPlus', function () { _kCycleZoom(); });
-    /* [v157] 카카오/네이버 뷰 안의 「조사표 전송」 — 이동/취소 확인 후 fpSubmit */
-    function _mapViewSend() { if (window.confirm('조사표로 이동할까요?\n\n[확인] 이동   [취소] 취소')) { try { fpSubmit(); } catch (e) {} } }
+    /* [v157] 카카오/네이버 뷰 안의 「조사표 전송」 — 이동/취소 확인 후 전송.
+       [v194] 현장모드 중이면 세로총길이 덮어쓰기 없이 바로 이동(fpFieldGoSurvey), 그 외에는 기존 전송(fpSubmit). */
+    function _mapViewSend() {
+      if (!window.confirm('조사표로 이동할까요?\n\n[확인] 이동   [취소] 취소')) return;
+      try {
+        if (document.body.classList.contains('field-mode')) fpFieldGoSurvey();
+        else fpSubmit();
+      } catch (e) {}
+    }
     on('kakaoSend', _mapViewSend);
     on('naverSend', _mapViewSend);
     /* [v150] 네이버 지도 대체 뷰 + 카카오↔네이버 상호 전환 */
