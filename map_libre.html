@@ -1,4 +1,5 @@
-<!-- map_v206.html (v206 · TENAR V1.8) · 저장: 2026-11-11 00:40 KST · [v206] 지도 보완 묶음② (요청 #4·#5) — ①#5 「핀 위치 수정」 모드에서 X(시트 닫기)·바깥터치로 닫아도 중앙 십자(+)와 이동 모드가 남던 문제: 시트가 닫히면 위치수정 모드도 함께 종료(startPinMove는 먼저 닫고 설정하도록 순서 조정). ②#4 측정(청취) 재저장: editingSaveId를 잃어버려도 「같은 자리(첫 측정점)·같은 핀」의 기존 저장이 있으면 덮어쓰기 대상으로 인식해 덮어쓰기/새로저장 선택지가 나오게 하고, 저장 시트에 「취소」 버튼 추가. ※ 계산·전송 로직 무변경. (v205 이하 유지) -->
+<!-- map_v207.html (v207 · TENAR V1.8) · 저장: 2026-11-11 01:00 KST · [v207] 지도 보완 묶음③ (요청 #6·#7) — ①#6A 화면 꾹누르기 팝업(저장·측정·토지정보·공유)이 손가락이 조금만 움직여도 안 뜨던 문제: 이동 허용치 8→24px로 넓히고, 드래그/무브 시작만으로는 취소하지 않게(줌·메뉴숨김은 유지) → 약간 움직여도 메뉴가 뜨고 약간의 팬은 그대로. ②#6B 토지정보의 「저장」을 꾹눌러 「저장」과 동일 화면으로 — 기존엔 생산량 핀만 저장(openPinSaveSheet)되던 것을, 생산량 핀/조사구 종류 선택 화면(areaSaveFromMap)으로 통일. ③#7 저장위치 팝업에 「잠금/해제」 버튼을 핀 수정과 삭제 사이에 추가(생산량목록 잠금과 동일 동작). ※ 계산·전송 로직 무변경. (v206 이하 유지) -->
+<!-- (이전) map_v206.html (v206 · TENAR V1.8) · 저장: 2026-11-11 00:40 KST · [v206] 지도 보완 묶음② (요청 #4·#5) — ①#5 「핀 위치 수정」 모드에서 X(시트 닫기)·바깥터치로 닫아도 중앙 십자(+)와 이동 모드가 남던 문제: 시트가 닫히면 위치수정 모드도 함께 종료(startPinMove는 먼저 닫고 설정하도록 순서 조정). ②#4 측정(청취) 재저장: editingSaveId를 잃어버려도 「같은 자리(첫 측정점)·같은 핀」의 기존 저장이 있으면 덮어쓰기 대상으로 인식해 덮어쓰기/새로저장 선택지가 나오게 하고, 저장 시트에 「취소」 버튼 추가. ※ 계산·전송 로직 무변경. (v205 이하 유지) -->
 <!-- (이전) map_v205.html (v205 · TENAR V1.8) · 저장: 2026-11-11 00:20 KST · [v205] 지도 보완 묶음① (요청 #2·#3·#14) — ①#2 면적측정 도형 작물 라벨이 전역 작물(measCrop)에 흔들려 엉뚱한 작물(콩인데 참깨)로 뜨던 문제: 도형마다 「그때 작물」을 저장(commit·저장·복원)하고 라벨은 도형 자체 작물로 표시(작업 중 도형만 현재 작물). ②#3·#14(같은 원인) 포구도구 작물명: 핀에서 포구 시작 시 핀 작물을 포구 작물에 미리 반영(배너에 작물 표시) + 「작물·기준·비율」 조사설정 열면 작물칸이 연결된 핀 작물로 미리 채워짐(없으면 빈칸). ※ 비율·기준은 그대로 비워 확인 유도. 계산·전송 로직 무변경. (v204 이하 유지) -->
 <!-- (이전) map_v204.html (v204 · TENAR V1.8) · 저장: 2026-11-10 15:52 KST · [v204] 답례품 — 농비·축비 「대상처」 이름 자동 묶음 — 농비·축비는 핀을 여러 개 찍어도 「이름(경영주/성명)」이 같으면 한 대상처로 묶어, 답례품은 대표(맨 위 1핀)에만 1개 지급·집계. 답례품 화면에서 대상처 1곳=1줄로 표시하고 「대표 · N곳」으로 핀 수 표기. 대상처 중 어느 핀에 지급돼 있어도 지급으로 인정(memberIds). 생산량·가축·쌀값·농판·기타조사는 핀 단위 그대로. 추가 입력 UI 없음(기존 이름 데이터로 자동). ※ 지급 월 규칙(v203)·기록 구조 무변경. (v203 이하 유지) -->
 <!-- (이전) map_v203.html (v203 · TENAR V1.8) · 저장: 2026-11-10 15:40 KST · [v203] 답례품 「업무별 지급하는 달」 반영 + 년/월 선택 — ①업무·작물별 지급 월 규칙(사용자 제공): 축비·농비=매월, 가축=3·9월, 산지쌀값=3·6·9·12월, 마늘·양파=5월, 겉보리·쌀보리·맥주보리·밀=6월, 감자=6월·고랭지감자=8월·가을감자=10월·고구마=8월, 고추·참깨=9월, 콩=8월, 사과·배=9월, 논벼=8월, 배추·무=10월, 봄배추무(시설)=4월·(노지)=6월. 그 달 지급 대상 업무·작물만 답례품 화면에 보이게(해당 목록 있을 때만 표시). ②답례품 화면 상단을 「년도(‹2026년›) + 1~12월 버튼」으로 바꿔 월 선택 시 바로 그 달 지급 대상 표시. ※ 미지정 업무(농판·기타조사)·작물은 매월 표시. 지급 기록·구조 무변경. (v202 이하 유지) -->
@@ -4591,7 +4592,17 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
       closeSheet();
       showToast('삭제되었습니다.', 2000, 'success');
     });
-    r2.appendChild(bEdit); r2.appendChild(bDel);
+    /* [v207] 핀 잠금/해제 버튼 — 핀 수정과 삭제 사이 (생산량목록의 잠금과 동일 동작) (요청 #7) */
+    var bLock = el('button', 'sheet-btn', f.locked ? '🔓 잠금 해제' : '🔒 삭제 잠금');
+    bLock.addEventListener('click', function () {
+      var arr = getFavs();
+      for (var k = 0; k < arr.length; k++) if (arr[k].id === f.id) { arr[k].locked = !arr[k].locked; arr[k].updatedAt = kstNowStr(); }
+      setFavs(arr);
+      f.locked = !f.locked;
+      bLock.textContent = f.locked ? '🔓 잠금 해제' : '🔒 삭제 잠금';
+      showToast(f.locked ? '🔒 삭제 잠금했습니다.' : '🔓 잠금을 해제했습니다.', 2000, 'info');
+    });
+    r2.appendChild(bEdit); r2.appendChild(bLock); r2.appendChild(bDel);
 
     /* [v10-19] 현재 필지 정보 → 토지정보 시트 (뒤로가기로 이 화면 복귀) */
     var bParcel = el('button', 'sheet-btn', '🧾 현재 필지 정보');
@@ -7234,15 +7245,16 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
     /* [v10-10] 하단 버튼 3개 — 현재 위치 팝업과 같은 컴포넌트(.btn-row/.sheet-btn) */
     var row = el('div', 'btn-row');
     row.style.marginTop = '16px';
-    var bSave = el('button', 'sheet-btn primary', '⭐ 현재 핀 저장');
+    var bSave = el('button', 'sheet-btn primary', '💾 저장');
     bSave.addEventListener('click', function () {
-      /* [v10-11] 저장 기준은 좌표, 표시 주소는 전체 지번 */
-      openPinSaveSheet({
+      /* [v207] 토지정보 저장도 꾹눌러 「저장」과 동일한 화면으로 — 생산량 핀/조사구 종류 선택 (요청 #6) */
+      var _si = {
         lat: data.lat, lng: data.lng,
         jibunAddress: data.jibunAddress || data.parcelAddr || '',
         roadAddress: data.roadAddress || '', postalCode: data.postalCode || '',
         pnu: data.pnu || ''
-      });
+      };
+      try { areaSaveFromMap(_si); } catch (e) { openPinSaveSheet(_si); }
     });
     var bNav = el('button', 'sheet-btn green-soft', '🚗 길찾기');
     bNav.addEventListener('click', function () {
@@ -10051,7 +10063,7 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
     function moved(e) {
       if (!timer || !startPt) return;
       var dx = e.point.x - startPt.x, dy = e.point.y - startPt.y;
-      if (Math.sqrt(dx * dx + dy * dy) > 8) cancel();   /* 지도를 끌면 취소 */
+      if (Math.sqrt(dx * dx + dy * dy) > 24) cancel();   /* [v207] 많이 끌면 취소 — 조금 움직여도 꾹눌러 메뉴가 뜨도록 8→24px (요청 #6) */
     }
     map.on('mousedown', begin);
     map.on('touchstart', begin);
@@ -10059,9 +10071,10 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
     map.on('touchmove', moved);
     map.on('mouseup', cancel);
     map.on('touchend', cancel);
-    map.on('dragstart', cancel);
+    /* [v207] 지도가 살짝 움직여도(약간의 팬) 꾹눌러 메뉴가 뜨도록 — 이동거리(24px)로만 취소하고
+       드래그/무브 시작만으로는 취소하지 않는다. 줌(핀치)과 이미 뜬 메뉴 숨김은 유지. (요청 #6) */
     map.on('zoomstart', cancel);
-    map.on('movestart', function () { cancel(); hideQuickMenu(); });
+    map.on('movestart', function () { hideQuickMenu(); });
     /* 롱프레스로 메뉴가 뜬 직후의 click 은 무시(점이 찍히지 않도록) */
     map.on('click', function () { if (fired) { fired = false; return; } hideQuickMenu(); });
     /* PC 우클릭도 동일 메뉴 */
