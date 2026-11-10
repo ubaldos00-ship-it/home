@@ -1,4 +1,6 @@
-<!-- map_v202.html (v202 · TENAR V1.8) · 저장: 2026-11-10 15:18 KST · [v202] 답례품 화면을 어디고처럼 「전 업무」로 확장 — ①🎁답례품 월별 화면에 「업무」 드롭다운 신설(생산량·가축·축비·농비·쌀값·농판·기타조사) + 답례품종류·지급여부도 버튼→드롭다운, 업무별 N/전체 건수 표시. 생산량=저장 핀, 그 외=조사구 종류(getAreaPlotsFor), 작물재배(재배면적)는 제외. ②조사구 카드(가축·축비·농비·쌀값·농판·기타조사)에 「🎁 답례품」 입력상자 추가 — 핀마다 월별 지급 기록(tenar_gifts_v1, 핀 id 기준). ③업무를 고르면 그 업무만, 조사구를 한 번 더 누르면 상세카드(답례품 입력). ※ 월별 지급 규칙(축비·농비=매달·생산량=작물별1회 등)은 추후 정보로 반영 예정. 검색·길찾기·계산 로직 무변경. (v201 이하 유지) -->
+<!-- map_v204.html (v204 · TENAR V1.8) · 저장: 2026-11-10 15:52 KST · [v204] 답례품 — 농비·축비 「대상처」 이름 자동 묶음 — 농비·축비는 핀을 여러 개 찍어도 「이름(경영주/성명)」이 같으면 한 대상처로 묶어, 답례품은 대표(맨 위 1핀)에만 1개 지급·집계. 답례품 화면에서 대상처 1곳=1줄로 표시하고 「대표 · N곳」으로 핀 수 표기. 대상처 중 어느 핀에 지급돼 있어도 지급으로 인정(memberIds). 생산량·가축·쌀값·농판·기타조사는 핀 단위 그대로. 추가 입력 UI 없음(기존 이름 데이터로 자동). ※ 지급 월 규칙(v203)·기록 구조 무변경. (v203 이하 유지) -->
+<!-- (이전) map_v203.html (v203 · TENAR V1.8) · 저장: 2026-11-10 15:40 KST · [v203] 답례품 「업무별 지급하는 달」 반영 + 년/월 선택 — ①업무·작물별 지급 월 규칙(사용자 제공): 축비·농비=매월, 가축=3·9월, 산지쌀값=3·6·9·12월, 마늘·양파=5월, 겉보리·쌀보리·맥주보리·밀=6월, 감자=6월·고랭지감자=8월·가을감자=10월·고구마=8월, 고추·참깨=9월, 콩=8월, 사과·배=9월, 논벼=8월, 배추·무=10월, 봄배추무(시설)=4월·(노지)=6월. 그 달 지급 대상 업무·작물만 답례품 화면에 보이게(해당 목록 있을 때만 표시). ②답례품 화면 상단을 「년도(‹2026년›) + 1~12월 버튼」으로 바꿔 월 선택 시 바로 그 달 지급 대상 표시. ※ 미지정 업무(농판·기타조사)·작물은 매월 표시. 지급 기록·구조 무변경. (v202 이하 유지) -->
+<!-- (이전) map_v202.html (v202 · TENAR V1.8) · 저장: 2026-11-10 15:18 KST · [v202] 답례품 화면을 어디고처럼 「전 업무」로 확장 — ①🎁답례품 월별 화면에 「업무」 드롭다운 신설(생산량·가축·축비·농비·쌀값·농판·기타조사) + 답례품종류·지급여부도 버튼→드롭다운, 업무별 N/전체 건수 표시. 생산량=저장 핀, 그 외=조사구 종류(getAreaPlotsFor), 작물재배(재배면적)는 제외. ②조사구 카드(가축·축비·농비·쌀값·농판·기타조사)에 「🎁 답례품」 입력상자 추가 — 핀마다 월별 지급 기록(tenar_gifts_v1, 핀 id 기준). ③업무를 고르면 그 업무만, 조사구를 한 번 더 누르면 상세카드(답례품 입력). ※ 월별 지급 규칙(축비·농비=매달·생산량=작물별1회 등)은 추후 정보로 반영 예정. 검색·길찾기·계산 로직 무변경. (v201 이하 유지) -->
 <!-- (이전) map_v201.html (v201 · TENAR V1.8) · 저장: 2026-11-10 15:02 KST · [v201] 지도 상단 버튼 배치 — ①🎁답례품 버튼을 조사구목록(🌾) 아래·현재위치(위치) 위, 즉 둘 사이로 이동. ②검색창을 오른쪽 끝(레이어 자리)까지 넓히고, 레이어(🗺) 버튼은 검색바 바로 아래 한 칸으로 내림(#topUI right 72→10, #sideBtns top 10→62·z16). ③실측조사 등 바로가기(quickSurvey) 오른쪽 56px를 비워 레이어와 겹치지 않게. ※ 계산·전송·검색·답례품 로직 무변경(배치만). (v200 이하 유지) -->
 <!-- (이전) map_v200.html (v200 · TENAR V1.8) · 저장: 2026-11-10 14:48 KST · [v200] 농비 조사구 핀 「아래」 라벨에 읍면동 뒤로 「리·지번」까지 표시 — 기존 「지목 · 이름 · 읍면동」 → 「지목 · 이름 · 읍면동 리 지번」(예: 논 홍길동 자인면 장기리 272-2). 초입주소에서 리·지번을 뽑는 기존 riJibunFromAddr 재사용, 농비(farmcost)만 적용(가축·축비 등 다른 종류는 그대로). 주소에 리·지번이 없으면 읍면동만. ※ 계산·전송·검색·길찾기·답례품 로직 무변경. (v199 이하 유지) -->
 <!-- (이전) map_v199.html (v199 · TENAR V1.8) · 저장: 2026-11-10 14:40 KST · [v199·버그수정] 작물재배조사구 추가폼 「🔎 주소 확인」 — 입력한 번지가 조회 번지와 다르면 초입주소를 덮어쓰지 않도록 수정. 예) 「구지읍 화산읍 323」 확인 시 엉뚱한 「화산리 159」로 바뀌고, 다시 누르면 또 다른 주소로 바뀌던(드리프트) 문제 해결. 이제 번지가 같거나 도로명 입력일 때만 전체 지번주소로 정규화하고, 번지가 다르면 초입주소는 그대로 두고 시도·시군구·읍면동만 반영 + 「지도검색으로 지정」 안내. (원인: 역지오코딩=브이월드 지적밀림으로 번지 틀어짐 + 바뀐 값을 재조회해 드리프트) ※ 검색·길찾기·답례품·계산 로직 무변경. (v198 이하 유지) -->
@@ -1592,6 +1594,11 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
 .tn-gsel { width: 100%; box-sizing: border-box; border: 1.5px solid #d0d7d4; border-radius: 10px; padding: 9px 11px; font-size: 15px; background: #fff; font-family: inherit; color: #222; }
 .tn-gsum { margin: 2px 0 6px; font-size: 13.5px; background: #f1f8f5; border-radius: 8px; padding: 7px 10px; }
 .tn-gsum b { color: #1b6e3a; }
+/* [v203] 답례품 1~12월 선택 버튼 */
+.tn-gmonths { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; margin: 6px 0; }
+.tn-gmo { padding: 8px 2px; border: 1.5px solid #d0d7d4; border-radius: 9px; background: #fff; font: inherit; font-size: 13px; font-weight: 700; color: #37474f; cursor: pointer; }
+.tn-gmo.on { background: #1c7ed6; border-color: #1c7ed6; color: #fff; }
+.tn-gmo:active { transform: scale(.95); }
 .tn-gift-row { display: grid; grid-template-columns: 74px 1.3fr 62px 1fr; gap: 5px; align-items: center; padding: 5px 0; border-top: 1px dashed #f0d9a8; }
 .tn-gift-row input[type=date], .tn-gift-row select, .tn-gift-row input[type=text] { min-width: 0; font-size: 13px; padding: 5px 4px; border: 1px solid #d0d7d4; border-radius: 7px; background: #fff; }
 .tn-gift-row.on .tn-gchk { color: #2b8a3e; }
@@ -6704,40 +6711,85 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
   }
   function _giftItemsAll() {
     var items = [];
-    getFavs().forEach(function (f) { if (isFinite(f.latitude)) items.push({ id: f.id, biz: 'prod', name: (f.crop ? f.crop + ' · ' : '') + (f.name || f.jibunAddress || '저장 위치'), sub: f.jibunAddress || '', lat: f.latitude, lng: f.longitude, kind: 'fav', ref: f }); });
+    getFavs().forEach(function (f) { if (isFinite(f.latitude)) items.push({ id: f.id, biz: 'prod', crop: f.crop || '', name: (f.crop ? f.crop + ' · ' : '') + (f.name || f.jibunAddress || '저장 위치'), sub: f.jibunAddress || '', lat: f.latitude, lng: f.longitude, kind: 'fav', ref: f }); });
     AREA_TYPES.forEach(function (t) {
       if (t.key === 'crop') return;
-      getAreaPlotsFor(t.key).forEach(function (p) { items.push({ id: p.id, biz: t.key, name: areaPlotNameOf(p, t.key), sub: p.eupmyeondong || p.address1 || '', lat: p.latitude, lng: p.longitude, kind: 'plot', tk: t.key, ref: p }); });
+      var plots = getAreaPlotsFor(t.key);
+      if (t.key === 'farmcost' || t.key === 'livecost') {
+        /* [v204] 농비·축비 = 이름(경영주/성명)으로 「대상처」 자동 묶기 — 대표(맨 위 1핀)만 답례품 지급·표시 */
+        var byName = {}, order = [];
+        plots.forEach(function (p) { var nm = (p.name || '').trim() || '(이름없음)'; if (!byName[nm]) { byName[nm] = []; order.push(nm); } byName[nm].push(p); });
+        order.forEach(function (nm) {
+          var grp = byName[nm], rep = grp[0];
+          items.push({ id: rep.id, biz: t.key, name: areaPlotNameOf(rep, t.key), sub: (rep.eupmyeondong || rep.address1 || '') + (grp.length > 1 ? ' · 대표 · ' + grp.length + '곳' : ''), lat: rep.latitude, lng: rep.longitude, kind: 'plot', tk: t.key, ref: rep, memberIds: grp.map(function (x) { return x.id; }) });
+        });
+      } else {
+        plots.forEach(function (p) { items.push({ id: p.id, biz: t.key, name: areaPlotNameOf(p, t.key), sub: p.eupmyeondong || p.address1 || '', lat: p.latitude, lng: p.longitude, kind: 'plot', tk: t.key, ref: p }); });
+      }
     });
     return items;
   }
+  /* [v204] 대상처(농비·축비)는 묶인 핀(memberIds) 중 어느 하나라도 지급됐으면 지급으로 본다. 그 외는 핀 1개 */
+  function _giftItemGiven(it, gi, mon) { var ids = it.memberIds || [it.id]; for (var i = 0; i < ids.length; i++) { var g = giftGet(ids[i], mon, gi); if (g && g.given) return g; } return null; }
+  /* [v203] 업무·작물별 답례품 「지급하는 달」 (사용자 제공 2026-11-10). 숫자=월(1~12). 'all'=매월. 미지정=매월(제한 없음).
+     해당 월에 지급 대상인 업무·작물만 답례품 화면에 보이게 한다. */
+  var GIFT_MONTHS_BIZ = { livecost: 'all', farmcost: 'all', livestock: [3, 9], riceprice: [3, 6, 9, 12], farmsale: 'all', etc: 'all' };
+  var GIFT_MONTHS_CROP = {
+    '마늘': [5], '양파': [5],
+    '겉보리': [6], '쌀보리': [6], '맥주보리': [6], '밀': [6],
+    '감자': [6], '고랭지감자': [8], '가을감자': [10], '고구마': [8],
+    '고추': [9], '참깨': [9], '콩': [8],
+    '사과': [9], '배': [9], '사과배': [9],
+    '논벼': [8], '배추': [10], '무': [10],
+    '봄배추무(시설)': [4], '봄배추(시설)': [4], '봄무(시설)': [4],
+    '봄배추무(노지)': [6], '봄배추(노지)': [6], '봄무(노지)': [6]
+  };
+  function giftSchedMonths(it) {
+    if (it.biz === 'prod') {
+      var c = (it.crop || '').replace(/\s+/g, '');
+      if (!c) return 'all';   /* 작물 미지정 핀 = 제한 없음(항상 표시) */
+      if (GIFT_MONTHS_CROP[c]) return GIFT_MONTHS_CROP[c];
+      for (var k in GIFT_MONTHS_CROP) { if (c.indexOf(k) >= 0 || k.indexOf(c) >= 0) return GIFT_MONTHS_CROP[k]; }   /* 부분 일치(괄호·수식어 차이) */
+      return 'all';
+    }
+    var m = GIFT_MONTHS_BIZ[it.biz];
+    return (m === undefined) ? 'all' : m;
+  }
+  function giftInMonth(it, mo) { var s = giftSchedMonths(it); return s === 'all' || (Array.isArray(s) && s.indexOf(mo) >= 0); }
+  var _giftYM = null;   /* [v203] 'YYYY-MM' 선택(년도·월 버튼). null이면 이번 달 */
   function openGiftPage() {
-    var mon = _giftMonth || giftMonthNow();
+    var mon = _giftYM || _giftMonth || giftMonthNow();
+    _giftYM = mon;
+    var yr = +mon.slice(0, 4), moNum = +mon.slice(5, 7);
     var bizList = _giftBizList();
-    var all = _giftItemsAll();
+    var all = _giftItemsAll().filter(function (it) { return giftInMonth(it, moNum); });   /* [v203] 이 달에 지급 대상인 업무·작물만 */
     var scoped = all.filter(function (it) { return !_giftBiz || it.biz === _giftBiz; });
     var shownItems = _giftItem ? [_giftItem] : GIFT_ITEMS;
-    function recGiven(it) { return shownItems.some(function (gi) { var g = giftGet(it.id, mon, gi); return g && g.given; }); }
+    function recGiven(it) { return shownItems.some(function (gi) { return !!_giftItemGiven(it, gi, mon); }); }
     var list = scoped.filter(function (it) { return _giftFilter === 'all' ? true : _giftFilter === 'given' ? recGiven(it) : !recGiven(it); });
     var groups = {}, gk = [];
     bizList.forEach(function (b) { if (_giftBiz && b.key !== _giftBiz) return; groups[b.key] = { b: b, list: [], total: all.filter(function (x) { return x.biz === b.key; }).length }; gk.push(b.key); });
     list.forEach(function (it) { if (groups[it.biz]) groups[it.biz].list.push(it); });
-    var cnt = {}; GIFT_ITEMS.forEach(function (gi) { cnt[gi] = scoped.filter(function (it) { var g = giftGet(it.id, mon, gi); return g && g.given; }).length; });
+    var cnt = {}; GIFT_ITEMS.forEach(function (gi) { cnt[gi] = scoped.filter(function (it) { return !!_giftItemGiven(it, gi, mon); }).length; });
     var html = '<div class="tn-nav">' +
-      '<div class="tn-gift-head"><span class="tn-gm"><button type="button" class="tn-gbtn" data-pm="-1">‹</button><b>' + mon + '</b><button type="button" class="tn-gbtn" data-pm="1">›</button></span>' +
+      '<div class="tn-gift-head"><span class="tn-gm"><button type="button" class="tn-gbtn" data-py="-1">‹</button><b>' + yr + '년</b><button type="button" class="tn-gbtn" data-py="1">›</button></span>' +
       '<span class="muted">조사구 ' + scoped.length + '곳</span></div>' +
+      '<div class="tn-gmonths">' + [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(function (m) { return '<button type="button" class="tn-gmo' + (m === moNum ? ' on' : '') + '" data-pmo="' + m + '">' + m + '월</button>'; }).join('') + '</div>' +
       '<div class="tn-gflt">' +
         '<select class="tn-gsel" id="gpBiz"><option value=""' + (_giftBiz === '' ? ' selected' : '') + '>모든 업무</option>' + bizList.map(function (b) { return '<option value="' + b.key + '"' + (_giftBiz === b.key ? ' selected' : '') + '>' + b.emoji + ' ' + escapeHtml(b.label) + '</option>'; }).join('') + '</select>' +
         '<select class="tn-gsel" id="gpItem"><option value=""' + (_giftItem === '' ? ' selected' : '') + '>답례품·수첩·달력 모두</option>' + GIFT_ITEMS.map(function (gi) { return '<option' + (gi === _giftItem ? ' selected' : '') + '>' + gi + '</option>'; }).join('') + '</select>' +
         '<select class="tn-gsel" id="gpFilter">' + [['given', '지급한 곳'], ['not', '안 준 곳'], ['all', '전체']].map(function (x) { return '<option value="' + x[0] + '"' + (x[0] === _giftFilter ? ' selected' : '') + '>' + x[1] + '</option>'; }).join('') + '</select>' +
       '</div>' +
-      '<div class="tn-gsum">' + mon + ' · ' + GIFT_ITEMS.map(function (gi) { return gi + ' <b>' + cnt[gi] + '</b>'; }).join(' · ') + '</div>';
+      '<div class="tn-gsum">' + yr + '년 ' + moNum + '월 지급 대상 · ' + GIFT_ITEMS.map(function (gi) { return gi + ' <b>' + cnt[gi] + '</b>'; }).join(' · ') + '</div>';
+    var anyShown = gk.some(function (k) { return groups[k].total > 0; });
+    if (!anyShown) html += '<p class="muted" style="margin:12px 2px">' + moNum + '월에 답례품 지급 대상 업무가 없습니다. (업무별 지급 달에 맞춰 표시됩니다)</p>';
     gk.forEach(function (k) {
       var G = groups[k];
+      if (!G.total) return;   /* [v203] 이 달에 지급 대상 조사구가 없는 업무는 숨김(해당 목록 있을 때만 표시) */
       html += '<div class="tn-ggrp">' + G.b.emoji + ' ' + escapeHtml(G.b.label) + ' <em>' + G.list.length + '/' + G.total + '</em></div>';
-      if (!G.list.length) { html += '<p class="muted" style="margin:2px 0 8px 10px">' + (G.total ? (_giftFilter === 'given' ? '지급한 곳 없음' : _giftFilter === 'not' ? '모두 지급함' : '') : '조사구 없음') + '</p>'; return; }
+      if (!G.list.length) { html += '<p class="muted" style="margin:2px 0 8px 10px">' + (_giftFilter === 'given' ? '지급한 곳 없음' : _giftFilter === 'not' ? '모두 지급함' : '') + '</p>'; return; }
       G.list.forEach(function (it) {
-        var gtxt = shownItems.map(function (gi) { var g = giftGet(it.id, mon, gi); return (g && g.given) ? (gi + (g.date ? ' ' + g.date.slice(5) : '')) : ''; }).filter(Boolean).join(' · ');
+        var gtxt = shownItems.map(function (gi) { var g = _giftItemGiven(it, gi, mon); return g ? (gi + (g.date ? ' ' + g.date.slice(5) : '')) : ''; }).filter(Boolean).join(' · ');
         html += '<div class="tn-grow" data-id="' + it.id + '"><span class="t"><b>' + escapeHtml(it.name) + '</b>' +
           '<small>' + escapeHtml(it.sub) + '</small>' + (gtxt ? '<small class="ok">✔ ' + escapeHtml(gtxt) + '</small>' : '') +
           '<small class="tap-hint">한 번 더 누르면 상세(답례품 입력)</small></span></div>';
@@ -6746,7 +6798,8 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
     html += '<p class="muted" style="margin-top:10px">업무를 골라 그 업무만 볼 수 있어요. 지급 기록은 조사구를 한 번 더 눌러 열리는 카드의 「🎁 답례품」에서 넣습니다.<br>이 기록은 어디고 답례품 화면에도 「텐아르」 표시로 함께 보입니다(같은 휴대폰·같은 브라우저).</p></div>';
     openSheet('🎁 답례품', html, 72);
     var body = sheetBody;
-    body.querySelectorAll('[data-pm]').forEach(function (b) { b.addEventListener('click', function () { _giftMonth = giftShift(mon, +b.getAttribute('data-pm')); openGiftPage(); }); });
+    body.querySelectorAll('[data-py]').forEach(function (b) { b.addEventListener('click', function () { _giftYM = (yr + (+b.getAttribute('data-py'))) + '-' + mon.slice(5, 7); _giftMonth = _giftYM; openGiftPage(); }); });
+    body.querySelectorAll('[data-pmo]').forEach(function (b) { b.addEventListener('click', function () { var mm = +b.getAttribute('data-pmo'); _giftYM = yr + '-' + (mm < 10 ? '0' : '') + mm; _giftMonth = _giftYM; openGiftPage(); }); });
     body.querySelector('#gpBiz').addEventListener('change', function () { _giftBiz = this.value; openGiftPage(); });
     body.querySelector('#gpItem').addEventListener('change', function () { _giftItem = this.value; openGiftPage(); });
     body.querySelector('#gpFilter').addEventListener('change', function () { _giftFilter = this.value; openGiftPage(); });
