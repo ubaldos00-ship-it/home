@@ -1,4 +1,5 @@
-<!-- map_v204.html (v204 · TENAR V1.8) · 저장: 2026-11-10 15:52 KST · [v204] 답례품 — 농비·축비 「대상처」 이름 자동 묶음 — 농비·축비는 핀을 여러 개 찍어도 「이름(경영주/성명)」이 같으면 한 대상처로 묶어, 답례품은 대표(맨 위 1핀)에만 1개 지급·집계. 답례품 화면에서 대상처 1곳=1줄로 표시하고 「대표 · N곳」으로 핀 수 표기. 대상처 중 어느 핀에 지급돼 있어도 지급으로 인정(memberIds). 생산량·가축·쌀값·농판·기타조사는 핀 단위 그대로. 추가 입력 UI 없음(기존 이름 데이터로 자동). ※ 지급 월 규칙(v203)·기록 구조 무변경. (v203 이하 유지) -->
+<!-- map_v205.html (v205 · TENAR V1.8) · 저장: 2026-11-11 00:20 KST · [v205] 지도 보완 묶음① (요청 #2·#3·#14) — ①#2 면적측정 도형 작물 라벨이 전역 작물(measCrop)에 흔들려 엉뚱한 작물(콩인데 참깨)로 뜨던 문제: 도형마다 「그때 작물」을 저장(commit·저장·복원)하고 라벨은 도형 자체 작물로 표시(작업 중 도형만 현재 작물). ②#3·#14(같은 원인) 포구도구 작물명: 핀에서 포구 시작 시 핀 작물을 포구 작물에 미리 반영(배너에 작물 표시) + 「작물·기준·비율」 조사설정 열면 작물칸이 연결된 핀 작물로 미리 채워짐(없으면 빈칸). ※ 비율·기준은 그대로 비워 확인 유도. 계산·전송 로직 무변경. (v204 이하 유지) -->
+<!-- (이전) map_v204.html (v204 · TENAR V1.8) · 저장: 2026-11-10 15:52 KST · [v204] 답례품 — 농비·축비 「대상처」 이름 자동 묶음 — 농비·축비는 핀을 여러 개 찍어도 「이름(경영주/성명)」이 같으면 한 대상처로 묶어, 답례품은 대표(맨 위 1핀)에만 1개 지급·집계. 답례품 화면에서 대상처 1곳=1줄로 표시하고 「대표 · N곳」으로 핀 수 표기. 대상처 중 어느 핀에 지급돼 있어도 지급으로 인정(memberIds). 생산량·가축·쌀값·농판·기타조사는 핀 단위 그대로. 추가 입력 UI 없음(기존 이름 데이터로 자동). ※ 지급 월 규칙(v203)·기록 구조 무변경. (v203 이하 유지) -->
 <!-- (이전) map_v203.html (v203 · TENAR V1.8) · 저장: 2026-11-10 15:40 KST · [v203] 답례품 「업무별 지급하는 달」 반영 + 년/월 선택 — ①업무·작물별 지급 월 규칙(사용자 제공): 축비·농비=매월, 가축=3·9월, 산지쌀값=3·6·9·12월, 마늘·양파=5월, 겉보리·쌀보리·맥주보리·밀=6월, 감자=6월·고랭지감자=8월·가을감자=10월·고구마=8월, 고추·참깨=9월, 콩=8월, 사과·배=9월, 논벼=8월, 배추·무=10월, 봄배추무(시설)=4월·(노지)=6월. 그 달 지급 대상 업무·작물만 답례품 화면에 보이게(해당 목록 있을 때만 표시). ②답례품 화면 상단을 「년도(‹2026년›) + 1~12월 버튼」으로 바꿔 월 선택 시 바로 그 달 지급 대상 표시. ※ 미지정 업무(농판·기타조사)·작물은 매월 표시. 지급 기록·구조 무변경. (v202 이하 유지) -->
 <!-- (이전) map_v202.html (v202 · TENAR V1.8) · 저장: 2026-11-10 15:18 KST · [v202] 답례품 화면을 어디고처럼 「전 업무」로 확장 — ①🎁답례품 월별 화면에 「업무」 드롭다운 신설(생산량·가축·축비·농비·쌀값·농판·기타조사) + 답례품종류·지급여부도 버튼→드롭다운, 업무별 N/전체 건수 표시. 생산량=저장 핀, 그 외=조사구 종류(getAreaPlotsFor), 작물재배(재배면적)는 제외. ②조사구 카드(가축·축비·농비·쌀값·농판·기타조사)에 「🎁 답례품」 입력상자 추가 — 핀마다 월별 지급 기록(tenar_gifts_v1, 핀 id 기준). ③업무를 고르면 그 업무만, 조사구를 한 번 더 누르면 상세카드(답례품 입력). ※ 월별 지급 규칙(축비·농비=매달·생산량=작물별1회 등)은 추후 정보로 반영 예정. 검색·길찾기·계산 로직 무변경. (v201 이하 유지) -->
 <!-- (이전) map_v201.html (v201 · TENAR V1.8) · 저장: 2026-11-10 15:02 KST · [v201] 지도 상단 버튼 배치 — ①🎁답례품 버튼을 조사구목록(🌾) 아래·현재위치(위치) 위, 즉 둘 사이로 이동. ②검색창을 오른쪽 끝(레이어 자리)까지 넓히고, 레이어(🗺) 버튼은 검색바 바로 아래 한 칸으로 내림(#topUI right 72→10, #sideBtns top 10→62·z16). ③실측조사 등 바로가기(quickSurvey) 오른쪽 56px를 비워 레이어와 겹치지 않게. ※ 계산·전송·검색·답례품 로직 무변경(배치만). (v200 이하 유지) -->
@@ -4663,8 +4664,11 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
       try { fpResetSetupForFreshOpen(); } catch (e) {}
       fp._sessionFavId = f.id;                 /* 저장 시 반드시 이 핀에 연결(다른 필지가 딴 핀으로 안 가게) */
       fp.jibunAddress = f.jibunAddress || '';
+      /* [v205] 핀 작물을 포구 작물에 미리 반영(요청 #3·#14) — 비율·기준은 그대로 비워 확인 유도 */
+      try { if (f.crop) { fp.ctx = fp.ctx || { app: 'tonghab', ts: Date.now() }; fp.ctx.crop = f.crop; saveJSON(FP_CTX_KEY, fp.ctx); } } catch (e) {}
       try { openFpTool(); } catch (e) {}
-      showToast('이 핀에 연결해 포구도구를 시작합니다.\n조사설정은 초기화했습니다 — 「작물·기준·비율」부터 입력하세요.\n저장하면 이 핀에 연결됩니다.', 5000, 'info');
+      try { fpRenderBanner(); } catch (e) {}
+      showToast('이 핀에 연결해 포구도구를 시작합니다.' + (f.crop ? ('\n작물은 「' + f.crop + '」로 넣었습니다.') : '') + '\n「작물·기준·비율」에서 비율을 확인·입력하세요.\n저장하면 이 핀에 연결됩니다.', 5000, 'info');
     } else {
       try {
         fpToolPanelEl.classList.remove('show'); document.getElementById('btnFpTool').classList.remove('active');
@@ -8251,7 +8255,7 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
   function clearAreaLabel() { areaLabelMarkers.forEach(function (m) { m.remove(); }); areaLabelMarkers = []; }
   /* [v17-11] 작물명 + 면적 + 평 을 다각형 중심보다 "조금 위"에 표시.
      핀·주소 라벨과 겹치지 않도록 위로 살짝 띄운다. */
-  function addAreaLabel(polygon, areaM2) {
+  function addAreaLabel(polygon, areaM2, cropArg) {
     if (!hasTurf || !polygon) return;
     if (settings.showAreaLabel === false) return;   /* [v28-7] */
     var c = null;
@@ -8274,8 +8278,9 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
     } catch (e) {}
     var e2 = document.createElement('div');
     e2.className = 'area-label';
-    /* [v85-2] 작물명은 측정도구 작물(measCrop)을 우선 — 청취조사 참깨가 총각무로 보이던 버그 수정 */
-    var crop = String((surveyMeasureState && surveyMeasureState.measCrop) || (fp.ctx && fp.ctx.crop) || '');
+    /* [v205] 작물명은 「그 도형 자체의 작물」을 우선 — 도형마다 저장된 작물로 라벨(전역 measCrop이 바뀌어도 안 흔들림).
+       작업 중(라벨에 작물 안 넘겨온) 도형만 현재 측정작물(measCrop)·포구작물(fp.ctx.crop)로 폴백. */
+    var crop = String((cropArg != null && cropArg !== '') ? cropArg : ((surveyMeasureState && surveyMeasureState.measCrop) || (fp && fp.ctx && fp.ctx.crop) || ''));
     e2.innerHTML = (crop ? '<span class="area-crop">' + escapeHtml(crop) + '</span><br>' : '') +
                    formatNumber(areaM2, 1) + '㎡<br>' + formatNumber(areaM2 / 3.305785, 1) + '평';
     /* [v18-5] A/B포구 세로선·점이 가장 중요하므로 면적 라벨은 아래로 내려 겹치지 않게 한다 */
@@ -8287,9 +8292,9 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
     var s = surveyMeasureState;
     /* [v7-9] 완료된 면적들 + 현재 작업 중인 면적 각각에 라벨 */
     s.areas.forEach(function (ar) {
-      addAreaLabel({ type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [closedRing(ar.points)] } }, ar.areaM2);
+      addAreaLabel({ type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [closedRing(ar.points)] } }, ar.areaM2, ar.crop);
     });
-    if (s.fieldPolygon && s.fieldPoints.length >= 3) addAreaLabel(s.fieldPolygon, s.fieldAreaM2);
+    if (s.fieldPolygon && s.fieldPoints.length >= 3) addAreaLabel(s.fieldPolygon, s.fieldAreaM2, s.measCrop);
   }
   function clearSegmentLabels() { segmentLabelMarkers.forEach(function (m) { m.remove(); }); segmentLabelMarkers = []; }
   function updateDistanceGeometry() {
@@ -8608,6 +8613,7 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
       points: s.fieldPoints.slice(),
       areaM2: s.fieldAreaM2,
       perimeterM: s.fieldPerimeterM,
+      crop: s.measCrop || '',    /* [v205] 도형마다 그때 작물 저장 — 라벨이 전역 measCrop에 흔들리지 않게 */
       kind: s.fieldKind          /* [v14] 필지/재배구역 구분 보존 */
     });
     s.fieldPoints = []; s.fieldPolygon = null; s.fieldAreaM2 = 0; s.fieldPerimeterM = 0;
@@ -9215,7 +9221,7 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
     var s = surveyMeasureState;
     var areas = s.areas.slice();
     var lines = s.lines.slice();
-    if (s.fieldPoints.length >= 3) areas.push({ id: 'cur', points: s.fieldPoints.slice(), areaM2: s.fieldAreaM2, perimeterM: s.fieldPerimeterM });
+    if (s.fieldPoints.length >= 3) areas.push({ id: 'cur', points: s.fieldPoints.slice(), areaM2: s.fieldAreaM2, perimeterM: s.fieldPerimeterM, crop: s.measCrop || '' });
     if (s.distancePoints.length >= 2) lines.push({ id: 'cur', points: s.distancePoints.slice(), segs: s.segmentDistances.slice(), totalM: s.totalDistanceM });
 
     var totalArea = areas.reduce(function (a, x) { return a + (x.areaM2 || 0); }, 0);
@@ -9351,7 +9357,7 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
   function loadMeasure(rec, quiet) {
     var s = surveyMeasureState;
     s.areas = (rec.areas || []).map(function (a) {
-      return { id: 'a' + Math.random().toString(36).slice(2, 7), points: a.points.slice(), areaM2: a.areaM2, perimeterM: a.perimeterM };
+      return { id: 'a' + Math.random().toString(36).slice(2, 7), points: a.points.slice(), areaM2: a.areaM2, perimeterM: a.perimeterM, crop: a.crop || rec.crop || '' };
     });
     s.lines = (rec.lines || []).map(function (l) {
       return { id: 'l' + Math.random().toString(36).slice(2, 7), points: l.points.slice(), segs: (l.segs || []).slice(), totalM: l.totalM };
@@ -12004,7 +12010,9 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
     /* [v174] 논벼를 콤보 맨 위로 (가장 많이 쓰는 작물) — 나머지는 기존 순서 유지 */
     var _fpCropOrder = ['논벼'].concat(FP_CROP_NAMES.filter(function (n) { return n !== '논벼'; }));
     _fpCropOrder.forEach(function (n) { inCrop.appendChild(new Option(n, n)); });   /* [v83-3] 실측 작물만 */
-    if (c.crop) { if (!Array.prototype.some.call(inCrop.options, function (o) { return o.value === c.crop; })) inCrop.appendChild(new Option(c.crop, c.crop)); inCrop.value = c.crop; }
+    /* [v205] 작물 기본값 = 조사설정 작물(c.crop) · 없으면 연결된 핀의 작물(요청 #3·#14) */
+    var _initCrop = c.crop || (function () { try { if (fp._sessionFavId) { var _pf = getFavs().filter(function (x) { return x.id === fp._sessionFavId; })[0]; if (_pf) return _pf.crop || ''; } } catch (e) {} return ''; })();
+    if (_initCrop) { if (!Array.prototype.some.call(inCrop.options, function (o) { return o.value === _initCrop; })) inCrop.appendChild(new Option(_initCrop, _initCrop)); inCrop.value = _initCrop; }
     f1.appendChild(inCrop);
 
     /* [v19-8] 기준은 작물이 정한다 — 논벼는 길이, 그 밖은 이랑. 직접 못 고친다 */
