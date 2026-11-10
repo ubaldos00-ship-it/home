@@ -1,4 +1,7 @@
-<!-- map_v199.html (v199 · TENAR V1.8) · 저장: 2026-11-10 14:40 KST · [v199·버그수정] 작물재배조사구 추가폼 「🔎 주소 확인」 — 입력한 번지가 조회 번지와 다르면 초입주소를 덮어쓰지 않도록 수정. 예) 「구지읍 화산읍 323」 확인 시 엉뚱한 「화산리 159」로 바뀌고, 다시 누르면 또 다른 주소로 바뀌던(드리프트) 문제 해결. 이제 번지가 같거나 도로명 입력일 때만 전체 지번주소로 정규화하고, 번지가 다르면 초입주소는 그대로 두고 시도·시군구·읍면동만 반영 + 「지도검색으로 지정」 안내. (원인: 역지오코딩=브이월드 지적밀림으로 번지 틀어짐 + 바뀐 값을 재조회해 드리프트) ※ 검색·길찾기·답례품·계산 로직 무변경. (v198 이하 유지) -->
+<!-- map_v202.html (v202 · TENAR V1.8) · 저장: 2026-11-10 15:18 KST · [v202] 답례품 화면을 어디고처럼 「전 업무」로 확장 — ①🎁답례품 월별 화면에 「업무」 드롭다운 신설(생산량·가축·축비·농비·쌀값·농판·기타조사) + 답례품종류·지급여부도 버튼→드롭다운, 업무별 N/전체 건수 표시. 생산량=저장 핀, 그 외=조사구 종류(getAreaPlotsFor), 작물재배(재배면적)는 제외. ②조사구 카드(가축·축비·농비·쌀값·농판·기타조사)에 「🎁 답례품」 입력상자 추가 — 핀마다 월별 지급 기록(tenar_gifts_v1, 핀 id 기준). ③업무를 고르면 그 업무만, 조사구를 한 번 더 누르면 상세카드(답례품 입력). ※ 월별 지급 규칙(축비·농비=매달·생산량=작물별1회 등)은 추후 정보로 반영 예정. 검색·길찾기·계산 로직 무변경. (v201 이하 유지) -->
+<!-- (이전) map_v201.html (v201 · TENAR V1.8) · 저장: 2026-11-10 15:02 KST · [v201] 지도 상단 버튼 배치 — ①🎁답례품 버튼을 조사구목록(🌾) 아래·현재위치(위치) 위, 즉 둘 사이로 이동. ②검색창을 오른쪽 끝(레이어 자리)까지 넓히고, 레이어(🗺) 버튼은 검색바 바로 아래 한 칸으로 내림(#topUI right 72→10, #sideBtns top 10→62·z16). ③실측조사 등 바로가기(quickSurvey) 오른쪽 56px를 비워 레이어와 겹치지 않게. ※ 계산·전송·검색·답례품 로직 무변경(배치만). (v200 이하 유지) -->
+<!-- (이전) map_v200.html (v200 · TENAR V1.8) · 저장: 2026-11-10 14:48 KST · [v200] 농비 조사구 핀 「아래」 라벨에 읍면동 뒤로 「리·지번」까지 표시 — 기존 「지목 · 이름 · 읍면동」 → 「지목 · 이름 · 읍면동 리 지번」(예: 논 홍길동 자인면 장기리 272-2). 초입주소에서 리·지번을 뽑는 기존 riJibunFromAddr 재사용, 농비(farmcost)만 적용(가축·축비 등 다른 종류는 그대로). 주소에 리·지번이 없으면 읍면동만. ※ 계산·전송·검색·길찾기·답례품 로직 무변경. (v199 이하 유지) -->
+<!-- (이전) map_v199.html (v199 · TENAR V1.8) · 저장: 2026-11-10 14:40 KST · [v199·버그수정] 작물재배조사구 추가폼 「🔎 주소 확인」 — 입력한 번지가 조회 번지와 다르면 초입주소를 덮어쓰지 않도록 수정. 예) 「구지읍 화산읍 323」 확인 시 엉뚱한 「화산리 159」로 바뀌고, 다시 누르면 또 다른 주소로 바뀌던(드리프트) 문제 해결. 이제 번지가 같거나 도로명 입력일 때만 전체 지번주소로 정규화하고, 번지가 다르면 초입주소는 그대로 두고 시도·시군구·읍면동만 반영 + 「지도검색으로 지정」 안내. (원인: 역지오코딩=브이월드 지적밀림으로 번지 틀어짐 + 바뀐 값을 재조회해 드리프트) ※ 검색·길찾기·답례품·계산 로직 무변경. (v198 이하 유지) -->
 <!-- (이전) map_v198.html (v198 · TENAR V1.8) · 저장: 2026-11-10 14:30 KST · [v198] 지도 검색에서 같은 지번/도로명이 여러 시군에 있으면 「가까운 순 목록」으로 선택 — 예) 「평천리 992」가 태안읍·공성면 둘 다 있으면 둘 다 띄우고 현재위치 가까운 순으로 골라 이동. 카카오 주소검색 전체결과(requestKakaoGeocodeAll, size30)를 받아 2곳 이상이면 기존 명칭검색과 같은 areaOpenPlacePicker로 표시(1곳이면 바로 이동, 0곳이면 브이월드 주소→카카오키워드→브이월드명칭 순 폴백). ※ 길찾기·답례품·계산·전송 로직 무변경. (v197 이하 유지) -->
 <!-- (이전) map_v197.html (v197 · TENAR V1.8) · 저장: 2026-11-09 21:03 KST · [v197] ①검색창 옆 🧭 길찾기 버튼 — 검색어가 있으면 그 검색어로 도착지 고르기(내 핀·카카오 주소·장소), 없으면 길찾기 창 ②길찾기 출발·도착 「🔍 검색」 ③안내 아래쪽 남은 시간·남은 거리·도착 예정 ④잘 가다가 경로를 다시 찾던 문제 고침(경로 선분까지 거리·2번 연속 벗어날 때만·GPS 오차 반영) + 고속에서 갈림길을 놓쳐 안내가 멈추던 문제 고침(경로 위 진행 위치로 넘김) ⑤단속카메라 표시·음성(어디고 공공데이터 파일이 생기면 자동 사용). ※ 계산식·조사표 전송 로직 무변경. (v196 이하 유지) -->
 <!-- (이전) map_v196.html (v196 · TENAR V1.8) · 저장: 2026-11-09 15:05 KST · [v196] ①어디고처럼 「텐아르 지도 안 길찾기」 — 핀 카드 「🚗 길찾기」 맨 위 「🧭 텐아르 지도로 길찾기」: 출발(현재 위치·지도·내 핀)→도착, 경로 4가지(추천=고속도로+최단·고속도로 우선·최단거리·무료도로, 거리·시간 비교, Valhalla 공개 서버→실패 시 OSRM), 한국어 음성 안내, 안내 모드(자동차 표시·진행 방향·3D 기울임·차는 화면 아래·경로 위 방향 화살표·지나온 길 지우기·60m 벗어나면 다시 탐색·위아래 버튼 숨김·안내창 끌어서 이동), 저장 핀 도착 시 「조사표 열기」「포구도구 시작」. ②답례품 — 저장 핀 카드에 월별 답례품·수첩·달력(지급·날짜·방법·받은 사람, 체크하면 바로 저장), 오른쪽 🎁 버튼 = 월별 답례품 화면(품목·지급한 곳/안 준 곳/전체, 작물별, 한 번 누르면 이동·두 번이면 상세, 안 준 곳 🧭 길찾기). 저장 키 tenar_gifts_v1(기기키 암호화) — 어디고 답례품 화면에서도 함께 보임. ※ 계산식·조사표 전송 로직 무변경. (v195 이하 유지) -->
@@ -489,7 +492,7 @@ TenarSecureStore.init('map',
     position: absolute;
     top: calc(env(safe-area-inset-top, 0px) + 10px);
     left: calc(env(safe-area-inset-left, 0px) + 10px);
-    right: calc(env(safe-area-inset-right, 0px) + 72px);
+    right: calc(env(safe-area-inset-right, 0px) + 10px);   /* [v201] 검색창을 레이어 자리까지 넓힘(레이어는 검색바 아래로 이동) */
     z-index: 15; display: flex; flex-direction: column; gap: 6px; touch-action: auto;
   }
   #searchBar {
@@ -547,8 +550,8 @@ TenarSecureStore.init('map',
   #sideBtns {
     position: absolute;
     right: calc(env(safe-area-inset-right, 0px) + 10px);
-    top: calc(env(safe-area-inset-top, 0px) + 10px);
-    z-index: 14; display: flex; flex-direction: column; gap: 8px; touch-action: auto;
+    top: calc(env(safe-area-inset-top, 0px) + 62px);   /* [v201] 레이어를 검색바 아래 한 칸으로 (검색창은 오른쪽 끝까지 넓힘) */
+    z-index: 16; display: flex; flex-direction: column; gap: 8px; touch-action: auto;   /* [v201] quickSurvey(z15) 위로 */
   }
   /* [v5-4] 저장핀·측정·추적·즐겨찾기·현재위치는 오른쪽 최하단으로 이동.
      바텀시트가 올라오면 JS(updateBottomBtnsPos)가 시트 위로 밀어 올린다. */
@@ -1205,7 +1208,7 @@ TenarSecureStore.init('map',
      (주소검색·레이어는 그대로 두어 지도 종류를 바꾸거나 검색할 수 있게 한다) */
   /* [v85-3] 조사 실행 바로가기 버튼(타원) */
   /* [v86-3]·[v92-5]·[v93] 더 작게 · 가로 스크롤 · 잘림 보완(양끝 여백) · 설정 off 시 숨김 */
-  #quickSurvey { display:flex; gap:5px; margin-top:6px; pointer-events:auto; overflow-x:auto; -webkit-overflow-scrolling:touch; padding:2px 6px 3px 2px; scrollbar-width:none; scroll-padding-right:12px; }
+  #quickSurvey { display:flex; gap:5px; margin-top:6px; margin-right:56px; pointer-events:auto; overflow-x:auto; -webkit-overflow-scrolling:touch; padding:2px 6px 3px 2px; scrollbar-width:none; scroll-padding-right:12px; }   /* [v201] 오른쪽 56px는 레이어 버튼 자리 */
   #quickSurvey::-webkit-scrollbar { display:none; }
   #quickSurvey .qs-btn {
     flex:0 0 auto; text-decoration:none; font-family:inherit; font-size:10px; font-weight:700;
@@ -1583,6 +1586,12 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
 .tn-gift-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 4px; }
 .tn-gm { display: inline-flex; align-items: center; gap: 6px; } .tn-gm b { font-size: 14px; }
 .tn-gbtn { width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid #d0d7d4; background: #fff; font-size: 16px; cursor: pointer; }
+/* [v202] 답례품 화면 필터 드롭다운(업무·종류·지급여부) */
+.tn-gflt { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 8px 0 6px; }
+.tn-gflt .tn-gsel:first-child { grid-column: 1 / -1; }
+.tn-gsel { width: 100%; box-sizing: border-box; border: 1.5px solid #d0d7d4; border-radius: 10px; padding: 9px 11px; font-size: 15px; background: #fff; font-family: inherit; color: #222; }
+.tn-gsum { margin: 2px 0 6px; font-size: 13.5px; background: #f1f8f5; border-radius: 8px; padding: 7px 10px; }
+.tn-gsum b { color: #1b6e3a; }
 .tn-gift-row { display: grid; grid-template-columns: 74px 1.3fr 62px 1fr; gap: 5px; align-items: center; padding: 5px 0; border-top: 1px dashed #f0d9a8; }
 .tn-gift-row input[type=date], .tn-gift-row select, .tn-gift-row input[type=text] { min-width: 0; font-size: 13px; padding: 5px 4px; border: 1px solid #d0d7d4; border-radius: 7px; background: #fff; }
 .tn-gift-row.on .tn-gchk { color: #2b8a3e; }
@@ -1676,9 +1685,10 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
       <span class="sb-label">포구도구</span>
     </button>
     <button class="side-btn" id="btnMeasure" type="button" title="측정도구 (면적·길이)">📐<span class="sb-label">면적길이</span></button>
-    <button class="side-btn" id="btnGift"    type="button" title="답례품">🎁<span class="sb-label">답례품</span></button>
     <button class="side-btn" id="btnFav"     type="button" title="생산량목록">⭐<span class="sb-label">생산량목록</span></button>
     <button class="side-btn" id="btnAreaShort" type="button" title="조사구목록">🌾<span class="sb-label">조사구목록</span></button>
+    <!-- [v201] 답례품 버튼을 조사구목록 아래·위치 위(사이)로 이동 -->
+    <button class="side-btn" id="btnGift"    type="button" title="답례품">🎁<span class="sb-label">답례품</span></button>
     <!-- [v71-4] 현재위치+실시간추적 통합 버튼 · [v72-5] 맨 아래로 이동 -->
     <button class="side-btn ico" id="btnLoc" type="button" title="현재 위치 · 실시간 추적" aria-label="현재 위치 · 실시간 추적">
       <svg id="btnLocIcon" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
@@ -6684,53 +6694,73 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
     draw();
     return wrap;
   }
-  /* 월별 답례품 화면 */
+  /* [v202] 월별 답례품 화면 — 어디고처럼 전 업무(생산량·가축·축비·농비·쌀값·농판·기타조사) + 업무/종류/지급여부 드롭다운.
+     생산량=저장 핀(getFavs), 그 외=조사구 종류(getAreaPlotsFor). 작물재배(재배면적)는 답례품 없음(제외). */
+  var _giftBiz = '';   /* '' = 모든 업무 · 'prod' 또는 조사구 종류 key */
+  function _giftBizList() {
+    var out = [{ key: 'prod', label: '생산량', emoji: '🌾' }];
+    AREA_TYPES.forEach(function (t) { if (t.key !== 'crop') out.push({ key: t.key, label: t.label, emoji: t.emoji }); });
+    return out;
+  }
+  function _giftItemsAll() {
+    var items = [];
+    getFavs().forEach(function (f) { if (isFinite(f.latitude)) items.push({ id: f.id, biz: 'prod', name: (f.crop ? f.crop + ' · ' : '') + (f.name || f.jibunAddress || '저장 위치'), sub: f.jibunAddress || '', lat: f.latitude, lng: f.longitude, kind: 'fav', ref: f }); });
+    AREA_TYPES.forEach(function (t) {
+      if (t.key === 'crop') return;
+      getAreaPlotsFor(t.key).forEach(function (p) { items.push({ id: p.id, biz: t.key, name: areaPlotNameOf(p, t.key), sub: p.eupmyeondong || p.address1 || '', lat: p.latitude, lng: p.longitude, kind: 'plot', tk: t.key, ref: p }); });
+    });
+    return items;
+  }
   function openGiftPage() {
     var mon = _giftMonth || giftMonthNow();
-    var favs = getFavs().filter(function (f) { return isFinite(f.latitude); });
-    var given = 0, rows = favs.map(function (f) { var g = giftGet(f.id, mon, _giftItem); if (g && g.given) given++; return { f: f, g: g }; });
-    var list = rows.filter(function (r) { return _giftFilter === 'all' ? true : _giftFilter === 'given' ? (r.g && r.g.given) : !(r.g && r.g.given); });
-    var groups = {};
-    list.forEach(function (r) { var k = r.f.crop || '작물 미지정'; (groups[k] = groups[k] || []).push(r); });
+    var bizList = _giftBizList();
+    var all = _giftItemsAll();
+    var scoped = all.filter(function (it) { return !_giftBiz || it.biz === _giftBiz; });
+    var shownItems = _giftItem ? [_giftItem] : GIFT_ITEMS;
+    function recGiven(it) { return shownItems.some(function (gi) { var g = giftGet(it.id, mon, gi); return g && g.given; }); }
+    var list = scoped.filter(function (it) { return _giftFilter === 'all' ? true : _giftFilter === 'given' ? recGiven(it) : !recGiven(it); });
+    var groups = {}, gk = [];
+    bizList.forEach(function (b) { if (_giftBiz && b.key !== _giftBiz) return; groups[b.key] = { b: b, list: [], total: all.filter(function (x) { return x.biz === b.key; }).length }; gk.push(b.key); });
+    list.forEach(function (it) { if (groups[it.biz]) groups[it.biz].list.push(it); });
+    var cnt = {}; GIFT_ITEMS.forEach(function (gi) { cnt[gi] = scoped.filter(function (it) { var g = giftGet(it.id, mon, gi); return g && g.given; }).length; });
     var html = '<div class="tn-nav">' +
       '<div class="tn-gift-head"><span class="tn-gm"><button type="button" class="tn-gbtn" data-pm="-1">‹</button><b>' + mon + '</b><button type="button" class="tn-gbtn" data-pm="1">›</button></span>' +
-      '<span class="muted">지급 ' + given + ' / ' + favs.length + '곳</span></div>' +
-      '<div class="row">' + GIFT_ITEMS.map(function (it) { return '<button type="button" class="btn sm' + (it === _giftItem ? ' primary' : '') + '" data-pi="' + it + '">' + it + '</button>'; }).join('') + '</div>' +
-      '<div class="row">' + [['given', '지급한 곳'], ['not', '안 준 곳'], ['all', '전체']].map(function (x) { return '<button type="button" class="btn sm' + (x[0] === _giftFilter ? ' primary' : '') + '" data-pf="' + x[0] + '">' + x[1] + '</button>'; }).join('') + '</div>';
-    var keys = Object.keys(groups).sort();
-    if (!keys.length) html += '<p class="muted">' + (_giftFilter === 'given' ? '이 달에 「' + _giftItem + '」을(를) 준 곳이 없습니다.' : '해당하는 저장 핀이 없습니다.') + '</p>';
-    keys.forEach(function (k) {
-      html += '<div class="tn-ggrp">' + escapeHtml(k) + ' <em>' + groups[k].length + '</em></div>';
-      groups[k].forEach(function (r) {
-        var g = r.g;
-        html += '<div class="tn-grow" data-id="' + r.f.id + '"><span class="t"><b>' + escapeHtml(r.f.name || r.f.jibunAddress || '저장 위치') + '</b>' +
-          '<small>' + escapeHtml(r.f.jibunAddress || '') + '</small>' +
-          (g && g.given ? '<small class="ok">✔ ' + escapeHtml([g.date, g.method, g.receiver].filter(Boolean).join(' · ')) + '</small>' : '') +
-          '<small class="tap-hint">한 번 더 누르면 상세 정보</small></span>' +
-          (g && g.given ? '' : '<button type="button" class="btn sm" data-go="' + r.f.id + '">🧭</button>') + '</div>';
+      '<span class="muted">조사구 ' + scoped.length + '곳</span></div>' +
+      '<div class="tn-gflt">' +
+        '<select class="tn-gsel" id="gpBiz"><option value=""' + (_giftBiz === '' ? ' selected' : '') + '>모든 업무</option>' + bizList.map(function (b) { return '<option value="' + b.key + '"' + (_giftBiz === b.key ? ' selected' : '') + '>' + b.emoji + ' ' + escapeHtml(b.label) + '</option>'; }).join('') + '</select>' +
+        '<select class="tn-gsel" id="gpItem"><option value=""' + (_giftItem === '' ? ' selected' : '') + '>답례품·수첩·달력 모두</option>' + GIFT_ITEMS.map(function (gi) { return '<option' + (gi === _giftItem ? ' selected' : '') + '>' + gi + '</option>'; }).join('') + '</select>' +
+        '<select class="tn-gsel" id="gpFilter">' + [['given', '지급한 곳'], ['not', '안 준 곳'], ['all', '전체']].map(function (x) { return '<option value="' + x[0] + '"' + (x[0] === _giftFilter ? ' selected' : '') + '>' + x[1] + '</option>'; }).join('') + '</select>' +
+      '</div>' +
+      '<div class="tn-gsum">' + mon + ' · ' + GIFT_ITEMS.map(function (gi) { return gi + ' <b>' + cnt[gi] + '</b>'; }).join(' · ') + '</div>';
+    gk.forEach(function (k) {
+      var G = groups[k];
+      html += '<div class="tn-ggrp">' + G.b.emoji + ' ' + escapeHtml(G.b.label) + ' <em>' + G.list.length + '/' + G.total + '</em></div>';
+      if (!G.list.length) { html += '<p class="muted" style="margin:2px 0 8px 10px">' + (G.total ? (_giftFilter === 'given' ? '지급한 곳 없음' : _giftFilter === 'not' ? '모두 지급함' : '') : '조사구 없음') + '</p>'; return; }
+      G.list.forEach(function (it) {
+        var gtxt = shownItems.map(function (gi) { var g = giftGet(it.id, mon, gi); return (g && g.given) ? (gi + (g.date ? ' ' + g.date.slice(5) : '')) : ''; }).filter(Boolean).join(' · ');
+        html += '<div class="tn-grow" data-id="' + it.id + '"><span class="t"><b>' + escapeHtml(it.name) + '</b>' +
+          '<small>' + escapeHtml(it.sub) + '</small>' + (gtxt ? '<small class="ok">✔ ' + escapeHtml(gtxt) + '</small>' : '') +
+          '<small class="tap-hint">한 번 더 누르면 상세(답례품 입력)</small></span></div>';
       });
     });
-    html += '<p class="muted" style="margin-top:10px">이 기록은 어디고 답례품 화면에도 「텐아르」 표시로 함께 보입니다(같은 휴대폰·같은 브라우저).</p></div>';
+    html += '<p class="muted" style="margin-top:10px">업무를 골라 그 업무만 볼 수 있어요. 지급 기록은 조사구를 한 번 더 눌러 열리는 카드의 「🎁 답례품」에서 넣습니다.<br>이 기록은 어디고 답례품 화면에도 「텐아르」 표시로 함께 보입니다(같은 휴대폰·같은 브라우저).</p></div>';
     openSheet('🎁 답례품', html, 72);
     var body = sheetBody;
     body.querySelectorAll('[data-pm]').forEach(function (b) { b.addEventListener('click', function () { _giftMonth = giftShift(mon, +b.getAttribute('data-pm')); openGiftPage(); }); });
-    body.querySelectorAll('[data-pi]').forEach(function (b) { b.addEventListener('click', function () { _giftItem = b.getAttribute('data-pi'); openGiftPage(); }); });
-    body.querySelectorAll('[data-pf]').forEach(function (b) { b.addEventListener('click', function () { _giftFilter = b.getAttribute('data-pf'); openGiftPage(); }); });
-    function favOf(id) { return favs.filter(function (x) { return x.id === id; })[0]; }
+    body.querySelector('#gpBiz').addEventListener('change', function () { _giftBiz = this.value; openGiftPage(); });
+    body.querySelector('#gpItem').addEventListener('change', function () { _giftItem = this.value; openGiftPage(); });
+    body.querySelector('#gpFilter').addEventListener('change', function () { _giftFilter = this.value; openGiftPage(); });
     body.querySelectorAll('.tn-grow').forEach(function (row) {
-      row.addEventListener('click', function (e) {
-        if (e.target.closest('[data-go]')) return;
-        var f = favOf(row.getAttribute('data-id')); if (!f) return;
-        if (row.classList.contains('sel')) { openSavedLocationSheet(f); return; }   /* 한 번 더 누르면 상세 */
+      row.addEventListener('click', function () {
+        var it = all.filter(function (x) { return x.id === row.getAttribute('data-id'); })[0]; if (!it) return;
+        if (row.classList.contains('sel')) {   /* 한 번 더 = 상세(답례품 입력) */
+          if (it.kind === 'fav') { openSavedLocationSheet(it.ref); }
+          else { currentAreaType = it.tk; areaOpenPlotSheet(it.ref); }
+          return;
+        }
         body.querySelectorAll('.tn-grow.sel').forEach(function (x) { x.classList.remove('sel'); });
         row.classList.add('sel');
-        map.easeTo({ center: [f.longitude, f.latitude], offset: [0, -Math.round(window.innerHeight * 0.25)], duration: 500 });
-      });
-    });
-    body.querySelectorAll('[data-go]').forEach(function (b) {
-      b.addEventListener('click', function () {
-        var f = favOf(b.getAttribute('data-go')); if (!f) return;
-        closeSheet(); TenarNav.open({ end: tnNavEnd({ lat: f.latitude, lng: f.longitude, name: (f.crop ? f.crop + ' · ' : '') + f.name, jibunAddress: f.jibunAddress, favoriteId: f.id }) });
+        if (isFinite(it.lat) && isFinite(it.lng)) map.easeTo({ center: [it.lng, it.lat], offset: [0, -Math.round(window.innerHeight * 0.25)], duration: 500 });
       });
     });
   }
@@ -13790,6 +13820,12 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     }
     if (tk === 'riceprice') return [(p.company || p.farmName || ''), (p.name || ''), emd].filter(Boolean).join(' ') || (areaTypeCfg(tk).label + ' 조사');
     if (tk === 'farmsale') return [(p.name || ''), emd].filter(Boolean).join(' ') || (areaTypeCfg(tk).label + ' 조사');
+    /* [v200] 농비 핀 아래 = 지목 · 이름 · 「읍면동 리 지번」 (요청: 읍면동리 지번까지 표시) */
+    if (tk === 'farmcost') {
+      var rj = riJibunFromAddr(p.address1 || '', emd);
+      var loc = [emd, rj].filter(Boolean).join(' ');
+      return [(p.kind || ''), (p.name || ''), loc].filter(Boolean).join(' ') || (areaTypeCfg(tk).label + ' 조사');
+    }
     /* 가축·축비=축종, 농비=지목 → kind 먼저 */
     return [(p.kind || ''), (p.name || ''), emd].filter(Boolean).join(' ') || (areaTypeCfg(tk).label + ' 조사');
   }
@@ -14160,6 +14196,8 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     bMemo.addEventListener('click', function () { var pid = p.id; areaOpenMemoSheet(pid, function () { areaOpenPlotSheet(getAreaPlots().filter(function (x) { return x.id === pid; })[0] || p); }); });
     rDM.appendChild(bMemo);
     box.appendChild(rDM);
+    /* [v202] 답례품 입력 상자 — 작물재배(재배면적) 제외 조사구 종류(가축·축비·농비·쌀값·농판·기타조사). 핀마다 월별 지급 기록 */
+    if (currentAreaType !== 'crop') { try { box.appendChild(giftBoxEl(p)); } catch (e) {} }
     var row = el('div', 'btn-row'); row.style.marginTop = '8px';
     var bEdit = el('button', 'sheet-btn primary', '✏️ 수정');
     bEdit.addEventListener('click', function () { areaOpenEditChoice(p); });   /* [v76-5] 지도/입력창 선택 */
