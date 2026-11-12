@@ -1,4 +1,4 @@
-<!-- map_v227.html (v227 · TENAR V1.8) · 저장: 2026-11-13 03:08 KST · [v227] 저장위치 연결자료 선택 강조 + 조사표 이동 확인 (요청 3건) — ①연결자료(포구·면적·길이)를 1탭하면 그 자료의 '선(파랑 굵게)+찍은 꼭짓점(파랑 점)'을 지도에 표시(전용 item-select 소스, 저장된 자료라도 선택표시로 점이 보임). 2탭으로 도구로 열어도 점 표시 유지(재강조). ②1탭=위치이동+그 자료 선·꼭짓점 선택표시, 2탭=저장위치 닫고 해당 도구로 열기(기존 동작 유지). ③연결된 조사표 링크(buildSurveyLinkRow) 클릭 시 바로 이동하지 않고 「연결된 …조사표로 이동하시겠습니까? 확인/취소」 확인. ※ 계산·전송 로직 무변경. 아래는 v226 — [v226] 저장위치 「포구도구」 버튼 — 기존 포구자료가 있으면 「기존 열기 / 새로 작성」 선택 (요청) — 핀에 이미 포구자료가 연결돼 있는데 포구도구를 누르면 무조건 새 포구가 추가로 만들어지던 것을, 기존 자료가 있으면 _tenarChoice3로 「기존 포구 열기(focusMapItem로 조사설정값까지 불러옴)」 / 「새로 작성(기존 유지)」 / 취소를 먼저 묻는다(여러 개면 연결자료 목록에서 선택, 한 핀에 포구 하나 권장 안내). ※ 계산·전송 로직 무변경. 아래는 v225 — [v225] 선택 핀 연결선 파랑강조 + 연락처 버튼 이동·편집 (요청 2건) — ①핀 선택 시 그 핀에 연결된 선/도형(저장 요도)을 보라(#7c3aed)에서 파랑(#0078FF)으로 강조, 선택 해제하면 원래색 복귀(renderMapItems _focusBlue + applyFavFocus에서 재렌더). 포구/측정 '작업 중' 도형은 별도 소스라 보라 그대로 유지. ②저장위치 「연락처 보기」→「연락처」로 바꾸고 카카오지도 버튼 오른쪽으로 이동·같은 크기(mapbtn). 팝업을 보기↔수정/저장으로 바꿔, 저장하면 핀(fav.contact)·포구도구(fp.ctx.contact)·연결된 실측/청취 조사표 저장데이터(contactName 등)까지 반영(saveContactForFav·_writeSurveyContact, 보안저장=투명 암호화). ※ 계산·전송 로직 무변경. 아래는 v224 — [v224] 연락처(이름·전화·메모·수확예정일) 포구/측정도구 ↔ 조사표 ↔ 핀 연동 (요청 2건, tonghab v168·chungchi v136과 함께) — ①포구도구·측정도구 「조사 설정」의 1·2번 비율 아래에 연락처 섹션(열기/닫기, 기본 닫힘) 추가: 입력하면 조사표 전송 시 함께 넘어가고(빈 칸만 채움), 「📥 조사표에서 연락처 가져오기」로 연결 조사표의 연락처를 끌어올 수 있음(양쪽 모두 선택). 연락처는 연결 핀(fav.contact)에도 저장. ②핀 저장위치 팝업에 작은 「📇 연락처 보기」 버튼 — 누르면 이름·전화(통화 링크)·메모(주소)·수확예정일 팝업(핀에 없으면 연결 조사표에서 읽어 표시). 헬퍼: _fullSurveyContact·buildContactSection·openContactPopup·tenarSetFavContact·favContactResolved. 전송 payload(FP_RESULT ctx.contact·meas_result.contact)에 연락처 추가. ※ 계산식 무변경(연락처는 빈 칸만 채움, 기존 값은 유지). 아래는 v223 — [v223] 생산량목록·내보내기/가져오기 보완 (요청 4건) — ①(tonghab v167과 함께) 요청①은 tonghab 평균이랑넓이 소수점 키보드. ②내보내기(생산량 favExport·목록도구 fpListTools export)가 자체 a.click(target 없음)이라 iOS에서 지도 탭이 파일로 이동(→홈으로 감)하던 것을 target=_blank 새 탭 다운로드로 고침(v123 방식과 동일). 가져오기 후 생산량목록 화면 유지(닫혔으면 재오픈). ③생산량목록은 정렬·필터·콤보·스크롤 위치를 이미 기억(닫고 열면 이전 목록화면) — ②수정으로 홈이탈로 상태가 날아가던 것도 해소. ④생산량목록 카드의 「📋 연결된 조사표」 중복 헤더 줄 제거 — 조사표 행 자체가 이미 조사표를 표시하므로, 연결자료와 조사표 사이 간격을 줄여 화면 덜 차지하게. ※ 계산·전송·자동연결 로직 무변경. 아래는 v222 — [v222] 포구도구 핀 연결·작물 동기화 보완 (요청 6건) — ①팝업(저장위치 등)이 닫히면 모든 핀 선택(강조) 해제(실수 선택 방지, closeSheet). ②포구도구 FAB를 핀 미선택 상태로 누르면 「핀이 선택되지 않았습니다. 핀을 선택하고 포구도구를 작성하시겠습니까? [확인/취소]」 안내(openFpToolMaybeWithPin). ③포구도구(조사설정)에서 작물을 정하면 연결된 핀 제목(작물)도 같은 작물로 자동 변경(tenarSetFavCrop). ④핀에 작물이 없거나 조사설정 작물과 다르면 어느 작물로 할지 물어봄(핀 제목·조사설정 모두 맞춤, askCropChoice). ⑤저장위치 팝업의 「포구도구」 버튼도 지도 FAB처럼 「조사 설정」 팝업을 바로 띄움(startToolForFav fp). ⑥조사설정 1·2번 비율의 빈 칸 강조를 가뿐 아니라 나·다까지 노랑 테두리. ※ 계산·전송·자동연결 로직 무변경(표시·입력편의·멘트만). 아래는 v221/v220 변경분 — [v221] v220 + 요청 #20: 토지정보 「공시지가」 아래 안내 멘트 "※ 표시된 공시지가는 고시 연도 기준값입니다." (연도 기준). [v220] 검색핀·토지정보·포구/측정도구 보완 (요청 8+2건) — ①검색은 좌표로 노랑핀만 찍고 지적도 테두리(필지 외곽선)는 안 그림(지적 밀림지역 핀누락 방지). ②검색 즉시 토지정보 안 뜨고, 노랑핀을 '탭'하면 그 자리 토지정보(카카오)가 열림. ③화면 꾹→「토지정보」 누르면 그 자리에 노랑 검색핀 찍고 토지정보 열림(테두리 없음). ④핀 선택 상태에서 포구도구 FAB를 누르면 그 핀에 연결+「조사 설정(작물·기준·비율)」을 바로 띄우고, 비어 있는 작물/가-나총이랑수/1번·2번 비율 칸을 노랑 테두리로 강조. ⑤핀 작물(논벼·배추 등)을 조사설정 작물로 자동 반영(안 나오던 문제 보강). ⑥조사설정 저장을 '이랑수 없이도' 허용(추후 입력 안내 멘트) + 핀 작물과 조사설정 작물이 다르면 확인 멘트. ⑦그리기(재배구역) 색을 필지선택과 같은 파랑(#0078FF)으로 통일. ⑧포구·측정 저장이 끝나면 「조사표로 이동·저장 하시겠습니까?」 [이동저장][취소] 안내 — 이동저장 시 조사표(실측 tonghab/청취 chungchi)로 전송·이동. (추가)측정도구도 선택핀↔지역·작물 이름 동기화+지역·작물 설정 자동 열기+같은 이동저장 멘트. ※ 계산·전송·핀↔조사표 자동연결 로직 무변경(표시·입력편의·멘트만). (v219 이하 포함) -->
+<!-- map_v228.html (v228 · TENAR V1.8) · 저장: 2026-11-13 03:08 KST · [v228] 연락처·답례품 보완 (요청 5건, #6 농비/축비 조사구 농가별은 별도 예정) — ①조사설정 연락처에 층·조사구 추가(조사표 nbFloor/nbSurveyPlot 연동) + 열기/닫기 토글을 오른쪽 정렬·화살표(▼닫힘/▲열림)로. ②저장위치 「🎁 답례품」 버튼을 연락처 옆(mapbtn)에 추가 — 누르면 이 핀 답례품 지급현황 체크 팝업(openPinGiftPopup, 기존 하단 인라인 박스 제거). ③답례품 종류를 상품권·수첩·달력·기타로(GIFT_ITEMS, 옛 '답례품' 기록은 '상품권'으로 읽음). ④답례품 화면 연도 옆 「📅 전체월」 토글 — 그 해 1~12월 통틀어 지급한 곳을 월 표시와 함께 조회(_giftItemGivenYear). ⑤답례품 종류 드롭다운 제목을 「전체답례품」으로(기본 전체). ※ 계산·전송 로직 무변경(연락처는 조사표 빈 칸만 채움, tonghab v169·chungchi v137). 아래는 v227 — [v227] 저장위치 연결자료 선택 강조 + 조사표 이동 확인 (요청 3건) — ①연결자료(포구·면적·길이)를 1탭하면 그 자료의 '선(파랑 굵게)+찍은 꼭짓점(파랑 점)'을 지도에 표시(전용 item-select 소스, 저장된 자료라도 선택표시로 점이 보임). 2탭으로 도구로 열어도 점 표시 유지(재강조). ②1탭=위치이동+그 자료 선·꼭짓점 선택표시, 2탭=저장위치 닫고 해당 도구로 열기(기존 동작 유지). ③연결된 조사표 링크(buildSurveyLinkRow) 클릭 시 바로 이동하지 않고 「연결된 …조사표로 이동하시겠습니까? 확인/취소」 확인. ※ 계산·전송 로직 무변경. 아래는 v226 — [v226] 저장위치 「포구도구」 버튼 — 기존 포구자료가 있으면 「기존 열기 / 새로 작성」 선택 (요청) — 핀에 이미 포구자료가 연결돼 있는데 포구도구를 누르면 무조건 새 포구가 추가로 만들어지던 것을, 기존 자료가 있으면 _tenarChoice3로 「기존 포구 열기(focusMapItem로 조사설정값까지 불러옴)」 / 「새로 작성(기존 유지)」 / 취소를 먼저 묻는다(여러 개면 연결자료 목록에서 선택, 한 핀에 포구 하나 권장 안내). ※ 계산·전송 로직 무변경. 아래는 v225 — [v225] 선택 핀 연결선 파랑강조 + 연락처 버튼 이동·편집 (요청 2건) — ①핀 선택 시 그 핀에 연결된 선/도형(저장 요도)을 보라(#7c3aed)에서 파랑(#0078FF)으로 강조, 선택 해제하면 원래색 복귀(renderMapItems _focusBlue + applyFavFocus에서 재렌더). 포구/측정 '작업 중' 도형은 별도 소스라 보라 그대로 유지. ②저장위치 「연락처 보기」→「연락처」로 바꾸고 카카오지도 버튼 오른쪽으로 이동·같은 크기(mapbtn). 팝업을 보기↔수정/저장으로 바꿔, 저장하면 핀(fav.contact)·포구도구(fp.ctx.contact)·연결된 실측/청취 조사표 저장데이터(contactName 등)까지 반영(saveContactForFav·_writeSurveyContact, 보안저장=투명 암호화). ※ 계산·전송 로직 무변경. 아래는 v224 — [v224] 연락처(이름·전화·메모·수확예정일) 포구/측정도구 ↔ 조사표 ↔ 핀 연동 (요청 2건, tonghab v168·chungchi v136과 함께) — ①포구도구·측정도구 「조사 설정」의 1·2번 비율 아래에 연락처 섹션(열기/닫기, 기본 닫힘) 추가: 입력하면 조사표 전송 시 함께 넘어가고(빈 칸만 채움), 「📥 조사표에서 연락처 가져오기」로 연결 조사표의 연락처를 끌어올 수 있음(양쪽 모두 선택). 연락처는 연결 핀(fav.contact)에도 저장. ②핀 저장위치 팝업에 작은 「📇 연락처 보기」 버튼 — 누르면 이름·전화(통화 링크)·메모(주소)·수확예정일 팝업(핀에 없으면 연결 조사표에서 읽어 표시). 헬퍼: _fullSurveyContact·buildContactSection·openContactPopup·tenarSetFavContact·favContactResolved. 전송 payload(FP_RESULT ctx.contact·meas_result.contact)에 연락처 추가. ※ 계산식 무변경(연락처는 빈 칸만 채움, 기존 값은 유지). 아래는 v223 — [v223] 생산량목록·내보내기/가져오기 보완 (요청 4건) — ①(tonghab v167과 함께) 요청①은 tonghab 평균이랑넓이 소수점 키보드. ②내보내기(생산량 favExport·목록도구 fpListTools export)가 자체 a.click(target 없음)이라 iOS에서 지도 탭이 파일로 이동(→홈으로 감)하던 것을 target=_blank 새 탭 다운로드로 고침(v123 방식과 동일). 가져오기 후 생산량목록 화면 유지(닫혔으면 재오픈). ③생산량목록은 정렬·필터·콤보·스크롤 위치를 이미 기억(닫고 열면 이전 목록화면) — ②수정으로 홈이탈로 상태가 날아가던 것도 해소. ④생산량목록 카드의 「📋 연결된 조사표」 중복 헤더 줄 제거 — 조사표 행 자체가 이미 조사표를 표시하므로, 연결자료와 조사표 사이 간격을 줄여 화면 덜 차지하게. ※ 계산·전송·자동연결 로직 무변경. 아래는 v222 — [v222] 포구도구 핀 연결·작물 동기화 보완 (요청 6건) — ①팝업(저장위치 등)이 닫히면 모든 핀 선택(강조) 해제(실수 선택 방지, closeSheet). ②포구도구 FAB를 핀 미선택 상태로 누르면 「핀이 선택되지 않았습니다. 핀을 선택하고 포구도구를 작성하시겠습니까? [확인/취소]」 안내(openFpToolMaybeWithPin). ③포구도구(조사설정)에서 작물을 정하면 연결된 핀 제목(작물)도 같은 작물로 자동 변경(tenarSetFavCrop). ④핀에 작물이 없거나 조사설정 작물과 다르면 어느 작물로 할지 물어봄(핀 제목·조사설정 모두 맞춤, askCropChoice). ⑤저장위치 팝업의 「포구도구」 버튼도 지도 FAB처럼 「조사 설정」 팝업을 바로 띄움(startToolForFav fp). ⑥조사설정 1·2번 비율의 빈 칸 강조를 가뿐 아니라 나·다까지 노랑 테두리. ※ 계산·전송·자동연결 로직 무변경(표시·입력편의·멘트만). 아래는 v221/v220 변경분 — [v221] v220 + 요청 #20: 토지정보 「공시지가」 아래 안내 멘트 "※ 표시된 공시지가는 고시 연도 기준값입니다." (연도 기준). [v220] 검색핀·토지정보·포구/측정도구 보완 (요청 8+2건) — ①검색은 좌표로 노랑핀만 찍고 지적도 테두리(필지 외곽선)는 안 그림(지적 밀림지역 핀누락 방지). ②검색 즉시 토지정보 안 뜨고, 노랑핀을 '탭'하면 그 자리 토지정보(카카오)가 열림. ③화면 꾹→「토지정보」 누르면 그 자리에 노랑 검색핀 찍고 토지정보 열림(테두리 없음). ④핀 선택 상태에서 포구도구 FAB를 누르면 그 핀에 연결+「조사 설정(작물·기준·비율)」을 바로 띄우고, 비어 있는 작물/가-나총이랑수/1번·2번 비율 칸을 노랑 테두리로 강조. ⑤핀 작물(논벼·배추 등)을 조사설정 작물로 자동 반영(안 나오던 문제 보강). ⑥조사설정 저장을 '이랑수 없이도' 허용(추후 입력 안내 멘트) + 핀 작물과 조사설정 작물이 다르면 확인 멘트. ⑦그리기(재배구역) 색을 필지선택과 같은 파랑(#0078FF)으로 통일. ⑧포구·측정 저장이 끝나면 「조사표로 이동·저장 하시겠습니까?」 [이동저장][취소] 안내 — 이동저장 시 조사표(실측 tonghab/청취 chungchi)로 전송·이동. (추가)측정도구도 선택핀↔지역·작물 이름 동기화+지역·작물 설정 자동 열기+같은 이동저장 멘트. ※ 계산·전송·핀↔조사표 자동연결 로직 무변경(표시·입력편의·멘트만). (v219 이하 포함) -->
 <!-- (이전) map_v219.html (v219 · TENAR V1.8) · 저장: 2026-11-12 20:13 KST · [v219] 검색 시 토지정보 팝업 (요청 #19 마무리) — 주소·지번·명칭을 검색하면 그 위치로 이동(검색핀=노랑+검정+돋보기 v215)하면서 그 위치의 '토지정보' 시트를 자동으로 띄운다(openLandInfoAt). 단일 결과·명칭 다중결과에서 고른 경우 모두 적용. ※ 계산·전송·연결 로직 무변경. (v218 이하 포함) -->
 <!-- (이전) map_v218.html (v218 · TENAR V1.8) · 저장: 2026-11-12 19:56 KST · [v218] 생산량목록·저장위치 정리 (요청 4건) — ①「🔗 중복 핀 합치기」 버튼 삭제(한 주소에 여러 핀이 정상적으로 있을 수 있어 합치면 안 됨). ②생산량목록에서 카드 1탭=지도이동, 2탭=저장위치 팝업 열 때 '지도를 다시 움직이지 않고 화면 그대로 유지'(keepView — 핀이 팝업에 가려도 팝업 내리면 보임). ③생산량목록 카드에도 저장위치처럼 '연결자료 + 연결된 조사표'를 함께 표시(연결자료는 기존, 연결된 조사표 행 신설). ④조사표 표시는 '실제 연결(조사표 저장됨=조사표 버튼에 숫자 있음)'일 때만 — '열었으나 미저장'은 더 이상 '연결된 조사표'로 안 보임. 저장위치·생산량목록 모두 「📋 연결된 조사표」 행(클릭=열기, 🔒잠금·🔀변경·🗑연결해제)으로 통일. ※ 계산·전송·자동연결 로직 무변경. (v217 이하 포함) -->
 <!-- (이전) map_v217.html (v217 · TENAR V1.8) · 저장: 2026-11-12 17:46 KST · [v217] 저장위치 조사표 연결 UI 강화 + 자동 재연결 매칭 보강 (요청) — ①저장위치 「📋 조사표」 버튼에 연결 개수 표시(연결자료 버튼처럼, 예: 「📋 조사표 1」). ②연결자료 아래에 「📋 연결된 조사표」 링크 행 추가 — 이름 클릭=연결 조사표 바로 열기(미저장이면 연결화면), 🔒잠금·🔀변경(다른 조사표로)·🗑연결해제 버튼 포함(연결자료 행과 동일 형식, surveyLocked 플래그). ③자동 재연결(v216) 매칭을 '주소 정확일치 → 주소 포함 → 좌표(≈25m)' 단계별로 보강 — 옆 필지(예: 송산리 965/962-17)가 좌표로 같이 잡혀 모호해지던 것을 주소 정확일치로 먼저 가려 확실히 연결. ※ 계산·전송·저장시 자동연결(tonghab) 로직 무변경. (v216 자동재연결·v215 검색핀/선택테두리 포함) -->
@@ -4664,7 +4664,11 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
     bContact.addEventListener('click', function () {
       openContactPopup(favContactResolved(f), f.name || f.jibunAddress || '저장 위치', function (ct) { saveContactForFav(f, ct); });
     });
-    mapRow.appendChild(bNmap); mapRow.appendChild(bKmap); mapRow.appendChild(bContact);
+    /* [v228·2] 답례품 버튼 — 연락처 옆, 같은 크기. 누르면 이 핀의 답례품 지급 현황을 체크하는 팝업 */
+    var bGift = el('button', 'mapbtn', '🎁 답례품');
+    bGift.style.cssText += 'background:#fff7e6;color:#8a5a00;border-color:#f0d9a8;';
+    bGift.addEventListener('click', function () { openPinGiftPopup(f); });
+    mapRow.appendChild(bNmap); mapRow.appendChild(bKmap); mapRow.appendChild(bContact); mapRow.appendChild(bGift);
     box.appendChild(mapRow);
 
     /* ② 도로명주소 */
@@ -4804,7 +4808,7 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
       collapseRef = svRow;   /* 접힘 높이를 조사표 행까지 */
     }
     box.appendChild(bParcel);   /* [v160] 현재 필지정보는 연결자료 목록 아래(맨 끝)로 이동 */
-    try { box.appendChild(giftBoxEl(f)); } catch (e) {}   /* [v196] 답례품 */
+    /* [v228·2] 답례품은 맨 아래 인라인 박스 대신 상단 「🎁 답례품」 버튼(연락처 옆)으로 이동 — openPinGiftPopup */
     openSheet('저장 위치', box, 'auto');
     /* [v118] 생산량목록에서 들어왔으면 「저장 위치」 왼쪽에 뒤로가기(←) — 누르면 목록으로(스크롤 위치 그대로) */
     if (navOpts && navOpts.fromList) {
@@ -7016,14 +7020,15 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
      · 어디고(같은 주소의 앱)도 이 기록을 읽어 어디고 답례품 화면에 함께 보여 줌
      =================================================================== */
   var GIFT_KEY = 'tenar_gifts_v1';
-  var GIFT_ITEMS = ['답례품', '수첩', '달력'];
+  var GIFT_ITEMS = ['상품권', '수첩', '달력', '기타'];   /* [v228·3] 답례품 종류: 상품권·수첩·달력·기타 (기존 '답례품' 기록은 '상품권'으로 읽음) */
   var GIFT_METHODS = ['직접', '우편', '우편함', '기타'];
-  var _giftMonth = null, _giftItem = '답례품', _giftFilter = 'given';
+  var _giftMonth = null, _giftItem = '', _giftFilter = 'given';   /* [v228·5] 기본 '전체답례품' */
+  var _giftAllMonths = false;   /* [v228·4] 전체월 보기 */
   function giftMonthNow() { var d = new Date(Date.now() + 9 * 3600000); return d.toISOString().slice(0, 7); }
   function giftToday() { return new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10); }
   function giftShift(m, k) { var y = +m.slice(0, 4), mo = +m.slice(5, 7) - 1 + k; y += Math.floor(mo / 12); mo = ((mo % 12) + 12) % 12; return y + '-' + (mo < 9 ? '0' : '') + (mo + 1); }
   function giftAll() { var o = loadJSON(GIFT_KEY, {}); return o && typeof o === 'object' && !Array.isArray(o) ? o : {}; }
-  function giftGet(favId, mon, item) { var o = giftAll(); return ((o[favId] || {})[mon] || {})[item] || null; }
+  function giftGet(favId, mon, item) { var o = giftAll(); var m = (o[favId] || {})[mon] || {}; return m[item] || (item === '상품권' ? (m['답례품'] || null) : null); }   /* [v228·3] '상품권'은 옛 '답례품' 기록도 함께 읽음 */
   function giftPut(favId, mon, item, rec) {
     var o = giftAll(); o[favId] = o[favId] || {}; o[favId][mon] = o[favId][mon] || {};
     if (rec) { rec.at = Date.now(); o[favId][mon][item] = rec; } else delete o[favId][mon][item];
@@ -7095,6 +7100,8 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
   }
   /* [v204] 대상처(농비·축비)는 묶인 핀(memberIds) 중 어느 하나라도 지급됐으면 지급으로 본다. 그 외는 핀 1개 */
   function _giftItemGiven(it, gi, mon) { var ids = it.memberIds || [it.id]; for (var i = 0; i < ids.length; i++) { var g = giftGet(ids[i], mon, gi); if (g && g.given) return g; } return null; }
+  /* [v228·4] 전체월: 그 해(yr) 1~12월 중 지급된 월 번호 배열 반환 */
+  function _giftItemGivenYear(it, gi, yr) { var ms = []; for (var m = 1; m <= 12; m++) { var mm = yr + '-' + (m < 10 ? '0' : '') + m; if (_giftItemGiven(it, gi, mm)) ms.push(m); } return ms; }
   /* [v203] 업무·작물별 답례품 「지급하는 달」 (사용자 제공 2026-11-10). 숫자=월(1~12). 'all'=매월. 미지정=매월(제한 없음).
      해당 월에 지급 대상인 업무·작물만 답례품 화면에 보이게 한다. */
   var GIFT_MONTHS_BIZ = { livecost: 'all', farmcost: 'all', livestock: [3, 9], riceprice: [3, 6, 9, 12], farmsale: 'all', etc: 'all' };
@@ -7126,25 +7133,28 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
     _giftYM = mon;
     var yr = +mon.slice(0, 4), moNum = +mon.slice(5, 7);
     var bizList = _giftBizList();
-    var all = _giftItemsAll().filter(function (it) { return giftInMonth(it, moNum); });   /* [v203] 이 달에 지급 대상인 업무·작물만 */
+    /* [v228·4] 전체월: 그 해의 지급 대상(월 제한 없이) 전부 — 지급여부는 1~12월 통틀어 판단 */
+    var all = _giftItemsAll().filter(function (it) { return _giftAllMonths ? true : giftInMonth(it, moNum); });
     var scoped = all.filter(function (it) { return !_giftBiz || it.biz === _giftBiz; });
     var shownItems = _giftItem ? [_giftItem] : GIFT_ITEMS;
-    function recGiven(it) { return shownItems.some(function (gi) { return !!_giftItemGiven(it, gi, mon); }); }
+    function givenMonthsOf(it, gi) { return _giftAllMonths ? _giftItemGivenYear(it, gi, yr) : (_giftItemGiven(it, gi, mon) ? [moNum] : []); }
+    function recGiven(it) { return shownItems.some(function (gi) { return givenMonthsOf(it, gi).length > 0; }); }
     var list = scoped.filter(function (it) { return _giftFilter === 'all' ? true : _giftFilter === 'given' ? recGiven(it) : !recGiven(it); });
     var groups = {}, gk = [];
     bizList.forEach(function (b) { if (_giftBiz && b.key !== _giftBiz) return; groups[b.key] = { b: b, list: [], total: all.filter(function (x) { return x.biz === b.key; }).length }; gk.push(b.key); });
     list.forEach(function (it) { if (groups[it.biz]) groups[it.biz].list.push(it); });
-    var cnt = {}; GIFT_ITEMS.forEach(function (gi) { cnt[gi] = scoped.filter(function (it) { return !!_giftItemGiven(it, gi, mon); }).length; });
+    var cnt = {}; GIFT_ITEMS.forEach(function (gi) { cnt[gi] = scoped.filter(function (it) { return givenMonthsOf(it, gi).length > 0; }).length; });
     var html = '<div class="tn-nav">' +
-      '<div class="tn-gift-head"><span class="tn-gm"><button type="button" class="tn-gbtn" data-py="-1">‹</button><b>' + yr + '년</b><button type="button" class="tn-gbtn" data-py="1">›</button></span>' +
+      '<div class="tn-gift-head"><span class="tn-gm"><button type="button" class="tn-gbtn" data-py="-1">‹</button><b>' + yr + '년</b><button type="button" class="tn-gbtn" data-py="1">›</button>' +
+        '<button type="button" class="tn-gbtn" id="gpAllMo" style="margin-left:6px;padding:3px 8px;border-radius:7px;font-weight:800;' + (_giftAllMonths ? 'background:#1f8a4c;color:#fff;border-color:#1f8a4c;' : '') + '">📅 전체월' + (_giftAllMonths ? ' ✓' : '') + '</button></span>' +
       '<span class="muted">조사구 ' + scoped.length + '곳</span></div>' +
-      '<div class="tn-gmonths">' + [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(function (m) { return '<button type="button" class="tn-gmo' + (m === moNum ? ' on' : '') + '" data-pmo="' + m + '">' + m + '월</button>'; }).join('') + '</div>' +
+      '<div class="tn-gmonths"' + (_giftAllMonths ? ' style="opacity:.45;"' : '') + '>' + [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(function (m) { return '<button type="button" class="tn-gmo' + (!_giftAllMonths && m === moNum ? ' on' : '') + '" data-pmo="' + m + '">' + m + '월</button>'; }).join('') + '</div>' +
       '<div class="tn-gflt">' +
         '<select class="tn-gsel" id="gpBiz"><option value=""' + (_giftBiz === '' ? ' selected' : '') + '>모든 업무</option>' + bizList.map(function (b) { return '<option value="' + b.key + '"' + (_giftBiz === b.key ? ' selected' : '') + '>' + b.emoji + ' ' + escapeHtml(b.label) + '</option>'; }).join('') + '</select>' +
-        '<select class="tn-gsel" id="gpItem"><option value=""' + (_giftItem === '' ? ' selected' : '') + '>답례품·수첩·달력 모두</option>' + GIFT_ITEMS.map(function (gi) { return '<option' + (gi === _giftItem ? ' selected' : '') + '>' + gi + '</option>'; }).join('') + '</select>' +
+        '<select class="tn-gsel" id="gpItem"><option value=""' + (_giftItem === '' ? ' selected' : '') + '>전체답례품</option>' + GIFT_ITEMS.map(function (gi) { return '<option' + (gi === _giftItem ? ' selected' : '') + '>' + gi + '</option>'; }).join('') + '</select>' +
         '<select class="tn-gsel" id="gpFilter">' + [['given', '지급한 곳'], ['not', '안 준 곳'], ['all', '전체']].map(function (x) { return '<option value="' + x[0] + '"' + (x[0] === _giftFilter ? ' selected' : '') + '>' + x[1] + '</option>'; }).join('') + '</select>' +
       '</div>' +
-      '<div class="tn-gsum">' + yr + '년 ' + moNum + '월 지급 대상 · ' + GIFT_ITEMS.map(function (gi) { return gi + ' <b>' + cnt[gi] + '</b>'; }).join(' · ') + '</div>';
+      '<div class="tn-gsum">' + yr + '년 ' + (_giftAllMonths ? '전체월' : (moNum + '월')) + ' 지급 · ' + GIFT_ITEMS.map(function (gi) { return gi + ' <b>' + cnt[gi] + '</b>'; }).join(' · ') + '</div>';
     var anyShown = gk.some(function (k) { return groups[k].total > 0; });
     if (!anyShown) html += '<p class="muted" style="margin:12px 2px">' + moNum + '월에 답례품 지급 대상 업무가 없습니다. (업무별 지급 달에 맞춰 표시됩니다)</p>';
     gk.forEach(function (k) {
@@ -7153,7 +7163,11 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
       html += '<div class="tn-ggrp">' + G.b.emoji + ' ' + escapeHtml(G.b.label) + ' <em>' + G.list.length + '/' + G.total + '</em></div>';
       if (!G.list.length) { html += '<p class="muted" style="margin:2px 0 8px 10px">' + (_giftFilter === 'given' ? '지급한 곳 없음' : _giftFilter === 'not' ? '모두 지급함' : '') + '</p>'; return; }
       G.list.forEach(function (it) {
-        var gtxt = shownItems.map(function (gi) { var g = _giftItemGiven(it, gi, mon); return g ? (gi + (g.date ? ' ' + g.date.slice(5) : '')) : ''; }).filter(Boolean).join(' · ');
+        var gtxt = shownItems.map(function (gi) {
+          var ms = givenMonthsOf(it, gi); if (!ms.length) return '';
+          if (_giftAllMonths) return gi + ' ' + ms.map(function (m) { return m + '월'; }).join(',');
+          var g = _giftItemGiven(it, gi, mon); return gi + (g && g.date ? ' ' + g.date.slice(5) : '');
+        }).filter(Boolean).join(' · ');
         html += '<div class="tn-grow" data-id="' + it.id + '"><span class="t"><b>' + escapeHtml(it.name) + '</b>' +
           '<small>' + escapeHtml(it.sub) + '</small>' + (gtxt ? '<small class="ok">✔ ' + escapeHtml(gtxt) + '</small>' : '') +
           '<small class="tap-hint">한 번 더 누르면 상세(답례품 입력)</small></span></div>';
@@ -7164,6 +7178,7 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
     var body = sheetBody;
     body.querySelectorAll('[data-py]').forEach(function (b) { b.addEventListener('click', function () { _giftYM = (yr + (+b.getAttribute('data-py'))) + '-' + mon.slice(5, 7); _giftMonth = _giftYM; openGiftPage(); }); });
     body.querySelectorAll('[data-pmo]').forEach(function (b) { b.addEventListener('click', function () { var mm = +b.getAttribute('data-pmo'); _giftYM = yr + '-' + (mm < 10 ? '0' : '') + mm; _giftMonth = _giftYM; openGiftPage(); }); });
+    var _amBtn = body.querySelector('#gpAllMo'); if (_amBtn) _amBtn.addEventListener('click', function () { _giftAllMonths = !_giftAllMonths; openGiftPage(); });   /* [v228·4] 전체월 토글 */
     body.querySelector('#gpBiz').addEventListener('change', function () { _giftBiz = this.value; openGiftPage(); });
     body.querySelector('#gpItem').addEventListener('change', function () { _giftItem = this.value; openGiftPage(); });
     body.querySelector('#gpFilter').addEventListener('change', function () { _giftFilter = this.value; openGiftPage(); });
@@ -13499,7 +13514,7 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
   /* ================= [v224] 연락처(이름·전화·메모·수확예정일) — 포구/측정 ↔ 조사표 ↔ 핀 연동 ================= */
   /* 저장 조사표(tonghabSave_/chungchiSave_)에서 연락처 읽기 (보안 prefix라 평문 복호화됨) */
   function _fullSurveyContact(app, key) {
-    var c = { name: '', phone: '', memo: '', harvest: '' };
+    var c = { name: '', phone: '', memo: '', harvest: '', floor: '', plot: '' };
     try {
       if (!key) return c;
       var pfx = (app === 'chungchi') ? 'chungchiSave_' : 'tonghabSave_';
@@ -13511,10 +13526,12 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
       c.phone = String((d && d.contactPhone) || '').trim();
       c.memo = String((d && d.contactAddr) || '').trim();
       c.harvest = String((d && d.harvestDate) || '').trim();
+      c.floor = String((d && d.nbFloor) || '').trim();         /* [v228·1] 층 */
+      c.plot = String((d && d.nbSurveyPlot) || '').trim();     /* [v228·1] 조사구 */
     } catch (e) {}
     return c;
   }
-  function _contactIsEmpty(c) { return !c || (!c.name && !c.phone && !c.memo && !c.harvest); }
+  function _contactIsEmpty(c) { return !c || (!c.name && !c.phone && !c.memo && !c.harvest && !c.floor && !c.plot); }
   /* 핀(fav)에 연락처 저장 */
   function tenarSetFavContact(favId, contact) {
     if (!favId) return false;
@@ -13522,7 +13539,7 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
       var arr = getFavs(); var changed = false;
       for (var i = 0; i < arr.length; i++) {
         if (arr[i].id === favId) {
-          arr[i].contact = { name: contact.name || '', phone: contact.phone || '', memo: contact.memo || '', harvest: contact.harvest || '' };
+          arr[i].contact = { name: contact.name || '', phone: contact.phone || '', memo: contact.memo || '', harvest: contact.harvest || '', floor: contact.floor || '', plot: contact.plot || '' };
           arr[i].updatedAt = kstNowStr(); changed = true; break;
         }
       }
@@ -13534,10 +13551,11 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
   function buildContactSection(initial, pullFn) {
     initial = initial || {};
     var wrap = el('div'); wrap.style.cssText = 'margin-top:8px;border-top:1px dashed #e2e6ec;padding-top:6px;';
+    /* [v228·1] 헤더: 제목 왼쪽 + 열기/닫기 화살표(▼/▲) 오른쪽 정렬 (기본 닫힘=▼) */
     var head = el('div'); head.style.cssText = 'display:flex;align-items:center;gap:6px;cursor:pointer;padding:6px 2px;';
-    var caret = el('span', null, '▸'); caret.style.cssText = 'font-size:12px;color:#1f8a4c;font-weight:800;flex:0 0 auto;';
-    var title = el('span', null, '📇 연락처 <span style="font-weight:600;color:#999;">(선택 · 조사표와 연동)</span>'); title.style.cssText = 'font-size:13px;font-weight:800;color:#14612f;';
-    head.appendChild(caret); head.appendChild(title);
+    var title = el('span', null, '📇 연락처 <span style="font-weight:600;color:#999;">(선택 · 조사표와 연동)</span>'); title.style.cssText = 'font-size:13px;font-weight:800;color:#14612f;flex:1 1 auto;';
+    var caret = el('span', null, '▼'); caret.style.cssText = 'font-size:13px;color:#1f8a4c;font-weight:800;flex:0 0 auto;margin-left:auto;';
+    head.appendChild(title); head.appendChild(caret);
     var body = el('div'); body.style.cssText = 'display:none;margin-top:4px;';
     function mkF(label, val, ph, mode) {
       var f = el('div', 'fld', '<label>' + label + '</label>');
@@ -13546,6 +13564,8 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
     }
     var iName = mkF('이름', initial.name, '성명');
     var iPhone = mkF('전화', initial.phone, '010-0000-0000', 'numeric');
+    var iFloor = mkF('층', initial.floor, '예) 1', 'numeric');          /* [v228·1] 층 */
+    var iPlot = mkF('조사구', initial.plot, '예) 23', 'numeric');        /* [v228·1] 조사구 */
     var iMemo = mkF('메모(주소)', initial.memo, '기타사항');
     var iHarv = mkF('수확예정일', initial.harvest, '예) 10월 중순, 11/5');
     if (typeof pullFn === 'function') {
@@ -13555,6 +13575,7 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
         var c = null; try { c = pullFn(); } catch (e) {}
         if (_contactIsEmpty(c)) { showToast('연결된 조사표에 가져올 연락처가 없습니다.', 3200, 'info'); return; }
         iName.value = c.name || ''; iPhone.value = c.phone || ''; iMemo.value = c.memo || ''; iHarv.value = c.harvest || '';
+        iFloor.value = c.floor || ''; iPlot.value = c.plot || '';
         showToast('조사표의 연락처를 가져왔습니다.', 2400, 'success');
       });
       body.appendChild(pull);
@@ -13562,15 +13583,32 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
     head.addEventListener('click', function () {
       var open = body.style.display === 'none';
       body.style.display = open ? 'block' : 'none';
-      caret.textContent = open ? '▾' : '▸';
+      caret.textContent = open ? '▲' : '▼';   /* 열림=▲, 닫힘=▼ */
     });
     wrap.appendChild(head); wrap.appendChild(body);
-    return { el: wrap, read: function () { return { name: iName.value.trim(), phone: iPhone.value.trim(), memo: iMemo.value.trim(), harvest: iHarv.value.trim() }; } };
+    return { el: wrap, read: function () { return { name: iName.value.trim(), phone: iPhone.value.trim(), memo: iMemo.value.trim(), harvest: iHarv.value.trim(), floor: iFloor.value.trim(), plot: iPlot.value.trim() }; } };
   }
-  /* 연락처 보기 팝업 (저장위치) */
+  /* [v228·2] 핀 답례품 지급 현황 팝업 — 저장위치의 「🎁 답례품」 버튼에서 연다(월 이동·체크 바로 저장) */
+  function openPinGiftPopup(f) {
+    var ov = document.createElement('div');
+    ov.style.cssText = 'position:fixed;inset:0;z-index:2147483646;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:18px;';
+    var box = document.createElement('div');
+    box.style.cssText = 'background:#fff;border-radius:16px;max-width:400px;width:100%;max-height:86vh;overflow:auto;padding:16px;box-shadow:0 8px 30px rgba(0,0,0,.35);';
+    var title = document.createElement('div');
+    title.style.cssText = 'font-size:15px;font-weight:800;color:#8a5a00;margin-bottom:6px;';
+    title.textContent = '🎁 답례품 지급 — ' + (f.name || f.jibunAddress || '저장 위치');
+    box.appendChild(title);
+    try { box.appendChild(giftBoxEl(f)); } catch (e) {}
+    var close = document.createElement('button'); close.textContent = '닫기';
+    close.style.cssText = 'width:100%;margin-top:12px;padding:11px;border:none;border-radius:10px;background:#1f8a4c;color:#fff;font-size:14px;font-weight:800;';
+    box.appendChild(close); ov.appendChild(box); document.body.appendChild(ov);
+    function done() { try { document.body.removeChild(ov); } catch (e) {} }
+    close.addEventListener('click', done);
+    ov.addEventListener('click', function (e) { if (e.target === ov) done(); });
+  }
   /* 연락처 팝업 — 보기(기본) ↔ 수정/저장. onSave(contact) 가 있으면 「수정」 버튼 노출 */
   function openContactPopup(contact, titleText, onSave) {
-    contact = Object.assign({ name: '', phone: '', memo: '', harvest: '' }, contact || {});
+    contact = Object.assign({ name: '', phone: '', memo: '', harvest: '', floor: '', plot: '' }, contact || {});
     var ov = document.createElement('div');
     ov.style.cssText = 'position:fixed;inset:0;z-index:2147483646;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:22px;';
     var box = document.createElement('div');
@@ -13586,7 +13624,7 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
       function row(lbl, valHtml) { return '<div style="display:flex;gap:8px;padding:7px 0;border-bottom:1px solid #f0f0f4;"><span style="flex:0 0 72px;font-size:12.5px;font-weight:800;color:#5a6b50;">' + lbl + '</span><span style="flex:1;font-size:13.5px;color:#222;word-break:break-all;">' + (valHtml || '<span style="color:#bbb;">-</span>') + '</span></div>'; }
       var telRaw = String(contact.phone || '').replace(/[^0-9+]/g, '');
       var phoneHtml = contact.phone ? '<a href="tel:' + telRaw + '" style="color:#1a5fd0;font-weight:700;">' + escapeHtml(contact.phone) + '</a>' : '';
-      bodyWrap.innerHTML = row('이름', contact.name ? escapeHtml(contact.name) : '') + row('전화', phoneHtml) + row('메모(주소)', contact.memo ? escapeHtml(contact.memo) : '') + row('수확예정일', contact.harvest ? escapeHtml(contact.harvest) : '');
+      bodyWrap.innerHTML = row('이름', contact.name ? escapeHtml(contact.name) : '') + row('전화', phoneHtml) + row('층', contact.floor ? escapeHtml(contact.floor) : '') + row('조사구', contact.plot ? escapeHtml(contact.plot) : '') + row('메모(주소)', contact.memo ? escapeHtml(contact.memo) : '') + row('수확예정일', contact.harvest ? escapeHtml(contact.harvest) : '');
       btnRow.innerHTML = '';
       if (typeof onSave === 'function') { var bE = mkBtn('수정', false); bE.addEventListener('click', renderEdit); btnRow.appendChild(bE); }
       var bC = mkBtn('닫기', true); bC.addEventListener('click', done); btnRow.appendChild(bC);
@@ -13602,12 +13640,14 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
       }
       var iName = field('이름', contact.name, '성명');
       var iPhone = field('전화', contact.phone, '010-0000-0000', 'numeric');
+      var iFloor = field('층', contact.floor, '예) 1', 'numeric');
+      var iPlot = field('조사구', contact.plot, '예) 23', 'numeric');
       var iMemo = field('메모(주소)', contact.memo, '기타사항');
       var iHarv = field('수확예정일', contact.harvest, '예) 10월 중순, 11/5');
       btnRow.innerHTML = '';
       var bS = mkBtn('저장', true);
       bS.addEventListener('click', function () {
-        contact = { name: iName.value.trim(), phone: iPhone.value.trim(), memo: iMemo.value.trim(), harvest: iHarv.value.trim() };
+        contact = { name: iName.value.trim(), phone: iPhone.value.trim(), memo: iMemo.value.trim(), harvest: iHarv.value.trim(), floor: iFloor.value.trim(), plot: iPlot.value.trim() };
         try { if (typeof onSave === 'function') onSave(contact); } catch (e) {}
         renderView();
       });
@@ -13649,6 +13689,8 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
       var raw = localStorage.getItem(pfx + key); if (!raw) return false;
       var d = JSON.parse(raw); if (!d || d.tenarSecure === true) return false;
       d.contactName = c.name || ''; d.contactPhone = c.phone || ''; d.contactAddr = c.memo || ''; d.harvestDate = c.harvest || '';
+      if (c.floor !== undefined) d.nbFloor = c.floor || '';         /* [v228·1] 층 */
+      if (c.plot !== undefined) d.nbSurveyPlot = c.plot || '';      /* [v228·1] 조사구 */
       localStorage.setItem(pfx + key, JSON.stringify(d));
       return true;
     } catch (e) { return false; }
