@@ -1,4 +1,5 @@
-<!-- map_v216.html (v216 · TENAR V1.8) · 저장: 2026-11-12 17:31 KST · [v216] 핀↔조사표 자동 재연결 (요청: '유형만 있고 연결 끊김' 해결) — 증상: 지도핀→조사표 작성 후 지도에서 「조사표」를 보면 실측 '유형'은 표시되는데 "연결된 저장 조사표를 찾지 못함"(surveyType 있고 surveyId 없음). 수정: 그 상태를 감지하면, 이 위치의 저장된 조사표(실측/청취 목록)를 '주소(공백제거 일치/포함) 또는 좌표(≈25m) 일치가 딱 1건'일 때 자동으로 찾아 핀에 surveyId 연결하고 화면 갱신. ①조사표 선택 화면 열 때 ②저장위치 팝업 열 때 모두 자동 시도. 여러 건 모호하면 기존 「📎 저장된 조사표에 연결」 수동선택 유지. 저장 조사표 좌표는 __mapLat/__mapLng 사용. ※ 자동연결(tonghab 저장시 _tenarLinkPinToSurvey)·계산·전송 로직 무변경 — map 쪽에 '복구용 자동 재연결'만 추가. (v215 검색핀·선택테두리 포함) -->
+<!-- map_v217.html (v217 · TENAR V1.8) · 저장: 2026-11-12 17:46 KST · [v217] 저장위치 조사표 연결 UI 강화 + 자동 재연결 매칭 보강 (요청) — ①저장위치 「📋 조사표」 버튼에 연결 개수 표시(연결자료 버튼처럼, 예: 「📋 조사표 1」). ②연결자료 아래에 「📋 연결된 조사표」 링크 행 추가 — 이름 클릭=연결 조사표 바로 열기(미저장이면 연결화면), 🔒잠금·🔀변경(다른 조사표로)·🗑연결해제 버튼 포함(연결자료 행과 동일 형식, surveyLocked 플래그). ③자동 재연결(v216) 매칭을 '주소 정확일치 → 주소 포함 → 좌표(≈25m)' 단계별로 보강 — 옆 필지(예: 송산리 965/962-17)가 좌표로 같이 잡혀 모호해지던 것을 주소 정확일치로 먼저 가려 확실히 연결. ※ 계산·전송·저장시 자동연결(tonghab) 로직 무변경. (v216 자동재연결·v215 검색핀/선택테두리 포함) -->
+<!-- (이전) map_v216.html (v216 · TENAR V1.8) · 저장: 2026-11-12 17:31 KST · [v216] 핀↔조사표 자동 재연결 (요청: '유형만 있고 연결 끊김' 해결) — 증상: 지도핀→조사표 작성 후 지도에서 「조사표」를 보면 실측 '유형'은 표시되는데 "연결된 저장 조사표를 찾지 못함"(surveyType 있고 surveyId 없음). 수정: 그 상태를 감지하면, 이 위치의 저장된 조사표(실측/청취 목록)를 '주소(공백제거 일치/포함) 또는 좌표(≈25m) 일치가 딱 1건'일 때 자동으로 찾아 핀에 surveyId 연결하고 화면 갱신. ①조사표 선택 화면 열 때 ②저장위치 팝업 열 때 모두 자동 시도. 여러 건 모호하면 기존 「📎 저장된 조사표에 연결」 수동선택 유지. 저장 조사표 좌표는 __mapLat/__mapLng 사용. ※ 자동연결(tonghab 저장시 _tenarLinkPinToSurvey)·계산·전송 로직 무변경 — map 쪽에 '복구용 자동 재연결'만 추가. (v215 검색핀·선택테두리 포함) -->
 <!-- (이전) map_v215.html (v215 · TENAR V1.8) · 저장: 2026-11-12 17:23 KST · [v215] 검색핀 디자인 변경 + 선택핀 테두리 검정 (요청) — ①#19(일부) 검색핀을 저장핀(빨강 물방울)과 똑같아 구분 안 되던 것에서 '안B(노랑 바탕 + 검정 테두리 + 돋보기🔍)'로 변경(showSearchMarker). 저장핀(빨강)·포구(A파랑/B빨강)·측정(녹색)과 확실히 구분. ②핀이 선택되면(확대·물결, pin-focus) 테두리를 검정(#111827)으로 바꿔 선택 표시를 더 분명히 — 조사구목록 선택핀(심볼레이어 circle-stroke sel=검정)과 동일한 느낌. 확대·물결은 그대로. ※ 계산·전송·연결 로직 무변경(표시만). (v214 이하 유지) -->
 <!-- (이전) map_v214.html (v214 · TENAR V1.8) · 저장: 2026-11-12 15:46 KST · [v214] 조사표 연결 표시 보강 (요청: 지도핀→조사표 작성 시 연결표시 누락·미연결 혼동) — 원인: ①저장위치 팝업의 조사표 상태가 '연결자료(요도) 있을 때만' 떠서, 요도 없이 조사표만 연결/작성한 핀은 표시가 아예 없었음. ②지도에서 핀→조사표를 '열기만' 하면 유형(surveyType)이 미리 기록돼 「연결 해제」 버튼은 떠도 실제 연결(surveyId)은 조사표에서 '저장'해야 완성 — 이 '열었으나 미저장' 상태를 구분표시 안 함. 수정: 저장위치·생산량목록 모두 3상태로 정확표시 — ✓연결완료(초록·바로열기, surveyId 있음)/📎열었으나 미저장(노랑, 유형만 있음→저장하면 연결)/⚠미연결(빨강). 저장위치 상태줄을 요도 없어도 항상 표시(+「조사표 연결 N개」 배지). ※ 핀↔조사표 자동연결·계산·전송 로직 무변경(표시만 교정). 참고: 실제 연결은 조사표에서 「저장」 시 tonghab의 _tenarLinkPinToSurvey가 tenar_pin_link로 완료함(정상). (v213 이하 유지) -->
 <!-- (이전) map_v213.html (v213 · TENAR V1.8) · 저장: 2026-11-12 15:39 KST · [v213] 지도 위치수정 좌표 보정 (요청 #16) — 지도에서 「위치 수정/선택」 시 화면 중앙 십자(+)와 다른 곳에 찍히던 버그 수정. 원인: 저장 좌표를 map.getCenter()(바텀시트 패딩만큼 아래로 밀린 '지리중심')로 읽어 십자선과 어긋남. 수정: 컨테이너 정중앙 픽셀을 unproject 한 crosshairLngLat()(=십자선 바로 아래 좌표)로 저장 — ①조사구 「🗺 지도에서 위치 수정」 저장(areaMapEditStart), ②조사구 「🗺 지도에서 조사 위치 선택」(새 조사구 추가, areaMapPickForAdd), ③생산량 핀 「위치 수정」 확정·표시(commitPinMove/updatePinMoveCoord). 센터추가(측정·포구) v107 수정과 동일 방식. ※ 계산·전송·자동연결 로직 무변경(저장 좌표 출처만 교정). (v212 이하 유지) -->
@@ -4650,7 +4651,8 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
     var r1 = el('div', 'btn-row');
     var bNav = el('button', 'sheet-btn primary', '🚗 길찾기');
     bNav.addEventListener('click', function () { openNavSheet(info, function () { openSavedLocationSheet(f, false, navOpts); }); });   /* [v212·#5] ← 저장위치 복귀 */
-    var bSurvey = el('button', 'sheet-btn green-soft', '📋 조사표');
+    var _svCntBtn = favSurveyCount(f);   /* [v217·요청] 연결된 조사표 수 — 연결자료 버튼처럼 개수 표시 */
+    var bSurvey = el('button', 'sheet-btn green-soft', '📋 조사표' + (_svCntBtn > 0 ? ' ' + _svCntBtn : ''));
     bSurvey.addEventListener('click', function () { openSurveySheet(info, { mode: 'pin' }, function () { openSavedLocationSheet(f, false, navOpts); });   /* [v27-2] 저장핀 : 연결돼 있으면 바로 열기 · [v212·#5] ← 저장위치 복귀 */ });
     r1.appendChild(bNav); r1.appendChild(bSurvey);
     /* [v47-6·v135] 연결자료 개수 — 도구 버튼 배지와 연결자료 버튼에 함께 사용 */
@@ -4746,6 +4748,15 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
       collapseRef = childBox;   /* [v160] 연결자료가 바로 보이도록 접힘 높이를 목록까지 확장 */
     } else if (rStatus) {
       collapseRef = rStatus;   /* [v214] 요도 없고 조사표 상태만 있으면 접힘 높이를 상태줄까지 */
+    }
+    /* [v217·요청] 연결자료 아래에 「연결된 조사표」 링크 행 — 클릭=조사표 열기, 🔒잠금·🔀변경·🗑연결해제 (연결자료 행과 동일 형식) */
+    if (_svLink || _svOpenedType) {
+      var svHdr = el('div', 'sec-title', '📋 연결된 조사표' + (_svCnt > 0 ? ' ' + _svCnt + '개' : ''));
+      svHdr.style.cssText += 'margin-top:10px;';
+      box.appendChild(svHdr);
+      var svRow = buildSurveyLinkRow(f, info, navOpts, _svLink, _svOpenedType);
+      box.appendChild(svRow);
+      collapseRef = svRow;   /* 접힘 높이를 조사표 행까지 */
     }
     box.appendChild(bParcel);   /* [v160] 현재 필지정보는 연결자료 목록 아래(맨 끝)로 이동 */
     try { box.appendChild(giftBoxEl(f)); } catch (e) {}   /* [v196] 답례품 */
@@ -5510,6 +5521,60 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
     return parts.slice(-2).join(' ');   /* 예: "중산동 655번지" */
   }
   var _childSelId = null;   /* [v208] 연결자료(요도) 1탭 선택 id (같은 항목 2탭이면 열어서 이동) */
+  /* [v217·요청] 저장위치 팝업 「연결된 조사표」 링크 행 — 연결자료 행과 같은 형식.
+     이름 클릭 = 연결된 조사표 열기(미저장이면 연결화면), 🔒잠금 / 🔀변경 / 🗑연결해제. */
+  function buildSurveyLinkRow(f, info, navOpts, svLink, svOpenedType) {
+    var hasLink = !!(svLink && svLink.id);
+    var type = (svLink && svLink.type) || f.surveyType || f.surveyApp || 'tonghab';
+    var typeKo = (type === 'chungchi') ? '🎧 청취조사표' : '📐 실측조사표';
+    var tcol = (type === 'chungchi') ? '#6b3fa0' : '#1a5fd0';
+    var tbg = (type === 'chungchi') ? '#f3ecff' : '#eef3ff';
+    var row = el('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:5px;width:100%;box-sizing:border-box;padding:6px 8px;margin-top:4px;border-radius:7px;border-left:3px solid ' + tcol + ';background:' + tbg + ';';
+    var stateTxt = hasLink
+      ? '<span style="font-size:11px;font-weight:800;color:#14612f;"> · ✓ 연결됨</span>'
+      : '<span style="font-size:11px;font-weight:800;color:#9a5b00;"> · 📎 미저장</span>';
+    var sTime = favSentTimeText(f, false);
+    var nm = el('div', null,
+      '<span style="font-size:13px;">📋</span> ' +
+      '<span style="font-size:12.5px;font-weight:800;color:' + tcol + ';">' + typeKo + '</span>' +
+      stateTxt +
+      (sTime ? '<span style="font-size:10.5px;font-weight:500;color:#aaa;"> · ' + escapeHtml(sTime) + '</span>' : ''));
+    nm.style.cssText = 'flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;';
+    nm.addEventListener('click', function () {
+      if (hasLink) { var i2 = {}; for (var k in info) i2[k] = info[k]; i2.surveyId = svLink.id; openSurveyApp(i2, svLink.type, f.id); }   /* 바로 열기 */
+      else { openSurveySheet(info, { mode: 'pin' }, function () { openSavedLocationSheet(f, false, navOpts); }); }   /* 미저장 → 연결화면 */
+    });
+    var lk = el('button', 'icon-btn ' + (f.surveyLocked ? 'lock-on' : 'lock-off'), f.surveyLocked ? '🔒' : '🔓');
+    lk.title = '조사표 연결 잠금'; lk.style.cssText = 'width:30px;height:28px;padding:0;font-size:14px;flex:0 0 auto;';
+    lk.addEventListener('click', function () {
+      var arr = getFavs();
+      for (var k = 0; k < arr.length; k++) if (arr[k].id === f.id) { arr[k].surveyLocked = !arr[k].surveyLocked; arr[k].updatedAt = kstNowStr(); }
+      setFavs(arr); f.surveyLocked = !f.surveyLocked;
+      lk.className = 'icon-btn ' + (f.surveyLocked ? 'lock-on' : 'lock-off'); lk.textContent = f.surveyLocked ? '🔒' : '🔓';
+      showToast(f.surveyLocked ? '🔒 조사표 연결을 잠갔습니다.' : '🔓 잠금을 해제했습니다.', 2000, 'info');
+    });
+    var ch = el('button', 'icon-btn', '🔀');
+    ch.title = '연결 조사표 변경'; ch.style.cssText = 'width:30px;height:28px;padding:0;font-size:14px;flex:0 0 auto;';
+    ch.addEventListener('click', function () {
+      if (f.surveyLocked) { showToast('잠긴 조사표 연결입니다. 잠금을 풀어주세요.', 3000); return; }
+      openSurveySheet(info, { mode: 'pin' }, function () { openSavedLocationSheet(f, false, navOpts); });
+    });
+    var dl = el('button', 'icon-btn del-on', '🗑');
+    dl.title = '조사표 연결 해제'; dl.style.cssText = 'width:30px;height:28px;padding:0;font-size:14px;flex:0 0 auto;';
+    dl.addEventListener('click', function () {
+      if (f.surveyLocked) { showToast('잠긴 조사표 연결입니다. 잠금을 풀어주세요.', 3000); return; }
+      if (!window.confirm('이 핀의 조사표 연결을 해제할까요?\n(저장된 조사표 자료 자체는 지워지지 않습니다)')) return;
+      var arr = getFavs();
+      for (var k = 0; k < arr.length; k++) if (arr[k].id === f.id) { arr[k].surveyId = ''; arr[k].surveyKey = ''; arr[k].surveyType = ''; arr[k].surveyApp = ''; arr[k].updatedAt = kstNowStr(); }
+      setFavs(arr); f.surveyId = ''; f.surveyKey = ''; f.surveyType = ''; f.surveyApp = '';
+      showToast('조사표 연결을 해제했습니다.', 2400, 'success');
+      openSavedLocationSheet(f, false, navOpts);
+    });
+    row.appendChild(nm); row.appendChild(lk); row.appendChild(ch); row.appendChild(dl);
+    return row;
+  }
+
   function buildFavChildren(box, favId) {
     box.innerHTML = '';
     var icons = { fieldplot: '🚩', area: '▱', distance: '↔' };
@@ -7755,18 +7820,31 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
     var items = [];
     try { items = (await _readSavedSurveys('tonghabSaveList', 'tonghab')).concat(await _readSavedSurveys('chungchiSaveList', 'chungchi')); } catch (e) { return null; }
     if (!items.length) return null;
-    var pAddr = String((info && info.jibunAddress) || '').replace(/\s+/g, '');
+    function norm(s) { return String(s || '').replace(/\([^)]*\)/g, '').replace(/\s+/g, ''); }   /* 공백·지목(…) 제거 */
+    var pAddr = norm(info && info.jibunAddress);
     var pLat = Number(info && info.lat), pLng = Number(info && info.lng);
-    function match(it) {
-      var a = String(it.addr || '').replace(/\s+/g, '');
-      if (pAddr && a && (a === pAddr || a.indexOf(pAddr) >= 0 || pAddr.indexOf(a) >= 0)) return true;
+    /* [v217] 단계별 매칭: ①주소 정확일치 → ②주소 포함 → ③좌표(≈25m). 상위 단계에서 '딱 1건'이면 바로 채택
+       (옆 필지가 좌표로 2건 잡혀 모호해지는 것을 주소 정확일치로 먼저 가려냄). 각 단계는 유형(preferType) 우선. */
+    var exact = [], contains = [], coord = [];
+    items.forEach(function (it) {
+      var a = norm(it.addr);
+      if (pAddr && a && a === pAddr) { exact.push(it); return; }
+      if (pAddr && a && (a.indexOf(pAddr) >= 0 || pAddr.indexOf(a) >= 0)) { contains.push(it); return; }
       if (isFinite(pLat) && isFinite(pLng) && isFinite(it.lat) && isFinite(it.lng)
-          && Math.abs(it.lat - pLat) < 0.00025 && Math.abs(it.lng - pLng) < 0.00025) return true;   /* 약 25m */
-      return false;
+          && Math.abs(it.lat - pLat) < 0.00025 && Math.abs(it.lng - pLng) < 0.00025) { coord.push(it); }
+    });
+    function pick(list) {
+      if (!list.length) return null;
+      if (preferType) { var pm = list.filter(function (x) { return x.app === preferType; }); if (pm.length) list = pm; }
+      if (list.length === 1) return list[0];
+      /* 같은 주소에 여러 건이면 가장 최근 저장분 1건으로(정확일치 단계에서만 허용) */
+      if (list === exact || (preferType && list.every(function (x) { return x.app === preferType; }))) {
+        list = list.slice().sort(function (a, b) { return String(b.ymd + b.hm).localeCompare(String(a.ymd + a.hm)); });
+        return list[0];
+      }
+      return null;
     }
-    var hits = items.filter(match);
-    if (preferType) { var pm = hits.filter(function (x) { return x.app === preferType; }); if (pm.length) hits = pm; }
-    return (hits.length === 1) ? hits[0] : null;   /* 모호하면(0 또는 2+) 자동연결 안 함 → 수동 선택 */
+    return pick(exact) || pick(contains) || pick(coord) || null;
   }
   /* [v216] 핀이 '유형만 있고 연결 끊김'이면 자동 재연결 시도. cb(연결된 항목 또는 false) */
   function _tryAutoReconnectFav(f, cb) {
