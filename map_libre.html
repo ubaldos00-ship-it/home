@@ -1,4 +1,6 @@
-<!-- map_v207.html (v207 · TENAR V1.8) · 저장: 2026-11-11 01:00 KST · [v207] 지도 보완 묶음③ (요청 #6·#7) — ①#6A 화면 꾹누르기 팝업(저장·측정·토지정보·공유)이 손가락이 조금만 움직여도 안 뜨던 문제: 이동 허용치 8→24px로 넓히고, 드래그/무브 시작만으로는 취소하지 않게(줌·메뉴숨김은 유지) → 약간 움직여도 메뉴가 뜨고 약간의 팬은 그대로. ②#6B 토지정보의 「저장」을 꾹눌러 「저장」과 동일 화면으로 — 기존엔 생산량 핀만 저장(openPinSaveSheet)되던 것을, 생산량 핀/조사구 종류 선택 화면(areaSaveFromMap)으로 통일. ③#7 저장위치 팝업에 「잠금/해제」 버튼을 핀 수정과 삭제 사이에 추가(생산량목록 잠금과 동일 동작). ※ 계산·전송 로직 무변경. (v206 이하 유지) -->
+<!-- map_v209.html (v209 · TENAR V1.8) · 저장: 2026-11-12 01:00 KST · [v209] 지도 보완 묶음⑤ (요청 #10·#11) — ①#10 마무리: 생산량목록·조사구목록에서 항목을 고르면 그 핀 위치에 「동그라미 물결」을 띄워 어느 핀이 선택됐는지 보이게(생산량 핀은 커짐+물결, 조사구 핀은 물결). ②#11(핵심): 포구도구→조사표 전송→저장 시 핀↔조사표가 자동 연결되도록 전송 시 핀-연결 슬롯(tenar_pin_link=현재 세션 핀 favoriteId)을 기록 → tonghab 저장 때 그 핀에 surveyId가 기록되어, 창·앱을 닫았다 다시 들어가도 「조사표」가 연결 상태로 열림(이전엔 전송 경로가 연결 슬롯을 안 써서 '연결된 조사표 없음'이 떴음). ※ 자동연결·계산·현장모드 로직 무변경(전송 경로에 연결 기록만 추가). (v208 이하 유지) -->
+<!-- (이전) map_v208.html (v208 · TENAR V1.8) · 저장: 2026-11-12 00:30 KST · [v208] 지도 보완 묶음④ (요청 #8·#9, #10 일부) — ①#8 생산량목록 항목을 1탭=지도만 그 핀으로 이동 + 목록 그대로 유지 + 그 카드만 파랑 강조 + 선택 핀 커짐·물결(pin-focus), 2탭=저장위치(상세) 팝업. 안내 토스트 표시. ②#9 연결자료(요도) 항목을 1탭=지도만 그 자료 위치로 이동 + 팝업 유지 + 그 연결목록만 파랑 선택, 2탭=창 닫고 그 자료 열어 수정. 안내 토스트. ③#10(일부) 생산량목록 1탭 선택 시 핀 커짐·물결 효과 적용(조사구목록은 #10에서 이어서). ※ 계산·전송 로직 무변경. (v207 이하 유지) -->
+<!-- (이전) map_v207.html (v207 · TENAR V1.8) · 저장: 2026-11-11 01:00 KST · [v207] 지도 보완 묶음③ (요청 #6·#7) — ①#6A 화면 꾹누르기 팝업(저장·측정·토지정보·공유)이 손가락이 조금만 움직여도 안 뜨던 문제: 이동 허용치 8→24px로 넓히고, 드래그/무브 시작만으로는 취소하지 않게(줌·메뉴숨김은 유지) → 약간 움직여도 메뉴가 뜨고 약간의 팬은 그대로. ②#6B 토지정보의 「저장」을 꾹눌러 「저장」과 동일 화면으로 — 기존엔 생산량 핀만 저장(openPinSaveSheet)되던 것을, 생산량 핀/조사구 종류 선택 화면(areaSaveFromMap)으로 통일. ③#7 저장위치 팝업에 「잠금/해제」 버튼을 핀 수정과 삭제 사이에 추가(생산량목록 잠금과 동일 동작). ※ 계산·전송 로직 무변경. (v206 이하 유지) -->
 <!-- (이전) map_v206.html (v206 · TENAR V1.8) · 저장: 2026-11-11 00:40 KST · [v206] 지도 보완 묶음② (요청 #4·#5) — ①#5 「핀 위치 수정」 모드에서 X(시트 닫기)·바깥터치로 닫아도 중앙 십자(+)와 이동 모드가 남던 문제: 시트가 닫히면 위치수정 모드도 함께 종료(startPinMove는 먼저 닫고 설정하도록 순서 조정). ②#4 측정(청취) 재저장: editingSaveId를 잃어버려도 「같은 자리(첫 측정점)·같은 핀」의 기존 저장이 있으면 덮어쓰기 대상으로 인식해 덮어쓰기/새로저장 선택지가 나오게 하고, 저장 시트에 「취소」 버튼 추가. ※ 계산·전송 로직 무변경. (v205 이하 유지) -->
 <!-- (이전) map_v205.html (v205 · TENAR V1.8) · 저장: 2026-11-11 00:20 KST · [v205] 지도 보완 묶음① (요청 #2·#3·#14) — ①#2 면적측정 도형 작물 라벨이 전역 작물(measCrop)에 흔들려 엉뚱한 작물(콩인데 참깨)로 뜨던 문제: 도형마다 「그때 작물」을 저장(commit·저장·복원)하고 라벨은 도형 자체 작물로 표시(작업 중 도형만 현재 작물). ②#3·#14(같은 원인) 포구도구 작물명: 핀에서 포구 시작 시 핀 작물을 포구 작물에 미리 반영(배너에 작물 표시) + 「작물·기준·비율」 조사설정 열면 작물칸이 연결된 핀 작물로 미리 채워짐(없으면 빈칸). ※ 비율·기준은 그대로 비워 확인 유도. 계산·전송 로직 무변경. (v204 이하 유지) -->
 <!-- (이전) map_v204.html (v204 · TENAR V1.8) · 저장: 2026-11-10 15:52 KST · [v204] 답례품 — 농비·축비 「대상처」 이름 자동 묶음 — 농비·축비는 핀을 여러 개 찍어도 「이름(경영주/성명)」이 같으면 한 대상처로 묶어, 답례품은 대표(맨 위 1핀)에만 1개 지급·집계. 답례품 화면에서 대상처 1곳=1줄로 표시하고 「대표 · N곳」으로 핀 수 표기. 대상처 중 어느 핀에 지급돼 있어도 지급으로 인정(memberIds). 생산량·가축·쌀값·농판·기타조사는 핀 단위 그대로. 추가 입력 UI 없음(기존 이름 데이터로 자동). ※ 지급 월 규칙(v203)·기록 구조 무변경. (v203 이하 유지) -->
@@ -1467,6 +1469,12 @@ TenarSecureStore.init('map',
     display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-start; background: #fffdf5;
   }
   .fav-card.locked { background: #eef4ff; border-color: #cdddf7; }             /* [v8-18] 잠금: 연한 파랑 */
+  .fav-card.sel { outline: 2px solid #1c7ed6; outline-offset: -2px; background: #e7f5ff; }   /* [v208] 생산량목록 1탭 선택 강조(파랑) */
+  /* [v209] 선택 핀 물결(조사구·생산량 목록에서 고른 핀 위치 표시) */
+  .sel-ripple { position: relative; width: 0; height: 0; pointer-events: none; }
+  .sel-ripple span { position: absolute; left: 0; top: 0; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%; border: 3px solid rgba(0,120,255,.9); animation: selRipple 1.4s ease-out infinite; }
+  .sel-ripple span:nth-child(2) { animation-delay: .7s; }
+  @keyframes selRipple { 0% { transform: scale(.3); opacity: .95; } 100% { transform: scale(2.7); opacity: 0; } }
   .fav-num {
     width: 28px; height: 28px; border-radius: 14px; flex-shrink: 0; color: #fff;
     font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center;
@@ -3738,6 +3746,18 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
   }
 
   var searchMarker = null;
+  /* [v209·#10] 선택 핀 물결 — 생산량/조사구 목록에서 고른 핀 위치에 잠깐 동그라미 물결을 띄워 어느 핀인지 보이게 */
+  var _selRippleMarker = null, _selRippleTimer = null;
+  function showSelectRipple(lng, lat) {
+    try {
+      if (_selRippleMarker) { _selRippleMarker.remove(); _selRippleMarker = null; }
+      if (_selRippleTimer) { clearTimeout(_selRippleTimer); _selRippleTimer = null; }
+      if (!isFinite(lng) || !isFinite(lat)) return;
+      var e = document.createElement('div'); e.className = 'sel-ripple'; e.innerHTML = '<span></span><span></span>';
+      _selRippleMarker = new maplibregl.Marker({ element: e, anchor: 'center' }).setLngLat([lng, lat]).addTo(map);
+      _selRippleTimer = setTimeout(function () { if (_selRippleMarker) { _selRippleMarker.remove(); _selRippleMarker = null; } }, 3200);
+    } catch (e) {}
+  }
   function clearSearchMarker() { if (searchMarker) { searchMarker.remove(); searchMarker = null; } }
   function showSearchMarker(result) {
     clearSearchMarker();
@@ -4499,6 +4519,7 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
   }
 
   function openSavedLocationSheet(f, isRestore, navOpts) {
+    _childSelId = null;   /* [v208] 저장위치 팝업을 새로 열면 연결자료 1탭 선택 초기화 */
     var box = el('div');
 
     /* ① 전체 지번 + 복사 */
@@ -5115,6 +5136,7 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
     });
   }
   function openFavSheet(priority) {
+    _favSelId = null;   /* [v208] 목록을 새로 열면 1탭 선택 상태 초기화 */
     _favPriority = (typeof priority === 'string') ? priority : '';
     favReturnView = { center: map.getCenter().toArray(), zoom: map.getZoom(), bearing: map.getBearing(), pitch: map.getPitch() };
 
@@ -5190,6 +5212,7 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
     renderFavCombos(); renderFavList();
   }
 
+  var _favSelId = null;   /* [v208] 생산량목록에서 1탭 선택한 핀 id (같은 카드 2탭이면 저장위치 팝업) */
   function renderFavList() {
     var list = document.getElementById('favList');
     if (!list) return;
@@ -5237,7 +5260,7 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
       return;
     }
     favs.forEach(function (f, i) {
-      var card = el('div', 'fav-card' + (f.locked ? ' locked' : ''));
+      var card = el('div', 'fav-card' + (f.locked ? ' locked' : '') + (_favSelId === f.id ? ' sel' : ''));
       var num = el('div', 'fav-num', String(favs.length - i));
       num.style.background = colorHex(f.color);
 
@@ -5271,9 +5294,15 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
       /* [v42-3] 목록에서 고르면 지도만 옮기고 그 핀을 강조한다.
          저장위치 팝업은 지도에서 핀을 직접 눌렀을 때만 연다. */
       body.addEventListener('click', function () {
-        try { _favListScroll = sheetBody ? sheetBody.scrollTop : 0; } catch (e) { _favListScroll = 0; }   /* [v118] 목록 스크롤 기억 */
-        closeSheet();
-        /* [v45-12] 선택하면 그 위치의 연결자료를 모두 켜서 지도에 표시 */
+        if (_favSelId === f.id) {
+          /* [v208] 두 번째 탭 = 저장위치(상세) 팝업 (요청 #8) */
+          try { _favListScroll = sheetBody ? sheetBody.scrollTop : 0; } catch (e) { _favListScroll = 0; }
+          closeSheet();
+          openSavedLocationSheet(f, false, { fromList: true });
+          return;
+        }
+        /* [v208] 첫 번째 탭 = 지도만 이 핀으로 이동 + 생산량목록은 그대로 유지 + 이 카드만 파랑 강조 + 연결자료 표시 (요청 #8) */
+        _favSelId = f.id;
         var favs = getFavs();
         for (var k = 0; k < favs.length; k++) if (favs[k].id === f.id) favs[k].childrenVisible = true;
         setFavs(favs);
@@ -5281,8 +5310,14 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
         for (var j = 0; j < its.length; j++) if (its[j].favoriteId === f.id) { its[j].visible = true; n++; }
         setMapItems(its);
         refreshFavoriteAndMapItems();   /* [v46-14] */
-        openSavedLocationSheet(f, false, { fromList: true });   /* [v62-2·v118] 이동 + 저장위치(뒤로가기=생산량목록) */
-        if (n > 0) setTimeout(function () { showToast('연결된 지도자료 ' + n + '개를 표시했습니다.', 2600, 'success'); }, 700);
+        try { if (sheetBody) sheetBody.querySelectorAll('.fav-card.sel').forEach(function (x) { x.classList.remove('sel'); }); } catch (e) {}
+        card.classList.add('sel');
+        if (isFinite(f.latitude) && isFinite(f.longitude)) {
+          map.easeTo({ center: [f.longitude, f.latitude], offset: [0, -Math.round(window.innerHeight * 0.22)], duration: 600 });
+          try { _focusFavId = f.id; setTimeout(applyFavFocus, 300); } catch (e) {}   /* [v208·#10] 선택 핀 커짐·물결(pin-focus) */
+          try { showSelectRipple(f.longitude, f.latitude); } catch (e) {}   /* [v209·#10] 생산량 핀도 동일 물결 */
+        }
+        showToast('지도를 이 핀으로 옮겼어요.\n한 번 더 누르면 저장위치(상세)가 열립니다.', 2800, 'info');
       });
 
       var acts = el('div', 'fav-acts');
@@ -5352,6 +5387,7 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
     if (parts.length <= 2) return addr;
     return parts.slice(-2).join(' ');   /* 예: "중산동 655번지" */
   }
+  var _childSelId = null;   /* [v208] 연결자료(요도) 1탭 선택 id (같은 항목 2탭이면 열어서 이동) */
   function buildFavChildren(box, favId) {
     box.innerHTML = '';
     var icons = { fieldplot: '🚩', area: '▱', distance: '↔' };
@@ -5364,7 +5400,7 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
       var TYPEBG  = { fieldplot: '#f5f3ff', area: '#f0faf4', distance: '#eff5ff' };
       var tcol = TYPECOL[it.type] || '#9ca3af';
       var row = el('div', 'fav-child-row');
-      var _isSel = (_selItemId && it.id === _selItemId);   /* [v172] 도구에서 선택 중인 항목 */
+      var _isSel = (_selItemId && it.id === _selItemId) || (_childSelId && it.id === _childSelId);   /* [v172] 도구 선택 · [v208] 연결자료 1탭 선택(#9) */
       row.style.cssText = 'display:flex;align-items:center;gap:5px;width:100%;box-sizing:border-box;padding:6px 8px;margin-top:4px;border-radius:7px;border-left:3px solid ' + tcol + ';background:' + (TYPEBG[it.type] || '#f7f7fa') + ';'
         + (_isSel ? 'outline:2.5px solid #0078FF;outline-offset:1px;box-shadow:0 0 0 3px rgba(0,120,255,.18);' : '');   /* [v172] 선택 강조 테두리 */
       /* [v63-7·8] 이름(종류) · 작물 · 주소 · 저장일시(작게). 포구도 면적/길이와 같은 형식. */
@@ -5382,8 +5418,18 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
         (ts ? '<span style="font-size:10.5px;font-weight:500;color:#aaa;"> · ' + ts + '</span>' : ''));
       nm.style.cssText = 'flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;';
       nm.addEventListener('click', function () {
-        closeSheet();
-        focusMapItem(it);
+        if (_childSelId === it.id) {
+          /* [v208] 두 번째 탭 = 창 닫고 그 자료를 열어(도구 불러오기) 이동 (요청 #9) */
+          closeSheet();
+          focusMapItem(it);
+          return;
+        }
+        /* [v208] 첫 번째 탭 = 지도만 이 자료 위치로 이동 + 팝업 유지 + 이 연결목록만 파랑 선택 (요청 #9) */
+        _childSelId = it.id;
+        try { box.dataset.built = ''; buildFavChildren(box, favId); } catch (e) {}
+        var ll = _itemLngLat(it);
+        if (ll) { try { map.easeTo({ center: ll, offset: [0, -Math.round(window.innerHeight * 0.22)], duration: 600 }); } catch (e) {} }
+        showToast('지도를 이 자료 위치로 옮겼어요.\n한 번 더 누르면 그 자료를 열어 수정합니다.', 2800, 'info');
       });
       /* [v63-6] 표시/숨김(👁) 버튼 삭제 — 연결자료는 부모 선택 시 항상 표시 */
       var lk = el('button', 'icon-btn ' + (it.locked ? 'lock-on' : 'lock-off'), it.locked ? '🔒' : '🔓');
@@ -11993,6 +12039,16 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
       saveJSON(FP_RESULT_KEY, rec);     /* 계산기가 읽어 반영 */
       saveJSON(FP_PRELOAD_KEY, rec);    /* 다시 열 때 이어서 작업 */
       fpSaveOnly();                     /* [v16-6] 전송은 "전송 + 저장" — A/B포구 목록에도 남긴다 */
+      /* [v209·#11] 포구도구→조사표 전송→저장 시 이 핀에 조사표가 자동 연결되도록 핀-연결 슬롯 기록.
+         (tonghab 저장 때 _tenarLinkPinToSurvey가 이 favoriteId 핀을 찾아 surveyId를 써서,
+          창을 닫거나 앱을 닫았다 다시 들어가도 「조사표」가 연결 상태로 열린다.) */
+      if (fp._sessionFavId) {
+        var _lf = (typeof getFavs === 'function') ? getFavs().filter(function (x) { return x && x.id === fp._sessionFavId; })[0] : null;
+        if (_lf) localStorage.setItem('tenar_pin_link', JSON.stringify({
+          favoriteId: fp._sessionFavId, app: 'tonghab', ts: Date.now(),
+          lat: _lf.latitude, lng: _lf.longitude, addr: _lf.jibunAddress || rec.jibunAddress || fp.jibunAddress || ''
+        }));
+      }
     } catch (e) { showToast('전송 저장에 실패했습니다.', 3500); return; }
     /* [v17-8] 지도에서 비율을 1번→2번 등으로 바꿨으면 조사표도 그 비율로 바꾸도록 알린다 */
     rec.ratioChanged = !!(fp.ctx && Number(fp.ctx.ratio) !== Number(fp.ratio));
@@ -14157,6 +14213,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     var zoomTo = function (lng, lat) {
       /* [v116] 팝업(시트) 높이를 반영해 핀을 가시영역 가운데로 (즐겨찾기·측정과 동일 방식) */
       flyPinAboveSheet(lng, lat, opts.zoom);
+      try { showSelectRipple(lng, lat); } catch (e) {}   /* [v209·#10] 선택 조사구 핀 위치에 물결 표시 */
     };
     var showPop = function (pp) { if (!opts.noPopup) areaOpenPlotSheet(pp); };
     if (areaCoordOk(p.latitude, p.longitude)) {
