@@ -1,4 +1,6 @@
-<!-- map_v212.html (v212 · TENAR V1.8) · 저장: 2026-11-12 11:26 KST · [v212] 지도 보완 묶음⑧ (요청 #5·#7·#3) — ①#5 하위 팝업에 뒤로가기(←) 추가: 「길찾기」·「조사표 선택」·「핀 수정」 헤더 왼쪽에 ← 주입(저장위치/현재위치에서 열었을 때 그 화면으로 복귀). 연결자료·토지정보는 기존 ← 유지. 공통 헬퍼 injectSheetBack 신설. ②#7 생산량목록·조사구목록 스크롤 위치 기억: 목록이 열린 동안 스크롤을 계속 저장했다가 다시 열면 그 위치로 복원(sheetBody scroll 리스너 + #favList/#areaListPane 식별). ③#3 조사표 연결 가시화: 생산량목록 각 항목에 「📋 조사표 열기(연결됨, 초록)」/「📋 조사표 연결(미연결, 빨강)」 클릭 칩 — 연결돼 있으면 바로 조사표 열기, 아니면 연결 화면. 저장위치 상태줄에 「📋 조사표 연결 N개」 배지 추가(핀+연결자료 기준 서로 다른 조사표 수). 연결 헬퍼 favSurveyLink/favSurveyCount 신설. ※ 자동연결·계산·전송 로직 무변경(표시·네비게이션만). (v211 이하 유지) -->
+<!-- map_v214.html (v214 · TENAR V1.8) · 저장: 2026-11-12 15:46 KST · [v214] 조사표 연결 표시 보강 (요청: 지도핀→조사표 작성 시 연결표시 누락·미연결 혼동) — 원인: ①저장위치 팝업의 조사표 상태가 '연결자료(요도) 있을 때만' 떠서, 요도 없이 조사표만 연결/작성한 핀은 표시가 아예 없었음. ②지도에서 핀→조사표를 '열기만' 하면 유형(surveyType)이 미리 기록돼 「연결 해제」 버튼은 떠도 실제 연결(surveyId)은 조사표에서 '저장'해야 완성 — 이 '열었으나 미저장' 상태를 구분표시 안 함. 수정: 저장위치·생산량목록 모두 3상태로 정확표시 — ✓연결완료(초록·바로열기, surveyId 있음)/📎열었으나 미저장(노랑, 유형만 있음→저장하면 연결)/⚠미연결(빨강). 저장위치 상태줄을 요도 없어도 항상 표시(+「조사표 연결 N개」 배지). ※ 핀↔조사표 자동연결·계산·전송 로직 무변경(표시만 교정). 참고: 실제 연결은 조사표에서 「저장」 시 tonghab의 _tenarLinkPinToSurvey가 tenar_pin_link로 완료함(정상). (v213 이하 유지) -->
+<!-- (이전) map_v213.html (v213 · TENAR V1.8) · 저장: 2026-11-12 15:39 KST · [v213] 지도 위치수정 좌표 보정 (요청 #16) — 지도에서 「위치 수정/선택」 시 화면 중앙 십자(+)와 다른 곳에 찍히던 버그 수정. 원인: 저장 좌표를 map.getCenter()(바텀시트 패딩만큼 아래로 밀린 '지리중심')로 읽어 십자선과 어긋남. 수정: 컨테이너 정중앙 픽셀을 unproject 한 crosshairLngLat()(=십자선 바로 아래 좌표)로 저장 — ①조사구 「🗺 지도에서 위치 수정」 저장(areaMapEditStart), ②조사구 「🗺 지도에서 조사 위치 선택」(새 조사구 추가, areaMapPickForAdd), ③생산량 핀 「위치 수정」 확정·표시(commitPinMove/updatePinMoveCoord). 센터추가(측정·포구) v107 수정과 동일 방식. ※ 계산·전송·자동연결 로직 무변경(저장 좌표 출처만 교정). (v212 이하 유지) -->
+<!-- (이전) map_v212.html (v212 · TENAR V1.8) · 저장: 2026-11-12 11:26 KST · [v212] 지도 보완 묶음⑧ (요청 #5·#7·#3) — ①#5 하위 팝업에 뒤로가기(←) 추가: 「길찾기」·「조사표 선택」·「핀 수정」 헤더 왼쪽에 ← 주입(저장위치/현재위치에서 열었을 때 그 화면으로 복귀). 연결자료·토지정보는 기존 ← 유지. 공통 헬퍼 injectSheetBack 신설. ②#7 생산량목록·조사구목록 스크롤 위치 기억: 목록이 열린 동안 스크롤을 계속 저장했다가 다시 열면 그 위치로 복원(sheetBody scroll 리스너 + #favList/#areaListPane 식별). ③#3 조사표 연결 가시화: 생산량목록 각 항목에 「📋 조사표 열기(연결됨, 초록)」/「📋 조사표 연결(미연결, 빨강)」 클릭 칩 — 연결돼 있으면 바로 조사표 열기, 아니면 연결 화면. 저장위치 상태줄에 「📋 조사표 연결 N개」 배지 추가(핀+연결자료 기준 서로 다른 조사표 수). 연결 헬퍼 favSurveyLink/favSurveyCount 신설. ※ 자동연결·계산·전송 로직 무변경(표시·네비게이션만). (v211 이하 유지) -->
 <!-- (이전) map_v211.html (v211 · TENAR V1.8) · 저장: 2026-11-12 10:58 KST · [v211] 지도 보완 묶음⑦ (요청 #2·#6·#8 + 추가요청) — ①#2 생산량목록 핀 이름이 작물명과 같을 때 「콩 콩」처럼 중복 표기되던 것 1개만 표시(작물뱃지+이름 중복 제거). ②#8 「전체보기」가 헤더 드래그에 첫 탭이 먹혀 두 번 눌러야 하던 것 → 헤더 액션 버튼(#sheetAction)을 드래그/스냅에서 제외해 한 번에 실행(생산량·조사구 목록 공통). ③#6 토지정보 「‹ 뒤로」도 같은 #sheetAction 버튼이라 #8 수정으로 함께 정상 동작. ④추가요청A 저장위치 팝업이 열려 있는 동안 '그 핀'을 확대·물결(pin-focus)로 강조 유지 + 핀을 눌러 팝업이 열려도 강조 유지 — 생산량이 여러 개라 핀이 뭉쳐 있어도 지금 선택된 핀을 눈으로 확인. ⑤추가요청B 포구도구 현장(필지) 외곽선을 보조지도(카카오·네이버 좌표확인)에서 주황(#B04A00)→파랑(#0078FF, 메인지도 현장선과 동일)으로 변경. ※ 계산·전송·연결 로직 무변경. (v210 이하 유지) -->
 <!-- (이전) map_v210.html (v210 · TENAR V1.8) · 저장: 2026-11-12 01:30 KST · [v210] 지도 보완 묶음⑥ (요청 #12·#13) — ①#12 「연결자료 핀 변경(🔀)」 화면에 시도·시군구·읍면동·작물 드롭다운 필터 추가(캐스케이드: 시도→시군구→읍면동, 작물 별도) — 저장 핀이 많아도 걸러서 쉽게 찾기. 핀 이름 앞에 작물도 함께 표시, N/전체 개수 표시. ②#13 핀-작물 연결 규칙 — 연결자료를 다른 작물의 핀으로 옮기면 경고(핀은 되도록 한 작물만, 같은 작물은 여러 개 연결 가능). ※ 계산·전송·연결 로직 무변경(필터·경고만). (v209 이하 유지) -->
 <!-- (이전) map_v209.html (v209 · TENAR V1.8) · 저장: 2026-11-12 01:00 KST · [v209] 지도 보완 묶음⑤ (요청 #10·#11) — ①#10 마무리: 생산량목록·조사구목록에서 항목을 고르면 그 핀 위치에 「동그라미 물결」을 띄워 어느 핀이 선택됐는지 보이게(생산량 핀은 커짐+물결, 조사구 핀은 물결). ②#11(핵심): 포구도구→조사표 전송→저장 시 핀↔조사표가 자동 연결되도록 전송 시 핀-연결 슬롯(tenar_pin_link=현재 세션 핀 favoriteId)을 기록 → tonghab 저장 때 그 핀에 surveyId가 기록되어, 창·앱을 닫았다 다시 들어가도 「조사표」가 연결 상태로 열림(이전엔 전송 경로가 연결 슬롯을 안 써서 '연결된 조사표 없음'이 떴음). ※ 자동연결·계산·현장모드 로직 무변경(전송 경로에 연결 기록만 추가). (v208 이하 유지) -->
@@ -4692,21 +4694,29 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
       });
     });
 
-    /* [v136] 조사표 전송완료 / 미전송 상태 — 연결자료가 있을 때만 표시 */
+    /* [v214·요청] 조사표 연결 상태 — 연결자료(요도)가 없어도 '조사표를 연결/작성한 핀'이면 표시.
+       3상태: ①연결완료(초록, surveyId 있음) ②열었으나 미저장(노랑, 유형만 있고 저장 안 됨) ③미연결(빨강).
+       ※ 지도에서 핀→조사표를 '열기만' 하면 유형(surveyType)이 미리 기록되지만, 실제 연결은 조사표에서 '저장'해야 완성됨. */
+    var _svLink = favSurveyLink(f);                              /* {type,id} 또는 null */
+    var _svCnt = favSurveyCount(f);
+    var _svOpenedType = (f && (f.surveyType || f.surveyApp)) || '';   /* 열어서 유형만 남은 상태 식별 */
     var rStatus = null;
-    if (_tot) {
+    if (_tot || _svLink || _svOpenedType || favSurveySent(f)) {
       rStatus = el('div');
-      rStatus.style.cssText = 'margin-top:8px;font-size:12.5px;font-weight:700;';
+      rStatus.style.cssText = 'margin-top:8px;font-size:12.5px;font-weight:700;line-height:1.7;';
       var _sentTf = favSentTimeText(f, true);
-      /* [v212·#3] 이 핀에 연결된 조사표 갯수(핀+연결자료 기준) */
-      var _lnkCnt = favSurveyCount(f);
-      var _cntBadge = _lnkCnt > 0
-        ? ' <span style="padding:2px 9px;border-radius:9px;background:#eef3ff;color:#1a3f9e;">📋 조사표 연결 ' + _lnkCnt + '개</span>'
+      var _cntBadge = _svCnt > 0
+        ? ' <span style="padding:2px 9px;border-radius:9px;background:#eef3ff;color:#1a3f9e;">📋 조사표 연결 ' + _svCnt + '개</span>'
         : '';
-      rStatus.innerHTML = (favSurveySent(f)
-        ? '<span style="padding:2px 9px;border-radius:9px;background:#e7f6ec;color:#14612f;">✓ 조사표 전송완료</span>' + (_sentTf ? ' <span style="color:#888;font-weight:600;font-size:11.5px;">' + escapeHtml(_sentTf) + '</span>' : '')
-        : '<span style="padding:2px 9px;border-radius:9px;background:#fdecec;color:#c0392b;">⚠ 조사표 미전송</span> <span style="color:#888;font-weight:600;font-size:11.5px;">— 위 「조사표」로 전송하세요</span>')
-        + _cntBadge;
+      var _main;
+      if (_svLink && _svLink.id) {
+        _main = '<span style="padding:2px 9px;border-radius:9px;background:#e7f6ec;color:#14612f;">✓ 조사표 연결완료</span>' + (_sentTf ? ' <span style="color:#888;font-weight:600;font-size:11.5px;">' + escapeHtml(_sentTf) + '</span>' : '');
+      } else if (_svOpenedType) {
+        _main = '<span style="padding:2px 9px;border-radius:9px;background:#fff4e5;color:#9a5b00;">📎 조사표 열었으나 미저장</span> <span style="color:#888;font-weight:600;font-size:11.5px;">— 조사표에서 「저장」해야 연결됩니다</span>';
+      } else {
+        _main = '<span style="padding:2px 9px;border-radius:9px;background:#fdecec;color:#c0392b;">⚠ 조사표 미전송</span> <span style="color:#888;font-weight:600;font-size:11.5px;">— 위 「조사표」로 작성·저장하세요</span>';
+      }
+      rStatus.innerHTML = _main + _cntBadge;
     }
 
     /* [v160] 순서: 길찾기·조사표·연결자료(r1) → 포구·측정도구(rTools) → 핀수정·삭제(r2)
@@ -4714,8 +4724,8 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
        ※ 「포구/측정도구 아래 현장모드로 이동」(rField)은 제거 — 연결자료 목록의 항목별 현장모드 버튼과 중복이라. */
     box.appendChild(r1); box.appendChild(rTools); box.appendChild(r2);
     var collapseRef = r2;   /* [v160] 접힘 높이 기준 */
+    if (rStatus) box.appendChild(rStatus);   /* [v214·요청] 조사표 상태는 연결자료(요도)가 없어도 항상 표시 */
     if (_tot) {
-      if (rStatus) box.appendChild(rStatus);   /* [v160] 조사표 전송상태를 연결자료 바로 위로 이동 */
       var childHdr = el('div', 'sec-title', '🗺 연결된 자료 ' + _tot + '개');
       childHdr.style.cssText += 'margin-top:10px;';
       box.appendChild(childHdr);
@@ -4723,6 +4733,8 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
       try { buildFavChildren(childBox, f.id); } catch (e) {}
       box.appendChild(childBox);
       collapseRef = childBox;   /* [v160] 연결자료가 바로 보이도록 접힘 높이를 목록까지 확장 */
+    } else if (rStatus) {
+      collapseRef = rStatus;   /* [v214] 요도 없고 조사표 상태만 있으면 접힘 높이를 상태줄까지 */
     }
     box.appendChild(bParcel);   /* [v160] 현재 필지정보는 연결자료 목록 아래(맨 끝)로 이동 */
     try { box.appendChild(giftBoxEl(f)); } catch (e) {}   /* [v196] 답례품 */
@@ -5019,7 +5031,7 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
   function updatePinMoveCoord() {
     var c2 = document.getElementById('pinMoveCoord');
     if (!c2) return;
-    var ctr = map.getCenter();
+    var ctr = crosshairLngLat();   /* [v213·#16] 십자(+) 바로 아래 좌표(패딩 보정 getCenter 아님) */
     c2.textContent = '새 위치  위도 ' + ctr.lat.toFixed(6) + ' · 경도 ' + ctr.lng.toFixed(6);
   }
   function endPinMove() {
@@ -5030,7 +5042,7 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
   function commitPinMove() {
     var f = pinMoveTarget;
     if (!f) return;
-    var ctr = map.getCenter();
+    var ctr = crosshairLngLat();   /* [v213·#16] 십자(+)에 맞춘 위치로 저장(패딩 보정 getCenter 아님) — 다른 곳에 찍히던 버그 수정 */
     var arr = getFavs();
     var idx = -1;
     for (var i = 0; i < arr.length; i++) if (arr[i].id === f.id) { idx = i; break; }
@@ -5365,15 +5377,16 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
       (function () {
         var _lnk = favSurveyLink(f);
         var _sent = favSurveySent(f);
-        if (!_sent && !total) return;   /* 연결도 자료도 없으면 칩 없음 */
-        var _green = _sent && _lnk && _lnk.id;   /* 실제 열 수 있는 연결 */
+        if (!_sent && !total && !_lnk) return;   /* 연결(유형)도 자료도 전송도 없으면 칩 없음 */
+        var _green = !!(_lnk && _lnk.id);         /* 실제 열 수 있는 연결(저장된 조사표 key 있음) */
+        var _amber = !_green && !!(_lnk && !_lnk.id);   /* [v214] 유형만 남음 = 열었으나 미저장 */
         var _chip = el('span');
-        _chip.style.cssText = 'display:inline-block;margin-top:3px;padding:2px 9px;border-radius:9px;font-size:11px;font-weight:800;cursor:pointer;' +
-          (_green ? 'background:#e7f6ec;color:#14612f;' : 'background:#fdecec;color:#c0392b;');
+        var _bg = _green ? 'background:#e7f6ec;color:#14612f;' : (_amber ? 'background:#fff4e5;color:#9a5b00;' : 'background:#fdecec;color:#c0392b;');
+        _chip.style.cssText = 'display:inline-block;margin-top:3px;padding:2px 9px;border-radius:9px;font-size:11px;font-weight:800;cursor:pointer;' + _bg;
         _chip.innerHTML = _green
           ? ('📋 조사표 열기' + (_sentT ? ' · ' + escapeHtml(_sentT) : ''))
-          : ((_lnk && !_lnk.id) ? '📎 조사표 연결 필요' : '📋 조사표 연결');
-        _chip.title = _green ? '연결된 조사표 바로 열기' : '조사표에 연결하기';
+          : (_amber ? '📎 조사표 열었으나 미저장' : '📋 조사표 연결');
+        _chip.title = _green ? '연결된 조사표 바로 열기' : (_amber ? '조사표에서 저장하면 연결됩니다 — 눌러서 이어가기' : '조사표에 연결하기');
         _chip.addEventListener('click', function (ev) {
           ev.stopPropagation();
           var info = { lat: f.latitude, lng: f.longitude, jibunAddress: f.jibunAddress, roadAddress: f.roadAddress, postalCode: f.postalCode, favoriteId: f.id, color: f.color, crop: f.crop };
@@ -14401,7 +14414,10 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     var row = el('div', 'btn-row'); row.style.marginTop = '10px';
     var bSave = el('button', 'sheet-btn primary', '💾 이 위치로 저장');
     bSave.addEventListener('click', function () {
-      var ctr = map.getCenter(); var lng = ctr.lng, lat = ctr.lat;
+      /* [v213·#16] 십자(+)와 다른 곳에 찍히던 버그: map.getCenter()는 바텀시트 패딩만큼 아래로 밀린
+         '지리중심'이라 화면 십자선과 어긋남 → 컨테이너 정중앙 픽셀을 unproject 한 crosshairLngLat()로
+         «십자선 바로 아래 좌표»를 저장(센터추가 v107 수정과 동일). */
+      var ctr = crosshairLngLat(); var lng = ctr.lng, lat = ctr.lat;
       _areaMapEditActive = false; try { if (crosshairEl) crosshairEl.style.display = 'none'; } catch (e) {}
       var cur = getAreaPlots(); var rec = cur.filter(function (x) { return x.id === p.id; })[0];
       if (rec) { rec.latitude = lat; rec.longitude = lng; rec.updatedAt = kstNowStr(); setAreaPlots(cur); areaApplyVisibility(); }
@@ -14544,7 +14560,7 @@ on('fpTNewSurvey', startNewSurveyFp);   /* [v48-1] 완료 중에도 다음 필�
     var row = el('div', 'btn-row'); row.style.marginTop = '10px';
     var bOk = el('button', 'sheet-btn primary', '📍 이 위치 선택');
     bOk.addEventListener('click', function () {
-      var ctr = map.getCenter(), lng = ctr.lng, lat = ctr.lat;
+      var ctr = crosshairLngLat(), lng = ctr.lng, lat = ctr.lat;   /* [v213·#16] 새 조사구도 십자(+) 위치로 선택(패딩 보정 getCenter 아님) */
       _areaMapEditActive = false; try { if (crosshairEl) crosshairEl.style.display = 'none'; } catch (e) {}
       window._areaCloseReturn = null;
       showToast('선택한 위치의 주소를 찾는 중…', 0, 'info');
