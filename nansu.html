@@ -1,4 +1,4 @@
-<!-- nansu_v6.html · 저장: 2026-06-18 06:06 KST -->
+<!-- nansu_v7.html · 저장: 2026-11-14 KST · [v7] 실측조사표에서 넘어온 가로·세로값(URL ?col=&row=) 자동 입력(둘 다 있으면 바로 조회) + 마지막 입력값 기억(localStorage). 아래는 v6 — nansu_v6.html · 저장: 2026-06-18 06:06 KST -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -467,6 +467,8 @@
         error.textContent = "해당 위치의 데이터를 찾을 수 없습니다.";
         return;
       }
+      /* [v7·요청] 마지막 조회한 가로·세로값 기억 */
+      try{ localStorage.setItem('nansu_lastCol', String(col)); localStorage.setItem('nansu_lastRow', String(row)); }catch(e){}
 
       const decimalValue = `${value[0]}.${value[1]}`;
 
@@ -546,7 +548,17 @@
     document.addEventListener("DOMContentLoaded", () => {
       renderTable();
 
+      /* [v7·요청] 실측조사표에서 넘어온 가로·세로값(URL ?col=&row=) 자동 입력, 없으면 마지막 입력값 복원 */
+      var _col='', _row='';
+      try{ var _q=new URLSearchParams(location.search); _col=_q.get('col')||''; _row=_q.get('row')||''; }catch(e){}
+      if(_col==='' && _row===''){ try{ _col=localStorage.getItem('nansu_lastCol')||''; _row=localStorage.getItem('nansu_lastRow')||''; }catch(e){} }
+      if(_col!=='') document.getElementById("colInput").value=_col;
+      if(_row!=='') document.getElementById("rowInput").value=_row;
+
       document.getElementById("colInput").focus();
+
+      /* 가로·세로가 모두 채워졌으면 바로 조회해 보여준다(조회버튼 안 눌러도 됨) */
+      if(String(_col).trim()!=='' && String(_row).trim()!==''){ try{ lookupNumber(); }catch(e){} }
 
       document.getElementById("colInput").addEventListener("keydown", e => {
         if (e.key === "Enter") document.getElementById("rowInput").focus();
