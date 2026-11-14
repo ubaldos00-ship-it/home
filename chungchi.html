@@ -1,4 +1,4 @@
-<!-- chungchi.html (v140) · 저장: 2026-11-14 17:18 KST · [v140·요청] 핀 '항상 별개'(작물 같든 다르든) — _upsertMapFavIfCoord에서 좌표(②)·주소(③)로 '연결 안 된 다른 핀'에 자동 병합하던 처리를 끔. 같은 조사표(surveyKey=①)만 같은 핀으로 갱신, 그 외 새 핀 생성(핀에서 열어 저장하면 _tenarLinkPinToSurvey가 surveyKey 먼저 기록→①로 잡힘). ※ 지도(map v240)·실측(tonghab v173)과 함께. 계산 무변경. (이전) chungchi.html (v139) · [v139·요청] 저장/불러오기 — 새로 저장하면 그 항목이 바로 '선택'되도록(saveCurrentData에서 _slSelectedKey=key). 그래서 저장 직후 상단 버튼이 「💾 덮어쓰기 · 라벨」로 바뀌어, 다시 누르면 중복 추가 대신 그 항목을 덮어씀. ※ 실측(tonghab v172)과 동일(저장/불러오기 화면 동일 유지). 계산 무변경. (이전) chungchi.html (v138) · 저장: 2026-11-14 KST · [v138·중대버그수정] 청취조사표→지도핀 동기화(_upsertMapFavIfCoord) 병합 수정 — 같은 좌표·주소라도 작물 다르면 병합 안 함(한 핀=한 작물)+새 핀 createdAt=현재시각(목록 생성순). 아래는 v137 — [v137] 지도 측정도구 연락처에 층·조사구 추가 반영 — 넘어온 res.contact.floor→nbFloor, res.contact.plot→nbSurveyPlot를 청취조사표 빈 칸에만 채움(선택). 아래는 v136 — [v136] ①(연락처 연동) 지도 측정도구에서 넘어온 연락처(이름·전화·메모·수확예정일)를 청취조사표의 비어 있는 칸에만 채움(선택). ②(홈이탈) 내보내기·이미지 저장 다운로드(a.click)에 target=_blank 추가 — iOS에서 조사표 탭이 파일로 이동(→홈으로 감)하던 문제 방지. ※ 계산 로직 무변경. 아래는 v135 — [v135] 연락처에 「수확예정일」 추가 — 메모 아래 텍스트 입력란(harvestDate), 저장/복원(_ccCollect/_ccApply)·초기화 포함. 저장/불러오기 목록 저장일시 옆에 「🌾수확예정 …」 표시. 전화 자동 하이픈 동작. 실측계산기와 동일. ※ 계산 로직 무변경. (v134 이하 유지) -->
+<!-- chungchi.html (v141) · 저장: 2026-11-14 23:59 KST · [v141·중대버그수정] 측정도구→청취조사표 '조사표 연결 안 됨' 수정(저장 순서) — saveCurrentData·overwriteSavedData에서 _queueMapSync(→_upsertMapFavIfCoord)를 _tenarLinkPinToSurvey '앞'에서 호출하던 것을 '뒤'로. 이전엔 핀에 surveyKey 없는 상태로 _upsertMapFavIfCoord가 돌아(v140에서 좌표/주소 병합 끔) '새 핀'을 따로 만들어 측정 핀과 조사표가 다른 핀으로 갈려 연결이 안 되던 문제(실측은 되는데 청취만 안 되던 원인). 이제 _tenarLinkPinToSurvey가 먼저 핀에 surveyKey 기록→_upsertMapFavIfCoord가 그 핀을 surveyKey(①)로 찾아 갱신(중복 핀 방지). node 테스트: 옛순서=핀2개(중복), 새순서=핀1개 정확연결. ※ 실측(tonghab v174)과 함께. 계산 무변경. (이전) chungchi.html (v140) · [v140·요청] 핀 '항상 별개'(작물 같든 다르든) —_upsertMapFavIfCoord에서 좌표(②)·주소(③)로 '연결 안 된 다른 핀'에 자동 병합하던 처리를 끔. 같은 조사표(surveyKey=①)만 같은 핀으로 갱신, 그 외 새 핀 생성(핀에서 열어 저장하면 _tenarLinkPinToSurvey가 surveyKey 먼저 기록→①로 잡힘). ※ 지도(map v240)·실측(tonghab v173)과 함께. 계산 무변경. (이전) chungchi.html (v139) · [v139·요청] 저장/불러오기 — 새로 저장하면 그 항목이 바로 '선택'되도록(saveCurrentData에서 _slSelectedKey=key). 그래서 저장 직후 상단 버튼이 「💾 덮어쓰기 · 라벨」로 바뀌어, 다시 누르면 중복 추가 대신 그 항목을 덮어씀. ※ 실측(tonghab v172)과 동일(저장/불러오기 화면 동일 유지). 계산 무변경. (이전) chungchi.html (v138) · 저장: 2026-11-14 KST · [v138·중대버그수정] 청취조사표→지도핀 동기화(_upsertMapFavIfCoord) 병합 수정 — 같은 좌표·주소라도 작물 다르면 병합 안 함(한 핀=한 작물)+새 핀 createdAt=현재시각(목록 생성순). 아래는 v137 — [v137] 지도 측정도구 연락처에 층·조사구 추가 반영 — 넘어온 res.contact.floor→nbFloor, res.contact.plot→nbSurveyPlot를 청취조사표 빈 칸에만 채움(선택). 아래는 v136 — [v136] ①(연락처 연동) 지도 측정도구에서 넘어온 연락처(이름·전화·메모·수확예정일)를 청취조사표의 비어 있는 칸에만 채움(선택). ②(홈이탈) 내보내기·이미지 저장 다운로드(a.click)에 target=_blank 추가 — iOS에서 조사표 탭이 파일로 이동(→홈으로 감)하던 문제 방지. ※ 계산 로직 무변경. 아래는 v135 — [v135] 연락처에 「수확예정일」 추가 — 메모 아래 텍스트 입력란(harvestDate), 저장/복원(_ccCollect/_ccApply)·초기화 포함. 저장/불러오기 목록 저장일시 옆에 「🌾수확예정 …」 표시. 전화 자동 하이픈 동작. 실측계산기와 동일. ※ 계산 로직 무변경. (v134 이하 유지) -->
 <!-- (이전)  chungchi.html (v134) · 저장: 2026-10-28 02:48 KST · [v134] 저장/불러오기 목록 2건 보완 — ①항목을 줄바꿈 형태로(라벨/주소/이름·전화·메모/날짜 각 줄). ②번호를 「보이는 목록(조회 필터 후)」 기준으로 매겨 개수와 항상 일치(정렬 바꿔도 번호 유지, 삭제 시 1..N 재번호). 실측계산기와 동일. ※ 계산 로직 무변경. (v133 이하 유지) -->
 <!-- (이전)  chungchi.html (v133) · 저장: 2026-10-28 02:39 KST · [v133] 저장/불러오기 목록 촘촘하게 + 연락처 보완 — 목록 항목의 주소(작게)·연락처(📇이름·☎전화)·메모(📝)·날짜를 한 줄로 합쳐 높이 축소(여백도 축소), 메모도 표시, 전화 입력란 type tel→text로 통일. 실측계산기와 동일. ※ 계산 로직 무변경. (v132 이하 유지) -->
 <!-- (이전)  chungchi.html (v132) · 저장: 2026-10-28 02:29 KST · [v132] 연락처란 개선 — 접기/펼치기(기본 펼침)·이름+전화 한 줄·전화 자동 하이픈(010-1234-1234/054-111-2222/02)·「주소」→「메모」(예시 기타사항, id contactAddr 유지). 실측계산기와 동일. ※ 계산 로직 무변경. (v131 이하 유지) -->
@@ -2771,10 +2771,13 @@ function saveCurrentData(){
   list.unshift({key:key, label:label, ymd:ymd, hm:hh+':'+mm2, crop:crop, addr:addrShort, per10a:_ccPer10a()});
   if(list.length>30){ var rm=list.splice(30); rm.forEach(function(r){ try{ localStorage.removeItem(CC_DATA_PFX+r.key); }catch(e){} _removeMapFavBySurveyKey('chungchi', r.key); }); }
   _ccSetList(list);
-  _queueMapSync(key);   /* 지도 자동반영 대기열 등록 */
+  /* [v141·중요] 순서 — 먼저 측정 핀에 surveyKey를 기록(_tenarLinkPinToSurvey)한 뒤 지도 동기화(_queueMapSync→_upsertMapFavIfCoord).
+     이렇게 해야 _upsertMapFavIfCoord가 그 핀을 surveyKey(①)로 찾아 갱신한다. (이전 순서는 핀에 아직 surveyKey가 없어
+     새 핀을 따로 만들어, 측정 핀과 조사표가 '다른 핀'으로 갈려 연결이 안 되던 원인) */
+  _tenarLinkPinToSurvey('chungchi', key);   /* [v28-1] 지도 저장핀과 연결 — 먼저 */
+  _queueMapSync(key);   /* 지도 자동반영 — 그 핀을 surveyKey로 찾아 갱신(중복 핀 방지) */
   _slLastLoadedKey = key; /* v60: 방금 저장한 항목 자동 선택 대상 */
   _slSelectedKey = key;   /* [v139·요청] 새로 저장하면 그 항목이 바로 '선택'되어, 다시 누르면 중복 추가 대신 덮어쓰기 */
-  _tenarLinkPinToSurvey('chungchi', key);   /* [v28-1] 지도 저장핀과 연결 */
   ccAutoSave();
   _slRenderList();
   var btn=document.getElementById('slSmartSaveBtn');
@@ -2807,10 +2810,10 @@ function overwriteSavedData(key){
     }
   }
   _ccSetList(list);
-  _queueMapSync(key);   /* 지도 자동반영 대기열 등록 */
+  _tenarLinkPinToSurvey('chungchi', key);   /* [v141] 먼저 핀에 surveyKey 기록 */
+  _queueMapSync(key);   /* 그 핀을 surveyKey로 찾아 갱신(중복 핀 방지) */
   _slSelectedKey = null;
   _slLastLoadedKey = key; /* v60: 덮어쓴 항목 자동 선택 유지 */
-  _tenarLinkPinToSurvey('chungchi', key);   /* [v28-1] 지도 저장핀과 연결 */
   _slRenderList();
   _slUpdateSaveBtn();
   var t=document.createElement('div');
