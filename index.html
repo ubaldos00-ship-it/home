@@ -1,4 +1,4 @@
-<!-- index.html (v117) · 저장: 2026-11-19 13:01 KST · [v117·요청 반응형2차] 태블릿·PC에서 홈 도구 메뉴를 다열 그리드로 — main max-width 600→880(≥768)·1040(≥1200), .menu-grid grid-template-columns 1열→2열(≥768), #toolsMenuGrid 3열(≥1200). 모바일 ≤767px 미변경(min-width만 추가, CSS만). 링크·기능 무변경. 아래는 v116 — [v116] 하단 「오늘 접속자」 카운트 보정 —서버(GA4 Apps Script)의 '오늘' 값이 집계 지연으로 0으로 올 때 실시간 접속자(예: 1명)보다 작게(0명으로) 표시되어 「실시간 1·오늘 0」 모순이 보이던 문제 수정. 오늘 = max(서버 오늘, 실시간, 로컬 하한 1)로 계산해 실시간보다 작아지지 않게 함. 로컬 오늘값은 새로고침마다 부풀지 않도록 '이 기기 오늘 방문=1' 하한만 사용. ※ 서버 집계가 채워지면 그 값으로 표시. 그 외 무변경. (v115 이하 유지) -->
+<!-- index.html (v118) · 저장: 2026-11-19 16:31 KST · [v118·요청] 홈 PC 즐겨찾기 균형+별표 확대 — ①별표로 추가한 즐겨찾기가 한 셀(favMenuContainer)에 세로로 쌓여 오른쪽이 길어지고 KOSIS가 늘어나던 것 → #favMenuContainer{display:contents}(+.menu-grid align-items:start)로 즐겨찾기를 그리드 칸에 좌우 번갈아 배치(균형). ②별표(.fav-btn) 너무 작아 오터치 → padding 2→9px·min 40x40·svg 21→24px·hover 배경. 아래는 v117 — [v117·요청 반응형2차] 태블릿·PC에서 홈 도구 메뉴를 다열 그리드로 —main max-width 600→880(≥768)·1040(≥1200), .menu-grid grid-template-columns 1열→2열(≥768), #toolsMenuGrid 3열(≥1200). 모바일 ≤767px 미변경(min-width만 추가, CSS만). 링크·기능 무변경. 아래는 v116 — [v116] 하단 「오늘 접속자」 카운트 보정 —서버(GA4 Apps Script)의 '오늘' 값이 집계 지연으로 0으로 올 때 실시간 접속자(예: 1명)보다 작게(0명으로) 표시되어 「실시간 1·오늘 0」 모순이 보이던 문제 수정. 오늘 = max(서버 오늘, 실시간, 로컬 하한 1)로 계산해 실시간보다 작아지지 않게 함. 로컬 오늘값은 새로고침마다 부풀지 않도록 '이 기기 오늘 방문=1' 하한만 사용. ※ 서버 집계가 채워지면 그 값으로 표시. 그 외 무변경. (v115 이하 유지) -->
 <!-- (이전)  index.html (v115) · 저장: 2026-10-01 19:46 KST · [v115] 홈 버튼 위치 교체 — 빠른조사 메뉴(실측·청취 아래)의 「작물별 10a당 생산량 조회(graph.html)」와 개별 조사도구(QR코드 공유 아래)의 「KOSIS 생산량 조회(kosis_graph.html)」 위치를 서로 바꿈. 보고서상 생산량 조회를 KOSIS로 안내해 KOSIS를 빠른조사 메뉴로 올림. 각 자리 성격 유지(빠른메뉴=별표 없음, 개별도구=별표 추가 가능). ※ 링크 대상·기능 무변경(위치만). (v114 이하 유지) -->
 <!-- (이전)  index.html (v114) · 저장: 2026-09-23 05:01 KST · [v114] 홈 리브랜딩 — ①헤더 문구 「농작물생산조사 통합시스템」→「농작물생산조사 현장지원」(제목·og·footer 포함). ②슬로건 「계산식을 이해하면 조사가 보입니다.」 추가(헤더). ③테마 초록색을 산뜻한 초록(#27500A→#2E8B57, #1f5132→#26794A, #2e7a4e→#37A55C)으로 밝게 변경. ④앱 아이콘·favicon 새 초록으로 재생성 + ?v=224 캐시 무효화. ※ 기능·계산 무변경(색·문구·아이콘만). (v113 이하 유지) -->
 <!-- (이전)  index.html (v113) · 저장: 2026-09-17 14:09 KST · [v113] 북마크(즐겨찾기)에서 아이콘이 '두당'으로 나오던 문제 해결 — 북마크는 apple-touch-icon이 아니라 favicon을 사용하는데 favicon.ico가 없어 캐시된 다른 앱 아이콘이 표시됨. favicon.ico(16/32/48 '텐')·favicon-16/32.png·apple-touch-icon(-precomposed).png 추가하고 ?v=224로 캐시 무효화. ※ 기존 아이콘이 iOS에 캐시로 남아있으면: 옛 북마크 삭제 + 사파리 「방문 기록·웹사이트 데이터 지우기」 후 다시 추가. (v112 이하 유지) -->
@@ -500,14 +500,17 @@
     border: none;
     cursor: pointer;
     flex-shrink: 0;
-    padding: 2px;
+    padding: 9px;                 /* [요청] 2px→9px 터치 영역 확대(별표 오터치 방지) */
+    min-width: 40px; min-height: 40px;
     line-height: 1;
     font-family: inherit;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    border-radius: 10px;
   }
-  .fav-btn svg { display: block; }
+  .fav-btn svg { display: block; width: 24px; height: 24px; }   /* [요청] 별표 크게(21→24) */
+  .fav-btn:hover { background: rgba(201,150,43,.12); }
   .fav-btn:active { opacity: 0.45; transform: scale(0.9); }
 
   /* 강조 메뉴 (빠른조사) */
@@ -1253,7 +1256,9 @@
   /* ===== [요청 반응형2차] 태블릿·PC에서 홈 도구 메뉴를 다열 그리드로 (모바일 ≤767px 미변경 — min-width만 추가) ===== */
   @media (min-width:768px){
     main{ max-width:880px; }
-    .menu-grid{ grid-template-columns:1fr 1fr; gap:10px; }
+    .menu-grid{ grid-template-columns:1fr 1fr; gap:10px; align-items:start; }
+    /* [요청] 별표로 추가한 즐겨찾기(favMenuContainer)를 한 셀에 세로로 쌓지 않고, 그리드 칸에 좌우 번갈아 배치해 균형을 맞춘다. */
+    #favMenuContainer{ display:contents; }
   }
   @media (min-width:1200px){
     main{ max-width:1040px; }
