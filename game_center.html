@@ -1,4 +1,4 @@
-<!-- game_center.html · v13 · 저장: 2026-11-19 16:31 KST · [v13·요청 반응형] 태블릿·PC(≥768px) 폭 확장(main 600→820) + 게임 목록 2열(#gameList grid 2col, .game-card margin-bottom:0). 모바일 미변경(min-width CSS만). 아래는 v12 — [v12]두당 링크 대응 — 헤더 홈버튼(🏠) 제거 → 뒤로가기(‹) 버튼으로 교체. 뒤로가기는 진입한 곳(텐아르·두당 등)으로 복귀(같은 탭=history.back, 새 탭=referrer), 텐아르 홈으로 강제 이동 안 함. (이전) v11 · 이번주1위·챔피언 동점=나중달성 우선 -->
+<!-- game_center.html · v14 · 저장: 2026-11-21 11:55 KST · [v14·요청] ①뒤로가기 꼬임→홈 복귀: 헤더에 🏠 홈 버튼 추가(tenarGoHome: ?home 있으면 그쪽, 없으면 index.html) + 뒤로가기(‹)를 tenarSmartBack(히스토리→referrer→홈)으로 복원(반응형 v13이 홈폴백 없는 옛 뒤로가기로 되돌려놨던 것 수정). ②메뉴 정리: '작물 사다리게임'·'생산량 계산 챌린지'·'조사원 퀴즈' 삭제(파일은 보존, GAMES 목록에서만 제외). ③공지사항 섹션 감추기(display:none). ※ 반응형(≥768 2열) 유지. 0.home 정본과 동기화. 아래는 v13 — [v13·요청 반응형] 태블릿·PC(≥768px) 폭 확장(main 600→820) + 게임 목록 2열. 그 아래 v13(2026-10-28) 뒤로가기 안정화(tenarSmartBack) 병합. 아래는 v12 — [v12]두당 링크 대응 — 헤더 홈버튼(🏠) 제거 → 뒤로가기(‹) 버튼으로 교체. 뒤로가기는 진입한 곳(텐아르·두당 등)으로 복귀(같은 탭=history.back, 새 탭=referrer), 텐아르 홈으로 강제 이동 안 함. (이전) v11 · 이번주1위·챔피언 동점=나중달성 우선 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -312,9 +312,24 @@
 <header class="app-header">
   <div class="hd-top">
     <div class="hd-left">
-      <!-- [수정] 홈버튼(🏠) 제거 → 뒤로가기 버튼. 진입한 곳(텐아르·두당 등)으로 복귀, 텐아르 홈 강제 이동 안 함 -->
-      <button type="button" class="nav-back" title="뒤로가기" aria-label="뒤로가기"
-        onclick="if(history.length>1){history.back()}else{var r='';try{r=document.referrer||''}catch(e){}; if(/^https?:\/\//i.test(r)){location.href=r}else{history.back()}}">‹</button>
+      <!-- [v14·요청] 뒤로가기(스마트백) + 홈 버튼 — 게임 등 다른 버튼을 거쳐 히스토리가 꼬여도 '홈'으로 확실히 이동 -->
+      <button type="button" class="nav-back" title="뒤로가기" aria-label="뒤로가기" onclick="tenarSmartBack();return false;">‹</button>
+      <button type="button" class="nav-back" title="홈으로" aria-label="홈으로" onclick="tenarGoHome();return false;" style="margin-left:4px;">🏠</button>
+      <script>
+      /* [v14] 공용 뒤로가기/홈 — 텐아르 홈 기본, ?home=으로 두당 등 지정 가능.
+         게임(다른 버튼)을 거쳐 히스토리가 꼬여도 홈 버튼으로 항상 홈 복귀. */
+      window.tenarGoHome=function(){
+        var hp=''; try{ hp=(new URLSearchParams(location.search)).get('home')||''; }catch(e){}
+        if(hp && hp!=='tenar'){ location.href=hp; return; }   /* 두당 등: ?home=<경로> */
+        location.href='index.html';                            /* 텐아르 홈 */
+      };
+      window.tenarSmartBack=function(){
+        try{ if(history.length>1){ history.back(); return; } }catch(e){}
+        var r=''; try{ r=document.referrer||''; }catch(e){}
+        if(/^https?:\/\//i.test(r)){ location.href=r; return; }
+        tenarGoHome();                                         /* 최종 폴백: 홈 */
+      };
+      </script>
       <div>
         <p class="hd-title">🎮 텐아르 게임센터</p>
         <div class="hd-brand">
@@ -361,8 +376,8 @@
     <div id="champList"><div class="loading">랭킹 불러오는 중…</div></div>
   </section>
 
-  <!-- 공지사항 -->
-  <section class="section">
+  <!-- 공지사항 — [v14·요청] 감추기(표시 안 함) -->
+  <section class="section" style="display:none;">
     <h2 class="section-title"><span class="icon">📢</span>공지사항</h2>
     <div id="noticeList"><div class="loading">공지 불러오는 중…</div></div>
   </section>
@@ -467,12 +482,11 @@
   const GAMES = [
     { id: 'eagle_eye',            emoji: '🌾', name: '매의 눈 작물조사',   desc: '숨은 다른 작물 찾기', file: 'game_eagle_eye.html',            unit: 'LV', active: true },
     { id: 'crop_quiz',            emoji: '🌱', name: '작물 구별 퀴즈',     desc: '사진보고 작물 맞히기', file: 'game_crop_quiz.html',          unit: '점', active: true },
-    { id: 'ladder',              emoji: '🪜', name: '작물 사다리게임',     desc: '사다리타기로 배정·뽑기', file: 'ladder.html',                   unit: '판', active: true },
+    /* [v14·요청] 작물 사다리게임 메뉴 삭제(ladder.html 파일은 보존, 목록에서만 제외) */
     { id: 'crop_baseball',       emoji: '⚾', name: '작물 홈런왕',         desc: '스윙 타이밍 홈런 도전', file: 'game_crop_baseball.html',       unit: '점', active: true },
     { id: 'crop_galaga',         emoji: '🚀', name: '돌아온 작물갤러그',  desc: '우주선을 조종해 몰려오는 작물을 격파하세요', file: 'game_crop_galaga.html', unit: '점', active: true },
-    { id: 'crop_bubble',         emoji: '🫧', name: '돌아온 작물버블버블', desc: '방울로 해충을 가두고 작물을 지켜주세요', file: 'game_crop_bubble.html', unit: '점', active: true },
-    { id: 'production_challenge', emoji: '📊', name: '생산량 계산 챌린지', desc: '출시 예정',          file: 'game_production_challenge.html', unit: '점', active: false },
-    { id: 'survey_quiz',          emoji: '📝', name: '조사원 퀴즈',       desc: '출시 예정',          file: 'game_survey_quiz.html',          unit: '점', active: false },
+    { id: 'crop_bubble',         emoji: '🫧', name: '돌아온 작물버블버블', desc: '방울로 해충을 가두고 작물을 지켜주세요', file: 'game_crop_bubble.html', unit: '점', active: true }
+    /* [v14·요청] '생산량 계산 챌린지'·'조사원 퀴즈'(출시예정) 메뉴 삭제 */
   ];
 
   /* ===== 사용자 식별 ===== */
