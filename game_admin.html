@@ -1,4 +1,4 @@
-<!-- game_admin.html · v4 · 저장: 2026-08-05 09:20 KST · 주간만 초기화 + 삭제 오류 표시(권한실패 알림) -->
+<!-- game_admin.html · v5 · 저장: 2026-11-21 11:55 KST · [v5·요청] 관리자 화면 헤더에 뒤로가기(‹) 버튼 추가(기존엔 로그아웃🚪만 있었음) — 히스토리 있으면 history.back, 없으면(새 탭) game_center.html로 이동. 아래는 v4 — 주간만 초기화 + 삭제 오류 표시(권한실패 알림) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -151,7 +151,10 @@
 <!-- 헤더 -->
 <header>
   <div class="hd-top">
-    <div>
+    <!-- [v5·요청] 관리자 화면에 뒤로가기 버튼 추가(기존 로그아웃만 있었음). 새 탭이면 history 없어 게임센터로 이동 -->
+    <button class="hd-logout" id="adminBackBtn" title="뒤로가기" aria-label="뒤로가기" style="margin-right:8px;"
+      onclick="if(history.length>1){history.back()}else{location.href='game_center.html'}">‹</button>
+    <div style="flex:1;min-width:0;">
       <p class="hd-title">🎮 텐아르 게임센터</p>
       <div class="hd-brand">
         <span class="nm">ADMIN</span>
