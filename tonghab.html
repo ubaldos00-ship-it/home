@@ -1,4 +1,4 @@
-<!-- tonghab.html (v179) · 저장: 2026-11-19 12:44 KST · [v179·요청] 실측조사표 「📇 연락처」 섹션 기본값을 '펼침'→'닫힘'으로(핀 저장처럼) — #contactBody display:none, #contactToggleArr ▼. 누르면 펼침. ※ 계산 무변경. 아래는 v178 — [v178·요청 반응형2차]PC(≥1280px)에서 실측조사표 카드를 '2열'로 — .wrap을 display:block+column-count:2(max 1080px), .card·.port-card·.btn-row는 break-inside:avoid(카드 안 쪼개짐). 태블릿·모바일(≤1279px)은 1열 그대로, 계산식·입력·저장 무변경(화면 배치만). ※ 라이브 PC 확인 필요(1차 시안). 아래는 v177 — [v177·요청] 조사표 저장 시 포구도구 조사설정(작물·이랑 lenGaNa·비율 r1/r2)을 핀에 전달 — _queueMapSync entry.fpCtx(d의 r1_ga/na/da·r2_*·lenGaNa·작물, ratio는 r1/r2값으로 추정), _upsertMapFavIfCoord rec.fpCtx 저장(기존 보존). → 지도(map v250)에서 핀 포구도구 열면 그 값 복원. 아래는 v176 — [v176·요청 반응형1차]태블릿·PC 본문 폭 확장 — .wrap·.sticky-inner에 min-width:768px(700px)·1280px(860px) 추가(모바일 ≤767px 미변경, CSS만, 확대 아님). 아래는 v175 — [v175·요청 #3·#5]①저장 시 조사표 연락처(이름·전화·메모·수확예정일·층·조사구)를 핀에 전달 — _queueMapSync entry.contact 추가, _upsertMapFavIfCoord rec.contact(기존 핀 연락처 보존+조사표 값 있는 칸만 채움)+pnu/memo 보존. 작물은 기존대로 entry.crop로 전달. ②주소 옆 📍지도 버튼: 현재 조사표가 핀에 연결되면 활성(초록), 아니면 비활성(회색) — _updateAddrMapBtnState(1.5초 간격 갱신, 저장/불러오기 목록 핀표시와 동일 기준). ※ 지도(map v249)·청취(chungchi v142)와 함께. 계산 무변경. (이전) tonghab.html (v174) · [v174·중대버그수정] 조사표↔핀 연결 안정화(저장 순서) —saveCurrentData·overwriteSavedData에서 _queueMapSync(→_upsertMapFavIfCoord)를 _tenarLinkPinToSurvey '앞'에서 호출하던 것을 '뒤'로 바꿈. 이전엔 핀에 surveyKey가 없는 상태로 _upsertMapFavIfCoord가 돌아(v173에서 좌표/주소 병합을 꺼서) '새 핀'을 따로 만들어 측정/포구 핀과 조사표가 다른 핀으로 갈려 연결이 안 되던 문제. 이제 _tenarLinkPinToSurvey가 먼저 핀에 surveyKey를 기록→_upsertMapFavIfCoord가 그 핀을 surveyKey(①)로 찾아 갱신(중복 핀 방지). node 테스트: 옛순서=핀2개(중복), 새순서=핀1개 정확연결. ※ chungchi v141과 함께. 계산 무변경. (이전) tonghab.html (v173) · [v173·요청] 핀 '항상 별개'(작물 같든 다르든) —_upsertMapFavIfCoord에서 좌표(②)·주소(③)로 '연결 안 된 다른 핀'에 자동 병합하던 처리를 끔. 같은 조사표(surveyKey=①)만 같은 핀으로 갱신, 그 외에는 새 핀 생성(핀에서 열어 저장하면 _tenarLinkPinToSurvey가 surveyKey를 먼저 기록해 ①로 잡힘→중복핀 방지). ※ 지도(map v240)·청취(chungchi v140)와 함께. 계산 무변경. (이전) tonghab.html (v172) · [v172·요청] 저장/불러오기 — 새로 저장하면 그 항목이 바로 '선택'되도록(saveCurrentData에서 _slSelectedKey=key). 그래서 저장 직후 상단 버튼이 「💾 덮어쓰기 · 라벨」로 바뀌어, 다시 누르면 중복 추가 대신 그 항목을 덮어씀(기존엔 새 항목이 계속 추가되던 문제). ※ 청취(chungchi v139)도 동일 적용(저장/불러오기 화면 동일 유지). 계산 무변경. (이전) tonghab.html (v171) · 저장: 2026-11-14 KST · [v171·중대버그수정] 조사표 저장→지도핀 동기화(_upsertMapFavIfCoord) 병합 수정 — 같은 좌표(②)·주소(③)면 '작물이 달라도' 기존 핀을 덮어써(병합) 한 핀에 여러 작물이 섞이던 문제를, 작물 충돌 시 병합 안 하고 새 핀으로. 새 핀은 createdAt=현재시각(생산량목록 생성순 정렬·이전엔 날짜없어 맨뒤로 가던 문제). 아래는 v170 — [v170] ①(생중량 행 저장복원) 다중중량(생중량) 개별 행 값을 __pmwRows_로 저장→불러오기 시 그 행들 그대로 복원(이전엔 합계 1행만), 행 삭제 시 확인창(「행 삭제?」 취소/삭제). ②난수표 「확인하기」 누르면 현재 가로·세로값을 새창 난수표에 넘겨 자동입력(_openNansu, URL col/row) — 난수표에서 조회만 누르면 됨. ※ 계산식 무변경. 아래는 v169 — [v169] 지도 포구도구 연락처에 층·조사구 추가 반영 — 넘어온 r.contact.floor→nbFloor, r.contact.plot→nbSurveyPlot를 조사표 빈 칸에만 채움(선택). 아래는 v168 — [v168] (연락처 연동) 지도 포구도구에서 넘어온 연락처(이름·전화·메모·수확예정일)를 실측조사표의 비어 있는 칸에만 채움(선택). 아래는 v167 — [v167] 이랑 작물(마늘·양파·감자·콩·배추·무·총각무) 「이랑 평균너비(cm)」 입력칸(A/B포구 waAvg·wbAvg)의 모바일 키보드를 숫자전용(inputmode=numeric)→숫자+소수점(inputmode=decimal)으로 변경 — 소수점 평균너비 입력 가능. ※ 계산식·다른 입력칸 무변경. 아래는 v166 — [v166·버그수정] 저장자료를 불러올 때 「10a당 생산량 계산기(지역·품종 아래 조사데이터)」의 이전 조사 값이 남아 10a당 생산량이 이전 위치(예: 연경) 값으로 나오던 문제 수정 — 불러온 자료에 없는 prod 입력란(중량·포기수·개수·건조율·피해 등)을 빈칸/기본값으로 비우고 10a 결과를 숨기는 _prodClearStale()를 _slApply(불러오기)에 추가. 논벼 실수확량은 v144에서 이미 처리됐었고, 마늘·양파·감자·콩·배추·무·총각무 전반에 동일 적용. 다중중량(PMW) 필드도 없으면 UI 비움. ※ 계산식 무변경(잔상 제거·표시만). (v165 이하 유지) -->
+<!-- tonghab.html (v180) · 저장: 2026-11-21 09:04 KST · [v180·요청] ①제목 「농작물생산 실측계산기」→「실측조사표」(이모지 제거·글자 20px). ②배추·무를 KOSIS 변종으로 분리 — 배추=가을배추/노지봄배추/시설봄배추, 무=가을무/노지봄무/시설봄무. 가을=기존 노지가을(17개 시도), 봄(노지봄·시설봄)=KOSIS 채소생산량 2021~2024(2025 미조사)·전국/대구/경북/강원 전년·평년·이력·선그래프 연결(PROD_VARIETIES·PROD_STATS·PROD_HISTORY·prodVarKey). ③저장/불러오기 — 불러오거나 덮어쓴 항목을 '선택' 상태로 유지(선택취소 전까지 「덮어쓰기」 버튼). ④시설 변종 선택 시 ④재배형태 자동 '시설'(노지봄·가을은 '노지'). ※ 계산 산식 무변경. 아래는 v179 — [v179·요청] 실측조사표 「📇 연락처」 섹션 기본값을 '펼침'→'닫힘'으로(핀 저장처럼) — #contactBody display:none, #contactToggleArr ▼. 누르면 펼침. ※ 계산 무변경. 아래는 v178 — [v178·요청 반응형2차]PC(≥1280px)에서 실측조사표 카드를 '2열'로 — .wrap을 display:block+column-count:2(max 1080px), .card·.port-card·.btn-row는 break-inside:avoid(카드 안 쪼개짐). 태블릿·모바일(≤1279px)은 1열 그대로, 계산식·입력·저장 무변경(화면 배치만). ※ 라이브 PC 확인 필요(1차 시안). 아래는 v177 — [v177·요청] 조사표 저장 시 포구도구 조사설정(작물·이랑 lenGaNa·비율 r1/r2)을 핀에 전달 — _queueMapSync entry.fpCtx(d의 r1_ga/na/da·r2_*·lenGaNa·작물, ratio는 r1/r2값으로 추정), _upsertMapFavIfCoord rec.fpCtx 저장(기존 보존). → 지도(map v250)에서 핀 포구도구 열면 그 값 복원. 아래는 v176 — [v176·요청 반응형1차]태블릿·PC 본문 폭 확장 — .wrap·.sticky-inner에 min-width:768px(700px)·1280px(860px) 추가(모바일 ≤767px 미변경, CSS만, 확대 아님). 아래는 v175 — [v175·요청 #3·#5]①저장 시 조사표 연락처(이름·전화·메모·수확예정일·층·조사구)를 핀에 전달 — _queueMapSync entry.contact 추가, _upsertMapFavIfCoord rec.contact(기존 핀 연락처 보존+조사표 값 있는 칸만 채움)+pnu/memo 보존. 작물은 기존대로 entry.crop로 전달. ②주소 옆 📍지도 버튼: 현재 조사표가 핀에 연결되면 활성(초록), 아니면 비활성(회색) — _updateAddrMapBtnState(1.5초 간격 갱신, 저장/불러오기 목록 핀표시와 동일 기준). ※ 지도(map v249)·청취(chungchi v142)와 함께. 계산 무변경. (이전) tonghab.html (v174) · [v174·중대버그수정] 조사표↔핀 연결 안정화(저장 순서) —saveCurrentData·overwriteSavedData에서 _queueMapSync(→_upsertMapFavIfCoord)를 _tenarLinkPinToSurvey '앞'에서 호출하던 것을 '뒤'로 바꿈. 이전엔 핀에 surveyKey가 없는 상태로 _upsertMapFavIfCoord가 돌아(v173에서 좌표/주소 병합을 꺼서) '새 핀'을 따로 만들어 측정/포구 핀과 조사표가 다른 핀으로 갈려 연결이 안 되던 문제. 이제 _tenarLinkPinToSurvey가 먼저 핀에 surveyKey를 기록→_upsertMapFavIfCoord가 그 핀을 surveyKey(①)로 찾아 갱신(중복 핀 방지). node 테스트: 옛순서=핀2개(중복), 새순서=핀1개 정확연결. ※ chungchi v141과 함께. 계산 무변경. (이전) tonghab.html (v173) · [v173·요청] 핀 '항상 별개'(작물 같든 다르든) —_upsertMapFavIfCoord에서 좌표(②)·주소(③)로 '연결 안 된 다른 핀'에 자동 병합하던 처리를 끔. 같은 조사표(surveyKey=①)만 같은 핀으로 갱신, 그 외에는 새 핀 생성(핀에서 열어 저장하면 _tenarLinkPinToSurvey가 surveyKey를 먼저 기록해 ①로 잡힘→중복핀 방지). ※ 지도(map v240)·청취(chungchi v140)와 함께. 계산 무변경. (이전) tonghab.html (v172) · [v172·요청] 저장/불러오기 — 새로 저장하면 그 항목이 바로 '선택'되도록(saveCurrentData에서 _slSelectedKey=key). 그래서 저장 직후 상단 버튼이 「💾 덮어쓰기 · 라벨」로 바뀌어, 다시 누르면 중복 추가 대신 그 항목을 덮어씀(기존엔 새 항목이 계속 추가되던 문제). ※ 청취(chungchi v139)도 동일 적용(저장/불러오기 화면 동일 유지). 계산 무변경. (이전) tonghab.html (v171) · 저장: 2026-11-14 KST · [v171·중대버그수정] 조사표 저장→지도핀 동기화(_upsertMapFavIfCoord) 병합 수정 — 같은 좌표(②)·주소(③)면 '작물이 달라도' 기존 핀을 덮어써(병합) 한 핀에 여러 작물이 섞이던 문제를, 작물 충돌 시 병합 안 하고 새 핀으로. 새 핀은 createdAt=현재시각(생산량목록 생성순 정렬·이전엔 날짜없어 맨뒤로 가던 문제). 아래는 v170 — [v170] ①(생중량 행 저장복원) 다중중량(생중량) 개별 행 값을 __pmwRows_로 저장→불러오기 시 그 행들 그대로 복원(이전엔 합계 1행만), 행 삭제 시 확인창(「행 삭제?」 취소/삭제). ②난수표 「확인하기」 누르면 현재 가로·세로값을 새창 난수표에 넘겨 자동입력(_openNansu, URL col/row) — 난수표에서 조회만 누르면 됨. ※ 계산식 무변경. 아래는 v169 — [v169] 지도 포구도구 연락처에 층·조사구 추가 반영 — 넘어온 r.contact.floor→nbFloor, r.contact.plot→nbSurveyPlot를 조사표 빈 칸에만 채움(선택). 아래는 v168 — [v168] (연락처 연동) 지도 포구도구에서 넘어온 연락처(이름·전화·메모·수확예정일)를 실측조사표의 비어 있는 칸에만 채움(선택). 아래는 v167 — [v167] 이랑 작물(마늘·양파·감자·콩·배추·무·총각무) 「이랑 평균너비(cm)」 입력칸(A/B포구 waAvg·wbAvg)의 모바일 키보드를 숫자전용(inputmode=numeric)→숫자+소수점(inputmode=decimal)으로 변경 — 소수점 평균너비 입력 가능. ※ 계산식·다른 입력칸 무변경. 아래는 v166 — [v166·버그수정] 저장자료를 불러올 때 「10a당 생산량 계산기(지역·품종 아래 조사데이터)」의 이전 조사 값이 남아 10a당 생산량이 이전 위치(예: 연경) 값으로 나오던 문제 수정 — 불러온 자료에 없는 prod 입력란(중량·포기수·개수·건조율·피해 등)을 빈칸/기본값으로 비우고 10a 결과를 숨기는 _prodClearStale()를 _slApply(불러오기)에 추가. 논벼 실수확량은 v144에서 이미 처리됐었고, 마늘·양파·감자·콩·배추·무·총각무 전반에 동일 적용. 다중중량(PMW) 필드도 없으면 UI 비움. ※ 계산식 무변경(잔상 제거·표시만). (v165 이하 유지) -->
 <!-- (이전)  tonghab.html (v165) · 저장: 2026-11-06 17:06 KST · [v165] 「🧭 지도에서 A/B포구 위치(현장모드)」 버튼을 논벼 외 작물(마늘·양파·감자·콩·배추·무·총각무)에도 추가 — 기존엔 논벼 ⑤ 이삭수 아래에만 있던 버튼을, 비논벼 작물에서는 「🗺 지도에서 위치 계산」 버튼 바로 아래(.hide-nonbye)에 함께 표시(같은 tenarGoFieldFromSurvey 호출). 논벼는 기존 위치 그대로. 작물별로 1개만 보임(중복 없음) 확인. ※ 계산식 무변경. (v164 이하 유지) -->
 <!-- (이전)  tonghab.html (v164) · 저장: 2026-10-28 13:34 KST · [v164] 연락처에 「수확예정일」 추가 — 메모 아래 텍스트 입력란(harvestDate), 저장/복원·초기화 포함. 저장/불러오기 목록의 저장일시 옆에 「🌾수확예정 …」 표시. 전화 자동 하이픈(01012345678→010-1234-5678)은 기존대로 동작. ※ 계산식 무변경. (v163 이하 유지) -->
 <!-- (이전)  tonghab.html (v163) · 저장: 2026-10-28 02:48 KST · [v163] 저장/불러오기 목록 2건 보완 — ①항목 표시를 줄바꿈 형태로: 작물·지번(라벨) / 전체주소 / 이름·전화·메모 / 날짜 를 각 줄(작은 글씨). ②번호를 「실제 보이는 목록(조회 필터 적용 후)」 기준으로 매겨 보이는 개수와 항상 일치(예: 22건이면 최대 22번). 이전엔 전체목록 기준이라, 조회 필터가 걸리면 보이는 개수보다 큰 번호가 나왔음. 정렬을 바꿔도 각 자료 번호는 유지(재번호 안 됨), 삭제 시엔 1..N로 다시 매겨짐. ※ 계산식 무변경. (v162 이하 유지) -->
@@ -409,7 +409,7 @@ TenarSecureStore.init('tonghab',
   gtag('js', new Date());
   gtag('config', 'G-B8ELP4S5PR');
 </script>
-<title>농작물생산 실측 계산기</title>
+<title>실측조사표</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
 :root{
@@ -456,7 +456,7 @@ body{
 
 /* ── Header ── */
 .hdr-ttl{font-size:17px;font-weight:700;color:#fff;display:flex;align-items:center;gap:6px;flex-wrap:nowrap;}
-.hdr-ttl>span:first-child{font-size:14px;white-space:normal;line-height:1.35;flex:1;min-width:0;}
+.hdr-ttl>span:first-child{font-size:20px;font-weight:800;white-space:nowrap;line-height:1.2;flex:1;min-width:0;}   /* [요청] 아이콘 제거·「실측조사표」 글자 키움 */
 .hdr-crop-badge{font-size:12px;font-weight:700;background:var(--g400);color:#fff;padding:3px 10px;border-radius:100px;display:none;white-space:nowrap;flex-shrink:0;}
 .hdr-sub{font-size:9.5px;color:var(--g100);margin-top:3px;font-weight:500;letter-spacing:.04em;}
 .home-btn{
@@ -2006,7 +2006,7 @@ select,
 <div class="sticky-top">
   <div class="sticky-inner">
     <div class="hdr-ttl">
-      <span><svg width="28" height="28" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" style="vertical-align:middle;margin-right:4px;"><circle cx="11" cy="12" r="7.5" fill="#2e7a4e" stroke="#1f5132" stroke-width="0.8"/><path d="M6.5 6.5 Q11 4 15.5 6.5" stroke="rgba(255,255,255,0.25)" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="11" cy="12" r="4.2" fill="#f6f4ec" stroke="#1f5132" stroke-width="0.7"/><circle cx="11" cy="12" r="1.6" fill="#c9962b" stroke="#a07020" stroke-width="0.6"/><circle cx="11" cy="12" r="0.7" fill="#fff"/><rect x="18" y="10.8" width="4.5" height="2.4" rx="0.7" fill="#e6b955" stroke="#c9962b" stroke-width="0.7"/><line x1="19.3" y1="10.8" x2="19.3" y2="13.2" stroke="#a07020" stroke-width="0.7"/><line x1="20.6" y1="10.8" x2="20.6" y2="13.2" stroke="#a07020" stroke-width="0.7"/><line x1="21.8" y1="10.8" x2="21.8" y2="13.2" stroke="#a07020" stroke-width="0.7"/></svg> 농작물생산<br><span style="padding-left:33px;">실측 계산기</span></span>
+      <span>실측조사표</span>
       <span class="hdr-crop-badge" id="hdrCropBadge"></span>
       <div id="hdr-btns-wrap" style="display:flex;align-items:center;gap:6px;flex-shrink:0;overflow:hidden;transition:max-width .28s ease,opacity .25s ease;max-width:200px;opacity:1;">
         <a href="https://ubaldos00-ship-it.github.io/home/" class="home-btn" aria-label="홈" onclick="return goHomeAndReset();">
@@ -6784,7 +6784,22 @@ const PROD_CROP_KO   = {garlic:'마늘', onion:'양파', potato:'감자', cabbag
 const PROD_CROP_EMOJI= {garlic:'🧄', onion:'🧅', potato:'🥔', cabbage:'🥬', radish:'🌱', tongak:'🌿', soybean:'🫛', rice:'🌾'};
 const PROD_CROP_MAP  = {'마늘':'garlic','양파':'onion','무':'radish','총각무':'tongak','배추':'cabbage','감자':'potato','콩':'soybean','논벼':'rice'};
 const PROD_CROP_HIST_KEY = {garlic:'garlic',onion:'onion',potato:'potato',cabbage:'cabbage',radish:'radish',tongak:'tongak',soybean:'soybean'};
-const PROD_VARIETIES = {garlic:['난지형','한지형'],onion:['조생종','중만생종'],potato:['봄감자','고랭지감자'],cabbage:[],radish:[],tongak:[],soybean:[],rice:[]};
+const PROD_VARIETIES = {garlic:['난지형','한지형'],onion:['조생종','중만생종'],potato:['봄감자','고랭지감자'],cabbage:['가을배추','노지봄배추','시설봄배추'],radish:['가을무','노지봄무','시설봄무'],tongak:[],soybean:[],rice:[]};
+/* [v180] 배추·무 KOSIS 변종 → PROD_STATS/PROD_HISTORY 키 매핑. 가을=기존 cabbage/radish(노지가을·17개 시도), 봄(노지봄·시설봄)=KOSIS 채소생산량 2021~2024(2025 미조사)·전국/대구/경북/강원만 */
+function prodVarKey(crop, variety){
+  if(crop==='potato' && variety==='고랭지감자') return 'potato_highland';
+  if(crop==='cabbage'){
+    if(variety==='노지봄배추') return 'cabbage_spring_open';
+    if(variety==='시설봄배추') return 'cabbage_spring_fac';
+    return 'cabbage'; /* 가을배추 = 노지가을배추 */
+  }
+  if(crop==='radish'){
+    if(variety==='노지봄무') return 'radish_spring_open';
+    if(variety==='시설봄무') return 'radish_spring_fac';
+    return 'radish'; /* 가을무 = 노지가을무 */
+  }
+  return crop;
+}
 
 const PROD_HISTORY = {
   garlic:{
@@ -6946,6 +6961,31 @@ const PROD_HISTORY = {
     jeonnam:[{y:'2021',v:4691},{y:'2022',v:4427},{y:'2023',v:4052},{y:'2024',v:5605},{y:'2025',v:4392}],
     gyeongnam:[{y:'2021',v:3763},{y:'2022',v:0},{y:'2023',v:3058},{y:'2024',v:4182},{y:'2025',v:0}],
     jeju:[{y:'2021',v:0},{y:'2022',v:0},{y:'2023',v:0},{y:'2024',v:5605},{y:'2025',v:0}]
+  },
+  /* [v180] 배추·무 봄 변종 이력 (KOSIS 채소생산량 2021~2024, 2025 미조사). 전국·대구·경북·강원만 */
+  radish_spring_open:{
+    national:[{y:'2021',v:4038},{y:'2022',v:4087},{y:'2023',v:3638},{y:'2024',v:3753}],
+    daegu:[{y:'2021',v:4324},{y:'2022',v:4304},{y:'2023',v:3118},{y:'2024',v:3103}],
+    gyeongbuk:[{y:'2021',v:2773},{y:'2022',v:2759},{y:'2023',v:3110},{y:'2024',v:3329}],
+    gangwon:[{y:'2021',v:4132},{y:'2022',v:4122},{y:'2023',v:3642},{y:'2024',v:3806}]
+  },
+  radish_spring_fac:{
+    national:[{y:'2021',v:4433},{y:'2022',v:4074},{y:'2023',v:4378},{y:'2024',v:4202}],
+    daegu:[{y:'2021',v:3236},{y:'2022',v:3211},{y:'2023',v:3211},{y:'2024',v:null}],
+    gyeongbuk:[{y:'2021',v:3295},{y:'2022',v:3438},{y:'2023',v:4410},{y:'2024',v:3438}],
+    gangwon:[{y:'2021',v:4132},{y:'2022',v:4122},{y:'2023',v:3642},{y:'2024',v:3806}]
+  },
+  cabbage_spring_open:{
+    national:[{y:'2021',v:4810},{y:'2022',v:4713},{y:'2023',v:4782},{y:'2024',v:4729}],
+    daegu:[{y:'2021',v:4910},{y:'2022',v:4733},{y:'2023',v:3023},{y:'2024',v:2791}],
+    gyeongbuk:[{y:'2021',v:4698},{y:'2022',v:4565},{y:'2023',v:4795},{y:'2024',v:4712}],
+    gangwon:[{y:'2021',v:4579},{y:'2022',v:4507},{y:'2023',v:4476},{y:'2024',v:4342}]
+  },
+  cabbage_spring_fac:{
+    national:[{y:'2021',v:4638},{y:'2022',v:4357},{y:'2023',v:4258},{y:'2024',v:4207}],
+    daegu:[{y:'2021',v:3201},{y:'2022',v:3200},{y:'2023',v:3200},{y:'2024',v:3200}],
+    gyeongbuk:[{y:'2021',v:4468},{y:'2022',v:4516},{y:'2023',v:4542},{y:'2024',v:4216}],
+    gangwon:[{y:'2021',v:3343},{y:'2022',v:3461},{y:'2023',v:3336},{y:'2024',v:3267}]
   }
 };
 const PROD_STATS = {
@@ -6956,7 +6996,12 @@ const PROD_STATS = {
   soybean: {prev:{national:211, daegu:164, gyeongbuk:164, gangwon:240, seoul:203, busan:186, incheon:180, gwangju:179, daejeon:181, ulsan:140, sejong:157, gyeonggi:203, chungbuk:235, chungnam:200, jeonbuk:246, jeonnam:213, gyeongnam:186, jeju:121}, mean5:{national:207, daegu:141, gyeongbuk:195, gangwon:213, seoul:189, busan:167, incheon:179, gwangju:194, daejeon:220, ulsan:138, sejong:178, gyeonggi:189, chungbuk:211, chungnam:221, jeonbuk:249, jeonnam:194, gyeongnam:177, jeju:132}},
   radish: {prev:{national:6423, daegu:5708, gyeongbuk:4862, gangwon:4877, seoul:6160, busan:8573, incheon:7532, gwangju:9725, daejeon:5983, ulsan:6635, sejong:3624, gyeonggi:6072, chungbuk:5845, chungnam:5537, jeonbuk:6926, jeonnam:8149, gyeongnam:7867, jeju:8626}, mean5:{national:7299, daegu:6830, gyeongbuk:6209, gangwon:5773, seoul:6989, busan:8299, incheon:8309, gwangju:9582, daejeon:7241, ulsan:7671, sejong:5429, gyeonggi:6743, chungbuk:5994, chungnam:7160, jeonbuk:7649, jeonnam:8579, gyeongnam:8489, jeju:5667}},
   cabbage: {prev:{national:7768, daegu:7950, gyeongbuk:6459, gangwon:6693, seoul:6758, busan:8538, incheon:10228, gwangju:9659, daejeon:7386, ulsan:7689, sejong:5336, gyeonggi:6758, chungbuk:6842, chungnam:6834, jeonbuk:8162, jeonnam:10364, gyeongnam:8523, jeju:10364}, mean5:{national:8881, daegu:8061, gyeongbuk:7462, gangwon:7983, seoul:9532, busan:9065, incheon:10446, gwangju:10935, daejeon:8359, ulsan:8745, sejong:8489, gyeonggi:8922, chungbuk:7532, chungnam:8743, jeonbuk:9663, jeonnam:10800, gyeongnam:9595, jeju:8480}},
-  tongak: {prev:{national:4889, daegu:0, gyeongbuk:3954, gangwon:4719, seoul:5267, busan:0, incheon:6171, gwangju:0, daejeon:4863, ulsan:0, sejong:4863, gyeonggi:5267, chungbuk:3954, chungnam:4863, jeonbuk:4549, jeonnam:4392, gyeongnam:0, jeju:0}, mean5:{national:5226, daegu:1589, gyeongbuk:3877, gangwon:4121, seoul:5374, busan:2589, incheon:6097, gwangju:1121, daejeon:5483, ulsan:3474, sejong:5192, gyeonggi:5374, chungbuk:4415, chungnam:5483, jeonbuk:6292, jeonnam:4633, gyeongnam:2201, jeju:1121}}
+  tongak: {prev:{national:4889, daegu:0, gyeongbuk:3954, gangwon:4719, seoul:5267, busan:0, incheon:6171, gwangju:0, daejeon:4863, ulsan:0, sejong:4863, gyeonggi:5267, chungbuk:3954, chungnam:4863, jeonbuk:4549, jeonnam:4392, gyeongnam:0, jeju:0}, mean5:{national:5226, daegu:1589, gyeongbuk:3877, gangwon:4121, seoul:5374, busan:2589, incheon:6097, gwangju:1121, daejeon:5483, ulsan:3474, sejong:5192, gyeonggi:5374, chungbuk:4415, chungnam:5483, jeonbuk:6292, jeonnam:4633, gyeongnam:2201, jeju:1121}},
+  /* [v180] 배추·무 봄 변종 (출처: KOSIS 채소생산량 2021~2024, 2025 미조사 → 전년=2024·평년=2021~2024 평균). 전국·대구·경북·강원만 조사 */
+  radish_spring_open: {prev:{national:3753, daegu:3103, gyeongbuk:3329, gangwon:3806, seoul:null, busan:null, incheon:null, gwangju:null, daejeon:null, ulsan:null, sejong:null, gyeonggi:null, chungbuk:null, chungnam:null, jeonbuk:null, jeonnam:null, gyeongnam:null, jeju:null}, mean5:{national:3879, daegu:3712, gyeongbuk:2993, gangwon:3926, seoul:0, busan:0, incheon:0, gwangju:0, daejeon:0, ulsan:0, sejong:0, gyeonggi:0, chungbuk:0, chungnam:0, jeonbuk:0, jeonnam:0, gyeongnam:0, jeju:0}},
+  radish_spring_fac: {prev:{national:4202, daegu:3211, gyeongbuk:3438, gangwon:3806, seoul:null, busan:null, incheon:null, gwangju:null, daejeon:null, ulsan:null, sejong:null, gyeonggi:null, chungbuk:null, chungnam:null, jeonbuk:null, jeonnam:null, gyeongnam:null, jeju:null}, mean5:{national:4272, daegu:3219, gyeongbuk:3645, gangwon:3926, seoul:0, busan:0, incheon:0, gwangju:0, daejeon:0, ulsan:0, sejong:0, gyeonggi:0, chungbuk:0, chungnam:0, jeonbuk:0, jeonnam:0, gyeongnam:0, jeju:0}},
+  cabbage_spring_open: {prev:{national:4729, daegu:2791, gyeongbuk:4712, gangwon:4342, seoul:null, busan:null, incheon:null, gwangju:null, daejeon:null, ulsan:null, sejong:null, gyeonggi:null, chungbuk:null, chungnam:null, jeonbuk:null, jeonnam:null, gyeongnam:null, jeju:null}, mean5:{national:4758, daegu:3864, gyeongbuk:4692, gangwon:4476, seoul:0, busan:0, incheon:0, gwangju:0, daejeon:0, ulsan:0, sejong:0, gyeonggi:0, chungbuk:0, chungnam:0, jeonbuk:0, jeonnam:0, gyeongnam:0, jeju:0}},
+  cabbage_spring_fac: {prev:{national:4207, daegu:3200, gyeongbuk:4216, gangwon:3267, seoul:null, busan:null, incheon:null, gwangju:null, daejeon:null, ulsan:null, sejong:null, gyeonggi:null, chungbuk:null, chungnam:null, jeonbuk:null, jeonnam:null, gyeongnam:null, jeju:null}, mean5:{national:4365, daegu:3200, gyeongbuk:4436, gangwon:3352, seoul:0, busan:0, incheon:0, gwangju:0, daejeon:0, ulsan:0, sejong:0, gyeonggi:0, chungbuk:0, chungnam:0, jeonbuk:0, jeonnam:0, gyeongnam:0, jeju:0}}
 };
 
 let prodCrop = null, prodVariety = null, prodRegion = null;
@@ -6985,7 +7030,7 @@ function prodSyncFromCrop(koreanCrop) {
     prodVariety = {cabbage:'노지가을배추',soybean:'기본',tongak:'총각무',radish:'노지가을무'}[eng] || '기본';
   } else {
     if(vSec) vSec.style.display = 'block';
-    const lMap = {garlic:'마늘 품종 선택',onion:'양파 품종 선택',potato:'감자 품종 선택'};
+    const lMap = {garlic:'마늘 품종 선택',onion:'양파 품종 선택',potato:'감자 품종 선택',cabbage:'배추 종류 선택',radish:'무 종류 선택'}; /* [v180] */
     const lbl = document.getElementById('prod-variety-label');
     if(lbl) lbl.textContent = lMap[eng] || '품종 선택';
     const vBtns = document.getElementById('prod-variety-btns');
@@ -7048,6 +7093,11 @@ function prodApplyCropSections(crop) {
 function prodSelectVariety(idx, name) {
   prodVariety = name;
   document.querySelectorAll('#prod-variety-btns .ptog-btn').forEach((b,i)=>b.classList.toggle('p-active-var',i===idx));
+  /* [v180] 배추·무 변종 선택 시 ④재배형태 자동: 시설봄→시설, 노지봄·가을→노지 (마늘·양파·감자 품종명엔 시설/노지/가을 미포함 → 영향 없음) */
+  if(typeof setCultivation==='function'){
+    if(name.indexOf('시설')!==-1) setCultivation('시설');
+    else if(name.indexOf('노지')!==-1 || name.indexOf('가을')!==-1) setCultivation('노지');
+  }
 }
 
 function prodSelectRegion(r) {
@@ -7458,7 +7508,7 @@ function prodCalculate() {
   }
 
   // 비교 바 그래프
-  const _statsKey=(prodCrop==='potato'&&prodVariety==='고랭지감자')?'potato_highland':prodCrop;
+  const _statsKey=prodVarKey(prodCrop,prodVariety); /* [v180] 배추·무 변종 포함 */
   const prev=region&&PROD_STATS[_statsKey]?PROD_STATS[_statsKey].prev[region]:null;
   const mean=region&&PROD_STATS[_statsKey]?PROD_STATS[_statsKey].mean5[region]:null;
   function prodCmpItem(label,ref,my){
@@ -7505,8 +7555,7 @@ function prodCalculate() {
   // 지역별 막대그래프
   /* [v121] 선택한 시도가 대구·경북·강원 밖이면 참고 그래프에도 함께 표시 */
   const allR=prodAllR(region);
-  let histKey=PROD_CROP_HIST_KEY[prodCrop]||prodCrop;
-  if(prodCrop==='potato' && prodVariety==='고랭지감자') histKey='potato_highland';
+  let histKey=prodVarKey(prodCrop,prodVariety); /* [v180] 배추·무 변종 포함 */
   const hist=PROD_HISTORY[histKey];
   if(!hist){
     document.getElementById('prod-history-content').innerHTML='<p class="pstat-note">※ 해당 작물의 지역별 데이터가 준비 중입니다.</p>';
@@ -7515,7 +7564,7 @@ function prodCalculate() {
   } else {
     const rN=PROD_REGION_KO;   /* [v121] 전국 17개 시도 이름 */
     const m5v={},pvv={};
-    const _sk2=(prodCrop==='potato'&&prodVariety==='고랭지감자')?'potato_highland':prodCrop;
+    const _sk2=prodVarKey(prodCrop,prodVariety); /* [v180] 배추·무 변종 포함 */
     allR.forEach(r=>{m5v[r]=PROD_STATS[_sk2]?.mean5[r]||0;pvv[r]=PROD_STATS[_sk2]?.prev[r]||0;});
     const sA={},sB={};   /* [v121] allR 기준으로 동적 구성 */
     allR.forEach(r=>{sA[r]=A?A.kg10a:0; sB[r]=B?B.kg10a:0;});
@@ -7552,8 +7601,7 @@ function drawProdLineChart(crop,region){
   const cvs=document.getElementById('prodLineCanvas');
   const legEl=document.getElementById('prodLineLegend');
   if(!cvs||!crop)return;
-  let histKey=PROD_CROP_HIST_KEY[crop]||crop;
-  if(crop==='potato' && prodVariety==='고랭지감자') histKey='potato_highland';
+  let histKey=prodVarKey(crop,prodVariety); /* [v180] 배추·무 변종 포함 */
   const hist=PROD_HISTORY[histKey];
   if(!hist)return;
   if(prodLineChartInst){prodLineChartInst.destroy();prodLineChartInst=null;}
@@ -7629,8 +7677,7 @@ function prodToggleHistTable(){
 }
 
 function prodBuildHistTable(crop,region){
-  let histKey=PROD_CROP_HIST_KEY[crop]||crop;
-  if(crop==='potato' && prodVariety==='고랭지감자') histKey='potato_highland';
+  let histKey=prodVarKey(crop,prodVariety); /* [v180] 배추·무 변종 포함 */
   const hist=PROD_HISTORY[histKey];
   const card=document.getElementById('prod-hist-table-card');
   if(!hist){if(card)card.style.display='none';return;}
@@ -10315,6 +10362,7 @@ function loadSavedData(key){
     var s=localStorage.getItem(SL_DATA_PFX+key);
     if(!s){alert('저장 데이터를 찾을 수 없습니다.');return;}
     _slLastLoadedKey = key; /* v133: 불러온 항목 기억 → 재오픈 시 자동 선택(덮어쓰기 준비) */
+    _slSelectedKey = key;   /* [요청] 불러오면 그 항목을 '선택' 상태로 유지 → 저장 버튼이 '덮어쓰기'(사용자가 선택취소 전까지) */
     closeSaveLoadModal();
     /* v129: 복원 완료 후 yields 자동 갱신 → 기존 저장 데이터도 집계 반영 */
     _slApply(JSON.parse(s), function(){
@@ -10376,7 +10424,7 @@ function overwriteSavedData(key){
   _slSetList(list);
   _tenarLinkPinToSurvey('tonghab', key);   /* [v174] 먼저 핀에 surveyKey 기록 */
   _queueMapSync(key);   /* 그 핀을 surveyKey로 찾아 갱신(중복 핀 방지) */
-  _slSelectedKey = null; /* v83: 덮어쓰기 후 선택 초기화 */
+  _slSelectedKey = key; /* [요청] 덮어쓰기 후에도 그 항목 '선택' 유지(계속 덮어쓰기 가능, 선택취소 전까지) */
   _slLastLoadedKey = key; /* v133: 덮어쓴 항목을 다음 오픈 시에도 자동 선택 */
   _slRenderList();
   _slUpdateSaveBtn();
