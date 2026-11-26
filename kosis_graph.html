@@ -1,3 +1,4 @@
+<!-- kosis_graph.html · 2026-11-26 09:42 KST 수정(v235) · [v235·요청] ①지역선택 '초기화'(clearRegions)·'전체 초기화'(resetAll) 시 '추가 정보' 패널도 초기화(_clearAddInfoUI, 패널 닫혀 있어도 이전 시도·시군 상세 제거). ②논벼 '시군별 보기'에서 시도(광역시)를 선택해도 추가정보 조회되도록 loadAddInfo가 시군(level=sigungu)+시도(level 없음) 데이터를 함께 받아 병합. 계산·차트 무변경. -->
 <!-- kosis_graph.html · 2026-11-15 08:33 KST 수정(v234) · [v234·요청 반응형1차] 태블릿·PC 본문 폭 확장(.wrap min-width:768px→720px·1280px→980px, 모바일 미변경). 아래는 v233 — 2026-10-03 06:31 KST ·[수정] ③ 조회 기간 다음의 생산량 추이 카드 번호를 ③→④로 변경. ※ 그 외 무변경. (이전) 2026-10-01 (1)데이터 라벨 네모박스 제거+흰 외곽선 (2)🔗 공유 텍스트→이미지. -->
 <!-- kosis_graph.html · 2026-10-01 수정 · [수정] (1)그래프 데이터 라벨의 네모박스 제거 + 흰 외곽선(여러 데이터 겹침 완화) (2)🔗 공유 버튼을 텍스트 → 그래프 이미지 공유로 변경(카톡 등, 미지원 시 이미지 모달/텍스트 폴백). ※ 데이터·API 무변경. (이전 v8 이하) -->
 <!-- kosis_graph_v8.html · 저장: 2026-08-09 KST · Cloudflare 연결
@@ -836,14 +837,21 @@ function loadAddInfo(cb) {
   if (ADDINFO && ADDINFO.key === k) { cb(); return; }
   var key = LIVE_CROP_MAP[currentCrop];
   if (!key) { ADDINFO = null; cb(); return; }
-  var level = (currentCrop === '논벼' && isRiceSigunMode) ? '&level=sigungu' : '';
-  var base = API_BASE_URL + '/kosis/regions?crop=' + encodeURIComponent(key) + level + '&startYear=' + QUERY_START + '&endYear=' + QUERY_END + '&item=';
-  var items = ['yield10a','area','production'], res = { key:k }, years = null, done = 0;
+  /* [v235·요청] 논벼 시군별보기에서 '시도(광역시)'를 선택해도 조회되도록
+     시군(level=sigungu)과 시도(level 없음) 데이터를 함께 받아 병합한다. */
+  var levels = (currentCrop === '논벼' && isRiceSigunMode) ? ['', '&level=sigungu'] : [''];
+  var items = ['yield10a','area','production'];
+  var res = { key:k, yield10a:{}, area:{}, production:{} }, years = null;
+  var total = items.length * levels.length, done = 0;
   items.forEach(function(it){
-    fetch(base + it).then(function(r){ return r.json(); }).then(function(j){
-      res[it] = (j && j.regions) ? j.regions : {}; if (j && j.years) years = j.years;
-      if (++done === 3) { res.years = years || DB.years; ADDINFO = res; cb(); }
-    }).catch(function(){ res[it] = {}; if (++done === 3) { res.years = years || DB.years; ADDINFO = res; cb(); } });
+    levels.forEach(function(lv){
+      var url = API_BASE_URL + '/kosis/regions?crop=' + encodeURIComponent(key) + lv + '&startYear=' + QUERY_START + '&endYear=' + QUERY_END + '&item=' + it;
+      fetch(url).then(function(r){ return r.json(); }).then(function(j){
+        if (j && j.regions) { for (var rg in j.regions){ if (!res[it][rg]) res[it][rg] = j.regions[rg]; } }
+        if (j && j.years && !years) years = j.years;
+        if (++done === total) { res.years = years || DB.years; ADDINFO = res; cb(); }
+      }).catch(function(){ if (++done === total) { res.years = years || DB.years; ADDINFO = res; cb(); } });
+    });
   });
 }
 function showAddInfoDetail(region) {
@@ -1139,8 +1147,16 @@ function isChungOn(members) {
   return sel.length > 0 && sel.every(r => selectedRegions.includes(r));
 }
 
+function _clearAddInfoUI(){
+  try{
+    var air=document.getElementById('addInfoRegions');
+    if(air) air.innerHTML='<span style="font-size:12px;color:#9ca3af">상단에서 지역을 선택하세요.</span>';
+    var aid=document.getElementById('addInfoDetail'); if(aid) aid.innerHTML='';
+  }catch(e){}
+}
 function clearRegions() {
   selectedRegions = [];
+  _clearAddInfoUI();          /* [v235·요청] 지역 초기화 시 추가정보도 초기화(패널 닫혀 있어도) */
   buildChips();
   render();
 }
@@ -1509,6 +1525,7 @@ function resetAll() {
   currentLabel = '논벼';
   selectedRegions = [];
   isRiceSigunMode = false;
+  _clearAddInfoUI();          /* [v235·요청] 전체 초기화 시 추가정보도 초기화 */
   renderCatChips();
   renderCropChips();
   renderRegionControls();
