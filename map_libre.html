@@ -1,4 +1,5 @@
-<!-- map_v261.html (v261 · TENAR V1.8) · 저장: 2026-11-27 15:40 KST · [v261·요청 사진 5건] ①사진 지역에 지번까지(뷰어 열 때 지번 없는 기존 사진은 revGeo로 주소 보충). ②★사진핀 세로 일렬 버그 수정 — 원인=.pm-mk에 position:relative가 maplibre .maplibregl-marker{position:absolute}를 덮어써 마커가 문서흐름으로 세로로 쌓임(좌표는 정상). position 제거→작물핀처럼 정확 위치. ③사진조정: 회전버튼이 화면에 즉시 반영(adjMakeUrl), 자르기 모서리(●) 드래그로 자유롭게+슬라이더 유지, 등록 때도 동일(attachCrop), 등록 최대 30장·순차처리. ④뷰어 뒤로가기: 들어온 경로대로(지도에서=지도로 닫기, 사진관리에서=관리로). ⑤상단 흐림은 코드상 black(v259)이나 iOS는 설치시점 status-bar 캐시—홈화면 앱 삭제 후 재설치 필요. 여러 장 올려도 뷰어 꽉 차게(작게 등록 보완). ※ 기존 함수·데이터 무수정. -->
+<!-- map_v262.html (v262 · TENAR V1.8) · 저장: 2026-11-27 16:01 KST · [v262·요청 사진 3건] ①뷰어 좌우 탐색=전체 사진 '등록(저장)순'(createdAt)으로 통일(지도마커·목록 어디서 열든 openViewerAll→photosOrdered). ②화질 향상: 프리뷰 1280→1920·q0.8→0.9(등록 analyze·자르기 regenPending·사진조정 adjustApply), 사진조정 표시 1100→1600(기존 저장 사진은 1280이라 재등록/재조정 때 개선). ③사진관리 다중선택: 목록에 「☑ 선택」→전체선택/선택해제·선택 공유(여러 파일 navigator.share)·선택 삭제(확인). ※ 뒤로가기 버튼 이미지는 이번 메시지에 미첨부. 기존 함수·데이터 무수정. -->
+<!-- (이전)  map_v261.html (v261 · TENAR V1.8) · 저장: 2026-11-27 15:40 KST · [v261·요청 사진 5건] ①사진 지역에 지번까지(뷰어 열 때 지번 없는 기존 사진은 revGeo로 주소 보충). ②★사진핀 세로 일렬 버그 수정 — 원인=.pm-mk에 position:relative가 maplibre .maplibregl-marker{position:absolute}를 덮어써 마커가 문서흐름으로 세로로 쌓임(좌표는 정상). position 제거→작물핀처럼 정확 위치. ③사진조정: 회전버튼이 화면에 즉시 반영(adjMakeUrl), 자르기 모서리(●) 드래그로 자유롭게+슬라이더 유지, 등록 때도 동일(attachCrop), 등록 최대 30장·순차처리. ④뷰어 뒤로가기: 들어온 경로대로(지도에서=지도로 닫기, 사진관리에서=관리로). ⑤상단 흐림은 코드상 black(v259)이나 iOS는 설치시점 status-bar 캐시—홈화면 앱 삭제 후 재설치 필요. 여러 장 올려도 뷰어 꽉 차게(작게 등록 보완). ※ 기존 함수·데이터 무수정. -->
 <!-- (이전)  map_v260.html (v260 · TENAR V1.8) · 저장: 2026-11-27 15:06 KST · [v260·요청 사진 6건+답례품] ①사진 마커: 뷰포트 제한 제거→핀처럼 전 지도에 모두 표시(상한 800), 레이어 기본 ON, 줌 중 위치고정·크기만 부드럽게(zoom 이벤트 pmResize, 축소=더 작게). ②뷰어: 수정/지도/삭제 옆 '사진조정(회전·자르기)'·'공유'·상단 '⬅️ 사진관리' 뒤로 추가(뒤로=사진관리). ③공유버튼(Web Share/다운로드 폴백), 뷰어 지역=p.addr(리·지번 포함) 우선, 목록 캡션=시군구+읍면동. ④전체 작물필터=등록된 작물만, 작물별=미분류 맨위. ⑤모든 사진 팝업 헤더 통일: 제목(좌)+⬅️뒤로·➖최소화·✖️닫기(우). ⑥답례품: 년도·월 정렬 깨짐(헤더 flex-wrap), 🎁 버튼 열면 오늘 달 기준, 조사구 상세에 ← 뒤로(답례품 복귀). ※ 사진 '위치가 경선 따라 어긋남'은 저장 좌표값 문제로 별도 확인 필요. 기존 함수·데이터 무수정. -->
 <!-- (이전)  map_v259.html (v259 · TENAR V1.8) · 저장: 2026-11-27 13:40 KST · [v259·요청 사진·PWA] ①사진 썸네일 마커: 격자 클러스터 제거→같은 좌표만 묶고 겹침 허용, 줌 축소 시 크기 작아지게(다른 핀처럼). ②지역 역지오코딩이 fetch(VWorld CORS 차단)라 비던 것→map의 reverseGeocodePreferKakao를 window._tenarRevGeo로 노출해 재사용(JSONP/카카오, 지번주소 파싱 parseJibun). 기존 사진 좌표만 있고 지역 빈 것 backfillRegions로 보충. 뷰어에 주소+좌표 함께 표시. ③작물선택 팝업 고정높이(검색 결과수에 안 흔들림)+상단 손잡이 드래그로 크기조절. ④PWA 상단 흐림: apple status-bar-style black-translucent→black. ※ 기존 함수·데이터 무수정(노출 1줄만 추가). -->
 <!-- (이전)  map_v258.html (v258 · TENAR V1.8) · 저장: 2026-11-27 11:00 KST · [v258·요청 사진모듈 개선] ①지역별을 시도→시군구→읍면동 3단 트리로 + 시도·시군구·읍면동 드롭다운 콤보필터(지역필터 초기화). ②작물별→사진 선택 후 '수정' 안 되던 것(뷰어가 수정시트를 가림) 수정(edit서 뷰어 닫음). ③사진 등록 즉시 레이어 ON+지도 반영(사진버튼 안 눌러도 보임). 레이어 ON/OFF를 레이어시트→「핀표시」로 이동, '사진관리 열기'는 제거. ④사진 등록을 '사진별' 작물·유형·메모 지정으로(일괄 버튼 별도), 작물선택을 작물분류표(107종) 기반 대분류>소분류>작물 + 초성검색 선택기로. ⑤사진 회전(90°)·자르기(상·하·좌·우 %) 추가(등록 전 적용). ※ 기존 함수·데이터 무수정, DB 공유 유지. -->
@@ -18217,6 +18218,7 @@ try{
   /* ---------- 상태 ---------- */
   var _map=null, pmPhotos=[], pmMarkers=[], layerOn=(localStorage.getItem(LAYER_KEY)!=='0'), pendPick=null;   /* [v260] 기본 ON — 전 지도에 사진 항상 표시(명시적 OFF만 숨김) */
   var vwList=[], vwIdx=0, pmFilter={crop:'',year:'',hasGps:'',ptype:''}, pmRF={sido:'',sigungu:'',emd:''}, _editId=null;
+  var _selMode=false, _selIds={}, _gridReopen=null;   /* [v262] 사진관리 다중선택 */
   function uniqSort(arr){ var s=[],m={}; arr.forEach(function(x){ x=x||''; if(x&&!m[x]){m[x]=1;s.push(x);} }); return s.sort(); }
 
   /* ---------- CSS ---------- */
@@ -18232,7 +18234,8 @@ try{
     '.pm-tabs{display:flex;gap:6px;margin-bottom:10px}.pm-tabs button{flex:1;border:1.5px solid #d9e4d2;background:#fff;border-radius:9px;padding:8px;font-size:13px;font-weight:800;color:#27500A}.pm-tabs button.on{background:#27500A;color:#fff;border-color:#27500A}'+
     '.pm-row{display:flex;gap:9px;align-items:center;margin:7px 0}.pm-row label{font-size:13px;font-weight:700;width:72px;flex:0 0 auto;color:#44543a}.pm-row input,.pm-row select,.pm-row textarea{flex:1;border:1.5px solid #d9e4d2;border-radius:9px;padding:9px;font-size:14px;font-family:inherit}'+
     '.pm-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;border-radius:10px;padding:11px 14px;font-size:14.5px;font-weight:800}.pm-btn.p{background:#27500A;color:#fff}.pm-btn.g{background:#eef2ea;color:#27500A}.pm-btn.d{background:#fde8e8;color:#b91c1c}'+
-    '.pm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}.pm-grid .c{border:1px solid #e3ebdd;border-radius:10px;overflow:hidden;background:#fafafa}.pm-grid .c img{width:100%;height:92px;object-fit:cover;display:block}.pm-grid .c .cap{font-size:10.5px;padding:3px 5px;color:#55624b;line-height:1.3}'+
+    '.pm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}.pm-grid .c{position:relative;border:1px solid #e3ebdd;border-radius:10px;overflow:hidden;background:#fafafa}.pm-grid .c img{width:100%;height:92px;object-fit:cover;display:block}.pm-grid .c .cap{font-size:10.5px;padding:3px 5px;color:#55624b;line-height:1.3}'+
+    '.pm-grid .c.sel{outline:3px solid #27500A;outline-offset:-3px}.pm-ck{position:absolute;top:5px;left:5px;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.85);border:2px solid #27500A;z-index:2}.pm-ck.on{background:#27500A}.pm-ck.on::after{content:"✓";color:#fff;font-size:13px;font-weight:900;position:absolute;left:3px;top:-1px}'+   /* [v262] 다중선택 */
     '.pm-tree .node{border-bottom:1px solid #eef3ea}.pm-tree .nh{display:flex;align-items:center;gap:8px;padding:10px 4px;font-weight:700;cursor:pointer}.pm-tree .nh .cnt{color:#8a9880;font-weight:700;font-size:12.5px}.pm-tree .ch{margin-left:16px}'+
     '.pm-prev{display:flex;gap:10px;border:1px solid #e3ebdd;border-radius:10px;padding:8px;margin-bottom:8px}.pm-prev img{width:66px;height:66px;object-fit:cover;border-radius:7px;flex:0 0 auto}.pm-prev .m{flex:1;min-width:0;font-size:12px;color:#55624b}'+
     '.pm-bd{display:inline-block;font-size:10.5px;font-weight:800;padding:1px 6px;border-radius:9px;margin-left:4px}.pm-bd.y{background:#e6f3e0;color:#2f6a12}.pm-bd.n{background:#fff2dd;color:#a3600a}'+
@@ -18295,7 +18298,7 @@ try{
     var cells={}; gps.forEach(function(p){ var k=(+p.lat).toFixed(6)+','+(+p.lon).toFixed(6); (cells[k]=cells[k]||[]).push(p); });   /* 같은 좌표만 묶음, 나머지 겹침 허용 */
     Object.keys(cells).forEach(function(k){ var g=cells[k],rep=g[0]; var el=document.createElement('div'); el.className='pm-mk'+(rep.hasGps?'':' nogps'); el.style.backgroundImage='url('+rep._thumbURL+')'; el.style.width=sz+'px'; el.style.height=sz+'px';
       if(g.length>1){var c=document.createElement('div');c.className='cnt';c.textContent=g.length;el.appendChild(c);}
-      el.onclick=function(ev){ev.stopPropagation();openViewer(g,0,'map');};
+      el.onclick=function(ev){ev.stopPropagation();openViewerAll(rep,'map');};   /* [v262] 전체 사진 등록순으로 좌우 탐색 */
       pmMarkers.push(new maplibregl.Marker({element:el,anchor:'center'}).setLngLat([+rep.lon,+rep.lat]).addTo(_map)); });
   }
   function pmFiltered(){ return pmPhotos.filter(function(p){
@@ -18327,7 +18330,7 @@ try{
     return ep.then(function(ex){ rec.exif=ex||{}; if(ex&&isFinite(ex.lat)&&isFinite(ex.lon)){rec.lat=ex.lat;rec.lon=ex.lon;rec.hasGps=1;}else rec.hasGps=0;
       var dt=dtFromRaw(ex&&ex.dtRaw); if(dt){rec.dateTaken=dt.date;rec.timeTaken=dt.time;rec.ts=dt.ts;}
       if(isHeic(file))rec.warn='HEIC/HEIF는 기기에 따라 미리보기가 안 될 수 있습니다.'; else if(!SUPPORTED.test(file.type))rec.warn='지원하지 않는 형식일 수 있습니다.';
-      return loadImg(file).then(function(o){ var or=(rec.exif&&rec.exif.orientation)||1; return Promise.all([cvBlob(drawScaled(o.img,200,or),.72),cvBlob(drawScaled(o.img,1280,or),.8)]).then(function(bl){ URL.revokeObjectURL(o.url); rec.thumbBlob=bl[0];rec.previewBlob=bl[1];rec.thumbURL=URL.createObjectURL(bl[0]); return rec; }); })
+      return loadImg(file).then(function(o){ var or=(rec.exif&&rec.exif.orientation)||1; return Promise.all([cvBlob(drawScaled(o.img,200,or),.72),cvBlob(drawScaled(o.img,1920,or),.9)]).then(function(bl){ URL.revokeObjectURL(o.url); rec.thumbBlob=bl[0];rec.previewBlob=bl[1];rec.thumbURL=URL.createObjectURL(bl[0]); return rec; }); })
         .catch(function(){ rec.warn=rec.warn||'이미지를 불러오지 못했습니다(형식 미지원).'; return rec; }); }); }
   function typeOpts(sel){ return ['<option value="">(유형)</option>'].concat(PTYPES.map(function(c){return '<option'+(c===sel?' selected':'')+'>'+c+'</option>';})).join(''); }
   function cropCode(name){ for(var i=0;i<CROP_DB.length;i++) if(CROP_DB[i][2]===name) return CROP_DB[i][3]; return ''; }
@@ -18352,7 +18355,8 @@ try{
   /* ---------- 관리 팝업(탭) ---------- */
   var curTab='region';
   function openManager(){ ensureMap(); reload().then(function(){ renderManager(); backfillRegions(); }); }
-  function renderManager(){ var n=pmPhotos.length, withGps=pmPhotos.filter(function(p){return p.hasGps;}).length;
+  function renderManager(){ _gridReopen=renderManager;   /* [v262] 선택 재렌더 대상 */
+    var n=pmPhotos.length, withGps=pmPhotos.filter(function(p){return p.hasGps;}).length;
     var head='<div style="display:flex;gap:8px;margin-bottom:10px"><button class="pm-btn p" style="flex:1" onclick="PM._pick()">📷 사진 등록 및 가져오기</button></div>'+
       '<div class="pm-hint">전체 '+n+'장 · 위치있음 '+withGps+' · 위치없음 '+(n-withGps)+'</div>'+
       '<div class="pm-tabs"><button class="'+(curTab==='region'?'on':'')+'" onclick="PM._tab(\'region\')">지역별</button><button class="'+(curTab==='crop'?'on':'')+'" onclick="PM._tab(\'crop\')">작물별</button><button class="'+(curTab==='all'?'on':'')+'" onclick="PM._tab(\'all\')">전체</button></div>';
@@ -18389,8 +18393,13 @@ try{
     var bar='<div style="display:flex;gap:6px;margin-bottom:8px"><select onchange="PM._flt(\'year\',this.value)" style="flex:1;border:1.5px solid #d9e4d2;border-radius:8px;padding:7px">'+yO+'</select><select onchange="PM._flt(\'crop\',this.value)" style="flex:1;border:1.5px solid #d9e4d2;border-radius:8px;padding:7px">'+cO+'</select><select onchange="PM._flt(\'hasGps\',this.value)" style="flex:1;border:1.5px solid #d9e4d2;border-radius:8px;padding:7px">'+gO+'</select></div>'+
       '<div style="margin-bottom:8px"><button class="pm-btn g" onclick="PM._fltReset()">필터 초기화</button></div>';
     var list=pmFiltered().slice().sort(function(a,b){return (b.ts||0)-(a.ts||0);}); return bar+gridHtml(list); }
+  function selCount(){ return Object.keys(_selIds).length; }   /* [v262] 다중선택 */
   function gridHtml(list){ if(!list.length)return '<div class="pm-hint">해당 사진이 없습니다.</div>'; window._pmGrid=list;
-    return '<div class="pm-grid">'+list.map(function(p,i){return '<div class="c" onclick="PM._open('+i+')"><img src="'+(p._thumbURL||'')+'"><div class="cap">'+esc(p.crop||'미분류')+'<br>'+(p.dateTaken||'날짜?')+'<br>'+esc([p.sigungu,p.emd].filter(Boolean).join(' ')||p.sido||(p.hasGps?'':'위치없음'))+'</div></div>';}).join('')+'</div>'; }   /* [v260] 캡션 시군구+읍면동 */
+    var bar='<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px">'+
+      '<button class="pm-mini" onclick="PM._selToggle()">'+(_selMode?'✖ 선택 끝':'☑ 선택')+'</button>'+
+      (_selMode?('<button class="pm-mini" onclick="PM._selAll()">전체선택</button><button class="pm-mini" onclick="PM._selNone()">선택해제</button><span class="pm-hint" id="pmSelCnt" style="margin:0 2px">'+selCount()+'개</span><button class="pm-btn g" style="padding:6px 10px" onclick="PM._selShare()">📤 공유</button><button class="pm-btn d" style="padding:6px 10px" onclick="PM._selDel()">🗑 삭제</button>'):'')+'</div>';
+    return bar+'<div class="pm-grid">'+list.map(function(p,i){ var sel=_selMode&&_selIds[p.id];
+      return '<div class="c'+(sel?' sel':'')+'" onclick="PM._cell('+i+')">'+(_selMode?'<div class="pm-ck'+(sel?' on':'')+'"></div>':'')+'<img src="'+(p._thumbURL||'')+'"><div class="cap">'+esc(p.crop||'미분류')+'<br>'+(p.dateTaken||'날짜?')+'<br>'+esc([p.sigungu,p.emd].filter(Boolean).join(' ')||p.sido||(p.hasGps?'':'위치없음'))+'</div></div>';}).join('')+'</div>'; }   /* [v260] 캡션 시군구+읍면동 · [v262] 선택 */
   function emptyHint(){ return '<div class="pm-hint">등록된 사진이 없습니다. 위 버튼으로 등록하세요.</div>'; }
 
   /* ---------- 뷰어 ---------- */
@@ -18399,6 +18408,8 @@ try{
     var p=list[vwIdx]; if(p)ensurePreview(p).then(function(u){p._previewURL=u;renderViewer();});
     if(p&&p.hasGps&&!/\d/.test(p.addr||'')&&!p._addrTried){ p._addrTried=1; revGeo(p.lon,p.lat).then(function(g){ if(g&&(g.full||g.sido)){ p.sido=g.sido;p.sigungu=g.sigungu;p.emd=g.emd;p.ri=g.ri;p.addr=g.full||p.addr; p.updatedAt=kst(); put('photos',strip(p)); if(viewer.classList.contains('show'))renderViewer(); } }); }   /* [v261] 지번 없는 기존 사진 주소 보충 */
   }
+  function photosOrdered(){ return pmPhotos.slice().sort(function(a,b){ var x=a.createdAt||'',y=b.createdAt||''; return x<y?-1:(x>y?1:0); }); }   /* [v262] 전체 사진 등록(저장)순 */
+  function openViewerAll(p,from){ var list=photosOrdered(); var idx=0; for(var i=0;i<list.length;i++){ if(list[i].id===p.id){idx=i;break;} } openViewer(list,idx,from); }
   function renderViewer(){ var p=vwList[vwIdx]; if(!p)return; document.getElementById('pmvImg').src=p._previewURL||p._thumbURL||''; document.getElementById('pmvT').textContent=(vwIdx+1)+' / '+vwList.length;
     var _bk=document.getElementById('pmvBack'); if(_bk)_bk.textContent=(_viewerFrom==='manager')?'⬅️ 사진관리':'⬅️ 지도';
     var parts=[p.sido,p.sigungu,p.emd,p.ri].filter(Boolean).join(' ');
@@ -18456,7 +18467,7 @@ try{
   function regenPending(idx){ var r=_pending[idx]; if(!r||!r._file) return Promise.resolve();
     return loadImg(r._file).then(function(o){ var or=(r.exif&&r.exif.orientation)||1; var base=drawScaled(o.img,1600,or); URL.revokeObjectURL(o.url);
       var rot=rotateCanvas(base,r.userRot||0), cropped=cropCanvas(rot,r.cropBox);
-      return Promise.all([cvBlob(scaleCanvas(cropped,200),.72),cvBlob(scaleCanvas(cropped,1280),.8)]).then(function(bl){ if(r.thumbURL)URL.revokeObjectURL(r.thumbURL); r.thumbBlob=bl[0];r.previewBlob=bl[1];r.thumbURL=URL.createObjectURL(bl[0]); });
+      return Promise.all([cvBlob(scaleCanvas(cropped,200),.72),cvBlob(scaleCanvas(cropped,1920),.9)]).then(function(bl){ if(r.thumbURL)URL.revokeObjectURL(r.thumbURL); r.thumbBlob=bl[0];r.previewBlob=bl[1];r.thumbURL=URL.createObjectURL(bl[0]); });
     }).catch(function(){}); }
   function cropSheet(idx){ var r=_pending[idx]; if(!r||!r.thumbURL)return; var cb=r.cropBox||{l:0,t:0,r:0,b:0}; r.cropBox=cb;
     openSheet('회전·자르기',
@@ -18505,7 +18516,7 @@ try{
       _adj={id:id,rot:0,box:{l:0,t:0,r:0,b:0},_blob:blob,_url:URL.createObjectURL(blob)}; adjustSheet(); }); }
   function adjMakeUrl(){ if(!_adj)return Promise.resolve();   /* [v261] 회전을 화면에 즉시 반영 */
     return loadImg(_adj._blob).then(function(o){ var base=imgToCanvas(o.img); try{URL.revokeObjectURL(o.url);}catch(_){}
-      var rot=rotateCanvas(base,_adj.rot||0); return cvBlob(scaleCanvas(rot,1100),.85); })
+      var rot=rotateCanvas(base,_adj.rot||0); return cvBlob(scaleCanvas(rot,1600),.9); })
     .then(function(b){ if(_adj._url)try{URL.revokeObjectURL(_adj._url);}catch(_){} _adj._url=URL.createObjectURL(b); }); }
   function adjustSheet(){ if(!_adj||!_adj._url)return; var cb=_adj.box;
     openSheet('사진 조정(회전·자르기)',
@@ -18522,7 +18533,7 @@ try{
   function adjustApply(){ if(!_adj)return; var id=_adj.id; toast('사진 조정 중…');
     loadImg(_adj._blob).then(function(o){ var base=imgToCanvas(o.img); try{URL.revokeObjectURL(o.url);}catch(_){}
       var rot=rotateCanvas(base,_adj.rot||0), cr=cropCanvas(rot,_adj.box);
-      return Promise.all([cvBlob(scaleCanvas(cr,200),.72),cvBlob(scaleCanvas(cr,1280),.8)]); })
+      return Promise.all([cvBlob(scaleCanvas(cr,200),.72),cvBlob(scaleCanvas(cr,1920),.9)]); })
     .then(function(bl){ var p=find(id); if(!p)return; p.updatedAt=kst();
       return getSettings().then(function(st){ var ps=[put('thumbs',{id:id,blob:bl[0]}),put('photos',strip(p))]; if(st.saveMode!=='light')ps.push(put('previews',{id:id,blob:bl[1]})); return Promise.all(ps); }); })
     .then(function(){ toast('사진 조정 저장됨'); return reload(); })
@@ -18547,9 +18558,25 @@ try{
     _commit:commit, _close:closeSheet,
     _tab:function(t){curTab=t;renderManager();},
     _exp:function(nh){ var ch=nh.nextElementSibling; if(ch){var open=ch.style.display!=='none';ch.style.display=open?'none':'block';nh.innerHTML=nh.innerHTML.replace(open?'▾':'▸',open?'▸':'▾');} },
-    _showList:function(enc2){ var kv=decodeURIComponent(enc2).split('|'); var list=pmPhotos.filter(function(p){ return (p.sido||'')===(kv[0]||'')&&(p.sigungu||'')===(kv[1]||'')&&(kv.length<3||(p.emd||'')===(kv[2]||'')); }).sort(function(a,b){return (b.ts||0)-(a.ts||0);}); openSheet(kv.filter(Boolean).join(' ')||'(지역 미상)',gridHtml(list),openManager); },
-    _showCrop:function(enc2){ var c=decodeURIComponent(enc2); var list=pmPhotos.filter(function(p){return (p.crop||'미분류')===c;}).sort(function(a,b){return (b.ts||0)-(a.ts||0);}); openSheet(c,gridHtml(list),openManager); },
-    _open:function(i){ var list=window._pmGrid||pmPhotos; openViewer(list,i,'manager'); },
+    _showList:function(enc2){ _gridReopen=function(){ PM._showList(enc2); }; var kv=decodeURIComponent(enc2).split('|'); var list=pmPhotos.filter(function(p){ return (p.sido||'')===(kv[0]||'')&&(p.sigungu||'')===(kv[1]||'')&&(kv.length<3||(p.emd||'')===(kv[2]||'')); }).sort(function(a,b){return (b.ts||0)-(a.ts||0);}); openSheet(kv.filter(Boolean).join(' ')||'(지역 미상)',gridHtml(list),openManager); },
+    _showCrop:function(enc2){ _gridReopen=function(){ PM._showCrop(enc2); }; var c=decodeURIComponent(enc2); var list=pmPhotos.filter(function(p){return (p.crop||'미분류')===c;}).sort(function(a,b){return (b.ts||0)-(a.ts||0);}); openSheet(c,gridHtml(list),openManager); },
+    _open:function(i){ var list=window._pmGrid||pmPhotos; if(list[i])openViewerAll(list[i],'manager'); },
+    _cell:function(i){ var list=window._pmGrid||pmPhotos; var p=list[i]; if(!p)return;
+      if(_selMode){ if(_selIds[p.id])delete _selIds[p.id]; else _selIds[p.id]=1;
+        var cells=document.querySelectorAll('#pmBody .pm-grid .c'); var cell=cells[i]; if(cell){ var on=!!_selIds[p.id]; cell.classList.toggle('sel',on); var ck=cell.querySelector('.pm-ck'); if(ck)ck.classList.toggle('on',on); }
+        var cnt=document.getElementById('pmSelCnt'); if(cnt)cnt.textContent=selCount()+'개';
+      } else { openViewerAll(p,'manager'); } },
+    _selToggle:function(){ _selMode=!_selMode; if(!_selMode)_selIds={}; if(_gridReopen)_gridReopen(); },
+    _selAll:function(){ (window._pmGrid||[]).forEach(function(p){_selIds[p.id]=1;}); if(_gridReopen)_gridReopen(); },
+    _selNone:function(){ _selIds={}; if(_gridReopen)_gridReopen(); },
+    _selDel:function(){ var ids=Object.keys(_selIds); if(!ids.length){toast('선택된 사진이 없습니다.');return;}
+      if(!confirm(ids.length+'장을 TENaR에서 삭제하시겠습니까? 휴대전화 사진 앱의 원본은 삭제되지 않습니다.'))return;
+      var seq=Promise.resolve(); ids.forEach(function(id){ seq=seq.then(function(){ return Promise.all([del('photos',id),del('thumbs',id),del('previews',id),del('originals',id)]); }); });
+      seq.then(function(){ _selIds={}; toast(ids.length+'장 삭제됨'); return reload(); }).then(function(){ renderMarkers(); if(_gridReopen)_gridReopen(); }); },
+    _selShare:function(){ var ids=Object.keys(_selIds); if(!ids.length){toast('선택된 사진이 없습니다.');return;}
+      var seq=Promise.resolve(), files=[]; ids.forEach(function(id){ seq=seq.then(function(){ return get('previews',id).then(function(r){ return (r&&r.blob)?r.blob:get('thumbs',id).then(function(t){return t&&t.blob;}); }).then(function(b){ if(b)files.push(new File([b],'tenar_'+id.slice(0,6)+'.jpg',{type:b.type||'image/jpeg'})); }); }); });
+      seq.then(function(){ try{ if(files.length&&navigator.canShare&&navigator.canShare({files:files})){ navigator.share({files:files,text:files.length+'장'}).catch(function(){}); return; } }catch(e){}
+        toast('이 기기는 여러 장 공유를 지원하지 않습니다. 한 장씩 공유하세요.'); }); },
     _pview:function(i){ /* 등록 미리보기 썸네일 탭 = 자르기 */ cropSheet(i); },
     _flt:function(k,val){ pmFilter[k]=val; renderManager(); renderMarkers(); },
     _fltReset:function(){ pmFilter={crop:'',year:'',hasGps:'',ptype:''}; renderManager(); renderMarkers(); },
