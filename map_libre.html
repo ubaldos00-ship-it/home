@@ -1,4 +1,4 @@
-<!-- map_v267.html (v267 · TENAR V1.8) · 저장: 2026-11-28 01:36 KST · [v267·요청 사진 2건] ①사진보기 좌우 nav 버튼: 배경 rgba(255,255,255,.2)→rgba(17,17,17,.62)+흰 테두리+그림자(밝은 사진 위에서 안 보이던 것=「나왔다 안나왔다」 수정). 사진 여러장이면 양쪽 항상 표시(1장이면 숨김)·순환(viewerPrev/Next). 손가락 스와이프: 좌=다음·우=이전(scale<=1일 때, touchstart에 sw기록·touchend에서 dx>55·|dx|>|dy|*1.3·700ms). ②사진화질 더 올림: preview 2560→4096px(원본 대부분 그대로)·q0.82→0.85(onFiles·adjust·drawSave·crop 전부). ⚠️기존 저장 사진은 옛 해상도 그대로 — 새로 등록해야 개선됨. ※ 측정계산·기존경로 무변경. 아래 v266 — [v266·요청] 조사구핀 측정도구 — 농비·농가경제(MEAS_PLOT_TYPES) 조사구 카드에 「📐 측정도구로 재기」 버튼+측정목록 추가. startMeasureForPlot: surveyMeasureState._plotBind={tk,plotId}로 묶어 측정패널 시작(즐겨찾기/조사표 연결 비움). doMeasSave 진입부 분기: _plotBind면 _savePlotMeasure로 rec.areas/lines를 그 조사구 p.measures[](kind area/length·㎡/평·m·createdAt)에 저장(생산량핀 아님). 카드에 측정목록+건별 삭제(areaPlotMeasureDel). _plotBind는 즐겨찾기측정·새조사·툴바측정·닫기에서 해제(오저장 방지). 수정저장은 editing 객체 변형이라 measures 보존. ※ 측정 계산식·기존 측정/즐겨찾기 경로 무변경. 아래 v265 — [v265·요청 4건] ①사진화질: preview 1920px·q0.9→2560px·q0.82(원본에 가깝게·용량 유지/감소)·핀치 확대 최대 5→8배. ②세로사진 잘림 수정 — drawScaled가 EXIF 방향을 수동회전하는데 <img>는 브라우저가 이미 자동 방향적용 → 2중회전=세로 잘림. drawScaled 방향 무시(o=1). ③답례품 '📅 전체월' 버튼 글자 잘림 — .tn-gbtn(30×30 원형) 상속 → width/height auto·nowrap로 수정. ④조사구 종류에 농가경제·어가경제(농비와 완전 동일: 지목 종류·답례품 이름묶기·매월) + 어업(어업생산동향조사, 쌀값과 동일: 종류없음·답례품 3·6·9·12월) 추가(AREA_TYPES·_giftBizList 자동파생·GIFT_MONTHS_BIZ·이름묶기 조건). ※ 기존 함수·데이터·계산 무수정. -->
+<!-- map_v270.html (v270 · TENAR V1.8) · 저장: 2026-11-28 02:54 KST · [v270·요청] 사진 저장 최적화+설정+쿼터경고+백업/복원. ①저장모델: 지도·목록=썸네일, 사진보기=원본. 원본보관 ON(기본)이면 등록 시 원본만 저장(4096 preview 생략→용량절약), OFF면 4096 preview 저장. HEIC는 원본렌더불가라 preview. 편집(그리기·사진조정)하면 편집본 4096 preview 저장+p.edited=1, 원본 유지. ensurePreview·shareBlob·편집base 모두 편집본/preview→원본→썸네일 폴백. ②설정화면(관리 ⚙): 저장공간 표시(navigator.storage.estimate), 원본보관 ON/OFF(getSettings.keepOriginal·setSettings). ③등록 쿼터초과(QuotaExceededError) 안내 토스트. ④백업/복원: 백업은 '원본포함'(수백MB 경고)/'썸네일+메타'(가벼움·복원시 원본화질 안됨 안내) 선택, JSON(dataURL blob)으로 다운로드, 복원은 jin 파일선택→put 복구. ※ 계산·기존경로 무변경. 아래 v269 — [v269·요청] 사진조정·그리기로 편집해도 원본은 유지(이전 v268은 편집 시 원본 삭제했음). 편집 저장 시 del('originals') 제거 + p.edited=1 플래그(strip 보존). 뷰어 ensurePreview는 p.edited면 originals 건너뛰고 편집 preview 사용, 아니면 원본 사용 → 원본 파일은 저장소에 그대로 남고 화면은 편집본. ※ 계산·기존경로 무변경. 아래 v268 — [v268·요청 사진 2건] ①사진보기 좌우 nav 버튼이 사진에 가리던 것 — ‹(이전) 버튼이 <img>보다 소스순서 앞이라 뒤에 그려지고 img의 will-change:transform 합성레이어가 덮음. .nav에 z-index:5 추가해 사진 앞으로. ②화질 최대치: 등록 시 원본 파일(jpeg/png/webp만·HEIC 제외)을 originals 저장소에 저장하고, 뷰어 ensurePreview가 원본>preview>thumb 순으로 써서 원본 화질로 표시(preview 4096/q0.85는 공유·폴백용 유지). 그리기·사진조정 저장 시 원본 삭제(del originals)해 편집본이 보이게. ⚠️기존 사진은 원본 없음 → 재등록해야 원본화질. ※ 계산·기존경로 무변경. 아래 v267 — [v267·요청 사진 2건] ①사진보기 좌우 nav 버튼: 배경 rgba(255,255,255,.2)→rgba(17,17,17,.62)+흰 테두리+그림자(밝은 사진 위에서 안 보이던 것=「나왔다 안나왔다」 수정). 사진 여러장이면 양쪽 항상 표시(1장이면 숨김)·순환(viewerPrev/Next). 손가락 스와이프: 좌=다음·우=이전(scale<=1일 때, touchstart에 sw기록·touchend에서 dx>55·|dx|>|dy|*1.3·700ms). ②사진화질 더 올림: preview 2560→4096px(원본 대부분 그대로)·q0.82→0.85(onFiles·adjust·drawSave·crop 전부). ⚠️기존 저장 사진은 옛 해상도 그대로 — 새로 등록해야 개선됨. ※ 측정계산·기존경로 무변경. 아래 v266 — [v266·요청] 조사구핀 측정도구 — 농비·농가경제(MEAS_PLOT_TYPES) 조사구 카드에 「📐 측정도구로 재기」 버튼+측정목록 추가. startMeasureForPlot: surveyMeasureState._plotBind={tk,plotId}로 묶어 측정패널 시작(즐겨찾기/조사표 연결 비움). doMeasSave 진입부 분기: _plotBind면 _savePlotMeasure로 rec.areas/lines를 그 조사구 p.measures[](kind area/length·㎡/평·m·createdAt)에 저장(생산량핀 아님). 카드에 측정목록+건별 삭제(areaPlotMeasureDel). _plotBind는 즐겨찾기측정·새조사·툴바측정·닫기에서 해제(오저장 방지). 수정저장은 editing 객체 변형이라 measures 보존. ※ 측정 계산식·기존 측정/즐겨찾기 경로 무변경. 아래 v265 — [v265·요청 4건] ①사진화질: preview 1920px·q0.9→2560px·q0.82(원본에 가깝게·용량 유지/감소)·핀치 확대 최대 5→8배. ②세로사진 잘림 수정 — drawScaled가 EXIF 방향을 수동회전하는데 <img>는 브라우저가 이미 자동 방향적용 → 2중회전=세로 잘림. drawScaled 방향 무시(o=1). ③답례품 '📅 전체월' 버튼 글자 잘림 — .tn-gbtn(30×30 원형) 상속 → width/height auto·nowrap로 수정. ④조사구 종류에 농가경제·어가경제(농비와 완전 동일: 지목 종류·답례품 이름묶기·매월) + 어업(어업생산동향조사, 쌀값과 동일: 종류없음·답례품 3·6·9·12월) 추가(AREA_TYPES·_giftBizList 자동파생·GIFT_MONTHS_BIZ·이름묶기 조건). ※ 기존 함수·데이터·계산 무수정. -->
 <!-- (이전)  map_v263.html (v263 · TENAR V1.8) · 저장: 2026-11-27 17:09 KST · [v263·요청 사진 4건] ①뷰어에 「⬅️ 뒤로」 버튼 추가(하단 버튼줄 맨앞, 상단 뒤로와 동일 동작). ②뷰어 사진 손가락 핀치 확대·이동·더블탭 토글(_vz transform, 넘길 때·열 때 리셋). ③사진 수정의 '지역'칸에 지번까지 표시·저장(p.addr 전체주소, saveEdit가 p.addr 유지+시도/시군구/읍면동/리 파싱). ④사진에 그리기(펜·글씨) 추가 — 뷰어 「🖊 그리기」→캔버스에 펜(색6·굵기3)·글씨·되돌리기·전체지우기, 저장 시 그림을 합성해 thumb/preview 재생성→공유 시 그림도 함께 나감(sharePhoto·선택공유 공통). ※ 뒤로가기 버튼 이미지는 여전히 미첨부. 기존 함수·데이터 무수정. -->
 <!-- (이전)  map_v262.html (v262 · TENAR V1.8) · 저장: 2026-11-27 16:01 KST · [v262·요청 사진 3건] ①뷰어 좌우 탐색=전체 사진 '등록(저장)순'(createdAt)으로 통일(지도마커·목록 어디서 열든 openViewerAll→photosOrdered). ②화질 향상: 프리뷰 1280→1920·q0.8→0.9(등록 analyze·자르기 regenPending·사진조정 adjustApply), 사진조정 표시 1100→1600(기존 저장 사진은 1280이라 재등록/재조정 때 개선). ③사진관리 다중선택: 목록에 「☑ 선택」→전체선택/선택해제·선택 공유(여러 파일 navigator.share)·선택 삭제(확인). ※ 뒤로가기 버튼 이미지는 이번 메시지에 미첨부. 기존 함수·데이터 무수정. -->
 <!-- (이전)  map_v261.html (v261 · TENAR V1.8) · 저장: 2026-11-27 15:40 KST · [v261·요청 사진 5건] ①사진 지역에 지번까지(뷰어 열 때 지번 없는 기존 사진은 revGeo로 주소 보충). ②★사진핀 세로 일렬 버그 수정 — 원인=.pm-mk에 position:relative가 maplibre .maplibregl-marker{position:absolute}를 덮어써 마커가 문서흐름으로 세로로 쌓임(좌표는 정상). position 제거→작물핀처럼 정확 위치. ③사진조정: 회전버튼이 화면에 즉시 반영(adjMakeUrl), 자르기 모서리(●) 드래그로 자유롭게+슬라이더 유지, 등록 때도 동일(attachCrop), 등록 최대 30장·순차처리. ④뷰어 뒤로가기: 들어온 경로대로(지도에서=지도로 닫기, 사진관리에서=관리로). ⑤상단 흐림은 코드상 black(v259)이나 iOS는 설치시점 status-bar 캐시—홈화면 앱 삭제 후 재설치 필요. 여러 장 올려도 뷰어 꽉 차게(작게 등록 보완). ※ 기존 함수·데이터 무수정. -->
@@ -18257,7 +18257,8 @@ try{
   function get(st,k){return tx(st,'readonly').then(function(t){return new Promise(function(res,rej){var q=t.objectStore(st).get(k);q.onsuccess=function(){res(q.result);};q.onerror=function(){rej(q.error);};});});}
   function del(st,k){return tx(st,'readwrite').then(function(t){return new Promise(function(res,rej){var q=t.objectStore(st).delete(k);q.onsuccess=function(){res();};q.onerror=function(){rej(q.error);};});});}
   function all(st){return tx(st,'readonly').then(function(t){return new Promise(function(res,rej){var q=t.objectStore(st).getAll();q.onsuccess=function(){res(q.result||[]);};q.onerror=function(){rej(q.error);};});});}
-  function getSettings(){return get('settings','app').then(function(s){return Object.assign({saveMode:'normal'},(s&&s.v)||{});});}
+  function getSettings(){return get('settings','app').then(function(s){return Object.assign({saveMode:'normal',keepOriginal:true},(s&&s.v)||{});});}   /* [v270] keepOriginal=원본 보관(고화질) */
+  function setSettings(obj){ return getSettings().then(function(cur){ var v=Object.assign({},cur,obj); return put('settings',{id:'app',v:v}).then(function(){return v;}); }); }   /* [v270] 설정 저장 */
 
   /* ---------- EXIF(JPEG) ---------- */
   function parseExif(buf){ try{ var dv=new DataView(buf); if(dv.getUint16(0)!==0xFFD8) return {}; var off=2,len=dv.byteLength;
@@ -18339,7 +18340,7 @@ try{
     '.pm-prev{display:flex;gap:10px;border:1px solid #e3ebdd;border-radius:10px;padding:8px;margin-bottom:8px}.pm-prev img{width:66px;height:66px;object-fit:cover;border-radius:7px;flex:0 0 auto}.pm-prev .m{flex:1;min-width:0;font-size:12px;color:#55624b}'+
     '.pm-bd{display:inline-block;font-size:10.5px;font-weight:800;padding:1px 6px;border-radius:9px;margin-left:4px}.pm-bd.y{background:#e6f3e0;color:#2f6a12}.pm-bd.n{background:#fff2dd;color:#a3600a}'+
     '#pmViewer{position:fixed;inset:0;background:#000;z-index:3100;display:none;flex-direction:column}#pmViewer.show{display:flex}#pmViewer .vt{display:flex;gap:8px;align-items:center;padding:calc(env(safe-area-inset-top,0px) + 10px) 12px 10px;color:#fff}#pmViewer .vt .t{flex:1;font-size:14px;font-weight:700}#pmViewer .vt button{background:rgba(255,255,255,.15);color:#fff;border:0;border-radius:8px;padding:7px 10px;font-weight:700}'+
-    '#pmViewer .vi{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;touch-action:none}#pmViewer .vi img{width:100%;height:100%;object-fit:contain;transform-origin:center center;will-change:transform}'+   /* [v261] 꽉 차게 · [v263] 핀치 확대 */'#pmViewer .nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(17,17,17,.62);color:#fff;border:1.5px solid rgba(255,255,255,.55);width:46px;height:46px;border-radius:50%;font-size:24px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center}#pmViewer .nav.p{left:10px}#pmViewer .nav.n{right:10px}#pmViewer .vm{color:#eee;font-size:13px;padding:12px 14px calc(env(safe-area-inset-bottom,0px) + 12px);background:#111;max-height:46%;overflow:auto}#pmViewer .vm .k{color:#9aa}'+
+    '#pmViewer .vi{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;touch-action:none}#pmViewer .vi img{width:100%;height:100%;object-fit:contain;transform-origin:center center;will-change:transform}'+   /* [v261] 꽉 차게 · [v263] 핀치 확대 */'#pmViewer .nav{position:absolute;top:50%;transform:translateY(-50%);z-index:5;background:rgba(17,17,17,.62);color:#fff;border:1.5px solid rgba(255,255,255,.55);width:46px;height:46px;border-radius:50%;font-size:24px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center}#pmViewer .nav.p{left:10px}#pmViewer .nav.n{right:10px}#pmViewer .vm{color:#eee;font-size:13px;padding:12px 14px calc(env(safe-area-inset-bottom,0px) + 12px);background:#111;max-height:46%;overflow:auto}#pmViewer .vm .k{color:#9aa}'+
     '.pm-hint{font-size:12px;color:#8a9880;margin:6px 0}'+
     '.pm-toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%);background:rgba(20,20,20,.92);color:#fff;padding:10px 16px;border-radius:22px;font-size:13.5px;z-index:3200;opacity:0;transition:opacity .2s;pointer-events:none;max-width:86%;text-align:center}.pm-toast.show{opacity:1}'+
     '.pm-mini{font-size:12px;font-weight:700;border:1.5px solid #d9e4d2;background:#fff;border-radius:7px;padding:5px 8px;color:#27500A}'+
@@ -18370,8 +18371,9 @@ try{
   function vzReset(){ _vz={scale:1,tx:0,ty:0}; vzApply(); }
   var fin=document.createElement('input'); fin.type='file'; fin.accept='image/*'; fin.multiple=true; fin.style.display='none';
   var cin=document.createElement('input'); cin.type='file'; cin.accept='image/*'; cin.setAttribute('capture','environment'); cin.style.display='none';
+  var jin=document.createElement('input'); jin.type='file'; jin.accept='application/json,.json'; jin.style.display='none';   /* [v270] 백업 복원용 */
   document.addEventListener('DOMContentLoaded',attachDom); if(document.readyState!=='loading') attachDom();
-  function attachDom(){ if(bg._a)return; bg._a=1; [bg,sheet,viewer,drawEl,fin,cin].forEach(function(n){document.body.appendChild(n);});
+  function attachDom(){ if(bg._a)return; bg._a=1; [bg,sheet,viewer,drawEl,fin,cin,jin].forEach(function(n){document.body.appendChild(n);});
     bg.onclick=closeSheet;
     document.getElementById('pmBack').onclick=function(){ if(typeof _backFn==='function') _backFn(); };
     document.getElementById('pmMin').onclick=function(){ sheet.classList.toggle('min'); };
@@ -18405,6 +18407,7 @@ try{
     window.addEventListener('pointerup',function(){ if(_draw)_draw.cur=null; });
     fin.onchange=function(){closeSheet();onFiles(this.files);this.value='';};
     cin.onchange=function(){closeSheet();onFiles(this.files);this.value='';};
+    jin.onchange=function(){ var f=this.files&&this.files[0]; this.value=''; if(f)doRestore(f); };   /* [v270] 백업 복원 */
     var pb=document.getElementById('pmBtn'); if(pb) pb.onclick=openManager;
   }
   var _pkSheetH=null, _backFn=null;
@@ -18440,7 +18443,10 @@ try{
     pmPhotos.forEach(function(p){if(p._thumbURL)URL.revokeObjectURL(p._thumbURL);if(p._previewURL)URL.revokeObjectURL(p._previewURL);});
     pmPhotos=a[0].map(function(m){var p=Object.assign({},m);var tb=thumbs[m.id];if(tb)p._thumbURL=URL.createObjectURL(tb);return p;});
     renderMarkers(); return pmPhotos; }); }
-  function ensurePreview(p){ if(p._previewURL)return Promise.resolve(p._previewURL); return get('previews',p.id).then(function(r){ if(r&&r.blob){p._previewURL=URL.createObjectURL(r.blob);return p._previewURL;} return p._thumbURL; }); }
+  function ensurePreview(p){ if(p._previewURL)return Promise.resolve(p._previewURL);
+    var _og=p.edited?Promise.resolve(null):get('originals',p.id);   /* [v269] 편집본은 원본 대신 편집 preview 사용(원본 파일은 저장소에 그대로 유지) */
+    return _og.then(function(o){ if(o&&o.blob){ p._previewURL=URL.createObjectURL(o.blob); return p._previewURL; }   /* [v268] 원본 있으면 원본 화질로(최대) */
+      return get('previews',p.id).then(function(r){ if(r&&r.blob){p._previewURL=URL.createObjectURL(r.blob);return p._previewURL;} return p._thumbURL; }); }); }
 
   /* ---------- 레이어 토글 (레이어 시트 연동) ---------- */
   function setLayer(on){ layerOn=!!on; try{localStorage.setItem(LAYER_KEY,on?'1':'0');}catch(e){} renderMarkers(); }
@@ -18476,15 +18482,21 @@ try{
   function commit(){ var ok=_pending.filter(function(r){return r.thumbBlob;}); if(!ok.length){toast('등록 가능한 사진이 없습니다.');return;} toast('등록 중…');
     var seq=Promise.resolve(); ok.forEach(function(r){ seq=seq.then(function(){ var geo=r.hasGps?revGeo(r.lon,r.lat):Promise.resolve({sido:'',sigungu:'',emd:'',ri:'',full:''});
       return geo.then(function(g){ var id=uuid(),now=kst(); var rec={id:id,title:'',crop:r.crop||'미분류',cropCode:cropCode(r.crop),ptype:r.ptype||'',target:'',memo:r.memo||'',lat:r.hasGps?r.lat:null,lon:r.hasGps?r.lon:null,hasGps:r.hasGps?1:0,sido:g.sido,sigungu:g.sigungu,emd:g.emd,ri:g.ri,addr:g.full,dateTaken:r.dateTaken||'',timeTaken:r.timeTaken||'',ts:r.ts||0,favorite:0,linkedSurveyId:'',mime:r.mime,origSize:r.size,createdAt:now,updatedAt:now};
-        return getSettings().then(function(st){ var ps=[put('photos',rec),put('thumbs',{id:id,blob:r.thumbBlob})]; if(st.saveMode!=='light')ps.push(put('previews',{id:id,blob:r.previewBlob})); return Promise.all(ps); }); }); }); });
-    seq.then(function(){ closeSheet(); toast(ok.length+'장 등록 완료'); setLayer(true); return reload().then(function(){ renderMarkers(); }); }); }   /* [v258] 등록 즉시 사진레이어 ON + 지도 반영 */
+        return getSettings().then(function(st){ var ps=[put('photos',rec),put('thumbs',{id:id,blob:r.thumbBlob})];
+          var renderable=r._file&&/^image\/(jpeg|jpg|png|webp)$/i.test(r._file.type||'');
+          if(st.saveMode==='light'){ /* 썸네일만 */ }
+          else if(st.keepOriginal&&renderable){ ps.push(put('originals',{id:id,blob:r._file})); }   /* [v270] 원본 보관: 원본만(뷰어=원본), 4096 preview 생략해 용량 절약 */
+          else { ps.push(put('previews',{id:id,blob:r.previewBlob})); }   /* [v270] 절약모드 또는 HEIC: 4096 preview를 뷰어용으로 */
+          return Promise.all(ps); }); }); }); });
+    seq.then(function(){ closeSheet(); toast(ok.length+'장 등록 완료'); setLayer(true); return reload().then(function(){ renderMarkers(); }); })
+      .catch(function(e){ var q=e&&(e.name==='QuotaExceededError'||/quota/i.test(e.name||e.message||'')); toast(q?'⚠ 저장공간이 부족해 일부 사진이 저장되지 않았습니다.\n설정에서 「원본 보관」을 끄거나, 사진을 백업 후 정리하세요.':'일부 사진 저장에 실패했습니다.'); try{setLayer(true);reload().then(function(){renderMarkers();});}catch(_){} }); }   /* [v270] 쿼터 초과 안내 */
 
   /* ---------- 관리 팝업(탭) ---------- */
   var curTab='region';
   function openManager(){ ensureMap(); reload().then(function(){ renderManager(); backfillRegions(); }); }
   function renderManager(){ _gridReopen=renderManager;   /* [v262] 선택 재렌더 대상 */
     var n=pmPhotos.length, withGps=pmPhotos.filter(function(p){return p.hasGps;}).length;
-    var head='<div style="display:flex;gap:8px;margin-bottom:10px"><button class="pm-btn p" style="flex:1" onclick="PM._pick()">📷 사진 등록 및 가져오기</button></div>'+
+    var head='<div style="display:flex;gap:8px;margin-bottom:10px"><button class="pm-btn p" style="flex:1" onclick="PM._pick()">📷 사진 등록 및 가져오기</button><button class="pm-btn g" style="min-width:52px" onclick="PM._settings()" title="설정·백업">⚙</button></div>'+   /* [v270] 설정·백업 */
       '<div class="pm-hint">전체 '+n+'장 · 위치있음 '+withGps+' · 위치없음 '+(n-withGps)+'</div>'+
       '<div class="pm-tabs"><button class="'+(curTab==='region'?'on':'')+'" onclick="PM._tab(\'region\')">지역별</button><button class="'+(curTab==='crop'?'on':'')+'" onclick="PM._tab(\'crop\')">작물별</button><button class="'+(curTab==='all'?'on':'')+'" onclick="PM._tab(\'all\')">전체</button></div>';
     var body=''; if(curTab==='region')body=regionTree(); else if(curTab==='crop')body=cropList(); else body=allView();
@@ -18558,7 +18570,7 @@ try{
   /* ---------- [v263] 사진 그리기(펜·글씨) ---------- */
   var _draw=null;
   function drawOpen(id){ var p=find(id); if(!p)return; viewer.classList.remove('show');
-    get('previews',id).then(function(r){ return (r&&r.blob)?r.blob:get('thumbs',id).then(function(t){return t&&t.blob;}); }).then(function(blob){ if(!blob){toast('이미지를 불러오지 못했습니다.');reopenViewer(id);return;}
+    shareBlob(id).then(function(blob){ if(!blob){toast('이미지를 불러오지 못했습니다.');reopenViewer(id);return;}   /* [v270] 편집 소스: 편집본/절약preview→원본→썸네일(원본보관 사진도 고화질 base) */
       loadImg(blob).then(function(o){ var cv=document.getElementById('pmDcv'); var mx=4096,sc=Math.min(1,mx/Math.max(o.img.naturalWidth,o.img.naturalHeight)); cv.width=Math.round((o.img.naturalWidth||o.img.width)*sc); cv.height=Math.round((o.img.naturalHeight||o.img.height)*sc);
         _draw={id:id,items:[],cur:null,color:'#ee2b2b',width:8,mode:'pen',_img:o.img,_url:o.url};
         drawRedraw(); drawPanel(); drawEl.classList.add('show'); }).catch(function(){ toast('이미지 로드 실패'); reopenViewer(id); }); }); }
@@ -18573,8 +18585,8 @@ try{
     document.getElementById('pmDtools').innerHTML=h; }
   function drawCancel(){ drawEl.classList.remove('show'); var id=_draw&&_draw.id; if(_draw&&_draw._url){try{URL.revokeObjectURL(_draw._url);}catch(_){}} _draw=null; if(id)reopenViewer(id); }
   function drawSave(){ if(!_draw)return; var id=_draw.id,cv=document.getElementById('pmDcv'); toast('저장 중…');
-    cvBlob(cv,.85).then(function(prev){ var tc=scaleCanvas(cv,200); return cvBlob(tc,.72).then(function(th){ var p=find(id); if(!p)return Promise.reject(); p.updatedAt=kst();
-      return getSettings().then(function(st){ var ps=[put('thumbs',{id:id,blob:th}),put('photos',strip(p))]; if(st.saveMode!=='light')ps.push(put('previews',{id:id,blob:prev})); return Promise.all(ps); }); }); })
+    cvBlob(cv,.85).then(function(prev){ var tc=scaleCanvas(cv,200); return cvBlob(tc,.72).then(function(th){ var p=find(id); if(!p)return Promise.reject(); p.updatedAt=kst(); p.edited=1;   /* [v269] 편집본 표시용(원본은 유지) */
+      return getSettings().then(function(st){ var ps=[put('thumbs',{id:id,blob:th}),put('photos',strip(p))]; if(st.saveMode!=='light')ps.push(put('previews',{id:id,blob:prev})); return Promise.all(ps); }); }); })   /* [v269] 그리기 저장 — 원본은 유지, p.edited=1로 편집본 preview 표시 */
     .then(function(){ drawEl.classList.remove('show'); if(_draw&&_draw._url){try{URL.revokeObjectURL(_draw._url);}catch(_){}} _draw=null; toast('그림 저장됨'); return reload(); })
     .then(function(){ renderMarkers(); reopenViewer(id); }).catch(function(){ toast('저장 실패'); }); }
 
@@ -18669,7 +18681,7 @@ try{
   /* ---------- [v260] 등록된 사진 회전·자르기(사진조정) ---------- */
   var _adj=null;
   function adjustPhoto(id){ var p=find(id); if(!p)return; viewer.classList.remove('show');
-    get('previews',id).then(function(r){ return (r&&r.blob)?r.blob:get('thumbs',id).then(function(t){return t&&t.blob;}); }).then(function(blob){
+    shareBlob(id).then(function(blob){   /* [v270] 편집 소스: 편집본/절약preview→원본→썸네일 */
       if(!blob){toast('원본 미리보기가 없습니다.');reopenViewer(id);return;}
       if(_adj&&_adj._url){try{URL.revokeObjectURL(_adj._url);}catch(_){}}
       _adj={id:id,rot:0,box:{l:0,t:0,r:0,b:0},_blob:blob,_url:URL.createObjectURL(blob)}; adjustSheet(); }); }
@@ -18693,22 +18705,79 @@ try{
     loadImg(_adj._blob).then(function(o){ var base=imgToCanvas(o.img); try{URL.revokeObjectURL(o.url);}catch(_){}
       var rot=rotateCanvas(base,_adj.rot||0), cr=cropCanvas(rot,_adj.box);
       return Promise.all([cvBlob(scaleCanvas(cr,200),.72),cvBlob(scaleCanvas(cr,4096),.85)]); })
-    .then(function(bl){ var p=find(id); if(!p)return; p.updatedAt=kst();
-      return getSettings().then(function(st){ var ps=[put('thumbs',{id:id,blob:bl[0]}),put('photos',strip(p))]; if(st.saveMode!=='light')ps.push(put('previews',{id:id,blob:bl[1]})); return Promise.all(ps); }); })
+    .then(function(bl){ var p=find(id); if(!p)return; p.updatedAt=kst(); p.edited=1;   /* [v269] 편집본 표시용(원본은 유지) */
+      return getSettings().then(function(st){ var ps=[put('thumbs',{id:id,blob:bl[0]}),put('photos',strip(p))]; if(st.saveMode!=='light')ps.push(put('previews',{id:id,blob:bl[1]})); return Promise.all(ps); }); })   /* [v269] 사진조정 저장 — 원본은 유지, p.edited=1로 편집본 preview 표시 */
     .then(function(){ toast('사진 조정 저장됨'); return reload(); })
     .then(function(){ renderMarkers(); reopenViewer(id); })
     .catch(function(){ toast('사진 조정 실패'); reopenViewer(id); }); }
 
   /* ---------- [v260] 사진 공유 ---------- */
+  function shareBlob(id){ return get('previews',id).then(function(r){ if(r&&r.blob)return r.blob; return get('originals',id).then(function(o){ if(o&&o.blob)return o.blob; return get('thumbs',id).then(function(t){return t&&t.blob;}); }); }); }   /* [v270] 공유용 blob: 편집본/절약preview→원본→썸네일 */
   function sharePhoto(id){ var p=find(id); if(!p)return;
     var txt=[p.crop||'미분류',p.dateTaken||'',[p.sido,p.sigungu,p.emd,p.ri].filter(Boolean).join(' ')||p.addr||''].filter(Boolean).join(' · ');
-    get('previews',id).then(function(r){ return (r&&r.blob)?r.blob:get('thumbs',id).then(function(t){return t&&t.blob;}); }).then(function(blob){
+    shareBlob(id).then(function(blob){
       try{ if(blob&&navigator.canShare){ var f=new File([blob],'tenar_photo.jpg',{type:blob.type||'image/jpeg'}); if(navigator.canShare({files:[f]})){ navigator.share({files:[f],text:txt}).catch(function(){}); return; } }
         if(navigator.share){ navigator.share({text:txt}).catch(function(){}); return; }
         if(blob){ var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='tenar_photo.jpg'; a.target='_blank'; document.body.appendChild(a); a.click(); setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(a.href);},1500); toast('사진을 내려받았습니다.'); }
         else toast('공유를 지원하지 않습니다.');
       }catch(e){ toast('공유를 지원하지 않습니다.'); } }); }
 
+  /* ---------- [v270] 설정 · 저장공간 · 백업/복원 ---------- */
+  function blob2dataURL(b){ return new Promise(function(res,rej){ var fr=new FileReader(); fr.onload=function(){res(fr.result);}; fr.onerror=function(){rej(fr.error);}; fr.readAsDataURL(b); }); }
+  function dataURL2blob(d){ try{ var a=String(d).split(','),m=(a[0].match(/:(.*?);/)||[])[1]||'image/jpeg',bin=atob(a[1]),n=bin.length,u=new Uint8Array(n); while(n--)u[n]=bin.charCodeAt(n); return new Blob([u],{type:m}); }catch(e){ return null; } }
+  function fmtMB(bytes){ if(!isFinite(bytes)||!bytes)return '0 MB'; var mb=bytes/1048576; return mb>=1024?((mb/1024).toFixed(2)+' GB'):(mb.toFixed(1)+' MB'); }
+  function storageInfo(){ if(navigator.storage&&navigator.storage.estimate) return navigator.storage.estimate().then(function(e){ return {usage:e.usage||0,quota:e.quota||0}; }).catch(function(){return null;}); return Promise.resolve(null); }
+  function openSettings(){
+    getSettings().then(function(st){ return storageInfo().then(function(si){
+      var pct=(si&&si.quota)?Math.round(si.usage/si.quota*100):null;
+      var storeLine=si?('저장공간 사용 '+fmtMB(si.usage)+' / '+fmtMB(si.quota)+(pct!=null?(' · '+pct+'%'):'')):'저장공간 정보를 가져올 수 없습니다.';
+      var html='<div class="pm-hint">📦 '+storeLine+'</div>'+
+        '<div style="display:flex;align-items:center;gap:10px;margin:10px 0;padding:10px;border:1px solid #e3ebdd;border-radius:10px">'+
+        '<div style="flex:1"><b>원본 보관(고화질)</b><div class="pm-hint" style="margin:3px 0 0">켜면 사진보기에서 원본 화질로 봅니다(용량 큼). 끄면 4096px로 저장해 용량을 아낍니다. 이미 저장된 사진엔 소급 안 됨.</div></div>'+
+        '<button class="pm-btn '+(st.keepOriginal?'p':'g')+'" style="min-width:66px" onclick="PM._toggleKo()">'+(st.keepOriginal?'켜짐':'꺼짐')+'</button></div>'+
+        '<div style="display:flex;gap:8px;margin-top:6px"><button class="pm-btn g" style="flex:1" onclick="PM._backup()">⬇ 백업</button><button class="pm-btn g" style="flex:1" onclick="PM._restore()">⬆ 복원</button></div>'+
+        '<div class="pm-hint" style="margin-top:6px">기기 저장(IndexedDB)은 앱 삭제·브라우저 데이터 삭제 시 사라질 수 있습니다. 가끔 백업을 권합니다.</div>';
+      openSheet('⚙ 설정 · 백업',html,openManager);
+    }); });
+  }
+  function askBackup(){
+    openSheet('⬇ 백업 범위','<div style="display:flex;flex-direction:column;gap:9px">'+
+      '<button class="pm-btn p" onclick="PM._backupDo(1)">원본 포함 (전체 복원 가능)</button>'+
+      '<div class="pm-hint">원본까지 담습니다. 사진이 많으면 파일이 수백 MB라 폰에서 저장·공유가 실패할 수 있습니다.</div>'+
+      '<button class="pm-btn g" onclick="PM._backupDo(0)">썸네일 + 정보만 (가벼움)</button>'+
+      '<div class="pm-hint">위치·작물·날짜·썸네일만 담아 파일이 작고 항상 됩니다. 단 복원해도 원본 화질은 안 돌아옵니다(썸네일 화질).</div>'+
+      '</div>',openSettings);
+  }
+  function doBackup(includeOriginals){
+    toast('백업 준비 중…');
+    var meta={app:'tenar-photos',ver:1,createdAt:kst(),includeOriginals:!!includeOriginals,photos:[],blobs:{}};
+    var seq=Promise.resolve();
+    pmPhotos.forEach(function(p){ seq=seq.then(function(){ meta.photos.push(strip(p)); var e={};
+      return get('thumbs',p.id).then(function(t){ if(t&&t.blob) return blob2dataURL(t.blob).then(function(d){e.thumb=d;}); })
+        .then(function(){ if(!includeOriginals)return; return get('originals',p.id).then(function(o){ if(o&&o.blob) return blob2dataURL(o.blob).then(function(d){e.original=d;}); }); })
+        .then(function(){ if(!includeOriginals)return; return get('previews',p.id).then(function(r){ if(r&&r.blob) return blob2dataURL(r.blob).then(function(d){e.preview=d;}); }); })
+        .then(function(){ meta.blobs[p.id]=e; });
+    }); });
+    seq.then(function(){ var json=JSON.stringify(meta); var blob=new Blob([json],{type:'application/json'});
+      var fn='tenar_photos_'+kst().slice(0,10)+(includeOriginals?'_full':'_meta')+'.json';
+      var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=fn; a.target='_blank'; document.body.appendChild(a); a.click();
+      setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(a.href);},2000);
+      toast(pmPhotos.length+'장 백업 파일을 내려받았습니다.'+(includeOriginals?'':'\n(썸네일·정보만 — 복원 시 원본 화질은 안 됩니다)'));
+    }).catch(function(e){ toast('백업 실패: 사진이 많으면 파일이 너무 커 실패할 수 있습니다.\n「썸네일+정보만」으로 다시 시도하세요.'); });
+  }
+  function doRestore(file){ toast('복원 중…');
+    file.text().then(function(txt){ var data; try{ data=JSON.parse(txt); }catch(e){ toast('파일을 읽을 수 없습니다(형식 오류).'); return; }
+      if(!data||data.app!=='tenar-photos'||!Array.isArray(data.photos)){ toast('텐아르 사진 백업 파일이 아닙니다.'); return; }
+      var seq=Promise.resolve(), cnt=0;
+      data.photos.forEach(function(rec){ seq=seq.then(function(){ var e=(data.blobs&&data.blobs[rec.id])||{}; var ps=[put('photos',rec)];
+        if(e.thumb){ var tb=dataURL2blob(e.thumb); if(tb)ps.push(put('thumbs',{id:rec.id,blob:tb})); }
+        if(e.original){ var ob=dataURL2blob(e.original); if(ob)ps.push(put('originals',{id:rec.id,blob:ob})); }
+        if(e.preview){ var pb=dataURL2blob(e.preview); if(pb)ps.push(put('previews',{id:rec.id,blob:pb})); }
+        return Promise.all(ps).then(function(){cnt++;}); }); });
+      seq.then(function(){ toast(cnt+'장 복원했습니다.'+(data.includeOriginals?'':'\n(썸네일·정보만 — 원본 화질은 없습니다)')); return reload(); }).then(function(){ renderMarkers(); renderManager(); })
+        .catch(function(){ toast('복원 중 일부 실패(저장공간 부족일 수 있음).'); });
+    }).catch(function(){ toast('파일을 읽지 못했습니다.'); });
+  }
   /* ---------- 공개 API ---------- */
   window.PM={
     openManager:openManager, setLayer:setLayer, addLayerRow:addLayerRow, addPinToggle:addPinToggle,
@@ -18716,6 +18785,11 @@ try{
     _fin:function(){fin.click();}, _cin:function(){cin.click();},
     _commit:commit, _close:closeSheet,
     _tab:function(t){curTab=t;renderManager();},
+    _settings:openSettings,   /* [v270] 설정·백업 */
+    _toggleKo:function(){ getSettings().then(function(st){ return setSettings({keepOriginal:!st.keepOriginal}); }).then(function(st){ toast(st.keepOriginal?'원본 보관을 켰습니다(새 사진부터 고화질).':'원본 보관을 껐습니다(새 사진부터 4096px 저장).'); openSettings(); }); },
+    _backup:askBackup,
+    _backupDo:function(f){ doBackup(!!f); },
+    _restore:function(){ jin.click(); },
     _exp:function(nh){ var ch=nh.nextElementSibling; if(ch){var open=ch.style.display!=='none';ch.style.display=open?'none':'block';nh.innerHTML=nh.innerHTML.replace(open?'▾':'▸',open?'▸':'▾');} },
     _showList:function(enc2){ _gridReopen=function(){ PM._showList(enc2); }; var kv=decodeURIComponent(enc2).split('|'); var list=pmPhotos.filter(function(p){ return (p.sido||'')===(kv[0]||'')&&(p.sigungu||'')===(kv[1]||'')&&(kv.length<3||(p.emd||'')===(kv[2]||'')); }).sort(function(a,b){return (b.ts||0)-(a.ts||0);}); openSheet(kv.filter(Boolean).join(' ')||'(지역 미상)',gridHtml(list),openManager); },
     _showCrop:function(enc2){ _gridReopen=function(){ PM._showCrop(enc2); }; var c=decodeURIComponent(enc2); var list=pmPhotos.filter(function(p){return (p.crop||'미분류')===c;}).sort(function(a,b){return (b.ts||0)-(a.ts||0);}); openSheet(c,gridHtml(list),openManager); },
@@ -18733,7 +18807,7 @@ try{
       var seq=Promise.resolve(); ids.forEach(function(id){ seq=seq.then(function(){ return Promise.all([del('photos',id),del('thumbs',id),del('previews',id),del('originals',id)]); }); });
       seq.then(function(){ _selIds={}; toast(ids.length+'장 삭제됨'); return reload(); }).then(function(){ renderMarkers(); if(_gridReopen)_gridReopen(); }); },
     _selShare:function(){ var ids=Object.keys(_selIds); if(!ids.length){toast('선택된 사진이 없습니다.');return;}
-      var seq=Promise.resolve(), files=[]; ids.forEach(function(id){ seq=seq.then(function(){ return get('previews',id).then(function(r){ return (r&&r.blob)?r.blob:get('thumbs',id).then(function(t){return t&&t.blob;}); }).then(function(b){ if(b)files.push(new File([b],'tenar_'+id.slice(0,6)+'.jpg',{type:b.type||'image/jpeg'})); }); }); });
+      var seq=Promise.resolve(), files=[]; ids.forEach(function(id){ seq=seq.then(function(){ return shareBlob(id).then(function(b){ if(b)files.push(new File([b],'tenar_'+id.slice(0,6)+'.jpg',{type:b.type||'image/jpeg'})); }); }); });
       seq.then(function(){ try{ if(files.length&&navigator.canShare&&navigator.canShare({files:files})){ navigator.share({files:files,text:files.length+'장'}).catch(function(){}); return; } }catch(e){}
         toast('이 기기는 여러 장 공유를 지원하지 않습니다. 한 장씩 공유하세요.'); }); },
     _pview:function(i){ /* 등록 미리보기 썸네일 탭 = 자르기 */ cropSheet(i); },
