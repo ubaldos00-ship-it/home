@@ -1,4 +1,5 @@
-<!-- map_v258.html (v258 · TENAR V1.8) · 저장: 2026-11-27 11:00 KST · [v258·요청 사진모듈 개선] ①지역별을 시도→시군구→읍면동 3단 트리로 + 시도·시군구·읍면동 드롭다운 콤보필터(지역필터 초기화). ②작물별→사진 선택 후 '수정' 안 되던 것(뷰어가 수정시트를 가림) 수정(edit서 뷰어 닫음). ③사진 등록 즉시 레이어 ON+지도 반영(사진버튼 안 눌러도 보임). 레이어 ON/OFF를 레이어시트→「핀표시」로 이동, '사진관리 열기'는 제거. ④사진 등록을 '사진별' 작물·유형·메모 지정으로(일괄 버튼 별도), 작물선택을 작물분류표(107종) 기반 대분류>소분류>작물 + 초성검색 선택기로. ⑤사진 회전(90°)·자르기(상·하·좌·우 %) 추가(등록 전 적용). ※ 기존 함수·데이터 무수정, DB 공유 유지. -->
+<!-- map_v259.html (v259 · TENAR V1.8) · 저장: 2026-11-27 13:40 KST · [v259·요청 사진·PWA] ①사진 썸네일 마커: 격자 클러스터 제거→같은 좌표만 묶고 겹침 허용, 줌 축소 시 크기 작아지게(다른 핀처럼). ②지역 역지오코딩이 fetch(VWorld CORS 차단)라 비던 것→map의 reverseGeocodePreferKakao를 window._tenarRevGeo로 노출해 재사용(JSONP/카카오, 지번주소 파싱 parseJibun). 기존 사진 좌표만 있고 지역 빈 것 backfillRegions로 보충. 뷰어에 주소+좌표 함께 표시. ③작물선택 팝업 고정높이(검색 결과수에 안 흔들림)+상단 손잡이 드래그로 크기조절. ④PWA 상단 흐림: apple status-bar-style black-translucent→black. ※ 기존 함수·데이터 무수정(노출 1줄만 추가). -->
+<!-- (이전)  map_v258.html (v258 · TENAR V1.8) · 저장: 2026-11-27 11:00 KST · [v258·요청 사진모듈 개선] ①지역별을 시도→시군구→읍면동 3단 트리로 + 시도·시군구·읍면동 드롭다운 콤보필터(지역필터 초기화). ②작물별→사진 선택 후 '수정' 안 되던 것(뷰어가 수정시트를 가림) 수정(edit서 뷰어 닫음). ③사진 등록 즉시 레이어 ON+지도 반영(사진버튼 안 눌러도 보임). 레이어 ON/OFF를 레이어시트→「핀표시」로 이동, '사진관리 열기'는 제거. ④사진 등록을 '사진별' 작물·유형·메모 지정으로(일괄 버튼 별도), 작물선택을 작물분류표(107종) 기반 대분류>소분류>작물 + 초성검색 선택기로. ⑤사진 회전(90°)·자르기(상·하·좌·우 %) 추가(등록 전 적용). ※ 기존 함수·데이터 무수정, DB 공유 유지. -->
 <!-- (이전)  map_v257.html (v257 · TENAR V1.8) · 저장: 2026-11-27 09:00 KST · [v257·요청] ①측정·포구도구 그리기/필지선택/길이·면적에서 꼭짓점 점·번호가 안 보이고 선만 연결(특히 PWA 설치앱) 수정 — 원인=지도 style에 glyphs(GL 심볼 글꼴) 미설정이라 꼭짓점 번호(survey-field-vnum 등) 심볼이 못 그려지고 iOS PWA WebGL에서 점까지 깨짐. style.glyphs(openmaptiles Open Sans) 추가. ②현재위치 버튼 라벨 「면적길이」→「측정도구」(포구도구는 그대로). ※ 좌표·계산·기존 레이어 무변경. -->
 <!-- (이전)  map_v256.html (v256 · TENAR V1.8) · 저장: 2026-11-26 09:42 KST · [v256·요청] 사진 관리 기능을 기존 지도에 통합(PhotoMod) — 현재위치(#btnLoc) 위에 「📷 사진」 버튼 추가, 레이어 시트에 「📷 사진」 ON/OFF(기본 꺼짐)+「사진 관리 열기」. 사진 관리 팝업(등록·EXIF·압축·썸네일·지역별/작물별/전체 목록·복합필터·뷰어·수정·삭제), 지도에 사진 썸네일 클러스터 레이어(window._map 재사용). DB=tenarPhotoDB(photo_map.html과 공유, 동일 origin). 독립 IIFE(window.PM만 노출)+try/catch, 기존 함수·데이터 무수정. photo_map.html은 그대로 보존. -->
 <!-- (이전)  map_v255.html (v255 · TENAR V1.8) · 저장: 2026-11-24 10:55 KST · [v255·요청] PWA 하위페이지 주소창 수정 — 설치앱에서 내부(/home/) target=_blank 링크가 안드로이드 새탭(주소창)으로 열리던 것을 같은 앱창에서 열도록 가로채기 추가. 지도·계산·전송·다운로드(blob) 무영향. -->
@@ -483,7 +484,7 @@ TenarSecureStore.init('map',
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#27500A">
 <title>텐아르 지도 · MapLibre · VWorld</title>
@@ -4258,6 +4259,8 @@ body.nav-mode .tn-navbar::before { content: ''; display: block; width: 44px; hei
       return requestVWorldReverse(lng, lat).catch(function () { return { jibunAddress: '', roadAddress: '' }; });
     });
   }
+  /* [v259] 사진모듈(PhotoMod)에서 CORS 없이 역지오코딩 쓰도록 노출 — fetch는 VWorld CORS 차단, 이건 JSONP/카카오라 OK */
+  try{ window._tenarRevGeo = reverseGeocodePreferKakao; }catch(e){}
 
   function parseGeocode(data, type) {
     if (!data || !data.response || data.response.status !== 'OK') return null;
@@ -18176,8 +18179,27 @@ try{
   function cvBlob(cv,q){ return new Promise(function(res){ cv.toBlob(function(b){res(b);},'image/jpeg',q); }); }
 
   /* ---------- 역지오코딩 ---------- */
-  function revGeo(lon,lat){ var u='https://api.vworld.kr/req/address?service=address&request=getAddress&version=2.0&crs=epsg:4326&point='+lon+','+lat+'&format=json&type=both&zipcode=false&simple=false&key='+encodeURIComponent(VK)+'&domain='+VD;
+  function parseJibun(addr){ var o={sido:'',sigungu:'',emd:'',ri:'',full:addr||''}; var t=(addr||'').trim().split(/\s+/); if(!t[0])return o;
+    o.sido=t[0]||''; o.sigungu=t[1]||'';
+    var found=false;
+    for(var i=2;i<t.length;i++){ if(/(읍|면|동|가|로|리)$/.test(t[i])){ if(/(읍|면|동)$/.test(t[i])){ o.emd=t[i]; if(/리$/.test(t[i+1]||'')) o.ri=t[i+1]; found=true; break; } } }
+    if(!found){ o.emd=t[2]||''; if(/리$/.test(t[3]||'')) o.ri=t[3]; }
+    return o; }
+  function revGeo(lon,lat){
+    if(typeof window._tenarRevGeo==='function'){
+      try{ return window._tenarRevGeo(lon,lat).then(function(r){ var addr=(r&&(r.jibunAddress||r.roadAddress))||''; return parseJibun(addr); }).catch(function(){ return revGeoFetch(lon,lat); }); }catch(e){}
+    }
+    return revGeoFetch(lon,lat);
+  }
+  function revGeoFetch(lon,lat){ var u='https://api.vworld.kr/req/address?service=address&request=getAddress&version=2.0&crs=epsg:4326&point='+lon+','+lat+'&format=json&type=both&zipcode=false&simple=false&key='+encodeURIComponent(VK)+'&domain='+VD;
     return fetch(u).then(function(r){return r.json();}).then(function(j){ var o={sido:'',sigungu:'',emd:'',ri:'',full:''}; try{ var rs=j&&j.response&&j.response.result; if(rs&&rs.length){var s=rs[0].structure||{}; o.sido=s.level1||'';o.sigungu=s.level2||'';o.emd=s.level4L||s.level3||'';o.ri=s.level5||'';o.full=rs[0].text||'';} }catch(e){} return o; }).catch(function(){return {sido:'',sigungu:'',emd:'',ri:'',full:''};}); }
+  /* [v259] 기존 사진 중 좌표는 있는데 지역이 비어있는 것 역지오코딩 보충(순차·최대 30장/회) */
+  var _bfDone=false;
+  function backfillRegions(){ if(_bfDone)return Promise.resolve(); _bfDone=true;
+    var need=pmPhotos.filter(function(p){return p.hasGps&&isFinite(p.lat)&&isFinite(p.lon)&&!(p.sido||p.sigungu||p.emd);}).slice(0,30);
+    if(!need.length)return Promise.resolve();
+    var seq=Promise.resolve(); need.forEach(function(p){ seq=seq.then(function(){ return revGeo(p.lon,p.lat).then(function(g){ if(g&&(g.sido||g.sigungu||g.emd)){ p.sido=g.sido;p.sigungu=g.sigungu;p.emd=g.emd;p.ri=g.ri;p.addr=g.full||p.addr; p.updatedAt=kst(); return put('photos',strip(p)); } }); }); });
+    return seq.then(function(){ renderMarkers(); if(sheet.classList.contains('show')) renderManagerIfOpen(); }); }
 
   /* ---------- 유틸 ---------- */
   function uuid(){return crypto.randomUUID?crypto.randomUUID():'p'+Date.now()+'-'+Math.random().toString(16).slice(2);}
@@ -18216,13 +18238,14 @@ try{
     '.pm-toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%);background:rgba(20,20,20,.92);color:#fff;padding:10px 16px;border-radius:22px;font-size:13.5px;z-index:3200;opacity:0;transition:opacity .2s;pointer-events:none;max-width:86%;text-align:center}.pm-toast.show{opacity:1}'+
     '.pm-mini{font-size:12px;font-weight:700;border:1.5px solid #d9e4d2;background:#fff;border-radius:7px;padding:5px 8px;color:#27500A}'+
     '.pm-chip{font-size:12.5px;font-weight:700;border:1.5px solid #d9e4d2;background:#fff;border-radius:16px;padding:6px 11px;color:#27500A;margin:3px 4px 0 0}.pm-chip.on{background:#27500A;color:#fff;border-color:#27500A}.pm-chips{display:flex;flex-wrap:wrap;margin:6px 0}'+
-    '.pm-crop-wrap{position:relative;max-height:50vh;display:flex;justify-content:center;background:#000;border-radius:8px;overflow:hidden}.pm-crop-wrap img{max-width:100%;max-height:50vh;object-fit:contain}.pm-crop-box{position:absolute;border:2px solid #27500A;box-shadow:0 0 0 2000px rgba(0,0,0,.45)}';
+    '.pm-crop-wrap{position:relative;max-height:50vh;display:flex;justify-content:center;background:#000;border-radius:8px;overflow:hidden}.pm-crop-wrap img{max-width:100%;max-height:50vh;object-fit:contain}.pm-crop-box{position:absolute;border:2px solid #27500A;box-shadow:0 0 0 2000px rgba(0,0,0,.45)}'+
+    '.pm-grip{height:20px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;cursor:ns-resize;touch-action:none}.pm-grip::before{content:"";width:42px;height:5px;border-radius:3px;background:#cfd8c9}';
     document.head.appendChild(s); })();
 
   /* ---------- DOM: 시트/뷰어/입력 ---------- */
   var bg=document.createElement('div'); bg.className='pm-bg'; bg.id='pmBg';
   var sheet=document.createElement('div'); sheet.className='pm-sheet'; sheet.id='pmSheet';
-  sheet.innerHTML='<div class="hd"><button id="pmBack">‹ 닫기</button><div class="t" id="pmTitle">사진 관리</div></div><div class="pm-body" id="pmBody"></div>';
+  sheet.innerHTML='<div class="pm-grip" id="pmGrip"></div><div class="hd"><button id="pmBack">‹ 닫기</button><div class="t" id="pmTitle">사진 관리</div></div><div class="pm-body" id="pmBody"></div>';
   var viewer=document.createElement('div'); viewer.id='pmViewer';
   viewer.innerHTML='<div class="vt"><div class="t" id="pmvT"></div><button id="pmvX">✕</button></div><div class="vi"><button class="nav p" id="pmvP">‹</button><img id="pmvImg" alt=""><button class="nav n" id="pmvN">›</button></div><div class="vm" id="pmvM"></div>';
   var fin=document.createElement('input'); fin.type='file'; fin.accept='image/*'; fin.multiple=true; fin.style.display='none';
@@ -18230,6 +18253,11 @@ try{
   document.addEventListener('DOMContentLoaded',attachDom); if(document.readyState!=='loading') attachDom();
   function attachDom(){ if(bg._a)return; bg._a=1; [bg,sheet,viewer,fin,cin].forEach(function(n){document.body.appendChild(n);});
     bg.onclick=closeSheet; document.getElementById('pmBack').onclick=closeSheet;
+    /* [v259] 시트 상단 손잡이 드래그로 팝업 높이 조절 */
+    var grip=document.getElementById('pmGrip'), dragY=null, dragH=0;
+    if(grip){ grip.addEventListener('pointerdown',function(e){ dragY=e.clientY; dragH=sheet.getBoundingClientRect().height; try{grip.setPointerCapture(e.pointerId);}catch(_){} e.preventDefault(); });
+      grip.addEventListener('pointermove',function(e){ if(dragY==null)return; var dy=e.clientY-dragY; var nh=Math.max(window.innerHeight*0.3,Math.min(window.innerHeight*0.92,dragH-dy)); sheet.style.height=nh+'px'; _pkSheetH=nh+'px'; });
+      grip.addEventListener('pointerup',function(e){ dragY=null; try{grip.releasePointerCapture(e.pointerId);}catch(_){} }); }
     document.getElementById('pmvX').onclick=function(){viewer.classList.remove('show');};
     document.getElementById('pmvP').onclick=function(){if(vwIdx>0){vwIdx--;renderViewer();}};
     document.getElementById('pmvN').onclick=function(){if(vwIdx<vwList.length-1){vwIdx++;renderViewer();}};
@@ -18237,7 +18265,8 @@ try{
     cin.onchange=function(){closeSheet();onFiles(this.files);this.value='';};
     var pb=document.getElementById('pmBtn'); if(pb) pb.onclick=openManager;
   }
-  function openSheet(title,html){ document.getElementById('pmTitle').textContent=title; document.getElementById('pmBody').innerHTML=html; bg.classList.add('show'); sheet.classList.add('show'); }
+  var _pkSheetH=null;
+  function openSheet(title,html){ sheet.style.height=''; document.getElementById('pmTitle').textContent=title; document.getElementById('pmBody').innerHTML=html; bg.classList.add('show'); sheet.classList.add('show'); }
   function closeSheet(){ bg.classList.remove('show'); sheet.classList.remove('show'); }
 
   /* ---------- 지도 준비/마커 ---------- */
@@ -18246,8 +18275,10 @@ try{
   function renderMarkers(){ if(!_map||!_map.loaded||!_map.loaded()) return; pmMarkers.forEach(function(m){m.remove();}); pmMarkers=[]; if(!layerOn) return;
     var gps=pmFiltered().filter(function(p){return p.hasGps&&isFinite(p.lat)&&isFinite(p.lon);});
     var b=_map.getBounds(); var vis=gps.filter(function(p){return p.lon>=b.getWest()&&p.lon<=b.getEast()&&p.lat>=b.getSouth()&&p.lat<=b.getNorth();});
-    var CELL=68,cells={}; vis.forEach(function(p){ var pt=_map.project([p.lon,p.lat]); var k=Math.floor(pt.x/CELL)+'_'+Math.floor(pt.y/CELL); (cells[k]=cells[k]||[]).push(p); });
-    Object.keys(cells).forEach(function(k){ var g=cells[k],rep=g[0]; var el=document.createElement('div'); el.className='pm-mk'+(rep.hasGps?'':' nogps'); el.style.backgroundImage='url('+rep._thumbURL+')';
+    if(vis.length>500) vis=vis.slice(0,500);
+    var z=_map.getZoom(), sz=Math.round(Math.max(18,Math.min(48,(z-7)*4+18)));   /* [v259] 축소=작게, 확대=크게 */
+    var cells={}; vis.forEach(function(p){ var k=p.lat.toFixed(6)+','+p.lon.toFixed(6); (cells[k]=cells[k]||[]).push(p); });   /* [v259] 같은 좌표만 묶음, 나머지 겹침 허용 */
+    Object.keys(cells).forEach(function(k){ var g=cells[k],rep=g[0]; var el=document.createElement('div'); el.className='pm-mk'+(rep.hasGps?'':' nogps'); el.style.backgroundImage='url('+rep._thumbURL+')'; el.style.width=sz+'px'; el.style.height=sz+'px';
       if(g.length>1){var c=document.createElement('div');c.className='cnt';c.textContent=g.length;el.appendChild(c);}
       el.onclick=function(ev){ev.stopPropagation();openViewer(g,0);};
       pmMarkers.push(new maplibregl.Marker({element:el,anchor:'center'}).setLngLat([rep.lon,rep.lat]).addTo(_map)); });
@@ -18301,7 +18332,7 @@ try{
 
   /* ---------- 관리 팝업(탭) ---------- */
   var curTab='region';
-  function openManager(){ ensureMap(); reload().then(function(){ renderManager(); }); }
+  function openManager(){ ensureMap(); reload().then(function(){ renderManager(); backfillRegions(); }); }
   function renderManager(){ var n=pmPhotos.length, withGps=pmPhotos.filter(function(p){return p.hasGps;}).length;
     var head='<div style="display:flex;gap:8px;margin-bottom:10px"><button class="pm-btn p" style="flex:1" onclick="PM._pick()">📷 사진 등록 및 가져오기</button></div>'+
       '<div class="pm-hint">전체 '+n+'장 · 위치있음 '+withGps+' · 위치없음 '+(n-withGps)+'</div>'+
@@ -18345,8 +18376,10 @@ try{
   /* ---------- 뷰어 ---------- */
   function openViewer(list,idx){ vwList=list;vwIdx=idx||0; viewer.classList.add('show'); renderViewer(); var p=list[vwIdx]; if(p)ensurePreview(p).then(function(u){p._previewURL=u;renderViewer();}); }
   function renderViewer(){ var p=vwList[vwIdx]; if(!p)return; document.getElementById('pmvImg').src=p._previewURL||p._thumbURL||''; document.getElementById('pmvT').textContent=(vwIdx+1)+' / '+vwList.length;
-    var loc=[p.sido,p.sigungu,p.emd].filter(Boolean).join(' ')||(p.hasGps?'(좌표만)':'위치 없음');
-    document.getElementById('pmvM').innerHTML='<div><b>'+esc(p.crop||'미분류')+'</b> · '+esc(p.ptype||'')+(p.target?(' · '+esc(p.target)):'')+'</div><div><span class="k">촬영</span> '+(p.dateTaken||'미확인')+' '+(p.timeTaken||'')+'</div><div><span class="k">지역</span> '+esc(loc)+'</div>'+(p.memo?('<div><span class="k">메모</span> '+esc(p.memo)+'</div>'):'')+
+    var addr=[p.sido,p.sigungu,p.emd,p.ri].filter(Boolean).join(' ')||(p.addr||'');
+    var coord=p.hasGps&&isFinite(p.lat)?('위도 '+(+p.lat).toFixed(6)+', 경도 '+(+p.lon).toFixed(6)):'';
+    var locHtml=(addr?esc(addr):(p.hasGps?'(주소 조회 중/없음)':'위치 없음'))+(coord?('<br><span style="color:#9aa;font-size:11.5px">'+coord+'</span>'):'');
+    document.getElementById('pmvM').innerHTML='<div><b>'+esc(p.crop||'미분류')+'</b> · '+esc(p.ptype||'')+(p.target?(' · '+esc(p.target)):'')+'</div><div><span class="k">촬영</span> '+(p.dateTaken||'미확인')+' '+(p.timeTaken||'')+'</div><div><span class="k">지역</span> '+locHtml+'</div>'+(p.memo?('<div><span class="k">메모</span> '+esc(p.memo)+'</div>'):'')+
       '<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap"><button class="pm-btn g" onclick="PM._edit(\''+p.id+'\')">✏️ 수정</button>'+(p.hasGps?'<button class="pm-btn g" onclick="PM._fly(\''+p.id+'\')">📍 지도</button>':'<button class="pm-btn g" onclick="PM._pickLoc(\''+p.id+'\')">📍 위치지정</button>')+'<button class="pm-btn d" onclick="PM._del(\''+p.id+'\')">🗑 삭제</button></div>'; }
 
   /* ---------- 수정/삭제/위치 ---------- */
@@ -18387,7 +18420,7 @@ try{
   function renderPicker(){ var cats=[]; CROP_DB.forEach(function(r){if(cats.indexOf(r[0])<0)cats.push(r[0]);});
     var catChips=cats.map(function(c){return '<button class="pm-chip'+(_pk.cat===c?' on':'')+'" onclick="PM._pkCat(\''+enc(c)+'\')">'+esc(c)+'</button>';}).join('');
     var subChips=''; if(_pk.cat){ var subs=[]; CROP_DB.forEach(function(r){if(r[0]===_pk.cat&&subs.indexOf(r[1])<0)subs.push(r[1]);}); subChips='<div class="pm-chips">'+subs.map(function(s){return '<button class="pm-chip'+(_pk.sub===s?' on':'')+'" onclick="PM._pkSub(\''+enc(s)+'\')">'+esc(s)+'</button>';}).join('')+'</div>'; }
-    openSheet('작물 선택','<div class="pm-row"><input id="pmPkQ" placeholder="작물명·분류 또는 초성(예: ㅁㄴ)" value="'+esc(_pk.q)+'" oninput="PM._pkQ(this.value)"></div><div class="pm-chips">'+catChips+'</div>'+subChips+'<div id="pmPkList" style="margin-top:6px;max-height:46vh;overflow:auto">'+pkItems()+'</div>'); }
+    openSheet('작물 선택','<div class="pm-row"><input id="pmPkQ" placeholder="작물명·분류 또는 초성(예: ㅁㄴ)" value="'+esc(_pk.q)+'" oninput="PM._pkQ(this.value)"></div><div class="pm-chips">'+catChips+'</div>'+subChips+'<div id="pmPkList" style="margin-top:6px">'+pkItems()+'</div>'); sheet.style.height=_pkSheetH||'70vh'; }   /* [v259] 작물 팝업 고정높이(검색 결과 수에 안 흔들림)+손잡이로 조절 */
 
   /* ---------- 회전·자르기(canvas) ---------- */
   function rotateCanvas(cv,deg){ deg=((deg%360)+360)%360; if(!deg)return cv; var sw=(deg===90||deg===270),w=cv.width,h=cv.height,o=document.createElement('canvas'); o.width=sw?h:w; o.height=sw?w:h; var c=o.getContext('2d'); c.translate(o.width/2,o.height/2); c.rotate(deg*Math.PI/180); c.drawImage(cv,-w/2,-h/2); return o; }
