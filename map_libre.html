@@ -1,4 +1,4 @@
-<!-- map_v266.html (v266 · TENAR V1.8) · 저장: 2026-11-28 01:08 KST · [v266·요청] 조사구핀 측정도구 — 농비·농가경제(MEAS_PLOT_TYPES) 조사구 카드에 「📐 측정도구로 재기」 버튼+측정목록 추가. startMeasureForPlot: surveyMeasureState._plotBind={tk,plotId}로 묶어 측정패널 시작(즐겨찾기/조사표 연결 비움). doMeasSave 진입부 분기: _plotBind면 _savePlotMeasure로 rec.areas/lines를 그 조사구 p.measures[](kind area/length·㎡/평·m·createdAt)에 저장(생산량핀 아님). 카드에 측정목록+건별 삭제(areaPlotMeasureDel). _plotBind는 즐겨찾기측정·새조사·툴바측정·닫기에서 해제(오저장 방지). 수정저장은 editing 객체 변형이라 measures 보존. ※ 측정 계산식·기존 측정/즐겨찾기 경로 무변경. 아래 v265 — [v265·요청 4건] ①사진화질: preview 1920px·q0.9→2560px·q0.82(원본에 가깝게·용량 유지/감소)·핀치 확대 최대 5→8배. ②세로사진 잘림 수정 — drawScaled가 EXIF 방향을 수동회전하는데 <img>는 브라우저가 이미 자동 방향적용 → 2중회전=세로 잘림. drawScaled 방향 무시(o=1). ③답례품 '📅 전체월' 버튼 글자 잘림 — .tn-gbtn(30×30 원형) 상속 → width/height auto·nowrap로 수정. ④조사구 종류에 농가경제·어가경제(농비와 완전 동일: 지목 종류·답례품 이름묶기·매월) + 어업(어업생산동향조사, 쌀값과 동일: 종류없음·답례품 3·6·9·12월) 추가(AREA_TYPES·_giftBizList 자동파생·GIFT_MONTHS_BIZ·이름묶기 조건). ※ 기존 함수·데이터·계산 무수정. -->
+<!-- map_v267.html (v267 · TENAR V1.8) · 저장: 2026-11-28 01:36 KST · [v267·요청 사진 2건] ①사진보기 좌우 nav 버튼: 배경 rgba(255,255,255,.2)→rgba(17,17,17,.62)+흰 테두리+그림자(밝은 사진 위에서 안 보이던 것=「나왔다 안나왔다」 수정). 사진 여러장이면 양쪽 항상 표시(1장이면 숨김)·순환(viewerPrev/Next). 손가락 스와이프: 좌=다음·우=이전(scale<=1일 때, touchstart에 sw기록·touchend에서 dx>55·|dx|>|dy|*1.3·700ms). ②사진화질 더 올림: preview 2560→4096px(원본 대부분 그대로)·q0.82→0.85(onFiles·adjust·drawSave·crop 전부). ⚠️기존 저장 사진은 옛 해상도 그대로 — 새로 등록해야 개선됨. ※ 측정계산·기존경로 무변경. 아래 v266 — [v266·요청] 조사구핀 측정도구 — 농비·농가경제(MEAS_PLOT_TYPES) 조사구 카드에 「📐 측정도구로 재기」 버튼+측정목록 추가. startMeasureForPlot: surveyMeasureState._plotBind={tk,plotId}로 묶어 측정패널 시작(즐겨찾기/조사표 연결 비움). doMeasSave 진입부 분기: _plotBind면 _savePlotMeasure로 rec.areas/lines를 그 조사구 p.measures[](kind area/length·㎡/평·m·createdAt)에 저장(생산량핀 아님). 카드에 측정목록+건별 삭제(areaPlotMeasureDel). _plotBind는 즐겨찾기측정·새조사·툴바측정·닫기에서 해제(오저장 방지). 수정저장은 editing 객체 변형이라 measures 보존. ※ 측정 계산식·기존 측정/즐겨찾기 경로 무변경. 아래 v265 — [v265·요청 4건] ①사진화질: preview 1920px·q0.9→2560px·q0.82(원본에 가깝게·용량 유지/감소)·핀치 확대 최대 5→8배. ②세로사진 잘림 수정 — drawScaled가 EXIF 방향을 수동회전하는데 <img>는 브라우저가 이미 자동 방향적용 → 2중회전=세로 잘림. drawScaled 방향 무시(o=1). ③답례품 '📅 전체월' 버튼 글자 잘림 — .tn-gbtn(30×30 원형) 상속 → width/height auto·nowrap로 수정. ④조사구 종류에 농가경제·어가경제(농비와 완전 동일: 지목 종류·답례품 이름묶기·매월) + 어업(어업생산동향조사, 쌀값과 동일: 종류없음·답례품 3·6·9·12월) 추가(AREA_TYPES·_giftBizList 자동파생·GIFT_MONTHS_BIZ·이름묶기 조건). ※ 기존 함수·데이터·계산 무수정. -->
 <!-- (이전)  map_v263.html (v263 · TENAR V1.8) · 저장: 2026-11-27 17:09 KST · [v263·요청 사진 4건] ①뷰어에 「⬅️ 뒤로」 버튼 추가(하단 버튼줄 맨앞, 상단 뒤로와 동일 동작). ②뷰어 사진 손가락 핀치 확대·이동·더블탭 토글(_vz transform, 넘길 때·열 때 리셋). ③사진 수정의 '지역'칸에 지번까지 표시·저장(p.addr 전체주소, saveEdit가 p.addr 유지+시도/시군구/읍면동/리 파싱). ④사진에 그리기(펜·글씨) 추가 — 뷰어 「🖊 그리기」→캔버스에 펜(색6·굵기3)·글씨·되돌리기·전체지우기, 저장 시 그림을 합성해 thumb/preview 재생성→공유 시 그림도 함께 나감(sharePhoto·선택공유 공통). ※ 뒤로가기 버튼 이미지는 여전히 미첨부. 기존 함수·데이터 무수정. -->
 <!-- (이전)  map_v262.html (v262 · TENAR V1.8) · 저장: 2026-11-27 16:01 KST · [v262·요청 사진 3건] ①뷰어 좌우 탐색=전체 사진 '등록(저장)순'(createdAt)으로 통일(지도마커·목록 어디서 열든 openViewerAll→photosOrdered). ②화질 향상: 프리뷰 1280→1920·q0.8→0.9(등록 analyze·자르기 regenPending·사진조정 adjustApply), 사진조정 표시 1100→1600(기존 저장 사진은 1280이라 재등록/재조정 때 개선). ③사진관리 다중선택: 목록에 「☑ 선택」→전체선택/선택해제·선택 공유(여러 파일 navigator.share)·선택 삭제(확인). ※ 뒤로가기 버튼 이미지는 이번 메시지에 미첨부. 기존 함수·데이터 무수정. -->
 <!-- (이전)  map_v261.html (v261 · TENAR V1.8) · 저장: 2026-11-27 15:40 KST · [v261·요청 사진 5건] ①사진 지역에 지번까지(뷰어 열 때 지번 없는 기존 사진은 revGeo로 주소 보충). ②★사진핀 세로 일렬 버그 수정 — 원인=.pm-mk에 position:relative가 maplibre .maplibregl-marker{position:absolute}를 덮어써 마커가 문서흐름으로 세로로 쌓임(좌표는 정상). position 제거→작물핀처럼 정확 위치. ③사진조정: 회전버튼이 화면에 즉시 반영(adjMakeUrl), 자르기 모서리(●) 드래그로 자유롭게+슬라이더 유지, 등록 때도 동일(attachCrop), 등록 최대 30장·순차처리. ④뷰어 뒤로가기: 들어온 경로대로(지도에서=지도로 닫기, 사진관리에서=관리로). ⑤상단 흐림은 코드상 black(v259)이나 iOS는 설치시점 status-bar 캐시—홈화면 앱 삭제 후 재설치 필요. 여러 장 올려도 뷰어 꽉 차게(작게 등록 보완). ※ 기존 함수·데이터 무수정. -->
@@ -18339,7 +18339,7 @@ try{
     '.pm-prev{display:flex;gap:10px;border:1px solid #e3ebdd;border-radius:10px;padding:8px;margin-bottom:8px}.pm-prev img{width:66px;height:66px;object-fit:cover;border-radius:7px;flex:0 0 auto}.pm-prev .m{flex:1;min-width:0;font-size:12px;color:#55624b}'+
     '.pm-bd{display:inline-block;font-size:10.5px;font-weight:800;padding:1px 6px;border-radius:9px;margin-left:4px}.pm-bd.y{background:#e6f3e0;color:#2f6a12}.pm-bd.n{background:#fff2dd;color:#a3600a}'+
     '#pmViewer{position:fixed;inset:0;background:#000;z-index:3100;display:none;flex-direction:column}#pmViewer.show{display:flex}#pmViewer .vt{display:flex;gap:8px;align-items:center;padding:calc(env(safe-area-inset-top,0px) + 10px) 12px 10px;color:#fff}#pmViewer .vt .t{flex:1;font-size:14px;font-weight:700}#pmViewer .vt button{background:rgba(255,255,255,.15);color:#fff;border:0;border-radius:8px;padding:7px 10px;font-weight:700}'+
-    '#pmViewer .vi{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;touch-action:none}#pmViewer .vi img{width:100%;height:100%;object-fit:contain;transform-origin:center center;will-change:transform}'+   /* [v261] 꽉 차게 · [v263] 핀치 확대 */'#pmViewer .nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.2);color:#fff;border:0;width:44px;height:44px;border-radius:50%;font-size:22px}#pmViewer .nav.p{left:10px}#pmViewer .nav.n{right:10px}#pmViewer .vm{color:#eee;font-size:13px;padding:12px 14px calc(env(safe-area-inset-bottom,0px) + 12px);background:#111;max-height:46%;overflow:auto}#pmViewer .vm .k{color:#9aa}'+
+    '#pmViewer .vi{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;touch-action:none}#pmViewer .vi img{width:100%;height:100%;object-fit:contain;transform-origin:center center;will-change:transform}'+   /* [v261] 꽉 차게 · [v263] 핀치 확대 */'#pmViewer .nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(17,17,17,.62);color:#fff;border:1.5px solid rgba(255,255,255,.55);width:46px;height:46px;border-radius:50%;font-size:24px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center}#pmViewer .nav.p{left:10px}#pmViewer .nav.n{right:10px}#pmViewer .vm{color:#eee;font-size:13px;padding:12px 14px calc(env(safe-area-inset-bottom,0px) + 12px);background:#111;max-height:46%;overflow:auto}#pmViewer .vm .k{color:#9aa}'+
     '.pm-hint{font-size:12px;color:#8a9880;margin:6px 0}'+
     '.pm-toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%);background:rgba(20,20,20,.92);color:#fff;padding:10px 16px;border-radius:22px;font-size:13.5px;z-index:3200;opacity:0;transition:opacity .2s;pointer-events:none;max-width:86%;text-align:center}.pm-toast.show{opacity:1}'+
     '.pm-mini{font-size:12px;font-weight:700;border:1.5px solid #d9e4d2;background:#fff;border-radius:7px;padding:5px 8px;color:#27500A}'+
@@ -18383,14 +18383,16 @@ try{
       grip.addEventListener('pointermove',function(e){ if(dragY==null)return; var dy=e.clientY-dragY; var nh=Math.max(window.innerHeight*0.3,Math.min(window.innerHeight*0.92,dragH-dy)); sheet.style.height=nh+'px'; _pkSheetH=nh+'px'; });
       grip.addEventListener('pointerup',function(e){ dragY=null; try{grip.releasePointerCapture(e.pointerId);}catch(_){} }); }
     document.getElementById('pmvBack').onclick=viewerBack;   /* [v261] 진입 경로대로 */
-    document.getElementById('pmvP').onclick=function(){if(vwIdx>0){vwIdx--;vzReset();renderViewer();}};
-    document.getElementById('pmvN').onclick=function(){if(vwIdx<vwList.length-1){vwIdx++;vzReset();renderViewer();}};
-    /* [v263] 뷰어 핀치 확대·이동·더블탭 */
+    document.getElementById('pmvP').onclick=function(){viewerPrev();};   /* [v267] 순환 */
+    document.getElementById('pmvN').onclick=function(){viewerNext();};
+    /* [v263] 뷰어 핀치 확대·이동·더블탭 · [v267] 스와이프(좌=다음·우=이전) */
     var vi=viewer.querySelector('.vi'), _vs=null, _ltap=0;
     function _dist(t){return Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);}
-    vi.addEventListener('touchstart',function(e){ if(e.touches.length===2){ _vs={d:_dist(e.touches),s:_vz.scale}; e.preventDefault(); } else if(e.touches.length===1&&_vz.scale>1){ _vs={pan:true,x:e.touches[0].clientX,y:e.touches[0].clientY,tx:_vz.tx,ty:_vz.ty}; } },{passive:false});
-    vi.addEventListener('touchmove',function(e){ if(!_vs)return; if(e.touches.length===2&&!_vs.pan){ _vz.scale=Math.max(1,Math.min(8,_vs.s*_dist(e.touches)/_vs.d)); vzApply(); e.preventDefault(); } else if(_vs.pan&&e.touches.length===1){ _vz.tx=_vs.tx+(e.touches[0].clientX-_vs.x); _vz.ty=_vs.ty+(e.touches[0].clientY-_vs.y); vzApply(); e.preventDefault(); } },{passive:false});
-    vi.addEventListener('touchend',function(e){ if(e.touches.length>0){_vs=null;return;} var now=Date.now(),tgt=e.target,isNav=tgt&&tgt.classList&&tgt.classList.contains('nav'); if(!isNav&&now-_ltap<300){ if(_vz.scale>1)vzReset(); else {_vz.scale=2.5;vzApply();} } _ltap=now; if(_vz.scale<=1){_vz.tx=0;_vz.ty=0;vzApply();} _vs=null; });
+    vi.addEventListener('touchstart',function(e){ if(e.touches.length===2){ _vs={d:_dist(e.touches),s:_vz.scale}; e.preventDefault(); } else if(e.touches.length===1){ if(_vz.scale>1){ _vs={pan:true,x:e.touches[0].clientX,y:e.touches[0].clientY,tx:_vz.tx,ty:_vz.ty}; } else { _vs={sw:true,x:e.touches[0].clientX,y:e.touches[0].clientY,t:Date.now()}; } } },{passive:false});
+    vi.addEventListener('touchmove',function(e){ if(!_vs)return; if(e.touches.length===2&&!_vs.pan&&!_vs.sw){ _vz.scale=Math.max(1,Math.min(8,_vs.s*_dist(e.touches)/_vs.d)); vzApply(); e.preventDefault(); } else if(_vs.pan&&e.touches.length===1){ _vz.tx=_vs.tx+(e.touches[0].clientX-_vs.x); _vz.ty=_vs.ty+(e.touches[0].clientY-_vs.y); vzApply(); e.preventDefault(); } },{passive:false});
+    vi.addEventListener('touchend',function(e){ if(e.touches.length>0){_vs=null;return;} var now=Date.now(),tgt=e.target,isNav=tgt&&tgt.classList&&tgt.classList.contains('nav');
+      if(_vs&&_vs.sw&&_vz.scale<=1){ var ct=e.changedTouches&&e.changedTouches[0]; if(ct){ var dx=ct.clientX-_vs.x,dy=ct.clientY-_vs.y,dt=now-_vs.t; if(Math.abs(dx)>55&&Math.abs(dx)>Math.abs(dy)*1.3&&dt<700){ if(dx<0)viewerNext(); else viewerPrev(); _vs=null; return; } } }   /* [v267] 좌스와이프=다음·우=이전 */
+      if(!isNav&&now-_ltap<300){ if(_vz.scale>1)vzReset(); else {_vz.scale=2.5;vzApply();} } _ltap=now; if(_vz.scale<=1){_vz.tx=0;_vz.ty=0;vzApply();} _vs=null; });
     /* [v263] 그리기 오버레이 */
     document.getElementById('pmDCancel').onclick=drawCancel;
     document.getElementById('pmDSave').onclick=drawSave;
@@ -18455,7 +18457,7 @@ try{
     return ep.then(function(ex){ rec.exif=ex||{}; if(ex&&isFinite(ex.lat)&&isFinite(ex.lon)){rec.lat=ex.lat;rec.lon=ex.lon;rec.hasGps=1;}else rec.hasGps=0;
       var dt=dtFromRaw(ex&&ex.dtRaw); if(dt){rec.dateTaken=dt.date;rec.timeTaken=dt.time;rec.ts=dt.ts;}
       if(isHeic(file))rec.warn='HEIC/HEIF는 기기에 따라 미리보기가 안 될 수 있습니다.'; else if(!SUPPORTED.test(file.type))rec.warn='지원하지 않는 형식일 수 있습니다.';
-      return loadImg(file).then(function(o){ var or=(rec.exif&&rec.exif.orientation)||1; return Promise.all([cvBlob(drawScaled(o.img,200,or),.72),cvBlob(drawScaled(o.img,2560,or),.82)]).then(function(bl){ URL.revokeObjectURL(o.url); rec.thumbBlob=bl[0];rec.previewBlob=bl[1];rec.thumbURL=URL.createObjectURL(bl[0]); return rec; }); })
+      return loadImg(file).then(function(o){ var or=(rec.exif&&rec.exif.orientation)||1; return Promise.all([cvBlob(drawScaled(o.img,200,or),.72),cvBlob(drawScaled(o.img,4096,or),.85)]).then(function(bl){ URL.revokeObjectURL(o.url); rec.thumbBlob=bl[0];rec.previewBlob=bl[1];rec.thumbURL=URL.createObjectURL(bl[0]); return rec; }); })
         .catch(function(){ rec.warn=rec.warn||'이미지를 불러오지 못했습니다(형식 미지원).'; return rec; }); }); }
   function typeOpts(sel){ return ['<option value="">(유형)</option>'].concat(PTYPES.map(function(c){return '<option'+(c===sel?' selected':'')+'>'+c+'</option>';})).join(''); }
   function cropCode(name){ for(var i=0;i<CROP_DB.length;i++) if(CROP_DB[i][2]===name) return CROP_DB[i][3]; return ''; }
@@ -18539,7 +18541,10 @@ try{
   }
   function photosOrdered(){ return pmPhotos.slice().sort(function(a,b){ var x=a.createdAt||'',y=b.createdAt||''; return x<y?-1:(x>y?1:0); }); }   /* [v262] 전체 사진 등록(저장)순 */
   function openViewerAll(p,from){ var list=photosOrdered(); var idx=0; for(var i=0;i<list.length;i++){ if(list[i].id===p.id){idx=i;break;} } openViewer(list,idx,from); }
+  function viewerPrev(){ if(!vwList.length)return; vwIdx=(vwIdx-1+vwList.length)%vwList.length; vzReset(); renderViewer(); }   /* [v267] 순환 이전 */
+  function viewerNext(){ if(!vwList.length)return; vwIdx=(vwIdx+1)%vwList.length; vzReset(); renderViewer(); }   /* [v267] 순환 다음 */
   function renderViewer(){ var p=vwList[vwIdx]; if(!p)return; document.getElementById('pmvImg').src=p._previewURL||p._thumbURL||''; document.getElementById('pmvT').textContent=(vwIdx+1)+' / '+vwList.length;
+    var _np=document.getElementById('pmvP'),_nn=document.getElementById('pmvN'),_shw=(vwList.length>1)?'flex':'none'; if(_np)_np.style.display=_shw; if(_nn)_nn.style.display=_shw;   /* [v267] 사진 1장이면 nav 숨김, 여러장이면 양쪽 항상 표시 */
     var _bk=document.getElementById('pmvBack'); if(_bk)_bk.textContent=(_viewerFrom==='manager')?'⬅️ 사진관리':'⬅️ 지도';
     var parts=[p.sido,p.sigungu,p.emd,p.ri].filter(Boolean).join(' ');
     var addr=(p.addr&&p.addr.length>=(parts||'').length)?p.addr:(parts||p.addr||'');   /* [v260] 리·지번까지 포함된 전체주소(p.addr) 우선 */
@@ -18554,7 +18559,7 @@ try{
   var _draw=null;
   function drawOpen(id){ var p=find(id); if(!p)return; viewer.classList.remove('show');
     get('previews',id).then(function(r){ return (r&&r.blob)?r.blob:get('thumbs',id).then(function(t){return t&&t.blob;}); }).then(function(blob){ if(!blob){toast('이미지를 불러오지 못했습니다.');reopenViewer(id);return;}
-      loadImg(blob).then(function(o){ var cv=document.getElementById('pmDcv'); var mx=2560,sc=Math.min(1,mx/Math.max(o.img.naturalWidth,o.img.naturalHeight)); cv.width=Math.round((o.img.naturalWidth||o.img.width)*sc); cv.height=Math.round((o.img.naturalHeight||o.img.height)*sc);
+      loadImg(blob).then(function(o){ var cv=document.getElementById('pmDcv'); var mx=4096,sc=Math.min(1,mx/Math.max(o.img.naturalWidth,o.img.naturalHeight)); cv.width=Math.round((o.img.naturalWidth||o.img.width)*sc); cv.height=Math.round((o.img.naturalHeight||o.img.height)*sc);
         _draw={id:id,items:[],cur:null,color:'#ee2b2b',width:8,mode:'pen',_img:o.img,_url:o.url};
         drawRedraw(); drawPanel(); drawEl.classList.add('show'); }).catch(function(){ toast('이미지 로드 실패'); reopenViewer(id); }); }); }
   function drawRedraw(){ if(!_draw)return; var cv=document.getElementById('pmDcv'),ctx=cv.getContext('2d'); ctx.clearRect(0,0,cv.width,cv.height); ctx.drawImage(_draw._img,0,0,cv.width,cv.height);
@@ -18568,7 +18573,7 @@ try{
     document.getElementById('pmDtools').innerHTML=h; }
   function drawCancel(){ drawEl.classList.remove('show'); var id=_draw&&_draw.id; if(_draw&&_draw._url){try{URL.revokeObjectURL(_draw._url);}catch(_){}} _draw=null; if(id)reopenViewer(id); }
   function drawSave(){ if(!_draw)return; var id=_draw.id,cv=document.getElementById('pmDcv'); toast('저장 중…');
-    cvBlob(cv,.82).then(function(prev){ var tc=scaleCanvas(cv,200); return cvBlob(tc,.72).then(function(th){ var p=find(id); if(!p)return Promise.reject(); p.updatedAt=kst();
+    cvBlob(cv,.85).then(function(prev){ var tc=scaleCanvas(cv,200); return cvBlob(tc,.72).then(function(th){ var p=find(id); if(!p)return Promise.reject(); p.updatedAt=kst();
       return getSettings().then(function(st){ var ps=[put('thumbs',{id:id,blob:th}),put('photos',strip(p))]; if(st.saveMode!=='light')ps.push(put('previews',{id:id,blob:prev})); return Promise.all(ps); }); }); })
     .then(function(){ drawEl.classList.remove('show'); if(_draw&&_draw._url){try{URL.revokeObjectURL(_draw._url);}catch(_){}} _draw=null; toast('그림 저장됨'); return reload(); })
     .then(function(){ renderMarkers(); reopenViewer(id); }).catch(function(){ toast('저장 실패'); }); }
@@ -18619,9 +18624,9 @@ try{
   function cropCanvas(cv,box){ if(!box)return cv; var l=(box.l||0)/100,t=(box.t||0)/100,r=(box.r||0)/100,b=(box.b||0)/100; if(!l&&!t&&!r&&!b)return cv; var sx=Math.round(cv.width*l),sy=Math.round(cv.height*t),sw=Math.round(cv.width*(1-l-r)),sh=Math.round(cv.height*(1-t-b)); if(sw<10||sh<10)return cv; var o=document.createElement('canvas'); o.width=sw;o.height=sh; o.getContext('2d').drawImage(cv,sx,sy,sw,sh,0,0,sw,sh); return o; }
   function scaleCanvas(cv,maxEdge){ var sc=Math.min(1,maxEdge/Math.max(cv.width,cv.height)); if(sc>=1)return cv; var o=document.createElement('canvas'); o.width=Math.round(cv.width*sc); o.height=Math.round(cv.height*sc); o.getContext('2d').drawImage(cv,0,0,o.width,o.height); return o; }
   function regenPending(idx){ var r=_pending[idx]; if(!r||!r._file) return Promise.resolve();
-    return loadImg(r._file).then(function(o){ var or=(r.exif&&r.exif.orientation)||1; var base=drawScaled(o.img,2560,or); URL.revokeObjectURL(o.url);
+    return loadImg(r._file).then(function(o){ var or=(r.exif&&r.exif.orientation)||1; var base=drawScaled(o.img,4096,or); URL.revokeObjectURL(o.url);
       var rot=rotateCanvas(base,r.userRot||0), cropped=cropCanvas(rot,r.cropBox);
-      return Promise.all([cvBlob(scaleCanvas(cropped,200),.72),cvBlob(scaleCanvas(cropped,2560),.82)]).then(function(bl){ if(r.thumbURL)URL.revokeObjectURL(r.thumbURL); r.thumbBlob=bl[0];r.previewBlob=bl[1];r.thumbURL=URL.createObjectURL(bl[0]); });
+      return Promise.all([cvBlob(scaleCanvas(cropped,200),.72),cvBlob(scaleCanvas(cropped,4096),.85)]).then(function(bl){ if(r.thumbURL)URL.revokeObjectURL(r.thumbURL); r.thumbBlob=bl[0];r.previewBlob=bl[1];r.thumbURL=URL.createObjectURL(bl[0]); });
     }).catch(function(){}); }
   function cropSheet(idx){ var r=_pending[idx]; if(!r||!r.thumbURL)return; var cb=r.cropBox||{l:0,t:0,r:0,b:0}; r.cropBox=cb;
     openSheet('회전·자르기',
@@ -18670,7 +18675,7 @@ try{
       _adj={id:id,rot:0,box:{l:0,t:0,r:0,b:0},_blob:blob,_url:URL.createObjectURL(blob)}; adjustSheet(); }); }
   function adjMakeUrl(){ if(!_adj)return Promise.resolve();   /* [v261] 회전을 화면에 즉시 반영 */
     return loadImg(_adj._blob).then(function(o){ var base=imgToCanvas(o.img); try{URL.revokeObjectURL(o.url);}catch(_){}
-      var rot=rotateCanvas(base,_adj.rot||0); return cvBlob(scaleCanvas(rot,2560),.82); })
+      var rot=rotateCanvas(base,_adj.rot||0); return cvBlob(scaleCanvas(rot,4096),.85); })
     .then(function(b){ if(_adj._url)try{URL.revokeObjectURL(_adj._url);}catch(_){} _adj._url=URL.createObjectURL(b); }); }
   function adjustSheet(){ if(!_adj||!_adj._url)return; var cb=_adj.box;
     openSheet('사진 조정(회전·자르기)',
@@ -18687,7 +18692,7 @@ try{
   function adjustApply(){ if(!_adj)return; var id=_adj.id; toast('사진 조정 중…');
     loadImg(_adj._blob).then(function(o){ var base=imgToCanvas(o.img); try{URL.revokeObjectURL(o.url);}catch(_){}
       var rot=rotateCanvas(base,_adj.rot||0), cr=cropCanvas(rot,_adj.box);
-      return Promise.all([cvBlob(scaleCanvas(cr,200),.72),cvBlob(scaleCanvas(cr,2560),.82)]); })
+      return Promise.all([cvBlob(scaleCanvas(cr,200),.72),cvBlob(scaleCanvas(cr,4096),.85)]); })
     .then(function(bl){ var p=find(id); if(!p)return; p.updatedAt=kst();
       return getSettings().then(function(st){ var ps=[put('thumbs',{id:id,blob:bl[0]}),put('photos',strip(p))]; if(st.saveMode!=='light')ps.push(put('previews',{id:id,blob:bl[1]})); return Promise.all(ps); }); })
     .then(function(){ toast('사진 조정 저장됨'); return reload(); })
