@@ -1,4 +1,5 @@
-<!-- map_v260.html (v260 · TENAR V1.8) · 저장: 2026-11-27 15:06 KST · [v260·요청 사진 6건+답례품] ①사진 마커: 뷰포트 제한 제거→핀처럼 전 지도에 모두 표시(상한 800), 레이어 기본 ON, 줌 중 위치고정·크기만 부드럽게(zoom 이벤트 pmResize, 축소=더 작게). ②뷰어: 수정/지도/삭제 옆 '사진조정(회전·자르기)'·'공유'·상단 '⬅️ 사진관리' 뒤로 추가(뒤로=사진관리). ③공유버튼(Web Share/다운로드 폴백), 뷰어 지역=p.addr(리·지번 포함) 우선, 목록 캡션=시군구+읍면동. ④전체 작물필터=등록된 작물만, 작물별=미분류 맨위. ⑤모든 사진 팝업 헤더 통일: 제목(좌)+⬅️뒤로·➖최소화·✖️닫기(우). ⑥답례품: 년도·월 정렬 깨짐(헤더 flex-wrap), 🎁 버튼 열면 오늘 달 기준, 조사구 상세에 ← 뒤로(답례품 복귀). ※ 사진 '위치가 경선 따라 어긋남'은 저장 좌표값 문제로 별도 확인 필요. 기존 함수·데이터 무수정. -->
+<!-- map_v261.html (v261 · TENAR V1.8) · 저장: 2026-11-27 15:40 KST · [v261·요청 사진 5건] ①사진 지역에 지번까지(뷰어 열 때 지번 없는 기존 사진은 revGeo로 주소 보충). ②★사진핀 세로 일렬 버그 수정 — 원인=.pm-mk에 position:relative가 maplibre .maplibregl-marker{position:absolute}를 덮어써 마커가 문서흐름으로 세로로 쌓임(좌표는 정상). position 제거→작물핀처럼 정확 위치. ③사진조정: 회전버튼이 화면에 즉시 반영(adjMakeUrl), 자르기 모서리(●) 드래그로 자유롭게+슬라이더 유지, 등록 때도 동일(attachCrop), 등록 최대 30장·순차처리. ④뷰어 뒤로가기: 들어온 경로대로(지도에서=지도로 닫기, 사진관리에서=관리로). ⑤상단 흐림은 코드상 black(v259)이나 iOS는 설치시점 status-bar 캐시—홈화면 앱 삭제 후 재설치 필요. 여러 장 올려도 뷰어 꽉 차게(작게 등록 보완). ※ 기존 함수·데이터 무수정. -->
+<!-- (이전)  map_v260.html (v260 · TENAR V1.8) · 저장: 2026-11-27 15:06 KST · [v260·요청 사진 6건+답례품] ①사진 마커: 뷰포트 제한 제거→핀처럼 전 지도에 모두 표시(상한 800), 레이어 기본 ON, 줌 중 위치고정·크기만 부드럽게(zoom 이벤트 pmResize, 축소=더 작게). ②뷰어: 수정/지도/삭제 옆 '사진조정(회전·자르기)'·'공유'·상단 '⬅️ 사진관리' 뒤로 추가(뒤로=사진관리). ③공유버튼(Web Share/다운로드 폴백), 뷰어 지역=p.addr(리·지번 포함) 우선, 목록 캡션=시군구+읍면동. ④전체 작물필터=등록된 작물만, 작물별=미분류 맨위. ⑤모든 사진 팝업 헤더 통일: 제목(좌)+⬅️뒤로·➖최소화·✖️닫기(우). ⑥답례품: 년도·월 정렬 깨짐(헤더 flex-wrap), 🎁 버튼 열면 오늘 달 기준, 조사구 상세에 ← 뒤로(답례품 복귀). ※ 사진 '위치가 경선 따라 어긋남'은 저장 좌표값 문제로 별도 확인 필요. 기존 함수·데이터 무수정. -->
 <!-- (이전)  map_v259.html (v259 · TENAR V1.8) · 저장: 2026-11-27 13:40 KST · [v259·요청 사진·PWA] ①사진 썸네일 마커: 격자 클러스터 제거→같은 좌표만 묶고 겹침 허용, 줌 축소 시 크기 작아지게(다른 핀처럼). ②지역 역지오코딩이 fetch(VWorld CORS 차단)라 비던 것→map의 reverseGeocodePreferKakao를 window._tenarRevGeo로 노출해 재사용(JSONP/카카오, 지번주소 파싱 parseJibun). 기존 사진 좌표만 있고 지역 빈 것 backfillRegions로 보충. 뷰어에 주소+좌표 함께 표시. ③작물선택 팝업 고정높이(검색 결과수에 안 흔들림)+상단 손잡이 드래그로 크기조절. ④PWA 상단 흐림: apple status-bar-style black-translucent→black. ※ 기존 함수·데이터 무수정(노출 1줄만 추가). -->
 <!-- (이전)  map_v258.html (v258 · TENAR V1.8) · 저장: 2026-11-27 11:00 KST · [v258·요청 사진모듈 개선] ①지역별을 시도→시군구→읍면동 3단 트리로 + 시도·시군구·읍면동 드롭다운 콤보필터(지역필터 초기화). ②작물별→사진 선택 후 '수정' 안 되던 것(뷰어가 수정시트를 가림) 수정(edit서 뷰어 닫음). ③사진 등록 즉시 레이어 ON+지도 반영(사진버튼 안 눌러도 보임). 레이어 ON/OFF를 레이어시트→「핀표시」로 이동, '사진관리 열기'는 제거. ④사진 등록을 '사진별' 작물·유형·메모 지정으로(일괄 버튼 별도), 작물선택을 작물분류표(107종) 기반 대분류>소분류>작물 + 초성검색 선택기로. ⑤사진 회전(90°)·자르기(상·하·좌·우 %) 추가(등록 전 적용). ※ 기존 함수·데이터 무수정, DB 공유 유지. -->
 <!-- (이전)  map_v257.html (v257 · TENAR V1.8) · 저장: 2026-11-27 09:00 KST · [v257·요청] ①측정·포구도구 그리기/필지선택/길이·면적에서 꼭짓점 점·번호가 안 보이고 선만 연결(특히 PWA 설치앱) 수정 — 원인=지도 style에 glyphs(GL 심볼 글꼴) 미설정이라 꼭짓점 번호(survey-field-vnum 등) 심볼이 못 그려지고 iOS PWA WebGL에서 점까지 깨짐. style.glyphs(openmaptiles Open Sans) 추가. ②현재위치 버튼 라벨 「면적길이」→「측정도구」(포구도구는 그대로). ※ 좌표·계산·기존 레이어 무변경. -->
@@ -18220,7 +18221,7 @@ try{
 
   /* ---------- CSS ---------- */
   (function(){ var s=document.createElement('style'); s.textContent=
-    '.pm-mk{width:46px;height:46px;border-radius:10px;border:2.5px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.35);background-size:cover;background-position:center;position:relative;cursor:pointer}'+
+    '.pm-mk{width:46px;height:46px;border-radius:10px;border:2.5px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.35);background-size:cover;background-position:center;cursor:pointer}'+   /* [v261] position:relative 제거 — maplibre .maplibregl-marker{position:absolute}를 덮어써 마커가 문서흐름으로 세로로 쌓이던 버그 수정 */
     '.pm-mk .cnt{position:absolute;top:-8px;right:-8px;min-width:20px;height:20px;padding:0 5px;border-radius:11px;background:#dc2626;color:#fff;font-size:11.5px;font-weight:800;line-height:20px;text-align:center;border:1.5px solid #fff}'+
     '.pm-mk.nogps{border-color:#f59e0b}'+
     '.pm-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:3000;display:none}.pm-bg.show{display:block}'+
@@ -18236,12 +18237,13 @@ try{
     '.pm-prev{display:flex;gap:10px;border:1px solid #e3ebdd;border-radius:10px;padding:8px;margin-bottom:8px}.pm-prev img{width:66px;height:66px;object-fit:cover;border-radius:7px;flex:0 0 auto}.pm-prev .m{flex:1;min-width:0;font-size:12px;color:#55624b}'+
     '.pm-bd{display:inline-block;font-size:10.5px;font-weight:800;padding:1px 6px;border-radius:9px;margin-left:4px}.pm-bd.y{background:#e6f3e0;color:#2f6a12}.pm-bd.n{background:#fff2dd;color:#a3600a}'+
     '#pmViewer{position:fixed;inset:0;background:#000;z-index:3100;display:none;flex-direction:column}#pmViewer.show{display:flex}#pmViewer .vt{display:flex;gap:8px;align-items:center;padding:10px 12px;color:#fff}#pmViewer .vt .t{flex:1;font-size:14px;font-weight:700}#pmViewer .vt button{background:rgba(255,255,255,.15);color:#fff;border:0;border-radius:8px;padding:7px 10px;font-weight:700}'+
-    '#pmViewer .vi{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;position:relative}#pmViewer .vi img{max-width:100%;max-height:100%;object-fit:contain}#pmViewer .nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.2);color:#fff;border:0;width:44px;height:44px;border-radius:50%;font-size:22px}#pmViewer .nav.p{left:10px}#pmViewer .nav.n{right:10px}#pmViewer .vm{color:#eee;font-size:13px;padding:12px 14px;background:#111;max-height:42%;overflow:auto}#pmViewer .vm .k{color:#9aa}'+
+    '#pmViewer .vi{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;position:relative}#pmViewer .vi img{width:100%;height:100%;object-fit:contain}'+   /* [v261] 작은 미리보기도 화면에 꽉 차게(여러 장 올려도 작게 안 보이게) */'#pmViewer .nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.2);color:#fff;border:0;width:44px;height:44px;border-radius:50%;font-size:22px}#pmViewer .nav.p{left:10px}#pmViewer .nav.n{right:10px}#pmViewer .vm{color:#eee;font-size:13px;padding:12px 14px;background:#111;max-height:42%;overflow:auto}#pmViewer .vm .k{color:#9aa}'+
     '.pm-hint{font-size:12px;color:#8a9880;margin:6px 0}'+
     '.pm-toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%);background:rgba(20,20,20,.92);color:#fff;padding:10px 16px;border-radius:22px;font-size:13.5px;z-index:3200;opacity:0;transition:opacity .2s;pointer-events:none;max-width:86%;text-align:center}.pm-toast.show{opacity:1}'+
     '.pm-mini{font-size:12px;font-weight:700;border:1.5px solid #d9e4d2;background:#fff;border-radius:7px;padding:5px 8px;color:#27500A}'+
     '.pm-chip{font-size:12.5px;font-weight:700;border:1.5px solid #d9e4d2;background:#fff;border-radius:16px;padding:6px 11px;color:#27500A;margin:3px 4px 0 0}.pm-chip.on{background:#27500A;color:#fff;border-color:#27500A}.pm-chips{display:flex;flex-wrap:wrap;margin:6px 0}'+
     '.pm-crop-wrap{position:relative;max-height:50vh;display:flex;justify-content:center;background:#000;border-radius:8px;overflow:hidden}.pm-crop-wrap img{max-width:100%;max-height:50vh;object-fit:contain}.pm-crop-box{position:absolute;border:2px solid #27500A;box-shadow:0 0 0 2000px rgba(0,0,0,.45)}'+
+    '.pm-ch{position:absolute;width:24px;height:24px;background:#27500A;border:2.5px solid #fff;border-radius:50%;touch-action:none;z-index:2}.pm-ch[data-c="tl"]{left:-12px;top:-12px}.pm-ch[data-c="tr"]{right:-12px;top:-12px}.pm-ch[data-c="bl"]{left:-12px;bottom:-12px}.pm-ch[data-c="br"]{right:-12px;bottom:-12px}'+   /* [v261] 자르기 모서리 드래그 핸들 */
     '.pm-grip{height:20px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;cursor:ns-resize;touch-action:none}.pm-grip::before{content:"";width:42px;height:5px;border-radius:3px;background:#cfd8c9}'+
     '.pm-hd-ctl{display:flex;gap:6px;flex:0 0 auto}.pm-hd-ctl button{background:#f0f0f0;border:0;border-radius:8px;padding:7px 10px;font-size:15px;line-height:1;font-weight:700}.pm-hd-ctl button#pmBack[data-off="1"]{display:none}'+   /* [v260] 통일 헤더: 제목 좌, 뒤로/최소화/닫기 우 */
     '.pm-sheet.min{height:auto!important}.pm-sheet.min .pm-body{display:none}.pm-sheet.min .pm-grip{opacity:.4}'+
@@ -18268,7 +18270,7 @@ try{
     if(grip){ grip.addEventListener('pointerdown',function(e){ dragY=e.clientY; dragH=sheet.getBoundingClientRect().height; try{grip.setPointerCapture(e.pointerId);}catch(_){} e.preventDefault(); });
       grip.addEventListener('pointermove',function(e){ if(dragY==null)return; var dy=e.clientY-dragY; var nh=Math.max(window.innerHeight*0.3,Math.min(window.innerHeight*0.92,dragH-dy)); sheet.style.height=nh+'px'; _pkSheetH=nh+'px'; });
       grip.addEventListener('pointerup',function(e){ dragY=null; try{grip.releasePointerCapture(e.pointerId);}catch(_){} }); }
-    document.getElementById('pmvBack').onclick=function(){ viewer.classList.remove('show'); openManager(); };   /* [v260] 뷰어 뒤로=사진관리로 */
+    document.getElementById('pmvBack').onclick=function(){ viewer.classList.remove('show'); if(_viewerFrom==='manager'){ openManager(); } };   /* [v261] 들어온 경로대로: 사진관리에서 왔으면 관리로, 지도에서 왔으면 지도로(닫기만) */
     document.getElementById('pmvP').onclick=function(){if(vwIdx>0){vwIdx--;renderViewer();}};
     document.getElementById('pmvN').onclick=function(){if(vwIdx<vwList.length-1){vwIdx++;renderViewer();}};
     fin.onchange=function(){closeSheet();onFiles(this.files);this.value='';};
@@ -18293,7 +18295,7 @@ try{
     var cells={}; gps.forEach(function(p){ var k=(+p.lat).toFixed(6)+','+(+p.lon).toFixed(6); (cells[k]=cells[k]||[]).push(p); });   /* 같은 좌표만 묶음, 나머지 겹침 허용 */
     Object.keys(cells).forEach(function(k){ var g=cells[k],rep=g[0]; var el=document.createElement('div'); el.className='pm-mk'+(rep.hasGps?'':' nogps'); el.style.backgroundImage='url('+rep._thumbURL+')'; el.style.width=sz+'px'; el.style.height=sz+'px';
       if(g.length>1){var c=document.createElement('div');c.className='cnt';c.textContent=g.length;el.appendChild(c);}
-      el.onclick=function(ev){ev.stopPropagation();openViewer(g,0);};
+      el.onclick=function(ev){ev.stopPropagation();openViewer(g,0,'map');};
       pmMarkers.push(new maplibregl.Marker({element:el,anchor:'center'}).setLngLat([+rep.lon,+rep.lat]).addTo(_map)); });
   }
   function pmFiltered(){ return pmPhotos.filter(function(p){
@@ -18314,8 +18316,12 @@ try{
   function setLayer(on){ layerOn=!!on; try{localStorage.setItem(LAYER_KEY,on?'1':'0');}catch(e){} renderMarkers(); }
 
   /* ---------- 등록 ---------- */
-  function onFiles(files){ if(!files||!files.length)return; toast('사진 분석 중…'); ensureMap();
-    Promise.all(Array.prototype.slice.call(files).map(analyze)).then(function(recs){ _pending=recs; renderRegister(); }); }
+  function onFiles(files){ if(!files||!files.length)return; var arr=Array.prototype.slice.call(files);
+    if(arr.length>30){ toast('한 번에 최대 30장까지 등록합니다.'); arr=arr.slice(0,30); }   /* [v261] 등록 최대 30장 */
+    toast('사진 분석 중…'); ensureMap();
+    var out=[]; var seq=Promise.resolve();   /* [v261] 순차 처리 — 여러 장 동시 디코드로 일부가 작게/실패하던 문제 완화 */
+    arr.forEach(function(f){ seq=seq.then(function(){ return analyze(f).then(function(r){ out.push(r); }); }); });
+    seq.then(function(){ _pending=out; renderRegister(); }); }
   var _pending=[];
   function analyze(file){ var rec={_file:file,name:file.name,size:file.size,mime:file.type,warn:''}; var ep=/jpe?g/i.test(file.type)?file.arrayBuffer().then(parseExif):Promise.resolve({});
     return ep.then(function(ex){ rec.exif=ex||{}; if(ex&&isFinite(ex.lat)&&isFinite(ex.lon)){rec.lat=ex.lat;rec.lon=ex.lon;rec.hasGps=1;}else rec.hasGps=0;
@@ -18388,8 +18394,13 @@ try{
   function emptyHint(){ return '<div class="pm-hint">등록된 사진이 없습니다. 위 버튼으로 등록하세요.</div>'; }
 
   /* ---------- 뷰어 ---------- */
-  function openViewer(list,idx){ vwList=list;vwIdx=idx||0; viewer.classList.add('show'); renderViewer(); var p=list[vwIdx]; if(p)ensurePreview(p).then(function(u){p._previewURL=u;renderViewer();}); }
+  var _viewerFrom='manager';   /* [v261] 뷰어 진입 경로: 'map'=지도 마커, 'manager'=사진관리 */
+  function openViewer(list,idx,from){ if(from)_viewerFrom=from; vwList=list;vwIdx=idx||0; viewer.classList.add('show'); renderViewer();
+    var p=list[vwIdx]; if(p)ensurePreview(p).then(function(u){p._previewURL=u;renderViewer();});
+    if(p&&p.hasGps&&!/\d/.test(p.addr||'')&&!p._addrTried){ p._addrTried=1; revGeo(p.lon,p.lat).then(function(g){ if(g&&(g.full||g.sido)){ p.sido=g.sido;p.sigungu=g.sigungu;p.emd=g.emd;p.ri=g.ri;p.addr=g.full||p.addr; p.updatedAt=kst(); put('photos',strip(p)); if(viewer.classList.contains('show'))renderViewer(); } }); }   /* [v261] 지번 없는 기존 사진 주소 보충 */
+  }
   function renderViewer(){ var p=vwList[vwIdx]; if(!p)return; document.getElementById('pmvImg').src=p._previewURL||p._thumbURL||''; document.getElementById('pmvT').textContent=(vwIdx+1)+' / '+vwList.length;
+    var _bk=document.getElementById('pmvBack'); if(_bk)_bk.textContent=(_viewerFrom==='manager')?'⬅️ 사진관리':'⬅️ 지도';
     var parts=[p.sido,p.sigungu,p.emd,p.ri].filter(Boolean).join(' ');
     var addr=(p.addr&&p.addr.length>=(parts||'').length)?p.addr:(parts||p.addr||'');   /* [v260] 리·지번까지 포함된 전체주소(p.addr) 우선 */
     var coord=p.hasGps&&isFinite(p.lat)?('위도 '+(+p.lat).toFixed(6)+', 경도 '+(+p.lon).toFixed(6)):'';
@@ -18450,17 +18461,40 @@ try{
   function cropSheet(idx){ var r=_pending[idx]; if(!r||!r.thumbURL)return; var cb=r.cropBox||{l:0,t:0,r:0,b:0}; r.cropBox=cb;
     openSheet('회전·자르기',
       '<div class="pm-crop-wrap" id="pmCropWrap"><img id="pmCropImg" src="'+r.thumbURL+'" onload="PM._cbDraw('+idx+')"><div class="pm-crop-box" id="pmCropBox"></div></div>'+
-      '<div style="margin-top:8px"><button class="pm-mini" onclick="PM._rot('+idx+',true)">↻ 90° 회전</button></div>'+
-      '<div class="pm-row"><label>위 자르기</label><input type="range" min="0" max="80" value="'+cb.t+'" oninput="PM._cb('+idx+',\'t\',this.value)"></div>'+
-      '<div class="pm-row"><label>아래</label><input type="range" min="0" max="80" value="'+cb.b+'" oninput="PM._cb('+idx+',\'b\',this.value)"></div>'+
-      '<div class="pm-row"><label>왼쪽</label><input type="range" min="0" max="80" value="'+cb.l+'" oninput="PM._cb('+idx+',\'l\',this.value)"></div>'+
-      '<div class="pm-row"><label>오른쪽</label><input type="range" min="0" max="80" value="'+cb.r+'" oninput="PM._cb('+idx+',\'r\',this.value)"></div>'+
+      '<div class="pm-hint">모서리(●)를 끌어 자유롭게 자르거나 아래 막대로 조절하세요.</div>'+
+      '<div style="margin-top:4px"><button class="pm-mini" onclick="PM._rot('+idx+',true)">↻ 90° 회전</button></div>'+
+      '<div class="pm-row"><label>위 자르기</label><input id="pmCr_t" type="range" min="0" max="80" value="'+cb.t+'" oninput="PM._cb('+idx+',\'t\',this.value)"></div>'+
+      '<div class="pm-row"><label>아래</label><input id="pmCr_b" type="range" min="0" max="80" value="'+cb.b+'" oninput="PM._cb('+idx+',\'b\',this.value)"></div>'+
+      '<div class="pm-row"><label>왼쪽</label><input id="pmCr_l" type="range" min="0" max="80" value="'+cb.l+'" oninput="PM._cb('+idx+',\'l\',this.value)"></div>'+
+      '<div class="pm-row"><label>오른쪽</label><input id="pmCr_r" type="range" min="0" max="80" value="'+cb.r+'" oninput="PM._cb('+idx+',\'r\',this.value)"></div>'+
       '<div style="display:flex;gap:10px;margin-top:10px"><button class="pm-btn g" style="flex:1" onclick="PM._cropReset('+idx+')">자르기 해제</button><button class="pm-btn p" style="flex:2" onclick="PM._cropApply('+idx+')">적용</button></div>', renderRegister); }
   function drawBox(cb){ cb=cb||{l:0,t:0,r:0,b:0}; var box=document.getElementById('pmCropBox'),img=document.getElementById('pmCropImg'),wrap=document.getElementById('pmCropWrap'); if(!box||!img||!wrap)return;
     var iw=img.clientWidth,ih=img.clientHeight,ox=(wrap.clientWidth-iw)/2,oy=(wrap.clientHeight-ih)/2;
     box.style.left=(ox+iw*cb.l/100)+'px'; box.style.top=(oy+ih*cb.t/100)+'px'; box.style.width=(iw*(100-cb.l-cb.r)/100)+'px'; box.style.height=(ih*(100-cb.t-cb.b)/100)+'px'; }
   function drawCropBox(idx){ var r=_pending[idx]; if(!r)return; drawBox(r.cropBox); }
   function imgToCanvas(img){ var c=document.createElement('canvas'); c.width=img.naturalWidth||img.width; c.height=img.naturalHeight||img.height; c.getContext('2d').drawImage(img,0,0); return c; }
+  /* [v261] 자르기 모서리 드래그 — 사각형 네 꼭짓점을 잡고 자유롭게. 슬라이더와 양방향 동기 */
+  var _cropCleanup=null;
+  function syncCropSliders(box){ ['t','b','l','r'].forEach(function(k){ var s=document.getElementById('pmCr_'+k); if(s)s.value=Math.round(box[k]||0); }); }
+  function attachCrop(box,onChange){ box.l=box.l||0;box.t=box.t||0;box.r=box.r||0;box.b=box.b||0;
+    var elBox=document.getElementById('pmCropBox'),img=document.getElementById('pmCropImg'); if(!elBox||!img)return;
+    elBox.innerHTML='<div class="pm-ch" data-c="tl"></div><div class="pm-ch" data-c="tr"></div><div class="pm-ch" data-c="bl"></div><div class="pm-ch" data-c="br"></div>';
+    drawBox(box); syncCropSliders(box);
+    if(_cropCleanup){try{_cropCleanup();}catch(_){}_cropCleanup=null;}
+    var dc=null;
+    function cp(e){ return (e.touches&&e.touches[0])?e.touches[0]:e; }
+    function onDown(e){ var c=e.target&&e.target.getAttribute&&e.target.getAttribute('data-c'); if(!c)return; dc=c; e.preventDefault(); e.stopPropagation(); }
+    function onMove(e){ if(!dc)return; var p=cp(e); var r=img.getBoundingClientRect(); if(!r.width||!r.height)return;
+      var x=Math.max(0,Math.min(100,(p.clientX-r.left)/r.width*100)), y=Math.max(0,Math.min(100,(p.clientY-r.top)/r.height*100));
+      if(dc.indexOf('l')>=0) box.l=Math.max(0,Math.min(x,100-box.r-5));
+      if(dc.indexOf('r')>=0) box.r=Math.max(0,Math.min(100-x,100-box.l-5));
+      if(dc.indexOf('t')>=0) box.t=Math.max(0,Math.min(y,100-box.b-5));
+      if(dc.indexOf('b')>=0) box.b=Math.max(0,Math.min(100-y,100-box.t-5));
+      drawBox(box); syncCropSliders(box); e.preventDefault(); }
+    function onUp(){ if(dc){ dc=null; if(onChange)onChange(); } }
+    elBox.addEventListener('pointerdown',onDown); window.addEventListener('pointermove',onMove); window.addEventListener('pointerup',onUp);
+    _cropCleanup=function(){ window.removeEventListener('pointermove',onMove); window.removeEventListener('pointerup',onUp); };
+  }
 
   /* ---------- [v260] 등록된 사진 회전·자르기(사진조정) ---------- */
   var _adj=null;
@@ -18469,15 +18503,20 @@ try{
       if(!blob){toast('원본 미리보기가 없습니다.');reopenViewer(id);return;}
       if(_adj&&_adj._url){try{URL.revokeObjectURL(_adj._url);}catch(_){}}
       _adj={id:id,rot:0,box:{l:0,t:0,r:0,b:0},_blob:blob,_url:URL.createObjectURL(blob)}; adjustSheet(); }); }
+  function adjMakeUrl(){ if(!_adj)return Promise.resolve();   /* [v261] 회전을 화면에 즉시 반영 */
+    return loadImg(_adj._blob).then(function(o){ var base=imgToCanvas(o.img); try{URL.revokeObjectURL(o.url);}catch(_){}
+      var rot=rotateCanvas(base,_adj.rot||0); return cvBlob(scaleCanvas(rot,1100),.85); })
+    .then(function(b){ if(_adj._url)try{URL.revokeObjectURL(_adj._url);}catch(_){} _adj._url=URL.createObjectURL(b); }); }
   function adjustSheet(){ if(!_adj||!_adj._url)return; var cb=_adj.box;
     openSheet('사진 조정(회전·자르기)',
       '<div class="pm-hint">저장본 기준으로 회전·자르기합니다(원본 사진은 변경되지 않음).</div>'+
       '<div class="pm-crop-wrap" id="pmCropWrap"><img id="pmCropImg" src="'+_adj._url+'" onload="PM._adjDraw()"><div class="pm-crop-box" id="pmCropBox"></div></div>'+
-      '<div style="margin-top:8px"><button class="pm-mini" onclick="PM._adjRot()">↻ 90° 회전</button></div>'+
-      '<div class="pm-row"><label>위 자르기</label><input type="range" min="0" max="80" value="'+cb.t+'" oninput="PM._adjCb(\'t\',this.value)"></div>'+
-      '<div class="pm-row"><label>아래</label><input type="range" min="0" max="80" value="'+cb.b+'" oninput="PM._adjCb(\'b\',this.value)"></div>'+
-      '<div class="pm-row"><label>왼쪽</label><input type="range" min="0" max="80" value="'+cb.l+'" oninput="PM._adjCb(\'l\',this.value)"></div>'+
-      '<div class="pm-row"><label>오른쪽</label><input type="range" min="0" max="80" value="'+cb.r+'" oninput="PM._adjCb(\'r\',this.value)"></div>'+
+      '<div class="pm-hint">모서리(●)를 끌어 자유롭게 자르거나 아래 막대로 조절하세요.</div>'+
+      '<div style="margin-top:4px"><button class="pm-mini" onclick="PM._adjRot()">↻ 90° 회전</button></div>'+
+      '<div class="pm-row"><label>위 자르기</label><input id="pmCr_t" type="range" min="0" max="80" value="'+cb.t+'" oninput="PM._adjCb(\'t\',this.value)"></div>'+
+      '<div class="pm-row"><label>아래</label><input id="pmCr_b" type="range" min="0" max="80" value="'+cb.b+'" oninput="PM._adjCb(\'b\',this.value)"></div>'+
+      '<div class="pm-row"><label>왼쪽</label><input id="pmCr_l" type="range" min="0" max="80" value="'+cb.l+'" oninput="PM._adjCb(\'l\',this.value)"></div>'+
+      '<div class="pm-row"><label>오른쪽</label><input id="pmCr_r" type="range" min="0" max="80" value="'+cb.r+'" oninput="PM._adjCb(\'r\',this.value)"></div>'+
       '<div style="display:flex;gap:10px;margin-top:10px"><button class="pm-btn g" style="flex:1" onclick="PM._adjReset()">초기화</button><button class="pm-btn p" style="flex:2" onclick="PM._adjApply()">저장</button></div>',
       function(){ reopenViewer(_adj.id); }); }
   function adjustApply(){ if(!_adj)return; var id=_adj.id; toast('사진 조정 중…');
@@ -18510,7 +18549,7 @@ try{
     _exp:function(nh){ var ch=nh.nextElementSibling; if(ch){var open=ch.style.display!=='none';ch.style.display=open?'none':'block';nh.innerHTML=nh.innerHTML.replace(open?'▾':'▸',open?'▸':'▾');} },
     _showList:function(enc2){ var kv=decodeURIComponent(enc2).split('|'); var list=pmPhotos.filter(function(p){ return (p.sido||'')===(kv[0]||'')&&(p.sigungu||'')===(kv[1]||'')&&(kv.length<3||(p.emd||'')===(kv[2]||'')); }).sort(function(a,b){return (b.ts||0)-(a.ts||0);}); openSheet(kv.filter(Boolean).join(' ')||'(지역 미상)',gridHtml(list),openManager); },
     _showCrop:function(enc2){ var c=decodeURIComponent(enc2); var list=pmPhotos.filter(function(p){return (p.crop||'미분류')===c;}).sort(function(a,b){return (b.ts||0)-(a.ts||0);}); openSheet(c,gridHtml(list),openManager); },
-    _open:function(i){ var list=window._pmGrid||pmPhotos; openViewer(list,i); },
+    _open:function(i){ var list=window._pmGrid||pmPhotos; openViewer(list,i,'manager'); },
     _pview:function(i){ /* 등록 미리보기 썸네일 탭 = 자르기 */ cropSheet(i); },
     _flt:function(k,val){ pmFilter[k]=val; renderManager(); renderMarkers(); },
     _fltReset:function(){ pmFilter={crop:'',year:'',hasGps:'',ptype:''}; renderManager(); renderMarkers(); },
@@ -18521,16 +18560,16 @@ try{
     _set:function(i,k,val){ if(_pending[i]) _pending[i][k]=val; },
     _rot:function(i,fromCrop){ if(!_pending[i])return; _pending[i].userRot=((_pending[i].userRot||0)+90)%360; regenPending(i).then(function(){ if(fromCrop)cropSheet(i); else renderRegister(); }); },
     _cropOpen:function(i){ cropSheet(i); },
-    _cbDraw:function(i){ drawCropBox(i); },
+    _cbDraw:function(i){ if(_pending[i]){ _pending[i].cropBox=_pending[i].cropBox||{l:0,t:0,r:0,b:0}; attachCrop(_pending[i].cropBox); } },
     _cb:function(i,k,val){ if(_pending[i]){ _pending[i].cropBox=_pending[i].cropBox||{l:0,t:0,r:0,b:0}; _pending[i].cropBox[k]=+val; drawCropBox(i); } },
     _cropReset:function(i){ if(_pending[i]){ _pending[i].cropBox={l:0,t:0,r:0,b:0}; cropSheet(i); } },
     _cropApply:function(i){ regenPending(i).then(function(){ renderRegister(); }); },
     /* [v260] 등록된 사진 조정·공유 */
     _adjust:adjustPhoto, _share:sharePhoto,
-    _adjDraw:function(){ if(_adj)drawBox(_adj.box); },
-    _adjRot:function(){ if(_adj){ _adj.rot=((_adj.rot||0)+90)%360; toast('90° 회전(저장 시 적용)'); } },
+    _adjDraw:function(){ if(_adj)attachCrop(_adj.box); },
+    _adjRot:function(){ if(_adj){ _adj.rot=((_adj.rot||0)+90)%360; adjMakeUrl().then(function(){ adjustSheet(); }); } },
     _adjCb:function(k,val){ if(_adj){ _adj.box=_adj.box||{l:0,t:0,r:0,b:0}; _adj.box[k]=+val; drawBox(_adj.box); } },
-    _adjReset:function(){ if(_adj){ _adj.rot=0; _adj.box={l:0,t:0,r:0,b:0}; adjustSheet(); } },
+    _adjReset:function(){ if(_adj){ _adj.rot=0; _adj.box={l:0,t:0,r:0,b:0}; adjMakeUrl().then(function(){ adjustSheet(); }); } },
     _adjApply:adjustApply,
     _bulk:function(kind){ if(kind==='crop'){ cropPicker(function(nm){ _pending.forEach(function(r){r.crop=nm;}); renderRegister(); }, renderRegister); }
       else if(kind==='type'){ openSheet('유형 일괄', PTYPES.map(function(t){return '<button class="pm-btn g" style="width:100%;margin:3px 0" onclick="PM._bulkSet(\'ptype\',\''+enc(t)+'\')">'+esc(t)+'</button>';}).join('')+'<button class="pm-btn g" style="width:100%;margin:3px 0" onclick="PM._bulkSet(\'ptype\',\'\')">(비움)</button>', renderRegister); }
